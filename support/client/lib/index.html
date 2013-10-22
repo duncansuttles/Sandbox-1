@@ -187,7 +187,12 @@
         $("#loadVWFModal").centerInClient();
         $('#loadVWFModal').modal('show');
         
-        //
+        
+        window.Vec3 = goog.vec.Vec3;    
+  window.Vec4 = goog.vec.Vec4;
+  window.Mat4 = goog.vec.Mat4;
+  window.Quaternion = goog.vec.Quaternion;
+  
         require(['boot'], function () {
 
 

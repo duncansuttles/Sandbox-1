@@ -288,7 +288,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                   
                     } else if ( node.threeObject ) {
                         sceneNode.camera.threeJScameras[ childID ] = node.threeObject;
-                        sceneNode.threeScene.add(cam); 
+                       
                     }
                 }               
             }

@@ -667,7 +667,7 @@
 
             // Connect to the reflector. This implementation uses the socket.io library, which
             // communicates using a channel back to the server that provided the client documents.
-            debugger;
+            
             try {
                 if ( isSocketIO07()) {
                     if ( window.location.protocol === "https:" )
@@ -2803,7 +2803,7 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
 
                     var behaviorIDs = this.behaviors( nodeID );
 
-                    while ( propertyValue === undefined && behaviorIDs.length ) {
+                    while ( propertyValue === undefined && behaviorIDs && behaviorIDs.length ) {
                         var behaviorID = behaviorIDs.pop();
                         propertyValue = this.getProperty( behaviorID, propertyName, true ); // behavior node only, not its prototypes
                     }
@@ -2814,7 +2814,7 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
 
                     var prototypeID = this.prototype( nodeID );
 
-                    if ( prototypeID !== nodeTypeURI ) {
+                    if (prototypeID && prototypeID !== nodeTypeURI ) {
                         propertyValue = this.getProperty( prototypeID, propertyName );
                     }
 

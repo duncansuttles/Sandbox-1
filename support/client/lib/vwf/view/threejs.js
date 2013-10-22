@@ -267,7 +267,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             {
                 var threeview = this;
                 var domWin = window;
-                debugger;
+                
                 
                 this.canvasQuery = jQuery(this.rootSelector["application-root"]).append("<canvas id='" + 'index-vwf' + "' width='"+this.width+"' height='"+this.height+"' class='vwf-scene'/>"
                 ).children(":last");
