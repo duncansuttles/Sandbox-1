@@ -107,7 +107,7 @@ define( [ "module", "vwf/model", "vwf/configuration" ], function( module, model,
                     child.patches = { descendant: true };
                 }
 
-            } else if ( ! child.prototype ) {
+            } else if ( ! child.prototype  && childID != childExtendsID) {
 
                 // Second time: fill in the prototype and behaviors.
 

@@ -1920,6 +1920,7 @@ var useLegacyID = nodeID === 0 && childURI &&
     ( childURI == "index.vwf" || childURI == "appscene.vwf" || childURI.indexOf( "http://vwf.example.com/" ) == 0 ) &&
     childURI != "http://vwf.example.com/node.vwf";
     
+useLegacyID = true;    
 useLegacyID = useLegacyID ||
     nodeID == applicationID && childName == "camera"; // TODO: fix static ID references and remove; model/glge still expects a static ID for the camera
 
@@ -1949,6 +1950,12 @@ if ( useLegacyID ) {  // TODO: fix static ID references and remove
             // Record the application root ID. The application is the first global node annotated as
             // "application".
 
+
+
+     //       childID = childComponent.id || childComponent.uri || ( childComponent["extends"] || nodeTypeURI ) + "." + childName; 
+       //     childID = childID.replace( /[^0-9A-Za-z_]+/g, "-" ); // stick to HTML id-safe characters  // TODO: hash uri => childID to shorten for faster lookups?  // TODO: canonicalize uri
+            
+console.log(childID);
             if ( nodeID === 0 && childName == "application" && ! applicationID ) {
                 applicationID = childID;
             }
