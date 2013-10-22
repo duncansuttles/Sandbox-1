@@ -13,45 +13,50 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-define( [ "module", "logger", "vwf/api/kernel", "vwf/api/model" ], function( module, logger, kernel_api, model_api ) {
+/// vwf/model.js is the common implementation of all Virtual World Framework models. Each model
+/// is part of a federation with other models attached to the simulation that implements part of
+/// the greater model. Taken together, the models create the entire model system for the
+/// simulation.
+///
+/// Models are inside of, and directly part of the simulation. They may control the simulation
+/// and cause immediate change, but they cannot accept external input. The model configuration is
+/// identical for all participants in a shared world.
+/// 
+/// A given model might be responsible for a certain subset of nodes in the the simulation, such
+/// as those representing Flash objects. Or it might implement part of the functionality of any
+/// node, such as translating 3-D transforms and material properties back and forth to a scene
+/// manager. Or it might implement functionality that is only active for a short period, such as
+/// importing a document.
+/// 
+/// vwf/model and all deriving models are loaded as RequireJS (http://requirejs.org) modules.
+/// 
+/// @module vwf/model
+/// @requires logger
+/// @requires vwf/api/kernel
+/// @requires vwf/api/model
 
-    // vwf/model.js is the common implementation of all Virtual World Framework models. Each model
-    // is part of a federation with other models attached to the simulation that implements part of
-    // the greater model. Taken together, the models create the entire model system for the
-    // simulation.
-    //
-    // Models are inside of, and directly part of the simulation. They may control the simulation
-    // and cause immediate change, but they cannot accept external input. The model configuration is
-    // identical for all participants in a shared world.
-    // 
-    // A given model might be responsible for a certain subset of nodes in the the simulation, such
-    // as those representing Flash objects. Or it might implement part of the functionality of any
-    // node, such as translating 3-D transforms and material properties back and forth to a scene
-    // manager. Or it might implement functionality that is only active for a short period, such as
-    // importing a document.
-    // 
-    // vwf/model and all deriving models are loaded as RequireJS (http://requirejs.org) modules.
+define( [ "module", "logger", "vwf/api/kernel", "vwf/api/model" ], function( module, logger, kernel_api, model_api ) {
 
     // TODO: most of this is the same between vwf/model.js and vwf/view.js. Find a way to share.
 
-    var context = module.id.replace( /\//g, "." );
+    var label = module.id.replace( /\//g, "." );
 
-    logger.for( context ).infoc( "load" );
+    logger.for( label ).debug( "loading" );
 
-    return {
+    var exports = {
 
         module: module,
 
-        logger: logger.for( context ),
+        logger: logger.for( label ),
 
-        load: function( module, initializer, kernelGenerator, modelGenerator ) {
+        load: function( module, initializer, modelGenerator, kernelGenerator ) {
 
             var instance = Object.create( this );
 
             instance.module = module;
-            instance.logger = logger.for( instance.module.id.replace( /\//g, "." ) );
+            instance.logger = logger.for( instance.module.id.replace( /\//g, "." ), instance );
             
-            instance.logger.infoc( "load" );
+            instance.logger.debug( "loading" );
 
             if ( typeof initializer == "function" || initializer instanceof Function ) {
                 initializer = initializer();
@@ -61,20 +66,26 @@ define( [ "module", "logger", "vwf/api/kernel", "vwf/api/model" ], function( mod
                 instance[key] = initializer[key]; 
             }
 
-            kernelGenerator && Object.keys( kernel_api ).forEach( function( kernelFunctionName ) {
-                instance[kernelFunctionName] = kernelGenerator.call( instance, kernelFunctionName ); // TODO: ignore if undefined
+            modelGenerator && Object.keys( model_api ).forEach( function( modelFunctionName ) {
+                if ( ! instance.hasOwnProperty( modelFunctionName ) ) {
+                    instance[modelFunctionName] = modelGenerator.call( instance, modelFunctionName );
+                    instance[modelFunctionName] || delete instance[modelFunctionName];
+                }
             } );
 
-            modelGenerator && Object.keys( model_api ).forEach( function( modelFunctionName ) {
-                instance[modelFunctionName] = modelGenerator.call( instance, modelFunctionName ); // TODO: ignore if undefined
+            kernelGenerator && Object.keys( kernel_api ).forEach( function( kernelFunctionName ) {
+                if ( ! instance.hasOwnProperty( kernelFunctionName ) ) {
+                    instance[kernelFunctionName] = kernelGenerator.call( instance, kernelFunctionName );
+                    instance[kernelFunctionName] || delete instance[kernelFunctionName];
+                }
             } );
-                
+
             return instance;
         },
 
         create: function( kernel, model, stages, state, parameters ) {
 
-            this.logger.infoc( "create" );
+            this.logger.debug( "creating" );
 
             // Interpret create( kernel, stages, ... ) as create( kernel, undefined, stages, ... )
 
@@ -158,5 +169,7 @@ define( [ "module", "logger", "vwf/api/kernel", "vwf/api/model" ], function( mod
         },
         
     };
+
+    return exports;
 
 } );

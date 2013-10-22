@@ -15,57 +15,6 @@
 
 
 
-        THREE.Matrix4.prototype.lookAt = function ( eye, target, up , axis) {
-
-			var te = this.elements;
-			if(axis === undefined)
-				axis = 2;
-			var x = new THREE.Vector3();
-			var y = new THREE.Vector3();
-			var z = new THREE.Vector3();
-			z.subVectors( eye, target ).normalize();
-
-			if ( z.length() === 0 ) {
-
-				z.z = 1;
-
-			}
-
-			x.crossVectors( up, z ).normalize();
-
-			if ( x.length() === 0 ) {
-
-				z.x += 0.0001;
-				x.crossVectors( up, z ).normalize();
-
-			}
-
-			y.crossVectors( z, x );
-
-			
-			if(axis == 2)
-			{
-				
-			te[0] = x.x; te[4] = y.x; te[8] = z.x;
-			te[1] = x.y; te[5] = y.y; te[9] = z.y;
-			te[2] = x.z; te[6] = y.z; te[10] = z.z;
-			}
-			if(axis == 1)
-			{
-			te[0] = x.x; te[4] = z.x; te[8] = y.x;
-			te[1] = x.y; te[5] = z.y; te[9] = y.y;
-			te[2] = x.z; te[6] = z.z; te[10] = y.z;
-			}
-			if(axis == 0)
-			{
-			te[0] = z.x; te[4] = x.x; te[8] = y.x;
-			te[1] = z.y; te[5] = x.y; te[9] = y.y;
-			te[2] = z.z; te[6] = x.z; te[10] = y.z;
-			}
-
-			return this;
-
-		}
 
     
 
@@ -99,8 +48,60 @@
 		return true;	
 	}
 	
-define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/threejs/backgroundLoader" ], function( module, model, utility, Color, backgroundLoader ) {
+define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/threejs/backgroundLoader","vwf/model/threejs/three" ], function( module, model, utility, Color, backgroundLoader ) {
 
+
+        THREE.Matrix4.prototype.lookAt = function ( eye, target, up , axis) {
+
+            var te = this.elements;
+            if(axis === undefined)
+                axis = 2;
+            var x = new THREE.Vector3();
+            var y = new THREE.Vector3();
+            var z = new THREE.Vector3();
+            z.subVectors( eye, target ).normalize();
+
+            if ( z.length() === 0 ) {
+
+                z.z = 1;
+
+            }
+
+            x.crossVectors( up, z ).normalize();
+
+            if ( x.length() === 0 ) {
+
+                z.x += 0.0001;
+                x.crossVectors( up, z ).normalize();
+
+            }
+
+            y.crossVectors( z, x );
+
+            
+            if(axis == 2)
+            {
+                
+            te[0] = x.x; te[4] = y.x; te[8] = z.x;
+            te[1] = x.y; te[5] = y.y; te[9] = z.y;
+            te[2] = x.z; te[6] = y.z; te[10] = z.z;
+            }
+            if(axis == 1)
+            {
+            te[0] = x.x; te[4] = z.x; te[8] = y.x;
+            te[1] = x.y; te[5] = z.y; te[9] = y.y;
+            te[2] = x.z; te[6] = z.z; te[10] = y.z;
+            }
+            if(axis == 0)
+            {
+            te[0] = z.x; te[4] = x.x; te[8] = y.x;
+            te[1] = z.y; te[5] = x.y; te[9] = y.y;
+            te[2] = z.z; te[6] = x.z; te[10] = y.z;
+            }
+
+            return this;
+
+        }
 
     return model.load( module, {
 

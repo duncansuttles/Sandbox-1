@@ -13,212 +13,230 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-/// @name vwf.api.view
-/// @namespace
+/// View API.
+/// 
+/// @module vwf/api/view
 
-define( {
+define( function() {
 
-    /// Description.
-    /// 
-    /// @name vwf.api.view#createdNode
-    /// @function
-    /// 
-    /// @param {ID} nodeID
-    /// @param {ID} childID
-    /// @param {String} childExtendsID
-    /// @param {String[]} childImplementsIDs
-    /// @param {String} childSource
-    /// @param {String} childType
-    /// @param {String} childURI
-    /// @param {String} childName
-    /// @param {Function} [callback]
-    /// 
-    /// @returns {}
+    var exports = {
 
-    createdNode: [ /* nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType, childURI, childName, callback /- ( ready ) -/ */ ],
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {ID} childID
+        /// @param {String} childExtendsID
+        /// @param {String[]} childImplementsIDs
+        /// @param {String} childSource
+        /// @param {String} childType
+        /// @param {String} childIndex
+        ///   When `nodeID` is falsy, the URI of the component, or `undefined` if the component
+        ///   wasn't loaded from a URI. When `nodeID` is truthy, the numerical index of the child's
+        ///   position in the parent's array, starting at `0`. When child order is significant to
+        ///   the driver, the child should be placed at the given position in the parent's array.
+        ///   Nodes won't necessarily arrive in numerical order since varying dependencies cause
+        ///   nodes to become ready at indeterminate times.
+        /// @param {String} childName
+        /// @param {module:vwf/api/view~readyCallback} callback
+        /// 
+        /// @returns {}
 
-    /// Description.
-    /// 
-    /// @name vwf.api.view#initializedNode
-    /// @function
-    /// 
-    /// @param {ID} nodeID
-    /// @param {ID} childID
-    /// 
-    /// @returns {}
+        createdNode: [ /* nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType,
+            childIndex, childName, callback( ready ) */ ],
 
-    initializedNode: [ /* nodeID, childID */ ],
-   
-    /// Description.
-    /// 
-    /// @name vwf.api.view#deletedNode
-    /// @function
-    /// 
-    /// @param {ID} nodeID
-    /// 
-    /// @returns {}
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {ID} childID
+        /// @param {String} childExtendsID
+        /// @param {String[]} childImplementsIDs
+        /// @param {String} childSource
+        /// @param {String} childType
+        /// @param {String} childIndex
+        ///   When `nodeID` is falsy, the URI of the component, or `undefined` if the component
+        ///   wasn't loaded from a URI. When `nodeID` is truthy, the numerical index of the child's
+        ///   position in the parent's array, starting at `0`. When child order is significant to
+        ///   the driver, the child should be placed at the given position in the parent's array.
+        ///   Nodes won't necessarily arrive in numerical order since varying dependencies cause
+        ///   nodes to become ready at indeterminate times.
+        /// @param {String} childName
+        /// 
+        /// @returns {}
 
-    deletedNode: [ /* nodeID */ ],
+        initializedNode: [ /* nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType,
+            childIndex, childName */ ],
 
-    /// Description.
-    /// 
-    /// @name vwf.api.view#addedChild
-    /// @function
-    /// 
-    /// @param {ID} nodeID
-    /// @param {ID} childID
-    /// @param {String} childName
-    /// 
-    /// @returns {}
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// 
+        /// @returns {}
 
-    addedChild: [ /* nodeID, childID, childName */ ],
+        deletedNode: [ /* nodeID */ ],
 
-    /// Description.
-    /// 
-    /// @name vwf.api.view#removedChild
-    /// @function
-    /// 
-    /// @param {ID} nodeID
-    /// @param {ID} childID
-    /// 
-    /// @returns {}
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {ID} childID
+        /// @param {String} childName
+        /// 
+        /// @returns {}
 
-    removedChild: [ /* nodeID, childID */ ],
+        addedChild: [ /* nodeID, childID, childName */ ],
 
-    /// Description.
-    /// 
-    /// @name vwf.api.view#createdProperty
-    /// @function
-    /// 
-    /// @param {ID} nodeID
-    /// @param {String} propertyName
-    /// @param {Value} propertyValue
-    /// 
-    /// @returns {}
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {ID} childID
+        /// 
+        /// @returns {}
 
-    createdProperty: [ /* nodeID, propertyName, propertyValue */ ],
+        removedChild: [ /* nodeID, childID */ ],
 
-    /// Description.
-    /// 
-    /// @name vwf.api.view#initializedProperty
-    /// @function
-    /// 
-    /// @param {ID} nodeID
-    /// @param {String} propertyName
-    /// @param {Value} propertyValue
-    /// 
-    /// @returns {}
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {String} propertyName
+        /// @param {Value} propertyValue
+        /// 
+        /// @returns {}
 
-    initializedProperty: [ /* nodeID, propertyName, propertyValue */ ],
-    
-    /* TODO: deletedProperty, */
+        createdProperty: [ /* nodeID, propertyName, propertyValue */ ],
 
-    /// Description.
-    /// 
-    /// @name vwf.api.view#satProperty
-    /// @function
-    /// 
-    /// @param {ID} nodeID
-    /// @param {String} propertyName
-    /// @param {Value} propertyValue
-    /// 
-    /// @returns {}
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {String} propertyName
+        /// @param {Value} propertyValue
+        /// 
+        /// @returns {}
 
-    satProperty: [ /* nodeID, propertyName, propertyValue */ ],
+        initializedProperty: [ /* nodeID, propertyName, propertyValue */ ],
 
-    /// Description.
-    /// 
-    /// @name vwf.api.view#gotProperty
-    /// @function
-    /// 
-    /// @param {ID} nodeID
-    /// @param {String} propertyName
-    /// @param {Value} propertyValue
-    /// 
-    /// @returns {}
-    
-    gotProperty: [ /* nodeID, propertyName, propertyValue */ ],
+        // TODO: deletedProperty
 
-    /// Description.
-    /// 
-    /// @name vwf.api.view#createdMethod
-    /// @function
-    /// 
-    /// @param {ID} nodeID
-    /// @param {String} methodName
-    /// @param {String[]} methodParameters
-    /// @param {String} methodBody
-    /// 
-    /// @returns {}
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {String} propertyName
+        /// @param {Value} propertyValue
+        /// 
+        /// @returns {}
 
-    createdMethod: [ /* nodeID, methodName, methodParameters, methodBody */ ],
+        satProperty: [ /* nodeID, propertyName, propertyValue */ ],
 
-    /* TODO: deletedMethod, */
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {String} propertyName
+        /// @param {Value} propertyValue
+        /// 
+        /// @returns {}
 
-    /// Description.
-    /// 
-    /// @name vwf.api.view#calledMethod
-    /// @function
-    /// 
-    /// @param {ID} nodeID
-    /// @param {String} methodName
-    /// @param {String[]} methodParameters
-    /// 
-    /// @returns {}
+        gotProperty: [ /* nodeID, propertyName, propertyValue */ ],
 
-    calledMethod: [ /* nodeID, methodName, methodParameters */ ],
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {String} methodName
+        /// @param {String[]} methodParameters
+        /// @param {String} methodBody
+        /// 
+        /// @returns {}
 
-    /// Description.
-    /// 
-    /// @name vwf.api.view#createdEvent
-    /// @function
-    /// 
-    /// @param {ID} nodeID
-    /// @param {String} eventName
-    /// @param {String[]} eventParameters
-    /// 
-    /// @returns {}
+        createdMethod: [ /* nodeID, methodName, methodParameters, methodBody */ ],
 
-    createdEvent: [ /* nodeID, eventName, eventParameters */ ],
+        // TODO: deletedMethod
 
-    /* TODO: deletedEvent, */
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {String} methodName
+        /// @param {String[]} methodParameters
+        /// @param {Value} methodValue
+        /// 
+        /// @returns {}
 
-    /// Description.
-    /// 
-    /// @name vwf.api.view#firedEvent
-    /// @function
-    /// 
-    /// @param {ID} nodeID
-    /// @param {String} eventName
-    /// @param {String[]} eventParameters
-    /// 
-    /// @returns {}
+        calledMethod: [ /* nodeID, methodName, methodParameters, methodValue */ ],
 
-    firedEvent: [ /* nodeID, eventName, eventParameters */ ],
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {String} eventName
+        /// @param {String[]} eventParameters
+        /// 
+        /// @returns {}
 
-    /// Description.
-    /// 
-    /// @name vwf.api.view#executed
-    /// @function
-    /// 
-    /// @param {ID} nodeID
-    /// @param {String} scriptText
-    /// @param {String} scriptType
-    /// 
-    /// @returns {}
+        createdEvent: [ /* nodeID, eventName, eventParameters */ ],
 
-    executed: [ /* nodeID, scriptText, scriptType */ ],
+        // TODO: deletedEvent
 
-    /// Description.
-    /// 
-    /// @name vwf.api.view#ticked
-    /// @function
-    /// 
-    /// @param {Number} time
-    /// 
-    /// @returns {}
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {String} eventName
+        /// @param {String[]} eventParameters
+        /// 
+        /// @returns {}
 
-    ticked: [ /* time */ ],
+        firedEvent: [ /* nodeID, eventName, eventParameters */ ],
 
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {String} scriptText
+        /// @param {String} scriptType
+        /// 
+        /// @returns {}
+
+        executed: [ /* nodeID, scriptText, scriptType */ ],
+
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {Number} time
+        /// 
+        /// @returns {}
+
+        ticked: [ /* time */ ],
+
+        /// Description.
+        /// 
+        /// @callback module:vwf/api/view~readyCallback
+        /// 
+        /// @param {Boolean} ready
+
+    };
+
+    return exports;
 
 } );
