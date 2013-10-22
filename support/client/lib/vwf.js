@@ -322,7 +322,8 @@
                     { library: "vwf/view/lesson", active: false},
                     { library: "vwf/view/google-earth", active: false },
                     { library: "vwf/view/cesium", active: false },
-                    { library: "vwf/view/webrtc", active: false}
+                    { library: "vwf/view/webrtc", active: false},
+                     { library: "vwf/view/EditorView", active: true },
                 ]
             };
             mapLibraryName(requireArray);

@@ -48,7 +48,8 @@
 		return true;	
 	}
 	
-define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/threejs/backgroundLoader","vwf/model/threejs/three" ], function( module, model, utility, Color, backgroundLoader ) {
+define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/threejs/backgroundLoader" ], function( module, model, utility, Color, backgroundLoader) {
+
 
 
         THREE.Matrix4.prototype.lookAt = function ( eye, target, up , axis) {

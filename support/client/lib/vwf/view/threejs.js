@@ -20,7 +20,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		
         initialize: function( rootSelector ) {
            
-	 
+	    debugger;
 	    $(document).on('selectionChanged',this.selectionChanged.bind(this));
 		this.renderTargetPasses = [];
             this.rootSelector = rootSelector;
