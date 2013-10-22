@@ -288,11 +288,21 @@
                 { library: "vwf/utility", active: true },
                 { library: "vwf/model/glge/glge-compiled", active: false },
                 { library: "vwf/model/threejs/three", active: true },
-                { library: "vwf/model/threejs/ColladaLoader", active: true },
+                { library: "vwf/model/threejs/ColladaLoader", active: false },
                 { library: "vwf/model/jiglib/jiglib", active: false },
                 { library: "vwf/view/webrtc/adapter", active: false },
                 { library: "vwf/view/google-earth", active: false },
-                { library: "vwf/model/cesium/Cesium", active: false }
+                { library: "vwf/model/cesium/Cesium", active: false },
+
+
+             { library: "vwf/view/editorview/ObjectPools", active: true },
+             { library: "/socket.io/socket.io.js", active: true },
+             { library: "vwf/view/EditorView", active: true },
+             { library: "vwf/view/WebRTC", active: true },
+             { library: "vwf/view/audio", active: true },
+             { library: "messageCompress", active: true },
+             { library: "vwf/view/xapi", active: true }
+
             ];
 
             var initializers = {
@@ -408,7 +418,7 @@
                     requireArray["vwf/model/threejs"].active = true;
                     requireArray["vwf/view/threejs"].active = true;
                     requireArray["vwf/model/threejs/three"].active = true;
-                    requireArray["vwf/model/threejs/ColladaLoader"].active = true;
+                    requireArray["vwf/model/threejs/ColladaLoader"].active = false;
                     initializers["model"]["vwf/model/threejs"].active = true;
                     initializers["view"]["vwf/view/threejs"].active = true;
                 }
@@ -658,7 +668,7 @@
             // communicates using a channel back to the server that provided the client documents.
             debugger;
             try {
-                if ( isSocketIO07() || true) {
+                if ( isSocketIO07()) {
                     if ( window.location.protocol === "https:" )
                     {
                         socket = io.connect("wss://"+window.location.host);
@@ -760,7 +770,7 @@
                     try {
 
                         if ( isSocketIO07() ) {
-                            var fields = message;
+                            var fields = JSON.parse(messageCompress.unpack(message));
                         } else { // Ruby Server - Unpack the arguements
                             var fields = JSON.parse( message );
                         }
@@ -892,7 +902,7 @@
     
                 // Send the message.
                 var message = JSON.stringify( fields );
-                socket.send( message );
+                socket.send( messageCompress.pack(message) );
  
             } else {
                 

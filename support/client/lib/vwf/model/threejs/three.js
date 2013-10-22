@@ -4,7 +4,7 @@
  * @author mrdoob / http://mrdoob.com/
  * @author Larry Battle / http://bateru.com/news
  */
-debugger;
+
 var THREE = THREE || { REVISION: '56' };
 window.THREE = THREE;
  // stats.js - http://github.com/mrdoob/stats.js

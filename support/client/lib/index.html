@@ -29,8 +29,7 @@
 
     <!-- The Virtual World Framework makes use of the jQuery library.                            -->
 
-    <script type="text/javascript" src="socket.io.js"></script>
-    <script type="text/javascript" src="socket.io-sessionid-patch.js"></script>
+   
 
     <script type="text/javascript" src="require.js"></script>
 
@@ -185,8 +184,15 @@
 
         $("#loadVWFModal").centerInClient();
         $('#loadVWFModal').modal('show');
-        debugger;
-        vwf.loadConfiguration(application, userLibraries, updateOverlay);
+        
+        //vwf.loadConfiguration(application, userLibraries, updateOverlay);
+        define(["boot"],function()
+        {
+            debugger;
+            vwf.loadConfiguration(application, userLibraries, updateOverlay);
+
+
+        })
     </script>
   </body>
 
