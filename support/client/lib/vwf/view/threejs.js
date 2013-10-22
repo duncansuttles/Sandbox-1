@@ -20,7 +20,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		
         initialize: function( rootSelector ) {
            
-	    debugger;
+	    if(!this.events)
+				this.events = {};
+			
 	    $(document).on('selectionChanged',this.selectionChanged.bind(this));
 		this.renderTargetPasses = [];
             this.rootSelector = rootSelector;
@@ -265,9 +267,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             {
                 var threeview = this;
                 var domWin = window;
+                debugger;
                 
-                
-                this.canvasQuery = jQuery(this.rootSelector).append("<canvas id='" + this.state.sceneRootID + "' width='"+this.width+"' height='"+this.height+"' class='vwf-scene'/>"
+                this.canvasQuery = jQuery(this.rootSelector["application-root"]).append("<canvas id='" + 'index-vwf' + "' width='"+this.width+"' height='"+this.height+"' class='vwf-scene'/>"
                 ).children(":last");
                 
                 initScene.call(this,this.state.scenes[childID]);
