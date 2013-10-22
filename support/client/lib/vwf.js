@@ -408,7 +408,7 @@
                     requireArray["vwf/model/threejs"].active = true;
                     requireArray["vwf/view/threejs"].active = true;
                     requireArray["vwf/model/threejs/three"].active = true;
-                    requireArray["vwf/model/threejs/ColladaLoader"].active = false;
+                    requireArray["vwf/model/threejs/ColladaLoader"].active = true;
                     initializers["model"]["vwf/model/threejs"].active = true;
                     initializers["view"]["vwf/view/threejs"].active = true;
                 }
