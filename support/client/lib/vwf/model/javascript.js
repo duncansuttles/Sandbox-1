@@ -1312,7 +1312,7 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
           //      try {
                     if ( ! phase || listener.phases && listener.phases.indexOf( phase ) >= 0 ) {
                         var result = listener.handler.apply( listener.context || jsDriverSelf.nodes[0], eventParameters ); // default context is the global root  // TODO: this presumes this.creatingNode( undefined, 0 ) is retained above
-                        return handled || result || result === undefined; // interpret no return as "return true"
+                        return handled || result ; // interpret no return as "return true"
                     }
            //     } catch ( e ) {
             //        jsDriverSelf.logger.warnc( "firingEvent", nodeID, eventName, eventParameters,  // TODO: limit eventParameters for log
@@ -1323,13 +1323,17 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
 
             }, false );
 			
-			for( var i =0; i < node.children.length; i++)
+            if(handled) return handled;
+
+            var children = vwf.children(nodeID);
+			for( var i =0; i < children.length; i++)
 			{
 				
-				if(this.isBehavior(node.children[i]))
-				{
-					this.firingEvent(node.children[i].id,eventName, eventParameters);
-				}
+				//if(this.isBehavior(node.children[i]))
+				//{
+					var result = this.firingEvent(children[i],eventName, eventParameters);
+                    if(result) return result;
+				//}
 			
 			}
 			

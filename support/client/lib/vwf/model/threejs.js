@@ -121,6 +121,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 			
             this.delayedProperties = {};
 			this.subDriverFactory = new SubDriverFactory();
+            
 			$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/_THREERayTracer.js"></script>');
 			$(document.head).append('<script type="text/javascript" src="vwf/model/threejs/scenemanager.js"></script>');
 			

@@ -1004,7 +1004,7 @@
         /// message received from the reflector.
         /// 
         /// @name module:vwf.dispatch
-
+        this.lastTick = 0;
         this.dispatch = function() {
 
             var fields;
@@ -1016,16 +1016,44 @@
 
                 // Advance time to the message time.
 
-                if ( this.now != fields.time ) {
-                    this.sequence_ = undefined; // clear after the previous action
-                    this.client_ = undefined;   // clear after the previous action
+                
+
+                 if ( this.now != fields.time ) {
                     this.now = fields.time;
-                    this.tick();
+                     this.sequence_ = undefined; // clear after the previous action
+                    this.client_ = undefined;   // clear after the previous action                    
+                    var time = (this.now - this.lastTick);
+                                        if(time < 1)
+                                        {
+                                                
+                                                while(time > 0)
+                                                {        
+                                                        
+                                                        var now = performance.now();
+                                                        var realTickDif = now - this.lastRealTick;
+                                                        this.lastRealTick = now;
+                                                       
+                                                        this.tick();
+                                                
+                                                        time -= .05;
+                                                        
+                                                }
+                                                //save the leftovers
+                                                this.lastTick = this.now  - time;
+                                                
+                                        }else
+                                        {
+                                                //giving up, cant go fast enough
+                                                this.lastTick = fields.time;
+                                        }
+                                        
                 }
+
+               
 
                 // Perform the action.
 
-                if ( fields.action ) {  // TODO: don't put ticks on the queue but just use them to fast-forward to the current time (requires removing support for passing ticks to the drivers and nodes)
+                if ( fields.action && fields.action != 'tick') {  // TODO: don't put ticks on the queue but just use them to fast-forward to the current time (requires removing support for passing ticks to the drivers and nodes)
                     this.sequence_ = fields.sequence; // note the message's queue sequence number for the duration of the action
                     this.client_ = fields.client;     // ... and note the originating client
                     this.receive( fields.node, fields.action, fields.member, fields.parameters, fields.respond, fields.origin );
@@ -1040,7 +1068,7 @@
                 this.sequence_ = undefined; // clear after the previous action
                 this.client_ = undefined;   // clear after the previous action
                 this.now = queue.time;
-                this.tick();
+                
             }
             
         };
@@ -1074,17 +1102,20 @@
                 model.ticking && model.ticking( this.now ); // TODO: maintain a list of tickable models and only call those
             }, this );
 
-            // Call ticked() on each view.
-
-            this.views.forEach( function( view ) {
-                view.ticked && view.ticked( this.now ); // TODO: maintain a list of tickable views and only call those
-            }, this );
 
             // Call tick() on each tickable node.
 
             this.tickable.nodeIDs.forEach( function( nodeID ) {
                 this.callMethod( nodeID, "tick", [ this.now ] );
             }, this );
+
+            // Call ticked() on each view.
+
+            this.views.forEach( function( view ) {
+                view.ticked && view.ticked( this.now ); // TODO: maintain a list of tickable views and only call those
+            }, this );
+
+          
 
         };
 
@@ -1299,6 +1330,11 @@
             // `createNode( nodeComponent, undefined, callback )`. (`nodeAnnotation` was added in
             // 0.6.12.)
 
+            if(nodeComponent.id == "index-vwf")
+            {
+                    $(document).trigger('setstatebegin');
+            }
+
             if ( typeof nodeAnnotation == "function" || nodeAnnotation instanceof Function ) {
                 callback_async = nodeAnnotation;
                 nodeAnnotation = undefined;
@@ -1467,6 +1503,14 @@
                     } );
                 }
 
+                //debugger
+                if(nodeComponent == "index-vwf")
+                {
+                        $(document).trigger('setstatecomplete');
+                        $('#loadstatus').remove(); 
+                }
+
+
             } );
 
             this.logger.debugu();
@@ -1511,6 +1555,11 @@
             this.views.forEach( function( view ) {
                 view.deletedNode && view.deletedNode( nodeID );
             } );
+
+            if(this.tickable.nodeIDs.indexOf(nodeID) > -1)
+            {        
+                this.tickable.nodeIDs.splice(this.tickable.nodeIDs.indexOf(nodeID),1);
+            }
 
             this.logger.debugu();
         };
@@ -1668,6 +1717,7 @@
 
         this.getNode = function( nodeID, full, normalize ) {  // TODO: options to include/exclude children, prototypes
 
+            if(!nodeID) return undefined;
             this.logger.debuggx( "getNode", nodeID, full );
 
             // Start the descriptor.
@@ -1750,25 +1800,30 @@
 
             }
 
-            // Methods.
+             // Methods.
+                nodeComponent.methods = this.getMethods( nodeID );
 
-            // Because methods are much more data than properties, we only send them when patching
-            if ( patches && patches.methods ) {
-                var self = this;
-                nodeComponent.methods = {};
-                patches.methods.forEach( function( methodName ) {
-                    var method = self.models.javascript.nodes[ nodeID ].methods.node.private.bodies[ methodName ];
-                    if ( method )
-                        nodeComponent.methods[ methodName ] = method.toString();
-                } );
+                for ( var methodName in nodeComponent.methods ) {  // TODO: distinguish add, change, remove
+                    if ( nodeComponent.methods[methodName] === undefined ) {
+                        delete nodeComponent.methods[methodName];
+                    }
+                }
 
-                if ( Object.keys( nodeComponent.methods ).length == 0 )
+                if ( Object.keys( nodeComponent.methods ).length == 0 ) { 
                     delete nodeComponent.methods;
-                else
-                    patched = true;
-            }
+                } 
+                        //events
+                nodeComponent.events = this.getEvents( nodeID );
 
-            // Events.
+                for ( var eventName in nodeComponent.events ) {  // TODO: distinguish add, change, remove
+                    if ( nodeComponent.events[eventName] === undefined ) {
+                        delete nodeComponent.events[eventName];
+                    }
+                }
+
+                if ( Object.keys( nodeComponent.events ).length == 0 ) { 
+                    delete nodeComponent.events;
+                }
 
             // nodeComponent.events = {};  // TODO
 
@@ -1830,6 +1885,158 @@
 
         };
 
+        this.deleteEvent = function( nodeID, eventName) {  // TODO: parameters (used? or just for annotation?)  // TODO: allow a handler body here and treat as this.*event* = function() {} (a self-targeted handler); will help with ui event handlers
+
+                        
+            
+
+            // Call creatingEvent() on each model. The event is considered created after each model
+            // has run.
+
+            this.models.forEach( function( model ) {
+                model.deletingEvent && model.deletingEvent( nodeID, eventName );
+            } );
+
+            // Call createdEvent() on each view. The view is being notified that a event has been
+            // created.
+
+            this.views.forEach( function( view ) {
+                view.deletedEvent && view.deletedEvent( nodeID, eventName );
+            } );
+
+            
+        };
+
+        this.deleteMethod = function( nodeID, methodName) {
+
+                        
+            
+
+            // Call creatingMethod() on each model. The method is considered created after each
+            // model has run.
+
+            this.models.forEach( function( model ) {
+                model.deletingMethod && model.deletingMethod( nodeID, methodName);
+            } );
+
+            // Call createdMethod() on each view. The view is being notified that a method has been
+            // created.
+
+            this.views.forEach( function( view ) {
+                view.deletedMethod && view.deletedMethod( nodeID, methodName );
+            } );
+                
+                        //remove from the tickable queue.
+                        if(methodName == 'tick' && vwf.tickable.nodeIDs.indexOf(nodeID) != -1)
+                                vwf.tickable.nodeIDs.splice(vwf.tickable.nodeIDs.indexOf(nodeID),1);
+            
+        };
+
+        this.getMethods = function( nodeID ) {  // TODO: rework as a cover for getProperty(), or remove; passing all properties to each driver is impractical since reentry can't be controlled when multiple gets are in progress.
+
+            this.logger.debuggx( "getMethods", nodeID );
+
+            // Call gettingProperties() on each model.
+
+            var methods = this.models.reduceRight( function( intermediate_methods, model ) {  // TODO: note that we can't go left to right and take the first result since we are getting all of the properties as a batch; verify that this creates the same result as calling getProperty individually on each property and that there are no side effects from getting through a driver after the one that handles the get.
+
+                var model_methods = {};
+                                
+                if ( model.gettingMethods ) {
+                    model_methods = model.gettingMethods( nodeID, methods );
+                } else if ( model.gettingMethod ) {
+                    for ( var methodName in intermediate_methods ) {
+                        model_methods[methodName] =
+                            model.gettingMethod( nodeID, methodName, intermediate_methods[methodName] );
+                        if ( vwf.models.kernel.blocked() ) {
+                            model_methods[methodName] = undefined; // ignore result from a blocked getter
+                        }
+                    }
+                }
+
+                for ( var methodName in model_methods ) {
+                    if ( model_methods[methodName] !== undefined ) { // copy values from this model
+                        intermediate_methods[methodName] = model_methods[methodName];
+                    } else if ( intermediate_methods[methodName] === undefined ) { // as well as recording any new keys
+                        intermediate_methods[methodName] = undefined;
+                    }
+                }
+
+                return intermediate_methods;
+
+            }, {} );
+
+            // Call gotProperties() on each view.
+
+            this.views.forEach( function( view ) {
+
+                if ( view.gotMethods ) {
+                    view.gotMethods( nodeID, methods );
+                } else if ( view.gotMethod ) {
+                    for ( var methodName in methods ) {
+                        view.gotMethod( nodeID, methodName, methods[methodName] );  // TODO: be sure this is the value actually gotten and not an intermediate value from above
+                    }
+                }
+
+            } );
+
+           
+
+            return methods;
+        };
+
+        this.getEvents = function( nodeID ) {  // TODO: rework as a cover for getProperty(), or remove; passing all properties to each driver is impractical since reentry can't be controlled when multiple gets are in progress.
+
+            this.logger.debuggx( "getevents", nodeID );
+
+            // Call gettingProperties() on each model.
+
+            var events = this.models.reduceRight( function( intermediate_events, model ) {  // TODO: note that we can't go left to right and take the first result since we are getting all of the properties as a batch; verify that this creates the same result as calling getProperty individually on each property and that there are no side effects from getting through a driver after the one that handles the get.
+
+                var model_events = {};
+                                
+                if ( model.gettingEvents ) {
+                    model_events = model.gettingEvents( nodeID, events );
+                } else if ( model.gettingEvent ) {
+                    for ( var eventName in intermediate_events ) {
+                        model_events[eventName] =
+                            model.gettingEvent( nodeID, eventName, intermediate_events[eventName] );
+                        if ( vwf.models.kernel.blocked() ) {
+                            model_events[eventName] = undefined; // ignore result from a blocked getter
+                        }
+                    }
+                }
+
+                for ( var eventName in model_events ) {
+                    if ( model_events[eventName] !== undefined ) { // copy values from this model
+                        intermediate_events[eventName] = model_events[eventName];
+                    } else if ( intermediate_events[eventName] === undefined ) { // as well as recording any new keys
+                        intermediate_events[eventName] = undefined;
+                    }
+                }
+
+                return intermediate_events;
+
+            }, {} );
+
+            // Call gotProperties() on each view.
+
+            this.views.forEach( function( view ) {
+
+                if ( view.gotEvents ) {
+                    view.gotEvents( nodeID, events );
+                } else if ( view.gotEvent ) {
+                    for ( var eventName in events ) {
+                        view.gotEvent( nodeID, eventName, events[eventName] );  // TODO: be sure this is the value actually gotten and not an intermediate value from above
+                    }
+                }
+
+            } );
+
+            
+
+            return events;
+        };
         // -- hashNode -----------------------------------------------------------------------------
 
         /// @name module:vwf.hashNode
@@ -2866,6 +3073,11 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
                 view.createdMethod && view.createdMethod( nodeID, methodName, methodParameters, methodBody );
             } );
 
+            if(methodName == 'tick')
+            {
+                if(vwf.tickable.nodeIDs.indexOf(nodeID) < 0)
+                        vwf.tickable.nodeIDs.push(nodeID)
+            }
             this.logger.debugu();
         };
 
@@ -3194,6 +3406,7 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
         /// @see {@link module:vwf/api/kernel.prototype}
 
         this.prototype = function( nodeID ) {
+            if(!nodeID) return undefined;
             return this.models.object.prototype( nodeID );
         };
 
@@ -3266,6 +3479,7 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
         /// @see {@link module:vwf/api/kernel.parent}
 
         this.parent = function( nodeID, initializedOnly ) {
+            if(!nodeID) return undefined;
             return this.models.object.parent( nodeID, initializedOnly );
         };
 

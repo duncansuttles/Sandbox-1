@@ -1255,12 +1255,12 @@ define(function ()
 						params += _ScriptEditor.eventlist[event].parameters[j] + ','
 					}
 					var eventstring = 'function ' + event + '(';
-					for (var i in _ScriptEditor.currentNode.events[event].parameters)
+					for (var i in _ScriptEditor.eventlist[event].parameters)
 					{
 						eventstring += _ScriptEditor.eventlist[event].parameters[i] + ',';
 					}
 					eventstring = eventstring.substring(0, eventstring.length - 1);
-					eventstring += ')\n{\n' + _ScriptEditor.currentNode.events[event].body + '\n}';
+					eventstring += ')\n{\n' + _ScriptEditor.eventlist[event].body + '\n}';
 					_ScriptEditor.setSelectedEvent(event, eventstring);
 				});
 				if (refresh)

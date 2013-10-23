@@ -33,13 +33,6 @@ properties:
   maxSpeed: 500
   dragModeMove: false
 events:
-  keyUp:
-  keyDown:
-  pointerDown:
-  pointerUp:
-  pointerMove:
-  pointerLeave:
-  pointerWheel:
 methods:
   update:
   getCameraAt:  
@@ -144,127 +137,8 @@ scripts:
       }
       return false;
     }        
-    this.pointerDown = function( parms, pickInfo ){
-      this.input.lastPointerInfo = undefined;
-      this.input.pointerInfo = parms;
-      this.input.lastPickInfo = undefined;
-      this.input.pickInfo = pickInfo;      
-      this.input.pointerDownTime = this.time;
-    }
-    this.pointerUp = function( parms, pickInfo ){
-      this.input.lastPointerInfo = this.input.pointerInfo;
-      this.input.pointerInfo = undefined;
-      this.input.lastPickInfo = this.input.pickInfo;
-      this.input.pickInfo = undefined;            
-    }
-    this.pointerMove = function( parms, pickInfo ){
-      this.input.pointerEventTime = this.time;
-      this.input.lastPointerInfo = this.input.pointerInfo;
-      this.input.pointerInfo = parms;
-      this.input.lastPickInfo = this.input.pickInfo;
-      this.input.pickInfo = pickInfo;      
-      if ( this.pointerIsDown() /* && this.input.pointerEventTime - this.input.pointerDownTime > 6 */ ) {
-        var active = this.input.futureActive();
-        var delta = this.input.pointerDelta();
-        var valid = false;
-        if ( delta ) {
-          switch( this.navmode ) {
-            case "orbit":
-              this.orbit( delta[0], delta[1] );
-              valid = true;
-              break;          
-            case "walk":
-              if ( this.dragModeMove )
-                this.move( (parms.position[0]*2.0)-1, (parms.position[1]*2.0)-1 );
-              else
-                this.look( (parms.position[0]*2.0)-1, (parms.position[1]*2.0)-1 );
-              valid = true;
-              break;
-          }
-          if ( valid && !active ) {
-            this.future( 0.1 ).update();
-          }
-        }
-      }    
-    }
-    this.pointerLeave = function( parms ){
-      this.input.lastPointerInfo = this.input.pointerInfo;
-      this.input.pointerInfo = undefined;
-      this.input.lastPickInfo = this.input.pickInfo;
-      this.input.pickInfo = undefined;              
-    }
-    this.pointerWheel = function( parms, pickInfo ) {
-         return;
-      this.input.pointerEventTime = this.time;
-
-      this.input.lastPointerInfo = this.input.pointerInfo;
-      this.input.pointerInfo = parms;      
-      this.input.lastPickInfo = this.input.pickInfo;
-      this.input.pickInfo = pickInfo;
-
-      if (!this.activeCameraComp) {
-        this.getActiveCamera();
-      }
-      if ( this.activeCameraComp ) {
-        var cameraPos = this.activeCameraComp.translation;
-        var cameraAt = this.getCameraAt();
-        
-        var xInc = 0;
-        var yInc = 0;
-        var zInc = 0;
-        var distanceLimit;
-        var moveDistance; 
-
-        goog.vec.Vec3.normalize( cameraAt, cameraAt );
-
-        var mult = 0;
-        if ( this.input.pickInfo.wheel.deltaY ) {
-          mult = Math.abs( this.input.pickInfo.wheel.deltaY / 20 );
-          if ( this.input.pickInfo.wheel.deltaY < 0 ) {
-            // backwards
-            cameraAt[0] *= -1;
-            cameraAt[1] *= -1;
-            cameraAt[2] *= -1;
-          } else if ( pickInfo && pickInfo.distance ) {
-            distanceLimit = pickInfo.distance;
-          }
-        }
-        if ( this.orbitRadius == -1 || this.input.pointerEventTime - this.input.lastUpdateTime > 500 ) {
-          this.updateRadius();
-        }
-        moveDistance = this.speed * mult;
-        if ( distanceLimit && moveDistance > ( distanceLimit*0.4 )  ) {
-          moveDistance = distanceLimit*0.4;
-        }
-
-        xInc = cameraAt[0] * moveDistance;
-        yInc = cameraAt[1] * moveDistance;
-        zInc = cameraAt[2] * moveDistance;
-
-        // old code to handle when lookAt is valid
-        //else {  
-        //  z = cameraPos[2];
-        //  var ratioHR = camerapos[2] / this.orbitRadius;
-        //  zinc = Math.sqrt( Math.pow( x-cameraPos[0], 2 ) + Math.pow( y-cameraPos[1], 2 ) ) * ratioHR;
-        //  if ( this.input.pickInfo.wheel.deltaY > 0 ) zinc *= -1;
-        //  z = cameraPos[2] + zinc;
-        //}
-
-        this.activeCameraComp.translateBy( [ xInc, yInc, zInc ], 0 );
-        positionChanged = true;
-      }
-    }
-    this.keyDown = function( parms ) {
-      var active = this.input.futureActive();
-      this.input.keyInfo = parms;
-      this.handleKeyDown();
-      if ( !active ) {
-        this.future( 0.1 ).update();
-      }
-    }
-    this.keyUp = function( parms ) {
-      this.input.keyInfo = parms;
-    }
+    
+   
     this.handleKeyDown = function() {
     return;
       if (!this.activeCameraComp) {

@@ -195,6 +195,19 @@ define( function() {
         /// @function
         /// 
         /// @param {ID} nodeID
+        /// @param {String} methodName
+        /// @param {String[]} methodParameters
+        /// @param {String} methodBody
+        /// 
+        /// @returns {}
+
+        deletingMethod: [ /* nodeID, methodName */ ],
+
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
         /// @param {String} eventName
         /// @param {String[]} eventParameters
         /// 
@@ -215,6 +228,18 @@ define( function() {
         /// @returns {}
 
         firingEvent: [ /* nodeID, eventName, eventParameters */ ],
+
+        /// Description.
+        /// 
+        /// @name vwf.api.model#deletingEvent
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {String} eventName
+        /// 
+        /// @returns {}
+
+        deletingEvent: [ /* nodeID, eventName */ ],
 
         /// Description.
         /// 
@@ -239,6 +264,26 @@ define( function() {
         /// @callback module:vwf/api/model~readyCallback
         /// 
         /// @param {Boolean} ready
+
+        /// Description.
+        /// 
+        /// @name vwf.api.model#gettingMethods
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// 
+        /// @returns {}
+        gettingMethods: [/* nodeID*/],
+
+        /// Description.
+        /// 
+        /// @name vwf.api.model#gettingMethods
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// 
+        /// @returns {}
+        gettingEvents: [/* nodeID*/],
 
     };
 

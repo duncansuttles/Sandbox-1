@@ -153,7 +153,12 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     this.kernel.send( nodeID, kernelFunctionName, methodName,
                         [ methodParameters ], when || 0, callback /* result */ );
                 };
-    
+            case "deleteMethod":
+
+                return function( nodeID, methodName, when, callback ) {
+                    this.kernel.send( nodeID, kernelFunctionName, methodName,
+                        undefined, when || 0, callback /* ( result ) */ );
+                };
             case "createEvent":
 
                 return function( nodeID, eventName, eventParameters, when, callback ) {
@@ -177,6 +182,12 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                         [ eventParameters, eventNodeParameters ], when || 0, callback /* result */ );
                 };
     
+            case "deleteEvent":
+
+                return function( nodeID, eventName, eventParameters,eventBody, when, callback ) {
+                    this.kernel.send( nodeID, kernelFunctionName, eventName,
+                        undefined, when || 0, callback /* ( result ) */ );
+                };
             case "execute":
 
                 return function( nodeID, scriptText, scriptType, when, callback ) {

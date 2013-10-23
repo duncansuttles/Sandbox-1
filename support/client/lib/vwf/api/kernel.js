@@ -230,6 +230,20 @@ define( function() {
 
         createMethod: [ /* nodeID, methodName, methodParameters, methodBody */ ],
 
+        /// It will call deletingMethod() on each model. The method is considered deleted after each
+        /// model has run.  It will also call deletedMethod() on each view. The view is being 
+        /// notified that a method has been deleted.
+        /// 
+        /// @name vwf.api.kernel#deleteMethod
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {String} methodName
+        /// 
+        /// @returns {}
+
+        deleteMethod: [ /* nodeID, methodName */ ],
+
         // TODO: deleteMethod
 
         /// It will call callingMethod() on each model. The first model to return a non-undefined value

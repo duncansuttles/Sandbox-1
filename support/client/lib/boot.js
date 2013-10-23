@@ -26,8 +26,10 @@ require.config({
                 // and view configuration parameters.
 				$(document.body).append('<div id="glyphOverlay" style="display:none"/>');
                
-                 vwf.loadConfiguration(application, userLibraries, updateOverlay);
 
+                 
+                 vwf.loadConfiguration(application, userLibraries, updateOverlay);
+                
             } );
 
         } );

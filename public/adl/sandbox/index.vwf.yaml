@@ -159,8 +159,6 @@ properties:
         - white
         - black
 events:
-  keyDown:
-  keyUp:
   disconnected:
   newClient:
   clientDisconnect:
@@ -389,16 +387,6 @@ scripts:
             var thistime = (new Date()) - time;
             _Notifier.alert("The round trip time to the server was: " + thistime +"ms");
         }
-    }
-    this.keyDown = function(e)
-    {
-      for(var i in this.children)
-        this.children[i].keyDown(e);
-    }
-    this.keyUp = function(e)
-    {
-       for(var i in this.children)
-        this.children[i].keyUp(e);
     }
     //the system is notifiying us that it has become disconnected from the server
     this.disconnected = function()
