@@ -27,6 +27,7 @@
 				
 
 				var oldmat = mesh.material;
+				if(oldmat.def == def) return;
 				if(oldmat && oldmat.refCount === undefined)
 					oldmat.refCount = 1;
 				if(oldmat)

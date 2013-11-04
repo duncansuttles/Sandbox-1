@@ -171,7 +171,12 @@ SceneManager.prototype.update = function(dt)
 	this.dirtyObjects = [];
 	for(var i =0; i < this.BatchManagers.length; i++)
 	{
-		this.BatchManagers[i].update();
+		//only update at most one batch manager per frame
+		if(this.BatchManagers[i].dirty)
+		{	
+			this.BatchManagers[i].update();
+			break;
+		}
 	}
 	var removelist = [];
 	for(var i =0; i < this.tempDebatchList.length; i++)
@@ -971,6 +976,8 @@ THREE.RenderBatch = function(material,scene)
 	this.scene = scene;
 	this.totalVerts = 0;
 	this.totalFaces = 0;
+	this.toAdd = [];
+	this.toRemove = [];
 }
 THREE.RenderBatch.prototype.addObject = function(object)
 {
@@ -979,7 +986,7 @@ THREE.RenderBatch.prototype.addObject = function(object)
 		this.totalVerts += object.geometry.vertices.length;
 		this.totalFaces += object.geometry.faces.length;
 		this.objects.push(object);
-		
+		//this.toAdd.push(object);
 		this.dirty = true;
 	}
 	
@@ -991,6 +998,7 @@ THREE.RenderBatch.prototype.removeObject = function(object)
 		this.totalVerts -= object.geometry.vertices.length;
 		this.totalFaces -= object.geometry.faces.length;
 		this.objects.splice(this.objects.indexOf(object),1);
+		//this.toRemove.push(object);
 		this.dirty = true;
 	}
 	

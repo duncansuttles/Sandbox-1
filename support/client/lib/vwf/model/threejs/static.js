@@ -19,7 +19,7 @@
                     //debugger;
 					this.settingProperty('isStatic',false);
 					this.dynamic = propval;
-                    threeObject.setDynamic(propval);
+                    this.getRoot().setDynamic(propval);
                     return propval;
                 }
 			}

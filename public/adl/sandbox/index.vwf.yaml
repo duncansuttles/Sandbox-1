@@ -26,7 +26,7 @@ properties:
             this.sun.color.g = value[1];
             this.sun.color.b = value[2];
   sunDirection: 
-    value: [0 , 0 , 1 ]
+    value: [.5 , .5 , 1 ]
     set: |
             if(!this.sun) return;
             
@@ -41,14 +41,13 @@ properties:
             this.sun.position.multiplyScalar(100);
             this.sun.updateMatrixWorld(true);
   sunIntensity: 
-    value: .5
+    value: .8
     set: |
             if(!this.sun) return;
             this.sun.intensity = value;   
             this.sun.shadowDarkness = value;           
   ambientColor: 
-    set: |
-            //this.sun.shadowDarkness = MATH.lengthVec3(value);
+    value: [.35, .35 , .35]
   fogColor: [155, 155, 155]
   fogNear: 100
   fogFar: 1000

@@ -449,7 +449,7 @@ scripts:
               
                 
                 falldist = intersect?intersect.distance:falldist;
-                console.log(falldist);
+                
                 if(falldist && intersect)
                 {
                   

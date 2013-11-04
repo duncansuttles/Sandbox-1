@@ -482,7 +482,7 @@ define(
 			_Editor.findscene().staticBatchingEnabled = !_Editor.findscene().staticBatchingEnabled;
 			if (!_Editor.findscene().staticBatchingEnabled)
 			{
-				_Editor.findscene().destroyBatches();
+				_SceneManager.forceUnbatchAll();
 				_Notifier.notify('static batching disabled');
 			}
 			else

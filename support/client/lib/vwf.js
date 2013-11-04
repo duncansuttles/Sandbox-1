@@ -995,7 +995,7 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 
         this.createNode = function( nodeComponent, create_callback /* ( nodeID ) */ ) {
 			
-	   
+	    
 	    if(nodeComponent.id == "index-vwf")
 		{
 			$(document).trigger('setstatebegin');

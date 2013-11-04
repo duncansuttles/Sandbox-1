@@ -9,7 +9,9 @@
 				
 				if(this.mymesh)
 					this.mymesh.parent.remove(this.mymesh);
+
 				var mesh = this.parentNode.GetMesh();
+				if(!mesh) return;
 				var geo = mesh.geometry;
 				var points = [];
 				
