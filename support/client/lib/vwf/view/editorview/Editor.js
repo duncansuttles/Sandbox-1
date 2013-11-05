@@ -122,7 +122,7 @@ THREE.Object3D.prototype.getBoundingBox = function (donttransform)
 	return object.boundingBox;
 }
 
-define(function ()
+define(["vwf/view/EditorView/log","vwf/view/EditorView/progressBar"],function (Log,ProgressBar)
 {
 	var originalGizmoPos;
 	var Editor = {};
@@ -219,6 +219,12 @@ define(function ()
 			$('#statusbar').append('<div id="StatusCameraLocation" class="statusbarElement" />');
 			$('#StatusCameraLocation').text('[0,0,0]');
 		}
+		//create progressbar and the log bar
+		ProgressBar.initialize('statusbar');
+		window._ProgressBar = ProgressBar;
+		Log.initialize('statusbar');
+		window._Log = Log;
+
 		var _CopiedNodes = [];
 		//	$('#vwf-root').mousedown(function(e){
 		this.mousedown_Gizmo = function (e)

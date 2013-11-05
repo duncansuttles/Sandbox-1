@@ -20,6 +20,45 @@
 		border-color: lightgray;
 		border-width: 1px;
 	}
+	#GlobalProgressBar
+	{
+		width: 200px;
+		background: gray;
+		min-width: 200px;
+		display: inline-block;
+		margin: 0px 0px 0px 10px;
+		padding: 0px;
+		line-height: 100%;
+	}
+	#GlobalProgressBarInner
+	{
+		width: 100px;
+		background: lightcyan;
+		display: block;
+		position: absolute;
+		top: 6px;
+		box-shadow: 0px 0px 3px inset;
+		border-radius: 8px;
+		font-size: 13px;
+		font-family: sans-serif;
+		font-weight: bold;
+		height: 15px;
+		padding-left: 5px;
+		white-space: nowrap;
+	}
+	#GlobalProgressBarBack
+	{
+		width: 200px;
+		background: gray;
+		position: absolute;
+		top: 6px;
+		box-shadow: 0px 0px 3px inset;
+		border-radius: 5px;
+		font-size: 13px;
+		font-family: sans-serif;
+		font-weight: bold;
+		height: 15px;
+	}
 	#FunctionTip
 	{
 	
