@@ -29,7 +29,10 @@ var vwfPortalModel = new function(){
 		
 		console.log(e, o);
 		self.currentDropDown(e);
-		
+
+		if(localStorage)
+			localStorage.setItem("searchQuery", filter + "--" + e);
+			
 		switch(e){
 			case "yours":
 				secondaryFilter = self.user().username;
@@ -77,6 +80,10 @@ var vwfPortalModel = new function(){
 				}
 				
 				self.dropDownMap.featured = filter ? "All worlds" : "Featured worlds";
+				
+				if(localStorage)
+					localStorage.setItem("searchQuery", filter + "--" + self.currentDropDown());
+				
 				self.currentDropDown.valueHasMutated();
 			}
 		}	

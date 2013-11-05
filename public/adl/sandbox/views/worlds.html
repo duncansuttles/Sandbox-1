@@ -23,8 +23,9 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-md-3 col-md-offset-3" style="margin-bottom:5px;text-align:right;float:right;" data-bind="visible:!initialSearchDisplay()">
-					<input class="form-control filter" type="text" placeholder="Search Worlds" data-bind="value:filterVal, valueUpdate:'afterkeydown'" />
+				<div class="col-md-3 col-md-offset-3 worldSmallSearch" data-bind="visible:!initialSearchDisplay()">
+					<input class="form-control filter" type="search" placeholder="Search Worlds" data-bind="value:filterVal, valueUpdate:'afterkeydown'"/>
+					<div class="glyphicon glyphicon-remove" data-bind="click:function(){filterVal('');}"></div>
 				</div>
 			</div>
 			<div class="row" style="margin-top:45px;margin-bottom:70px;" data-bind="visible:(displayWorldObjects().length==0) || initialSearchDisplay()">	
@@ -117,8 +118,27 @@
 			ko.applyBindings(vwfPortalModel);
 			getLoginInfo(function(){
 				
-				$('.filter').val(window.location.hash.substr(1));
-				$('.filter').keydown();
+				if(localStorage){
+					var hashArr = localStorage.getItem("searchQuery");
+					if(hashArr){
+						hashArr = hashArr.split('--');
+						
+						if(hashArr[0] && hashArr[1]){
+							hashArr[0] = hashArr[0].replace(/[^a-zA-Z0-9 ]/g, '');
+							hashArr[1] = hashArr[1].replace(/[^a-zA-Z0-9 ]/g, '');
+							$('.filter').val(hashArr[0]);
+							vwfPortalModel.filterVal(hashArr[0]);
+							
+							if(hashArr[1] && vwfPortalModel.user().isLoggedIn && vwfPortalModel.dropDownMap[hashArr[1]]){
+								filter = hashArr[0];
+								vwfPortalModel.toggleNameFilter(hashArr[1]);
+							}
+							
+							vwfPortalModel.initialSearchDisplay(false);
+						}
+					}
+				}
+				
 				showStates();
 
 				window.setInterval(function(){
