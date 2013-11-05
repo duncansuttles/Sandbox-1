@@ -15,7 +15,7 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 		this.volume = 1;
 		this.endrange = 100;
 		this.startrange = 1;
-		this.loop = false;
+		this.looping = false;
 		this.playing = false;
 		this.play = function()
 		{
@@ -40,6 +40,22 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 
 		}
 		this.stop = this.pause;
+	}
+	SoundSource.prototype.loop = function()
+	{
+		if(!this.looping)
+		{
+			this.looping = true;
+			this.sound.loop();
+		}
+	}
+	SoundSource.prototype.unloop = function()
+	{
+		if(this.looping)
+		{
+			this.looping = false;
+			this.sound.unloop();
+		}
 	}
 	//Get the position of your source object
 	//note: the 3D driver must keep track of this
@@ -119,23 +135,23 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 					var Sound = this.soundSources[soundid] = new SoundSource()
 					Sound.id = id;
 					Sound.url = url;
-					Sound.loop = loop;
+					
 					Sound.volume = vol;
 					Sound.sound = new this.buzz.sound(url,{
 							autoplay: true,
 							loop: loop
 							
 					});
-				
+					Sound.looping = loop;
 					Sound.position = [0,0,0];
 					window._dSound = Sound;
 				}else
 				{
 					Sound.play();
 					if(loop)
-					Sound.sound.loop();
+					Sound.loop();
 					else
-					Sound.sound.unloop();
+					Sound.unloop();
 					Sound.volume = vol;
 				}
 			}

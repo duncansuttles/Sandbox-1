@@ -236,7 +236,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					min: sliderprops[i].min,
 					max: sliderprops[i].max,
 					slide: this.RootPropUpdate,
-					stop: this.RootPropUpdate,
+				//	stop: this.RootPropUpdate,
 					value: val
 				});
 			}
@@ -571,7 +571,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 						min: layersliderprops[j].min,
 						max: layersliderprops[j].max,
 						slide: this.LayerPropUpdate,
-						stop: this.LayerPropUpdate,
+						//stop: this.LayerPropUpdate,
 						value: val
 					});
 				}

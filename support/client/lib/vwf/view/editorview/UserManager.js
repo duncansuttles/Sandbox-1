@@ -282,6 +282,7 @@ define(function ()
 			type: 'subDriver/threejs/asset/vnd.collada+xml',
 			properties: {
 				PlayerNumber: 1,
+				isDynamic: true
 			},
 			events: {
 				ShowProfile: null,

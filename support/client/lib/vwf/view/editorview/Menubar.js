@@ -301,10 +301,16 @@ define(
 			e.time = new Date();
 			vwf_view.kernel.callMethod('index-vwf', 'latencyTest', [e]);
 		});
+		$('#ResetTransforms').click(function (e)
+		{
+			_Editor.ResetTransforms();
+		});
 		$('#MenuCopy').click(function (e)
 		{
 			_Editor.Copy();
 		});
+
+		
 		$('#MenuPaste').click(function (e)
 		{
 			_Editor.Paste();
@@ -476,7 +482,7 @@ define(
 			_Editor.findscene().staticBatchingEnabled = !_Editor.findscene().staticBatchingEnabled;
 			if (!_Editor.findscene().staticBatchingEnabled)
 			{
-				_Editor.findscene().destroyBatches();
+				_SceneManager.forceUnbatchAll();
 				_Notifier.notify('static batching disabled');
 			}
 			else
