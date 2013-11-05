@@ -122,7 +122,7 @@ THREE.Object3D.prototype.getBoundingBox = function (donttransform)
 	return object.boundingBox;
 }
 
-define(function ()
+define(["vwf/view/EditorView/log","vwf/view/EditorView/progressBar"],function (Log,ProgressBar)
 {
 	var originalGizmoPos;
 	var Editor = {};
@@ -219,6 +219,12 @@ define(function ()
 			$('#statusbar').append('<div id="StatusCameraLocation" class="statusbarElement" />');
 			$('#StatusCameraLocation').text('[0,0,0]');
 		}
+		//create progressbar and the log bar
+		ProgressBar.initialize('statusbar');
+		window._ProgressBar = ProgressBar;
+		Log.initialize('statusbar');
+		window._Log = Log;
+
 		var _CopiedNodes = [];
 		//	$('#vwf-root').mousedown(function(e){
 		this.mousedown_Gizmo = function (e)
@@ -2091,6 +2097,13 @@ define(function ()
 					}
 					
 		}.bind(this);
+		this.ResetTransforms = function()
+		{
+			for(var i =0; i < SelectedVWFNodes.length; i++)
+			{
+				_PermissionsManager.setProperty(SelectedVWFNodes[i].id,'transform', [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1], "You do not have permission to reset the transforms for this object");
+			}
+		}
 		this.hideMoveGizmo = function ()
 		{
 			
@@ -3117,6 +3130,7 @@ define(function ()
 		{
 			return SelectMode;
 		}
+
 		//$(document).bind('prerender',this.rt.bind(this));
 	}
 });

@@ -3,8 +3,57 @@
 	$(document).ready(function()
 	{
 		getLoginInfo(function(){}, redirect);
+		vwfPortalModel.restoreList = ko.observableArray();
+		vwfPortalModel.restoreState = function(obj, e){
+		
+			alertify.confirm("Are you sure you want to restore this state?", function(e){
+				if(e){
+					$.get(root + '/vwfDataManager.svc/restorebackup?SID=' + sid + '&statename=' + obj.file, function(data){
+						getBackupList(function(){
+							alertify.success("State successfully restored");
+						});
+					}).error(function(){
+						alertify.error("Error: State not restored");
+					});
+				}
+			});
 			
-		$.ajax('/vwfDataManager.svc/statedata?SID=' + sid,
+			e.preventDefault();
+			e.stopPropagation();
+			return false;
+		};
+		
+		function getBackupList(cb){
+			$.get(root + '/vwfDataManager.svc/stateslist?SID=' + sid, function(data){
+				
+				var tempData = JSON.parse(data);
+				for(var i = 0; i < tempData.length; i++){
+					if(tempData[i].file == "state"){
+						tempData.splice(i, 1);
+					}
+					
+					if(tempData[i])
+					{
+						tempData[i].unix = moment(tempData[i].time).unix();
+						tempData[i].time = moment(tempData[i].time).format('MMM Do YYYY, h:mm a');
+					}
+				}
+				
+				tempData.sort(function(a, b){
+					return b.unix - a.unix;
+				});
+				
+				vwfPortalModel.restoreList(tempData);
+				
+				if(cb){
+					cb();
+				}
+			});
+		}
+		
+		getBackupList();
+		
+		$.ajax(root + '/vwfDataManager.svc/statedata?SID=' + sid,
 		{
 			cache:false,
 			success:function(data,status,xhr)
@@ -23,7 +72,7 @@
 	});	
 	function redirect()
 	{
-		window.location = '{{root}}/worlds';
+		window.location = root + '/worlds';
 	}
 	vwfPortalModel.handleEditButton = function(o, e){
 
@@ -37,10 +86,11 @@
 		jQuery.ajax(
 		{
 			type: 'POST',
-			url: '/vwfDataManager.svc/statedata?SID='+sid,
+			url: root + '/vwfDataManager.svc/statedata?SID='+sid,
 			data: JSON.stringify(statedata),
 			success:function(data,status,xhr)
 			{
+				
 				redirect();
 			},
 			error:function(xhr,status,err)
@@ -52,7 +102,7 @@
 	};
 </script>
 <div class="row">
-	<div class="col-md-5 col-md-offset-3">
+	<div class="col-md-6 col-md-offset-1">
 		<form data-bind="submit:handleEditButton" >
 			<fieldset>
 				<legend>Edit world name and description</legend>
@@ -61,6 +111,17 @@
 				<input type="submit" class='btn btn-default' style="float:right;margin-top:7px;"  value="Edit"/>
 			</fieldset>
 		</form>
+	</div>
+	<div class="col-md-3 col-md-offset-1">
+		<legend style="">Restore Backup</legend>
+		<p style="text-align:center;margin-top:60px;" data-bind="visible:restoreList().length==0">No backups found</p>
+		<table data-bind="submit:handleEditButton" class="table table-striped" style="border-top:none;">
+			<tbody data-bind="foreach:restoreList">
+				<tr>
+					<td><a href="#" data-bind="text:time, click:$root.restoreState"></a></td>
+				</tr>
+			</tbody>
+		</table>
 	</div>
 </div>
 <div class="row">	

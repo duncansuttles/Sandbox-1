@@ -4,6 +4,7 @@ nStore = nStore.extend(require('nstore/query')());
 var async = require('async');
 var fs = require('fs-extra');
 require('./hash.js');
+var mkdirp = require('mkdirp');
 var datapath = '';
 
 var DBTablePath = libpath.sep+'users.db';
@@ -21,6 +22,10 @@ Array.prototype.getUnique = function(){
       u[this[i]] = 1;
    }
    return a;
+}
+
+function sanitizeString(str){
+	return str.replace(/[^a-zA-Z0-9\-\_ ]/gi,'')
 }
 
 //generate a random id.
@@ -89,7 +94,7 @@ function updateUser (id,data,cb)
 		},
 		function(user,cb2)
 		{
-			if(data.username)
+			if(data.Username)
 			{
 				
 				cb2('cant change username');
@@ -97,6 +102,7 @@ function updateUser (id,data,cb)
 			}
 			for(var key in data)
 			{
+				console.log('changing ' + key + ' to ' + data[key] + ' in user ' + user.Username )
 				user[key] = data[key];
 			}
 			
@@ -359,7 +365,8 @@ function createUser (id,data,cb)
 		if(user)
 		{
 			global.log('user '+ id + ' already exists');
-			cb(false);
+			cb(false,'user '+ id + ' already exists');
+			return;
 		}
 		else
 		{
@@ -1151,52 +1158,12 @@ function Publish(id, publishSettings, cb)
 		
 		if(instance){
 			//create a new ID for the published world
-			var newId = '_adl_sandbox_' + makeid() + '_';
-			instance.featured = false;
-			instance.publishedFrom = id;
-			delete instance.clonedFrom;
-			delete instance.children;
-			instance.created = new Date();
 			instance.publishSettings = publishSettings;
-			createInstance (newId, instance, function(success){
-				if(success){
-					var oldStateFile = datapath + libpath.sep + 'States' +libpath.sep + id + libpath.sep+'state', newStateFile = datapath + libpath.sep+'States'+libpath.sep + newId + libpath.sep + 'state';
-					
-					fs.readFile(oldStateFile,function(err, olddata)
-					{
-						//olddata may not exist..
-						if(!olddata || err){
-							cb(newId);
-							return;
-						}
-						//set the publish settings on the state file as well, just for grins.
-						var oldstate = JSON.parse(olddata);
-						oldstate[oldstate.length-1].publishSettings = publishSettings;
-						var newstate = JSON.stringify(oldstate);
-						fs.writeFile(newStateFile, newstate, function(err)
-						{
-						
-							//get the orignial instance and record the new one as a child
-							getInstance(id, function(instance){
-							
-								if(!instance.children)
-									instance.children = [];
-								instance.children.push(newId);
-								
-								updateInstance(id,instance,function()
-								{
-									cb(newId);
-								});
-							});
-							
-						});
-					});
-				}
-				
-				else cb(false);
+			updateInstance(id,instance,function()
+			{
+				cb(id);
 			});
 		}
-		
 		else cb(false);	
 	});
 
@@ -1269,6 +1236,79 @@ function copyInstance (id, arg2, arg3){
 	});
 }
 
+function getStatesFilelist(id, cb){
+	id = sanitizeString(id);
+	fs.readdir(libpath.join(datapath, '/States/', id), function(err, files){
+		
+		if(err || !files || files.length <= 0){
+			cb(false);
+			return;
+		}
+		
+		var infoArr = [];
+		async.each(files,function(item,cb2){
+		
+			fs.stat(libpath.join(datapath, '/States/', id, '/', item), function(err, stats){
+			
+				if(stats.isFile()){
+					infoArr.push({file:item, time:stats.mtime});
+				}
+				
+				cb2(null);
+			});
+		}, 
+		function(err){
+		
+			if(err){
+				cb(false);
+				return;
+			}
+			
+			cb(infoArr);
+			return;			
+		});
+	});
+}
+
+function restoreBackup(id, stateFileName, cb){
+
+	id = sanitizeString(id);
+	stateFileName = sanitizeString(stateFileName);
+	var basePath = libpath.join(datapath, '/States/', id, '/');
+	var oldPath =  libpath.join(basePath,  stateFileName), statePath = libpath.join(basePath, 'state'), tempPath = libpath.join(basePath, 'temp');
+	
+	//Rename current state file to a temp file
+	fs.rename(statePath, tempPath, function(err){
+		
+		if(err){
+			cb(false);
+			return;
+		}
+		
+		//Make old backup file current state file
+		fs.rename(oldPath, statePath, function(err){
+		
+			if(err){
+				cb(false);
+				return;
+			}
+			
+			//Make temp file no different than any other backup state file
+			fs.rename(tempPath, oldPath, function(err){
+			
+				if(err){
+					cb(false);
+					return;
+				}
+			
+				cb(statePath);
+				return;
+			});
+		
+		});
+	});
+}
+
 function startup(callback)
 {
 	async.series([
@@ -1323,6 +1363,8 @@ function startup(callback)
 			exports.deleteInstance = deleteInstance;
 			exports.deleteInstances = deleteInstances;
 			exports.copyInstance = copyInstance;
+			exports.getStatesFilelist = getStatesFilelist;
+			exports.restoreBackup = restoreBackup;
 			
 			exports.getUsers = getUsers;
 			exports.getInstances = getInstances;
@@ -1355,12 +1397,69 @@ function startup(callback)
 
 exports.setDataPath = function(p)
 {
+	p = libpath.resolve(p);
 	global.log("datapath is " + p,0);
 	datapath = p;
 	DBTablePath = datapath + DBTablePath;
 	
+	// create data directory if doesn't exist
+	mkdirp(datapath, '755', function(err){
+		if(err){
+			global.error('Could not create data path!');
+		}
+
+		else {
 	
+			// create various subdirectories
+			fs.mkdir( libpath.join(datapath, 'DataFiles'), '755', function(err){
+				if( !err )
+					global.log('Created DataFiles dir');
+				else if( err.code != 'EEXIST' )
+					global.error('Error checking DataFiles dir:', err);
+			});
 	
+			fs.mkdir( libpath.join(datapath, 'GlobalAssets'), '755', function(err){
+				if( !err )
+					global.log('Created GlobalAssets dir');
+				else if( err.code != 'EEXIST' )
+					global.error('Error checking GlobalAssets dir:', err);
+			});
 	
+			fs.mkdir( libpath.join(datapath, 'Logs'), '755', function(err){
+				if( !err )
+					global.log('Created Logs dir');
+				else if( err.code != 'EEXIST' )
+					global.error('Error checking Logs dir:', err);
+			});
+	
+			fs.mkdir( libpath.join(datapath, 'Profiles'), '755', function(err){
+				if( !err )
+					global.log('Created Profiles dir');
+				else if( err.code != 'EEXIST' )
+					global.error('Error checking Profiles dir:', err);
+			});
+	
+			fs.mkdir( libpath.join(datapath, 'States'), '755', function(err){
+				if( !err )
+					global.log('Created States dir');
+				else if( err.code != 'EEXIST' )
+					global.error('Error checking States dir:', err);
+			});
+	
+			fs.mkdir( libpath.join(datapath, 'Textures'), '755', function(err){
+				if( !err )
+					global.log('Created Textures dir');
+				else if( err.code != 'EEXIST' )
+					global.error('Error checking Textures dir:', err);
+			});
+	
+			fs.mkdir( libpath.join(datapath, 'Thumbnails'), '755', function(err){
+				if( !err )
+					global.log('Created Thumbnails dir');
+				else if( err.code != 'EEXIST' )
+					global.error('Error checking Thumbnails dir:', err);
+			});
+		}
+	}); // end mkdirp
 }
 exports.startup = startup;

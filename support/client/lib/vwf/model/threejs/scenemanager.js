@@ -171,7 +171,12 @@ SceneManager.prototype.update = function(dt)
 	this.dirtyObjects = [];
 	for(var i =0; i < this.BatchManagers.length; i++)
 	{
-		this.BatchManagers[i].update();
+		//only update at most one batch manager per frame
+		if(this.BatchManagers[i].dirty)
+		{	
+			this.BatchManagers[i].update();
+			break;
+		}
 	}
 	var removelist = [];
 	for(var i =0; i < this.tempDebatchList.length; i++)
@@ -232,6 +237,18 @@ SceneManager.prototype.getTexture = function(src,noclone)
 	if(noclone) 
 		return ret;
 	ret = new THREE.Texture(ret.image);
+
+	ret.wrapS =  this.textureList[src].wrapS;
+	ret.wrapT =  this.textureList[src].wrapT;
+	ret.magFilter =  this.textureList[src].magFilter;
+	ret.minFilter =  this.textureList[src].minFilter;
+	ret.repeat.x = this.textureList[src].repeat.x;
+	ret.repeat.y = this.textureList[src].repeat.y;
+	ret.offset.x = this.textureList[src].offset.x;
+	ret.offset.y = this.textureList[src].offset.y;
+	ret.anisotropy = this.textureList[src].anisotropy;
+	ret.flipY = this.textureList[src].flipY;
+	ret.generateMipmaps = this.textureList[src].generateMipmaps;
 	ret.needsUpdate  = true;
 	this.textureList[src].clones.push(ret);
     return ret;	
@@ -959,6 +976,8 @@ THREE.RenderBatch = function(material,scene)
 	this.scene = scene;
 	this.totalVerts = 0;
 	this.totalFaces = 0;
+	this.toAdd = [];
+	this.toRemove = [];
 }
 THREE.RenderBatch.prototype.addObject = function(object)
 {
@@ -967,7 +986,7 @@ THREE.RenderBatch.prototype.addObject = function(object)
 		this.totalVerts += object.geometry.vertices.length;
 		this.totalFaces += object.geometry.faces.length;
 		this.objects.push(object);
-		
+		//this.toAdd.push(object);
 		this.dirty = true;
 	}
 	
@@ -979,6 +998,7 @@ THREE.RenderBatch.prototype.removeObject = function(object)
 		this.totalVerts -= object.geometry.vertices.length;
 		this.totalFaces -= object.geometry.faces.length;
 		this.objects.splice(this.objects.indexOf(object),1);
+		//this.toRemove.push(object);
 		this.dirty = true;
 	}
 	

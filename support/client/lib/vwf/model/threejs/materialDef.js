@@ -25,7 +25,9 @@
 			this.setMaterial = function(mesh,def)
 			{
 				
+
 				var oldmat = mesh.material;
+				if(oldmat.def == def) return;
 				if(oldmat && oldmat.refCount === undefined)
 					oldmat.refCount = 1;
 				if(oldmat)
@@ -413,6 +415,7 @@
 		window._MaterialCache = _MaterialCache;
 		function materialDef(childID, childSource, childName)
 		{
+			
 		    this.defaultmaterialDef = {
                     shininess:15,
                     alpha:1,

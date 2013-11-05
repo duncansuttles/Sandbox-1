@@ -6,7 +6,7 @@
 			//asyncCallback(false);
 			
 		
-			this.inherits = ['vwf/model/threejs/transformable.js','vwf/model/threejs/materialDef.js','vwf/model/threejs/animatable.js','vwf/model/threejs/shadowcaster.js','vwf/model/threejs/passable.js'];
+			this.inherits = ['vwf/model/threejs/transformable.js','vwf/model/threejs/materialDef.js','vwf/model/threejs/animatable.js','vwf/model/threejs/shadowcaster.js','vwf/model/threejs/passable.js','vwf/model/threejs/visible.js','vwf/model/threejs/static.js'];
 			this.initializingNode = function()
 			{
 				
@@ -91,8 +91,9 @@
 			this.loadFailed = function(id)
 			{
 				$(document).trigger('EndParse');
-				if(window._Notifier)
-					_Notifier.alert('error loading asset ' + id);
+				//the collada loader uses the failed callback as progress. data means this is not really an error;
+				if(!id && window._Notifier)
+					_Notifier.alert('error loading asset ' + this.assetSource);
 			
 			}
 			this.loaded = function(asset)
@@ -147,7 +148,7 @@
 						}
 				
 					
-					
+				
 				
 				this.settingProperty('materialDef',this.materialDef);
 				//if any callbacks were waiting on the asset, call those callbacks
@@ -219,7 +220,8 @@
 				if(childType == 'subDriver/threejs/asset/vnd.collada+xml')
 				{
 					this.loader = new THREE.ColladaLoader();
-					this.loader.load(assetSource,this.loaded);
+					
+					this.loader.load(assetSource,this.loaded,this.loadFailed.bind(this));
 					
 					asyncCallback(false);
 				}
@@ -238,6 +240,7 @@
 			else if(reg.loaded == true && reg.pending == false)
 			{
 				this.getRoot().add(reg.node.clone());
+				
 				var list = [];
 					
 					this.GetAllLeafMeshes(this.rootnode,list);

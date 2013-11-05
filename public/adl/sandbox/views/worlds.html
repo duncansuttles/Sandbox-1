@@ -14,13 +14,22 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-md-3 col-md-offset-3" style="margin-bottom:5px;text-align:right;float:right;">
-					<input id="filter" class="form-control" type="text" placeholder="Search Worlds" data-bind="value:filterVal, valueUpdate:'afterkeydown'" />
+				<div class="col-md-3 col-md-offset-3" style="margin-bottom:5px;text-align:right;float:right;" data-bind="visible:!initialSearchDisplay()">
+					<input class="form-control filter" type="text" placeholder="Search Worlds" data-bind="value:filterVal, valueUpdate:'afterkeydown'" />
 				</div>
 			</div>
-			
+			<div class="row" style="margin-top:45px;margin-bottom:70px;" data-bind="visible:(displayWorldObjects().length==0) || initialSearchDisplay()">	
+				<div class="col-md-4 col-md-offset-4" style="text-align:center;">
+					<p style="font-weight:bold;" data-bind="visible:filter().length > 0">No worlds found, please try again</p>
+					<div style="font-weight:bold;" data-bind="visible:initialSearchDisplay">
+						<p data-bind="visible:filter().length==0">Enter a search term</p>
+						<input class="form-control filter" type="text" placeholder="Search Worlds" data-bind="value:filterVal, valueUpdate:'afterkeydown'" />
+					</div>		
+					<p style="font-weight:bold;" data-bind="visible:filter().length == 0 && displayWorldObjects().length==0 && !initialSearchDisplay()">There are no featured worlds to display, please try searching.</p>
+				</div>
+			</div>
 			<div class="row" id="activeRow" data-bind="foreach:displayWorldObjects">				
-				<div data-bind="style: $root.alignWorldsList($index()), visible:isVisible, css:$data.featured?'col-md-3 worldHeightPadding':'col-md-3 worldHeightMiniPadding'">
+				<div data-bind="visible:isVisible" class="col-md-3 worldHeightPadding">
 					<div data-bind="event: {mouseover:$root.handleEditDisplay, mouseout:$root.handleEditDisplay}, css: $data.featured?'featuredInstance':'worldBox'">
 						
 						<div class="boxContentWrapper">
@@ -28,7 +37,7 @@
 								<a data-bind="attr:{href:'{{root}}/'+id}, text:$root.getShorterStr(title, 20)" href="">Title</a>
 								<span class="owner" data-bind="text:' - ' + owner"></span>
 							</div>
-							<!-- ko if: $data.featured --><img data-bind="attr:{src:'{{root}}/img/' + id + '_small.png'}" class="worldImage" /><!-- /ko -->
+							<img data-bind="attr:{src:'{{root}}/vwfDataManager.svc/thumbnail?SID=' + id + ''}" class="worldImage" onerror="this.src = './img/thumbnotfound.png';"/>
 							<div class="worldInfo">
 								<a data-bind="attr:{href:'{{root}}/'+id}" style="text-decoration:none;">
 									<span class="description" data-bind="text:description?$root.getShorterStr(description, 75):'No description'"></span>
@@ -48,7 +57,7 @@
 							<div style="border-left:1px solid #e7e7e7;float:right;height:18px;width:120px;" data-bind="visible:$root.user().isLoggedIn && ($root.user().username == $data.owner || $root.user().isAdmin) && editVisible">
 								<a title="Delete World" class="editstatedelete glyphicon glyphicon-remove" data-bind="attr:{href:'{{root}}/'+'remove?id='+id}"></a>
 								<a title="Edit World" class="editstatedata glyphicon glyphicon-pencil" data-bind="attr:{href:'{{root}}/'+'edit?id='+id}"></a>
-								<a title="Publish World" class="editstatedata glyphicon glyphicon-print" data-bind="visible:!($data.publishSettings), attr:{href:'{{root}}/'+'publish?id='+id}"></a>								
+								<a title="Publish World" class="editstatedata glyphicon glyphicon-print" data-bind="attr:{href:'{{root}}/'+'publish?id='+id}"></a>								
 							</div>
 							<div data-bind="visible:$root.user().isLoggedIn && editVisible">
 								<a title="Clone World" class="editstatecopy glyphicon glyphicon-export" data-bind="click:$root.cloneWorld" style="margin-right:18px;"></a>
@@ -60,11 +69,6 @@
 							</div>
 						</div>
 					</div>
-				</div>
-			</div>
-			<div class="row" style="margin-top:45px;margin-bottom:70px;" data-bind="visible:displayWorldObjects().length==0">	
-				<div class="col-md-4 col-md-offset-4" style="text-align:center;">
-					<span style="font-weight:bold;">No worlds found</span>
 				</div>
 			</div>
 			<div class="row" style="margin-bottom:45px;">
@@ -81,28 +85,31 @@
 		$(document).ready(function(){	
 			
 			vwfPortalModel.cloneWorld = function(world){
-				if(window.confirm("Copy this world?")){
-					$.get('/vwfDataManager.svc/copyinstance?SID=' + world.id, function(o){
-		
-						if(o){
-							window.location = '{{root}}/edit?id=' + o.substr(13,16);
-						}
+				alertify.confirm("Copy this world?", function(e){
+					if(e){
+						
+						$.get(root + '/vwfDataManager.svc/copyinstance?SID=' + world.id, function(o){
+			
+							if(o){
+								window.location = root + '/edit?id=' + o.substr(13,16);
+							}
 
-						else{
-							window.alert("World was not successfully copied.");
-						}
-					})
-					.error(function(){
-						window.alert("World was not successfully copied.");
-					});
-				}
+							else{
+								alertify.error("World was not successfully copied.");
+							}
+						})
+						.error(function(){
+							alertify.error("World was not successfully copied.");
+						});
+					}
+				});	
 			};
 			
 			ko.applyBindings(vwfPortalModel);
 			getLoginInfo(function(){
 				
-				$('#filter').val(window.location.hash.substr(1));
-				$('#filter').keydown();
+				$('.filter').val(window.location.hash.substr(1));
+				$('.filter').keydown();
 				showStates();
 
 				window.setInterval(function(){

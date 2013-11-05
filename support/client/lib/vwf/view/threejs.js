@@ -169,6 +169,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			for(var i in this.nodes)
 			{
 				
+					//don't do interpolation for static objects
+					if(this.nodes[i].isStatic)  continue;
+
 					var last = this.nodes[i].lastTickTransform;
 					var now = this.nodes[i].thisTickTransform;
 					if(last && now && !this.matCmp(last,now,.001))
@@ -205,7 +208,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		{
 			for(var i in this.nodes)
 			{
-				
+				//don't do interpolation for static objects
+				if(this.nodes[i].isStatic)  continue;
+
 				var now = this.nodes[i].thisTickTransform;
 				
 				if(now && this.nodes[i].needTransformRestore)
@@ -238,6 +243,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
 			for(var i in this.nodes)
 			{
+				//don't do interpolation for static objects
+				if(this.nodes[i].isStatic)  continue;
+
 				if(this.state.nodes[i] && this.state.nodes[i].gettingProperty)
 				{				
 					this.nodes[i].lastTickTransform = this.nodes[i].thisTickTransform;
@@ -346,7 +354,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			{
 				var selcam = _Editor.findviewnode(this.selection.id).children[0];
 				this.cameraHelper = new THREE.CameraHelper(selcam);
-				selcam.add(this.cameraHelper,false);
+				this.cameraHelper.InvisibleToCPUPick = true;
+				selcam.add(this.cameraHelper,true);
 			}
 			
 			
@@ -391,6 +400,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		{
 			this.setCamera();
 		},
+		createdProperty: function (nodeID, propertyName, propertyValue) {
+			this.satProperty(nodeID, propertyName, propertyValue);
+		},
         satProperty: function (nodeID, propertyName, propertyValue) {
         
             //console.log([nodeID,propertyName,propertyValue]);
@@ -421,6 +433,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			}
 			
 			
+			this.nodes[nodeID][propertyName] = propertyValue;
             //this driver has no representation of this node, so there is nothing to do.
             if(!node) return;
           
@@ -529,7 +542,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                                 lightsFound++;
                             }else
 							{
-								threeObject.__lights[i].shadowDarkness = MATH.lengthVec3(propertyValue)/2.7320508075688772;
+								//threeObject.__lights[i].shadowDarkness = MATH.lengthVec3(propertyValue)/2.7320508075688772;
 							}
                             
                         }
@@ -741,7 +754,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
 			
 			
-			vpargs[0] = vp;
+			vpargs[0] = vp.slice(0);
 			vpargs[1] = wh;
 			vpargs[2] = ww;
 			
@@ -880,7 +893,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
 			if($('#glyphOverlay').css('display') != 'none')
 			{
-				self.trigger('glyphrender',vpargs);
+				self.trigger('glyphRender',vpargs);
 			}
 			
 			

@@ -1227,8 +1227,7 @@
                 // Global node and descendant deltas.
 
                 nodes: [  // TODO: all global objects
-                    this.getNode( "http-vwf-example-com-clients-vwf", full ),
-                    this.getNode( applicationID, full ),
+                    this.getNode( "index-vwf", full )
                 ],
 
                 // `createNode` annotations, keyed by `nodes` indexes.

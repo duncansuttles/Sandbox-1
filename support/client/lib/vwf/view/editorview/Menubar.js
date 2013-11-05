@@ -22,6 +22,95 @@ define(
 			method: 'hover'
 		});
 		
+		$(document).on('setstatecomplete',function()
+		{
+
+			
+			//lets try to grab a screenshot if it's not set already
+
+			if(vwf.getProperty('index-vwf','owner') != _UserManager.GetCurrentUserName())
+			{
+				//don't bother if this is not the owner
+				return;
+			}
+
+				jQuery.ajax(
+				{
+					type: 'GET',
+					url: './vwfDataManager.svc/thumbnail?SID='+_DataManager.getCurrentSession().replace(/\//g,'_'),
+					
+					success:function(data,status,xhr)
+					{
+						//there is a thumb, don't do anything
+					},
+					error:function(xhr,status,err)
+					{
+						window.setTimeout(function(){
+							$('#SetThumbnail').click();
+
+						},10000)
+						
+						
+					},
+					dataType: "text"
+				});	
+
+
+
+		});
+
+		$('#SetThumbnail').click(function(e){
+
+			
+			if(vwf.getProperty('index-vwf','owner') != _UserManager.GetCurrentUserName())
+			{
+				alertify.alert('Sorry, only the world owner can set the thumbnail');
+				return;
+			}
+
+			var h = $('#index-vwf').attr('height');
+			var w = $('#index-vwf').attr('width');
+			_dRenderer.setSize(240,120);
+			var camera = _dView.getCamera();
+			var a = camera.aspect;
+			camera.aspect = 2;
+			camera.updateProjectionMatrix();
+			
+			window.takeimage = function()
+			{
+
+				var img = $('#index-vwf')[0].toDataURL();
+				_dRenderer.setSize(w,h);
+				camera.aspect = a;
+				camera.updateProjectionMatrix();
+
+				
+				jQuery.ajax(
+				{
+					type: 'POST',
+					url: './vwfDataManager.svc/thumbnail?SID='+_DataManager.getCurrentSession().replace(/\//g,'_'),
+					data: img,
+					success:function(data,status,xhr)
+					{
+						
+					},
+					error:function(xhr,status,err)
+					{
+						
+						
+					},
+					dataType: "text"
+				});	
+				_dView.unbind('postrender',takeimage);
+				$(window).resize();
+			}
+			_dView.bind('postrender',takeimage);
+
+			
+
+		});
+
+
 		$('#MenuEn').click(function (e)
 		{
 			localStorage.setItem("language","en");
@@ -47,6 +136,9 @@ define(
 			_DataManager.saveToServer();
 		});
 		
+
+		
+
 		$('#MenuShareWorld').click(function (e)
 		{
 			
@@ -209,10 +301,16 @@ define(
 			e.time = new Date();
 			vwf_view.kernel.callMethod('index-vwf', 'latencyTest', [e]);
 		});
+		$('#ResetTransforms').click(function (e)
+		{
+			_Editor.ResetTransforms();
+		});
 		$('#MenuCopy').click(function (e)
 		{
 			_Editor.Copy();
 		});
+
+		
 		$('#MenuPaste').click(function (e)
 		{
 			_Editor.Paste();
@@ -384,7 +482,7 @@ define(
 			_Editor.findscene().staticBatchingEnabled = !_Editor.findscene().staticBatchingEnabled;
 			if (!_Editor.findscene().staticBatchingEnabled)
 			{
-				_Editor.findscene().destroyBatches();
+				_SceneManager.forceUnbatchAll();
 				_Notifier.notify('static batching disabled');
 			}
 			else

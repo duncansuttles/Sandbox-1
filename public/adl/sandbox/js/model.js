@@ -35,22 +35,41 @@ var vwfPortalModel = new function(){
 			$("#allWorlds").removeClass("active").blur();
 		}
 		
+		self.filter(filter || userNameFilter);
 		pageIndex = 0;
-		showStates();
+		
+		var tempWorlds = self.worldObjects();
+		for(var i = 0; i < tempWorlds.length; i++){
+			tempWorlds[i]().isVisible = checkFilter([tempWorlds[i]().title, tempWorlds[i]().description, tempWorlds[i]().owner], tempWorlds[i]().featured);
+		}
+		
+		self.getPage(0);
+		if(self.filter() && self.displayWorldObjects().length > 0){
+			self.initialSearchDisplay(false);
+		}
 	};			
-	
+	self.filter = ko.observable(filter);
+	self.initialSearchDisplay = ko.observable(true);
 	self.filterVal = ko.computed({
-		read:  function(){ return ''; }, 
+		read:  function(){ return filter; }, 
 		write: function(str){ 
 			if(filter != str){
 				filter = str;
+				self.filter(filter || userNameFilter);
+				
 				pageIndex = 0;
 				var tempWorlds = self.worldObjects();
 				for(var i = 0; i < tempWorlds.length; i++){
-					tempWorlds[i]().isVisible = checkFilter([tempWorlds[i]().title, tempWorlds[i]().description, tempWorlds[i]().owner]);
+					tempWorlds[i]().isVisible = checkFilter([tempWorlds[i]().title, tempWorlds[i]().description, tempWorlds[i]().owner], tempWorlds[i]().featured);
 				}
 				
 				self.getPage(0);
+				
+				$(".filter").val(filter);
+				if(self.filter() && self.displayWorldObjects().length > 0){
+					self.initialSearchDisplay(false);
+				}
+				//console.log(filter);
 			}
 		}	
 	}).extend({throttle:500});
@@ -90,7 +109,6 @@ var vwfPortalModel = new function(){
 	
 	
 	self.getPage = function(i){
-
 		self.worldObjects.sort(sortArrByUpdates);
 		var worldObjectsLength = getArrVisibleLength(self.worldObjects());
 		pageIndex += i;
@@ -221,7 +239,7 @@ function handleHash(propStr){
 	else vwfPortalModel.currentAdminItem(false);
 }
 
-function checkFilter(textArr){
+function checkFilter(textArr, isFeatured){
 	
 	//textArr[2] is the owner of the world
 	if(userNameFilter && userNameFilter != textArr[2]){
@@ -229,14 +247,21 @@ function checkFilter(textArr){
 	}
 	
 	if(filter != ""){
-		for(var i = 0; i < textArr.length; i++){
-			if(textArr[i] && textArr[i].toLowerCase().indexOf(filter.toLowerCase()) != -1)
-				return true;
+		var filterArr = filter.split(" "), textStr = textArr.join().toLowerCase(), spaceFix = false;
+		for(var i = 0; i < filterArr.length; i++){
+			if(textStr.indexOf(filterArr[i].toLowerCase()) == -1){
+				return false;
+			}
+			
+			if(!spaceFix && filterArr[i] != ""){
+				spaceFix = true;
+			}
 		}
-		return false;
+
+		return spaceFix;
 	}			
 	
-	else return true;
+	else return (!!isFeatured && !userNameFilter) || userNameFilter == textArr[2];
 }
 
 function getFlatIdArr(resetHotstate){
@@ -284,14 +309,14 @@ function removeAgoFromMoment(date){
 
 function showStates(cb){
 
-	$.getJSON("./vwfDataManager.svc/states",function(e){
-		
-		var tempArr = getFlatIdArr(), saveIndex = 0, i = 0, flatWorldArray = ko.toJS(vwfPortalModel.worldObjects);
+	$.getJSON(root + "/vwfDataManager.svc/states",function(e){
+
+		var tempArr = getFlatIdArr(), saveIndex = 0, i = 0, flatWorldArray = ko.toJS(vwfPortalModel.worldObjects), saveDate = Date.now() - 31536000000;
 		for(var tmpKey in e){
 			
 			if(e.hasOwnProperty(tmpKey)){
 				
-				var id = tmpKey.substr(13,16), saveDate = Date.now() - 31536000000;
+				var id = tmpKey.substr(13,16);
 				e[tmpKey].id = id;
 
 				//The incoming data elements may not be in the same order as existing elements, get proper index
@@ -302,7 +327,7 @@ function showStates(cb){
 				e[tmpKey].description = e[tmpKey].description ? e[tmpKey].description : "";
 				
 				e[tmpKey].editVisible = ko.observable(false);				
-				e[tmpKey].isVisible = checkFilter([e[tmpKey].title, e[tmpKey].description, e[tmpKey].owner]);
+				e[tmpKey].isVisible = checkFilter([e[tmpKey].title, e[tmpKey].description, e[tmpKey].owner], e[tmpKey].featured);
 				
 				if(ko.isObservable(vwfPortalModel.worldObjects()[saveIndex])){
 				
@@ -326,7 +351,7 @@ function showStates(cb){
 		
 		vwfPortalModel.getPage(0);
 		
-		$.getJSON("./admin/instances",function(e){
+		$.getJSON(root + "/admin/instances",function(e){
 		
 			//Get all world IDs in flat array form
 			var tempArr = getFlatIdArr();
@@ -384,7 +409,7 @@ function sortArrByUpdates(a, b){
 
 function getLoginInfo(defaultCb, failCb){
 	
-	$.ajax('/vwfDataManager.svc/logindata',
+	$.ajax(root + '/vwfDataManager.svc/logindata',
 	{
 		cache:false,
 		success:function(data,status,xhr){

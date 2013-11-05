@@ -15,8 +15,47 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 		this.volume = 1;
 		this.endrange = 100;
 		this.startrange = 1;
-		this.loop = false;
-		
+		this.looping = false;
+		this.playing = false;
+		this.play = function()
+		{
+
+			
+			if(!this.playing)
+				this.sound.play();
+
+			this.playing = true;
+
+
+		}
+		this.pause = function()
+		{
+
+			
+			if(this.playing)
+				this.sound.pause();
+			
+			this.playing = false;
+
+
+		}
+		this.stop = this.pause;
+	}
+	SoundSource.prototype.loop = function()
+	{
+		if(!this.looping)
+		{
+			this.looping = true;
+			this.sound.loop();
+		}
+	}
+	SoundSource.prototype.unloop = function()
+	{
+		if(this.looping)
+		{
+			this.looping = false;
+			this.sound.unloop();
+		}
 	}
 	//Get the position of your source object
 	//note: the 3D driver must keep track of this
@@ -96,23 +135,23 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 					var Sound = this.soundSources[soundid] = new SoundSource()
 					Sound.id = id;
 					Sound.url = url;
-					Sound.loop = loop;
+					
 					Sound.volume = vol;
 					Sound.sound = new this.buzz.sound(url,{
 							autoplay: true,
 							loop: loop
 							
 					});
-				
+					Sound.looping = loop;
 					Sound.position = [0,0,0];
 					window._dSound = Sound;
 				}else
 				{
-					Sound.sound.play();
+					Sound.play();
 					if(loop)
-					Sound.sound.loop();
+					Sound.loop();
 					else
-					Sound.sound.unloop();
+					Sound.unloop();
 					Sound.volume = vol;
 				}
 			}
@@ -123,7 +162,7 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 				var soundid = id+url;
 				var Sound = this.soundSources[soundid];
 				if(Sound)
-				Sound.sound.pause();
+				Sound.pause();
 			}
 			//stop the sound
 			if(name == 'stopSound')
@@ -132,7 +171,7 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 				var soundid = id+url;
 				var Sound = this.soundSources[soundid];
 				if(Sound)
-				Sound.sound.stop();
+				Sound.stop();
 			}
 			//delete the sound completely - only use this if you sure the sound will not play again anytime soon.
 			if(name == 'deleteSound')
@@ -142,7 +181,7 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 				var Sound = this.soundSources[soundid];
 				if(Sound)
 				{
-					Sound.sound.stop();
+					Sound.stop();
 					Sound.sound = null;
 				}
 				delete this.soundSources[soundid];

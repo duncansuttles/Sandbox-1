@@ -2,6 +2,9 @@
 	<div class="col-md-2" style="text-align:left;">
 		<a href="{{root}}/create" id="newinstancebutton" data-bind="visible:user().isLoggedIn">
 			<span class="btn btn-default btn-sm" style="width:100%;">Create World</span>
+		</a><br/><br/>
+		<a href="{{root}}/avatar" id="editavatarbtn" data-bind="visible:user().isLoggedIn">
+			<span class="btn btn-default btn-sm" style="width:100%;">Choose Avatar</span>
 		</a>
 	</div> 
 	<div class="col-md-10">			
@@ -81,10 +84,7 @@
 	function redirect()
 	{
 		var ret = window.location.search.substr(window.location.search.indexOf('=')+1);
-		var path = window.location.pathname.substr(0,window.location.pathname.lastIndexOf('/')+1);
-		
-		var url = window.location.protocol + "//" + window.location.host + path + ret;
-		window.location = url;
+		window.location = ret.charAt(0) == '/' ? root + ret : root + '/' + ret;
 	}
 	function GUID()
 	{

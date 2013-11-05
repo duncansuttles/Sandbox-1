@@ -14766,7 +14766,7 @@ THREE.ShaderChunk = {
 
 				"} else { ",
 
-					"reflectVec = reflect( cameraToVertex, normal );",
+					"reflectVec = reflect( cameraToVertex,( vec4(normal,1.0) * viewMatrix).xyz );",
 
 				"}",
 
@@ -14851,6 +14851,11 @@ THREE.ShaderChunk = {
 	].join("\n"),
 
 	envmap_vertex : [
+
+
+
+
+		
 
 		"#if defined( USE_ENVMAP ) && ! defined( USE_BUMPMAP ) && ! defined( USE_NORMALMAP )",
 
@@ -15070,6 +15075,23 @@ THREE.ShaderChunk = {
 				"mapN.xy = normalScale * mapN.xy;",
 				"mat3 tsn = mat3( S, T, N );",
 				"return normalize( tsn * mapN );",
+
+			"}",
+			"vec3 perturbNormal3Arb( vec3 eye_pos, vec3 surf_norm ) {",
+
+				"vec3 q0 = dFdx( eye_pos.xyz );",
+				"vec3 q1 = dFdy( eye_pos.xyz );",
+				"vec2 st0 = dFdx( vUv.st );",
+				"vec2 st1 = dFdy( vUv.st );",
+
+				"vec3 S = normalize(  q0 * st1.t - q1 * st0.t );",
+				"vec3 T = normalize( -q0 * st1.s + q1 * st0.s );",
+				"vec3 N = normalize( surf_norm );",
+
+				"vec3 mapN = texture2D( normalMap, vUv ).xyz * 2.0 - 1.0;",
+				"mapN.xy = normalScale * mapN.xy;",
+				"mat3 tsn = mat3( S, T, N );",
+				"return normalize( tsn * mapN  );",
 
 			"}",
 
@@ -15367,10 +15389,80 @@ THREE.ShaderChunk = {
 
 	// LIGHTS PHONG
 
+	sphericalHarmonicAmbient_pars_vertex :[
+
+		"varying vec4 vWorldNormal;",
+
+
+
+	].join("\n"),
+	sphericalHarmonicAmbient_vertex :[
+
+		//"shAmbient = vec3(1.0,1.0,0.0);"
+		"mat4 normMat = modelMatrix;",
+		"normMat[3][0] = normMat[3][1] = normMat[3][2] = 0.0;",
+		"vWorldNormal = normalize(normMat * vec4(normal,1.0));",
+
+
+	].join("\n"),
+	sphericalHarmonicAmbient_pars_fragment :[
+
+		"varying vec3 shAmbient;",
+		"varying vec4 vWorldNormal;",
+
+		"const float C1 = 0.429043;",
+		"const float C2 = 0.511664;",
+		"const float C3 = 0.743125;",
+		"const float C4 = 0.886227;",
+		"const float C5 = 0.247708;",
+
+		// Constants for Old Town Square lighting
+		"const vec3 L00  = vec3( 0.871297,  0.875222,  0.864470);",
+		"const vec3 L1m1 = vec3( 0.175058,  0.245335,  0.312891);",
+		"const vec3 L10  = vec3( 0.034675,  0.036107,  0.037362);",
+		"const vec3 L11  = vec3(-0.004629, -0.029448, -0.048028);",
+		"const vec3 L2m2 = vec3(-0.120535, -0.121160, -0.117507);",
+		"const vec3 L2m1 = vec3( 0.003242,  0.003624,  0.007511);",
+		"const vec3 L20  = vec3(-0.028667, -0.024926, -0.020998);",
+		"const vec3 L21  = vec3(-0.077539, -0.086325, -0.091591);",
+		"const vec3 L22  = vec3(-0.161784, -0.191783, -0.219152);",
+
+
+		
+
+	].join("\n"),
+	sphericalHarmonicAmbient_fragment :[
+
+		"vec3 shAmbient;",
+		
+		"vec3 tnorm    = normalize(vWorldNormal.xzy);",
+    	"#ifdef USE_BUMPMAP",
+
+    	"tnorm  = perturbNormalArb( -vViewPosition, normalize( vNormal ), dHdxy_fwd() );",
+
+    	"#endif",
+    	"#ifdef USE_NORMALMAP",
+
+    	"tnorm  = perturbNormal3Arb( -vViewPosition, normalize( vNormal ));",
+
+    	"#endif",
+    	"shAmbient =  C1 * L22 * (tnorm.x * tnorm.x - tnorm.y * tnorm.y) +",
+        "            C3 * L20 * tnorm.z * tnorm.z +",
+        "            C4 * L00 -",
+        "            C5 * L20 +",
+         "           2.0 * C1 * L2m2 * tnorm.x * tnorm.y +",
+         "           2.0 * C1 * L21  * tnorm.x * tnorm.z +",
+         "           2.0 * C1 * L2m1 * tnorm.y * tnorm.z +",
+          "          2.0 * C2 * L11  * tnorm.x +",
+          "          2.0 * C2 * L1m1 * tnorm.y + ",  
+          "          2.0 * C2 * L10  * tnorm.z;",
+		"shAmbient *= length(ambientLightColor);",
+
+	].join("\n"),
 	lights_phong_pars_vertex: [
 
 		"#ifndef PHONG_PER_PIXEL",
-
+		
 		"#if MAX_POINT_LIGHTS > 0",
 
 			"uniform vec3 pointLightPosition[ MAX_POINT_LIGHTS ];",
@@ -15391,7 +15483,7 @@ THREE.ShaderChunk = {
 
 		"#endif",
 
-		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP )",
+		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( USE_NORMALMAP )",
 
 			"varying vec3 vWorldPosition;",
 
@@ -15403,7 +15495,7 @@ THREE.ShaderChunk = {
 	lights_phong_vertex: [
 
 		"#ifndef PHONG_PER_PIXEL",
-
+		
 		"#if MAX_POINT_LIGHTS > 0",
 
 			"for( int i = 0; i < MAX_POINT_LIGHTS; i ++ ) {",
@@ -15440,7 +15532,7 @@ THREE.ShaderChunk = {
 
 		"#endif",
 
-		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP )",
+		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( USE_NORMALMAP )",
 
 			"vWorldPosition = worldPosition.xyz;",
 
@@ -15451,7 +15543,7 @@ THREE.ShaderChunk = {
 	lights_phong_pars_fragment: [
 
 		"uniform vec3 ambientLightColor;",
-
+		
 		"#if MAX_DIR_LIGHTS > 0",
 
 			"uniform vec3 directionalLightColor[ MAX_DIR_LIGHTS ];",
@@ -15504,7 +15596,7 @@ THREE.ShaderChunk = {
 
 		"#endif",
 
-		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP )",
+		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( USE_NORMALMAP )",
 
 			"varying vec3 vWorldPosition;",
 
@@ -15525,6 +15617,8 @@ THREE.ShaderChunk = {
 
 		"vec3 normal = normalize( vNormal );",
 		"vec3 viewPosition = normalize( vViewPosition );",
+
+		
 
 		"#ifdef DOUBLE_SIDED",
 
@@ -15849,13 +15943,15 @@ THREE.ShaderChunk = {
 
 		"#endif",
 
-		"#ifdef METAL",
+		"",
 
-			"gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ambientLightColor * ambient + totalSpecular );",
+		"#ifdef METAL",
+			"gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ( shAmbient) * ambient + totalSpecular );",
+		//	"gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + (ambientLightColor + shAmbient) * ambient + totalSpecular );",
 
 		"#else",
-
-			"gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ambientLightColor * ambient ) + totalSpecular;",
+			"gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ( shAmbient) * ambient ) + totalSpecular;",
+		//	"gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + (ambientLightColor + shAmbient) * ambient ) + totalSpecular;",
 
 		"#endif"
 
@@ -16886,6 +16982,7 @@ THREE.ShaderLib = {
 			THREE.ShaderChunk[ "morphtarget_pars_vertex" ],
 			THREE.ShaderChunk[ "skinning_pars_vertex" ],
 			THREE.ShaderChunk[ "shadowmap_pars_vertex" ],
+			THREE.ShaderChunk[ "sphericalHarmonicAmbient_pars_vertex" ],
 
 			"void main() {",
 
@@ -16910,6 +17007,7 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "envmap_vertex" ],
 				THREE.ShaderChunk[ "lights_phong_vertex" ],
 				THREE.ShaderChunk[ "shadowmap_vertex" ],
+				THREE.ShaderChunk[ "sphericalHarmonicAmbient_vertex" ],
 
 			"}"
 
@@ -16935,11 +17033,11 @@ THREE.ShaderLib = {
 			THREE.ShaderChunk[ "bumpmap_pars_fragment" ],
 			THREE.ShaderChunk[ "normalmap_pars_fragment" ],
 			THREE.ShaderChunk[ "specularmap_pars_fragment" ],
-
+			THREE.ShaderChunk[ "sphericalHarmonicAmbient_pars_fragment" ],
 			"void main() {",
 
 				"gl_FragColor = vec4( vec3 ( 1.0 ), opacity );",
-
+				THREE.ShaderChunk[ "sphericalHarmonicAmbient_fragment" ],
 				THREE.ShaderChunk[ "map_fragment" ],
 				THREE.ShaderChunk[ "alphatest_fragment" ],
 				THREE.ShaderChunk[ "specularmap_fragment" ],
@@ -16949,6 +17047,7 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "lightmap_fragment" ],
 				THREE.ShaderChunk[ "color_fragment" ],
 				THREE.ShaderChunk[ "envmap_fragment" ],
+				
 				THREE.ShaderChunk[ "shadowmap_fragment" ],
 
 				THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
@@ -36240,7 +36339,7 @@ THREE.ColladaLoader = function () {
 						} else {
 
 							console.error( "ColladaLoader: Empty or non-existing file (" + url + ")" );
-
+							progressCallback(  );
 						}
 
 					}
