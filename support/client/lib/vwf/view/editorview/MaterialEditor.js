@@ -148,7 +148,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			
 			}.bind(this));
 				
-			if(this.currentMaterial.type == 'phong')
+			if(this.currentMaterial.type == 'phong' || this.currentMaterial.type == 'mix')
 				this.BuildGUIPhong();	
 			if(this.currentMaterial.type == 'video')
 				this.BuildGUIVideo();	

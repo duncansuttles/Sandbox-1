@@ -452,11 +452,12 @@
 
 							"	for( int i=0; i<8; ++i ){",
 							"		texColors[i] = texture2D(diffuse_tex[i], texCoord);",
-							"		alphaTotal += alpha[i] * texColors[i].w;",
+							"		alphaTotal += alpha[i] * texColors[i].a;",
 							"	}",
 
 							"	for( int i=0; i<8; ++i ){",
-							"		finalColor += alpha[i]/alphaTotal * texColors[i];",
+							"		float aMix = (alpha[i]*texColors[i].a)/alphaTotal;",
+							"		finalColor += aMix * texColors[i];",
 							"	}",
 
 							"	gl_FragColor = finalColor;",
