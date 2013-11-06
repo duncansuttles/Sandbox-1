@@ -1433,8 +1433,6 @@ function startVWF(){
 		console.log("Error: Unable to load config file");
 	}
 	
-	console.log("Config settings: ", configSettings); 
-	
 	var p = process.argv.indexOf('-p'), port = 0, datapath = "";
 	
 	//This is a bit ugly, but it does beat putting a ton of if/else statements everywhere
@@ -1473,11 +1471,9 @@ function startVWF(){
 		console.log('Starting compilation process...');
 	}
 	
-	var versioning = false;
-	p = process.argv.indexOf('-cc');
-	if(p >= 0)
+	var versioning = process.argv.indexOf('-cc') >= 0 ? true : !!configSettings.useVersioning;
+	if(versioning)
 	{
-		versioning = true;
 		global.version = configSettings.version ? configSettings.version : global.version;
 		console.log(brown + 'Versioning is on. Version is ' + global.version + reset);
 	}else
