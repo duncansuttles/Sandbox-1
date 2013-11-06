@@ -418,10 +418,15 @@
 				{
 					var diffuse_tex = [];
 					var alphas = [];
+					var transform = [];
 					for( var i in value.layers ){
-						if( value.layers[i].mapTo == 1 ){
-							diffuse_tex.push( _SceneManager.getTexture(value.layers[i].src) );
-							alphas.push( value.layers[i].alpha );
+						var layer = value.layers[i];
+						if( layer.mapTo == 1 )
+						{
+							diffuse_tex.push( _SceneManager.getTexture(layer.src) );
+							alphas.push( layer.alpha );
+							var tfm = new THREE.Matrix3( layer.scalex, 0, layer.offsetx, 0, layer.scaley, layer.offsety, 0, 0, 1 );
+							transform.push.apply(transform,tfm.elements);
 						}
 					}
 
@@ -429,6 +434,7 @@
 						uniforms: {
 							diffuse_tex: { type: "tv", value: diffuse_tex },
 							alpha: {type: "fv1", value: alphas },
+							tex_xfrm: {type: "fv", value: transform}
 						},
 
 						vertexShader: [
@@ -443,6 +449,7 @@
 							"varying vec2 texCoord;",
 							"uniform sampler2D diffuse_tex[8];",
 							"uniform float alpha[8];",
+							"uniform vec3 tex_xfrm[24];",
 
 							"void main(){",
 
@@ -451,7 +458,10 @@
 							"	vec4 finalColor = vec4(0.0,0.0,0.0,1.0);",
 
 							"	for( int i=0; i<8; ++i ){",
-							"		texColors[i] = texture2D(diffuse_tex[i], texCoord);",
+							"		mat3 transform = mat3(tex_xfrm[3*i],tex_xfrm[3*i+1],tex_xfrm[3*i+2]);",
+							"		vec3 temp = transform * vec3(texCoord,1.0);
+							"		vec2 tc = vec2(fract(temp.x),fract(temp.y));",
+							"		texColors[i] = texture2D(diffuse_tex[i], tc);",
 							"		alphaTotal += alpha[i] * texColors[i].a;",
 							"	}",
 
