@@ -1,4 +1,4 @@
-global.version = 23;
+global.version = 1;
 var libpath = require('path'),
 http = require("http"),
 fs = require('fs'),
@@ -18,8 +18,6 @@ var compressor = require('node-minify');
 var async = require('async');
 var messageCompress = require('./support/client/lib/messageCompress').messageCompress;
 var exec=require('child_process').exec;
-//Get the version number. This will used to redirect clients to the proper url, to defeat their local cache when we release
-global.version = require('./Version').version;
 
 var  appNameCache = [];
 // pick the application name out of the URL by finding the index.vwf.yaml
