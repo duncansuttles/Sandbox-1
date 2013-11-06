@@ -294,6 +294,8 @@ define(function ()
 
 			//this.PlayerProto.source = 'usmale.dae'; //profile['Avatar'];
 
+			if(!profile) profile = {};
+
 			this.PlayerProto.source = profile.avatarModel || './avatars/VWS_Business_Female1.DAE';
 
             this.PlayerProto.properties.cycles = 

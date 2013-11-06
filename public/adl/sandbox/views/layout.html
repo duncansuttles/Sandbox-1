@@ -95,6 +95,7 @@
 				</div>
 				<div id="login">
 					<a class="headerA" href="{{root}}/login?return=worlds"  id="login"  data-bind="visible:!user().isLoggedIn">Login</a>
+					<a class="headerA" href="{{root}}/user"  id="user"  data-bind="visible:user().isLoggedIn">Account</a>
 					<a class="headerA" href="{{root}}/logout?return=index" id="logout" data-bind="visible:user().isLoggedIn">Logout</a>
 					<a class="headerA" href="{{root}}/signup?return=worlds" id="signup" data-bind="visible:!user().isLoggedIn">Create Account</a>
 				</div>
