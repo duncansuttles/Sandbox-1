@@ -159,7 +159,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
 			if(this.tickTime > this.realTickDif)
 				this.future = this.tickTime - this.realTickDif;
-			else
+			//else
 				this.future = 0;
 			//if going slower than tick rate, don't make life harder by changing values. it would be invisible anyway
 			if(step > 2) return;
