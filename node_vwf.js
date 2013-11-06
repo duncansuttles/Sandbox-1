@@ -1427,6 +1427,7 @@ function startVWF(){
 	//start the DAL, load configuration file
 	try{
 		configSettings = JSON.parse(fs.readFileSync('./config.json').toString());
+		SandboxAPI.setAnalytics(configSettings.analytics);
 	}
 	
 	catch(e){
