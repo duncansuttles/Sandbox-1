@@ -428,37 +428,46 @@
 					currentmat = new THREE.ShaderMaterial({
 						uniforms: {
 							diffuse_tex: { type: "tv", value: diffuse_tex },
-							alpha: {type: "fv", value: alphas }
+							alpha: {type: "fv1", value: alphas },
 						},
+
 						vertexShader: [
 							"varying vec2 texCoord;",
 							"void main(){",
 							"	gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);",
 							"	texCoord = uv;",
 							"}"
-							].join('\n'),
+						].join('\n'),
+
 						fragmentShader: [
 							"varying vec2 texCoord;",
 							"uniform sampler2D diffuse_tex[8];",
+							"uniform float alpha[8];",
+
 							"void main(){",
+
+							"	float alphaTotal = 0.0;",
+							"	vec4 texColors[8];",
 							"	vec4 finalColor = vec4(0.0,0.0,0.0,1.0);",
-							"	for( int i=1; i<=8; ++i ){",
-							"		float ratio = 1.0/float(i);",
-							"		finalColor = mix(finalColor, texture2D(diffuse_tex[i-1], texCoord), ratio);",
+
+							"	for( int i=0; i<8; ++i ){",
+							"		texColors[i] = texture2D(diffuse_tex[i], texCoord);",
+							"		alphaTotal += alpha[i] * texColors[i].w;",
 							"	}",
+
+							"	for( int i=0; i<8; ++i ){",
+							"		finalColor += alpha[i]/alphaTotal * texColors[i];",
+							"	}",
+
 							"	gl_FragColor = finalColor;",
 							"}"
-							].join('\n')
+						].join('\n')
 					});
 				}
 				
 				//currentmat.needsUpdate = true;
 				return currentmat;
 			}
-		
-		
-		
-		
 		
 		}
 		var _MaterialCache = new MaterialCache();
