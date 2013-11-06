@@ -733,10 +733,10 @@
   </library_controllers>
   <library_images>
     <image id="VWS_Business_Female1-2_jpg">
-      <init_from>file:///C:/3D_Projects/BWom0012-Tp/Backup/Sandbox_Business_Woman/VWS_Business_Female1-2.jpg</init_from>
+      <init_from>Female1_2.png</init_from>
     </image>
     <image id="VWS_B_Female1-1_jpg">
-      <init_from>file:///C:/3D_Projects/BWom0012-Tp/VWS_Business_Female1/VWS_B_Female1-1.jpg</init_from>
+      <init_from>VWS_B_Female1-1.jpg</init_from>
     </image>
   </library_images>
   <library_visual_scenes>

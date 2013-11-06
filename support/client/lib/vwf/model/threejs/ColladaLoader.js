@@ -87,6 +87,9 @@ THREE.ColladaLoader = function () {
 						}
 
 					}
+					else if(  request.status == 404 || request.status == 500 || request.status == 401 || request.status == 501   ) {
+						progressCallback(null);
+					}
 
 				} else if ( request.readyState == 3 ) {
 
@@ -94,7 +97,7 @@ THREE.ColladaLoader = function () {
 
 						if ( length == 0 ) {
 
-							length = request.getResponseHeader( "Content-Length" );
+							length = request.getResponseHeader( "x-vwf-length" );
 
 						}
 

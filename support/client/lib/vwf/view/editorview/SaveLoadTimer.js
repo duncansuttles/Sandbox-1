@@ -9,7 +9,7 @@ define({
 		window.onbeforeunload = function(){
 			if(_DataManager.getClientCount() == 1 && _UserManager.GetCurrentUserName())
 			{
-				_DataManager.saveToServer();
+				_DataManager.saveToServer(true);
 				return "Are you sure you want to leave this VWF world?";
 			}		
 		};

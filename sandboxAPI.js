@@ -10,6 +10,7 @@ var libpath = require('path'),
 var safePathRE = RegExp('/\//'+(libpath.sep=='/' ? '\/' : '\\')+'/g');
 var datapath = '.'+libpath.sep+'data';
 var DAL = null;	
+var analyticsObj;
 // default path to data. over written by setup flags
 
 //generate a random id.
@@ -87,7 +88,8 @@ function ServeProfile(UID,response,URL)
 				respond(response,401,"user not logged in, or profile not found");
 			}else
 			{
-				user.Password = '';
+				user = JSON.parse(JSON.stringify(user));
+				delete user.Password;
 				respond(response,200,JSON.stringify(user));
 			}
 		
@@ -1213,6 +1215,18 @@ function Salt(URL,response)
 
 }
 
+function getAnalytics(req, res){
+	var tempStr = analyticsObj ? "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){" +
+				  "(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o)," +
+				  "m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)" +
+				  "})(window,document,'script','//www.google-analytics.com/analytics.js','ga');" +
+				  "ga('create', '"+analyticsObj.id+"', '"+analyticsObj.url+"');" +
+				  "ga('send', 'pageview');" : '//Analytics not found';
+				  
+	res.writeHead(200, {'Content-Type': 'application/javascript'});
+	res.end(tempStr);
+}
+
 //router
 function serve (request, response)
 {
@@ -1255,6 +1269,9 @@ function serve (request, response)
 	{
 		switch(command)
 		{	
+			case "getanalytics.js": {
+				getAnalytics(request, response);
+			} break;
 			case "texture":{
 				global.FileCache.ServeFile(request,basedir+"Textures"+libpath.sep+ URL.query.UID,response,URL);		
 			} break;
@@ -1495,3 +1512,7 @@ exports.getDataPath = function()
 {
 	return datapath;
 }
+
+exports.setAnalytics = function(obj){
+	analyticsObj = obj;
+};

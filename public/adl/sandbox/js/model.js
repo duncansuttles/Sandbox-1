@@ -3,7 +3,7 @@
 //IE undefined console fix
 if (!window.console) console = {log: function() {}};
 		
-var filter = '', pageIndex = 0, pageLength = 12, userNameFilter = '', selectAll = false;
+var filter = '', pageIndex = 0, pageLength = 12, secondaryFilter = '', selectAll = false;
 
 var vwfPortalModel = new function(){
 	var self = this;
@@ -22,25 +22,34 @@ var vwfPortalModel = new function(){
 		username: 'Guest'
 	});
 	
-	self.toggleNameFilter = function(){
 	
-		if(userNameFilter){
-			userNameFilter  = '';
-			$("#allWorlds").addClass("active");
-			$("#yourWorlds").removeClass("active").blur();
-		}			
-		else{
-			userNameFilter  = self.user().username;
-			$("#yourWorlds").addClass("active");
-			$("#allWorlds").removeClass("active").blur();
-		}
+	self.dropDownMap = {featured: "Featured worlds", yours: "Your worlds", published: "Published worlds", active: "Active worlds"};
+	self.currentDropDown = ko.observable("featured");
+	self.toggleNameFilter = function(e, o){
 		
-		self.filter(filter || userNameFilter);
+		console.log(e, o);
+		self.currentDropDown(e);
+
+		if(localStorage)
+			localStorage.setItem("searchQuery", filter + "--" + e);
+			
+		switch(e){
+			case "yours":
+				secondaryFilter = self.user().username;
+				break;
+			case "featured":
+				secondaryFilter = "";
+				break;
+			default:
+				secondaryFilter = e;
+		}
+
+		self.filter(filter || secondaryFilter);
 		pageIndex = 0;
 		
 		var tempWorlds = self.worldObjects();
 		for(var i = 0; i < tempWorlds.length; i++){
-			tempWorlds[i]().isVisible = checkFilter([tempWorlds[i]().title, tempWorlds[i]().description, tempWorlds[i]().owner], tempWorlds[i]().featured);
+			tempWorlds[i]().isVisible = checkFilter(tempWorlds[i]());
 		}
 		
 		self.getPage(0);
@@ -55,12 +64,12 @@ var vwfPortalModel = new function(){
 		write: function(str){ 
 			if(filter != str){
 				filter = str;
-				self.filter(filter || userNameFilter);
+				self.filter(filter || secondaryFilter);
 				
 				pageIndex = 0;
 				var tempWorlds = self.worldObjects();
 				for(var i = 0; i < tempWorlds.length; i++){
-					tempWorlds[i]().isVisible = checkFilter([tempWorlds[i]().title, tempWorlds[i]().description, tempWorlds[i]().owner], tempWorlds[i]().featured);
+					tempWorlds[i]().isVisible = checkFilter(tempWorlds[i]());
 				}
 				
 				self.getPage(0);
@@ -69,7 +78,13 @@ var vwfPortalModel = new function(){
 				if(self.filter() && self.displayWorldObjects().length > 0){
 					self.initialSearchDisplay(false);
 				}
-				//console.log(filter);
+				
+				self.dropDownMap.featured = filter ? "All worlds" : "Featured worlds";
+				
+				if(localStorage)
+					localStorage.setItem("searchQuery", filter + "--" + self.currentDropDown());
+				
+				self.currentDropDown.valueHasMutated();
 			}
 		}	
 	}).extend({throttle:500});
@@ -239,15 +254,21 @@ function handleHash(propStr){
 	else vwfPortalModel.currentAdminItem(false);
 }
 
-function checkFilter(textArr, isFeatured){
-	
-	//textArr[2] is the owner of the world
-	if(userNameFilter && userNameFilter != textArr[2]){
-		return false;
-	}
+function checkSecondaryFilter(state, filterMatch){
+
+	return ((!secondaryFilter && (!!state.featured || filterMatch)) || 
+			 secondaryFilter == state.owner || 
+			(secondaryFilter == "active" && !!state.hotState) || 
+			(secondaryFilter == "published" && !!state.publishSettings)) && 
+			(!filter || filterMatch);
+}
+
+function checkFilter(state){
+
+	var textArr = [state.title, state.description, state.owner], spaceFix = false;
 	
 	if(filter != ""){
-		var filterArr = filter.split(" "), textStr = textArr.join().toLowerCase(), spaceFix = false;
+		var filterArr = filter.split(" "), textStr = textArr.join().toLowerCase();
 		for(var i = 0; i < filterArr.length; i++){
 			if(textStr.indexOf(filterArr[i].toLowerCase()) == -1){
 				return false;
@@ -257,11 +278,9 @@ function checkFilter(textArr, isFeatured){
 				spaceFix = true;
 			}
 		}
-
-		return spaceFix;
 	}			
 	
-	else return (!!isFeatured && !userNameFilter) || userNameFilter == textArr[2];
+	return checkSecondaryFilter(state, spaceFix);
 }
 
 function getFlatIdArr(resetHotstate){
@@ -327,11 +346,12 @@ function showStates(cb){
 				e[tmpKey].description = e[tmpKey].description ? e[tmpKey].description : "";
 				
 				e[tmpKey].editVisible = ko.observable(false);				
-				e[tmpKey].isVisible = checkFilter([e[tmpKey].title, e[tmpKey].description, e[tmpKey].owner], e[tmpKey].featured);
+				
 				
 				if(ko.isObservable(vwfPortalModel.worldObjects()[saveIndex])){
 				
 					e[tmpKey].hotState = flatWorldArray[saveIndex].hotState ? flatWorldArray[saveIndex].hotState : false;
+					e[tmpKey].isVisible = checkFilter(e[tmpKey]);
 					
 					for(var saveProp in e[tmpKey]){
 						
@@ -344,6 +364,7 @@ function showStates(cb){
 				
 				else{
 					e[tmpKey].hotState = false;
+					e[tmpKey].isVisible = checkFilter(e[tmpKey]);
 					vwfPortalModel.worldObjects()[saveIndex] = ko.observable(e[tmpKey]);
 				}
 			}

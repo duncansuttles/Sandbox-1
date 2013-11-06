@@ -294,6 +294,8 @@ define(function ()
 
 			//this.PlayerProto.source = 'usmale.dae'; //profile['Avatar'];
 
+			if(!profile) profile = {};
+
 			this.PlayerProto.source = profile.avatarModel || './avatars/VWS_Business_Female1.DAE';
 
             this.PlayerProto.properties.cycles = 
@@ -372,6 +374,8 @@ define(function ()
 			this.PlayerProto.properties.profile = profile;
 			this.PlayerProto.properties.translation = newintersectxy;
 			this.PlayerProto.properties.scale = [proto.svatarHeight || 1.15,proto.svatarHeight || 1.15,proto.svatarHeight || 1.15];
+
+			vwf.models.javascript.nodes['index-vwf'].orbitPoint(newintersectxy);
 			document[username + 'link'] = null;
 			//this.PlayerProto.id = "player"+username;
 			document["PlayerNumber"] = username;

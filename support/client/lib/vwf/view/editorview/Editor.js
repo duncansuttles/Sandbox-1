@@ -122,7 +122,7 @@ THREE.Object3D.prototype.getBoundingBox = function (donttransform)
 	return object.boundingBox;
 }
 
-define(["vwf/view/EditorView/log","vwf/view/EditorView/progressBar"],function (Log,ProgressBar)
+define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (Log,ProgressBar)
 {
 	var originalGizmoPos;
 	var Editor = {};

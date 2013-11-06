@@ -1,4 +1,4 @@
-global.version = 23;
+global.version = 1;
 var libpath = require('path'),
 http = require("http"),
 fs = require('fs'),
@@ -18,8 +18,6 @@ var compressor = require('node-minify');
 var async = require('async');
 var messageCompress = require('./support/client/lib/messageCompress').messageCompress;
 var exec=require('child_process').exec;
-//Get the version number. This will used to redirect clients to the proper url, to defeat their local cache when we release
-global.version = require('./Version').version;
 
 var  appNameCache = [];
 // pick the application name out of the URL by finding the index.vwf.yaml
@@ -282,10 +280,12 @@ function _FileCache()
 							//record the data
 							var newentry = {};
 							
+							console.log(file.length);
 							newentry.path = path;
 							newentry.data = file;
 							newentry.stats = stats;
 							newentry.zippeddata = zippeddata;
+							newentry.contentlength = file.length;
 							newentry.datatype = datatype;
 							newentry.hash = hash(file);
 							
@@ -424,7 +424,8 @@ function _FileCache()
 					"Last-Modified": file.stats.mtime,
 					"ETag": file.hash,
 					"Cache-Control":"public; max-age=31536000" ,
-					'Content-Encoding': 'gzip'
+					'Content-Encoding': 'gzip',
+					"x-vwf-length": (file.contentlength + ''),
 				});
 				response.write(file.zippeddata, file.datatype);
 			
@@ -435,6 +436,7 @@ function _FileCache()
 			{
 				response.writeHead(200, {
 					"Content-Type": type,
+					"x-vwf-length":(file.contentlength + ''),
 					"Last-Modified": file.stats.mtime,
 					"ETag": file.hash,
 					"Cache-Control":"public; max-age=31536000"
@@ -1421,54 +1423,62 @@ function startVWF(){
 					red   = '\u001b[31m';
 					brown  = '\u001b[33m';
 					reset = '\u001b[0m';
-	//start the DAL
-	var p = process.argv.indexOf('-p');
-	var port = p >= 0 ? parseInt(process.argv[p+1]) : 3000;
-		
+					
+	var configSettings;
+	
+	//start the DAL, load configuration file
+	try{
+		configSettings = JSON.parse(fs.readFileSync('./config.json').toString());
+		SandboxAPI.setAnalytics(configSettings.analytics);
+	}
+	
+	catch(e){
+		configSettings = {};
+		console.log("Error: Unable to load config file");
+	}
+	
+	var p = process.argv.indexOf('-p'), port = 0, datapath = "";
+	
+	//This is a bit ugly, but it does beat putting a ton of if/else statements everywhere
+	port = p >= 0 ? parseInt(process.argv[p+1]) : (configSettings.port ? configSettings.port : 3000);
+	
 	p = process.argv.indexOf('-d');
-	var datapath = p >= 0 ? process.argv[p+1] : libpath.join(__dirname, "data");
+	datapath = p >= 0 ? process.argv[p+1] : (configSettings.datapath ? libpath.normalize(configSettings.datapath) : libpath.join(__dirname, "data"));
 	global.datapath = datapath;	
+	
 	p = process.argv.indexOf('-l');
-	global.logLevel = p >= 0 ? process.argv[p+1] : 1;
+	global.logLevel = p >= 0 ? process.argv[p+1] : (configSettings.logLevel ? configSettings.logLevel : 1);
 	global.log(brown+'LogLevel = ' +  global.logLevel+reset,0);	
 	
 	var adminUID = 'admin';
 	
 	p = process.argv.indexOf('-a');
-	adminUID = p >= 0 ? process.argv[p+1] : adminUID;	
+	adminUID = p >= 0 ? process.argv[p+1] : (configSettings.admin ? configSettings.admin : adminUID);	
 	
-	p = process.argv.indexOf('-nocache');
-	if(p >= 0)
+	FileCache.enabled = process.argv.indexOf('-nocache') >= 0 ? false : !configSettings.noCache;
+	if(!FileCache.enabled)
 	{
-	   FileCache.enabled = false;
 	   console.log('server cache disabled');
 	}
 	
-	p = process.argv.indexOf('-build');
-	if(p >= 0)
+	p = process.argv.indexOf('-build') >= 0 ? true : configSettings.build;
+	if(p)
 	{
 	  //build the VWF AMD with requrie optimizer
 	  BuildVWF();
 	}
 	
-	p = process.argv.indexOf('-min');
-	if(p >= 0)
+	FileCache.minify = process.argv.indexOf('-min') >= 0 ? true : !!configSettings.minify;
+	var compile = process.argv.indexOf('-compile') >= 0 ? true  : !!configSettings.compile;
+	if(compile)
 	{
-		FileCache.minify = true;
+		console.log('Starting compilation process...');
 	}
 	
-	var compile = false;
-	p = process.argv.indexOf('-compile');
-	if(p >= 0)
+	var versioning = process.argv.indexOf('-cc') >= 0 ? true : !!configSettings.useVersioning;
+	if(versioning)
 	{
-		compile = true;
-	}
-	
-	var versioning = false;
-	p = process.argv.indexOf('-cc');
-	if(p >= 0)
-	{
-		versioning = true;
+		global.version = configSettings.version ? configSettings.version : global.version;
 		console.log(brown + 'Versioning is on. Version is ' + global.version + reset);
 	}else
 	{

@@ -169,14 +169,32 @@ SceneManager.prototype.update = function(dt)
 		
 	}
 	this.dirtyObjects = [];
+	
+	var dirtybatchcount = 0;
 	for(var i =0; i < this.BatchManagers.length; i++)
 	{
 		//only update at most one batch manager per frame
 		if(this.BatchManagers[i].dirty)
 		{	
+			dirtybatchcount++;
+		}
+	}
+
+	for(var i =0; i < this.BatchManagers.length; i++)
+	{
+		//only update at most one batch manager per frame
+		if(this.BatchManagers[i].dirty)
+		{	
+			_ProgressBar.show()
+			_ProgressBar.setMessage('Batching');
+			_ProgressBar.setProgress(1- dirtybatchcount/this.BatchManagers.length);
 			this.BatchManagers[i].update();
 			break;
 		}
+	}
+	if(dirtybatchcount == 0)
+	{
+		_ProgressBar.hide();
 	}
 	var removelist = [];
 	for(var i =0; i < this.tempDebatchList.length; i++)
