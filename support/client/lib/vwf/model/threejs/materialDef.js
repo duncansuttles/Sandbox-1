@@ -27,7 +27,10 @@
 				
 
 				var oldmat = mesh.material;
-				if(oldmat.def == def) return;
+				var newmat = this.getMaterialbyDef(def);
+				
+				if(oldmat == newmat) return;
+
 				if(oldmat && oldmat.refCount === undefined)
 					oldmat.refCount = 1;
 				if(oldmat)
@@ -39,7 +42,7 @@
 					var olddef = oldmat.def;
 					delete this.materials[olddef];
 				}				
-				mesh.material = this.getMaterialbyDef(def);
+				mesh.material = newmat;
 				if(mesh.material && mesh.material.refCount === undefined)
 					mesh.material.refCount = 0;
 				if(mesh.material)
@@ -304,6 +307,11 @@
 					currentmat.depthWrite = true;
 				else 	
 					currentmat.depthWrite = false;
+
+				if(value.vertexColors === true)
+					currentmat.vertexColors = 2;
+				else 	
+					currentmat.vertexColors = 0;
 					
 				var mapnames = ['map','bumpMap','lightMap','normalMap','specularMap','envMap'];
 				currentmat.reflectivity = value.reflect/10;
@@ -472,6 +480,8 @@
 					
 					var needRebuild = false;
 					
+					
+				
 					if(this.materialDef)
 					{
 					if(this.materialDef && propval.layers.length > this.materialDef.layers.length)

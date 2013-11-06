@@ -998,7 +998,28 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 	    
 	    if(nodeComponent.id == "index-vwf")
 		{
+            
 			$(document).trigger('setstatebegin');
+            _ProgressBar.show();
+            _ProgressBar.setProgress(0);
+            _ProgressBar.setMessage('Loading Scene');
+            vwf.loadedcount = 0;
+             
+            var count = 0; 
+            var walk = function(o)
+            {
+                if(o && o.children)
+                {
+                   
+                    for(var i in o.children)
+                    {
+                        count++;
+                        walk(o.children[i]);
+                    }
+                }
+            }   
+            walk(nodeComponent);
+            vwf.loadcount = count;
 		}
 	    
 	    
@@ -1147,6 +1168,7 @@ if ( ! nodeURI.match( RegExp( "^http://vwf.example.com/|appscene.vwf$" ) ) ) {  
 				{
 					$(document).trigger('setstatecomplete');
 					$('#loadstatus').remove(); 
+                    _ProgressBar.hide();
 				}
 
             } );
@@ -1578,6 +1600,11 @@ if ( ! nodeURI.match( RegExp( "^http://vwf.example.com/|appscene.vwf$" ) ) ) {  
         this.createChild = function( nodeID, childName, childComponent, create_callback /* ( childID ) */ ) {
 
 		this.creatingNodeCount++;
+
+          _ProgressBar.show();
+        _ProgressBar.setMessage('Loading Scene');
+        vwf.loadedcount++;
+        _ProgressBar.setProgress(vwf.loadedcount/vwf.loadcount);
 		
 	console.log(	 "vwf.createChild " + nodeID + " " + childName + " ",childComponent);
             this.logger.group( "vwf.createChild " + nodeID + " " + childName + " " + (

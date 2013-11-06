@@ -234,15 +234,14 @@ define(function ()
 					},
 					error: function(e)
 					{
-						if (xhr.status != 200)
-						{
+						
 							alert('Save failed! Reloading');
 							window.onunload = function (e)
 							{};
 							window.onbeforeunload = function (e)
 							{};
 							document.location.reload(true);
-						}
+						
 					},
 					async: !sync,
 					dataType: "text"

@@ -242,9 +242,12 @@
                     
                     if(key == "VertexColor")
                     {
-                        for(var i = 0; i < node.attributes[key].length-3; i+= 4)
+                        for(var i = 0; i < node.attributes[key].length-2; i+= 3)
                         {
-                            var vert = new THREE.Vector3(node.attributes[key][i],node.attributes[key][i+1],node.attributes[key][i+2]);
+                            var vert = new THREE.Color();
+                            vert.r = node.attributes[key][i];
+                            vert.g = node.attributes[key][i+1];
+                            vert.b = node.attributes[key][i+2];
                             mesh.geometry.colors.push(vert);
                             
                         }
@@ -270,6 +273,10 @@
 						face.vertexNormals.push(mesh.geometry.normals[face.a]);
                         face.vertexNormals.push(mesh.geometry.normals[face.b]);
                         face.vertexNormals.push(mesh.geometry.normals[face.c]);
+                        face.vertexColors.push(mesh.geometry.colors[face.a]);
+                        face.vertexColors.push(mesh.geometry.colors[face.b]);
+                        face.vertexColors.push(mesh.geometry.colors[face.c]);
+
                         mesh.geometry.faces.push(face);
 						if(mesh.geometry.UVS && mesh.geometry.UVS.length > 0)
 							mesh.geometry.faceVertexUvs[0].push([mesh.geometry.UVS[face.a],mesh.geometry.UVS[face.b],mesh.geometry.UVS[face.c]]);
@@ -289,6 +296,7 @@
             
             
             mesh.geometry.verticesNeedUpdate  = true;
+            mesh.geometry.colorsNeedUpdate  = true;
             mesh.geometry.facesNeedUpdate  = true;
 			mesh.geometry.computeBoundingSphere();
 			mesh.geometry.computeBoundingBox();
@@ -296,6 +304,7 @@
             var newmaterial = null;
             if (node.stateset) {
                 newmaterial = new THREE.MeshPhongMaterial();
+               
 				newmaterial.map = _SceneManager.getTexture('white.png');
                 if (node.stateset.textures) {
                     var textures = node.stateset.textures;
@@ -444,7 +453,7 @@
     data = DecompressStrings(data,"\"primitives\":","p:");
     data = DecompressStrings(data,"\"projection\":","pr:");
     data = DecompressStrings(data,"\"matrix\":","M:");
-
+    data = DecompressStrings(data,"\"VertexColor\":","COL:");
     return data;
     }
 

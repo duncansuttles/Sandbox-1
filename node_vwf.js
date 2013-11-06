@@ -282,10 +282,12 @@ function _FileCache()
 							//record the data
 							var newentry = {};
 							
+							console.log(file.length);
 							newentry.path = path;
 							newentry.data = file;
 							newentry.stats = stats;
 							newentry.zippeddata = zippeddata;
+							newentry.contentlength = file.length;
 							newentry.datatype = datatype;
 							newentry.hash = hash(file);
 							
@@ -424,7 +426,8 @@ function _FileCache()
 					"Last-Modified": file.stats.mtime,
 					"ETag": file.hash,
 					"Cache-Control":"public; max-age=31536000" ,
-					'Content-Encoding': 'gzip'
+					'Content-Encoding': 'gzip',
+					"x-vwf-length": (file.contentlength + ''),
 				});
 				response.write(file.zippeddata, file.datatype);
 			
@@ -435,6 +438,7 @@ function _FileCache()
 			{
 				response.writeHead(200, {
 					"Content-Type": type,
+					"x-vwf-length":(file.contentlength + ''),
 					"Last-Modified": file.stats.mtime,
 					"ETag": file.hash,
 					"Cache-Control":"public; max-age=31536000"
