@@ -1421,47 +1421,57 @@ function startVWF(){
 					red   = '\u001b[31m';
 					brown  = '\u001b[33m';
 					reset = '\u001b[0m';
-	//start the DAL
-	var p = process.argv.indexOf('-p');
-	var port = p >= 0 ? parseInt(process.argv[p+1]) : 3000;
-		
+					
+	var configSettings;
+	
+	//start the DAL, load configuration file
+	try{
+		configSettings = JSON.parse(fs.readFileSync('./config.json').toString());
+	}
+	
+	catch(e){
+		configSettings = {};
+		console.log("Error: Unable to load config file");
+	}
+	
+	console.log("Config settings: ", configSettings); 
+	
+	var p = process.argv.indexOf('-p'), port = 0, datapath = "";
+	
+	//This is a bit ugly, but it does beat putting a ton of if/else statements everywhere
+	port = p >= 0 ? parseInt(process.argv[p+1]) : (configSettings.port ? configSettings.port : 3000);
+	
 	p = process.argv.indexOf('-d');
-	var datapath = p >= 0 ? process.argv[p+1] : libpath.join(__dirname, "data");
+	datapath = p >= 0 ? process.argv[p+1] : (configSettings.datapath ? libpath.normalize(configSettings.datapath) : libpath.join(__dirname, "data"));
 	global.datapath = datapath;	
+	
 	p = process.argv.indexOf('-l');
-	global.logLevel = p >= 0 ? process.argv[p+1] : 1;
+	global.logLevel = p >= 0 ? process.argv[p+1] : (configSettings.logLevel ? configSettings.logLevel : 1);
 	global.log(brown+'LogLevel = ' +  global.logLevel+reset,0);	
 	
 	var adminUID = 'admin';
 	
 	p = process.argv.indexOf('-a');
-	adminUID = p >= 0 ? process.argv[p+1] : adminUID;	
+	adminUID = p >= 0 ? process.argv[p+1] : (configSettings.admin ? configSettings.admin : adminUID);	
 	
-	p = process.argv.indexOf('-nocache');
-	if(p >= 0)
+	FileCache.enabled = process.argv.indexOf('-nocache') >= 0 ? false : !configSettings.noCache;
+	if(!FileCache.enabled)
 	{
-	   FileCache.enabled = false;
 	   console.log('server cache disabled');
 	}
 	
-	p = process.argv.indexOf('-build');
-	if(p >= 0)
+	p = process.argv.indexOf('-build') >= 0 ? true : configSettings.build;
+	if(p)
 	{
 	  //build the VWF AMD with requrie optimizer
 	  BuildVWF();
 	}
 	
-	p = process.argv.indexOf('-min');
-	if(p >= 0)
+	FileCache.minify = process.argv.indexOf('-min') >= 0 ? true : !!configSettings.minify;
+	var compile = process.argv.indexOf('-compile') >= 0 ? true  : !!configSettings.compile;
+	if(compile)
 	{
-		FileCache.minify = true;
-	}
-	
-	var compile = false;
-	p = process.argv.indexOf('-compile');
-	if(p >= 0)
-	{
-		compile = true;
+		console.log('Starting compilation process...');
 	}
 	
 	var versioning = false;
@@ -1469,6 +1479,7 @@ function startVWF(){
 	if(p >= 0)
 	{
 		versioning = true;
+		global.version = configSettings.version ? configSettings.version : global.version;
 		console.log(brown + 'Versioning is on. Version is ' + global.version + reset);
 	}else
 	{

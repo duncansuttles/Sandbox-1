@@ -1,0 +1,10 @@
+{
+	"port": 3002,
+	"datapath": "/vwfdata",
+	"logLevel": 2,
+	"admin": "mick",
+	"build": false,
+	"minify": false,
+	"compile": false,
+	"version": 10
+}
