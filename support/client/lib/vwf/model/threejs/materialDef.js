@@ -62,16 +62,15 @@
 				if(!value) return null;
 				if(!value.type)
 					value.type = 'phong';
+
 				if(value.type == 'phong')	
 					return this.setMaterialDefPhong(currentmat,value);
-				if(value.type == 'video')	
-				{
-						return this.setMaterialDefVideo(currentmat,value)
-				}
-				if(value.type == 'camera')	
-				{
-						return this.setMaterialDefCamera(currentmat,value)
-				}
+				else if(value.type == 'video')	
+					return this.setMaterialDefVideo(currentmat,value)
+				else if(value.type == 'camera')	
+					return this.setMaterialDefCamera(currentmat,value)
+				else if(value.type == 'mix')
+					return this.setMaterialDefMix(currentmat,value);
 			}
 			this.setMaterialDefVideo = function(currentmat,value)
 			{
@@ -404,7 +403,58 @@
 			}
 			
 			
-			
+			// blend all diffuse textures based on alpha ratios
+			this.setMaterialDefMix = function(currentmat,value)
+			{
+				if(!value) return;
+				
+				if(currentmat && currentmat.dispose)
+					currentmat.dispose();
+				
+				if(currentmat && !(currentmat instanceof THREE.ShaderMaterial))
+					currentmat = null;
+				
+				if(!currentmat)
+				{
+					var diffuse_tex = [];
+					var alphas = [];
+					for( var i in value.layers ){
+						if( value.layers[i].mapTo == 1 ){
+							diffuse_tex.push( _SceneManager.getTexture(value.layers[i].src) );
+							alphas.push( value.layers[i].alpha );
+						}
+					}
+
+					currentmat = new THREE.ShaderMaterial({
+						uniforms: {
+							diffuse_tex: { type: "tv", value: diffuse_tex },
+							alpha: {type: "fv", value: alphas }
+						},
+						vertexShader: [
+							"varying vec2 texCoord;",
+							"void main(){",
+							"	gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);",
+							"	texCoord = uv;",
+							"}"
+							].join('\n'),
+						fragmentShader: [
+							"varying vec2 texCoord;",
+							"uniform sampler2D diffuse_tex[8];",
+							"void main(){",
+							"	vec4 finalColor = vec4(0.0,0.0,0.0,1.0);",
+							"	for( int i=1; i<=8; ++i ){",
+							"		float ratio = 1.0/float(i);",
+							"		finalColor = mix(finalColor, texture2D(diffuse_tex[i-1], texCoord), ratio);",
+							"	}",
+							"	gl_FragColor = finalColor;",
+							"}"
+							].join('\n')
+					});
+				}
+				
+				//currentmat.needsUpdate = true;
+				return currentmat;
+			}
 		
 		
 		
