@@ -30115,7 +30115,43 @@ THREE.Animation.prototype.update = function ( deltaTimeMS ) {
 	}
 
 };
+THREE.Animation.prototype.setKey = function(keyf)
+{
+	
+	var l = keyf - Math.floor(keyf);
+	var l2 = 1-l;
 
+	for ( var h = 0, hl = this.hierarchy.length; h < hl; h ++ ) {
+		var object = this.hierarchy[h];
+		var key = this.data.hierarchy[h].keys[ Math.floor(keyf) ];
+		var key2 = this.data.hierarchy[h].keys[ Math.floor(keyf+1) ];
+		
+		//object.matrixAutoUpdate = false;
+		//object.matrix.copy(key.matrix);
+		//object.updateMatrixWorld();
+		//object.matrixWorldNeedsUpdate = true;
+
+		if(key && key2)
+		{
+			object.position.x = key.pos[0] * l + key2.pos[0] * l2;
+			object.position.y = key.pos[1] * l + key2.pos[1] * l2;
+			object.position.z = key.pos[2] * l + key2.pos[2] * l2;
+
+			object.scale.x = key.scl[0] * l + key2.scl[0] * l2;
+			object.scale.y = key.scl[1] * l + key2.scl[1] * l2;
+			object.scale.z = key.scl[2] * l + key2.scl[2] * l2;
+
+			object.quaternion.w = key.rot.w;
+			object.quaternion.y = key.rot.y;
+			object.quaternion.z = key.rot.z;
+			object.quaternion.x = key.rot.x;
+			object.quaternion.slerp(key2.rot,l);
+		}
+
+	}
+
+
+}
 // Catmull-Rom spline
 
 THREE.Animation.prototype.interpolateCatmullRom = function ( points, scale ) {

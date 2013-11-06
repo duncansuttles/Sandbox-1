@@ -461,7 +461,9 @@ THREE.ColladaLoader = function () {
 	function setupSkeleton ( node, bones, frame, parent ) {
 
 		node.world = node.world || new THREE.Matrix4();
+		node.localworld = node.localworld || new THREE.Matrix4();
 		node.world.copy( node.matrix );
+		node.localworld.copy( node.matrix );
 
 		if ( node.channels && node.channels.length ) {
 
@@ -471,7 +473,7 @@ THREE.ColladaLoader = function () {
 			if ( m instanceof THREE.Matrix4 ) {
 
 				node.world.copy( m );
-
+				node.localworld.copy(m);
 			}
 
 		}
@@ -521,7 +523,9 @@ THREE.ColladaLoader = function () {
 				bone.invBindMatrix = inv;
 				bone.skinningMatrix = new THREE.Matrix4();
 				bone.skinningMatrix.multiplyMatrices(bone.world, inv); // (IBMi * JMi)
+				bone.animatrix = new THREE.Matrix4();
 
+				bone.animatrix.copy(bone.localworld);
 				bone.weights = [];
 
 				for ( var j = 0; j < skin.weights.length; j ++ ) {
@@ -549,9 +553,39 @@ THREE.ColladaLoader = function () {
 		}
 
 	};
+	function flattenSkeleton(skeleton)
+	{
+		var list = [];
+		var walk = function(parentid, node, list)
+		{
+			var bone = {}
+			bone.name = node.sid;
+			bone.parent = parentid;
+			bone.matrix = node.matrix;
+			bone.pos = (new THREE.Vector3()).getPositionFromMatrix(bone.matrix);
+			bone.pos = [bone.pos.x,bone.pos.y,bone.pos.z];
+			bone.scl = (new THREE.Vector3()).getScaleFromMatrix(bone.matrix);
+			bone.scl = [bone.scl.x,bone.scl.y,bone.scl.z];
+			bone.rotq = (new THREE.Quaternion()).setFromRotationMatrix((new THREE.Matrix4()).extractRotation(bone.matrix));
+			bone.rotq = [bone.rotq.x,bone.rotq.y,bone.rotq.z,bone.rotq.w];
+			list.push(bone);
+			for(var i in node.nodes)
+			{
+				walk(node.sid,node.nodes[i],list);
+			}	
+		};
+		walk(-1,skeleton,list);
+		return list;
 
+	};
+	
 	function applySkin ( geometry, instanceCtrl, frame ) {
 
+		var maxbones = 20;
+		if(_dRenderer)
+		{
+			maxbones= 	Math.floor((_dRenderer.context.getParameter( _dRenderer.context.MAX_VERTEX_UNIFORM_VECTORS ) - 20)/4)
+		}
 		var skinController = controllers[ instanceCtrl.url ];
 
 		frame = frame !== undefined ? frame : 40;
@@ -574,6 +608,33 @@ THREE.ColladaLoader = function () {
 		var skeleton = daeScene.getChildById( instanceCtrl.skeleton[0], true ) ||
 					   daeScene.getChildBySid( instanceCtrl.skeleton[0], true );
 
+		var bonelist = flattenSkeleton(skeleton);
+		var joints = skinController.skin.joints;
+
+		var sortedbones = [];
+		for(var i = 0; i < joints.length; i++)
+		{
+			for(var j =0; j < bonelist.length; j++)
+			{
+				if(bonelist[j].name == joints[i])
+				{
+					sortedbones[i] = bonelist[j];
+				}
+			}
+		}
+
+		for(var i = 0; i < sortedbones.length; i++)
+		{
+			for(var j =0; j < sortedbones.length; j++)
+			{
+				if(sortedbones[i].parent == sortedbones[j].name)
+				{
+					sortedbones[i].parent = j;
+				}
+			}
+		}
+
+
 		var i, j, w, vidx, weight;
 		var v = new THREE.Vector3(), o, s;
 
@@ -584,9 +645,32 @@ THREE.ColladaLoader = function () {
 			geometry.vertices[i].applyMatrix4( skinController.skin.bindShapeMatrix );
 
 		}
+		
+		var skinIndices = [];
+		var skinWeights = [];
+		var weights = skinController.skin.weights;
 
+		for(var i =0; i < weights.length; i++)
+		{
+			var indicies = new THREE.Vector4(weights[i][0]?weights[i][0].joint:0,weights[i][1]?weights[i][1].joint:0,weights[i][2]?weights[i][2].joint:0,weights[i][3]?weights[i][3].joint:0);
+			var weight = new THREE.Vector4(weights[i][0]?weights[i][0].weight:0,weights[i][1]?weights[i][1].weight:0,weights[i][2]?weights[i][2].weight:0,weights[i][3]?weights[i][3].weight:0);
+			
+			
+			skinIndices.push(indicies);
+			skinWeights.push(weight);
+		}
+		geometry.skinIndices = skinIndices;
+		geometry.skinWeights = skinWeights;
+		geometry.bones = sortedbones;
 		// process animation, or simply pose the rig if no animation
 
+		var animationdata = {"name":"ArmatureAction","fps":30,"length":animationBounds.frames/30,"hierarchy":[]};
+		
+		for(var j =0; j < sortedbones.length; j++)
+		{
+			animationdata.hierarchy.push({parent:sortedbones[j].parent, name:sortedbones[j].name, keys:[]});
+		}
+		
 		for ( frame = 0; frame < animationBounds.frames; frame ++ ) {
 
 			var bones = [];
@@ -602,41 +686,67 @@ THREE.ColladaLoader = function () {
 
 			// process the frame and setup the rig with a fresh
 			// transform, possibly from the bone's animation channel(s)
-
+			
 			setupSkeleton( skeleton, bones, frame );
 			setupSkinningMatrices( bones, skinController.skin );
 
+			if(sortedbones.length < maxbones)
+			{
+				for(var i = 0; i < bones.length; i ++)
+				{
+					for(var j = 0; j < animationdata.hierarchy.length; j ++)
+					{
+						if(animationdata.hierarchy[j].name == bones[i].sid)
+						{
+							var key = {};
+							key.time = (frame/30);
+							key.matrix = bones[i].animatrix;
+							
+							var data = key.matrix.decompose();
+							
+							key.pos = [data[0].x,data[0].y,data[0].z];
+							
+							key.scl = [data[2].x,data[2].y,data[2].z];
+							key.rot = data[1];//[data[1].x,data[1].y,data[1].z,data[1].w];
+
+							animationdata.hierarchy[j].keys.push(key);
+						}
+					}
+				}
+				geometry.animation = animationdata;
+			}
 			// skin 'm
+			else
+			{
+				for ( i = 0; i < bones.length; i ++ ) {
 
-			for ( i = 0; i < bones.length; i ++ ) {
+					if ( bones[ i ].type != 'JOINT' ) continue;
 
-				if ( bones[ i ].type != 'JOINT' ) continue;
+					for ( j = 0; j < bones[ i ].weights.length; j ++ ) {
 
-				for ( j = 0; j < bones[ i ].weights.length; j ++ ) {
+						w = bones[ i ].weights[ j ];
+						vidx = w.index;
+						weight = w.weight;
 
-					w = bones[ i ].weights[ j ];
-					vidx = w.index;
-					weight = w.weight;
+						o = geometry.vertices[vidx];
+						s = skinned[vidx];
 
-					o = geometry.vertices[vidx];
-					s = skinned[vidx];
+						v.x = o.x;
+						v.y = o.y;
+						v.z = o.z;
 
-					v.x = o.x;
-					v.y = o.y;
-					v.z = o.z;
+						v.applyMatrix4( bones[i].skinningMatrix );
 
-					v.applyMatrix4( bones[i].skinningMatrix );
+						s.x += (v.x * weight);
+						s.y += (v.y * weight);
+						s.z += (v.z * weight);
 
-					s.x += (v.x * weight);
-					s.y += (v.y * weight);
-					s.z += (v.z * weight);
+					}
 
 				}
 
+				geometry.morphTargets.push( { name: "target_" + frame, vertices: skinned } );
 			}
-
-			geometry.morphTargets.push( { name: "target_" + frame, vertices: skinned } );
-
 		}
 
 	};
@@ -798,16 +908,37 @@ THREE.ColladaLoader = function () {
 
 				if ( skinController !== undefined ) {
 
+					
 					applySkin( geom, skinController );
-
-					material.morphTargets = true;
+					
+					material.morphTargets = false;
+					material.skinning = true;
+					if(geom.animation)
+					{
+						geom.animation.name = Math.floor(Math.random() * 1000000) + '';
+						THREE.AnimationHandler.add(geom.animation);
+					}
+					
 
 					mesh = new THREE.SkinnedMesh( geom, material, false );
+
+
 					mesh.skeleton = skinController.skeleton;
 					mesh.skinController = controllers[ skinController.url ];
 					mesh.skinInstanceController = skinController;
 					mesh.name = 'skin_' + skins.length;
 
+					
+					if(geom.animation)
+					{
+						var animation = new THREE.Animation(
+						    mesh,
+						    mesh.geometry.animation.name,
+						    THREE.AnimationHandler.LINEAR
+						  );
+						mesh.animationHandle = animation;
+						window._dAnimation = animation;
+					}
 					skins.push( mesh );
 
 				} else if ( morphController !== undefined ) {
