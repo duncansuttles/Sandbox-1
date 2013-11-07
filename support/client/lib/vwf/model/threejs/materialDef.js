@@ -430,56 +430,55 @@
 						}
 					}
 
-					currentmat = new THREE.ShaderMaterial({
-						uniforms: {
-							diffuse_tex: { type: "tv", value: diffuse_tex },
-							alpha: {type: "fv1", value: alphas },
-							tex_xfrm: {type: "fv", value: transform},
-						},
+					//console.log('Input values:', value);
+					//console.log('Shader uniforms:', config.uniforms);
+					//console.log('Shader:', config.fragmentShader);
 
-						vertexShader: [
-							"varying vec2 texCoord;",
-							"varying vec3 normalVec;",
-							"void main(){",
-							"	gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);",
-							"	texCoord = uv;",
-							"	normalVec = normal;",
-							"}"
-						].join('\n'),
+					// line 185 is current texture fetch, uniforms can go right at top
+					// vec4 texelColor = texture2D( map, vUv );
+					var config = THREE.ShaderLib['phong'];
+					config.uniforms.diffuse_tex = { type: 'tv', value: diffuse_tex };
+					config.uniforms.alpha = { type: 'fv1', value: alphas };
+					config.uniforms.tex_xfrm = { type: 'fv', value: transform };
 
-						fragmentShader: [
-							"varying vec2 texCoord;",
-							"varying vec3 normalVec;",
-							"uniform sampler2D diffuse_tex[8];",
-							"uniform float alpha[8];",
-							"uniform vec3 tex_xfrm[24];",
+					var shader = config.fragmentShader.split('\n');
+					var myUniforms = [
+						"#define MAX_DIFFUSE 8",
+						"uniform sampler2D diffuse_tex[MAX_DIFFUSE];",
+						"uniform float alpha[MAX_DIFFUSE];",
+						"uniform vec3 tex_xfrm[3*MAX_DIFFUSE];",
+						""
+					].join('\n');
+					var myShaderFrag = [
+						"",
+						"float alphaTotal = 0.0;",
+						"vec4 texColors[MAX_DIFFUSE];",
+						"vec4 texelColor = vec4(0.0,0.0,0.0,1.0);",
 
-							"void main(){",
+						// transform UV to account for offset/scale
+						// also total up alpha contributions
+						"for( int i=0; i<MAX_DIFFUSE; ++i ){",
+						"	mat3 transform = mat3(tex_xfrm[3*i],tex_xfrm[3*i+1],tex_xfrm[3*i+2]);",
+						"	vec3 temp = transform * vec3(vUv,1.0);",
+						"	vec2 tc = vec2(fract(temp.x),fract(temp.y));",
+						"	texColors[i] = texture2D(diffuse_tex[i], tc);",
+						"	alphaTotal += alpha[i] * texColors[i].a;",
+						"}",
 
-							"	float alphaTotal = 0.0;",
-							"	vec4 texColors[8];",
-							"	vec4 finalColor = vec4(0.0,0.0,0.0,1.0);",
+						// calculate contributions of each layer towards final color
+						"for( int i=0; i<MAX_DIFFUSE; ++i ){",
+						"	float aMix = (alpha[i]*texColors[i].a)/alphaTotal;",
+						"	texelColor += aMix * texColors[i];",
+						"}",
+						""
+					].join('\n');
+					config.fragmentShader = myUniforms + shader.slice(0,184).join('\n') + myShaderFrag + shader.slice(185).join('\n');
 
-							// transform UV to account for offset/scale
-							// also total up alpha contributions
-							"	for( int i=0; i<8; ++i ){",
-							"		mat3 transform = mat3(tex_xfrm[3*i],tex_xfrm[3*i+1],tex_xfrm[3*i+2]);",
-							"		vec3 temp = transform * vec3(texCoord,1.0);",
-							"		vec2 tc = vec2(fract(temp.x),fract(temp.y));",
-							"		texColors[i] = texture2D(diffuse_tex[i], tc);",
-							"		alphaTotal += alpha[i] * texColors[i].a;",
-							"	}",
+					console.log(config.fragmentShader);
 
-							// calculate contributions of each layer towards final color
-							"	for( int i=0; i<8; ++i ){",
-							"		float aMix = (alpha[i]*texColors[i].a)/alphaTotal;",
-							"		finalColor += aMix * texColors[i];",
-							"	}",
+					currentmat = new THREE.ShaderMaterial(config);
+					currentmat.lights = true;
 
-							"	gl_FragColor = finalColor;",
-							"}"
-						].join('\n')
-					});
 				}
 				
 				//currentmat.needsUpdate = true;
