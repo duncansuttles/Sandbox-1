@@ -411,7 +411,7 @@
 				if(currentmat && currentmat.dispose)
 					currentmat.dispose();
 				
-				if(currentmat && !(currentmat instanceof THREE.ShaderMaterial))
+				//if(currentmat && !(currentmat instanceof THREE.ShaderMaterial))
 					currentmat = null;
 				
 				if(!currentmat)
@@ -430,20 +430,18 @@
 						}
 					}
 
-					//console.log('Input values:', value);
-					//console.log('Shader uniforms:', config.uniforms);
-					//console.log('Shader:', config.fragmentShader);
-
+					// line 14 is uniform USE_MAP define
 					// line 185 is current texture fetch, uniforms can go right at top
-					// vec4 texelColor = texture2D( map, vUv );
-					var config = THREE.ShaderLib['phong'];
+					var config = JSON.parse(JSON.stringify(THREE.ShaderLib['phong']));
 					config.uniforms.diffuse_tex = { type: 'tv', value: diffuse_tex };
 					config.uniforms.alpha = { type: 'fv1', value: alphas };
 					config.uniforms.tex_xfrm = { type: 'fv', value: transform };
+					delete config.uniforms.map;
+					config.defines = {'MAX_DIFFUSE': 8};
 
 					var shader = config.fragmentShader.split('\n');
 					var myUniforms = [
-						"#define MAX_DIFFUSE 8",
+						"",
 						"uniform sampler2D diffuse_tex[MAX_DIFFUSE];",
 						"uniform float alpha[MAX_DIFFUSE];",
 						"uniform vec3 tex_xfrm[3*MAX_DIFFUSE];",
@@ -470,14 +468,15 @@
 						"	float aMix = (alpha[i]*texColors[i].a)/alphaTotal;",
 						"	texelColor += aMix * texColors[i];",
 						"}",
+
+						"gl_FragColor = gl_FragColor * texelColor;",
 						""
 					].join('\n');
-					config.fragmentShader = myUniforms + shader.slice(0,184).join('\n') + myShaderFrag + shader.slice(185).join('\n');
-
-					console.log(config.fragmentShader);
+					config.fragmentShader = shader.slice(0,13).join('\n') + myUniforms + shader.slice(14,184).join('\n') + myShaderFrag + shader.slice(185).join('\n');
 
 					currentmat = new THREE.ShaderMaterial(config);
 					currentmat.lights = true;
+					currentmat.map = true;
 
 				}
 				
