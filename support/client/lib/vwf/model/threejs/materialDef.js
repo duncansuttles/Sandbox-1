@@ -457,14 +457,17 @@
 							"	vec4 texColors[8];",
 							"	vec4 finalColor = vec4(0.0,0.0,0.0,1.0);",
 
+							// transform UV to account for offset/scale
+							// also total up alpha contributions
 							"	for( int i=0; i<8; ++i ){",
 							"		mat3 transform = mat3(tex_xfrm[3*i],tex_xfrm[3*i+1],tex_xfrm[3*i+2]);",
-							"		vec3 temp = transform * vec3(texCoord,1.0);
+							"		vec3 temp = transform * vec3(texCoord,1.0);",
 							"		vec2 tc = vec2(fract(temp.x),fract(temp.y));",
 							"		texColors[i] = texture2D(diffuse_tex[i], tc);",
 							"		alphaTotal += alpha[i] * texColors[i].a;",
 							"	}",
 
+							// calculate contributions of each layer towards final color
 							"	for( int i=0; i<8; ++i ){",
 							"		float aMix = (alpha[i]*texColors[i].a)/alphaTotal;",
 							"		finalColor += aMix * texColors[i];",
