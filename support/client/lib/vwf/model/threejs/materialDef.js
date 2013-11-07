@@ -439,14 +439,17 @@
 
 						vertexShader: [
 							"varying vec2 texCoord;",
+							"varying vec3 normalVec;",
 							"void main(){",
 							"	gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);",
 							"	texCoord = uv;",
+							"	normalVec = normal;",
 							"}"
 						].join('\n'),
 
 						fragmentShader: [
 							"varying vec2 texCoord;",
+							"varying vec3 normalVec;",
 							"uniform sampler2D diffuse_tex[8];",
 							"uniform float alpha[8];",
 							"uniform vec3 tex_xfrm[24];",
