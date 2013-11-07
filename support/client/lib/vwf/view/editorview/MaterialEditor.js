@@ -144,7 +144,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 						this.BuildGUI();
 					}
 				
-				}.bind(this),['phong','video']);
+				}.bind(this),['phong','mix','video']);
 			
 			}.bind(this));
 				

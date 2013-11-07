@@ -434,7 +434,7 @@
 						uniforms: {
 							diffuse_tex: { type: "tv", value: diffuse_tex },
 							alpha: {type: "fv1", value: alphas },
-							tex_xfrm: {type: "fv", value: transform}
+							tex_xfrm: {type: "fv", value: transform},
 						},
 
 						vertexShader: [
