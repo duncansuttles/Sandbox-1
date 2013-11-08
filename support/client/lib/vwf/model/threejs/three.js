@@ -30123,7 +30123,7 @@ THREE.Animation.prototype.debug = function()
  var walk = function(bone,debugparent)
  {
 
- 	var debug = new THREE.Mesh(new THREE.CubeGeometry(1,1,1));
+ 	var debug = new THREE.Mesh(new THREE.CubeGeometry(.1,.1,.1));
  	
  	if(!debugroot) debugroot = debug;
  	debug.matrixAutoUpdate = false;
@@ -30170,6 +30170,7 @@ THREE.Animation.prototype.setKey = function(keyf)
 
 		if(key && key2)
 		{
+			
 			object.position.x = key.pos[0] * l2 + key2.pos[0] * l;
 			object.position.y = key.pos[1] * l2 + key2.pos[1] * l;
 			object.position.z = key.pos[2] * l2 + key2.pos[2] * l;

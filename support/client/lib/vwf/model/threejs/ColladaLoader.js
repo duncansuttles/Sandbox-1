@@ -477,6 +477,8 @@ THREE.ColladaLoader = function () {
 
 				node.world.copy( m );
 				node.localworld.copy(m);
+				if(frame == 0)
+					node.matrix.copy(m);
 			}
 
 		}
@@ -581,10 +583,55 @@ THREE.ColladaLoader = function () {
 		return list;
 
 	};
-	
+	function skinToBindPose(geometry,skeleton,skinController)
+	{
+			var bones = [];
+			setupSkeleton( skeleton, bones, -1 );
+			setupSkinningMatrices( bones, skinController.skin );
+			v = new THREE.Vector3();
+			var skinned = [];
+			for(var i =0; i < geometry.vertices.length; i++)
+			{
+				skinned.push(new THREE.Vector3());
+			}
+			for ( i = 0; i < bones.length; i ++ ) {
+
+					if ( bones[ i ].type != 'JOINT' ) continue;
+
+					for ( j = 0; j < bones[ i ].weights.length; j ++ ) {
+
+						w = bones[ i ].weights[ j ];
+						vidx = w.index;
+						weight = w.weight;
+
+						o = geometry.vertices[vidx];
+						s = skinned[vidx];
+						
+
+						v.x = o.x;
+						v.y = o.y;
+						v.z = o.z;
+
+						v.applyMatrix4( bones[i].skinningMatrix );
+
+						s.x += (v.x * weight);
+						s.y += (v.y * weight);
+						s.z += (v.z * weight);
+
+						
+
+					}
+
+				}
+			for(var i =0; i < geometry.vertices.length; i++)
+			{
+				geometry.vertices[i] = skinned[i];
+			}	
+
+	}
 	function applySkin ( geometry, instanceCtrl, frame ) {
 
-		debugger;
+		
 		var maxbones = 20;
 		if(_dRenderer)
 		{
@@ -675,6 +722,11 @@ THREE.ColladaLoader = function () {
 			animationdata.hierarchy.push({parent:sortedbones[j].parent, name:sortedbones[j].name, keys:[]});
 		}
 		
+		if(sortedbones.length < maxbones)
+		{
+			skinToBindPose(geometry,skeleton,skinController);
+		}
+
 		for ( frame = 0; frame < animationBounds.frames; frame ++ ) {
 
 			var bones = [];
