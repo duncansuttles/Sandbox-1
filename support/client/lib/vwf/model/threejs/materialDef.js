@@ -419,25 +419,94 @@
 					var diffuse_tex = [];
 					var alphas = [];
 					var transform = [];
+					var render_flags = {
+						// always used
+						lights: true,
+						fog: !!value.fog,
+
+						// optional
+						map: false, 
+						bumpMap: false,
+						lightMap: false,
+						normalMap: false,
+						specularMap: false,
+						envMap: false
+					};
+
+					var config = JSON.parse(JSON.stringify(THREE.ShaderLib['phong']));
+					config.defines = {};
+
 					for( var i in value.layers ){
 						var layer = value.layers[i];
 						if( layer.mapTo == 1 )
 						{
+							render_flags['map'] = true;
+
+							// have to total up, can't just assign. see below
 							diffuse_tex.push( _SceneManager.getTexture(layer.src) );
 							alphas.push( layer.alpha );
 							var tfm = new THREE.Matrix3( layer.scalex, 0, layer.offsetx, 0, layer.scaley, layer.offsety, 0, 0, 1 );
 							transform.push.apply(transform,tfm.elements);
 						}
+						else if( layer.mapTo == 2 )
+						{
+							render_flags['bumpMap'] = true;
+							config.uniforms.bumpMap.value = _SceneManager.getTexture(layer.src);
+							config.uniforms.bumpScale.value = value.layers[i].alpha;
+						}
+						else if( layer.mapTo == 3 )
+						{
+							render_flags['lightMap'] = true;
+							config.uniforms.lightMap.value = _SceneManager.getTexture(layer.src);
+						}
+						else if( layer.mapTo == 4 )
+						{
+							render_flags['normalMap'] = true;
+							config.uniforms.normalMap.value = _SceneManager.getTexture(layer.src);
+							config.uniforms.normalScale.value = new THREE.Vector2(value.layers[i].alpha, value.layers[i].alpha);
+						}
+						else if( layer.mapTo == 5 )
+						{
+							render_flags['specularMap'] = true;
+							config.uniforms.specularMap.value = _SceneManager.getTexture(layer.src);
+						}
+						else if( layer.mapTo == 6 )
+						{
+							render_flags['envMap'] = true;
+							config.uniforms.envMap.value = _SceneManager.getTexture(layer.src);
+						}
+
 					}
 
-					// line 14 is uniform USE_MAP define
-					// line 185 is current texture fetch, uniforms can go right at top
-					var config = JSON.parse(JSON.stringify(THREE.ShaderLib['phong']));
+					// define uniforms used in diffuse mixing
 					config.uniforms.diffuse_tex = { type: 'tv', value: diffuse_tex };
+					config.uniforms.dtex_count = { type: 'i', value: diffuse_tex.length };
 					config.uniforms.alpha = { type: 'fv1', value: alphas };
 					config.uniforms.tex_xfrm = { type: 'fv', value: transform };
 					delete config.uniforms.map;
-					config.defines = {'MAX_DIFFUSE': 8};
+					config.defines.MAX_DIFFUSE = 8;
+
+					// assign other random uniforms/flags
+					config.uniforms.diffuse.value = {r: value.color.r, g: value.color.g, b: value.color.b};
+					config.uniforms.emissive.value = value.emit;
+					config.uniforms.ambient.value = value.ambient;
+					var temp = new THREE.Vector3(value.specularColor.r, value.specularColor.g, value.specularColor.b);
+					temp.multiplyScalar(value.specularLevel);
+					config.uniforms.specular.value = {r: temp.x, b: temp.y, g: temp.z};
+					config.uniforms.shininess.value = value.shininess;
+					config.uniforms.opacity.value = value.alpha;
+					render_flags['side'] = value.side || 0;
+
+					if(value.alpha < 1 || (value.blendMode !== undefined && value.blendMode !== THREE.NoBlending)){
+						render_flags['transparent'] = true;
+						console.log('Object transparency = true');
+					}
+					else{
+						render_flags['transparent'] = false;
+						console.log('Object transparency = false');
+					}
+					if(value.blendMode !== undefined)
+						render_flags['blending'] = value.blendMode;
 
 					var shader = config.fragmentShader.split('\n');
 					var myUniforms = [
@@ -445,6 +514,7 @@
 						"uniform sampler2D diffuse_tex[MAX_DIFFUSE];",
 						"uniform float alpha[MAX_DIFFUSE];",
 						"uniform vec3 tex_xfrm[3*MAX_DIFFUSE];",
+						"uniform int dtex_count;",
 						""
 					].join('\n');
 					var myShaderFrag = [
@@ -456,27 +526,35 @@
 						// transform UV to account for offset/scale
 						// also total up alpha contributions
 						"for( int i=0; i<MAX_DIFFUSE; ++i ){",
+						"	if( i >= dtex_count ) break;",
 						"	mat3 transform = mat3(tex_xfrm[3*i],tex_xfrm[3*i+1],tex_xfrm[3*i+2]);",
 						"	vec3 temp = transform * vec3(vUv,1.0);",
 						"	vec2 tc = vec2(fract(temp.x),fract(temp.y));",
 						"	texColors[i] = texture2D(diffuse_tex[i], tc);",
+
 						"	alphaTotal += alpha[i] * texColors[i].a;",
 						"}",
 
 						// calculate contributions of each layer towards final color
 						"for( int i=0; i<MAX_DIFFUSE; ++i ){",
+						"	if( i >= dtex_count ) break;",
 						"	float aMix = (alpha[i]*texColors[i].a)/alphaTotal;",
 						"	texelColor += aMix * texColors[i];",
+						//"	texelColor.rgb += aMix * texColors[i].rgb;",
+						//"	texelColor.a = max(texelColor.a, texColors[i].a);",
 						"}",
 
 						"gl_FragColor = gl_FragColor * texelColor;",
+						//"gl_FragColor = vec4(vec3(gl_FragColor.a),1.0); return;",
 						""
 					].join('\n');
 					config.fragmentShader = shader.slice(0,13).join('\n') + myUniforms + shader.slice(14,184).join('\n') + myShaderFrag + shader.slice(185).join('\n');
 
+					// apply renderer flags
 					currentmat = new THREE.ShaderMaterial(config);
-					currentmat.lights = true;
-					currentmat.map = true;
+					for( var i in render_flags ){
+						currentmat[i] = render_flags[i];
+					}
 
 				}
 				
