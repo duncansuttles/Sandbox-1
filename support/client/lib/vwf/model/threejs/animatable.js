@@ -93,8 +93,11 @@
 				}
 				if(propertyName == 'animationLength')
 				{
+					
 					var skins = getSkin(this.getRoot());
-					if(skins[0]) return skins[0].morphTargetInfluences.length;
+					if(skins[0] && skins[0].morphTargetInfluences) return skins[0].morphTargetInfluences.length;
+					if(skins[0].animationHandle)
+						return skins[0].animationHandle.data.length*skins[0].animationHandle.data.fps;
 					return 0;
 				}
 				if(propertyName == 'animationState')

@@ -30115,6 +30115,43 @@ THREE.Animation.prototype.update = function ( deltaTimeMS ) {
 	}
 
 };
+THREE.Animation.prototype.debug = function()
+{
+ 
+ var debugobjects = [];
+ var debugroot;
+ var walk = function(bone,debugparent)
+ {
+
+ 	var debug = new THREE.Mesh(new THREE.CubeGeometry(1,1,1));
+ 	
+ 	if(!debugroot) debugroot = debug;
+ 	debug.matrixAutoUpdate = false;
+ 	debug.matrix.copy(bone.matrix);
+ 	debug.bone = bone;
+ 	bone.debugobject = debug;
+ 	
+ 	debugobjects.push(debug);
+ 	
+ 	var parentbonepos = (new THREE.Vector3()).getPositionFromMatrix(debug.matrix);
+ 	parentbonepos.x = Math.abs(parentbonepos.x+1);
+ 	parentbonepos.y = Math.abs(parentbonepos.y+1);
+ 	parentbonepos.z = Math.abs(parentbonepos.z+1);
+ 	
+ 	for(var i =0; i < bone.children.length; i++)
+ 	{
+ 		walk(bone.children[i],debug);
+ 	}
+
+ 	
+	debugparent.add(debug);
+ }
+
+ walk(this.root.children[0],this.root);
+ 
+ this.debugobjects = debugobjects;
+ this.debugroot = debugroot;
+}
 THREE.Animation.prototype.setKey = function(keyf)
 {
 	
@@ -30133,9 +30170,9 @@ THREE.Animation.prototype.setKey = function(keyf)
 
 		if(key && key2)
 		{
-			object.position.x = key.pos[0] * l + key2.pos[0] * l2;
-			object.position.y = key.pos[1] * l + key2.pos[1] * l2;
-			object.position.z = key.pos[2] * l + key2.pos[2] * l2;
+			object.position.x = key.pos[0] * l2 + key2.pos[0] * l;
+			object.position.y = key.pos[1] * l2 + key2.pos[1] * l;
+			object.position.z = key.pos[2] * l2 + key2.pos[2] * l;
 
 			object.scale.x = key.scl[0] * l + key2.scl[0] * l2;
 			object.scale.y = key.scl[1] * l + key2.scl[1] * l2;
@@ -30146,10 +30183,20 @@ THREE.Animation.prototype.setKey = function(keyf)
 			object.quaternion.z = key.rot.z;
 			object.quaternion.x = key.rot.x;
 			object.quaternion.slerp(key2.rot,l);
+			object.updateMatrixWorld();
+			if(object.debugobject)
+			{
+				object.debugobject.matrix.copy(object.matrix);
+				object.debugobject.updateMatrixWorld();
+			}
 		}
 
 	}
-
+	this.root.updateMatrixWorld()
+	if(this.debugroot)
+	{
+		this.debugroot.updateMatrixWorld()
+	}
 
 }
 // Catmull-Rom spline
