@@ -610,7 +610,10 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 
             // Note that the message should be validated before looking up and invoking an arbitrary
             // handler.
-
+            if(actionName == 'status' && !nodeID)
+            {
+                alertify.log(parameters[0]);
+            }
             var args = [];
 
             if ( nodeID || nodeID === 0 ) args.push( nodeID );

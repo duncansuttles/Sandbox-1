@@ -280,7 +280,7 @@ function _FileCache()
 							//record the data
 							var newentry = {};
 							
-							console.log(file.length);
+							//console.log(file.length);
 							newentry.path = path;
 							newentry.data = file;
 							newentry.stats = stats;
@@ -872,8 +872,14 @@ function startVWF(){
 				WebSocketConnection(socket,msg.space);
 				socket.emit('namespaceSet',{});
 			  });
+			  socket.on('connectionTest',function(msg)
+			  {
+					socket.emit('connectionTest',msg);
+			  })
 			  return;
 		  }
+
+
 	  
 		DAL.getInstance(namespace.replace(/\//g,"_"),function(instancedata)
 		{
@@ -986,6 +992,11 @@ function startVWF(){
 		}
 	  }
 	  
+	  for(var i in global.instances[namespace].clients)
+	  {
+		  		global.instances[namespace].clients[i].emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Peer Connected"],"time":global.instances[namespace].time})));	
+	  }
+
 	  //add the new client to the instance data
 	  global.instances[namespace].clients[socket.id] = socket;	 
 	  
@@ -995,8 +1006,8 @@ function startVWF(){
 	  if(!loadClient)
 	  {
 		console.log('load from db');
-		//socket.emit('message',{"action":"getState","respond":true,"time":global.instances[namespace].time});
 		
+		socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Loading state from database"],"time":global.instances[namespace].time})));	
 		var instance = namespace;
 		//Get the state and load it.
 		//Now the server has a rough idea of what the simulation is
@@ -1040,6 +1051,7 @@ function startVWF(){
 		
 		fs.readFile("./public/adl/sandbox/index.vwf.yaml", 'utf8',function(err,blankscene)
 		{
+			socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State loaded, sending..."],"time":global.instances[namespace].time})));	
 			blankscene= YAML.load(blankscene);
 			
 			blankscene.id = 'index-vwf';
@@ -1082,9 +1094,7 @@ function startVWF(){
 			//global.log(Object.keys(global.instances[namespace].state.nodes['index-vwf'].children));
 			
 			//this is a blank world, go ahead and load the default
-			
-			
-			
+
 			
 			socket.emit('message',messageCompress.pack(JSON.stringify({"action":"createNode","parameters":[blankscene],"time":global.instances[namespace].time})));
 			socket.pending = false;
@@ -1098,8 +1108,9 @@ function startVWF(){
 		//firstclient = global.instances[namespace].clients[firstclient];
 		socket.pending = true;
 		global.instances[namespace].getStateTime = global.instances[namespace].time;
+		firstclient.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Server requested state. Sending..."],"time":global.instances[namespace].getStateTime})));	
 		firstclient.emit('message',messageCompress.pack(JSON.stringify({"action":"getState","respond":true,"time":global.instances[namespace].time})));
-		
+		socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Requesting state from clients"],"time":global.instances[namespace].getStateTime})));	
 		var timeout = function(namespace){
 			
 			this.namespace = namespace;
@@ -1124,6 +1135,7 @@ function startVWF(){
 						console.log('did not get state, resending request');	
 						this.namespace.getStateTime = this.namespace.time;
 						loadClient.emit('message',messageCompress.pack(JSON.stringify({"action":"getState","respond":true,"time":this.namespace.time})));
+						socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Did not get state, resending request."],"time":global.instances[namespace].getStateTime})));	
 						this.handle = global.setTimeout(this.time.bind(this),2000);			
 					}else
 					{
@@ -1356,7 +1368,10 @@ function startVWF(){
 					
 					
 					if(message.client != i && client.pending===true)
+					{
+						client.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State Received, Transmitting"],"time":global.instances[namespace].getStateTime})));	
 						client.emit('message',messageCompress.pack(JSON.stringify({"action":"setState","parameters":[state],"time":global.instances[namespace].getStateTime})));
+					}
 					client.pending = false;
 					for(var j = 0; j < client.pendingList.length; j++)
 					{
@@ -1407,8 +1422,10 @@ function startVWF(){
 			  }
 			  global.instances[namespace].state.deleteNode(avatarID);	
 		  }
-		  
-		  
+		  for(var i in global.instances[namespace].clients)
+		  {
+		  		global.instances[namespace].clients[i].emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Peer disconnected: " + (loginData?loginData.UID:"Unknown")],"time":global.instances[namespace].getStateTime})));	
+		  }
 		  if(Object.keys(global.instances[namespace].clients).length == 0)
 		  {
 			clearInterval(global.instances[namespace].timerID);
