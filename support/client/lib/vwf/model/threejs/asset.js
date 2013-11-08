@@ -131,6 +131,11 @@
 			this.loaded = function(asset)
 			{
 				_ProgressBar.hide();
+				if(!asset)
+				{
+					this.loadFailed();
+					return;
+				}
 				this.getRoot().add(asset.scene);
 				$(document).trigger('EndParse',['Loading...',assetSource]);
 				

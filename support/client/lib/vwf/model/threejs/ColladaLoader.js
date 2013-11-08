@@ -125,6 +125,12 @@ THREE.ColladaLoader = function () {
 		COLLADA = doc;
 		callBack = callBack || readyCallbackFunc;
 
+		//need fix for IE
+		if(!window.XPathResult)
+		{
+			callBack(null)
+		}
+
 		if ( url !== undefined ) {
 
 			var parts = url.split( '/' );
