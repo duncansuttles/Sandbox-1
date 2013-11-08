@@ -955,7 +955,7 @@ THREE.ColladaLoader = function () {
 						mesh.animationHandle = animation;
 						window._dAnimation = animation;
 					}
-					mesh.animationHandle.setKey(0);
+					//mesh.animationHandle.setKey(0);
 					skins.push( mesh );
 
 				} else if ( morphController !== undefined ) {
