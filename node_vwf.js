@@ -1135,7 +1135,7 @@ function startVWF(){
 						console.log('did not get state, resending request');	
 						this.namespace.getStateTime = this.namespace.time;
 						loadClient.emit('message',messageCompress.pack(JSON.stringify({"action":"getState","respond":true,"time":this.namespace.time})));
-						socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Did not get state, resending request."],"time":global.instances[namespace].getStateTime})));	
+						socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Did not get state, resending request."],"time":this.namespace.time})));	
 						this.handle = global.setTimeout(this.time.bind(this),2000);			
 					}else
 					{
