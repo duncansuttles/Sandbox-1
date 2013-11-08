@@ -302,7 +302,7 @@ function _FileCache()
 								if(!FileCache.minify)
 								{
 									//reload files that change on disk
-									fs.watch(path,{},function(event,filename){
+									var watcher = fs.watch(path,{},function(event,filename){
 									
 									
 									
@@ -310,6 +310,10 @@ function _FileCache()
 										FileCache.files.splice(FileCache.files.indexOf(newentry),1);
 									
 									});
+									watcher.on('error',function(e)
+									{
+										this.close();
+									})
 								}
 							}
 							//send the record to the caller . Usually FileCache.serveFile
