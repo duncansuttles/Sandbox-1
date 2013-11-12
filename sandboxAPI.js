@@ -734,10 +734,11 @@ function RestoreBackupState(URL, SID, response){
 		SID = '_adl_sandbox_' + SID + '_';
 	}
 	
+	console.log(SID, statename);
 	DAL.restoreBackup(SID, statename, function(success){
 	
 		if(success) respond(response, 200, JSON.stringify("Success"));
-		else respond(response, 500, 'Error in trying to retrieve backup list');
+		else respond(response, 500, 'Unable to restore backup');
 	});
 }
 
