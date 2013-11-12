@@ -348,11 +348,11 @@ THREE.ColladaLoader = function () {
 		var start = 1000000;
 		var end = -start;
 		var frames = 0;
-
+		var ID;
 		for ( var id in animations ) {
 
 			var animation = animations[ id ];
-
+			ID = ID || animation.id; 
 			for ( var i = 0; i < animation.sampler.length; i ++ ) {
 
 				var sampler = animation.sampler[ i ];
@@ -366,7 +366,7 @@ THREE.ColladaLoader = function () {
 
 		}
 
-		return { start:start, end:end, frames:frames };
+		return { start:start, end:end, frames:frames,ID:ID };
 
 	};
 
@@ -551,13 +551,16 @@ THREE.ColladaLoader = function () {
 
 			} else {
 
-				throw 'ColladaLoader: Could not find joint \'' + bone.sid + '\'.';
+				console.warn( "ColladaLoader: Could not find joint '" + bone.sid + "'." );
 
-			}
+				bone.skinningMatrix = new THREE.Matrix4();
+				bone.weights = [];
 
+		}
 		}
 
 	};
+	//Walk the Collada tree and flatten the bones into a list, extract the position, quat and scale from the matrix
 	function flattenSkeleton(skeleton)
 	{
 		var list = [];
@@ -583,6 +586,7 @@ THREE.ColladaLoader = function () {
 		return list;
 
 	};
+	//Move the vertices into the pose that is proper for the start of the animation
 	function skinToBindPose(geometry,skeleton,skinController)
 	{
 			var bones = [];
@@ -659,9 +663,11 @@ THREE.ColladaLoader = function () {
 		var skeleton = daeScene.getChildById( instanceCtrl.skeleton[0], true ) ||
 					   daeScene.getChildBySid( instanceCtrl.skeleton[0], true );
 
+		//flatten the skeleton into a list of bones
 		var bonelist = flattenSkeleton(skeleton);
 		var joints = skinController.skin.joints;
 
+		//sort that list so that the order reflects the order in the joint list
 		var sortedbones = [];
 		for(var i = 0; i < joints.length; i++)
 		{
@@ -674,6 +680,7 @@ THREE.ColladaLoader = function () {
 			}
 		}
 
+		//hook up the parents by index instead of name
 		for(var i = 0; i < sortedbones.length; i++)
 		{
 			for(var j =0; j < sortedbones.length; j++)
@@ -701,11 +708,12 @@ THREE.ColladaLoader = function () {
 		var skinWeights = [];
 		var weights = skinController.skin.weights;
 
+		//hook up the skin weights
+		// TODO -  this might be a good place to choose greatest 4 weights
 		for(var i =0; i < weights.length; i++)
 		{
 			var indicies = new THREE.Vector4(weights[i][0]?weights[i][0].joint:0,weights[i][1]?weights[i][1].joint:0,weights[i][2]?weights[i][2].joint:0,weights[i][3]?weights[i][3].joint:0);
 			var weight = new THREE.Vector4(weights[i][0]?weights[i][0].weight:0,weights[i][1]?weights[i][1].weight:0,weights[i][2]?weights[i][2].weight:0,weights[i][3]?weights[i][3].weight:0);
-			
 			
 			skinIndices.push(indicies);
 			skinWeights.push(weight);
@@ -715,13 +723,16 @@ THREE.ColladaLoader = function () {
 		geometry.bones = sortedbones;
 		// process animation, or simply pose the rig if no animation
 
-		var animationdata = {"name":"ArmatureAction","fps":30,"length":animationBounds.frames/30,"hierarchy":[]};
+		//create an animation for the animated bones
+		//NOTE: this has no effect when using morphtargets
+		var animationdata = {"name":animationBounds.ID,"fps":30,"length":animationBounds.frames/30,"hierarchy":[]};
 		
 		for(var j =0; j < sortedbones.length; j++)
 		{
 			animationdata.hierarchy.push({parent:sortedbones[j].parent, name:sortedbones[j].name, keys:[]});
 		}
 		
+		//if using hardware skinning, move the vertices into the binding pose
 		if(sortedbones.length < maxbones)
 		{
 			skinToBindPose(geometry,skeleton,skinController);
@@ -731,17 +742,13 @@ THREE.ColladaLoader = function () {
 
 			var bones = [];
 			var skinned = [];
-
-			// zero skinned vertices
-
-			
-
 			// process the frame and setup the rig with a fresh
 			// transform, possibly from the bone's animation channel(s)
 			
 			setupSkeleton( skeleton, bones, frame );
 			setupSkinningMatrices( bones, skinController.skin );
 
+			//if using hardware skinning, just hook up the animiation data
 			if(sortedbones.length < maxbones)
 			{
 				for(var i = 0; i < bones.length; i ++)
@@ -774,7 +781,7 @@ THREE.ColladaLoader = function () {
 				
 
 			}
-			// skin 'm
+			// otherwise, process the animation into morphtargets
 			else
 			{
 				
@@ -978,6 +985,13 @@ THREE.ColladaLoader = function () {
 					
 					applySkin( geom, skinController );
 					
+					if(geom.morphTargets.length > 0)
+					{
+						material.morphTargets = true;
+						material.skinning = false;
+					}
+					else
+					{
 					material.morphTargets = false;
 					material.skinning = true;
 					if(geom.animation)
