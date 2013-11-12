@@ -1,7 +1,7 @@
 <div class="row" data-bind="foreach:avatarInfo">
 	<!-- ko foreach: $root.makeAvatarArr($data) -->
 		<div class="col-md-2">
-			<div class="row avatarchoice" data-bind="click:function(data, e){$root.handleAvatarClick({obj:data, parent:$parent}, e)}">
+			<div class="row avatarchoice" data-bind="click:function(data, e){$root.handleAvatarClick({data:data, parent:$parent}, e)}">
 				<img data-bind="attr:{src:'./avatars/' + $parent.texture + $data[0] +'-'+ $data[1] +'.png'}">
 			</div>
 		</div>
@@ -19,6 +19,7 @@
 		{model: "VWS_Business_Male", texture: 'VWS_B_Male', texturesArr: [2, 4]}
 	];
 	
+	vwfPortalModel.profile = {};
 	vwfPortalModel.makeAvatarArr = function(obj){
 		var arr = [], rollingSum = 0, g = 0,
 		sum = obj.texturesArr.reduce(function(prev, curr){
@@ -36,9 +37,26 @@
 		return arr;
 	};
 	
-	vwfPortalModel.handleAvatarClick = function(obj, parent){
-	
-		console.log(obj, parent);
+	vwfPortalModel.handleAvatarClick = function(obj, event){
+		
+		$('.avatarchoice').css('border','');
+		$('.avatarchoice').css('padding','');
+		$(event.target).css('border','1px solid blue');
+		$(event.target).css('padding','0px');
+
+		vwfPortalModel.profile.avatarModel = './avatars/' + obj.parent.model + obj.data[0] + '.DAE';
+		vwfPortalModel.profile.avatarTexture = './avatars/' + obj.parent.texture + obj.data[0] + '-' + obj.data[1] + '.jpg';
+		
+		$.ajax({
+			type: 'POST',
+			url:  root + '/vwfDataManager.svc/Profile?UID='+UID,
+			data: JSON.stringify(vwfPortalModel.profile),
+			success: null,
+			async: false,
+			dataType: "text"
+		});
+			
+		console.log(obj, event);
 	};
 	
 	var EncryptPassword = function (password, username,salt)
@@ -49,14 +67,16 @@
 			unencrpytedpassword = CryptoJS.SHA256(unencrpytedpassword) + '';
 		}
 		return unencrpytedpassword;
-	}
+	};
+	
+	var UID = '';
 	
 	$(document).ready(function()
 	{
 		getLoginInfo(function(){
 		
-			var UID = vwfPortalModel.user().username;
-			var profile;
+			UID = vwfPortalModel.user().username;
+
 			var data = jQuery.ajax(
 				{
 					type: 'GET',
@@ -71,7 +91,7 @@
 					try
 					{
 						data = JSON.parse(data.responseText);
-						profile = data;
+						vwfPortalModel.profile = data;
 						
 					}
 					catch (e)
@@ -84,38 +104,13 @@
 					return data.responseText;
 				}
 
+				//$("[data-model='"+vwfPortalModel.profile.avatarModel+"']").filter("[data-texture='"+vwfPortalModel.profile.avatarTexture+"']").css('border','1px solid blue');
+				//$("[data-model='"+vwfPortalModel.profile.avatarModel+"']").filter("[data-texture='"+vwfPortalModel.profile.avatarTexture+"']").css('padding','0px');
+				//HIGHLIGHT CURRENT AVATAR
 				
-
-				$('.avatarchoice').click(
-					function()
-					{
-						$('.avatarchoice').css('border','');
-						$('.avatarchoice').css('padding','');
-						$(this).css('border','1px solid blue');
-						$(this).css('padding','0px');
-
-						profile.avatarModel = $(this).attr('data-model');
-						profile.avatarTexture = $(this).attr('data-texture');
-						var data = JSON.stringify(profile);
-						
-						jQuery.ajax(
-						{
-
-							type: 'POST',
-							url:  root + '/vwfDataManager.svc/Profile?UID='+UID,
-							data: JSON.stringify(profile),
-							success: null,
-							async: false,
-							dataType: "text"
-						});
-
-					});
-
-				$("[data-model='"+profile.avatarModel+"']").filter("[data-texture='"+profile.avatarTexture+"']").css('border','1px solid blue');
-				$("[data-model='"+profile.avatarModel+"']").filter("[data-texture='"+profile.avatarTexture+"']").css('padding','0px');
-
-				vwfPortalModel.usersPage = true;
-		ko.applyBindings(vwfPortalModel);
+				
+			vwfPortalModel.usersPage = true;
+			ko.applyBindings(vwfPortalModel);
 			
 		}, redirect);
 	});	
