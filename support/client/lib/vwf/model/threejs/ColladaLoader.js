@@ -998,13 +998,14 @@ THREE.ColladaLoader = function () {
 					}
 					else
 					{
-					material.morphTargets = false;
-					material.skinning = true;
-					if(geom.animation)
-					{
-						geom.animation.name = Math.floor(Math.random() * 1000000) + '';
-						THREE.AnimationHandler.add(geom.animation);
+						material.morphTargets = false;
+						material.skinning = true;
+						if(geom.animation)
+						{
+							geom.animation.name = Math.floor(Math.random() * 1000000) + '';
+							THREE.AnimationHandler.add(geom.animation);
 
+						}
 					}
 					
 
