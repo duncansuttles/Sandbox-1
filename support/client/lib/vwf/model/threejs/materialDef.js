@@ -271,6 +271,7 @@
 				currentmat.emissive.b = value.emit.b;
 				
 				currentmat.morphTargets = value.morphTargets || false;
+				currentmat.skinning = value.skinning || false;
 				currentmat.specular.r = value.specularColor.r * value.specularLevel;
 				currentmat.specular.g = value.specularColor.g * value.specularLevel;
 				currentmat.specular.b = value.specularColor.b * value.specularLevel;
@@ -498,6 +499,10 @@
 							propval.morphTargets = true;
 						else
 							propval.morphTargets = false;
+						if(list[i].animationHandle)
+							propval.skinning = true;
+						else
+							propval.skinning = false;
 						_MaterialCache.setMaterial(list[i],propval);
 							
 						

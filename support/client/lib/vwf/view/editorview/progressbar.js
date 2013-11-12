@@ -5,7 +5,7 @@ define({
 		$('#GlobalProgressBar').append('<div id="GlobalProgressBarBack" />');
 		$('#GlobalProgressBar').append('<div id="GlobalProgressBarInner" />');
 		$('#GlobalProgressBarInner').text('message');
-		
+		this.end();
 	},
 	setProgress:function(percent)
 	{
