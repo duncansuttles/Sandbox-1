@@ -733,8 +733,7 @@ function RestoreBackupState(URL, SID, response){
 	if(SID.length == 16){
 		SID = '_adl_sandbox_' + SID + '_';
 	}
-	
-	console.log(SID, statename);
+
 	DAL.restoreBackup(SID, statename, function(success){
 	
 		if(success) respond(response, 200, JSON.stringify("Success"));
