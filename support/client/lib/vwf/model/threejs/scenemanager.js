@@ -218,6 +218,17 @@ SceneManager.prototype.update = function(dt)
 	{
 		this.particleSystemList[i].update(dt);
 	}
+
+}
+SceneManager.prototype.releaseTexture = function(texture)
+{
+
+	if(!texture) return;
+	texture.refCount--;
+	if(!texture.refCount)
+	{
+		texture.dispose();
+	}
 }
 SceneManager.prototype.getTexture = function(src,noclone)
 {
@@ -254,9 +265,13 @@ SceneManager.prototype.getTexture = function(src,noclone)
 	}
 	var ret = this.textureList[src];
 	if(noclone) 
+	{
+		ret.refCount++;
 		return ret;
+	}
 	ret = new THREE.Texture(ret.image);
 	ret._SMsrc = originalSrc;
+	ret.refCount = 1;
 	ret.wrapS =  this.textureList[src].wrapS;
 	ret.wrapT =  this.textureList[src].wrapT;
 	ret.magFilter =  this.textureList[src].magFilter;

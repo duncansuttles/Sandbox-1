@@ -393,7 +393,7 @@
 
 						if((currentmat[mapname] && currentmat[mapname]._SMsrc != value.layers[i].src) || !currentmat[mapname])
 						{
-							
+							 _SceneManager.releaseTexture(currentmat[mapname]);
 							currentmat[mapname] = _SceneManager.getTexture(value.layers[i].src);
 							currentmat[mapname].needsUpdate = true;
 							currentmat.needsUpdate = true;
