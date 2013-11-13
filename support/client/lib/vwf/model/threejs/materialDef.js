@@ -456,6 +456,8 @@
 							alphas.push( layer.alpha );
 							var tfm = new THREE.Matrix3( layer.scalex, 0, layer.offsetx, 0, layer.scaley, layer.offsety, 0, 0, 1 );
 							transform.push.apply(transform,tfm.elements);
+							//config.uniforms.map.value = _SceneManager.getTexture(layer.src);
+
 						}
 						else if( layer.mapTo == 2 )
 						{
@@ -502,17 +504,17 @@
 					var temp = new THREE.Vector3(value.specularColor.r, value.specularColor.g, value.specularColor.b);
 					temp.multiplyScalar(value.specularLevel);
 					config.uniforms.specular.value = {r: temp.x, b: temp.y, g: temp.z};
-					config.uniforms.shininess.value = value.shininess;
+					config.uniforms.shininess.value = value.shininess * 5;
 					config.uniforms.opacity.value = value.alpha;
 					render_flags['side'] = value.side || 0;
 
 					if(value.alpha < 1 || (value.blendMode !== undefined && value.blendMode !== THREE.NoBlending)){
 						render_flags['transparent'] = true;
-						console.log('Object transparency = true');
+						//console.log('Object transparency = true');
 					}
 					else{
 						render_flags['transparent'] = false;
-						console.log('Object transparency = false');
+						//console.log('Object transparency = false');
 					}
 					if(value.blendMode !== undefined)
 						render_flags['blending'] = value.blendMode;
@@ -531,6 +533,7 @@
 						"float alphaTotal = 0.0;",
 						"vec4 texColors[MAX_DIFFUSE];",
 						"vec4 texelColor = vec4(0.0,0.0,0.0,1.0);",
+						"if( opacity < 1.0 ) texelColor.w = 0.0;",
 
 						// transform UV to account for offset/scale
 						// also total up alpha contributions
@@ -548,15 +551,18 @@
 						"for( int i=0; i<MAX_DIFFUSE; ++i ){",
 						"	if( i >= dtex_count ) break;",
 						"	float aMix = (alpha[i]*texColors[i].a)/alphaTotal;",
-						"	texelColor += aMix * texColors[i];",
-						//"	texelColor.rgb += aMix * texColors[i].rgb;",
-						//"	texelColor.a = max(texelColor.a, texColors[i].a);",
+						//"	texelColor += aMix * texColors[i];",
+						"	texelColor.rgb += aMix * texColors[i].rgb;",
+						"	texelColor.a = max(texelColor.a, texColors[i].a);",
+						//"	texelColor = vec4(texColors[i].rgb/texColors[i].a, 1.0);",
 						"}",
 
-						"gl_FragColor = gl_FragColor * texelColor;",
-						//"gl_FragColor = vec4(vec3(gl_FragColor.a),1.0); return;",
+						// brighten up under-saturated colors
+						"if( alphaTotal < 1.0 )",
+						"	texelColor.rgb = 1.0/alphaTotal * texelColor.rgb;",
 						""
 					].join('\n');
+
 					config.fragmentShader = shader.slice(0,13).join('\n') + myUniforms + shader.slice(14,184).join('\n') + myShaderFrag + shader.slice(185).join('\n');
 
 					// apply renderer flags
