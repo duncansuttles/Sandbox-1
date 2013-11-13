@@ -27,7 +27,10 @@
 				
 
 				var oldmat = mesh.material;
-				if(oldmat.def == def) return;
+				var newmat = this.getMaterialbyDef(def);
+				
+				if(oldmat == newmat) return;
+
 				if(oldmat && oldmat.refCount === undefined)
 					oldmat.refCount = 1;
 				if(oldmat)
@@ -39,7 +42,7 @@
 					var olddef = oldmat.def;
 					delete this.materials[olddef];
 				}				
-				mesh.material = this.getMaterialbyDef(def);
+				mesh.material = newmat;
 				if(mesh.material && mesh.material.refCount === undefined)
 					mesh.material.refCount = 0;
 				if(mesh.material)
@@ -267,6 +270,7 @@
 				currentmat.emissive.b = value.emit.b;
 				
 				currentmat.morphTargets = value.morphTargets || false;
+				currentmat.skinning = value.skinning || false;
 				currentmat.specular.r = value.specularColor.r * value.specularLevel;
 				currentmat.specular.g = value.specularColor.g * value.specularLevel;
 				currentmat.specular.b = value.specularColor.b * value.specularLevel;
@@ -303,6 +307,11 @@
 					currentmat.depthWrite = true;
 				else 	
 					currentmat.depthWrite = false;
+
+				if(value.vertexColors === true)
+					currentmat.vertexColors = 2;
+				else 	
+					currentmat.vertexColors = 0;
 					
 				var mapnames = ['map','bumpMap','lightMap','normalMap','specularMap','envMap'];
 				currentmat.reflectivity = value.reflect/10;
@@ -624,6 +633,8 @@
 					
 					var needRebuild = false;
 					
+					
+				
 					if(this.materialDef)
 					{
 					if(this.materialDef && propval.layers.length > this.materialDef.layers.length)
@@ -640,6 +651,10 @@
 							propval.morphTargets = true;
 						else
 							propval.morphTargets = false;
+						if(list[i].animationHandle)
+							propval.skinning = true;
+						else
+							propval.skinning = false;
 						_MaterialCache.setMaterial(list[i],propval);
 							
 						

@@ -1,5 +1,5 @@
 "use strict";
-define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/src/alertify","vwf/view/editorview/Menubar","vwf/view/editorview/ObjectPools","vwf/view/editorview/LocationTools", "vwf/view/editorview/WindowResize","vwf/view/editorview/_PermissionsManager", "vwf/view/editorview/InputSetup", "vwf/view/editorview/SaveLoadTimer", "vwf/view/editorview/TouchHandler", "vwf/view/editorview/SidePanel", "vwf/view/editorview/Toolbar", "vwf/view/editorview/ChatSystemGUI", "vwf/view/editorview/PrimitiveEditor", "vwf/view/editorview/MaterialEditor", "vwf/view/editorview/Notifier", "vwf/view/editorview/ScriptEditor", "vwf/view/editorview/Editor", "vwf/view/editorview/_3DRIntegration", "vwf/view/editorview/InventoryManager", "vwf/view/editorview/HeirarchyManager",  "vwf/view/editorview/DataManager", "vwf/view/editorview/UserManager", "vwf/view/editorview/help"], function (module, version, view)
+define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/src/alertify","vwf/view/editorview/Menubar","vwf/view/editorview/ObjectPools","vwf/view/editorview/LocationTools", "vwf/view/editorview/WindowResize","vwf/view/editorview/_PermissionsManager", "vwf/view/editorview/InputSetup", "vwf/view/editorview/SaveLoadTimer", "vwf/view/editorview/TouchHandler", "vwf/view/editorview/SidePanel", "vwf/view/editorview/Toolbar", "vwf/view/editorview/ChatSystemGUI", "vwf/view/editorview/PrimitiveEditor", "vwf/view/editorview/MaterialEditor", "vwf/view/editorview/Notifier", "vwf/view/editorview/ScriptEditor", "vwf/view/editorview/Editor", "vwf/view/editorview/_3DRIntegration", "vwf/view/editorview/InventoryManager", "vwf/view/editorview/HeirarchyManager",  "vwf/view/editorview/DataManager", "vwf/view/editorview/UserManager", "vwf/view/editorview/help","vwf/view/editorview/SideTabs"], function (module, version, view)
 {
 	return view.load(module,
 	{
@@ -200,6 +200,7 @@ function InitializeEditor()
 		require("vwf/view/editorview/Toolbar").initialize();
 		
 		require("vwf/view/editorview/Menubar").initialize();
+		require("vwf/view/editorview/SideTabs").initialize();
 		require("vwf/view/editorview/ChatSystemGUI").initialize();
 		$(document.head).append('<script type="text/javascript" src="vwf/view/localization/translate.js"></script>');
 		translateMenu();

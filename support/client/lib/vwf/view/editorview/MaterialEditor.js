@@ -268,6 +268,9 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					_MaterialEditor.currentMaterial.color.r = rgb.r / 255;
 					_MaterialEditor.currentMaterial.color.g = rgb.g / 255;
 					_MaterialEditor.currentMaterial.color.b = rgb.b / 255;
+					_MaterialEditor.currentMaterial.ambient.r = rgb.r / 255;
+					_MaterialEditor.currentMaterial.ambient.g = rgb.g / 255;
+					_MaterialEditor.currentMaterial.ambient.b = rgb.b / 255;
 					_MaterialEditor.updateObject();
 				},
 				onChange: function (hsb, hex, rgb)
@@ -276,6 +279,9 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					_MaterialEditor.currentMaterial.color.r = rgb.r / 255;
 					_MaterialEditor.currentMaterial.color.g = rgb.g / 255;
 					_MaterialEditor.currentMaterial.color.b = rgb.b / 255;
+					_MaterialEditor.currentMaterial.ambient.r = rgb.r / 255;
+					_MaterialEditor.currentMaterial.ambient.g = rgb.g / 255;
+					_MaterialEditor.currentMaterial.ambient.b = rgb.b / 255;
 					_MaterialEditor.updateObject();
 				}
 			});
@@ -313,6 +319,9 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					_MaterialEditor.updateObject();
 				}
 			});
+
+			$('#ambientdiv').hide();
+
 			$('#MaterialBasicSettings').append('<div />');
 			$('#MaterialBasicSettings').append('<div style="margin-bottom:10px" id="emitdiv" />');
 			$('#emitdiv').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;">Emission Color: </div>');
@@ -388,6 +397,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsWireFrame" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Wireframe </div></div>');
 			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsDepthTest" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Depth Test </div></div>');
 			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsDepthWrite" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Depth Write </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsVertexColors" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Vertex Colors </div></div>');
 			
 			$('#MaterialBasicSettingsFog').click(function()
 			{
@@ -416,6 +426,19 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			if (this.currentMaterial.metal === true)
 			{
 				$('#MaterialBasicSettingsMetal').attr('checked', 'checked');
+			}
+
+			$('#MaterialBasicSettingsVertexColors').click(function()
+			{
+				if ($(this).attr('checked') == 'checked') 
+					_MaterialEditor.currentMaterial.vertexColors = true;
+				else  
+					_MaterialEditor.currentMaterial.vertexColors = false;
+				_MaterialEditor.updateObject();
+			});
+			if (this.currentMaterial.vertexColors === true)
+			{
+				$('#MaterialBasicSettingsVertexColors').attr('checked', 'checked');
 			}
 			
 			$('#MaterialBasicSettingsWireFrame').click(function()

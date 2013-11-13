@@ -90,15 +90,52 @@
 			}
 			this.loadFailed = function(id)
 			{
-				$(document).trigger('EndParse');
+				
+				
 				//the collada loader uses the failed callback as progress. data means this is not really an error;
-				if(!id && window._Notifier)
-					_Notifier.alert('error loading asset ' + this.assetSource);
-			
+				if(!id)
+				{
+					if(window._Notifier)
+					{
+						_Notifier.alert('error loading asset ' + this.assetSource);
+					}
+					//get the entry from the asset registry
+					reg = this.assetRegistry[this.assetSource];
+					$(document).trigger('EndParse');
+					//it's not pending, and it is loaded
+					reg.pending = false;
+					reg.loaded = true;
+					//store this asset in the registry
+					reg.node = null;
+					
+					//if any callbacks were waiting on the asset, call those callbacks
+					for(var i = 0; i < reg.callbacks.length; i++)
+						reg.callbacks[i](null);
+					//nothing should be waiting on callbacks now.	
+					reg.callbacks = [];	
+					
+					_ProgressBar.hide();
+					asyncCallback(true);
+				}else
+				{
+					
+					//this is actuall a progress event!
+					_ProgressBar.setProgress(id.loaded/id.total);
+					_ProgressBar.setMessage(this.assetSource);
+					_ProgressBar.show();
+
+
+				}
+
 			}
 			this.loaded = function(asset)
 			{
-				
+				_ProgressBar.hide();
+				if(!asset)
+				{
+					this.loadFailed();
+					return;
+				}
 				this.getRoot().add(asset.scene);
 				$(document).trigger('EndParse',['Loading...',assetSource]);
 				
@@ -301,50 +338,53 @@
 					//this should not clone the geometry, so much lower memory.
 					//seems to take near nothing to duplicated animated avatar
 					$(document).trigger('EndParse');
-					this.getRoot().add(node.clone());
-					
-					var list = [];
-					
-					this.GetAllLeafMeshes(this.rootnode,list);
-					for(var i =0; i < list.length; i++)
-						if(list[i].material)
-						{
-							list[i].material = list[i].material.clone();
-							list[i].material.needsUpdate = true;
-							
-							if(list[i].material.map)
+					if(node)
+					{
+						this.getRoot().add(node.clone());
+						
+						var list = [];
+						
+						this.GetAllLeafMeshes(this.rootnode,list);
+						for(var i =0; i < list.length; i++)
+							if(list[i].material)
 							{
-								list[i].material.map =  _SceneManager.getTexture(list[i].material.map.image.src);
-								list[i].material.map.needsUpdate = true;
-							}else
-							{
-								list[i].material.map =  _SceneManager.getTexture('white.png');
-								list[i].material.map.needsUpdate = true;
+								list[i].material = list[i].material.clone();
+								list[i].material.needsUpdate = true;
+								
+								if(list[i].material.map)
+								{
+									list[i].material.map =  _SceneManager.getTexture(list[i].material.map.image.src);
+									list[i].material.map.needsUpdate = true;
+								}else
+								{
+									list[i].material.map =  _SceneManager.getTexture('white.png');
+									list[i].material.map.needsUpdate = true;
+								}
+								if(list[i].material.bumpMap)
+								{
+									list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.bumpMap.image.src);
+									list[i].material.bumpMap.needsUpdate = true;
+								}
+								if(list[i].material.lightMap)
+								{
+									list[i].material.lightMap = _SceneManager.getTexture(list[i].material.lightMap.image.src);
+									list[i].material.lightMap.needsUpdate = true;
+								}
+								if(list[i].material.normalMap)
+								{
+									list[i].material.normalMap = _SceneManager.getTexture(list[i].material.normalMap.image.src);
+									list[i].material.normalMap.needsUpdate = true;								
+								}
+								
+								
+								list[i].materialUpdated();
 							}
-							if(list[i].material.bumpMap)
-							{
-								list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.bumpMap.image.src);
-								list[i].material.bumpMap.needsUpdate = true;
-							}
-							if(list[i].material.lightMap)
-							{
-								list[i].material.lightMap = _SceneManager.getTexture(list[i].material.lightMap.image.src);
-								list[i].material.lightMap.needsUpdate = true;
-							}
-							if(list[i].material.normalMap)
-							{
-								list[i].material.normalMap = _SceneManager.getTexture(list[i].material.normalMap.image.src);
-								list[i].material.normalMap.needsUpdate = true;								
-							}
-							
-							
-							list[i].materialUpdated();
-						}
-					
-					
-					this.settingProperty('materialDef',this.materialDef);
-					this.getRoot().updateMatrixWorld(true);
-					this.getRoot().sceneManagerUpdate();
+						
+						
+						this.settingProperty('materialDef',this.materialDef);
+						this.getRoot().updateMatrixWorld(true);
+						this.getRoot().sceneManagerUpdate();
+					}
 					tcal( true );
 				}.bind(this));
 			}	
