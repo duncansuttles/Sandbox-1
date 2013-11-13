@@ -221,7 +221,7 @@ SceneManager.prototype.update = function(dt)
 }
 SceneManager.prototype.getTexture = function(src,noclone)
 {
-	
+	var originalSrc = src;
 	var p = window.location.pathname;
 	if(p[p.length-1] == '/') {p = p.substring(0,p.length -1)};
 	p = p.substring(p.lastIndexOf('/')+1);
@@ -249,13 +249,14 @@ SceneManager.prototype.getTexture = function(src,noclone)
 		this.textureList[src]  = THREE.ImageUtils.loadTexture(src,new THREE.UVMapping(), onload);
 		var tex = this.textureList[src];
 		tex.clones = [];
+		tex._SMsrc = originalSrc;
 		return this.textureList[src];
 	}
 	var ret = this.textureList[src];
 	if(noclone) 
 		return ret;
 	ret = new THREE.Texture(ret.image);
-
+	ret._SMsrc = originalSrc;
 	ret.wrapS =  this.textureList[src].wrapS;
 	ret.wrapT =  this.textureList[src].wrapT;
 	ret.magFilter =  this.textureList[src].magFilter;

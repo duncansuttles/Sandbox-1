@@ -349,7 +349,7 @@ define(function ()
 			            "offsetx": 0,
 			            "offsety": 0,
 			            "alpha": 1,
-			            "src": profile.avatarTexture || "http://localhost:3000/adl/sandbox/gvpGcxtL0EF2SVOQ/avatars/VWS_B_Female1-1.jpg",
+			            "src": profile.avatarTexture || "./avatars/VWS_B_Female1-1.jpg",
 			            "mapInput": 0
 			        }
 			    ],
