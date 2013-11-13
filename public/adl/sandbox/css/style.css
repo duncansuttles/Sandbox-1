@@ -66,14 +66,25 @@ ul{
 }
 
 .avatarchoice:hover {
-	padding: 0px;
-	border: 1px solid #DDD;
+	border-color: green;
 }
 
 .avatarchoice {
 	text-align: center;
 	padding: 1px;
 	border-radius:10px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	margin: 9px 0;
+	cursor: pointer;
+	width: 150px;
+	height: 110px;
+	overflow: hidden;
+}
+
+.avatarchoice  img{
+
+	margin-left: -10px;
 }
 .videoList td{
 	border: none !important;

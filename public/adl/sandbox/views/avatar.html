@@ -1,11 +1,24 @@
-<div class="row" data-bind="foreach:avatarInfo">
-	<!-- ko foreach: $root.makeAvatarArr($data) -->
-		<div class="col-md-2">
-			<div class="row avatarchoice" data-bind="click:function(data, e){$root.handleAvatarClick({data:data, parent:$parent}, e)}">
-				<img data-bind="attr:{src:'./avatars/' + $parent.texture + $data[0] +'-'+ $data[1] +'.png'}">
+<div class="row">
+	<div class="col-md-7" data-bind="foreach:avatarInfo">
+		<!-- ko foreach: $root.makeAvatarArr($data) -->
+			<div class="col-md-3">
+				<div class="avatarchoice" data-bind="click:function(data, e){$root.handleAvatarClick({data:data, parent:$parent}, e)}">
+					<img data-bind="attr:{src:'./avatars/' + $parent.texture + $data[0] +'-'+ $data[1] +'.png'}" class="avatarPortrait">
+				</div>
+			</div>
+		<!-- /ko -->
+	</div>
+	<div class="col-md-5">
+	
+		<div style="width:50%; margin: 0 auto;">
+			<img data-bind="attr:{src:currentAvatar()?'./avatars/' + currentAvatar().parent.texture + currentAvatar().data[0] +'-'+ currentAvatar().data[1] +'.png':''}"></img>
+			<div>
+				<button class="btn btn-primary" style="margin: 15px 0 15px 52px;" data-bind="click:saveAvatar">Save</button>
 			</div>
 		</div>
-	<!-- /ko -->
+	</div>
+	
+	<div id="previewRender"></div>
 </div>
 
 <script type="text/javascript">
@@ -18,6 +31,21 @@
 		{model: "VWS_Business_Female", texture: 'VWS_B_Female', texturesArr: [3, 1]},
 		{model: "VWS_Business_Male", texture: 'VWS_B_Male', texturesArr: [2, 4]}
 	];
+	
+	vwfPortalModel.currentAvatar = ko.observable(false);
+	vwfPortalModel.saveAvatar = function(){
+		$.ajax({
+			type: 'POST',
+			url:  root + '/vwfDataManager.svc/Profile?UID='+UID,
+			data: JSON.stringify(vwfPortalModel.profile),
+			success: function(){
+			
+				console.log("Success");
+			},
+			async: false,
+			dataType: "text"
+		});
+	};
 	
 	vwfPortalModel.profile = {};
 	vwfPortalModel.makeAvatarArr = function(obj){
@@ -38,25 +66,12 @@
 	};
 	
 	vwfPortalModel.handleAvatarClick = function(obj, event){
-		
 		$('.avatarchoice').css('border','');
-		$('.avatarchoice').css('padding','');
-		$(event.target).css('border','1px solid blue');
-		$(event.target).css('padding','0px');
-
+		$(event.target).css('border-color','blue');
+		
+		vwfPortalModel.currentAvatar(obj);
 		vwfPortalModel.profile.avatarModel = './avatars/' + obj.parent.model + obj.data[0] + '.DAE';
 		vwfPortalModel.profile.avatarTexture = './avatars/' + obj.parent.texture + obj.data[0] + '-' + obj.data[1] + '.jpg';
-		
-		$.ajax({
-			type: 'POST',
-			url:  root + '/vwfDataManager.svc/Profile?UID='+UID,
-			data: JSON.stringify(vwfPortalModel.profile),
-			success: null,
-			async: false,
-			dataType: "text"
-		});
-			
-		console.log(obj, event);
 	};
 	
 	var EncryptPassword = function (password, username,salt)
@@ -122,5 +137,9 @@
 	}
 </script>
 
+<script type="text/javascript" src="{{root}}/vwf/model/threejs/three.js"></script>
+<script type="text/javascript" src="{{root}}/vwf/model/threejs/ColladaLoader.js.r60"></script>
+<script type="text/javascript" src="{{root}}/vwf/model/threejs/UTF8JSONLoader.js"></script>
+<script type="text/javascript" src="{{root}}/js/avatarPreview.js"></script>
 
 		
