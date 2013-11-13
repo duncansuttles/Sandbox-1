@@ -642,11 +642,13 @@ THREE.ColladaLoader = function () {
 	function applySkin ( geometry, instanceCtrl, frame ) {
 
 		
-		var maxbones = 20;
+		var maxbones = 30;
 		if(_dRenderer)
 		{
-			maxbones= 	Math.floor((_dRenderer.context.getParameter( _dRenderer.context.MAX_VERTEX_UNIFORM_VECTORS ) - 20)/4)
+			//this does not really find the proper minimum
+			maxbones = 	Math.min(32,Math.floor((_dRenderer.context.getParameter( _dRenderer.context.MAX_VERTEX_UNIFORM_VECTORS ) - 20)/4));
 		}
+
 		var skinController = controllers[ instanceCtrl.url ];
 
 		frame = frame !== undefined ? frame : 40;

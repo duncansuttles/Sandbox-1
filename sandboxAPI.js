@@ -130,29 +130,7 @@ function SessionData()
 	this.Password = '';
 	this.loginTime = new Date();
 	this.clients = {};
-	this.setTimeout = function(sec)
-	{
-		if(this.timeout) clearTimeout(this.timeout);
-		this.timeout = setTimeout(function()
-		{
-			//if I have no active clients, log me out
-			
-			if(Object.keys(this.clients).length == 0)
-			{
-				global.sessions.splice(global.sessions.indexOf(this),1);
-				global.log('Removing Session data for ' + this.UID,1);
-			}
-			//wait another three minutes and try again
-			else
-				this.resetTimeout();
-		
-		}.bind(this),sec*1000);
-	}
-	this.resetTimeout = function()
-	{
-		//15 mins
-		this.setTimeout(900);
-	}	
+	this.lastUpdate = new Date();
 }
 
 //login to the site
@@ -181,7 +159,7 @@ function SiteLogin(response,URL)
 					var session = new SessionData();
 					session.UID = UID;
 					session.Password = password;
-					session.resetTimeout();
+					
 					global.sessions.push(session);
 					
 					response.writeHead(200, {
@@ -1164,9 +1142,11 @@ function getState(SID)
 //find the session data for a request
 function GetSessionData(request)
 {
+  //request should contain the session ID in the cookie header
   if(!request.headers['cookie'])
 	return null;
 	
+  //extract our session ID from the header	
   cookies = {};
   var cookielist = request.headers.cookie.split(';');
   
@@ -1178,14 +1158,27 @@ function GetSessionData(request)
 
   var SessionID = cookies.session;
   
+  //if there is no session ID, return ull
   if(!SessionID) return null;
   global.log(SessionID,3);
   for(var i in global.sessions)
   {	
-	//console.log("checking "+global.sessions[i].sessionId+" == " + SessionID);
+	//find the session record for this ID
 	if(global.sessions[i].sessionId == SessionID)
-	{
-		global.sessions[i].resetTimeout();
+	{	
+		var now = (new Date()) ;
+		//if it's been more than 1 hour, and the user has no open socket connections, log out
+		if(now- global.sessions[i].lastUpdate > 3600 * 1000 && Object.keys(global.sessions[i].clients).length == 0)
+		{
+			global.log('session expired for ' + global.sessions[i].UID,3);
+			delete global.sessions[i];
+			return null;
+
+		}else   //reset the clock
+		{
+			global.log('Reset session for ' + global.sessions[i].UID,3);
+			global.sessions[i].lastUpdate = now;
+		}
 		return global.sessions[i];
 	}
   }
@@ -1202,6 +1195,7 @@ function Salt(URL,response)
 			
 		}else if (user)
 		{
+			//security measure. SALT endpoint should never return nothing, to prevent guessing that username is valid
 			respond(response,200,'OBS#$%SGSDF##$%#DA');
 		}else
 		{
