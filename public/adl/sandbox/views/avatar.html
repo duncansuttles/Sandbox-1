@@ -10,10 +10,10 @@
 	</div>
 	<div class="col-md-5">
 	
-		<div style="width:50%; margin: 0 auto;">
-			<img data-bind="attr:{src:currentAvatar()?'./avatars/' + currentAvatar().parent.texture + currentAvatar().data[0] +'-'+ currentAvatar().data[1] +'.png':''}"></img>
+		<div style="margin: 0;">
+			<!--<img data-bind="attr:{src:currentAvatar()?'./avatars/' + currentAvatar().parent.texture + currentAvatar().data[0] +'-'+ currentAvatar().data[1] +'.png':''}"></img>-->
 			<div id="previewRender"></div>
-			<div>
+			<div style="width:40%; margin:0 auto;">
 				<button class="btn btn-primary" style="margin: 15px 0 15px 52px;" data-bind="click:saveAvatar">Save</button>
 			</div>
 		</div>
@@ -21,13 +21,16 @@
 	
 
 </div>
-
+<script type="text/javascript" src="{{root}}/vwf/model/threejs/three.js"></script>
+<script type="text/javascript" src="{{root}}/vwf/model/threejs/ColladaLoader.js.r60"></script>
+<script type="text/javascript" src="{{root}}/js/avatarPreview.js"></script>
 <script type="text/javascript">
 	//model and texture are self explanatory, but the format of texturesArr is as follows:
 	//The length of texturesArr should be equal to the number of DAE files given a base model name 
 	//Each element in texturesArr should be the number of textures that correspond to a base model
 	//For example: There exist VWS_Business_Female1.DAE and VWS_Business_Female2.DAE (so the length of texturesArr is 2)
 	//VWS_Business_Female1.DAE has 3 different textures (texturesArr[0]) while VWS_Business_Female2.DAE only has 1 (texturesArr[1])
+	init();
 	vwfPortalModel.avatarInfo = [
 		{model: "VWS_Business_Female", texture: 'VWS_B_Female', texturesArr: [3, 1]},
 		{model: "VWS_Business_Male", texture: 'VWS_B_Male', texturesArr: [2, 4]}
@@ -69,10 +72,35 @@
 	vwfPortalModel.handleAvatarClick = function(obj, event){
 		$('.avatarchoice').css('border','');
 		$(event.target).css('border-color','blue');
+		var tempModel = './avatars/' + obj.parent.model + obj.data[0] + '.DAE',
+		tempTexture = './avatars/' + obj.parent.texture + obj.data[0] + '-' + obj.data[1] + '.jpg';
+		
+		if(geometry){
+			console.log(tempModel, tempTexture);
+
+			if(obj.parent.model + obj.data[0] == vwfPortalModel.currentAvatar().parent.model + vwfPortalModel.currentAvatar().data[0]){
+				geometry.scene.children[0].children[1].material.map = THREE.ImageUtils.loadTexture(tempTexture);
+			}
+			
+			//Else, load new model
+			else{
+				
+				loader.load(tempModel, function(geo){
+					
+					scene.remove(geometry.scene);
+					geometry = geo;			
+					scene.add( geometry.scene );
+					camera.lookAt( new THREE.Vector3(0,0,.9));
+					skin = geometry.skins[0];
+					geometry.scene.children[0].children[1].material.map = THREE.ImageUtils.loadTexture(tempTexture);
+				});
+			}
+		}
+		
+		vwfPortalModel.profile.avatarModel = tempModel;
+		vwfPortalModel.profile.avatarTexture = tempTexture;
 		
 		vwfPortalModel.currentAvatar(obj);
-		vwfPortalModel.profile.avatarModel = './avatars/' + obj.parent.model + obj.data[0] + '.DAE';
-		vwfPortalModel.profile.avatarTexture = './avatars/' + obj.parent.texture + obj.data[0] + '-' + obj.data[1] + '.jpg';
 	};
 	
 	var EncryptPassword = function (password, username,salt)
@@ -108,6 +136,29 @@
 					{
 						data = JSON.parse(data.responseText);
 						vwfPortalModel.profile = data;
+						vwfPortalModel.currentAvatar({data:[], parent:{model:'', texture:''}});
+						
+						for(var i = 0; i < vwfPortalModel.avatarInfo.length; i++){
+							if(data.avatarModel.indexOf(vwfPortalModel.avatarInfo[i].model) > -1){
+								vwfPortalModel.currentAvatar().parent.model = vwfPortalModel.avatarInfo[i].model;
+								vwfPortalModel.currentAvatar().parent.texture = vwfPortalModel.avatarInfo[i].texture;
+								
+								//FIX ME!
+								var tempArr = vwfPortalModel.profile.avatarTexture.split('-')
+								vwfPortalModel.currentAvatar().data[0] = tempArr[0].charAt(tempArr[0].length -1);
+								vwfPortalModel.currentAvatar().data[1] = tempArr[1].charAt(0);
+								break;
+							}
+						}
+						
+						loader.load(vwfPortalModel.profile.avatarModel, function(geo){
+							geometry = geo;			
+							scene.add( geometry.scene );
+							camera.lookAt( new THREE.Vector3(0,0,.9));
+							skin = geometry.skins[0];
+							geometry.scene.children[0].children[1].material.map = THREE.ImageUtils.loadTexture(vwfPortalModel.profile.avatarTexture);
+							loopStart();
+						});
 						
 					}
 					catch (e)
@@ -120,11 +171,6 @@
 					return data.responseText;
 				}
 
-				//$("[data-model='"+vwfPortalModel.profile.avatarModel+"']").filter("[data-texture='"+vwfPortalModel.profile.avatarTexture+"']").css('border','1px solid blue');
-				//$("[data-model='"+vwfPortalModel.profile.avatarModel+"']").filter("[data-texture='"+vwfPortalModel.profile.avatarTexture+"']").css('padding','0px');
-				//HIGHLIGHT CURRENT AVATAR
-				
-				
 			vwfPortalModel.usersPage = true;
 			ko.applyBindings(vwfPortalModel);
 			
@@ -136,11 +182,4 @@
 		var ret = window.location.search.substr(window.location.search.indexOf('=')+1);
 		window.location = ret.charAt(0) == '/' ? root + ret : root + '/' + ret;
 	}
-</script>
-
-<script type="text/javascript" src="{{root}}/vwf/model/threejs/three.js"></script>
-<script type="text/javascript" src="{{root}}/vwf/model/threejs/ColladaLoader.js.r60"></script>
-<script type="text/javascript" src="{{root}}/vwf/model/threejs/UTF8JSONLoader.js"></script>
-<script type="text/javascript" src="{{root}}/js/avatarPreview.js"></script>
-
-		
+</script>		
