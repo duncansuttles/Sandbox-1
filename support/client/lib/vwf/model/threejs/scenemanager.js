@@ -237,7 +237,13 @@ SceneManager.prototype.getDefaultTexture = function()
 		
 		this.defaultTexture = THREE.ImageUtils.generateDataTexture(8,8,new THREE.Color( 0x0000ff));
 		this.defaultTexture.image.src = "";
-		
+		this.defaultTexture.minFilter = THREE.LinearMipMapLinearFilter;
+		this.defaultTexture.magFilter = THREE.LinearMipMapLinearFilter;
+		var maxAnisotropy = _dRenderer.getMaxAnisotropy();
+
+		this.defaultTexture.anisotropy = maxAnisotropy;
+		this.defaultTexture.wrapS = THREE.RepeatWrapping;
+		this.defaultTexture.wrapT = THREE.RepeatWrapping;
 	}
 
 	return this.defaultTexture;
@@ -247,6 +253,13 @@ SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) 
 		var image = new Image();
 		var texture = new THREE.Texture( this.getDefaultTexture().image, mapping );
 		texture.format = this.getDefaultTexture().format;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.magFilter = THREE.LinearMipMapLinearFilter;
+		var maxAnisotropy = _dRenderer.getMaxAnisotropy();
+
+		texture.anisotropy = maxAnisotropy;
+		texture.wrapS = THREE.RepeatWrapping;
+		texture.wrapT = THREE.RepeatWrapping;
 		var loader = new THREE.ImageLoader();
 
 		loader.addEventListener( 'load', function ( event ) {

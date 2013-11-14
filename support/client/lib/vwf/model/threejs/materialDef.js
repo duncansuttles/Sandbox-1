@@ -593,7 +593,7 @@
 						"	if( i < dtex_count ) {",
 						"	mat3 transform = mat3(tex_xfrm[3*i],tex_xfrm[3*i+1],tex_xfrm[3*i+2]);",
 						"	vec3 temp = transform * vec3(vUv,1.0);",
-						"	vec2 tc = vec2(fract(temp.x),fract(temp.y));",
+						"	vec2 tc = vec2(temp.x,temp.y);",
 						"	texColors[i] = texture2D(diffuse_tex[i], tc);",
 
 						"	alphaTotal += alpha[i] * texColors[i].a;}",
