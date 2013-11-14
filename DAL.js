@@ -59,6 +59,8 @@ function getUser (id,cb)
 		{
 			DB.get(id,function(err,doc,key){
 			
+				//make super sure that the object that is returned is a copy of the data in memory, not a reference
+				var doc = JSON.parse(JSON.stringify(doc));
 				cb(doc);
 			});
 		}

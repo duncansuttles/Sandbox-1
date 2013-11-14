@@ -5,6 +5,6 @@
 	"build": false,
 	"minify": false,
 	"compile": false,
-	"version": 1,
+	"version": 47,
 	"useVersioning": false
 }

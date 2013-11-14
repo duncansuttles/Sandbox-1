@@ -2,9 +2,10 @@
 		function MaterialCache()
 		{
 			this.materials = {};
-			this.getMaterialbyDef = function(def)
+			this.getMaterialbyDef = function(oldmat,def)
 			{
 				var id = JSON.stringify(def);
+				//if oldmat is not null, then we are reusing a material because it is only used once
 				if(this.materials[id])
 					return this.materials[id];
 				else
@@ -13,7 +14,12 @@
 					//this.materials[id].morphTargets  = true;
 					if(def)
 					{
-						this.materials[id] =  this.setMaterialByDef(this.materials[id],def);
+						if(oldmat)
+						{
+							//because we are reusing the material, we need to remove it from the cache
+							delete this.materials[JSON.stringify(oldmat.def)];
+						}
+						this.materials[id] =  this.setMaterialByDef(oldmat,def);
 						this.materials[id].def = def;
 					}else
 						return null;
@@ -27,7 +33,7 @@
 				
 
 				var oldmat = mesh.material;
-				var newmat = this.getMaterialbyDef(def);
+				var newmat = this.getMaterialbyDef(oldmat&&oldmat.refCount==1?oldmat:null,def);
 				
 				if(oldmat == newmat) return;
 
@@ -246,16 +252,19 @@
 			{
 				if(!value) return;
 				
-				if(currentmat && currentmat.dispose)
-					currentmat.dispose();
+				
 				
 				if(currentmat && !(currentmat instanceof THREE.MeshPhongMaterial))
 				{
-					
+					if(currentmat && currentmat.dispose)
+						currentmat.dispose();
 					currentmat = null;
 				}
 				
-				if(!currentmat) currentmat = new THREE.MeshPhongMaterial();
+				if(!currentmat){
+				 currentmat = new THREE.MeshPhongMaterial();
+				 currentmat.needsUpdate = true;
+				}
 				
 				currentmat.color.r = value.color.r;
 				currentmat.color.g = value.color.g;
@@ -279,16 +288,24 @@
 				currentmat.opacity = value.alpha;
 				//if the alpha value less than 1, and the blendmode is defined but not noblending
 				if(value.alpha < 1 || (value.blendMode !== undefined && value.blendMode !== THREE.NoBlending))
+				{
+					if(currentmat.transparent == false) currentmat.needsUpdate = true;
 					currentmat.transparent = true;
-				else
+				}
+				else{
+
+					if(currentmat.transparent == true) currentmat.needsUpdate = true;	
 					currentmat.transparent = false;
+				}
 				
 				if(value.blendMode !== undefined)
 				{
+					if(currentmat.blending != value.blendMode) currentmat.needsUpdate = true;
 					currentmat.blending = value.blendMode;
 				}
 				if(value.fog !== undefined)
 				{
+					if(currentmat.fog != value.fog) currentmat.needsUpdate = true;
 					currentmat.fog = value.fog;
 				}
 				
@@ -296,22 +313,38 @@
 				currentmat.metal = value.metal || false;
 				currentmat.combine = value.combine || 0;
 				
+				if(currentmat.wireframe != value.wireframe) currentmat.needsUpdate = true;
+				if(currentmat.metal != value.metal) currentmat.needsUpdate = true;
+				if(currentmat.combine != value.combine) currentmat.needsUpdate = true;
+
 				currentmat.shininess = value.shininess * 5 ;
 				
-				if(value.depthtest === true || value.depthtest === undefined)
+				if(currentmat.depthtest != value.depthtest) currentmat.needsUpdate = true;	
+				if(value.depthtest === true || value.depthtest === undefined){
 					currentmat.depthTest = true;
-				else 	
+				}
+				else{
 					currentmat.depthTest = false;
-					
-				if(value.depthwrite === true || value.depthwrite === undefined)
+				}
+				
+				if(currentmat.depthwrite != value.depthwrite) currentmat.needsUpdate = true;	
+				if(value.depthwrite === true || value.depthwrite === undefined){
 					currentmat.depthWrite = true;
-				else 	
+				}
+				else{ 	
 					currentmat.depthWrite = false;
+				}
 
+				
 				if(value.vertexColors === true)
+				{
+					if(currentmat.vertexColors != 2) currentmat.needsUpdate = true;
 					currentmat.vertexColors = 2;
-				else 	
+				}
+				else{
+					if(currentmat.vertexColors != 0) currentmat.needsUpdate = true;
 					currentmat.vertexColors = 0;
+				}
 					
 				var mapnames = ['map','bumpMap','lightMap','normalMap','specularMap','envMap'];
 				currentmat.reflectivity = value.reflect/10;
@@ -357,10 +390,12 @@
 							return this.indexOf(suffix, this.length - suffix.length) !== -1;
 						};
 
-						if((currentmat[mapname] && currentmat[mapname].image && !currentmat[mapname].image.src.toString().endsWith(value.layers[i].src)) || !currentmat[mapname])
+						if((currentmat[mapname] && currentmat[mapname]._SMsrc != value.layers[i].src) || !currentmat[mapname])
 						{
+							 _SceneManager.releaseTexture(currentmat[mapname]);
 							currentmat[mapname] = _SceneManager.getTexture(value.layers[i].src);
 							currentmat[mapname].needsUpdate = true;
+							currentmat.needsUpdate = true;
 							//currentmat[mapname] = THREE.ImageUtils.loadTexture(value.layers[i].src);
 							
 						}
@@ -394,9 +429,27 @@
 				for(var i in mapnames)
 				{
 					if(mapnames[i] == 'map')
+					{
 						currentmat.map =  _SceneManager.getTexture('white.png');
+						currentmat.map.wrapS = THREE.RepeatWrapping;
+						currentmat.map.wrapT = THREE.RepeatWrapping;
+						if(value.layers[0])
+						{
+						currentmat.map.repeat.x = value.layers[0].scalex;
+						currentmat.map.repeat.y = value.layers[0].scaley;
+						currentmat.map.offset.x = value.layers[0].offsetx;
+						currentmat.map.offset.y = value.layers[0].offsety;
+						}
+					}
 					else	
-					currentmat[mapnames[i]] = null;
+					{
+						if(currentmat[mapnames[i]] != null)
+						{
+							currentmat[mapnames[i]] = null;
+							currentmat.needsUpdate = true;
+						}
+					}
+					
 				}
 				if(currentmat.reflectivity)
 				{
@@ -407,7 +460,7 @@
 					currentmat.envMap.mapping = new THREE.CubeReflectionMapping();
 					}
 				}
-				currentmat.needsUpdate = true;
+				
 				return currentmat;
 			}
 			
