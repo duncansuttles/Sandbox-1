@@ -230,8 +230,53 @@ SceneManager.prototype.releaseTexture = function(texture)
 		texture.dispose();
 	}
 }
+SceneManager.prototype.getDefaultTexture = function()
+{
+	if(!this.defaultTexture)
+	{
+		
+		this.defaultTexture = THREE.ImageUtils.generateDataTexture(8,8,new THREE.Color( 0x0000ff));
+		this.defaultTexture.image.src = "";
+		
+	}
+
+	return this.defaultTexture;
+}
+SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) {
+
+		var image = new Image();
+		var texture = new THREE.Texture( this.getDefaultTexture().image, mapping );
+		texture.format = this.getDefaultTexture().format;
+		var loader = new THREE.ImageLoader();
+
+		loader.addEventListener( 'load', function ( event ) {
+
+
+			texture.image = event.content;
+			texture.format = THREE.RGBAFormat;
+			texture.needsUpdate = true;
+
+			if ( onLoad ) onLoad( texture );
+
+		} );
+
+		loader.addEventListener( 'error', function ( event ) {
+
+			if ( onError ) onError( event.message );
+
+		} );
+
+		loader.crossOrigin = this.crossOrigin;
+		loader.load( url, image );
+
+		texture.sourceFile = url;
+
+		return texture;
+
+}
 SceneManager.prototype.getTexture = function(src,noclone)
 {
+	
 	var originalSrc = src;
 	var p = window.location.pathname;
 	if(p[p.length-1] == '/') {p = p.substring(0,p.length -1)};
@@ -246,18 +291,22 @@ SceneManager.prototype.getTexture = function(src,noclone)
 	
 		var tex = this.textureList[src];
 		
-		var onload = function(){
+		var onload = function(texture){
 		
-			if(tex.clones)
+			if(texture.clones)
 			{
 				for(var i =0; i < tex.clones.length; i++)
+				{
+					tex.clones[i].image = texture.image;
+					tex.clones[i].format = texture.format;
 					tex.clones[i].needsUpdate = true;
+				}
 			
 			
 			}
 		}.bind(this);
 		
-		this.textureList[src]  = THREE.ImageUtils.loadTexture(src,new THREE.UVMapping(), onload);
+		this.textureList[src]  = this.loadTexture(src,new THREE.UVMapping(), onload);
 		var tex = this.textureList[src];
 		tex.clones = [];
 		tex._SMsrc = originalSrc;
@@ -270,6 +319,7 @@ SceneManager.prototype.getTexture = function(src,noclone)
 		return ret;
 	}
 	ret = new THREE.Texture(ret.image);
+	ret.format = this.textureList[src].format;
 	ret._SMsrc = originalSrc;
 	ret.refCount = 1;
 	ret.wrapS =  this.textureList[src].wrapS;

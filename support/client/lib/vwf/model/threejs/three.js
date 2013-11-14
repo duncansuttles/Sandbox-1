@@ -18023,7 +18023,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	var _canvas = parameters.canvas !== undefined ? parameters.canvas : document.createElement( 'canvas' ),
 
-	_precision = parameters.precision !== undefined ? parameters.precision : 'highp',
+	_precision = parameters.precision !== undefined ? parameters.precision : 'lowp',
 
 	_alpha = parameters.alpha !== undefined ? parameters.alpha : true,
 	_premultipliedAlpha = parameters.premultipliedAlpha !== undefined ? parameters.premultipliedAlpha : true,
@@ -24876,7 +24876,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			var mipmap, mipmaps = texture.mipmaps;
 
-			if ( texture instanceof THREE.DataTexture ) {
+			if ( texture instanceof THREE.DataTexture || image.data instanceof Uint8Array) {
 
 				// use manually created mipmaps if available
 				// if there are no manual mipmaps
