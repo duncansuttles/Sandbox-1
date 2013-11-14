@@ -58,6 +58,14 @@ ul{
 	
 }
 
+#avatarSpinner{
+	width: 100px;
+	height: 100px;
+	position: absolute;
+	top: 30%;
+	left: 37%;
+}
+
 .glyphicon-star{
 	color: #F3E003;
 	font-size: 17px;

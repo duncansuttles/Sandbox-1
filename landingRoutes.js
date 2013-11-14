@@ -32,7 +32,8 @@ routesMap = {
 	'user': {sid:true, title: 'Account'},
 	'admin': {sid:true, title:'Admin', fileList: fileList, template: 'admin/admin'},
 	'admin/edit': {fileList: fileList},
-	'index': {home:true}
+	'index': {home:true},
+	'avatar': {avatar:true}
 };
 
 exports.generalHandler = function(req, res, next){
@@ -59,9 +60,10 @@ exports.generalHandler = function(req, res, next){
 			template = routesMap[currentAcceptedRoute].template ? routesMap[currentAcceptedRoute].template : currentAcceptedRoute;
 			fileList = routesMap[currentAcceptedRoute].fileList ? routesMap[currentAcceptedRoute].fileList : [];	
 			home = routesMap[currentAcceptedRoute].home ? routesMap[currentAcceptedRoute].home : false;	
+			avatar = routesMap[currentAcceptedRoute].avatar ? routesMap[currentAcceptedRoute].avatar : false;	
 		}
 		
-		res.locals = {sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home};
+		res.locals = {sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar};
 		res.render(template);
 	}
 	
