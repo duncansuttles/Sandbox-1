@@ -144,11 +144,11 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 						this.BuildGUI();
 					}
 				
-				}.bind(this),['phong','video']);
+				}.bind(this),['phong','mix','video']);
 			
 			}.bind(this));
 				
-			if(this.currentMaterial.type == 'phong')
+			if(this.currentMaterial.type == 'phong' || this.currentMaterial.type == 'mix')
 				this.BuildGUIPhong();	
 			if(this.currentMaterial.type == 'video')
 				this.BuildGUIVideo();	

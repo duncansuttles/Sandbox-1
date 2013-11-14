@@ -72,16 +72,15 @@
 				if(!value) return null;
 				if(!value.type)
 					value.type = 'phong';
+
 				if(value.type == 'phong')	
 					return this.setMaterialDefPhong(currentmat,value);
-				if(value.type == 'video')	
-				{
-						return this.setMaterialDefVideo(currentmat,value)
-				}
-				if(value.type == 'camera')	
-				{
-						return this.setMaterialDefCamera(currentmat,value)
-				}
+				else if(value.type == 'video')	
+					return this.setMaterialDefVideo(currentmat,value)
+				else if(value.type == 'camera')	
+					return this.setMaterialDefCamera(currentmat,value)
+				else if(value.type == 'mix')
+					return this.setMaterialDefMix(currentmat,value);
 			}
 			this.setMaterialDefVideo = function(currentmat,value)
 			{
@@ -467,11 +466,167 @@
 			}
 			
 			
-			
-		
-		
-		
-		
+			// blend all diffuse textures based on alpha ratios
+			this.setMaterialDefMix = function(currentmat,value)
+			{
+				if(!value) return;
+				
+				//if(currentmat && currentmat.dispose)
+				//	currentmat.dispose();
+				
+				//if(currentmat && !(currentmat instanceof THREE.ShaderMaterial))
+					currentmat = null;
+				
+				if(!currentmat)
+				{
+					var diffuse_tex = [];
+					var alphas = [];
+					var transform = [];
+					var render_flags = {
+						// always used
+						lights: true,
+						fog: !!value.fog,
+
+						// optional
+						map: false, 
+						bumpMap: false,
+						lightMap: false,
+						normalMap: false,
+						specularMap: false,
+						envMap: false
+					};
+
+					var config = JSON.parse(JSON.stringify(THREE.ShaderLib['phong']));
+					config.defines = {};
+
+					for( var i in value.layers ){
+						var layer = value.layers[i];
+						if( layer.mapTo == 1 )
+						{
+							render_flags['map'] = true;
+
+							// have to total up, can't just assign. see below
+							diffuse_tex.push( _SceneManager.getTexture(layer.src) );
+							alphas.push( layer.alpha );
+							var tfm = new THREE.Matrix3( layer.scalex, 0, layer.offsetx, 0, layer.scaley, layer.offsety, 0, 0, 1 );
+							transform.push.apply(transform,tfm.elements);
+							//config.uniforms.map.value = _SceneManager.getTexture(layer.src);
+
+						}
+						else if( layer.mapTo == 2 )
+						{
+							render_flags['bumpMap'] = true;
+							config.uniforms.bumpMap.value = _SceneManager.getTexture(layer.src);
+							config.uniforms.bumpScale.value = value.layers[i].alpha;
+						}
+						else if( layer.mapTo == 3 )
+						{
+							render_flags['lightMap'] = true;
+							config.uniforms.lightMap.value = _SceneManager.getTexture(layer.src);
+						}
+						else if( layer.mapTo == 4 )
+						{
+							render_flags['normalMap'] = true;
+							config.uniforms.normalMap.value = _SceneManager.getTexture(layer.src);
+							config.uniforms.normalScale.value = new THREE.Vector2(value.layers[i].alpha, value.layers[i].alpha);
+						}
+						else if( layer.mapTo == 5 )
+						{
+							render_flags['specularMap'] = true;
+							config.uniforms.specularMap.value = _SceneManager.getTexture(layer.src);
+						}
+						else if( layer.mapTo == 6 )
+						{
+							render_flags['envMap'] = true;
+							config.uniforms.envMap.value = _SceneManager.getTexture(layer.src);
+						}
+
+					}
+
+					// define uniforms used in diffuse mixing
+					config.uniforms.diffuse_tex = { type: 'tv', value: diffuse_tex };
+					config.uniforms.dtex_count = { type: 'i', value: diffuse_tex.length };
+					config.uniforms.alpha = { type: 'fv1', value: alphas };
+					config.uniforms.tex_xfrm = { type: 'fv', value: transform };
+					delete config.uniforms.map;
+					config.defines.MAX_DIFFUSE = 8;
+
+					// assign other random uniforms/flags
+					config.uniforms.diffuse.value = {r: value.color.r, g: value.color.g, b: value.color.b};
+					config.uniforms.emissive.value = value.emit;
+					config.uniforms.ambient.value = value.ambient;
+					var temp = new THREE.Vector3(value.specularColor.r, value.specularColor.g, value.specularColor.b);
+					temp.multiplyScalar(value.specularLevel);
+					config.uniforms.specular.value = {r: temp.x, b: temp.y, g: temp.z};
+					config.uniforms.shininess.value = value.shininess * 5;
+					config.uniforms.opacity.value = value.alpha;
+					render_flags['side'] = value.side || 0;
+
+					if(value.alpha < 1 || (value.blendMode !== undefined && value.blendMode !== THREE.NoBlending)){
+						render_flags['transparent'] = true;
+					}
+					else{
+						render_flags['transparent'] = false;
+					}
+					if(value.blendMode !== undefined)
+						render_flags['blending'] = value.blendMode;
+
+					var shader = config.fragmentShader.split('\n');
+					var myUniforms = [
+						"",
+						"uniform sampler2D diffuse_tex[MAX_DIFFUSE];",
+						"uniform float alpha[MAX_DIFFUSE];",
+						"uniform vec3 tex_xfrm[3*MAX_DIFFUSE];",
+						"uniform int dtex_count;",
+						""
+					].join('\n');
+					var myShaderFrag = [
+						"",
+						"float alphaTotal = 0.0;",
+						"vec4 texColors[MAX_DIFFUSE];",
+						"vec4 texelColor = vec4(0.0,0.0,0.0,1.0);",
+						"if( opacity < 1.0 ) texelColor.w = 0.0;",
+
+						// transform UV to account for offset/scale
+						// also total up alpha contributions
+						"for( int i=0; i<MAX_DIFFUSE; ++i ){",
+						"	if( i < dtex_count ) {",
+						"	mat3 transform = mat3(tex_xfrm[3*i],tex_xfrm[3*i+1],tex_xfrm[3*i+2]);",
+						"	vec3 temp = transform * vec3(vUv,1.0);",
+						"	vec2 tc = vec2(fract(temp.x),fract(temp.y));",
+						"	texColors[i] = texture2D(diffuse_tex[i], tc);",
+
+						"	alphaTotal += alpha[i] * texColors[i].a;}",
+						"}",
+
+						// calculate contributions of each layer towards final color
+						"for( int i=0; i<MAX_DIFFUSE; ++i ){",
+						"	if( i < dtex_count ) {",
+						"	float aMix = (alpha[i]*texColors[i].a)/alphaTotal;",
+						//"	texelColor += aMix * texColors[i];",
+						"	texelColor.rgb += aMix * texColors[i].rgb;",
+						"	texelColor.a = max(texelColor.a, texColors[i].a);}",
+						"}",
+
+						// brighten up under-saturated colors
+						"if( alphaTotal < 1.0 )",
+						"	texelColor.rgb = 1.0/alphaTotal * texelColor.rgb;",
+						""
+					].join('\n');
+
+					config.fragmentShader = shader.slice(0,13).join('\n') + myUniforms + shader.slice(14,184).join('\n') + myShaderFrag + shader.slice(185).join('\n');
+
+					// apply renderer flags
+					currentmat = new THREE.ShaderMaterial(config);
+					for( var i in render_flags ){
+						currentmat[i] = render_flags[i];
+					}
+
+				}
+				
+				//currentmat.needsUpdate = true;
+				return currentmat;
+			}
 		
 		}
 		var _MaterialCache = new MaterialCache();
