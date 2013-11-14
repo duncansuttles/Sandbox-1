@@ -882,6 +882,11 @@ function startVWF(){
 		DAL.getInstance(namespace.replace(/\//g,"_"),function(instancedata)
 		{
 			
+			if(!instancedata)
+			{
+				socket.disconnect();
+				return;
+			}
 			//if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
 			if(instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer)
 			{
