@@ -12,13 +12,14 @@
 	
 		<div style="width:50%; margin: 0 auto;">
 			<img data-bind="attr:{src:currentAvatar()?'./avatars/' + currentAvatar().parent.texture + currentAvatar().data[0] +'-'+ currentAvatar().data[1] +'.png':''}"></img>
+			<div id="previewRender"></div>
 			<div>
 				<button class="btn btn-primary" style="margin: 15px 0 15px 52px;" data-bind="click:saveAvatar">Save</button>
 			</div>
 		</div>
 	</div>
 	
-	<div id="previewRender"></div>
+
 </div>
 
 <script type="text/javascript">
