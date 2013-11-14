@@ -510,11 +510,9 @@
 
 					if(value.alpha < 1 || (value.blendMode !== undefined && value.blendMode !== THREE.NoBlending)){
 						render_flags['transparent'] = true;
-						//console.log('Object transparency = true');
 					}
 					else{
 						render_flags['transparent'] = false;
-						//console.log('Object transparency = false');
 					}
 					if(value.blendMode !== undefined)
 						render_flags['blending'] = value.blendMode;
@@ -554,7 +552,6 @@
 						//"	texelColor += aMix * texColors[i];",
 						"	texelColor.rgb += aMix * texColors[i].rgb;",
 						"	texelColor.a = max(texelColor.a, texColors[i].a);",
-						//"	texelColor = vec4(texColors[i].rgb/texColors[i].a, 1.0);",
 						"}",
 
 						// brighten up under-saturated colors
