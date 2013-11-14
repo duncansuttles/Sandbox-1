@@ -475,7 +475,7 @@
 				
 				//if(currentmat && !(currentmat instanceof THREE.ShaderMaterial))
 					currentmat = null;
-				
+
 				if(!currentmat)
 				{
 					var diffuse_tex = [];
@@ -559,8 +559,12 @@
 					config.uniforms.specular.value = {r: temp.x, b: temp.y, g: temp.z};
 					config.uniforms.shininess.value = value.shininess * 5;
 					config.uniforms.opacity.value = value.alpha;
+					config.uniforms.reflectivity.value = value.reflect/10;
+					config.uniforms.combine.value = value.combine || 0;
+
 					render_flags['side'] = value.side || 0;
 
+					// configure transparency
 					if(value.alpha < 1 || (value.blendMode !== undefined && value.blendMode !== THREE.NoBlending)){
 						render_flags['transparent'] = true;
 					}
@@ -570,6 +574,19 @@
 					if(value.blendMode !== undefined)
 						render_flags['blending'] = value.blendMode;
 
+					// configure reflectivity
+					if(config.uniforms.reflectivity.value)
+					{
+						var sky = vwf_view.kernel.kernel.callMethod('index-vwf','getSkyMat');
+						if(sky)
+						{
+							//console.log('Skymap:', sky.uniforms.texture);
+							config.uniforms.envMap.value = sky.uniforms.texture.value;
+							config.uniforms.envMap.value.mapping = new THREE.CubeReflectionMapping();
+							render_flags.envMap = true;
+						}
+					}
+				
 					var shader = config.fragmentShader.split('\n');
 					var myUniforms = [
 						"",
@@ -590,21 +607,23 @@
 						// also total up alpha contributions
 						"for( int i=0; i<MAX_DIFFUSE; ++i ){",
 						"	if( i < dtex_count ) {",
-						"	mat3 transform = mat3(tex_xfrm[3*i],tex_xfrm[3*i+1],tex_xfrm[3*i+2]);",
-						"	vec3 temp = transform * vec3(vUv,1.0);",
-						"	vec2 tc = vec2(fract(temp.x),fract(temp.y));",
-						"	texColors[i] = texture2D(diffuse_tex[i], tc);",
+						"		mat3 transform = mat3(tex_xfrm[3*i],tex_xfrm[3*i+1],tex_xfrm[3*i+2]);",
+						"		vec3 temp = transform * vec3(vUv,1.0);",
+						"		vec2 tc = vec2(fract(temp.x),fract(temp.y));",
+						"		texColors[i] = texture2D(diffuse_tex[i], tc);",
 
-						"	alphaTotal += alpha[i] * texColors[i].a;}",
+						"		alphaTotal += alpha[i] * texColors[i].a;",
+						"	}",
 						"}",
 
 						// calculate contributions of each layer towards final color
 						"for( int i=0; i<MAX_DIFFUSE; ++i ){",
 						"	if( i < dtex_count ) {",
-						"	float aMix = (alpha[i]*texColors[i].a)/alphaTotal;",
-						//"	texelColor += aMix * texColors[i];",
-						"	texelColor.rgb += aMix * texColors[i].rgb;",
-						"	texelColor.a = max(texelColor.a, texColors[i].a);}",
+						"		float aMix = (alpha[i]*texColors[i].a)/alphaTotal;",
+						//"		texelColor += aMix * texColors[i];",
+						"		texelColor.rgb += aMix * texColors[i].rgb;",
+						"		texelColor.a = max(texelColor.a, texColors[i].a);",
+						"	}",
 						"}",
 
 						// brighten up under-saturated colors
