@@ -793,8 +793,6 @@ function startVWF(){
 				});
 				response.write(e.toString(), "utf8");
 				response.end();
-		
-		
 		}
 	} // close onRequest
 	
@@ -1095,7 +1093,7 @@ function startVWF(){
 			
 			//this is a blank world, go ahead and load the default
 
-			
+			global.instances[namespace].cachedState = blankscene;
 			socket.emit('message',messageCompress.pack(JSON.stringify({"action":"createNode","parameters":[blankscene],"time":global.instances[namespace].time})));
 			socket.pending = false;
 		});
@@ -1114,6 +1112,7 @@ function startVWF(){
 		var timeout = function(namespace){
 			
 			this.namespace = namespace;
+			this.count = 0;
 			this.time = function()
 			{
 				try{
@@ -1132,11 +1131,40 @@ function startVWF(){
 					var loadClient = loadClients[Math.floor((Math.max(0,Math.random() -.001)) * loadClients.length)];
 					if(loadClient)
 					{
-						console.log('did not get state, resending request');	
-						this.namespace.getStateTime = this.namespace.time;
-						loadClient.emit('message',messageCompress.pack(JSON.stringify({"action":"getState","respond":true,"time":this.namespace.time})));
-						socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Did not get state, resending request."],"time":this.namespace.time})));	
-						this.handle = global.setTimeout(this.time.bind(this),2000);			
+						this.count++;
+						if(this.count < 5)
+						{
+							console.log('did not get state, resending request');	
+							this.namespace.getStateTime = this.namespace.time;
+							loadClient.emit('message',messageCompress.pack(JSON.stringify({"action":"getState","respond":true,"time":this.namespace.time})));
+							socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Did not get state, resending request."],"time":this.namespace.time})));	
+							this.handle = global.setTimeout(this.time.bind(this),2000);	
+						}else
+						{
+							console.log('sending default state');
+							var state =  this.namespace.cachedState;
+							for(var i in  this.namespace.clients)
+							{
+								var client =  this.namespace.clients[i];
+								console.log(state);
+								if(loadClient != client && client.pending===true)
+								{
+									console.log('sending default state 2');
+									client.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State Not Received, Transmitting default"],"time": this.namespace.getStateTime})));	
+									socket.emit('message',messageCompress.pack(JSON.stringify({"action":"createNode","parameters":[state],"time":this.namespace.getStateTime})));
+									client.pending = false;
+									for(var j = 0; j < client.pendingList.length; j++)
+									{
+										
+										client.emit('message',client.pendingList[j]);
+										
+										
+									}
+									client.pendingList = [];	
+								}
+							}
+						}
+
 					}else
 					{
 						console.log('need to load from db');	

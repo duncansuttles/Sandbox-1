@@ -20,6 +20,7 @@
 							delete this.materials[JSON.stringify(oldmat.def)];
 						}
 						this.materials[id] =  this.setMaterialByDef(oldmat,def);
+						if(this.materials[id])
 						this.materials[id].def = def;
 					}else
 						return null;
