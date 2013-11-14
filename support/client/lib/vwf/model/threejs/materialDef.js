@@ -470,8 +470,8 @@
 			{
 				if(!value) return;
 				
-				if(currentmat && currentmat.dispose)
-					currentmat.dispose();
+				//if(currentmat && currentmat.dispose)
+				//	currentmat.dispose();
 				
 				//if(currentmat && !(currentmat instanceof THREE.ShaderMaterial))
 					currentmat = null;
@@ -589,22 +589,22 @@
 						// transform UV to account for offset/scale
 						// also total up alpha contributions
 						"for( int i=0; i<MAX_DIFFUSE; ++i ){",
-						"	if( i >= dtex_count ) break;",
+						"	if( i < dtex_count ) {",
 						"	mat3 transform = mat3(tex_xfrm[3*i],tex_xfrm[3*i+1],tex_xfrm[3*i+2]);",
 						"	vec3 temp = transform * vec3(vUv,1.0);",
 						"	vec2 tc = vec2(fract(temp.x),fract(temp.y));",
 						"	texColors[i] = texture2D(diffuse_tex[i], tc);",
 
-						"	alphaTotal += alpha[i] * texColors[i].a;",
+						"	alphaTotal += alpha[i] * texColors[i].a;}",
 						"}",
 
 						// calculate contributions of each layer towards final color
 						"for( int i=0; i<MAX_DIFFUSE; ++i ){",
-						"	if( i >= dtex_count ) break;",
+						"	if( i < dtex_count ) {",
 						"	float aMix = (alpha[i]*texColors[i].a)/alphaTotal;",
 						//"	texelColor += aMix * texColors[i];",
 						"	texelColor.rgb += aMix * texColors[i].rgb;",
-						"	texelColor.a = max(texelColor.a, texColors[i].a);",
+						"	texelColor.a = max(texelColor.a, texColors[i].a);}",
 						"}",
 
 						// brighten up under-saturated colors
