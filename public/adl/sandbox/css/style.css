@@ -58,6 +58,14 @@ ul{
 	
 }
 
+#avatarSpinner{
+	width: 100px;
+	height: 100px;
+	position: absolute;
+	top: 30%;
+	left: 37%;
+}
+
 .glyphicon-star{
 	color: #F3E003;
 	font-size: 17px;
@@ -66,14 +74,25 @@ ul{
 }
 
 .avatarchoice:hover {
-	padding: 0px;
-	border: 1px solid #DDD;
+	border-color: green;
 }
 
 .avatarchoice {
 	text-align: center;
 	padding: 1px;
 	border-radius:10px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	margin: 9px 0;
+	cursor: pointer;
+	width: 150px;
+	height: 110px;
+	overflow: hidden;
+}
+
+.avatarchoice  img{
+
+	margin-left: -10px;
 }
 .videoList td{
 	border: none !important;

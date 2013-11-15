@@ -57,7 +57,7 @@
 								<a data-bind="attr:{href:'{{root}}/'+id}" style="text-decoration:none;">
 									<span class="description" data-bind="text:description?$root.getShorterStr(description, 75):'No description'"></span>
 									
-									<div style="margin-top: 5px;" data-bind="visible:!$data.featured">
+									<div style="margin-top: 5px;" data-bind="visible:false&&!$data.featured">
 										<span class="objects" data-bind="text: objects + (objects == 1 ? ' object ' : ' objects ')"></span>
 										&nbsp;<span class="lastModified stateid" data-bind="text:' (' + lastUpdate + ')' "></span>
 									</div>
@@ -69,7 +69,7 @@
 							<a class="loadWorld activeWorld" data-bind="attr:{href:'{{root}}/'+id}, visible:hotState">Active</a>
 							
 							
-							<div style="border-left:1px solid #e7e7e7;float:right;height:18px;width:120px;" data-bind="visible:$root.user().isLoggedIn && ($root.user().username == $data.owner || $root.user().isAdmin) && editVisible">
+							<div style="border-left:1px solid #e7e7e7;float:right;height:18px;" data-bind="visible:$root.user().isLoggedIn && ($root.user().username == $data.owner || $root.user().isAdmin) && editVisible">
 								<a title="Delete World" class="editstatedelete glyphicon glyphicon-remove" data-bind="attr:{href:'{{root}}/'+'remove?id='+id}"></a>
 								<a title="Edit World" class="editstatedata glyphicon glyphicon-pencil" data-bind="attr:{href:'{{root}}/'+'edit?id='+id}"></a>
 								<a title="Publish World" class="editstatedata glyphicon glyphicon-print" data-bind="attr:{href:'{{root}}/'+'publish?id='+id}"></a>								
