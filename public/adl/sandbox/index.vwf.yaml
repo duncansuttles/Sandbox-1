@@ -467,7 +467,7 @@ scripts:
             this.skymaterial.uniforms.texture.value.needsUpdate = true;
        }.bind(this);
             var skyCubeTexture = THREE.ImageUtils.loadTextureCube(urls,undefined,loaded);
-            skyCubeTexture.format = THREE.RGBFormat;
+           // skyCubeTexture.format = THREE.RGBFormat;
             skyCubeTexture.generateMipmaps = true;
             skyCubeTexture.minFilter = THREE.LinearFilter;
             skyCubeTexture.magFilter = THREE.LinearFilter;
