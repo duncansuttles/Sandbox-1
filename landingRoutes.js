@@ -4,7 +4,8 @@ routesMap = {},
 DAL = {},
 fs = require('fs'),
 async = require('async'),
-URL = require('url');
+URL = require('url'),
+avatar = false;
 
 fs.readdir(__dirname + '/public' + root + '/views/help', function(err, files){
 	var tempArr = [];
