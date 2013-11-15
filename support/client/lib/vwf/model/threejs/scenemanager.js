@@ -238,7 +238,7 @@ SceneManager.prototype.getDefaultTexture = function()
 		this.defaultTexture = THREE.ImageUtils.generateDataTexture(8,8,new THREE.Color( 0x0000ff));
 		this.defaultTexture.image.src = "";
 		this.defaultTexture.minFilter = THREE.LinearMipMapLinearFilter;
-		this.defaultTexture.magFilter = THREE.LinearMipMapLinearFilter;
+		this.defaultTexture.magFilter = THREE.LinearFilter;
 		if(window._dRenderer)
 			this.defaultTexture = _dRenderer.getMaxAnisotropy();
 		this.defaultTexture.wrapS = THREE.RepeatWrapping;
@@ -253,7 +253,7 @@ SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) 
 		var texture = new THREE.Texture( this.getDefaultTexture().image, mapping );
 		texture.format = this.getDefaultTexture().format;
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
-		texture.magFilter = THREE.LinearMipMapLinearFilter;
+		texture.magFilter = THREE.LinearFilter;
 		
 		if(window._dRenderer)
 			texture.anisotropy = _dRenderer.getMaxAnisotropy();
@@ -991,7 +991,7 @@ SceneManagerRegion.prototype.FrustrumCast = function(frustrum,opts)
 
 //Test a ray against an octree region
 SceneManagerRegion.prototype.SphereCast = function(center,r,opts)
-{
+{t
 	
 	var hits = [];
 	
@@ -1293,6 +1293,7 @@ function compareMaterials(m1,m2)
 				}
 				if(m1[mapname] && m2[mapname])
 				{
+					if(m1[mapname].image && m2[mapname].image)
 					if(m1[mapname].image.src.toString() != m2[mapname].image.src.toString())
 						delta += 1000;
 					if(m1[mapname]._SMsrc != m2[mapname]._SMsrc)

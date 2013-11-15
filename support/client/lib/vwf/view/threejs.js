@@ -779,7 +779,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 
                 sceneNode.frameCount = 0;
             
-             
+             	
                 var newPick = ThreeJSPick.call(self,sceneNode,cam,ww,wh);
 
                 var newPickId = newPick ? getPickObjectID.call( view, newPick.object ) : view.state.sceneRootID;
@@ -1594,11 +1594,12 @@ define( [ "module", "vwf/view" ], function( module, view ) {
          
     };
     function mouseXPos(e) {
-        return e.clientX - e.currentTarget.offsetLeft + window.scrollX;
+    	
+        return e.clientX - e.currentTarget.offsetLeft + (window.scrollX || 0);
     }
 
     function mouseYPos(e) {
-        return e.clientY - e.currentTarget.offsetTop + window.scrollY;
+        return e.clientY - e.currentTarget.offsetTop + (window.scrollY || 0);
     }
 
    function ThreeJSPick(sceneNode,cam,SCREEN_WIDTH,SCREEN_HEIGHT)

@@ -173,7 +173,7 @@
 				
 					currentmat.video = video;
 					currentmat.uniforms.texture1.value = new THREE.Texture(video);
-					currentmat.uniforms.texture1.value.minFilter = THREE.LinearFilter;
+					currentmat.uniforms.texture1.value.minFilter = THREE.LinearMipMapLinearFilter;
 					currentmat.uniforms.texture1.value.magFilter = THREE.LinearFilter;
 					currentmat.uniforms.texture1.value.format = THREE.RGBFormat;
 					currentmat.uniforms.texture1.value.generateMipmaps = false;

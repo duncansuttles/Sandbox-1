@@ -1994,7 +1994,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		this.SelectObject = function (VWFNode, selectmod)
 		{
 			this.waitingForSet.length = 0;
-			if (VWFNode && VWFNode.constructor.name == 'Array')
+			if (VWFNode && VWFNode.constructor == Array)
 			{
 				for (var i = 0; i < VWFNode.length; i++) VWFNode[i] = vwf.getNode(VWFNode[i]);
 			}
@@ -3050,6 +3050,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		this.mouseup = function (e)
 		{
 			if(!toolsOpen()) return;
+			
 			if (this.activeTool && this.activeTool.mouseup) this.activeTool.mouseup(e);
 		}
 		this.click = function (e)
