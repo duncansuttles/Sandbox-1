@@ -50,7 +50,7 @@ Installation (Server)
 
 1. Clone this repository from Github (https://github.com/adlnet/Sandbox)
 
-2. Install Node.js (optional)
+2. Install Node.js (if not already installed)
 
 	Note: A Node.js v0.8.3 Windows binary is included with the repository, and it is verified to work.
 	Feel free to use this binary instead of installing all of Node.js.
