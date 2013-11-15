@@ -1295,6 +1295,8 @@ function compareMaterials(m1,m2)
 				{
 					if(m1[mapname].image.src.toString() != m2[mapname].image.src.toString())
 						delta += 1000;
+					if(m1[mapname]._SMsrc != m2[mapname]._SMsrc)
+						delta += 1000;
 				
 				
                
