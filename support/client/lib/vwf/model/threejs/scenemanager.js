@@ -239,9 +239,8 @@ SceneManager.prototype.getDefaultTexture = function()
 		this.defaultTexture.image.src = "";
 		this.defaultTexture.minFilter = THREE.LinearMipMapLinearFilter;
 		this.defaultTexture.magFilter = THREE.LinearMipMapLinearFilter;
-		var maxAnisotropy = _dRenderer.getMaxAnisotropy();
-
-		this.defaultTexture.anisotropy = maxAnisotropy;
+		if(window._dRenderer)
+			this.defaultTexture = _dRenderer.getMaxAnisotropy();
 		this.defaultTexture.wrapS = THREE.RepeatWrapping;
 		this.defaultTexture.wrapT = THREE.RepeatWrapping;
 	}
@@ -255,9 +254,9 @@ SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) 
 		texture.format = this.getDefaultTexture().format;
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
 		texture.magFilter = THREE.LinearMipMapLinearFilter;
-		var maxAnisotropy = _dRenderer.getMaxAnisotropy();
-
-		texture.anisotropy = maxAnisotropy;
+		
+		if(window._dRenderer)
+			texture.anisotropy = _dRenderer.getMaxAnisotropy();
 		texture.wrapS = THREE.RepeatWrapping;
 		texture.wrapT = THREE.RepeatWrapping;
 		var loader = new THREE.ImageLoader();
@@ -279,7 +278,7 @@ SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) 
 
 		} );
 
-		loader.crossOrigin = this.crossOrigin;
+		loader.crossOrigin = 'anonymous';
 		loader.load( url, image );
 
 		texture.sourceFile = url;
