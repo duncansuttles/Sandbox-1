@@ -49,23 +49,14 @@ Installation (Server)
 ---------------------
 
 1. Clone this repository from Github (https://github.com/adlnet/Sandbox)
+
 2. Install Node.js (optional)
 
 	Note: A Node.js v0.8.3 Windows binary is included with the repository, and it is verified to work.
 	Feel free to use this binary instead of installing all of Node.js.
 
-3. Create data directory somewhere on the drive (default: C:\VWFData)
+3. Run "npm install" in the project directory
 
-	The directory should have the following structure:
-
-	    (datadir)
-		> GlobalAssets
-		> Logs
-		> Profiles
-		> States
-		> Textures
-		> Thumbnails
-
-4. Run the server: > node app.js -d &lt;datadir> -p &lt;port>
+4. Run the server: > node app.js
 
 
