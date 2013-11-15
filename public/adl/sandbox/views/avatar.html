@@ -181,7 +181,7 @@
 							scene.add( geometry.scene );
 							camera.lookAt( new THREE.Vector3(0,0,.9));
 							skin = geometry.skins;
-							geometry.scene.children[0].children[1].material.map = THREE.ImageUtils.loadTexture(vwfPortalModel.profile.avatarTexture);
+							replaceChildrenMaterial(geometry.scene.children, vwfPortalModel.profile.avatarTexture);
 							loopStart();
 						});
 						
