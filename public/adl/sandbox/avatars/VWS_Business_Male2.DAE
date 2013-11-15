@@ -553,7 +553,7 @@
   </library_controllers>
   <library_images>
     <image id="VWS_B_Male2-1_jpg">
-      <init_from>file:///C:/3D_Projects/VWS_Business_Male2/VWS_Business_Male2/VWS_B_Male2-1.jpg</init_from>
+      <init_from>VWS_B_Male2-1.jpg</init_from>
     </image>
   </library_images>
   <library_visual_scenes>

@@ -89,7 +89,7 @@
 		if(geometry){
 			//If new model and old model are the same, load texture
 			if(obj.parent.model + obj.data[0] == vwfPortalModel.currentAvatar().parent.model + vwfPortalModel.currentAvatar().data[0]){
-				geometry.scene.children[0].children[1].material.map = THREE.ImageUtils.loadTexture(tempTexture);
+				replaceChildrenMaterial(geometry.scene.children, tempTexture);
 			}
 			
 			//Else, load new model
@@ -101,8 +101,8 @@
 					geometry = geo;			
 					scene.add( geometry.scene );
 					camera.lookAt( new THREE.Vector3(0,0,.9));
-					skin = geometry.skins[0];
-					geometry.scene.children[0].children[1].material.map = THREE.ImageUtils.loadTexture(tempTexture);
+					skin = geometry.skins;
+					replaceChildrenMaterial(geometry.scene.children, tempTexture);
 				});
 			}
 		}
@@ -112,6 +112,20 @@
 		
 		vwfPortalModel.currentAvatar(obj);
 	};
+	
+	function replaceChildrenMaterial(arr, texture){
+		
+		for(var i = 0; i < arr.length; i++){
+		
+			if(arr[i].children){
+				replaceChildrenMaterial(arr[i].children, texture);
+			}
+			
+			if(arr[i].material){
+				arr[i].material.map = THREE.ImageUtils.loadTexture(texture);
+			}
+		}
+	}
 	
 	var EncryptPassword = function (password, username,salt)
 	{
@@ -166,7 +180,7 @@
 							vwfPortalModel.spinnerVisible(false);
 							scene.add( geometry.scene );
 							camera.lookAt( new THREE.Vector3(0,0,.9));
-							skin = geometry.skins[0];
+							skin = geometry.skins;
 							geometry.scene.children[0].children[1].material.map = THREE.ImageUtils.loadTexture(vwfPortalModel.profile.avatarTexture);
 							loopStart();
 						});

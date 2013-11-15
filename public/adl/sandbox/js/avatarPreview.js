@@ -1,4 +1,4 @@
-    var geometry, loader = new THREE.ColladaLoader(), scene, loopStart, skin, camera;
+    var geometry, loader = new THREE.ColladaLoader(), scene, loopStart, skin = [], camera;
     
 	//Scoping
 	var init = function(){
@@ -25,20 +25,23 @@
 		
 		function loop() {
 			
-			geometry.scene.rotation.z += .015;
+			geometry.scene.rotation.z += .01;
 			requestAnimationFrame( loop, renderer.domElement );
 			var delta = clock.getDelta();
 			
 			if ( t > 1.2 ) t = 0;
-			if ( skin )
-			{
-				skin.morphTargetInfluences[lastFrame] = 0;
-				var currentFrame = startFrame + Math.floor(t*totalFrames/1.2);
-				skin.morphTargetInfluences[currentFrame] = 1;
-				t += delta;
-				lastFrame = currentFrame;
+			var currentFrame = startFrame + Math.floor(t*totalFrames/1.2);
+			
+			for(var i = 0; i < skin.length; i++){
+				if ( skin[i] )
+				{
+					skin[i].morphTargetInfluences[lastFrame] = 0;
+					skin[i].morphTargetInfluences[currentFrame] = 1;
+				}
 			}
 			
+			t += delta;
+			lastFrame = currentFrame;
 			THREE.AnimationHandler.update( delta );
 			renderer.render( scene, camera );
 		}
