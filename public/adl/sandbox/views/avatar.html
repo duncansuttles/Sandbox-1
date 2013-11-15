@@ -159,16 +159,17 @@
 					try
 					{
 						data = JSON.parse(data.responseText);
+						data = data.avatarModel ? data : {avatarModel:'./avatars/VWS_Business_Female1.DAE', avatarTexture:'./avatars/VWS_B_Female1-1.jpg'};
 						vwfPortalModel.profile = data;
 						vwfPortalModel.currentAvatar({data:[], parent:{model:'', texture:''}});
+						var tempArr;
 						
 						for(var i = 0; i < vwfPortalModel.avatarInfo.length; i++){
 							if(data.avatarModel.indexOf(vwfPortalModel.avatarInfo[i].model) > -1){
 								vwfPortalModel.currentAvatar().parent.model = vwfPortalModel.avatarInfo[i].model;
 								vwfPortalModel.currentAvatar().parent.texture = vwfPortalModel.avatarInfo[i].texture;
 								
-								//FIX ME!
-								var tempArr = vwfPortalModel.profile.avatarTexture.split('-')
+								tempArr = vwfPortalModel.profile.avatarTexture.split('-')
 								vwfPortalModel.currentAvatar().data[0] = tempArr[0].charAt(tempArr[0].length -1);
 								vwfPortalModel.currentAvatar().data[1] = tempArr[1].charAt(0);
 								break;
