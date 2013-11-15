@@ -1289,9 +1289,14 @@ function restoreBackup(id, stateFileName, cb){
 		
 		//Make old backup file current state file
 		fs.rename(oldPath, statePath, function(err){
-		
+			
+			//Unable to set current state, restore previous current state
 			if(err){
-				cb(false);
+				fs.rename(tempPath, statePath, function(err){
+					cb(false);
+					return;
+				});
+				
 				return;
 			}
 			
