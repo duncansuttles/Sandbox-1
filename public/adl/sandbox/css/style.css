@@ -46,6 +46,11 @@ ul{
 	max-height:500px;
 }
 
+#previewRender{
+	height: 400px;
+	width: 400px;
+}
+
 #loadOverlay{
 	position:absolute;
 	width: 100%;

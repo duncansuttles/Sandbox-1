@@ -12,7 +12,7 @@
 	
 		<div style="margin: 0;">
 			<!--<img data-bind="attr:{src:currentAvatar()?'./avatars/' + currentAvatar().parent.texture + currentAvatar().data[0] +'-'+ currentAvatar().data[1] +'.png':''}"></img>-->
-			<div id="previewRender"></div>
+			<div id="previewRender" data-bind="style: {'visibility':!spinnerVisible()?'visible':'invisibile'}"></div>
 			<div id="avatarSpinner" data-bind="visible:spinnerVisible"></div>
 			<div style="width:40%; margin:0 auto;">
 				<button class="btn btn-primary" style="margin: 15px 0 15px 52px;" data-bind="click:saveAvatar">Save</button>
@@ -97,7 +97,6 @@
 				scene.remove(geometry.scene);
 				vwfPortalModel.spinnerVisible(true);
 				loader.load(tempModel, function(geo){
-					vwfPortalModel.spinnerVisible(false);
 					geometry = geo;			
 					scene.add( geometry.scene );
 					camera.lookAt( new THREE.Vector3(0,0,.9));
@@ -113,16 +112,23 @@
 		vwfPortalModel.currentAvatar(obj);
 	};
 	
-	function replaceChildrenMaterial(arr, texture){
-		
-		for(var i = 0; i < arr.length; i++){
+	function replaceChildrenMaterial(arr, textureUrl){
+		vwfPortalModel.spinnerVisible(true);
+		THREE.ImageUtils.loadTexture(textureUrl, undefined, function(texture){
+			replaceChildrenMaterialCb(arr, texture);
+		});
+	}
+	
+	function replaceChildrenMaterialCb(arr, texture){
+			for(var i = 0; i < arr.length; i++){
 		
 			if(arr[i].children){
-				replaceChildrenMaterial(arr[i].children, texture);
+				replaceChildrenMaterialCb(arr[i].children, texture);
 			}
 			
 			if(arr[i].material){
-				arr[i].material.map = THREE.ImageUtils.loadTexture(texture);
+				vwfPortalModel.spinnerVisible(false);
+				arr[i].material.map = texture;
 			}
 		}
 	}
@@ -178,7 +184,6 @@
 						
 						loader.load(vwfPortalModel.profile.avatarModel, function(geo){
 							geometry = geo;		
-							vwfPortalModel.spinnerVisible(false);
 							scene.add( geometry.scene );
 							camera.lookAt( new THREE.Vector3(0,0,.9));
 							skin = geometry.skins;
