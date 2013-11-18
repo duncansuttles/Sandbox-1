@@ -728,7 +728,7 @@ THREE.ColladaLoader = function () {
 			var indicies = new THREE.Vector4(vertweights[0]?vertweights[0].joint:0,vertweights[1]?vertweights[1].joint:0,vertweights[2]?vertweights[2].joint:0,vertweights[3]?vertweights[3].joint:0);
 			var weight = new THREE.Vector4(vertweights[0]?vertweights[0].weight:0,vertweights[1]?vertweights[1].weight:0,vertweights[2]?vertweights[2].weight:0,vertweights[3]?vertweights[3].weight:0);
 			
-			if(weights[i].length > 4 || weights[i].length == 0) console.log('too many weights')
+			
 
 			skinIndices.push(indicies);
 			skinWeights.push(weight);

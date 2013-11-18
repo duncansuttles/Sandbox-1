@@ -286,6 +286,14 @@ SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) 
 		return texture;
 
 }
+SceneManager.prototype.useSimpleMaterials = false;
+SceneManager.prototype.createMaterial = function()
+{
+	if(_SceneManager.useSimpleMaterials)
+		return new THREE.MeshBasicMaterial();
+	return new THREE.MeshPhongMaterial();
+}
+
 SceneManager.prototype.getTexture = function(src,noclone)
 {
 	
@@ -991,7 +999,7 @@ SceneManagerRegion.prototype.FrustrumCast = function(frustrum,opts)
 
 //Test a ray against an octree region
 SceneManagerRegion.prototype.SphereCast = function(center,r,opts)
-{t
+{
 	
 	var hits = [];
 	
@@ -1245,6 +1253,11 @@ THREE.RenderBatch.prototype.build = function()
 function compareMaterials(m1,m2)
 {
 	
+	if(!m1 || !m2) return false;
+
+	if(!(m1 instanceof THREE.MeshPhongMaterial)) return false;
+	if(!(m2 instanceof THREE.MeshPhongMaterial)) return false;
+
 	var delta = 0;
 	delta += Math.abs(m1.color.r - m2.color.r);
 	delta += Math.abs(m1.color.g - m2.color.g);

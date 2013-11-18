@@ -303,7 +303,7 @@
          }
             var newmaterial = null;
             if (node.stateset) {
-                newmaterial = new THREE.MeshPhongMaterial();
+                newmaterial = _SceneManager.createMaterial();
                
 				newmaterial.map = _SceneManager.getTexture('white.png');
                 if (node.stateset.textures) {
