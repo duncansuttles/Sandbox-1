@@ -1738,6 +1738,7 @@ function startVWF(){
 			app.use(app.router);
 			app.get('/adl/sandbox/help', Landing.help);
 			app.get('/adl/sandbox/help/:page([a-zA-Z]+)', Landing.help);
+			app.get('/adl/sandbox/world/:page([a-zA-Z0-9]+)', Landing.world);
 			app.get('/adl/sandbox', Landing.generalHandler);
 			app.get('/adl/sandbox/:page([a-zA-Z/]+)', Landing.generalHandler);		
 			

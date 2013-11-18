@@ -85,6 +85,15 @@ exports.help = function(req, res){
 	res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getFrontEndRoot(req), script: displayPage + ".js"};
 	res.render('help/template');
 };
+exports.world = function(req, res, next){
+	DAL.getInstance("_adl_sandbox_gCRTmt0K93DFVEci_",function(doc){
+	
+		console.log(doc);
+		res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getFrontEndRoot(req), world: doc};
+		res.render('worldTemplate');
+	});
+
+};
 
 exports.handlePostRequest = function(req, res, next){
 
