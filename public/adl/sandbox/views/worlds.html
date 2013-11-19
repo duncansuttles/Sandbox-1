@@ -52,7 +52,9 @@
 								<a data-bind="attr:{href:'{{root}}/world/'+id}, text:$root.getShorterStr(title, 20)" href="">Title</a>
 								<span class="owner" data-bind="text:' - ' + owner"></span>
 							</div>
-							<img data-bind="attr:{src:'{{root}}/vwfDataManager.svc/thumbnail?SID=' + id + ''}" class="worldImage" onerror="this.src = './img/thumbnotfound.png';"/>
+							<a data-bind="attr:{href:'{{root}}/world/'+id}" href="">
+								<img data-bind="attr:{src:'{{root}}/vwfDataManager.svc/thumbnail?SID=' + id + ''}" class="worldImage" onerror="this.src = './img/thumbnotfound.png';"/>
+							</a>
 							<div class="worldInfo">
 								<a data-bind="attr:{href:'{{root}}/'+id}" style="text-decoration:none;">
 									<span class="description" data-bind="text:description?$root.getShorterStr(description, 75):'No description'"></span>

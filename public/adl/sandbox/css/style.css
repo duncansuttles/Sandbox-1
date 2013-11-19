@@ -434,6 +434,44 @@ text-align:left;
 	margin-bottom:15px;
 }
 
+.singleOption{
+
+	background-color: #eee;
+	padding: 5px 5px 3px 5px;
+	border-bottom: 1px #DFDFDF solid;
+	border-top: 1px #f8f8f8 solid;
+	height: 45px;
+	border-left: 1px #E6E6E6 solid;
+	border-right: 1px #E6E6E6 solid;
+	cursor: pointer;
+}
+
+.singleOption .optionText{
+
+	font-size: 20px;
+	float:left;
+	width: 60%;
+	margin-left: 20px;
+	top: 6%;
+	position: relative;
+}
+.singleOption .glyphicon{
+
+	font-size: 15px;
+	float:left;
+	width: 14%;
+	margin-left: 25px;
+	top: 20%;
+	position: relative;
+}
+
+.worldOptions{
+	border-top:none;
+	border-radius: 8px;
+	padding: 0;
+	
+}
+
 .featuredInstance .boxContentWrapper, .worldBox .boxContentWrapper{
 
 	padding: 0 5px;
