@@ -658,13 +658,14 @@ function startVWF(){
 				if(uri.indexOf('/admin/instances'.replace(safePathRE)) != -1)
 				{	
 					
-					var data = {};
+					var data = {}, tempLoginData;
 					for(var i in global.instances)
 					{
 						data[i] = {clients:{}};
 						for(var j in global.instances[i].clients)
 						{
-							data[i].clients[j] = null;
+							tempLoginData = global.instances[i].clients[j].loginData;
+							data[i].clients[j] = {UID: tempLoginData.UID, loginTime: tempLoginData.loginTime, lastUpdate: tempLoginData.lastUpdate};
 						}
 					}
 					ServeJSON(data,response,URL);

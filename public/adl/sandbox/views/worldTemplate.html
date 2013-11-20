@@ -11,15 +11,15 @@
 		<div class="col-md-7">
 			
 			
-				
-				<img src="{{root}}/img/placeholder.png"/>
-				<h3><a href="" data-bind="attr:{href:'{{root}}'+'/}">{{owner}}</a></h3>
+				<h3><a href="" data-bind="attr:{href:'{{root}}'}">{{owner}}</a></h3>
 				<h4 data-bind="text:moment('{{created}}').format('MMM DD, YYYY')"></h4>
+				<img src="{{root}}/img/placeholder.png"/>
+
 			
 		</div>
 		<div class="col-md-3 col-md-offset-2" style="padding:20px">
 			<div class="worldOptions">
-				<div class="singleOption" style="border:1px #C0E0B3 solid;background-color:#DFF0D8;border-radius:5px 5px 0 0;">
+				<div class="singleOption launchWorld">
 					<p class="glyphicon glyphicon-globe"></p>
 					<p class="optionText">Launch world</p>
 				</div>
@@ -38,7 +38,7 @@
 
 			</div>
 			<div class="worldOptions" style="margin-top:20px;border:none;">
-				<div class="singleOption" style="border-color:#F8CECE;background-color:#F2DEDE;border-radius:5px;">
+				<div class="singleOption deleteWorld">
 					<p class="glyphicon glyphicon-remove"></p>
 					<p class="optionText">Delete world</p>
 				</div>

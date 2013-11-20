@@ -446,6 +446,26 @@ text-align:left;
 	cursor: pointer;
 }
 
+.launchWorld{
+	border:1px #C0E0B3 solid;
+	background-color:#DFF0D8;
+	border-radius:5px 5px 0 0;
+}
+.deleteWorld{
+	border-color:#F8CECE;
+	background-color:#F2DEDE;
+	border-radius:5px;
+}
+.singleOption:hover{
+	background-color: #ddd;
+}
+.deleteWorld:hover{
+	background-color:#E7D6D6;
+}
+.launchWorld:hover{
+	background-color:#D6E6D0;
+}
+
 .singleOption .optionText{
 
 	font-size: 20px;
@@ -464,6 +484,8 @@ text-align:left;
 	top: 20%;
 	position: relative;
 }
+
+
 
 .worldOptions{
 	border-top:none;
