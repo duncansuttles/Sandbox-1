@@ -70,7 +70,7 @@ define(
 
 			var h = $('#index-vwf').attr('height');
 			var w = $('#index-vwf').attr('width');
-			_dRenderer.setSize(240,120);
+			_dRenderer.setSize(500,250);
 			var camera = _dView.getCamera();
 			var a = camera.aspect;
 			camera.aspect = 2;
