@@ -1197,7 +1197,8 @@ function copyInstance (id, arg2, arg3){
 			delete instance.children;
 			createInstance (newId, instance, function(success){
 				if(success){
-					var oldStateFile = datapath + '/States/' + id + '/state', newStateFile = datapath + '/States/' + newId + '/state';
+					var oldStateFile = libpath.join(datapath, '/States/', id, '/state');
+					var newStateFile = libpath.join(datapath, '/States/', newId, '/state');
 					
 					fs.readFile(oldStateFile,function(err, olddata)
 					{
@@ -1227,6 +1228,16 @@ function copyInstance (id, arg2, arg3){
 							});
 							
 						});
+					});
+
+					// copy thumbnail
+					var oldThumbnail = libpath.join(datapath, '/States', id, '/thumbnail.png');
+					var newThumbnail = libpath.join(datapath, '/States', newId, '/thumbnail.png');
+					fs.readFile(oldThumbnail, function(err,data){
+						if(!data || err){
+							return;
+						}
+						fs.writeFile(newThumbnail, data);
 					});
 				}
 				
