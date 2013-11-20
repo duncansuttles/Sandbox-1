@@ -852,6 +852,14 @@ function GetThumbnail(request,SID,response)
 	global.FileCache.ServeFile(request,datapath + libpath.sep+"States"+libpath.sep+ SID + libpath.sep + "thumbnail.png" ,response,request.url);		
 }
 
+function GetCameras(SID, response)
+{
+	DAL.getInstance(SID,function(state)
+	{
+		respond(response,200,'Working on it');
+	});
+}
+
 //Save an asset. the POST URL must contain valid name/password and that UID must match the Asset Author
 function DeleteState(URL,SID,response)
 {
@@ -1271,6 +1279,9 @@ function serve (request, response)
 			} break;
 			case "thumbnail":{
 				GetThumbnail(request,SID,response);	
+			} break;
+			case "cameras":{
+				GetCameras(SID,response);
 			} break;
 			case "datafile":{
 				global.FileCache.ServeFile(request,basedir+"DataFiles"+ pathAfterCommand,response,URL);		
