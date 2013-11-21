@@ -70,11 +70,8 @@
 							<!--<span class="glyphicon glyphicon-star" data-bind="attr:{href:'{{root}}/'+id}, visible:$data.featured && !hotState"></span>-->
 							<a class="loadWorld activeWorld" data-bind="attr:{href:'{{root}}/world/'+id}, visible:hotState">Active</a>
 							<div data-bind="visible:editVisible">
-
 								<a title="Launch World" class="editstatecopy glyphicon glyphicon-globe" data-bind="attr:{href:'{{root}}/'+id}" style="margin-right:18px;"></a>
 								<a title="View Info" class="editstatecopy glyphicon glyphicon-list-alt" data-bind="attr:{href:'{{root}}/'+'world/'+id}" style="margin-right:10px;"></a>
-								
-								
 							</div>
 						</div>
 					</div>
@@ -82,10 +79,14 @@
 			</div>
 			<div class="row" style="margin-bottom:45px;">
 				<div class="col-md-1 col-md-offset-4" style="text-align:right;">
-					<a class="btn btn-default" data-bind="click:getPreviousPage, css:previousDisabled()?'disabled btn btn-default':'btn btn-default'"><i class="glyphicon glyphicon-chevron-left"></i></a>
+					<a class="btn btn-default" data-bind="click:getPreviousPage, css:previousDisabled()?'disabled btn btn-default':'btn btn-default'">
+						<i class="glyphicon glyphicon-chevron-left"></i>
+					</a>
 				</div>				
 				<div class="col-md-1 col-md-offset-2">
-					<a class="btn btn-default" data-bind="click:getNextPage, css:nextDisabled()?'disabled btn btn-default':'btn btn-default'"><i class="glyphicon glyphicon-chevron-right"></i></a>
+					<a class="btn btn-default" data-bind="click:getNextPage, css:nextDisabled()?'disabled btn btn-default':'btn btn-default'">
+						<i class="glyphicon glyphicon-chevron-right"></i>
+					</a>
 				</div>
 			</div>
 		</div>
@@ -121,10 +122,10 @@
 					var hashArr = localStorage.getItem("searchQuery");
 					if(hashArr){
 						hashArr = hashArr.split('--');
+						hashArr[0] = hashArr[0].replace(/[^a-zA-Z0-9 ]/g, '');
+						hashArr[1] = !!hashArr[1] ? hashArr[1].replace(/[^a-zA-Z0-9 ]/g, '') : '';
 						
-						if(hashArr[0] && hashArr[1]){
-							hashArr[0] = hashArr[0].replace(/[^a-zA-Z0-9 ]/g, '');
-							hashArr[1] = hashArr[1].replace(/[^a-zA-Z0-9 ]/g, '');
+						if(!!hashArr[0] || hashArr[1] != 'featured'){
 							$('.filter').val(hashArr[0]);
 							vwfPortalModel.filterVal(hashArr[0]);
 							
@@ -135,6 +136,9 @@
 							
 							vwfPortalModel.initialSearchDisplay(false);
 						}
+						
+						vwfPortalModel.dropDownMap.featured = hashArr[0] ? "All worlds" : "Featured worlds";
+						vwfPortalModel.currentDropDown.valueHasMutated();
 					}
 				}
 				
