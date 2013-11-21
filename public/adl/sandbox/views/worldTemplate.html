@@ -1,31 +1,22 @@
 	{{#world}}
 	<div class="row">
-		<div class="col-md-12">
-			<h1>{{title}}</h1>
+		<div class="col-md-offset-4 col-md-7">
+		
+						
+			<h2 style="margin-bottom:0px;"><a href="" data-bind="attr:{href:'{{root}}'}">{{title}}</a></h2>
+			<h4 data-bind="text:'Created by {{owner}} on ' + moment('{{created}}').format('MMM DD, YYYY')" style="font-size:17px;margin-top:5px;"></h4>
 		</div>
 	</div>
 	<div class="row" style="margin-bottom: 15px">
-		
-		
-	
-		<div class="col-md-7">
-			
-			
-				<h3><a href="" data-bind="attr:{href:'{{root}}'}">{{owner}}</a></h3>
-				<h4 data-bind="text:moment('{{created}}').format('MMM DD, YYYY')"></h4>
-				<img src="{{root}}/img/placeholder.png"/>
-
-			
-		</div>
-		<div class="col-md-3 col-md-offset-2" style="padding:20px">
+		<div class="col-md-3" style="padding: 0 20px">
 			<div class="worldOptions">
 				<div class="singleOption launchWorld">
 					<p class="glyphicon glyphicon-globe"></p>
-					<p class="optionText">Launch world</p>
+					<p class="optionText"><a href="{{root}}/">Launch world</a></p>
 				</div>
 				<div class="singleOption">
 					<p class="glyphicon glyphicon-pencil"></p>
-					<p class="optionText">Edit world</p>
+					<p class="optionText"><a href="{{root}}/edit?id=">Edit world</a></p>
 				</div>
 				<div class="singleOption">
 					<p class="glyphicon glyphicon-export"></p>
@@ -43,7 +34,19 @@
 					<p class="optionText">Delete world</p>
 				</div>
 			</div>
+		</div>		
+		
+	
+		<div class="col-md-7 col-md-offset-1">
+			
+
+				<img src="{{root}}/img/placeholder.png"/>
+				
+				<p>{{description}}</p>
+
+			
 		</div>
+
 	</div>
 	<script>
 		//vwfPortalModel.currentInstance = JSON.parse({{world}});

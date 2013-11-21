@@ -434,6 +434,10 @@ text-align:left;
 	margin-bottom:15px;
 }
 
+.singleOption a{
+	color: inherit;
+	text-decoration:none;
+}
 .singleOption{
 
 	background-color: #eee;

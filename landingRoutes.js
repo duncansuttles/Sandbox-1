@@ -86,9 +86,7 @@ exports.help = function(req, res){
 	res.render('help/template');
 };
 exports.world = function(req, res, next){
-	DAL.getInstance("_adl_sandbox_gCRTmt0K93DFVEci_",function(doc){
-	
-		console.log(doc);
+	DAL.getInstance("_adl_sandbox_"+req.params.page+"_",function(doc){
 		res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getFrontEndRoot(req), world: doc};
 		res.render('worldTemplate');
 	});
