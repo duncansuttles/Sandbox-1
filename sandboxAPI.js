@@ -852,11 +852,39 @@ function GetThumbnail(request,SID,response)
 	global.FileCache.ServeFile(request,datapath + libpath.sep+"States"+libpath.sep+ SID + libpath.sep + "thumbnail.png" ,response,request.url);		
 }
 
-function GetCameras(SID, response)
+function GetCameras(SID, response, URL)
 {
-	DAL.getInstance(SID,function(state)
+	function helper(node)
 	{
-		respond(response,200,'Working on it');
+		if( !node )
+			return [];
+
+		var ret = [];
+		for( var i in node )
+		{
+			if( node[i].extends == 'SandboxCamera.vwf' )
+			{
+				// based on vwf.js:1622
+				var childID = 'SandboxCamera-vwf-' + node[i].name;
+				ret.push( {'name': node[i].properties.DisplayName, 'id': childID} );
+			}
+			ret.push.apply(ret, helper(node[i].children));
+		}
+		return ret;
+	}
+
+	var statePath = libpath.join(datapath, 'States', SID, 'state');
+	fs.readFile(statePath,{encoding: 'utf8'}, function(err,state)
+	{
+		if( err || !state ){
+			respond(response,404,'No state with given SID found');
+			return;
+		}
+		else {
+			// loop over all objects, check if camera
+			state = JSON.parse(state);
+			ServeJSON( helper(state), response, URL );
+		}
 	});
 }
 
@@ -1281,7 +1309,7 @@ function serve (request, response)
 				GetThumbnail(request,SID,response);	
 			} break;
 			case "cameras":{
-				GetCameras(SID,response);
+				GetCameras(SID,response,URL);
 			} break;
 			case "datafile":{
 				global.FileCache.ServeFile(request,basedir+"DataFiles"+ pathAfterCommand,response,URL);		
