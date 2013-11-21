@@ -70,10 +70,10 @@ define(
 
 			var h = $('#index-vwf').attr('height');
 			var w = $('#index-vwf').attr('width');
-			_dRenderer.setSize(500,250);
+			_dRenderer.setSize(600,300);
 			var camera = _dView.getCamera();
 			var a = camera.aspect;
-			camera.aspect = 2;
+			camera.aspect = 6/3;
 			camera.updateProjectionMatrix();
 			
 			window.takeimage = function()

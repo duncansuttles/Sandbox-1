@@ -658,13 +658,14 @@ function startVWF(){
 				if(uri.indexOf('/admin/instances'.replace(safePathRE)) != -1)
 				{	
 					
-					var data = {};
+					var data = {}, tempLoginData;
 					for(var i in global.instances)
 					{
 						data[i] = {clients:{}};
 						for(var j in global.instances[i].clients)
 						{
-							data[i].clients[j] = null;
+							tempLoginData = global.instances[i].clients[j].loginData;
+							data[i].clients[j] = {UID: tempLoginData.UID, loginTime: tempLoginData.loginTime, lastUpdate: tempLoginData.lastUpdate};
 						}
 					}
 					ServeJSON(data,response,URL);
@@ -1738,6 +1739,7 @@ function startVWF(){
 			app.use(app.router);
 			app.get('/adl/sandbox/help', Landing.help);
 			app.get('/adl/sandbox/help/:page([a-zA-Z]+)', Landing.help);
+			app.get('/adl/sandbox/world/:page([a-zA-Z0-9]+)', Landing.world);
 			app.get('/adl/sandbox', Landing.generalHandler);
 			app.get('/adl/sandbox/:page([a-zA-Z/]+)', Landing.generalHandler);		
 			

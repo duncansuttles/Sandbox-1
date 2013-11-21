@@ -1,0 +1,148 @@
+	{{#world}}
+	<div class="row" style="margin-bottom: 15px;margin-top:35px;">
+		<div class="col-md-3" style="padding: 0 20px">
+			<div class="worldOptions">
+				<div class="singleOption launchWorld">
+					<a href="{{root}}/{{id}}"></a>
+					<p class="glyphicon glyphicon-globe"></p>
+					<p class="optionText">Launch world</p>
+				</div>
+				<div class="singleOption" data-bind="visible:user().isLoggedIn && '{{owner}}' == user().username || user().isAdmin">
+					<a href="{{root}}/edit?id={{id}}"></a>
+					<p class="glyphicon glyphicon-pencil"></p>
+					<p class="optionText">Modify</p>
+				</div>
+				<div class="singleOption" data-bind="visible:user().isLoggedIn">
+					<p class="glyphicon glyphicon-export"></p>
+					<p class="optionText">Clone</p>
+				</div>
+				<div class="singleOption" data-bind="visible:user().isLoggedIn && '{{owner}}' == user().username || user().isAdmin">
+					<a href="{{root}}/publish?id={{id}}"></a>
+					<p class="glyphicon glyphicon-print"></p>
+					<p class="optionText">Publish</p>
+				</div>
+				<div class="singleOption" style="border-bottom:1px #E6E6E6 solid;border-radius:0 0 5px 5px;">
+					<a href="{{root}}/history?id={{id}}"></a>
+					<p class="glyphicon glyphicon-time"></p>
+					<p class="optionText">History</p>
+				</div>
+			</div>
+			<div class="worldOptions" style="margin-top:20px;border:none;">
+				<div class="singleOption activeUsers">
+					<p class="glyphicon glyphicon-user"></p>
+					<p class="optionText">Active users</p>
+				</div>
+				<div class="singleOption roundedBorderBottom" data-bind="visible: $root.numGuests() == 0 && activeUsersList().length == 0">
+					<div class="glyphicon">
+						<p class="gIconGray"></p>
+					</div>
+					<p class="optionText">0 active users</p>
+				</div>
+				<!-- ko foreach: activeUsersList().slice(0, 3) -->
+					<div class="singleOption" data-bind="css:$root.activeUsersList().length == ($index()+1) && $root.numGuests() == 0 ? 'singleOption roundedBorderBottom' : 'singleOption'">
+						<div class="glyphicon">
+							<p class="gIcon"></p>
+						</div>
+						<p class="optionText" data-bind="text:UID.length>15?UID.charAt(0).toUpperCase() + UID.substr(1, 12) + '...':UID.charAt(0).toUpperCase() + UID.substr(1)"></p>
+					</div>
+				<!-- /ko -->
+				<div class="singleOption roundedBorderBottom" data-bind="visible: $root.numGuests() > 0 || activeUsersList().length > 3">
+					<div class="glyphicon">
+						<p class="gIcon"></p>
+					</div>
+					<p class="optionText" data-bind="text: activeUsersList().length > 3 ? '+ ' + (numGuests()+activeUsersList().length-3) + ' more' : '+ ' + numGuests() + ' ' + guests()"></p>
+				</div>
+			</div>
+			
+			<div class="worldOptions" style="margin-top:20px;border:none;" data-bind="visible:user().isLoggedIn && '{{owner}}' == user().username || user().isAdmin">
+				<div class="singleOption deleteWorld">
+					<p class="glyphicon glyphicon-remove"></p>
+					<p class="optionText"><a href="{{root}}/remove?id={{id}}">Delete world</a></p>
+				</div>
+			</div>
+		</div>		
+		<div class="col-md-7" style="margin:0 auto; margin-left:95px;">
+			<h2 style="margin:0px;"><a href="" data-bind="attr:{href:'{{root}}'}">{{title}}</a></h2>
+			<h4 data-bind="text:'Created by {{owner}} on ' + moment('{{created}}').format('MMM DD, YYYY')" style="font-size:17px;margin-top:5px;"></h4>
+			<img class="bigWorldScreen" src="{{root}}/vwfDataManager.svc/thumbnail?SID={{id}}" onerror="this.src='{{root}}/img/placeholder.png'"/>
+			<p class="paragraphText">{{description}}</p>
+		</div>
+
+	</div>
+	<script>
+		//vwfPortalModel.currentInstance = JSON.parse({{world}});
+		var date = '{{created}}';
+		vwfPortalModel.momentRef = moment;
+		vwfPortalModel.activeUsersList = ko.observableArray();
+		vwfPortalModel.numGuests = ko.observable(0);
+		vwfPortalModel.guests = ko.observable("");
+		$(document).ready(function(){	
+			
+			vwfPortalModel.cloneWorld = function(world){
+				alertify.confirm("Copy this world?", function(e){
+					if(e){
+						
+						$.get(root + '/vwfDataManager.svc/copyinstance?SID={{id}}', function(o){
+			
+							if(o){
+								window.location = root + '/edit?id=' + o.substr(13,16);
+							}
+
+							else{
+								alertify.error("World was not successfully copied.");
+							}
+						})
+						.error(function(){
+							alertify.error("World was not successfully copied.");
+						});
+					}
+				});	
+			};
+			function getActiveUsersInfo(){
+				$.getJSON(root + "/admin/instances",function(e){
+					
+					vwfPortalModel.activeUsersList.removeAll();
+					if(e && e["/adl/sandbox/{{id}}/"] && e["/adl/sandbox/{{id}}/"].clients){
+						var tempClients = e["/adl/sandbox/{{id}}/"].clients;
+						var keysArr = Object.keys(tempClients), guestCount = 0, tempArr;
+						
+						for(var i = 0; i < keysArr.length; i++){
+							if(!tempClients[keysArr[i]].UID){
+								guestCount++;
+							}
+							
+							else{
+								vwfPortalModel.activeUsersList.push(tempClients[keysArr[i]]);
+							}
+						}
+						
+						vwfPortalModel.numGuests(guestCount);
+						vwfPortalModel.guests(guestCount > 1 ? "guests" : "guest");
+					}
+				});
+			}
+			
+			getActiveUsersInfo();
+			window.setInterval(getActiveUsersInfo, 10000);
+			ko.applyBindings(vwfPortalModel);
+			getLoginInfo();
+		});
+	</script>
+	    <div id="disqus_thread"></div>
+	    <script type="text/javascript">
+		/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+		var disqus_shortname = 'vwfsandbox'; // required: replace example with your forum shortname
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function() {
+		    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    
+	
+	{{/world}}
+	

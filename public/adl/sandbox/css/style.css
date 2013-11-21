@@ -46,6 +46,11 @@ ul{
 	max-height:500px;
 }
 
+#previewRender{
+	height: 400px;
+	width: 400px;
+}
+
 #loadOverlay{
 	position:absolute;
 	width: 100%;
@@ -404,10 +409,15 @@ text-align:left;
 	float:left;
 	font-size: 25px;
 }
-
-
-
 .activeWorld{
+
+	background-color: #EAFFEA;
+	border: 1px solid #A0CFA0;
+	border-radius: 5px;
+	padding: 2px 10px;
+
+}
+.launchWorld{
 
 	background-color: #EAFFEA;
 	border: 1px solid #A0CFA0;
@@ -427,6 +437,117 @@ text-align:left;
 	overflow: hidden;
 	height: 233px;
 	margin-bottom:15px;
+}
+.paragraphText{
+
+	font-size: 17px;
+	line-height: 20px;
+	color: #747474;
+	margin: 17px 0 60px 0;
+}
+.singleOption a{
+	color: inherit;
+	text-decoration:none;
+	position:absolute;
+	height:45px;
+	width:100%;
+	left:0;
+	z-index:10;
+}
+.singleOption{
+
+	background-color: #eee;
+	padding: 5px 5px 3px 5px;
+	border-bottom: 1px #DFDFDF solid;
+	border-top: 1px #f8f8f8 solid;
+	height: 45px;
+	border-left: 1px #E6E6E6 solid;
+	border-right: 1px #E6E6E6 solid;
+	cursor: pointer;
+}
+
+.launchWorld{
+	border:1px #C0E0B3 solid;
+	background-color:#DFF0D8;
+	border-radius:5px 5px 0 0;
+}
+.deleteWorld{
+	border-color:#F8CECE;
+	background-color:#F2DEDE;
+	border-radius:5px;
+}
+
+.activeUsers{
+	border-color:#B5C3D3;
+	background-color:#CEDCEC;
+	border-radius:5px 5px 0 0;
+	/*border-radius:5px;*/
+}
+
+.singleOption:hover{
+	background-color: #ddd;
+}
+.deleteWorld:hover{
+	background-color:#E7D6D6;
+}
+.launchWorld:hover{
+	background-color:#D6E6D0;
+}
+.activeUsers:hover{
+	background-color:#CEDCEC;
+}
+
+.roundedBorderBottom{
+border-bottom:1px #E6E6E6 solid;
+border-radius:0 0 5px 5px;
+}
+
+.singleOption .optionText{
+
+	font-size: 19px;
+	float:left;
+	width: 60%;
+	margin-left: 20px;
+	top: 6%;
+	position: relative;
+}
+.singleOption .glyphicon{
+
+	font-size: 15px;
+	float:left;
+	width: 14%;
+	margin-left: 25px;
+	top: 20%;
+	position: relative;
+}
+
+.bigWorldScreen{
+border: 1px solid #E6E6E6;
+padding: 1px;
+border-radius: 6px;
+}
+
+.gIcon, .gIconGray{
+	width:10px; 
+	height:10px;
+	border-radius:50%;
+	background-color: #89D16E;
+	border: 1px solid #7EC363;
+	margin-top:4px;
+	margin-left:2px;
+}
+
+.gIconGray{
+
+	background-color: #aaa;
+	border: 1px solid #999;
+}
+
+.worldOptions{
+	border-top:none;
+	border-radius: 8px;
+	padding: 0;
+	
 }
 
 .featuredInstance .boxContentWrapper, .worldBox .boxContentWrapper{
@@ -485,6 +606,22 @@ text-align:left;
 {
 	text-align:right;
 	float:right;
+}
+.launchWorldList a{
+color: #4F8BCF;
+text-decoration:none;
+}
+.launchWorldList a:hover{
+color: #3A6AA0;
+}
+.launchWorldList{
+
+border-radius: 5px;
+padding: 2px 5px;
+float: right;
+width: 85px;
+margin-top: -3px;
+height: 26px;
 }
 .loadWorld{
 
