@@ -1,13 +1,5 @@
 	{{#world}}
-	<div class="row">
-		<div class="col-md-offset-4 col-md-7">
-		
-						
-			<h2 style="margin-bottom:0px;"><a href="" data-bind="attr:{href:'{{root}}'}">{{title}}</a></h2>
-			<h4 data-bind="text:'Created by {{owner}} on ' + moment('{{created}}').format('MMM DD, YYYY')" style="font-size:17px;margin-top:5px;"></h4>
-		</div>
-	</div>
-	<div class="row" style="margin-bottom: 15px">
+	<div class="row" style="margin-bottom: 15px;margin-top:35px;">
 		<div class="col-md-3" style="padding: 0 20px">
 			<div class="worldOptions">
 				<div class="singleOption launchWorld">
@@ -15,35 +7,36 @@
 					<p class="glyphicon glyphicon-globe"></p>
 					<p class="optionText">Launch world</p>
 				</div>
-				<div class="singleOption">
+				<div class="singleOption" data-bind="visible:user().isLoggedIn && '{{owner}}' == user().username || user().isAdmin">
 					<a href="{{root}}/edit?id={{id}}"></a>
 					<p class="glyphicon glyphicon-pencil"></p>
-					<p class="optionText">Edit world</p>
+					<p class="optionText">Modify</p>
 				</div>
-				<div class="singleOption">
+				<div class="singleOption" data-bind="visible:user().isLoggedIn">
 					<p class="glyphicon glyphicon-export"></p>
-					<p class="optionText">Clone world</p>
+					<p class="optionText">Clone</p>
 				</div>
-				<div class="singleOption" style="border-bottom:1px #E6E6E6 solid;border-radius:0 0 5px 5px;">
+				<div class="singleOption" data-bind="visible:user().isLoggedIn && '{{owner}}' == user().username || user().isAdmin">
 					<a href="{{root}}/publish?id={{id}}"></a>
 					<p class="glyphicon glyphicon-print"></p>
-					<p class="optionText">Publish world</p>
+					<p class="optionText">Publish</p>
 				</div>
-
+				<div class="singleOption" style="border-bottom:1px #E6E6E6 solid;border-radius:0 0 5px 5px;">
+					<a href="{{root}}/history?id={{id}}"></a>
+					<p class="glyphicon glyphicon-time"></p>
+					<p class="optionText">History</p>
+				</div>
 			</div>
-
-
-			
 			<div class="worldOptions" style="margin-top:20px;border:none;">
 				<div class="singleOption activeUsers">
 					<p class="glyphicon glyphicon-user"></p>
 					<p class="optionText">Active users</p>
 				</div>
-				<div class="singleOption roundedBorderBottom">
+				<div class="singleOption roundedBorderBottom" data-bind="visible: $root.numGuests() == 0 && activeUsersList().length == 0">
 					<div class="glyphicon">
 						<p class="gIconGray"></p>
 					</div>
-					<p class="optionText" data-bind="">0 active users</p>
+					<p class="optionText">0 active users</p>
 				</div>
 				<!-- ko foreach: activeUsersList().slice(0, 3) -->
 					<div class="singleOption" data-bind="css:$root.activeUsersList().length == ($index()+1) && $root.numGuests() == 0 ? 'singleOption roundedBorderBottom' : 'singleOption'">
@@ -61,23 +54,18 @@
 				</div>
 			</div>
 			
-			<div class="worldOptions" style="margin-top:20px;border:none;">
+			<div class="worldOptions" style="margin-top:20px;border:none;" data-bind="visible:user().isLoggedIn && '{{owner}}' == user().username || user().isAdmin">
 				<div class="singleOption deleteWorld">
 					<p class="glyphicon glyphicon-remove"></p>
 					<p class="optionText"><a href="{{root}}/remove?id={{id}}">Delete world</a></p>
 				</div>
 			</div>
 		</div>		
-		
-	
-		<div class="col-md-7 col-md-offset-1">
-			
-
-				<img src="{{root}}/img/placeholder.png"/>
-				
-				<p class="paragraphText">{{description}}</p>
-
-			
+		<div class="col-md-7" style="margin:0 auto; margin-left:95px;">
+			<h2 style="margin:0px;"><a href="" data-bind="attr:{href:'{{root}}'}">{{title}}</a></h2>
+			<h4 data-bind="text:'Created by {{owner}} on ' + moment('{{created}}').format('MMM DD, YYYY')" style="font-size:17px;margin-top:5px;"></h4>
+			<img class="bigWorldScreen" src="{{root}}/vwfDataManager.svc/thumbnail?SID={{id}}" onerror="this.src='{{root}}/img/placeholder.png'"/>
+			<p class="paragraphText">{{description}}</p>
 		</div>
 
 	</div>
@@ -110,29 +98,32 @@
 					}
 				});	
 			};
-			
-			$.getJSON(root + "/admin/instances",function(e){
-				
-				if(e && e["/adl/sandbox/{{id}}/"] && e["/adl/sandbox/{{id}}/"].clients){
-					var tempClients = e["/adl/sandbox/{{id}}/"].clients;
-					var keysArr = Object.keys(tempClients), guestCount = 0;
+			function getActiveUsersInfo(){
+				$.getJSON(root + "/admin/instances",function(e){
 					
-					for(var i = 0; i < keysArr.length; i++){
-						if(!tempClients[keysArr[i]].UID){
-							guestCount++;
+					vwfPortalModel.activeUsersList.removeAll();
+					if(e && e["/adl/sandbox/{{id}}/"] && e["/adl/sandbox/{{id}}/"].clients){
+						var tempClients = e["/adl/sandbox/{{id}}/"].clients;
+						var keysArr = Object.keys(tempClients), guestCount = 0, tempArr;
+						
+						for(var i = 0; i < keysArr.length; i++){
+							if(!tempClients[keysArr[i]].UID){
+								guestCount++;
+							}
+							
+							else{
+								vwfPortalModel.activeUsersList.push(tempClients[keysArr[i]]);
+							}
 						}
 						
-						else{
-							vwfPortalModel.activeUsersList.push(tempClients[keysArr[i]]);
-						}
+						vwfPortalModel.numGuests(guestCount);
+						vwfPortalModel.guests(guestCount > 1 ? "guests" : "guest");
 					}
-					
-					vwfPortalModel.numGuests(guestCount);
-					vwfPortalModel.guests(guestCount > 1 ? "guests" : "guest");
-				}
-				console.log(e);
-			});
+				});
+			}
 			
+			getActiveUsersInfo();
+			window.setInterval(getActiveUsersInfo, 10000);
 			ko.applyBindings(vwfPortalModel);
 			getLoginInfo();
 		});

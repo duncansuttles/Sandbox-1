@@ -409,10 +409,15 @@ text-align:left;
 	float:left;
 	font-size: 25px;
 }
-
-
-
 .activeWorld{
+
+	background-color: #EAFFEA;
+	border: 1px solid #A0CFA0;
+	border-radius: 5px;
+	padding: 2px 10px;
+
+}
+.launchWorld{
 
 	background-color: #EAFFEA;
 	border: 1px solid #A0CFA0;
@@ -516,6 +521,12 @@ border-radius:0 0 5px 5px;
 	position: relative;
 }
 
+.bigWorldScreen{
+border: 1px solid #E6E6E6;
+padding: 1px;
+border-radius: 6px;
+}
+
 .gIcon, .gIconGray{
 	width:10px; 
 	height:10px;
@@ -595,6 +606,22 @@ border-radius:0 0 5px 5px;
 {
 	text-align:right;
 	float:right;
+}
+.launchWorldList a{
+color: #4F8BCF;
+text-decoration:none;
+}
+.launchWorldList a:hover{
+color: #3A6AA0;
+}
+.launchWorldList{
+
+border-radius: 5px;
+padding: 2px 5px;
+float: right;
+width: 85px;
+margin-top: -3px;
+height: 26px;
 }
 .loadWorld{
 
