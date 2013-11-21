@@ -87,7 +87,7 @@ exports.help = function(req, res){
 };
 exports.world = function(req, res, next){
 	DAL.getInstance("_adl_sandbox_"+req.params.page+"_",function(doc){
-		res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getFrontEndRoot(req), world: doc};
+		res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getFrontEndRoot(req), world: doc, id: req.params.page?req.params.page:''};
 		res.render('worldTemplate');
 	});
 

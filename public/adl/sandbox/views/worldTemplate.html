@@ -11,27 +11,60 @@
 		<div class="col-md-3" style="padding: 0 20px">
 			<div class="worldOptions">
 				<div class="singleOption launchWorld">
+					<a href="{{root}}/{{id}}"></a>
 					<p class="glyphicon glyphicon-globe"></p>
-					<p class="optionText"><a href="{{root}}/">Launch world</a></p>
+					<p class="optionText">Launch world</p>
 				</div>
 				<div class="singleOption">
+					<a href="{{root}}/edit?id={{id}}"></a>
 					<p class="glyphicon glyphicon-pencil"></p>
-					<p class="optionText"><a href="{{root}}/edit?id=">Edit world</a></p>
+					<p class="optionText">Edit world</p>
 				</div>
 				<div class="singleOption">
 					<p class="glyphicon glyphicon-export"></p>
 					<p class="optionText">Clone world</p>
 				</div>
 				<div class="singleOption" style="border-bottom:1px #E6E6E6 solid;border-radius:0 0 5px 5px;">
+					<a href="{{root}}/publish?id={{id}}"></a>
 					<p class="glyphicon glyphicon-print"></p>
 					<p class="optionText">Publish world</p>
 				</div>
 
 			</div>
+
+
+			
+			<div class="worldOptions" style="margin-top:20px;border:none;">
+				<div class="singleOption activeUsers">
+					<p class="glyphicon glyphicon-user"></p>
+					<p class="optionText">Active users</p>
+				</div>
+				<div class="singleOption roundedBorderBottom">
+					<div class="glyphicon">
+						<p class="gIconGray"></p>
+					</div>
+					<p class="optionText" data-bind="">0 active users</p>
+				</div>
+				<!-- ko foreach: activeUsersList().slice(0, 3) -->
+					<div class="singleOption" data-bind="css:$root.activeUsersList().length == ($index()+1) && $root.numGuests() == 0 ? 'singleOption roundedBorderBottom' : 'singleOption'">
+						<div class="glyphicon">
+							<p class="gIcon"></p>
+						</div>
+						<p class="optionText" data-bind="text:UID.length>15?UID.charAt(0).toUpperCase() + UID.substr(1, 12) + '...':UID.charAt(0).toUpperCase() + UID.substr(1)"></p>
+					</div>
+				<!-- /ko -->
+				<div class="singleOption roundedBorderBottom" data-bind="visible: $root.numGuests() > 0 || activeUsersList().length > 3">
+					<div class="glyphicon">
+						<p class="gIcon"></p>
+					</div>
+					<p class="optionText" data-bind="text: activeUsersList().length > 3 ? '+ ' + (numGuests()+activeUsersList().length-3) + ' more' : '+ ' + numGuests() + ' ' + guests()"></p>
+				</div>
+			</div>
+			
 			<div class="worldOptions" style="margin-top:20px;border:none;">
 				<div class="singleOption deleteWorld">
 					<p class="glyphicon glyphicon-remove"></p>
-					<p class="optionText">Delete world</p>
+					<p class="optionText"><a href="{{root}}/remove?id={{id}}">Delete world</a></p>
 				</div>
 			</div>
 		</div>		
@@ -42,7 +75,7 @@
 
 				<img src="{{root}}/img/placeholder.png"/>
 				
-				<p>{{description}}</p>
+				<p class="paragraphText">{{description}}</p>
 
 			
 		</div>
@@ -52,13 +85,16 @@
 		//vwfPortalModel.currentInstance = JSON.parse({{world}});
 		var date = '{{created}}';
 		vwfPortalModel.momentRef = moment;
+		vwfPortalModel.activeUsersList = ko.observableArray();
+		vwfPortalModel.numGuests = ko.observable(0);
+		vwfPortalModel.guests = ko.observable("");
 		$(document).ready(function(){	
 			
 			vwfPortalModel.cloneWorld = function(world){
 				alertify.confirm("Copy this world?", function(e){
 					if(e){
 						
-						$.get(root + '/vwfDataManager.svc/copyinstance?SID=' + world.id, function(o){
+						$.get(root + '/vwfDataManager.svc/copyinstance?SID={{id}}', function(o){
 			
 							if(o){
 								window.location = root + '/edit?id=' + o.substr(13,16);
@@ -75,14 +111,30 @@
 				});	
 			};
 			
-			ko.applyBindings(vwfPortalModel);
-			getLoginInfo(function(){				
-				showStates();
-
-				window.setInterval(function(){
-					showStates();
-				},15000);
+			$.getJSON(root + "/admin/instances",function(e){
+				
+				if(e && e["/adl/sandbox/{{id}}/"] && e["/adl/sandbox/{{id}}/"].clients){
+					var tempClients = e["/adl/sandbox/{{id}}/"].clients;
+					var keysArr = Object.keys(tempClients), guestCount = 0;
+					
+					for(var i = 0; i < keysArr.length; i++){
+						if(!tempClients[keysArr[i]].UID){
+							guestCount++;
+						}
+						
+						else{
+							vwfPortalModel.activeUsersList.push(tempClients[keysArr[i]]);
+						}
+					}
+					
+					vwfPortalModel.numGuests(guestCount);
+					vwfPortalModel.guests(guestCount > 1 ? "guests" : "guest");
+				}
+				console.log(e);
 			});
+			
+			ko.applyBindings(vwfPortalModel);
+			getLoginInfo();
 		});
 	</script>
 	    <div id="disqus_thread"></div>

@@ -433,10 +433,21 @@ text-align:left;
 	height: 233px;
 	margin-bottom:15px;
 }
+.paragraphText{
 
+	font-size: 17px;
+	line-height: 20px;
+	color: #747474;
+	margin: 17px 0 60px 0;
+}
 .singleOption a{
 	color: inherit;
 	text-decoration:none;
+	position:absolute;
+	height:45px;
+	width:100%;
+	left:0;
+	z-index:10;
 }
 .singleOption{
 
@@ -460,6 +471,14 @@ text-align:left;
 	background-color:#F2DEDE;
 	border-radius:5px;
 }
+
+.activeUsers{
+	border-color:#B5C3D3;
+	background-color:#CEDCEC;
+	border-radius:5px 5px 0 0;
+	/*border-radius:5px;*/
+}
+
 .singleOption:hover{
 	background-color: #ddd;
 }
@@ -469,10 +488,18 @@ text-align:left;
 .launchWorld:hover{
 	background-color:#D6E6D0;
 }
+.activeUsers:hover{
+	background-color:#CEDCEC;
+}
+
+.roundedBorderBottom{
+border-bottom:1px #E6E6E6 solid;
+border-radius:0 0 5px 5px;
+}
 
 .singleOption .optionText{
 
-	font-size: 20px;
+	font-size: 19px;
 	float:left;
 	width: 60%;
 	margin-left: 20px;
@@ -489,7 +516,21 @@ text-align:left;
 	position: relative;
 }
 
+.gIcon, .gIconGray{
+	width:10px; 
+	height:10px;
+	border-radius:50%;
+	background-color: #89D16E;
+	border: 1px solid #7EC363;
+	margin-top:4px;
+	margin-left:2px;
+}
 
+.gIconGray{
+
+	background-color: #aaa;
+	border: 1px solid #999;
+}
 
 .worldOptions{
 	border-top:none;
