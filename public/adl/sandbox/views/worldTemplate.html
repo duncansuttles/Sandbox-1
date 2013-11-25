@@ -12,7 +12,7 @@
 					<p class="glyphicon glyphicon-pencil"></p>
 					<p class="optionText">Modify</p>
 				</div>
-				<div class="singleOption" data-bind="visible:user().isLoggedIn">
+				<div class="singleOption" data-bind="visible:user().isLoggedIn, click:cloneWorld">
 					<p class="glyphicon glyphicon-export"></p>
 					<p class="optionText">Clone</p>
 				</div>
@@ -62,7 +62,7 @@
 			</div>
 		</div>		
 		<div class="col-md-7" style="margin:0 auto; margin-left:95px;">
-			<h2 style="margin:0px;"><a href="" data-bind="attr:{href:'{{root}}'}">{{title}}</a></h2>
+			<h2 style="margin:0px;"><a href="" data-bind="attr:{href:'{{root}}/{{id}}'}">{{title}}</a></h2>
 			<h4 data-bind="text:'Created by {{owner}} on ' + moment('{{created}}').format('MMM DD, YYYY')" style="font-size:17px;margin-top:5px;"></h4>
 			<img class="bigWorldScreen" src="{{root}}/vwfDataManager.svc/thumbnail?SID={{id}}" onerror="this.src='{{root}}/img/placeholder.png'"/>
 			<p class="paragraphText">{{description}}</p>
