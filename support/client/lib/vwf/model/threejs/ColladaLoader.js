@@ -526,13 +526,12 @@ THREE.ColladaLoader = function () {
 			if ( found >= 0 ) {
 
 				var inv = skin.invBindMatrices[ found ];
-
+				console.log(inv);
 				bone.invBindMatrix = inv;
 				bone.skinningMatrix = new THREE.Matrix4();
 				bone.skinningMatrix.multiplyMatrices(bone.world, inv); // (IBMi * JMi)
-				bone.animatrix = new THREE.Matrix4();
-
-				bone.animatrix.copy(bone.localworld);
+				console.log(bone.world);
+				
 				bone.weights = [];
 
 				for ( var j = 0; j < skin.weights.length; j ++ ) {
@@ -558,7 +557,7 @@ THREE.ColladaLoader = function () {
 				bone.skinningMatrix = new THREE.Matrix4();
 				bone.weights = [];
 
-		}
+			}
 		}
 
 	};
@@ -638,11 +637,11 @@ THREE.ColladaLoader = function () {
 	function applySkin ( geometry, instanceCtrl, frame ) {
 
 		
-		var maxbones = 30;
+		var maxbones = 32;
 		if(_dRenderer)
 		{
 			//this does not really find the proper minimum
-			maxbones = 	Math.min(32,Math.floor((_dRenderer.context.getParameter( _dRenderer.context.MAX_VERTEX_UNIFORM_VECTORS ) - 20)/4));
+			maxbones = 	Math.min(maxbones,Math.floor((_dRenderer.context.getParameter( _dRenderer.context.MAX_VERTEX_UNIFORM_VECTORS ) - 20)/4));
 		}
 
 		var skinController = controllers[ instanceCtrl.url ];
@@ -671,6 +670,7 @@ THREE.ColladaLoader = function () {
 		var bonelist = flattenSkeleton(skeleton);
 		var joints = skinController.skin.joints;
 
+
 		//sort that list so that the order reflects the order in the joint list
 		var sortedbones = [];
 		for(var i = 0; i < joints.length; i++)
@@ -687,13 +687,17 @@ THREE.ColladaLoader = function () {
 		//hook up the parents by index instead of name
 		for(var i = 0; i < sortedbones.length; i++)
 		{
+			var found = false;
 			for(var j =0; j < sortedbones.length; j++)
 			{
+
 				if(sortedbones[i].parent == sortedbones[j].name)
 				{
 					sortedbones[i].parent = j;
+					found = true;
 				}
 			}
+			
 		}
 
 
@@ -724,15 +728,27 @@ THREE.ColladaLoader = function () {
 				return b.weight - a.weight;
 
 			})
-
+			if(vertweights.length == 0) debugger;
 			var indicies = new THREE.Vector4(vertweights[0]?vertweights[0].joint:0,vertweights[1]?vertweights[1].joint:0,vertweights[2]?vertweights[2].joint:0,vertweights[3]?vertweights[3].joint:0);
-			var weight = new THREE.Vector4(vertweights[0]?vertweights[0].weight:0,vertweights[1]?vertweights[1].weight:0,vertweights[2]?vertweights[2].weight:0,vertweights[3]?vertweights[3].weight:0);
+			var weight = new THREE.Vector4(vertweights[0]?vertweights[0].weight:0,
+				vertweights[1]?vertweights[1].weight:0,
+				vertweights[2]?vertweights[2].weight:0,
+				vertweights[3]?vertweights[3].weight:0);
+			
+			if(weight.x ==0) indicies.x = 0;
+			if(weight.y ==0) indicies.y = 0;
+			if(weight.z ==0) indicies.z = 0;
+			if(weight.w ==0) indicies.w = 0;
+			
+
 			
 			
 
 			skinIndices.push(indicies);
 			skinWeights.push(weight);
 		}
+		
+		
 		geometry.skinIndices = skinIndices;
 		geometry.skinWeights = skinWeights;
 		geometry.bones = sortedbones;
@@ -761,7 +777,7 @@ THREE.ColladaLoader = function () {
 			// transform, possibly from the bone's animation channel(s)
 			
 			setupSkeleton( skeleton, bones, frame );
-			setupSkinningMatrices( bones, skinController.skin );
+			
 
 			//if using hardware skinning, just hook up the animiation data
 			if(sortedbones.length < maxbones)
@@ -775,7 +791,7 @@ THREE.ColladaLoader = function () {
 
 							var key = {};
 							key.time = (frame/30);
-							key.matrix = bones[i].animatrix;
+							key.matrix = bones[i].localworld;
 							
 							if(frame == 0)
 								bones[i].matrix = key.matrix;

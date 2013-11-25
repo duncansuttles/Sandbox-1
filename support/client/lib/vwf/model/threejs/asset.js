@@ -146,6 +146,7 @@
 				reg.pending = false;
 				reg.loaded = true;
 				//store this asset in the registry
+
 				reg.node = asset.scene.clone();
 				
 				var list = [];
@@ -276,6 +277,7 @@
 			//if the asset registry entry is not pending and it is loaded, then just grab a copy, no download or parse necessary
 			else if(reg.loaded == true && reg.pending == false)
 			{
+				
 				this.getRoot().add(reg.node.clone());
 				
 				var list = [];

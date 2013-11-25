@@ -12560,7 +12560,17 @@ THREE.Mesh.prototype.clone = function ( object ) {
 	if ( object === undefined ) object = new THREE.Mesh( this.geometry, this.material );
 
 	THREE.Object3D.prototype.clone.call( this, object );
-
+	
+	
+	if(this.animationHandle)
+	{
+	var animation = new THREE.Animation(
+	    object,
+	    object.geometry.animation.name,
+	    THREE.AnimationHandler.LINEAR
+	  );
+	object.animationHandle = animation;
+	}					
 	return object;
 
 };
@@ -20399,7 +20409,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 		}
 
 		if ( obj_skinWeights.length ) {
-
+			
 			for ( f = 0, fl = chunk_faces3.length; f < fl; f ++ ) {
 
 				face = obj_faces[ chunk_faces3[ f ]	];
@@ -30378,15 +30388,16 @@ THREE.Animation.prototype.update = function ( deltaTimeMS ) {
 	}
 
 };
-THREE.Animation.prototype.debug = function()
+THREE.Animation.prototype.debug = function(size)
 {
  
+ size = size || .1;
  var debugobjects = [];
  var debugroot;
  var walk = function(bone,debugparent)
  {
 
- 	var debug = new THREE.Mesh(new THREE.CubeGeometry(.1,.1,.1));
+ 	var debug = new THREE.Mesh(new THREE.CubeGeometry(size,size,size));
  	
  	if(!debugroot) debugroot = debug;
  	debug.matrixAutoUpdate = false;
@@ -30438,9 +30449,9 @@ THREE.Animation.prototype.setKey = function(keyf)
 			object.position.y = key.pos[1] * l2 + key2.pos[1] * l;
 			object.position.z = key.pos[2] * l2 + key2.pos[2] * l;
 
-			object.scale.x = key.scl[0] * l + key2.scl[0] * l2;
-			object.scale.y = key.scl[1] * l + key2.scl[1] * l2;
-			object.scale.z = key.scl[2] * l + key2.scl[2] * l2;
+			object.scale.x = key.scl[0] * l2 + key2.scl[0] * l;
+			object.scale.y = key.scl[1] * l2 + key2.scl[1] * l;
+			object.scale.z = key.scl[2] * l2 + key2.scl[2] * l;
 
 			object.quaternion.w = key.rot.w;
 			object.quaternion.y = key.rot.y;

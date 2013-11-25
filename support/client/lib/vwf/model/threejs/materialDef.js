@@ -829,10 +829,10 @@
 				if(this.dirtyStack)
 					this.dirtyStack(true);
 			}
-			
 			this.GetAllLeafMeshes = function(threeObject,list)
 			{
 				
+				if(threeObject.vwfID) return;
 				if(threeObject instanceof THREE.Mesh)
 				{
 					list.push(threeObject);
@@ -841,8 +841,25 @@
 				{
 					for(var i=0; i < threeObject.children.length; i++)
 					{
-						if(!threeObject.children[i].vwfID)
-							GetAllLeafMeshes(threeObject.children[i],list);
+						
+							this.GetAllLeafMeshesMat(threeObject.children[i],list);
+					}               
+				}     
+			}
+			this.GetAllLeafMeshesMat = function(threeObject,list)
+			{
+				
+				if(threeObject.vwfID) return;
+				if(threeObject instanceof THREE.Mesh)
+				{
+					list.push(threeObject);
+				}
+				if(threeObject.children)
+				{
+					for(var i=0; i < threeObject.children.length; i++)
+					{
+						
+							this.GetAllLeafMeshesMat(threeObject.children[i],list);
 					}               
 				}     
 			}
@@ -854,7 +871,7 @@
 					var needRebuild = false;
 					
 					
-				
+					
 					if(this.materialDef)
 					{
 					if(this.materialDef && propval.layers.length > this.materialDef.layers.length)
@@ -863,7 +880,13 @@
 					this.materialDef = propval;
 					var list = [];
 					
-					this.GetAllLeafMeshes(this.getRoot(),list);
+					for(var i =0; i < this.getRoot().children.length; i++)
+					{
+						this.GetAllLeafMeshesMat(this.getRoot().children[i],list);
+					}
+					if(this.getRoot() instanceof THREE.Mesh)
+						list.push(this.getRoot());
+					
 					for(var i =0; i < list.length; i++)
 					{
 						
@@ -897,7 +920,7 @@
 				//else, this object is deleting for real, and we can remvoe the materials from the cache.
 				var list = [];
 			
-				this.GetAllLeafMeshes(this.getRoot(),list);
+				this.GetAllLeafMeshesMat(this.getRoot(),list);
 				for(var i =0; i < list.length; i++)
 				{
 					_MaterialCache.setMaterial(list[i],null);
