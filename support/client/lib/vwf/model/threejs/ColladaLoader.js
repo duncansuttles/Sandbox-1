@@ -777,7 +777,7 @@ THREE.ColladaLoader = function () {
 			// transform, possibly from the bone's animation channel(s)
 			
 			setupSkeleton( skeleton, bones, frame );
-			
+			setupSkinningMatrices( bones, skinController.skin );
 
 			//if using hardware skinning, just hook up the animiation data
 			if(sortedbones.length < maxbones)
