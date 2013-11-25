@@ -486,15 +486,19 @@ text-align:left;
 
 .singleOption:hover{
 	background-color: #ddd;
+	border-top: 1px #ddd solid;
 }
 .deleteWorld:hover{
 	background-color:#E7D6D6;
+	border-color:#F8CECE;
 }
 .launchWorld:hover{
 	background-color:#D6E6D0;
+	border:1px #C0E0B3 solid;
 }
 .activeUsers:hover{
 	background-color:#CEDCEC;
+	border-color:#B5C3D3;
 }
 
 .roundedBorderBottom{
