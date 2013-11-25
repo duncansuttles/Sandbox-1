@@ -15071,18 +15071,24 @@ THREE.ShaderChunk = {
 
 			"vec3 perturbNormal2Arb( vec3 eye_pos, vec3 surf_norm ) {",
 
-				"vec3 q0 = dFdx( eye_pos.xyz );",
-				"vec3 q1 = dFdy( eye_pos.xyz );",
-				"vec2 st0 = dFdx( vUv.st );",
-				"vec2 st1 = dFdy( vUv.st );",
+				"vec3 q0 = normalize(dFdx( eye_pos.xyz ));",
+				"vec3 q1 = normalize(dFdy( eye_pos.xyz ));",
+				"vec2 st0 = normalize(dFdx( vUv.st ));",
+				"vec2 st1 = normalize(dFdy( vUv.st ));",
 
 				"vec3 S = normalize(  q0 * st1.t - q1 * st0.t );",
 				"vec3 T = normalize( -q0 * st1.s + q1 * st0.s );",
+				
+				
+				
+				
 				"vec3 N = normalize( surf_norm );",
 
 				"vec3 mapN = texture2D( normalMap, vUv ).xyz * 2.0 - 1.0;",
 				"mapN.xy = normalScale * mapN.xy;",
+				"mapN = normalize(mapN);",
 				"mat3 tsn = mat3( S, T, N );",
+				
 				"return normalize( tsn * mapN );",
 
 			"}",
@@ -15452,8 +15458,8 @@ THREE.ShaderChunk = {
     	"#endif",
     	"#ifdef USE_NORMALMAP",
 
-    	"tnorm  = perturbNormal3Arb( -vViewPosition, normalize( vNormal ));",
-
+    	"tnorm  = perturbNormal2Arb( vWorldPosition.xzy, normalize( tnorm ));",
+    	
     	"#endif",
     	"shAmbient =  C1 * L22 * (tnorm.x * tnorm.x - tnorm.y * tnorm.y) +",
         "            C3 * L20 * tnorm.z * tnorm.z +",
@@ -15637,8 +15643,8 @@ THREE.ShaderChunk = {
 
 		"#ifdef USE_NORMALMAP",
 
-			"normal = perturbNormal2Arb( -viewPosition, normal );",
-
+			"normal = normalize(perturbNormal2Arb( -normalize(viewPosition), normal ));",
+			
 		"#elif defined( USE_BUMPMAP )",
 
 			"normal = perturbNormalArb( -vViewPosition, normal, dHdxy_fwd() );",

@@ -554,6 +554,30 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					if (this.TempPickCallback) this.TempPickCallback(vwf.getNode(vwf.views[0].lastPickId));
 					e.stopPropagation();
 				}
+				if (SelectMode == 'PointPick')
+				{
+					if (this.TempPickCallback)
+					{
+						var ray;
+						var campos = this.getCameraPosition();
+						ray = this.GetWorldPickRay(e);
+						self.GetMoveGizmo().InvisibleToCPUPick = true;
+						var pick = this.ThreeJSPick(campos, ray,{filter:function(o){return !(o.isAvatar === true)}});
+						self.GetMoveGizmo().InvisibleToCPUPick = false;
+						var dxy = pick.distance;
+						newintersectxy = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy * .99));
+						var dxy2 = this.intersectLinePlane(ray, campos, [0, 0, 0], [0, 0, 1]);
+						var newintersectxy2 = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy2));
+						newintersectxy2[2] += .01;
+						if (newintersectxy2[2] > newintersectxy[2]) newintersectxy = newintersectxy2;
+						this.TempPickCallback(newintersectxy);
+						this.TempPickCallback = null;
+						this.SelectObject();
+					}
+
+						
+					e.stopPropagation();
+				}
 				
 			}
 			//else if(document.AxisSelected == -1)
@@ -593,6 +617,12 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					this.GetAllLeafMeshes(threeObject.children[i], list);
 				}
 			}
+		}
+		this.PickPoint = function(func)
+		{
+
+				SelectMode = 'PointPick';
+				this.TempPickCallback = func;
 		}
 		this.FrustrumCast = function (frustrum)
 		{
