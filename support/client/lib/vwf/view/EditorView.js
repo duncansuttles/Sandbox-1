@@ -141,13 +141,14 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 		satProperty: function (nodeID, propertyName, propertyValue)
 		{
 			
-			if (window._Editor && _Editor.isSelected(nodeID) && propertyName == _Editor.transformPropertyName)
+			if (window._Editor && propertyName == _Editor.transformPropertyName && _Editor.isSelected(nodeID))
 			{
 				_Editor.updateBoundsTransform(nodeID);
 				if(vwf.client() == vwf.moniker())
 				{
-					_Editor.waitingForSet.splice(_Editor.waitingForSet.indexOf(nodeID), 1);
-					console.log('here');
+					if(_Editor.waitingForSet.length)
+						_Editor.waitingForSet.splice(_Editor.waitingForSet.indexOf(nodeID), 1);
+				
 				}
 				if (_Editor.waitingForSet.length == 0 || vwf.client() != vwf.moniker())
 				{
@@ -155,7 +156,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 					_Editor.updateGizmoSize();
 					_Editor.updateGizmoOrientation(false);
 				}
-				$(document).trigger('selectionTransformedLocal',[vwf.getNode(nodeID)]);
+				$(document).trigger('selectionTransformedLocal',[{id:nodeID}]);
 			}
 			
 			if(window._PrimitiveEditor)

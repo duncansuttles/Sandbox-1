@@ -1313,7 +1313,7 @@ THREE.Geometry.prototype.FrustrumCast = function(frustrum,opts)
 	 //try to reject based on bounding box.
 	 var bbhit = this.BoundingBox.intersectFrustrum(frustrum,opts); 
 	
-	 if(bbhit)
+	 if(bbhit.length > 0)
 	 {
 				
 		 //build the octree or the facelist

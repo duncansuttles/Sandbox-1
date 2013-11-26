@@ -542,6 +542,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 							var fbr = MATH.addVec3(campos, MATH.scaleVec3(BottomRighttRay, 10000));
 							var frustrum = new Frustrum(ntl, ntr, nbl, nbr, ftl, ftr, fbl, fbr);
 							
+							
 							var hits = _SceneManager.FrustrumCast(frustrum,
 							{
 								OneHitPerMesh: true
@@ -754,7 +755,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}.bind(this);
 		this.SelectParent = function ()
 		{
-			if (self.GetSelectedVWFNode()) self.SelectObject(vwf.parent(self.GetSelectedVWFNode().id));
+			if (self.GetSelectedVWFNode()) self.SelectObject(vwf.parent(self.GetSelectedVWFID()));
 		}
 		this.intersectLinePlane = function (ray, raypoint, planepoint, planenormal)
 		{
@@ -863,13 +864,13 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 			if (CoordSystem == WorldCoords)
 			{
-				var childmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GetSelectedVWFNode().id).matrixWorld));
-				var parentmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GetSelectedVWFNode().id).parent.matrixWorld));
+				var childmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GetSelectedVWFID()).matrixWorld));
+				var parentmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GGetSelectedVWFID()).parent.matrixWorld));
 				Axis = MATH.mulMat4Vec3(MATH.inverseMat4(parentmat), Axis);
 			}
 			if (CoordSystem == LocalCoords)
 			{
-				var childmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GetSelectedVWFNode().id).matrixWorld));
+				var childmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GetSelectedVWFID()).matrixWorld));
 				Axis = MATH.mulMat4Vec3(MATH.inverseMat4(childmat), Axis);
 			}
 			//Get a quaternion for the input matrix
@@ -894,14 +895,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 			if (CoordSystem == WorldCoords)
 			{
-				//self.findviewnode(self.GetSelectedVWFNode().id).parent.updatethis.Matrix();
-				var parentmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GetSelectedVWFNode().id).parent.matrixWorld));
+				//self.findviewnode(self.GetSelectedVWFID()).parent.updatethis.Matrix();
+				var parentmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GetSelectedVWFID()).parent.matrixWorld));
 				Axis = MATH.mulMat4Vec3(parentmat, Axis);
 			}
 			if (CoordSystem == LocalCoords)
 			{
-				//self.findviewnode(self.GetSelectedVWFNode().id).updatethis.Matrix();
-				var childmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GetSelectedVWFNode().id).matrix));
+				//self.findviewnode(self.GetSelectedVWFID()).updatethis.Matrix();
+				var childmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GetSelectedVWFID()).matrix));
 				Axis = MATH.mulMat4Vec3(MATH.inverseMat4(childmat), Axis);
 			}
 			//Get a quaternion for the input matrix
@@ -1561,7 +1562,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			proto.properties.type = 'behavior';
 			proto.properties.DisplayName = self.GetUniqueName('behavior');
 			proto.properties.owner = document.PlayerNumber;
-			var id = this.GetSelectedVWFNode().id;
+			var id = this.GetSelectedVWFID();
 			var owner = vwf.getProperty(id, 'owner');
 			if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),id) == 0)
 			{
@@ -1587,7 +1588,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			proto.properties.owner = owner;
 			proto.properties.type = 'behavior';
 			proto.properties.DisplayName = self.GetUniqueName(type);
-			var id = this.GetSelectedVWFNode().id;
+			var id = this.GetSelectedVWFID();
 			var owner = vwf.getProperty(id, 'owner');
 			if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),id) == 0)
 			{
@@ -1706,7 +1707,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			{
 				var proto = _DataManager.getCleanNodePrototype(SelectedVWFNodes[i].id);
 				proto.properties.DisplayName = self.GetUniqueName(proto.properties.DisplayName);
-				var parent = vwf.parent(self.GetSelectedVWFNode().id);
+				var parent = vwf.parent(self.GetSelectedVWFID());
 				self.createChild(parent, GUID(), proto, null, null, function ()
 				{
 					alert();
@@ -1924,8 +1925,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}.bind(this);
 		this.updateGizmoLocation = function ()
 		{
-			if(!this.GetSelectedVWFNode()) return;
-			var viewnode = this.findviewnode(this.GetSelectedVWFNode().id);
+			if(!this.GetSelectedVWFID()) return;
+			var viewnode = this.findviewnode(this.GetSelectedVWFID());
 			if(!viewnode)
 				return;
 			var childmat = toGMat(viewnode.matrixWorld);
@@ -1935,7 +1936,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			
 			
 			//new fix to allow drivers to trick editor with fake transform data
-			var matt2 = this.getTranslationCallback(this.GetSelectedVWFNode().id);
+			var matt2 = this.getTranslationCallback(this.GetSelectedVWFID());
 			gizpos = matt2;//[matt2[12], matt2[13], matt2[14]];
 			
 			
@@ -2498,8 +2499,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		this.PickParentCallback = function (parentnode)
 		{
 			this.TempPickCallback = null;
-			var node = _DataManager.getCleanNodePrototype(this.GetSelectedVWFNode().id);
-			var childmat = toGMat(this.findviewnode(this.GetSelectedVWFNode().id).matrixWorld);
+			var node = _DataManager.getCleanNodePrototype(this.GetSelectedVWFID());
+			var childmat = toGMat(this.findviewnode(this.GetSelectedVWFID()).matrixWorld);
 			var parentmat = toGMat(this.findviewnode(parentnode.id).matrixWorld);
 			var invparentmat = MATH.inverseMat4(parentmat);
 			childmat = MATH.mulMat4(invparentmat, childmat);
@@ -2515,8 +2516,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.RemoveParent = function ()
 		{
-			var node = _DataManager.getCleanNodePrototype(this.GetSelectedVWFNode().id);
-			var childmat = toGMat(this.findviewnode(this.GetSelectedVWFNode().id).matrixWorld);
+			var node = _DataManager.getCleanNodePrototype(this.GetSelectedVWFID());
+			var childmat = toGMat(this.findviewnode(this.GetSelectedVWFID()).matrixWorld);
 			delete node.properties.translation;
 			delete node.properties.rotation;
 			delete node.properties.quaternion;
@@ -2570,7 +2571,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		this.GroupSelection = function ()
 		{
 			var parentmat = MATH.identMatrix();
-			var parent = this.findviewnode(this.GetSelectedVWFNode().id).parent;
+			var parent = this.findviewnode(this.GetSelectedVWFID()).parent;
 			var pos;
 			for (var i = 0; i < this.getSelectionCount(); i++)
 			{

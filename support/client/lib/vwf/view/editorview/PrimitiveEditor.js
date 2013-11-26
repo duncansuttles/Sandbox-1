@@ -930,7 +930,7 @@ define(function ()
 		this.copyButtonClicked = function ()
 		{
 			var id = $(this).attr('nodename');
-			debugger;
+			
 			_Editor.Copy([{id:id}]);
 		}
 		this.saveButtonClicked = function ()
