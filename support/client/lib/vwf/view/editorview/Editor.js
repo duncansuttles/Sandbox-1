@@ -542,7 +542,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 							var fbr = MATH.addVec3(campos, MATH.scaleVec3(BottomRighttRay, 10000));
 							var frustrum = new Frustrum(ntl, ntr, nbl, nbr, ftl, ftr, fbl, fbr);
 							
-							
+
 							var hits = _SceneManager.FrustrumCast(frustrum,
 							{
 								OneHitPerMesh: true
@@ -2087,7 +2087,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						if (vwf.getProperty(VWFNode[i].id, 'type') != 'Group')
 						{
 							var testnode = VWFNode[i];
-							while (vwf.getProperty(testnode.id, 'type') != 'Group' || ( vwf.getProperty(testnode.id, 'type') == 'Group' && vwf.getProperty(testnode.id, 'open') == true))
+							while (testnode && (vwf.getProperty(testnode.id, 'type') != 'Group' || ( vwf.getProperty(testnode.id, 'type') == 'Group' && vwf.getProperty(testnode.id, 'open') == true)))
 							{
 								testnode = vwf.getNode(vwf.parent(testnode.id));
 							}

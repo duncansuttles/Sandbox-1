@@ -97,7 +97,8 @@ scripts:
       
      
       var div = this.nametag;
-      var pos = this.translation;
+      var trans = (new THREE.Vector3()).getPositionFromMatrix(_Editor.findviewnode(this.id).matrixWorld);
+      var pos = [trans.x,trans.y,trans.z];
       pos = [pos[0],pos[1],pos[2],1];
          
       
