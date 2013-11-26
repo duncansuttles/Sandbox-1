@@ -1064,7 +1064,14 @@ node.hasOwnProperty( methodName ) ||  // TODO: recalculate as properties, method
             return undefined;
         },
         // -- callingMethod ------------------------------------------------------------------------
+        dehookupBehaviorMethod :function(obj, id, methodName)
+        {
+            if(obj[methodName])
+            {
+                delete obj[methodName];
+            }
 
+        },
         callingMethod: function( nodeID, methodName, methodParameters ) {
 
 		

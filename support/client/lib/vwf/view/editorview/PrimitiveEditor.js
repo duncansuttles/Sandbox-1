@@ -930,7 +930,8 @@ define(function ()
 		this.copyButtonClicked = function ()
 		{
 			var id = $(this).attr('nodename');
-			_Editor.Copy([id]);
+			debugger;
+			_Editor.Copy([{id:id}]);
 		}
 		this.saveButtonClicked = function ()
 		{
@@ -1052,7 +1053,7 @@ define(function ()
 			}
 			catch (e)
 			{
-				console.log(e);
+				//console.log(e);
 			}
 		}
 		$(document).bind('selectionChanged', this.SelectionChanged.bind(this));

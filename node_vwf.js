@@ -1426,8 +1426,19 @@ function startVWF(){
 						
 					}else
 					{
+						//simulate latency
+						if(global.latencySim > 0)
+						{
+							(function(__client,__message){
+							global.setTimeout(function(){
+								__client.emit('message',__message);
+							},150)
+							})(client,compressedMessage);
+						}else
+						{
+							client.emit('message',compressedMessage);
+						}
 						
-						client.emit('message',compressedMessage);
 						
 					}
 				}
@@ -1500,6 +1511,13 @@ function startVWF(){
 	p = process.argv.indexOf('-d');
 	datapath = p >= 0 ? process.argv[p+1] : (configSettings.datapath ? libpath.normalize(configSettings.datapath) : libpath.join(__dirname, "data"));
 	global.datapath = datapath;	
+
+
+	p = process.argv.indexOf('-ls');
+	global.latencySim = p >= 0 ? parseInt(process.argv[p+1]) : (configSettings.latencySim ? configSettings.latencySim : 0);
+	
+	if(global.latencySim > 0) 
+		console.log(red+'Latency Sim = ' +  global.latencySim+reset);	
 	
 	p = process.argv.indexOf('-l');
 	global.logLevel = p >= 0 ? process.argv[p+1] : (configSettings.logLevel ? configSettings.logLevel : 1);

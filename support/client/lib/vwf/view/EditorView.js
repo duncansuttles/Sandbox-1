@@ -144,8 +144,12 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 			if (window._Editor && _Editor.isSelected(nodeID) && propertyName == _Editor.transformPropertyName)
 			{
 				_Editor.updateBoundsTransform(nodeID);
-				_Editor.waitingForSet.splice(_Editor.waitingForSet.indexOf(nodeID), 1);
-				if (_Editor.waitingForSet.length == 0)
+				if(vwf.client() == vwf.moniker())
+				{
+					_Editor.waitingForSet.splice(_Editor.waitingForSet.indexOf(nodeID), 1);
+					console.log('here');
+				}
+				if (_Editor.waitingForSet.length == 0 || vwf.client() != vwf.moniker())
 				{
 					_Editor.updateGizmoLocation();
 					_Editor.updateGizmoSize();

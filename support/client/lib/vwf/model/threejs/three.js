@@ -16751,7 +16751,7 @@ shadowmap_fragment_basic: [
 						
 						//"shadowColor *= vec3(dotProduct);",
 						//"shadowColor = shadowColor * vec3( ( 1.0 - shadowDarkness[ i ] * shadow * dotProduct ) );",
-						"shadowColor = mix(shadowColor,vec3(0.0,0.0,0.0),clamp(0.0,1.0,pow(length(shadowCoord.xy - .5)*2.0,4.0)));",
+						"shadowColor = mix(shadowColor,vec3(0.0,0.0,0.0),clamp(pow(length(shadowCoord.xy - .5)*2.0,4.0),0.0,1.0));",
 						
 					"#else",
 
