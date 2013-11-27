@@ -1174,13 +1174,7 @@ define(function ()
 			{
 				$('#methodlist').append('<div class="scriptchoice" style="' + style + '" id="method' + i + '"></div>');
 				$('#method' + i).text(i);
-				$('#method' + i).qtip(
-				{
-					content: "Edit the " + i + " method",
-					show: {
-						delay: 1000
-					}
-				});
+				
 				$('#method' + i).attr('method', i);
 				$('#method' + i).click(function ()
 				{
@@ -1206,13 +1200,7 @@ define(function ()
 			{
 				$('#propertylist').append('<div class="scriptchoice" style="' + style + '" id="property' + i + '"></div>');
 				$('#property' + i).text(i);
-				$('#property' + i).qtip(
-				{
-					content: "Edit the " + i + " property",
-					show: {
-						delay: 1000
-					}
-				});
+				
 				$('#property' + i).attr('property', i);
 				$('#property' + i).click(function ()
 				{
@@ -1237,13 +1225,7 @@ define(function ()
 				$('#eventlist').append('<div  style="' + style + '"  id="event' + i + '"></div>');
 				$('#event' + i).text(i);
 				$('#event' + i).attr('event', i);
-				$('#event' + i).qtip(
-				{
-					content: "Edit the " + i + " event",
-					show: {
-						delay: 1000
-					}
-				});
+				
 				$('#event' + i).click(function ()
 				{
 					$("#eventlist").children().css('border-color', 'gray');

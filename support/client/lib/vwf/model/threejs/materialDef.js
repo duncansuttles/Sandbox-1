@@ -777,7 +777,7 @@
 						""
 					].join('\n');
 
-					config.fragmentShader = shader.slice(0,13).join('\n') + myUniforms + shader.slice(14,184).join('\n') + myShaderFrag + shader.slice(185).join('\n');
+					config.fragmentShader = shader.slice(0,13).join('\n') + myUniforms + shader.slice(14,185).join('\n') + myShaderFrag + shader.slice(186).join('\n');
 
 					// apply renderer flags
 					currentmat = new THREE.ShaderMaterial(config);
