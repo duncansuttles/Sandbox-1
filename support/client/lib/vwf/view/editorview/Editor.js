@@ -1779,7 +1779,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.Paste = function (useMousePoint)
 		{
-			self.SelectObject(null);
+			
 			
 			for (var i = 0; i < _CopiedNodes.length; i++)
 			{
@@ -1818,9 +1818,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 
 				if(t.properties.type == 'behavior')
 				{
-					if(this.GetSelectedVWFID())
+
+					if(self.GetSelectedVWFID())
 					{
-						this.createChild(this.GetSelectedVWFID(), GUID(), t, null, null);
+						self.createChild(this.GetSelectedVWFID(), GUID(), t, null, null);
 					}else
 					{
 						alertify.alert('When pasting a behavior, select the node to paste onto')
@@ -1828,8 +1829,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 				else	
 				{
+					self.SelectObject(null);
 					self.SelectOnNextCreate();
-					this.createChild('index-vwf', GUID(), t, null, null);
+					self.createChild('index-vwf', GUID(), t, null, null);
 				}
 				
 				//reset in c ase we paste again

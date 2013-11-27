@@ -300,6 +300,7 @@ node.id = childID; // TODO: move to vwf/model/object
 		//Allow the behavior to call the parent's methods
 		hookupBehaviorMethod: function(behaviorNode,parentid,propname)
 		{
+            if(propname == "initialize") return;
 			if(behaviorNode[propname] !== undefined) return;
 			if(Object.keys(behaviorNode).indexOf(propname) != -1)
 				return;
@@ -1146,7 +1147,7 @@ node.hasOwnProperty( methodName ) ||  // TODO: recalculate as properties, method
 						}
 					
 					}).apply(node);
-					ret = this.nodes[refid].private.bodies[funcid].toString()
+					ret = (this.nodes[refid].private.bodies[funcid] || "").toString();
 				}				
 				
 				if(ret)

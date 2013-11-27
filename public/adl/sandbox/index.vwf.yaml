@@ -392,11 +392,13 @@ scripts:
     this.keyDown = function(e)
     {
       for(var i in this.children)
+      if(this.children[i].keyDown)
         this.children[i].keyDown(e);
     }
     this.keyUp = function(e)
     {
        for(var i in this.children)
+       if(this.children[i].keyUp)
         this.children[i].keyUp(e);
     }
     //the system is notifiying us that it has become disconnected from the server
