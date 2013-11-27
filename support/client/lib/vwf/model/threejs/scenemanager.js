@@ -294,6 +294,16 @@ SceneManager.prototype.createMaterial = function()
 	return new THREE.MeshPhongMaterial();
 }
 
+SceneManager.prototype.GetLoadedTextures = function()
+{
+	var ret = []
+	for( var i in this.textureList)
+	{
+		if(this.textureList[i].image.src !== '')
+			ret.push(i);
+	}
+	return ret;
+}
 SceneManager.prototype.getTexture = function(src,noclone)
 {
 	

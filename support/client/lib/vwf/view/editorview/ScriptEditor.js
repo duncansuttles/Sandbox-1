@@ -818,7 +818,7 @@ define(function ()
 
 		this.show = function ()
 		{
-			//window.clearInterval(window.scripthideinterval);
+			
 			if (!this.isOpen())
 			{
 				if(!this.currentNode)
@@ -831,17 +831,9 @@ define(function ()
 					alertify.alert('The Scene object cannot accept scripts. Try creating a behavior on the scene instead.');
 					return;
 				}
-				
-				//window.scripthideinterval = window.setInterval(function(){
-				//		$('#ScriptEditorTabs').css('height',$('#ScriptEditor').height() + 'px');
-				//		$('#index-vwf').css('height',window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - //$('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top-25) + 'px');
-				//		_Editor.findscene().camera.setAspect($('#index-vwf').width()/$('#index-vwf').height());
-				//		
-				//	},33);
-				//$('#ScriptEditor').show('slide',{direction:'down'},function(){window.clearInterval(window.scripthideinterval);window.scripthideinterval=null;});
 				$('#ScriptEditor').show();
 				var newtop = $(window).height() - $('#ScriptEditor').height() - $('#statusbar').height() + 'px';
-				//console.log(newtop);
+				
 				$('#ScriptEditor').animate(
 				{
 					'top': newtop
@@ -867,15 +859,6 @@ define(function ()
 		}
 		this.hide = function ()
 		{
-			//$('#ScriptEditor').dialog('close');
-			//window.clearInterval(window.scripthideinterval);
-			//window.scripthideinterval = window.setInterval(function(){
-			//		$('#ScriptEditorTabs').css('height',$('#ScriptEditor').height() + 'px');
-			//		$('#index-vwf').css('height',window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - //$('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top-25) + 'px');
-			//		_Editor.findscene().camera.setAspect($('#index-vwf').width()/$('#index-vwf').height());
-			//		
-			//	},33);
-			//$('#ScriptEditor').hide('slide',{direction:'down'},function(){ window.clearInterval(window.scripthideinterval);window.scripthideinterval=null;});
 			if (this.isOpen())
 			{
 				$('#ScriptEditor').animate(
@@ -1069,6 +1052,7 @@ define(function ()
 		
 		this.setSelectedProperty_internal = function (name, text)
 		{
+			text = text || null;
 			_ScriptEditor.selectedProperty = name;
 			_ScriptEditor.propertyEditor.setValue(js_beautify(text.toString(),{braces_on_own_line:true,opt_keep_array_indentation:true}));
 			_ScriptEditor.propertyEditor.selection.clearSelection();
@@ -1158,6 +1142,7 @@ define(function ()
 				$('#propertytext').find(".ace_content").css('background', 'url(vwf/view/editorview/images/ui-bg_diagonals-thick_8_cccccc_40x40.png) 50% 50% repeat');
 				_ScriptEditor.eventEditor.setValue('');
 				_ScriptEditor.methodEditor.setValue('');
+				_ScriptEditor.propertyEditor.setValue('');
 			}
 			if (!this.currentNode) return;
 			$('#methodlist').empty();
@@ -1322,6 +1307,7 @@ define(function ()
 			$('#methodlist').children().sortElements(function(a,b){return ($(a).text().toLowerCase() > $(b).text().toLowerCase()  ? 1 : -1)});
 			$('#eventlist').children().sortElements(function(a,b){return ($(a).text().toLowerCase() > $(b).text().toLowerCase()  ? 1 : -1)});
 			$('#propertylist').children().sortElements(function(a,b){return ($(a).text().toLowerCase() > $(b).text().toLowerCase()  ? 1 : -1)});
+
 		}
 		this.getMethods = function()
 		{
