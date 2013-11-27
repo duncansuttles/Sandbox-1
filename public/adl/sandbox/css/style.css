@@ -536,6 +536,7 @@ border-radius:0 0 5px 5px;
 
 .bigWorldScreen img {
 	height: 100%;
+	margin: auto;
 }
 
 .gIcon, .gIconGray{
