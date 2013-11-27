@@ -742,15 +742,22 @@ function startVWF(){
 										//no app name but is directory. Not listing directories, so try for index.html or 404
 										if(!appname)
 										{
-											
-											fs.exists(filename + libpath.sep + "index.html" ,function(indexexists){
+											if(!strEndsWith(URL.pathname, '/'))
+											{
+												console.log(filename);
+												_302(URL.pathname+'/',response);
+											}
+											else
+											{
+												fs.exists(libpath.join(filename , "index.html") ,function(indexexists){
 
-												if(indexexists)
-													ServeFile(request,filename + libpath.sep + "index.html",response,URL);
-												else
-													_404(response);
+													if(indexexists)
+														ServeFile(request,filename + libpath.sep + "index.html",response,URL);
+													else
+														_404(response);
 
-											})
+												});
+											}
 											
 											
 											return;
