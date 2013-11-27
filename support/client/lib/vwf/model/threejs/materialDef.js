@@ -739,7 +739,7 @@
 						render_flags['blending'] = value.blendMode;
 
 					// configure reflectivity
-					if(config.uniforms.reflectivity.value)
+					/*if(config.uniforms.reflectivity.value)
 					{
 						var sky = vwf_view.kernel.kernel.callMethod('index-vwf','getSkyMat');
 						if(sky)
@@ -749,54 +749,125 @@
 							config.uniforms.envMap.value.mapping = new THREE.CubeReflectionMapping();
 							render_flags.envMap = true;
 						}
-					}
+					}*/
 				
-					var shader = config.fragmentShader.split('\n');
-					var myUniforms = [
-						"",
-						"uniform sampler2D diffuse_tex[MAX_DIFFUSE];",
-						"uniform float alpha[MAX_DIFFUSE];",
-						"uniform vec3 tex_xfrm[3*MAX_DIFFUSE];",
-						"uniform int dtex_count;",
-						""
+					var mix_pars_fragment = [
+						"#if defined( USE_MAP ) || defined( USE_BUMPMAP ) || defined( USE_NORMALMAP ) || defined( USE_SPECULARMAP )",
+							"varying vec2 vUv;",
+						"#endif",
+						"#ifdef USE_MAP",
+							"uniform sampler2D diffuse_tex[MAX_DIFFUSE];",
+							"uniform float alpha[MAX_DIFFUSE];",
+							"uniform vec3 tex_xfrm[3*MAX_DIFFUSE];",
+							"uniform int dtex_count;",
+						"#endif",
 					].join('\n');
-					var myShaderFrag = [
-						"",
-						"float alphaTotal = 0.0;",
-						"vec4 texColors[MAX_DIFFUSE];",
-						"vec4 texelColor = vec4(0.0,0.0,0.0,1.0);",
-						"if( opacity < 1.0 ) texelColor.w = 0.0;",
+
+					var mix_fragment = [
+						"#ifdef USE_MAP",
+
+						"	float alphaTotal = 0.0;",
+						"	vec4 texColors[MAX_DIFFUSE];",
+						"	vec4 texelColor = vec4(0.0,0.0,0.0,1.0);",
+						"	if( opacity < 1.0 ) texelColor.w = 0.0;",
 
 						// transform UV to account for offset/scale
 						// also total up alpha contributions
-						"for( int i=0; i<MAX_DIFFUSE; ++i ){",
-						"	if( i < dtex_count ) {",
-						"		mat3 transform = mat3(tex_xfrm[3*i],tex_xfrm[3*i+1],tex_xfrm[3*i+2]);",
-						"		vec3 temp = transform * vec3(vUv,1.0);",
-						"		vec2 tc = vec2(temp.x,temp.y);",
-						"		texColors[i] = texture2D(diffuse_tex[i], tc);",
+						"	for( int i=0; i<MAX_DIFFUSE; ++i ){",
+						"		if( i < dtex_count ) {",
+						"			mat3 transform = mat3(tex_xfrm[3*i],tex_xfrm[3*i+1],tex_xfrm[3*i+2]);",
+						"			vec3 temp = transform * vec3(vUv,1.0);",
+						"			vec2 tc = vec2(temp.x,temp.y);",
+						"			texColors[i] = texture2D(diffuse_tex[i], tc);",
 
-						"		alphaTotal += alpha[i] * texColors[i].a;",
+						"			alphaTotal += alpha[i] * texColors[i].a;",
+						"		}",
 						"	}",
-						"}",
 
 						// calculate contributions of each layer towards final color
-						"for( int i=0; i<MAX_DIFFUSE; ++i ){",
-						"	if( i < dtex_count ) {",
-						"		float aMix = (alpha[i]*texColors[i].a)/alphaTotal;",
-						//"		texelColor += aMix * texColors[i];",
-						"		texelColor.rgb += aMix * texColors[i].rgb;",
-						"		texelColor.a = max(texelColor.a, texColors[i].a);",
+						"	for( int i=0; i<MAX_DIFFUSE; ++i ){",
+						"		if( i < dtex_count ) {",
+						"			float aMix = (alpha[i]*texColors[i].a)/alphaTotal;",
+						//"			texelColor += aMix * texColors[i];",
+						"			texelColor.rgb += aMix * texColors[i].rgb;",
+						"			texelColor.a = max(texelColor.a, texColors[i].a);",
+						"		}",
 						"	}",
-						"}",
 
 						// brighten up under-saturated colors
-						"if( alphaTotal < 1.0 )",
-						"	texelColor.rgb = 1.0/alphaTotal * texelColor.rgb;",
-						""
+						"	if( alphaTotal < 1.0 )",
+						"		texelColor.rgb = 1.0/alphaTotal * texelColor.rgb;",
+						"",
+						"	#ifdef GAMMA_INPUT",
+						"		texelColor.xyz *= texelColor.xyz;",
+						"	#endif",
+
+						"	gl_FragColor = gl_FragColor * texelColor;",
+						"#endif"
 					].join('\n');
 
-					config.fragmentShader = shader.slice(0,13).join('\n') + myUniforms + shader.slice(14,185).join('\n') + myShaderFrag + shader.slice(186).join('\n');
+					var config = {
+
+						uniforms: THREE.UniformsUtils.merge( [
+							THREE.UniformsLib[ "common" ],
+							THREE.UniformsLib[ "bump" ],
+							THREE.UniformsLib[ "normalmap" ],
+							THREE.UniformsLib[ "fog" ],
+							THREE.UniformsLib[ "lights" ],
+							THREE.UniformsLib[ "shadowmap" ],
+							{
+								"ambient"  : { type: "c", value: new THREE.Color( 0xffffff ) },
+								"emissive" : { type: "c", value: new THREE.Color( 0x000000 ) },
+								"specular" : { type: "c", value: new THREE.Color( 0x111111 ) },
+								"shininess": { type: "f", value: 30 },
+								"wrapRGB"  : { type: "v3", value: new THREE.Vector3( 1, 1, 1 ) }
+							}
+						] ),
+
+						vertexShader: THREE.ShaderLib['phong'].vertexShader,
+
+						fragmentShader: [
+
+							"uniform vec3 diffuse;",
+							"uniform float opacity;",
+							"uniform vec3 ambient;",
+							"uniform vec3 emissive;",
+							"uniform vec3 specular;",
+							"uniform float shininess;",
+
+							THREE.ShaderChunk[ "color_pars_fragment" ],
+							//THREE.ShaderChunk[ "map_pars_fragment" ],
+							mix_pars_fragment,
+							THREE.ShaderChunk[ "lightmap_pars_fragment" ],
+							THREE.ShaderChunk[ "envmap_pars_fragment" ],
+							THREE.ShaderChunk[ "fog_pars_fragment" ],
+							THREE.ShaderChunk[ "lights_phong_pars_fragment" ],
+							THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
+							THREE.ShaderChunk[ "bumpmap_pars_fragment" ],
+							THREE.ShaderChunk[ "normalmap_pars_fragment" ],
+							THREE.ShaderChunk[ "specularmap_pars_fragment" ],
+							THREE.ShaderChunk[ "sphericalHarmonicAmbient_pars_fragment" ],
+
+							"void main() {",
+								"gl_FragColor = vec4( vec3 ( 1.0 ), opacity );",
+								THREE.ShaderChunk[ "sphericalHarmonicAmbient_fragment" ],
+								//THREE.ShaderChunk[ "map_fragment" ],
+								mix_fragment,
+								THREE.ShaderChunk[ "alphatest_fragment" ],
+								THREE.ShaderChunk[ "specularmap_fragment" ],
+								THREE.ShaderChunk[ "lights_phong_fragment" ],
+								THREE.ShaderChunk[ "lightmap_fragment" ],
+								THREE.ShaderChunk[ "color_fragment" ],
+								THREE.ShaderChunk[ "envmap_fragment" ],
+								THREE.ShaderChunk[ "shadowmap_fragment" ],
+								THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
+								THREE.ShaderChunk[ "fog_fragment" ],
+							"}"
+
+						].join("\n")
+
+					};
+					//config.fragmentShader = shader.slice(0,13).join('\n') + myUniforms + shader.slice(14,185).join('\n') + myShaderFrag + shader.slice(186).join('\n');
 
 					// apply renderer flags
 					currentmat = new THREE.ShaderMaterial(config);
