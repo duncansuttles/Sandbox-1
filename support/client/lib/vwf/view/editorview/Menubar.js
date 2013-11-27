@@ -121,6 +121,11 @@ define(
 			localStorage.setItem("language","ru");
 			location.reload();
 		});
+		$('#MenuEs_ES').click(function (e)
+		{
+			localStorage.setItem("language","es_ES");
+			location.reload();
+		});
 
 
 		//make the menu items disappear when you click one
