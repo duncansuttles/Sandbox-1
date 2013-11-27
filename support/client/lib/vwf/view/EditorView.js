@@ -101,15 +101,78 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 					$('input[type="text"]').keypress(function(e){e.stopImmediatePropagation();});
 					
 					
+					this.addManager(_UserManager);
+					this.addManager(_InventoryManager);
+					this.addManager(HierarchyManager);
+					this.addManager(_PermissionsManager);
+					this.addManager(_ScriptEditor);
+					this.addManager(_ModelLibrary);
+					this.addManager(_Notifier);
+					this.addManager(_MaterialEditor);
+					this.addManager(_PrimitiveEditor);
+					this.addManager(_DataManager);
+
+
 					//  $(document).ready(function(){
 					//	});
 				
 			}
 		},
+		managers:[],
+		addManager:function(manager)
+		{
+			this.managers.push(manager);
+			manager.sendMessage = this.sendMessage;
+			manager.getParent = function(){return this;}.bind(this);
+
+		},
+		_sendMessage:function(message,data,sender)
+		{
+			
+			for(var i=0; i < this.managers.length; i++)
+			{
+				var manager = this.managers[i];
+				if(manager[message] && (typeof manager[message] == "function"))
+				{
+					var tret = null;
+					if(data && data.constructor == Array)
+						tret = manager[message].apply(manager,data);
+					else
+						tret = manager[message].apply(manager,[data]);
+					return tret;
+				}
+				else if(manager.receiveMessage)
+				{
+					var tret = manager.receiveMessage(message,data,sender);
+					if(tret)
+						return tret;
+				}
+			}
+			return null;
+		},
+		sendMessage:function(message,data)
+		{
+			return this.getParent()._sendMessage(message,data,this);
+		},
+		viewAPINotify:function(functionName,data)
+		{
+			for(var i=0; i < this.managers.length; i++)
+			{
+				var manager = this.managers[i];
+				if(manager[functionName])
+				{
+					manager[functionName].apply(manager,data)
+				}
+			}
+		},
 		createdNode: function (nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType, childURI, childName, callback /* ( ready ) */ )
-		{},
+		{
+			this.viewAPINotify('createdNode',arguments);
+		},
+		
 		initializedNode: function (nodeID, childID)
 		{
+			this.viewAPINotify('initializedNode',arguments);
 			if (childID == 'index-vwf')
 			{
 				if(window._Editor)
@@ -128,11 +191,16 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 			}
 		},
 		createdProperty: function (nodeID, propertyName, propertyValue)
-		{},
+		{
+			this.viewAPINotify('createdProperty',arguments);
+		},
 		initializedProperty: function (nodeID, propertyName, propertyValue)
-		{},
+		{
+			this.viewAPINotify('initializedProperty',arguments);
+		},
 		deletedNode: function (nodeID)
 		{
+			this.viewAPINotify('deletedNode',arguments);
 			if (window._Editor && _Editor.SelectedVWFID == nodeID)
 			{
 				_Editor.SelectObject(null);
@@ -140,7 +208,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 		},
 		satProperty: function (nodeID, propertyName, propertyValue)
 		{
-			
+			this.viewAPINotify('satProperty',arguments);
 			if (window._Editor && propertyName == _Editor.transformPropertyName && _Editor.isSelected(nodeID))
 			{
 				_Editor.updateBoundsTransform(nodeID);
@@ -163,15 +231,25 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 				_PrimitiveEditor.NodePropertyUpdate(nodeID, propertyName, propertyValue);
 		},
 		createdMethod: function (nodeID, methodName, methodParameters, methodBody)
-		{},
+		{
+			this.viewAPINotify('createdMethod',arguments);
+		},
 		calledMethod: function (nodeID, methodName, methodParameters)
-		{},
+		{
+			this.viewAPINotify('calledMethod',arguments);
+		},
 		createdEvent: function (nodeID, eventName, eventParameters)
-		{},
+		{
+			this.viewAPINotify('createdEvent',arguments);
+		},
 		firedEvent: function (nodeID, eventName, eventParameters)
-		{},
+		{
+			this.viewAPINotify('firedEvent',arguments);
+		},
 		executed: function (nodeID, scriptText, scriptType)
-		{},
+		{
+			this.viewAPINotify('executed',arguments);
+		},
 	});
 });
 

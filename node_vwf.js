@@ -718,6 +718,7 @@ function startVWF(){
 								{
 									if (isDir.isDirectory()) 
 									{
+										
 										var appname = findAppName(filename);
 										if(!appname)
 											appname = findAppName(filename+libpath.sep);
@@ -738,11 +739,19 @@ function startVWF(){
 											RedirectToInstance(request,response,appname,"");
 											return;
 										}
-										//no app name but is directory. Not listing directories, so 404
+										//no app name but is directory. Not listing directories, so try for index.html or 404
 										if(!appname)
 										{
 											
-											_404(response);
+											fs.exists(filename + libpath.sep + "index.html" ,function(indexexists){
+
+												if(indexexists)
+													ServeFile(request,filename + libpath.sep + "index.html",response,URL);
+												else
+													_404(response);
+
+											})
+											
 											
 											return;
 										}

@@ -461,7 +461,7 @@ node.id = childID; // TODO: move to vwf/model/object
         childrening: function( nodeID ) {  // TODO: move to vwf/model/object
 
             var node = this.nodes[nodeID];
-
+            if(!node) return null;
             return jQuery.map( node.children, function( child ) {
                 return child.id;
             } );
