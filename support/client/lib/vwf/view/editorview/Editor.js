@@ -2500,19 +2500,48 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		
 		this.PickParentCallback = function (parentnode)
 		{
+			if(parentnode)
+			{
+				var id = this.GetSelectedVWFID();
+				var parent = parentnode.id;
+				if(id != parent)
+				{
+					if(vwf.parent(id) != parent)
+					{
+						if(vwf.decendants(id).indexOf(parent) == -1)
+						{
+							var node = _DataManager.getCleanNodePrototype(this.GetSelectedVWFID());
+							var childmat = toGMat(this.findviewnode(this.GetSelectedVWFID()).matrixWorld);
+							var parentmat = toGMat(this.findviewnode(parentnode.id).matrixWorld);
+							var invparentmat = MATH.inverseMat4(parentmat);
+							childmat = MATH.mulMat4(invparentmat, childmat);
+							delete node.properties.translation;
+							delete node.properties.rotation;
+							delete node.properties.quaternion;
+							delete node.properties.scale;
+							node.properties.transform = MATH.transposeMat4(childmat);
+							this.DeleteSelection();
+							this.createChild(parentnode.id, GUID(), node);
+						}else
+						{
+							alertify.alert('This object cannot be assigned to be a child of one of its decendants')
+						}
+					}
+					else
+					{
+							alertify.alert('This object is already the selected objects parent');
+					}
+				}else
+				{
+					alertify.alert('An object cannot be linked to itself');
+				}	
+
+			}else
+			{
+					alertify.alert('No object selected')
+			}
+
 			this.TempPickCallback = null;
-			var node = _DataManager.getCleanNodePrototype(this.GetSelectedVWFID());
-			var childmat = toGMat(this.findviewnode(this.GetSelectedVWFID()).matrixWorld);
-			var parentmat = toGMat(this.findviewnode(parentnode.id).matrixWorld);
-			var invparentmat = MATH.inverseMat4(parentmat);
-			childmat = MATH.mulMat4(invparentmat, childmat);
-			delete node.properties.translation;
-			delete node.properties.rotation;
-			delete node.properties.quaternion;
-			delete node.properties.scale;
-			node.properties.transform = MATH.transposeMat4(childmat);
-			this.DeleteSelection();
-			this.createChild(parentnode.id, GUID(), node);
 			self.SelectOnNextCreate();
 			this.SetSelectMode('Pick');
 		}
@@ -2537,6 +2566,12 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				_Notifier.alert('No object selected. Select the desired child, then use this to choose the parent.');
 				return;
 			}
+			if (this.findviewnode(this.GetSelectedVWFID()).initializedFromAsset)
+			{
+				_Notifier.alert('This object is part of a 3D asset, and cannot have its heirarchy modified');
+				return;
+			}
+
 			this.SetSelectMode('TempPick');
 			this.TempPickCallback = this.PickParentCallback;
 		}

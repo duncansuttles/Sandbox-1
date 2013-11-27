@@ -323,7 +323,7 @@ define(function ()
 						$('#receiveShadows').removeAttr('checked');
 					}
 					$('#BaseSectionTitle').text(node.properties.type || "Type" + ": " + node.id);
-					this.SelectionTransformed(null, node);
+					this.SelectionTransformed(null, node,true);
 					this.setupAnimationGUI(node, true);
 					this.setupEditorData(node, true);
 					this.recursevlyAddModifiers(node);
@@ -1029,7 +1029,7 @@ define(function ()
 		{
 			this.propertyEditorDialogs=[];
 		}
-		this.SelectionTransformed = function (e, node)
+		this.SelectionTransformed = function (e, node, rot)
 		{
 			try
 			{
@@ -1043,9 +1043,14 @@ define(function ()
 					$('#PositionX').val(Math.floor(pos[0]*1000)/1000);
 					$('#PositionY').val(Math.floor(pos[1]*1000)/1000);
 					$('#PositionZ').val(Math.floor(pos[2]*1000)/1000);
-					$('#RotationX').val(Math.floor(.05 + angles[0] * -57.2957795));
-					$('#RotationY').val(Math.floor(.05 + angles[1] * -57.2957795));
-					$('#RotationZ').val(Math.floor(.05 + angles[2] * -57.2957795));
+				
+					//since there is ambiguity in the matrix, we need to keep these values aroud. otherwise , the typeins don't really do what you would think		
+					if(rot)
+					{
+						$('#RotationX').val(Math.floor(.05 + angles[0] * -57.2957795));
+						$('#RotationY').val(Math.floor(.05 + angles[1] * -57.2957795));
+						$('#RotationZ').val(Math.floor(.05 + angles[2] * -57.2957795));
+					}
 					//$('#RotationW').val(rot[3]);
 					$('#ScaleX').val(scl[0]);
 					$('#ScaleY').val(scl[1]);
