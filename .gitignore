@@ -8,3 +8,4 @@ cleanup.bat
 /build/*
 /data/*
 startup.bat
+config.json

@@ -767,7 +767,7 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 		
 		for(var i =0; i < this.models.length; i ++)
 		{	
-		  this.models[i].ticking && this.models[i].ticking( this.now );
+		  this.models[i].model.ticking && this.models[i].model.ticking( this.now );
 		}	
 		   
 
@@ -2312,7 +2312,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 		   for(var index = 0; index < this.models.length; index++)
 			{
                 // Skip models up through the one making the most recent call here (if any).
-				var model = this.models[index];
+				var model = this.models[index].model;
                 if ( entry.index === undefined || index > entry.index ) {
 
                     // Record the active model number.
@@ -2418,7 +2418,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 
 	    for(var index = 0; index < this.models.length; index++)
 	    {
-		var model = this.models[index];
+		var model = this.models[index].model;
 	    
 
                 // Skip models up through the one making the most recent call here (if any).
@@ -2564,7 +2564,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 	    
 	    for(var i =0; i < this.models.length; i ++)
 	    {	
-		  var value = this.models[i].callingMethod && this.models[i].callingMethod( nodeID, methodName, methodParameters );
+		  var value = this.models[i].model.callingMethod && this.models[i].model.callingMethod( nodeID, methodName, methodParameters );
 		  methodValue = value !== undefined ? value : methodValue;
 	    }	
 	    

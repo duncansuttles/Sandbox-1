@@ -146,6 +146,7 @@
 				reg.pending = false;
 				reg.loaded = true;
 				//store this asset in the registry
+
 				reg.node = asset.scene.clone();
 				
 				var list = [];
@@ -158,7 +159,7 @@
 							list[i].material.needsUpdate = true;
 							if(list[i].material.map)
 							{
-								list[i].material.map =  _SceneManager.getTexture(list[i].material.map.image.src);
+								list[i].material.map =  _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
 								list[i].material.map.needsUpdate = true;
 							}else
 							{
@@ -167,17 +168,17 @@
 							}
 							if(list[i].material.bumpMap)
 							{
-								list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.bumpMap.image.src);
+								list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
 								list[i].material.bumpMap.needsUpdate = true;
 							}
 							if(list[i].material.lightMap)
 							{
-								list[i].material.lightMap = _SceneManager.getTexture(list[i].material.lightMap.image.src);
+								list[i].material.lightMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
 								list[i].material.lightMap.needsUpdate = true;
 							}
 							if(list[i].material.normalMap)
 							{
-								list[i].material.normalMap = _SceneManager.getTexture(list[i].material.normalMap.image.src);
+								list[i].material.normalMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
 								list[i].material.normalMap.needsUpdate = true;								
 							}
 											
@@ -276,6 +277,7 @@
 			//if the asset registry entry is not pending and it is loaded, then just grab a copy, no download or parse necessary
 			else if(reg.loaded == true && reg.pending == false)
 			{
+				
 				this.getRoot().add(reg.node.clone());
 				
 				var list = [];
@@ -290,7 +292,8 @@
 				
 							if(list[i].material.map)
 							{
-								list[i].material.map =  _SceneManager.getTexture(list[i].material.map.image.src);
+								
+								list[i].material.map =  _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
 								list[i].material.map.needsUpdate = true;
 							}else
 							{
@@ -299,17 +302,17 @@
 							}
 							if(list[i].material.bumpMap)
 							{
-								list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.bumpMap.image.src);
+								list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
 								list[i].material.bumpMap.needsUpdate = true;
 							}
 							if(list[i].material.lightMap)
 							{
-								list[i].material.lightMap = _SceneManager.getTexture(list[i].material.lightMap.image.src);
+								list[i].material.lightMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
 								list[i].material.lightMap.needsUpdate = true;
 							}
 							if(list[i].material.normalMap)
 							{
-								list[i].material.normalMap = _SceneManager.getTexture(list[i].material.normalMap.image.src);
+								list[i].material.normalMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
 								list[i].material.normalMap.needsUpdate = true;								
 							}
 							
@@ -353,7 +356,7 @@
 								
 								if(list[i].material.map)
 								{
-									list[i].material.map =  _SceneManager.getTexture(list[i].material.map.image.src);
+									list[i].material.map =  _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
 									list[i].material.map.needsUpdate = true;
 								}else
 								{
@@ -362,17 +365,17 @@
 								}
 								if(list[i].material.bumpMap)
 								{
-									list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.bumpMap.image.src);
+									list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
 									list[i].material.bumpMap.needsUpdate = true;
 								}
 								if(list[i].material.lightMap)
 								{
-									list[i].material.lightMap = _SceneManager.getTexture(list[i].material.lightMap.image.src);
+									list[i].material.lightMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
 									list[i].material.lightMap.needsUpdate = true;
 								}
 								if(list[i].material.normalMap)
 								{
-									list[i].material.normalMap = _SceneManager.getTexture(list[i].material.normalMap.image.src);
+									list[i].material.normalMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
 									list[i].material.normalMap.needsUpdate = true;								
 								}
 								

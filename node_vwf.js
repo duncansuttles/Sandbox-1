@@ -658,13 +658,14 @@ function startVWF(){
 				if(uri.indexOf('/admin/instances'.replace(safePathRE)) != -1)
 				{	
 					
-					var data = {};
+					var data = {}, tempLoginData;
 					for(var i in global.instances)
 					{
 						data[i] = {clients:{}};
 						for(var j in global.instances[i].clients)
 						{
-							data[i].clients[j] = null;
+							tempLoginData = global.instances[i].clients[j].loginData;
+							data[i].clients[j] = {UID: tempLoginData.UID, loginTime: tempLoginData.loginTime, lastUpdate: tempLoginData.lastUpdate};
 						}
 					}
 					ServeJSON(data,response,URL);
@@ -793,8 +794,6 @@ function startVWF(){
 				});
 				response.write(e.toString(), "utf8");
 				response.end();
-		
-		
 		}
 	} // close onRequest
 	
@@ -884,6 +883,11 @@ function startVWF(){
 		DAL.getInstance(namespace.replace(/\//g,"_"),function(instancedata)
 		{
 			
+			if(!instancedata)
+			{
+				socket.disconnect();
+				return;
+			}
 			//if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
 			if(instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer)
 			{
@@ -1095,7 +1099,7 @@ function startVWF(){
 			
 			//this is a blank world, go ahead and load the default
 
-			
+			global.instances[namespace].cachedState = blankscene;
 			socket.emit('message',messageCompress.pack(JSON.stringify({"action":"createNode","parameters":[blankscene],"time":global.instances[namespace].time})));
 			socket.pending = false;
 		});
@@ -1114,6 +1118,7 @@ function startVWF(){
 		var timeout = function(namespace){
 			
 			this.namespace = namespace;
+			this.count = 0;
 			this.time = function()
 			{
 				try{
@@ -1132,11 +1137,40 @@ function startVWF(){
 					var loadClient = loadClients[Math.floor((Math.max(0,Math.random() -.001)) * loadClients.length)];
 					if(loadClient)
 					{
-						console.log('did not get state, resending request');	
-						this.namespace.getStateTime = this.namespace.time;
-						loadClient.emit('message',messageCompress.pack(JSON.stringify({"action":"getState","respond":true,"time":this.namespace.time})));
-						socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Did not get state, resending request."],"time":this.namespace.time})));	
-						this.handle = global.setTimeout(this.time.bind(this),2000);			
+						this.count++;
+						if(this.count < 5)
+						{
+							console.log('did not get state, resending request');	
+							this.namespace.getStateTime = this.namespace.time;
+							loadClient.emit('message',messageCompress.pack(JSON.stringify({"action":"getState","respond":true,"time":this.namespace.time})));
+							socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Did not get state, resending request."],"time":this.namespace.time})));	
+							this.handle = global.setTimeout(this.time.bind(this),2000);	
+						}else
+						{
+							console.log('sending default state');
+							var state =  this.namespace.cachedState;
+							for(var i in  this.namespace.clients)
+							{
+								var client =  this.namespace.clients[i];
+								console.log(state);
+								if(loadClient != client && client.pending===true)
+								{
+									console.log('sending default state 2');
+									client.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State Not Received, Transmitting default"],"time": this.namespace.getStateTime})));	
+									socket.emit('message',messageCompress.pack(JSON.stringify({"action":"createNode","parameters":[state],"time":this.namespace.getStateTime})));
+									client.pending = false;
+									for(var j = 0; j < client.pendingList.length; j++)
+									{
+										
+										client.emit('message',client.pendingList[j]);
+										
+										
+									}
+									client.pendingList = [];	
+								}
+							}
+						}
+
 					}else
 					{
 						console.log('need to load from db');	
@@ -1392,8 +1426,19 @@ function startVWF(){
 						
 					}else
 					{
+						//simulate latency
+						if(global.latencySim > 0)
+						{
+							(function(__client,__message){
+							global.setTimeout(function(){
+								__client.emit('message',__message);
+							},150)
+							})(client,compressedMessage);
+						}else
+						{
+							client.emit('message',compressedMessage);
+						}
 						
-						client.emit('message',compressedMessage);
 						
 					}
 				}
@@ -1466,6 +1511,13 @@ function startVWF(){
 	p = process.argv.indexOf('-d');
 	datapath = p >= 0 ? process.argv[p+1] : (configSettings.datapath ? libpath.normalize(configSettings.datapath) : libpath.join(__dirname, "data"));
 	global.datapath = datapath;	
+
+
+	p = process.argv.indexOf('-ls');
+	global.latencySim = p >= 0 ? parseInt(process.argv[p+1]) : (configSettings.latencySim ? configSettings.latencySim : 0);
+	
+	if(global.latencySim > 0) 
+		console.log(red+'Latency Sim = ' +  global.latencySim+reset);	
 	
 	p = process.argv.indexOf('-l');
 	global.logLevel = p >= 0 ? process.argv[p+1] : (configSettings.logLevel ? configSettings.logLevel : 1);
@@ -1705,6 +1757,7 @@ function startVWF(){
 			app.use(app.router);
 			app.get('/adl/sandbox/help', Landing.help);
 			app.get('/adl/sandbox/help/:page([a-zA-Z]+)', Landing.help);
+			app.get('/adl/sandbox/world/:page([a-zA-Z0-9]+)', Landing.world);
 			app.get('/adl/sandbox', Landing.generalHandler);
 			app.get('/adl/sandbox/:page([a-zA-Z/]+)', Landing.generalHandler);		
 			

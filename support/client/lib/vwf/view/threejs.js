@@ -779,7 +779,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 
                 sceneNode.frameCount = 0;
             
-             
+             	
                 var newPick = ThreeJSPick.call(self,sceneNode,cam,ww,wh);
 
                 var newPickId = newPick ? getPickObjectID.call( view, newPick.object ) : view.state.sceneRootID;
@@ -992,7 +992,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
             if(detectWebGL() && getURLParameter('disableWebGL') == 'null')
             {
-                sceneNode.renderer = new THREE.WebGLRenderer({canvas:mycanvas,antialias:true});
+            	
+                sceneNode.renderer = new THREE.WebGLRenderer({canvas:mycanvas,antialias:true,alpha:false,stencil:false});
 				sceneNode.renderer.autoUpdateScene = false;
 				sceneNode.renderer.setSize($('#index-vwf').width(),$('#index-vwf').height());
 				sceneNode.renderer.shadowMapEnabled = true;
@@ -1593,11 +1594,12 @@ define( [ "module", "vwf/view" ], function( module, view ) {
          
     };
     function mouseXPos(e) {
-        return e.clientX - e.currentTarget.offsetLeft + window.scrollX;
+    	
+        return e.clientX - e.currentTarget.offsetLeft + (window.scrollX || 0);
     }
 
     function mouseYPos(e) {
-        return e.clientY - e.currentTarget.offsetTop + window.scrollY;
+        return e.clientY - e.currentTarget.offsetTop + (window.scrollY || 0);
     }
 
    function ThreeJSPick(sceneNode,cam,SCREEN_WIDTH,SCREEN_HEIGHT)
@@ -1670,7 +1672,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		
 			
 			if(vwf.models[0].model.nodes['index-vwf'].cameramode == 'FirstPerson')
-				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[directionVector.x,directionVector.y,directionVector.z],{filter:function(o){return !(o.isAvatar === true)}});
+				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[this.directionVector.x,this.directionVector.y,this.directionVector.z],{filter:function(o){return !(o.isAvatar === true)}});
 			else
 				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[this.directionVector.x,this.directionVector.y,this.directionVector.z]);
 			

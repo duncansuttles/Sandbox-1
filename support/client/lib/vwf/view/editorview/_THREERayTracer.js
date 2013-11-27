@@ -482,7 +482,7 @@ face.prototype.intersectSphere = function(P,r)
 			else
 			point = intersectLinePlane(this.norm,P,this.v0,this.norm);
 		 }
-		 if(d > 0)
+		 if(d >= 0)
 		 {
 			point = this.intersect1(P,MATH.scaleVec3(this.norm,-1));
 				if(point) point =  point.point;
@@ -1313,7 +1313,7 @@ THREE.Geometry.prototype.FrustrumCast = function(frustrum,opts)
 	 //try to reject based on bounding box.
 	 var bbhit = this.BoundingBox.intersectFrustrum(frustrum,opts); 
 	
-	 if(bbhit)
+	 if(bbhit.length > 0)
 	 {
 				
 		 //build the octree or the facelist

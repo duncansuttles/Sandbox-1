@@ -477,7 +477,6 @@ function deleteUser (id,cb)
 function getInstance (id,cb)
 {
 	DB.get(id,function(err,doc,key){
-	
 		cb(doc);
 	});
 }
@@ -734,14 +733,110 @@ function createInstance (id,data,cb)
 function deleteInstance (id,cb)
 {
 	async.series([
+	function(cb2)  //try to remove this from the parents list of children
+	{
+			//get the state
+			getInstance(id,function(inst)
+			{
+
+				// if it does not exist, goto next in series
+				if(!inst)
+				cb2();
+				if(inst)
+				{
+					
+					//get the instances parent instance
+					var parent = inst.clonedFrom;
+					
+					getInstance(parent,function(parentInst)
+					{
+						//if it does not exist, goto nexxt in series
+						if(!parentInst)
+						{
+							cb2();
+						}
+						else
+						{
+							
+							//if parent has children array
+							
+							if(parentInst.children != null)
+							{
+								//remove this ID from the parents list of children
+								//then goto next in series
+								
+								parentInst.children.splice(parentInst.children.indexOf(id),1);
+								
+								updateInstance(parent, parentInst,function()
+								{
+									cb2();
+								});
+							}else  //just goto the next in the series
+							{
+								cb2();
+							}
+
+						}
+					});
+
+				}
+			});
+
+		
+	},
+	function(cb2)   // for each of my children, remove it's clonedFrom property
+	{
+		//get the state
+		getInstance(id,function(inst)
+		{
+			// if it does not exist, goto next in series
+				if(!inst)
+					cb2();
+				var children = inst.children || [];
+				// for each child
+				async.eachSeries(children,function(item,cb3)
+				{
+					//get the  child
+					
+					getInstance(item,function(child)
+					{
+						//if child
+						
+						if(child)
+						{
+							//child no longer has parent
+							child.clonedFrom = null;
+							
+							updateInstance(item + "" ,child,function()
+							{
+								cb3();
+							});
+						}else   //somehow, child does not exist. Next child
+						{
+							cb3();
+						}
+
+					});
+
+				},function(err)
+				{
+
+					//next in series
+					cb2();
+				});
+
+		});
+	},
 	function(cb2)
 	{
-		DB.remove(id,function(err,doc,key)
-		{
-			
-			deleteFolderRecursive((datapath + '/States/' + id).replace(safePathRE));
-			cb2();
-		});
+			DB.remove(id,function(err,doc,key)
+			{
+				
+				deleteFolderRecursive((datapath + '/States/' + id).replace(safePathRE));
+				cb2();
+			});
+
+		
 	},
 	function(cb2)
 	{
@@ -1077,7 +1172,12 @@ function getHistory(id,cb)
 			//get each child
 			getInstance(item,function(cinst)
 			{
-					var thischild = {world:item,type:1,created:cinst.created,title:cinst.title};
+				if(!cinst)
+				{
+					cb2();
+					return;
+				}
+				var thischild = {world:item,type:1,created:cinst.created,title:cinst.title};
 				if(cinst.publishedFrom)
 					thischild.type = 1;
 				if(cinst.clonedFrom)
@@ -1186,54 +1286,74 @@ function copyInstance (id, arg2, arg3){
 	getInstance(id, function(instance){
 		
 		if(instance){
+			
 			var newId = '_adl_sandbox_' + makeid() + '_';
-			instance.owner = newowner ? newowner : instance.owner;
-			instance.featured = false;
-			instance.clonedFrom = id;
-			instance.created = new Date();
-			//when cloning a world, it becomes unpublished so you can edit it.
-			delete instance.publishSettings;
-			delete instance.publishedFrom;
-			delete instance.children;
-			createInstance (newId, instance, function(success){
-				if(success){
-					var oldStateFile = datapath + '/States/' + id + '/state', newStateFile = datapath + '/States/' + newId + '/state';
-					
-					fs.readFile(oldStateFile,function(err, olddata)
-					{
-						//olddata may not exist..
-						if(!olddata || err){
-							cb(newId);
-							return;
-						}
+
+			if(!instance.children)
+				instance.children = [];
+
+			instance.children.push(newId);
+			updateInstance(id,instance,function(){
+
+				instance = JSON.parse(JSON.stringify(instance));
+				instance.owner = newowner ? newowner : instance.owner;
+				instance.featured = false;
+				instance.clonedFrom = id;
+				instance.created = new Date();
+				//when cloning a world, it becomes unpublished so you can edit it.
+				delete instance.publishSettings;
+				delete instance.publishedFrom;
+				delete instance.children;
+				createInstance (newId, instance, function(success){
+					if(success){
+						var oldStateFile = libpath.join(datapath, '/States/', id, '/state');
+						var newStateFile = libpath.join(datapath, '/States/', newId, '/state');
 						
-						var oldstate = JSON.parse(olddata);
-						oldstate[oldstate.length-1].owner = instance.owner;
-						var newstate = JSON.stringify(oldstate);
-						fs.writeFile(newStateFile, newstate, function(err)
+						fs.readFile(oldStateFile,function(err, olddata)
 						{
+							//olddata may not exist..
+							if(!olddata || err){
+								cb(newId);
+								return;
+							}
 							
-							//get the orignial instance and record the new one as a child
-							getInstance(id, function(instance){
-							
-								if(!instance.children)
-									instance.children = [];
-								instance.children.push(newId);
+							var oldstate = JSON.parse(olddata);
+							oldstate[oldstate.length-1].owner = instance.owner;
+							var newstate = JSON.stringify(oldstate);
+							fs.writeFile(newStateFile, newstate, function(err)
+							{
 								
-								updateInstance(id,instance,function()
-								{
-									cb(newId);
+								//get the orignial instance and record the new one as a child
+								getInstance(id, function(instance){
+								
+									if(!instance.children)
+										instance.children = [];
+									instance.children.push(newId);
+									
+									updateInstance(id,instance,function()
+									{
+										cb(newId);
+									});
 								});
+								
 							});
-							
 						});
-					});
-				}
-				
-				else cb(false);
-			});
+
+						// copy thumbnail
+						var oldThumbnail = libpath.join(datapath, '/States', id, '/thumbnail.png');
+						var newThumbnail = libpath.join(datapath, '/States', newId, '/thumbnail.png');
+						fs.readFile(oldThumbnail, function(err,data){
+							if(!data || err){
+								return;
+							}
+							fs.writeFile(newThumbnail, data);
+						});
+					}
+					
+					else cb(false);
+				});
+			})
 		}
-		
 		else cb(false);	
 	});
 }
@@ -1289,9 +1409,14 @@ function restoreBackup(id, stateFileName, cb){
 		
 		//Make old backup file current state file
 		fs.rename(oldPath, statePath, function(err){
-		
+			
+			//Unable to set current state, restore previous current state
 			if(err){
-				cb(false);
+				fs.rename(tempPath, statePath, function(err){
+					cb(false);
+					return;
+				});
+				
 				return;
 			}
 			

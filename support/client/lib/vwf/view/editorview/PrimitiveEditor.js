@@ -322,7 +322,7 @@ define(function ()
 					{
 						$('#receiveShadows').removeAttr('checked');
 					}
-					$('#BaseSectionTitle').text(node.properties.type + ": " + node.id);
+					$('#BaseSectionTitle').text(node.properties.type || "Type" + ": " + node.id);
 					this.SelectionTransformed(null, node);
 					this.setupAnimationGUI(node, true);
 					this.setupEditorData(node, true);
@@ -560,8 +560,9 @@ define(function ()
 			{
 				editordatanames.push(i);
 			}
+			if(editordatanames.length ==0 ) return;
 			editordatanames.sort();
-			section = '<h3 class="modifiersection" ><a href="#"><div style="font-weight:bold;display:inline">' + vwf.getProperty(node.id,'type') + ": </div>" + node.properties.DisplayName + '</a></h3>' + '<div class="modifiersection" id="basicSettings' + nodeid + '">' + '</div>';
+			section = '<h3 class="modifiersection" ><a href="#"><div style="font-weight:bold;display:inline">' + (vwf.getProperty(node.id,'type') || "Type") + ": </div>" + (node.properties.DisplayName || "None") + '</a></h3>' + '<div class="modifiersection" id="basicSettings' + nodeid + '">' + '</div>';
 			$("#accordion").append(section);
 			for (var j = 0; j < editordatanames.length; j++)
 			{
@@ -930,7 +931,8 @@ define(function ()
 		this.copyButtonClicked = function ()
 		{
 			var id = $(this).attr('nodename');
-			_Editor.Copy([id]);
+			
+			_Editor.Copy([{id:id}]);
 		}
 		this.saveButtonClicked = function ()
 		{
@@ -1052,7 +1054,7 @@ define(function ()
 			}
 			catch (e)
 			{
-				console.log(e);
+				//console.log(e);
 			}
 		}
 		$(document).bind('selectionChanged', this.SelectionChanged.bind(this));

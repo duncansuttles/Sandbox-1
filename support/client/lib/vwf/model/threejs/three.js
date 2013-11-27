@@ -12560,7 +12560,17 @@ THREE.Mesh.prototype.clone = function ( object ) {
 	if ( object === undefined ) object = new THREE.Mesh( this.geometry, this.material );
 
 	THREE.Object3D.prototype.clone.call( this, object );
-
+	
+	
+	if(this.animationHandle)
+	{
+	var animation = new THREE.Animation(
+	    object,
+	    object.geometry.animation.name,
+	    THREE.AnimationHandler.LINEAR
+	  );
+	object.animationHandle = animation;
+	}					
 	return object;
 
 };
@@ -15061,18 +15071,24 @@ THREE.ShaderChunk = {
 
 			"vec3 perturbNormal2Arb( vec3 eye_pos, vec3 surf_norm ) {",
 
-				"vec3 q0 = dFdx( eye_pos.xyz );",
-				"vec3 q1 = dFdy( eye_pos.xyz );",
-				"vec2 st0 = dFdx( vUv.st );",
-				"vec2 st1 = dFdy( vUv.st );",
+				"vec3 q0 = normalize(dFdx( eye_pos.xyz ));",
+				"vec3 q1 = normalize(dFdy( eye_pos.xyz ));",
+				"vec2 st0 = normalize(dFdx( vUv.st ));",
+				"vec2 st1 = normalize(dFdy( vUv.st ));",
 
 				"vec3 S = normalize(  q0 * st1.t - q1 * st0.t );",
 				"vec3 T = normalize( -q0 * st1.s + q1 * st0.s );",
+				
+				
+				
+				
 				"vec3 N = normalize( surf_norm );",
 
 				"vec3 mapN = texture2D( normalMap, vUv ).xyz * 2.0 - 1.0;",
 				"mapN.xy = normalScale * mapN.xy;",
+				"mapN = normalize(mapN);",
 				"mat3 tsn = mat3( S, T, N );",
+				
 				"return normalize( tsn * mapN );",
 
 			"}",
@@ -15442,8 +15458,8 @@ THREE.ShaderChunk = {
     	"#endif",
     	"#ifdef USE_NORMALMAP",
 
-    	"tnorm  = perturbNormal3Arb( -vViewPosition, normalize( vNormal ));",
-
+    	"tnorm  = perturbNormal2Arb( vWorldPosition.xzy, normalize( tnorm ));",
+    	
     	"#endif",
     	"shAmbient =  C1 * L22 * (tnorm.x * tnorm.x - tnorm.y * tnorm.y) +",
         "            C3 * L20 * tnorm.z * tnorm.z +",
@@ -15627,8 +15643,8 @@ THREE.ShaderChunk = {
 
 		"#ifdef USE_NORMALMAP",
 
-			"normal = perturbNormal2Arb( -viewPosition, normal );",
-
+			"normal = normalize(perturbNormal2Arb( -normalize(viewPosition), normal ));",
+			
 		"#elif defined( USE_BUMPMAP )",
 
 			"normal = perturbNormalArb( -vViewPosition, normal, dHdxy_fwd() );",
@@ -16260,6 +16276,265 @@ THREE.ShaderChunk = {
 
 	].join("\n"),
 
+
+shadowmap_fragment_basic: [
+
+		"#ifdef USE_SHADOWMAP",
+
+			"#ifdef SHADOWMAP_DEBUG",
+
+				"vec3 frustumColors[3];",
+				"frustumColors[0] = vec3( 1.0, 0.5, 0.0 );",
+				"frustumColors[1] = vec3( 0.0, 1.0, 0.8 );",
+				"frustumColors[2] = vec3( 0.0, 0.5, 1.0 );",
+
+			"#endif",
+
+			"#ifdef SHADOWMAP_CASCADE",
+
+				"int inFrustumCount = 0;",
+
+			"#endif",
+
+			"float fDepth;",
+			"vec3 shadowColor = vec3( 0.0 );",
+
+			"for( int i = 0; i < MAX_SHADOWS; i ++ ) {",
+
+				"vec3 shadowCoord = vShadowCoord[ i ].xyz / vShadowCoord[ i ].w;",
+
+				// "if ( something && something )" 		 breaks ATI OpenGL shader compiler
+				// "if ( all( something, something ) )"  using this instead
+
+				"bvec4 inFrustumVec = bvec4 ( shadowCoord.x >= 0.0, shadowCoord.x <= 1.0, shadowCoord.y >= 0.0, shadowCoord.y <= 1.0 );",
+				"bool inFrustum = all( inFrustumVec );",
+
+				// don't shadow pixels outside of light frustum
+				// use just first frustum (for cascades)
+				// don't shadow pixels behind far plane of light frustum
+
+				"#ifdef SHADOWMAP_CASCADE",
+
+					"inFrustumCount += int( inFrustum );",
+					"bvec3 frustumTestVec = bvec3( inFrustum, inFrustumCount == 1, shadowCoord.z <= 1.0 );",
+
+				"#else",
+
+					"bvec2 frustumTestVec = bvec2( inFrustum, shadowCoord.z <= 1.0 );",
+
+				"#endif",
+
+				"bool frustumTest = all( frustumTestVec );",
+
+				"if ( frustumTest ) {",
+					"shadowColor = vec3( 1.0 );",
+					"shadowCoord.z += shadowBias[ i ];",
+
+					"#if defined( SHADOWMAP_TYPE_PCF )",
+
+						// Percentage-close filtering
+						// (9 pixel kernel)
+						// http://fabiensanglard.net/shadowmappingPCF/
+
+						"float shadow = 0.0;",
+
+						/*
+						// nested loops breaks shader compiler / validator on some ATI cards when using OpenGL
+						// must enroll loop manually
+
+						"for ( float y = -1.25; y <= 1.25; y += 1.25 )",
+							"for ( float x = -1.25; x <= 1.25; x += 1.25 ) {",
+
+								"vec4 rgbaDepth = texture2D( shadowMap[ i ], vec2( x * xPixelOffset, y * yPixelOffset ) + shadowCoord.xy );",
+
+								// doesn't seem to produce any noticeable visual difference compared to simple "texture2D" lookup
+								//"vec4 rgbaDepth = texture2DProj( shadowMap[ i ], vec4( vShadowCoord[ i ].w * ( vec2( x * xPixelOffset, y * yPixelOffset ) + shadowCoord.xy ), 0.05, vShadowCoord[ i ].w ) );",
+
+								"float fDepth = unpackDepth( rgbaDepth );",
+
+								"if ( fDepth < shadowCoord.z )",
+									"shadow += 1.0;",
+
+						"}",
+
+						"shadow /= 9.0;",
+
+						*/
+
+						"const float shadowDelta = 1.0 / 9.0;",
+
+						"float xPixelOffset = 1.0 / shadowMapSize[ i ].x;",
+						"float yPixelOffset = 1.0 / shadowMapSize[ i ].y;",
+
+						"float dx0 = -1.25 * xPixelOffset;",
+						"float dy0 = -1.25 * yPixelOffset;",
+						"float dx1 = 1.25 * xPixelOffset;",
+						"float dy1 = 1.25 * yPixelOffset;",
+						
+						"if(shadowCoord.x + dx1 > 1.0 || shadowCoord.x - dx1 < 0.0 || shadowCoord.y + dy1 > 1.0 || shadowCoord.y - dy1 < 0.0)",
+						"shadow = 0.0;",
+						"else {",
+							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy0 ) ) );",
+							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy0 ) ) );",
+							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy0 ) ) );",
+							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, 0.0 ) ) );",
+							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy ) );",
+							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, 0.0 ) ) );",
+							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy1 ) ) );",
+							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy1 ) ) );",
+							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy1 ) ) );",
+							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+						"}",
+						
+				
+						"shadowColor = shadowColor * vec3( ( 1.0 - shadowDarkness[ i ] * shadow  ) );",
+						"shadowColor = mix(shadowColor,vec3(1.0,1.0,1.0),clamp(0.0,1.0,pow(length(shadowCoord.xy - .5)*2.0,4.0)));",
+					"#elif defined( SHADOWMAP_TYPE_PCF_SOFT )",
+
+						// Percentage-close filtering
+						// (9 pixel kernel)
+						// http://fabiensanglard.net/shadowmappingPCF/
+
+						"float shadow = 0.0;",
+
+						"float xPixelOffset = 1.0 / shadowMapSize[ i ].x;",
+						"float yPixelOffset = 1.0 / shadowMapSize[ i ].y;",
+
+						"float dx0 = -1.0 * xPixelOffset;",
+						"float dy0 = -1.0 * yPixelOffset;",
+						"float dx1 = 1.0 * xPixelOffset;",
+						"float dy1 = 1.0 * yPixelOffset;",
+
+						"mat3 shadowKernel;",
+						"mat3 depthKernel;",
+
+						"depthKernel[0][0] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy0 ) ) );",
+						"if ( depthKernel[0][0] < shadowCoord.z ) shadowKernel[0][0] = 0.25;",
+						"else shadowKernel[0][0] = 0.0;",
+
+						"depthKernel[0][1] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, 0.0 ) ) );",
+						"if ( depthKernel[0][1] < shadowCoord.z ) shadowKernel[0][1] = 0.25;",
+						"else shadowKernel[0][1] = 0.0;",
+
+						"depthKernel[0][2] = unpackDepth( texture2D( shadowMap[ i], shadowCoord.xy + vec2( dx0, dy1 ) ) );",
+						"if ( depthKernel[0][2] < shadowCoord.z ) shadowKernel[0][2] = 0.25;",
+						"else shadowKernel[0][2] = 0.0;",
+
+						"depthKernel[1][0] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy0 ) ) );",
+						"if ( depthKernel[1][0] < shadowCoord.z ) shadowKernel[1][0] = 0.25;",
+						"else shadowKernel[1][0] = 0.0;",
+
+						"depthKernel[1][1] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy ) );",
+						"if ( depthKernel[1][1] < shadowCoord.z ) shadowKernel[1][1] = 0.25;",
+						"else shadowKernel[1][1] = 0.0;",
+
+						"depthKernel[1][2] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy1 ) ) );",
+						"if ( depthKernel[1][2] < shadowCoord.z ) shadowKernel[1][2] = 0.25;",
+						"else shadowKernel[1][2] = 0.0;",
+
+						"depthKernel[2][0] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy0 ) ) );",
+						"if ( depthKernel[2][0] < shadowCoord.z ) shadowKernel[2][0] = 0.25;",
+						"else shadowKernel[2][0] = 0.0;",
+
+						"depthKernel[2][1] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, 0.0 ) ) );",
+						"if ( depthKernel[2][1] < shadowCoord.z ) shadowKernel[2][1] = 0.25;",
+						"else shadowKernel[2][1] = 0.0;",
+
+						"depthKernel[2][2] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy1 ) ) );",
+						"if ( depthKernel[2][2] < shadowCoord.z ) shadowKernel[2][2] = 0.25;",
+						"else shadowKernel[2][2] = 0.0;",
+
+						"vec2 fractionalCoord = 1.0 - fract( shadowCoord.xy * shadowMapSize[i].xy );",
+
+						"shadowKernel[0] = mix( shadowKernel[1], shadowKernel[0], fractionalCoord.x );",
+						"shadowKernel[1] = mix( shadowKernel[2], shadowKernel[1], fractionalCoord.x );",
+
+						"vec4 shadowValues;",
+						"shadowValues.x = mix( shadowKernel[0][1], shadowKernel[0][0], fractionalCoord.y );",
+						"shadowValues.y = mix( shadowKernel[0][2], shadowKernel[0][1], fractionalCoord.y );",
+						"shadowValues.z = mix( shadowKernel[1][1], shadowKernel[1][0], fractionalCoord.y );",
+						"shadowValues.w = mix( shadowKernel[1][2], shadowKernel[1][1], fractionalCoord.y );",
+
+						"shadow = dot( shadowValues, vec4( 1.0 ) );",
+
+
+			
+						"shadowColor = shadowColor * vec3( ( shadowDarkness[ i ] * shadow   ) );",
+						
+						//"shadowColor = shadowColor * vec3( ( 1.0 - shadowDarkness[ i ] * 1.0 * smoothstep(-0.05,0.05,-dotProduct)  ) ) * ambient;",
+						
+						
+						
+						//"shadowColor *= vec3(dotProduct);",
+						//"shadowColor = shadowColor * vec3( ( 1.0 - shadowDarkness[ i ] * shadow * dotProduct ) );",
+						"shadowColor = mix(shadowColor,vec3(0.0,0.0,0.0),clamp(0.0,1.0,pow(length(shadowCoord.xy - .5)*2.0,4.0)));",
+						
+					"#else",
+
+						"vec4 rgbaDepth = texture2D( shadowMap[ i ], shadowCoord.xy );",
+						"float fDepth = unpackDepth( rgbaDepth );",
+
+						"if ( fDepth < shadowCoord.z )",
+
+							// spot with multiple shadows is darker
+
+							"shadowColor = shadowColor * vec3( 1.0 - shadowDarkness[ i ] );",
+
+							// spot with multiple shadows has the same color as single shadow spot
+
+							//"shadowColor = min( shadowColor, vec3( shadowDarkness[ i ] ) );",
+
+					"#endif",
+
+				"}",
+
+
+				"#ifdef SHADOWMAP_DEBUG",
+
+					"#ifdef SHADOWMAP_CASCADE",
+
+						"if ( inFrustum && inFrustumCount == 1 ) gl_FragColor.xyz *= frustumColors[ i ];",
+
+					"#else",
+
+						"if ( inFrustum ) gl_FragColor.xyz *= frustumColors[ i ];",
+
+					"#endif",
+
+				"#endif",
+
+			"}",
+
+			"#ifdef GAMMA_OUTPUT",
+
+				"shadowColor *= shadowColor;",
+
+			"#endif",
+
+			"gl_FragColor.xyz = gl_FragColor.xyz * (1.0-shadowColor);",
+
+		"#endif"
+
+	].join("\n"),
+
+
 	shadowmap_fragment: [
 
 		"#ifdef USE_SHADOWMAP",
@@ -16476,7 +16751,7 @@ THREE.ShaderChunk = {
 						
 						//"shadowColor *= vec3(dotProduct);",
 						//"shadowColor = shadowColor * vec3( ( 1.0 - shadowDarkness[ i ] * shadow * dotProduct ) );",
-						"shadowColor = mix(shadowColor,vec3(0.0,0.0,0.0),clamp(0.0,1.0,pow(length(shadowCoord.xy - .5)*2.0,4.0)));",
+						"shadowColor = mix(shadowColor,vec3(0.0,0.0,0.0),clamp(pow(length(shadowCoord.xy - .5)*2.0,4.0),0.0,1.0));",
 						
 					"#else",
 
@@ -16812,7 +17087,7 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "lightmap_fragment" ],
 				THREE.ShaderChunk[ "color_fragment" ],
 				THREE.ShaderChunk[ "envmap_fragment" ],
-				THREE.ShaderChunk[ "shadowmap_fragment" ],
+				THREE.ShaderChunk[ "shadowmap_fragment_basic" ],
 
 				THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
 
@@ -20140,7 +20415,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 		}
 
 		if ( obj_skinWeights.length ) {
-
+			
 			for ( f = 0, fl = chunk_faces3.length; f < fl; f ++ ) {
 
 				face = obj_faces[ chunk_faces3[ f ]	];
@@ -24818,7 +25093,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 			_gl.texParameteri( textureType, _gl.TEXTURE_WRAP_S, paramThreeToGL( texture.wrapS ) );
 			_gl.texParameteri( textureType, _gl.TEXTURE_WRAP_T, paramThreeToGL( texture.wrapT ) );
 
+			
+
 			_gl.texParameteri( textureType, _gl.TEXTURE_MAG_FILTER, paramThreeToGL( texture.magFilter ) );
+
+			
 			_gl.texParameteri( textureType, _gl.TEXTURE_MIN_FILTER, paramThreeToGL( texture.minFilter ) );
 
 		} else {
@@ -30115,15 +30394,16 @@ THREE.Animation.prototype.update = function ( deltaTimeMS ) {
 	}
 
 };
-THREE.Animation.prototype.debug = function()
+THREE.Animation.prototype.debug = function(size)
 {
  
+ size = size || .1;
  var debugobjects = [];
  var debugroot;
  var walk = function(bone,debugparent)
  {
 
- 	var debug = new THREE.Mesh(new THREE.CubeGeometry(.1,.1,.1));
+ 	var debug = new THREE.Mesh(new THREE.CubeGeometry(size,size,size));
  	
  	if(!debugroot) debugroot = debug;
  	debug.matrixAutoUpdate = false;
@@ -30175,9 +30455,9 @@ THREE.Animation.prototype.setKey = function(keyf)
 			object.position.y = key.pos[1] * l2 + key2.pos[1] * l;
 			object.position.z = key.pos[2] * l2 + key2.pos[2] * l;
 
-			object.scale.x = key.scl[0] * l + key2.scl[0] * l2;
-			object.scale.y = key.scl[1] * l + key2.scl[1] * l2;
-			object.scale.z = key.scl[2] * l + key2.scl[2] * l2;
+			object.scale.x = key.scl[0] * l2 + key2.scl[0] * l;
+			object.scale.y = key.scl[1] * l2 + key2.scl[1] * l;
+			object.scale.z = key.scl[2] * l2 + key2.scl[2] * l;
 
 			object.quaternion.w = key.rot.w;
 			object.quaternion.y = key.rot.y;

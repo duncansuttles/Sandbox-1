@@ -4,7 +4,8 @@ routesMap = {},
 DAL = {},
 fs = require('fs'),
 async = require('async'),
-URL = require('url');
+URL = require('url'),
+avatar = false;
 
 fs.readdir(__dirname + '/public' + root + '/views/help', function(err, files){
 	var tempArr = [];
@@ -21,7 +22,7 @@ exports.setDAL = function(d){
 	DAL = d;
 };
 
-exports.acceptedRoutes = ['avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
+exports.acceptedRoutes = ['test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
 routesMap = {
 	'sandbox': {template:'index'},
 	'home': {template:'index'},
@@ -32,7 +33,8 @@ routesMap = {
 	'user': {sid:true, title: 'Account'},
 	'admin': {sid:true, title:'Admin', fileList: fileList, template: 'admin/admin'},
 	'admin/edit': {fileList: fileList},
-	'index': {home:true}
+	'index': {home:true},
+	'avatar': {avatar:true}
 };
 
 exports.generalHandler = function(req, res, next){
@@ -59,9 +61,10 @@ exports.generalHandler = function(req, res, next){
 			template = routesMap[currentAcceptedRoute].template ? routesMap[currentAcceptedRoute].template : currentAcceptedRoute;
 			fileList = routesMap[currentAcceptedRoute].fileList ? routesMap[currentAcceptedRoute].fileList : [];	
 			home = routesMap[currentAcceptedRoute].home ? routesMap[currentAcceptedRoute].home : false;	
+			avatar = routesMap[currentAcceptedRoute].avatar ? routesMap[currentAcceptedRoute].avatar : false;	
 		}
 		
-		res.locals = {sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home};
+		res.locals = {sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar};
 		res.render(template);
 	}
 	
@@ -81,6 +84,13 @@ exports.help = function(req, res){
 	
 	res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getFrontEndRoot(req), script: displayPage + ".js"};
 	res.render('help/template');
+};
+exports.world = function(req, res, next){
+	DAL.getInstance("_adl_sandbox_"+req.params.page+"_",function(doc){
+		res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getFrontEndRoot(req), world: doc, id: req.params.page?req.params.page:''};
+		res.render('worldTemplate');
+	});
+
 };
 
 exports.handlePostRequest = function(req, res, next){

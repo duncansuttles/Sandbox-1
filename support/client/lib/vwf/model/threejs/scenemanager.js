@@ -237,7 +237,12 @@ SceneManager.prototype.getDefaultTexture = function()
 		
 		this.defaultTexture = THREE.ImageUtils.generateDataTexture(8,8,new THREE.Color( 0x0000ff));
 		this.defaultTexture.image.src = "";
-		
+		this.defaultTexture.minFilter = THREE.LinearMipMapLinearFilter;
+		this.defaultTexture.magFilter = THREE.LinearFilter;
+		if(window._dRenderer)
+			this.defaultTexture = _dRenderer.getMaxAnisotropy();
+		this.defaultTexture.wrapS = THREE.RepeatWrapping;
+		this.defaultTexture.wrapT = THREE.RepeatWrapping;
 	}
 
 	return this.defaultTexture;
@@ -247,6 +252,13 @@ SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) 
 		var image = new Image();
 		var texture = new THREE.Texture( this.getDefaultTexture().image, mapping );
 		texture.format = this.getDefaultTexture().format;
+		texture.minFilter = THREE.LinearMipMapLinearFilter;
+		texture.magFilter = THREE.LinearFilter;
+		
+		if(window._dRenderer)
+			texture.anisotropy = _dRenderer.getMaxAnisotropy();
+		texture.wrapS = THREE.RepeatWrapping;
+		texture.wrapT = THREE.RepeatWrapping;
 		var loader = new THREE.ImageLoader();
 
 		loader.addEventListener( 'load', function ( event ) {
@@ -266,7 +278,7 @@ SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) 
 
 		} );
 
-		loader.crossOrigin = this.crossOrigin;
+		loader.crossOrigin = 'anonymous';
 		loader.load( url, image );
 
 		texture.sourceFile = url;
@@ -274,6 +286,14 @@ SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) 
 		return texture;
 
 }
+SceneManager.prototype.useSimpleMaterials = false;
+SceneManager.prototype.createMaterial = function()
+{
+	if(_SceneManager.useSimpleMaterials)
+		return new THREE.MeshBasicMaterial();
+	return new THREE.MeshPhongMaterial();
+}
+
 SceneManager.prototype.getTexture = function(src,noclone)
 {
 	
@@ -1233,6 +1253,11 @@ THREE.RenderBatch.prototype.build = function()
 function compareMaterials(m1,m2)
 {
 	
+	if(!m1 || !m2) return false;
+
+	if(!(m1 instanceof THREE.MeshPhongMaterial)) return false;
+	if(!(m2 instanceof THREE.MeshPhongMaterial)) return false;
+
 	var delta = 0;
 	delta += Math.abs(m1.color.r - m2.color.r);
 	delta += Math.abs(m1.color.g - m2.color.g);
@@ -1281,7 +1306,10 @@ function compareMaterials(m1,m2)
 				}
 				if(m1[mapname] && m2[mapname])
 				{
+					if(m1[mapname].image && m2[mapname].image)
 					if(m1[mapname].image.src.toString() != m2[mapname].image.src.toString())
+						delta += 1000;
+					if(m1[mapname]._SMsrc != m2[mapname]._SMsrc)
 						delta += 1000;
 				
 				

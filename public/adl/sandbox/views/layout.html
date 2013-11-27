@@ -75,6 +75,44 @@
 		});
 	</script>
 	{{/home}}
+	{{#avatar}}
+	<script type="text/javascript" src="{{root}}/js/spin.min.js"></script>
+	<script type="text/javascript">
+		var opts = {
+		  lines: 7, // The number of lines to draw
+		  length: 2, // The length of each line
+		  width: 5, // The line thickness
+		  radius: 15, // The radius of the inner circle
+		  corners: 1, // Corner roundness (0..1)
+		  rotate: 0, // The rotation offset
+		  direction: 1, // 1: clockwise, -1: counterclockwise
+		  color: '#000', // #rgb or #rrggbb or array of colors
+		  speed: 0.8, // Rounds per second
+		  trail: 60, // Afterglow percentage
+		  shadow: false, // Whether to render a shadow
+		  hwaccel: false, // Whether to use hardware acceleration
+		  className: 'spinner', // The CSS class to assign to the spinner
+		  zIndex: 2e9, // The z-index (defaults to 2000000000)
+		  top: 'auto', // Top position relative to parent in px
+		  left: 'auto' // Left position relative to parent in px
+		};
+		window.onscroll = function () { window.scrollTo(0, 0); };
+		$(document).ready(function(){
+			$("body").addClass("bodyLoad");
+		});
+		
+		$(window).load(function(){
+			//$("body").animate({opacity:1}, 500);
+			$("#loadOverlay").animate({opacity:0}, 500, 'swing', function(){
+				spinner.stop();
+				$("#loadOverlay").remove();
+			});
+			$("body").removeClass("bodyLoad");
+			window.onscroll = function(){};
+		});
+		var spinner = new Spinner(opts);
+	</script>	
+	{{/avatar}}
 	<script type="text/javascript" src="{{root}}/vwfDataManager.svc/getanalytics.js"></script>
 </head>
 <body style="min-width:990px;">
@@ -160,7 +198,9 @@
 			</div>
 			<div id="footer" class="container">
 				<br/><p style="color:#eee">A project from <a href='http://www.adlnet.gov'>ADL</a></p>
+				<a href="{{root}}/test">Test Browser Support</a> 
 			</div>
+
 		</div>
 	</div>
 	<a href="https://github.com/adlnet/Sandbox" id="gitBanner"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
