@@ -522,9 +522,20 @@ border-radius:0 0 5px 5px;
 }
 
 .bigWorldScreen{
-border: 1px solid #E6E6E6;
-padding: 1px;
-border-radius: 6px;
+	border: 1px solid #E6E6E6;
+	border-radius: 6px;
+
+	background-color: #E6E6E6;
+	width: 500px;
+	height: 250px;
+	overflow: hidden;
+
+	display: flex;
+	justify-content: center;
+}
+
+.bigWorldScreen img {
+	height: 100%;
 }
 
 .gIcon, .gIconGray{
