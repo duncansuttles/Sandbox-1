@@ -1479,7 +1479,7 @@ function startVWF(){
 					brown  = '\u001b[33m';
 					reset = '\u001b[0m';
 					
-	var configSettings;
+	var configSettings, avatarManifest;
 	
 	//start the DAL, load configuration file
 	try{
@@ -1490,6 +1490,16 @@ function startVWF(){
 	catch(e){
 		configSettings = {};
 		console.log("Error: Unable to load config file");
+	}
+	
+	//Load avatar manifest file
+	try{
+		avatarManifest = JSON.parse(fs.readFileSync('./avatars/manifest.json').toString());
+	}
+	
+	catch(e){
+		avatarManifest = {};
+		console.log("Error: Unable to load avatar manifest file");
 	}
 	
 	var p = process.argv.indexOf('-p'), port = 0, datapath = "";
@@ -1556,9 +1566,8 @@ function startVWF(){
 		SandboxAPI.setDAL(DAL);
 		SandboxAPI.setDataPath(datapath);
 		Shell.setDAL(DAL);
-		Landing.setDAL(DAL);
-		
-		
+		Landing.setDAL(DAL);		
+		Landing.setAvatarsList(avatarManifest);		
 		
 		DAL.startup(function(){
 			
@@ -1736,6 +1745,7 @@ function startVWF(){
 				else
 					next();
 			});
+
 			app.use(app.router);
 			app.get('/adl/sandbox/help', Landing.help);
 			app.get('/adl/sandbox/help/:page([a-zA-Z]+)', Landing.help);

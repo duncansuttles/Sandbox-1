@@ -2,6 +2,7 @@ var root = '/adl/sandbox',
 fileList = [],
 routesMap = {},
 DAL = {},
+avatarsList,
 fs = require('fs'),
 async = require('async'),
 URL = require('url'),
@@ -22,7 +23,12 @@ exports.setDAL = function(d){
 	DAL = d;
 };
 
-exports.acceptedRoutes = ['test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
+exports.setAvatarsList = function(a){
+	console.log("Landing: ", a);
+	avatarsList = a;
+};
+
+exports.acceptedRoutes = ['test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','admin/avatars','publish'];
 routesMap = {
 	'sandbox': {template:'index'},
 	'home': {template:'index'},
@@ -33,6 +39,7 @@ routesMap = {
 	'user': {sid:true, title: 'Account'},
 	'admin': {sid:true, title:'Admin', fileList: fileList, template: 'admin/admin'},
 	'admin/edit': {fileList: fileList},
+	'admin/avatars': {avatarsList: true},
 	'index': {home:true},
 	'avatar': {avatar:true}
 };
@@ -53,7 +60,7 @@ exports.generalHandler = function(req, res, next){
 
 	if(routeIndex >= 0){
 		
-		var currentAcceptedRoute = exports.acceptedRoutes[routeIndex], title = '', sid = '', template = currentAcceptedRoute, fileList = [], home = false;
+		var currentAcceptedRoute = exports.acceptedRoutes[routeIndex], title = '', sid = '', template = currentAcceptedRoute, fileList = [], home = false, showAvatarList;
 		if(routesMap[currentAcceptedRoute]){
 			
 			title = routesMap[currentAcceptedRoute].title ? routesMap[currentAcceptedRoute].title : '';
@@ -62,9 +69,10 @@ exports.generalHandler = function(req, res, next){
 			fileList = routesMap[currentAcceptedRoute].fileList ? routesMap[currentAcceptedRoute].fileList : [];	
 			home = routesMap[currentAcceptedRoute].home ? routesMap[currentAcceptedRoute].home : false;	
 			avatar = routesMap[currentAcceptedRoute].avatar ? routesMap[currentAcceptedRoute].avatar : false;	
+			showAvatarList = routesMap[currentAcceptedRoute].avatarsList ? JSON.stringify(avatarsList) : false;	
 		}
 		
-		res.locals = {sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar};
+		res.locals = {sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, avatarsList: showAvatarList};
 		res.render(template);
 	}
 	

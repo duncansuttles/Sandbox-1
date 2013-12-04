@@ -128,15 +128,19 @@
 	<div id="wrapper">
 		<div id="header" style="text-align: center">
 			<div class="headerMenu container">
-				<div id="username" data-bind="visible:user().isLoggedIn">
-					<span class="headerSpan" data-bind="text:'Logged in as: '"></span>
-					<a class="headerA" href="{{root}}/user" id="userOptions" data-bind="text: user().username"></a>
-				</div>
 				<div id="login">
 					<a class="headerA" href="{{root}}/login?return=worlds"  id="login"  data-bind="visible:!user().isLoggedIn">Login</a>
-					<a class="headerA" href="{{root}}/user"  id="user"  data-bind="visible:user().isLoggedIn">Account</a>
+					
+					
 					<a class="headerA" href="{{root}}/logout?return=index" id="logout" data-bind="visible:user().isLoggedIn">Logout</a>
+					
+					<a class="headerA" href="{{root}}/user"  id="user"  data-bind="visible:user().isLoggedIn && !user().isAdmin" style="border-left:1px solid #bbb">Account</a>
+					<a class="headerA" href="{{root}}/admin"  id="user"  data-bind="visible:user().isLoggedIn && user().isAdmin" style="border-left:1px solid #bbb">Admin Dashboard</a>
 					<a class="headerA" href="{{root}}/signup?return=worlds" id="signup" data-bind="visible:!user().isLoggedIn">Create Account</a>
+				</div>
+				<div id="username" data-bind="visible:user().isLoggedIn">
+					<span class="headerSpan" data-bind="text:'Logged in as: '"></span>
+					<a class="headerA" href="{{root}}/user" id="userOptions" style="padding-left:0;" data-bind="text: user().username"></a>
 				</div>
 			</div>
 		</div>		
