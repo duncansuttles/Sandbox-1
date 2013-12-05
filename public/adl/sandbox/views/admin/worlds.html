@@ -69,7 +69,7 @@
 						<p><span style="background:#eee;padding:2px;" data-bind='text:"adl/sandbox/img/" + id + "_small.png"'></span>
 						<br/>Preview image should be 140x110 pixels.</p>
 						
-						<img style="width:140px;height:110px;" data-bind="attr:{src:'{{root}}/img/'+id+'_small.png'}" />
+						<img style="width:140px;height:110px;" data-bind="attr:{src:'{{root}}/vwfDataManager.svc/thumbnail?SID='+id}" />
 					</div>
 				</div>
 			</form>

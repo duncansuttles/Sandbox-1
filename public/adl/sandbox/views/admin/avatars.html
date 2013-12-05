@@ -1,15 +1,11 @@
-<div class="row">
-	<div class="col-md-3">
-		<h3>Avatars</h3>
-	</div>
-</div>
 <div class="row" data-bind="visible:currentAdminItem() == false">
 	<div class="col-md-4">
+		<h3>Avatars</h3>
 		<a data-bind="click:deleteSelected" href="">Delete Selected</a><br/><br/>
 		<a href="{{root}}/admin/worlds">Worlds List</a><br/>
 		<a href="{{root}}/admin">Admin Page</a>
 	</div>
-	<div class="adminDisplayList col-md-4">
+	<div class="adminDisplayList col-md-4" style="margin:20px 0;">
 		<table class="table table-striped" style="border: 1px solid #ddd;">
 			<tr>
 				<th style="border:none; background:#FFF"><input type="checkbox" id="selectAllBox" class="checkAllBox" data-bind="click:handleSelectAll" /></th>
@@ -22,19 +18,28 @@
 				<td><span data-bind="text:$data.textures.length"></span></td>
 			</tbody>
 		</table>
-		<input type="file" name="model" />
+		<p>Upload a model file:</p>
+		<form method="post" action="{{root}}/admin/avatars">
+			<input type="file" name="modelFile" /><br/>
+			<input type="submit" value="Upload" />
+		</form>
 	</div>
 </div>
 <div class="row" data-bind="visible:currentAdminItem() != false">
 	<div class="col-md-4">
+		<h3>Avatars</h3>
 		<a href="#">View full list of models</a><br/><br/>
 		<a href="#" data-bind="click:deleteSelectedWorlds">Delete Selected</a>
 	</div>
-	<div class="col-md-4" style="border-top:1px #eee solid;padding-top:20px;">
+	<div class="col-md-4" >
+		
+		<div style="border-bottom:1px #eee solid;margin-bottom:20px;">
+			<h3 data-bind="text:currentAdminItem().model"></h3>
+		</div>
 		<table class="table table-striped" style="border: 1px solid #ddd;padding-top:20px;">
 			<tr>
 				<th style="border:none; background:#FFF"><input type="checkbox" id="selectAllWorldBox" class="checkAllBox" data-bind="click:handleSelectAll" /></th>
-				<th style="border:none; background:#FFF">Texture Name</th>
+				<th style="border:none; background:#FFF">Texture Filename</th>
 			</tr>
 			<tbody data-bind="foreach:currentAdminItem().textures" style="border:none">
 				<td><input type="checkbox" class="worldCheckboxes" /></td>
@@ -66,6 +71,7 @@
 		//vwfPortalModel.adminDisplayList(newObject);
 		handleHash("model");
 	}); 
+	
 	
 
 	

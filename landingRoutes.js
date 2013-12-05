@@ -102,8 +102,13 @@ exports.world = function(req, res, next){
 };
 
 exports.handlePostRequest = function(req, res, next){
-
-	var data = req.body ? JSON.parse(req.body) : '';
+	var data, tempAction = req.params.action ? req.params.action : req.params.page;
+	try{
+		data = JSON.parse(req.body);
+	}
+	catch(e){
+		data = '';
+	}
 	var sessionData = global.SandboxAPI.getSessionData(req);
 	
 	//Temporarily commenting out authorization
@@ -112,9 +117,12 @@ exports.handlePostRequest = function(req, res, next){
 		return;
 	}
 	
-	switch(req.params.action){
+	switch(tempAction){
 	
-		case "dal_test":			
+		case "avatars":		
+			console.log("MODEL UPLOAD!");
+			console.log(req.files);
+			res.end(req.files);
 			break;
 	
 		case "delete_users":			
@@ -190,16 +198,6 @@ exports.handlePostRequest = function(req, res, next){
 			console.log(data);	
 			delete data.Salt;	
 			delete data.Username;				
-			//delete data.inventoryKey;				
-			
-			//delete data.inventoryKey;	
-			//DAL.updateUser(userId, data, function(e){
-			
-						
-			//});
-			
-
-			//res.end();
 			break;			
 			
 		case "update_world":
