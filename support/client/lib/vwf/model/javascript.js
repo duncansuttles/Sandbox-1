@@ -835,11 +835,7 @@ node.id = childID; // TODO: move to vwf/model/object
         settingProperty: function( nodeID, propertyName, propertyValue ) {
 
             //notify all nodes of property changes
-            for(var i in this.nodes)
-            {
-                if(this.nodes[i].private.bodies["satProperty"])
-                    this.nodes[i].private.bodies["satProperty"].apply(this.nodes[i],[nodeID, propertyName, propertyValue]);
-            }
+            this.callMethodTraverse(this.nodes['index-vwf'],'satProperty',[nodeID, propertyName, propertyValue]);
 
             var node = this.nodes[nodeID];
 
@@ -1082,13 +1078,8 @@ node.hasOwnProperty( methodName ) ||  // TODO: recalculate as properties, method
         },
         callingMethod: function( nodeID, methodName, methodParameters ) {
 
-		
-            //notify all nodes of property changes
-            for(var i in this.nodes)
-            {
-                if(this.nodes[i].private.bodies["calledMethod"])
-                    this.nodes[i].private.bodies["calledMethod"].apply(this.nodes[i],[nodeID, propertyName, propertyValue]);
-            }
+	
+            this.callMethodTraverse(this.nodes['index-vwf'],'calledMethod',[nodeID, methodName, methodParameters]);
 
             var node = this.nodes[nodeID];
 			if(!node) return undefined;
@@ -1299,7 +1290,27 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
 			}	
 		
 		},
+    callMethodTraverse:function(node,method,args)
+    {
+            if(!node) return;
+            var jsDriverSelf = this;
+            
+            var body = node.private.bodies && node.private.bodies[method];
 
+            if ( body ) {
+                     body.apply( node, args );
+             }
+            
+            if(node.children)
+                for(var i =0; i < node.children.length; i++)
+                {
+                    jsDriverSelf.callMethodTraverse(node.children[i],method,args);
+                }
+    },    
+    ticking: function()
+    {
+        this.callMethodTraverse(this.nodes['index-vwf'],'tick',[]);
+    },    
 	isBehavior : function(node)
 	{
 		if(!node)

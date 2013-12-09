@@ -105,8 +105,9 @@
 
 						
 						var skinmat = threeObject.skin.matrixWorld.clone();
+						threeObject.updateMatrixWorld(true);
 						var mat = threeObject.matrixWorld.clone();
-						mat = (new THREE.Matrix4()).multiplyMatrices(skinmat,mat);
+					//	mat = (new THREE.Matrix4()).multiplyMatrices(skinmat,mat);
 						return mat.elements;
 
 					}

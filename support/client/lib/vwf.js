@@ -772,11 +772,11 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 		   
 
 		 // Call tick() on each tickable node.
-		
-		for(var i =0; i < this.tickable.nodeIDs.length; i ++)
-		{	
-		  this.callMethod( this.tickable.nodeIDs[i], "tick", [ this.now ] );
-		}
+		//this is really a bad idea. swtiching to a depth first recurse on only actually existing nodes within the JS driver
+		//for(var i =0; i < this.tickable.nodeIDs.length; i ++)
+		//{	
+		 // this.callMethod( this.tickable.nodeIDs[i], "tick", [ this.now ] );
+		//}
 		
 		for(var i =0; i < this.views.length; i ++)
 		{	
