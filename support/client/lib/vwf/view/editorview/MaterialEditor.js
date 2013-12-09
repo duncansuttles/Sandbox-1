@@ -93,6 +93,40 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#' + rootid + prop + 'value').val(ui.value);
 			_MaterialEditor.updateObject();
 		}
+		this.copyMaterial = function ()
+		{
+			_MaterialEditor.currentMaterialCopy = _MaterialEditor.currentMaterial;
+		}
+		this.copyLayer = function ()
+		{
+			var i = $(this).attr('i');
+			_MaterialEditor.currentMaterialLayerCopy = _MaterialEditor.currentMaterial.layers[i];
+		}
+		this.pasteMaterial = function ()
+		{
+			if(!_MaterialEditor.currentMaterialCopy)
+			{
+				_Notifier.notify('No Material to paste');
+				return;
+			}
+			
+			_MaterialEditor.currentMaterial = _MaterialEditor.currentMaterialCopy;
+			_MaterialEditor.updateObject();
+			_MaterialEditor.BuildGUI();
+		}
+		this.pasteLayer = function ()
+		{
+			if(!_MaterialEditor.currentMaterialLayerCopy)
+			{
+				_Notifier.notify('No Material Layer to paste');
+				return;
+			}
+			
+			var i = $(this).attr('i');
+			_MaterialEditor.currentMaterial.layers[i] = _MaterialEditor.currentMaterialLayerCopy;
+			_MaterialEditor.updateObject();
+			_MaterialEditor.BuildGUI();
+		}
 		this.updateObject = function ()
 		{
 			if(document.PlayerNumber == null)
@@ -526,6 +560,23 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				label: 'Add Layer'
 			});
 			$('#' + 'MaterialBasicSettingsnewLayer').click(this.addLayer);
+
+
+			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsCopy" style=width:100%;margin-top:10px/>');
+			$('#' + 'MaterialBasicSettingsCopy').button(
+			{
+				label: 'Copy Material'
+			});
+			$('#' + 'MaterialBasicSettingsCopy').click(this.copyMaterial);
+
+			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsPaste" style=width:100%;margin-top:10px/>');
+			$('#' + 'MaterialBasicSettingsPaste').button(
+			{
+				label: 'Paste Material'
+			});
+			$('#' + 'MaterialBasicSettingsPaste').click(this.pasteMaterial);
+
+
 			for (var i = 0; i < this.currentMaterial.layers.length; i++)
 			{
 				$('#materialaccordion').append('	<h3>' + '		<a href="#">Texture Layer ' + i + '</a>' + '	</h3>' + '	<div id="Layer' + i + 'Settings">' + '	</div>');
@@ -638,6 +689,23 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				});
 				$('#' + rootid + 'deleteLayer').attr('layer', i);
 				$('#' + rootid + 'deleteLayer').click(this.deletelayer);
+
+
+				$('#' + rootid).append('<div id="' + rootid + 'copyLayer" style="width: 100%;margin-top: 10px;"/>');
+				$('#' + rootid + 'copyLayer').button(
+				{
+					label: 'Copy Layer'
+				});
+				$('#' + rootid + 'copyLayer').attr('i', i);
+				$('#' + rootid + 'copyLayer').click(this.copyLayer);
+
+				$('#' + rootid).append('<div id="' + rootid + 'pasteLayer" style="width: 100%;margin-top: 10px;"/>');
+				$('#' + rootid + 'pasteLayer').button(
+				{
+					label: 'Paste Layer'
+				});
+				$('#' + rootid + 'pasteLayer').attr('i', i);
+				$('#' + rootid + 'pasteLayer').click(this.pasteLayer);
 			}
 			
 			
