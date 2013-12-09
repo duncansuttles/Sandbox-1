@@ -6,6 +6,7 @@ var fs = require('fs-extra');
 require('./hash.js');
 var mkdirp = require('mkdirp');
 var datapath = '';
+var avatarsList;
 
 var DBTablePath = libpath.sep+'users.db';
 
@@ -1436,6 +1437,26 @@ function restoreBackup(id, stateFileName, cb){
 	});
 }
 
+function updateAvatarManifest(obj, cb){
+	var filename = libpath.join(datapath, '/Avatars/', 'manifest.json'), data;
+	
+	try{
+		data = JSON.stringify(obj);
+	}
+	
+	catch(e){
+		cb(false);
+		return;
+	}
+
+	fs.writeFile(filename, data, function(err){
+		if(err) cb(false);
+		else cb(true);
+		
+		return;
+	});
+}
+
 function startup(callback)
 {
 	async.series([
@@ -1514,6 +1535,8 @@ function startup(callback)
 			exports.clearUsers = clearUsers;
 			exports.searchInventory = searchInventory;
 			exports.getHistory = getHistory;
+			
+			exports.updateAvatarManifest = updateAvatarManifest;
 			callback();
 		}
 	
@@ -1522,6 +1545,10 @@ function startup(callback)
 	
 }
 
+exports.setAvatarsList = function(a)
+{
+	avatarsList = a;
+}
 exports.setDataPath = function(p)
 {
 	p = libpath.resolve(p);

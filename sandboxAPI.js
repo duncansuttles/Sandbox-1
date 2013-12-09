@@ -12,6 +12,7 @@ var datapath = '.'+libpath.sep+'data';
 var DAL = null;	
 var analyticsObj;
 var currentChar = 0;
+var avatarsList;
 // default path to data. over written by setup flags
 
 //generate a random id.
@@ -839,7 +840,10 @@ function SaveAvatar(URL,SID,body,response)
 		return;
 	}*/
 
-	var startLine = 5, totalLines = 0, outStr = "", temp = "";
+	var startLine = 5, totalLines = 0, outStr = "", temp = "", filename = body.match(/(filename=")(.*?)"/gi,'')[0] || "", filepath = "";
+	
+	filename = filename.substr(10, filename.length-11);
+	filepath = libpath.join(datapath, '/Avatars/models/', filename);
 	currentChar = 0;
 	
 	while(nextLine(body)){
@@ -850,26 +854,34 @@ function SaveAvatar(URL,SID,body,response)
 	for(var i = 1; i < totalLines; i++){
 		temp = nextLine(body);
 		if(i >= startLine){
-			outStr += (i-startLine + 1) + ": " + temp;
+			outStr += temp;
 		}
 	}
 	
-	var filename = body.match(/(filename=")(.*?)"/gi,'')[0] || "";
-	filename = libpath.join(datapath, '/Avatars/models/', filename.substr(10, filename.length-11));
-	outStr = body;
-	fs.writeFile(filename, body, function(err){
+	fs.writeFile(filepath, outStr, function(err){
 		if(err){
-			console.log("Error writing file", err);
+			console.log("Error saving uploaded 'model' file", err);
+			respond(response, 500, "Error saving uploaded 'model' file");
 			return;
 		}
 		
-		else{
-			console.log("File written");
-			
-		}
+		console.log("Uploaded 'model' file saved");
+		
+		avatarsList = avatarsList instanceof Array ? avatarsList : [];
+		avatarsList.push({model:filename, textures:[]});
+		
+		DAL.updateAvatarManifest(avatarsList, function(e){
+		
+			if(e){ 
+				respond(response, 200, "Avatar manifest file saved");
+				console.log("Avatar manifest file saved");
+			}
+			else{
+				respond(response, 500, "Error saving avatar manifest file");
+				console.log("Error saving avatar manifest file");
+			}
+		});
 	});
-	
-	respond(response, 200, outStr);
 }
 
 function SaveThumbnail(URL,SID,body,response)
@@ -1600,6 +1612,10 @@ function serve (request, response)
 exports.serve = serve;
 exports.getState = getState;
 exports.getSessionData = GetSessionData;
+exports.setAvatarsList = function(a)
+{
+	avatarsList = a;
+}
 exports.setDataPath = function(p)
 {
 	p = libpath.resolve(p);

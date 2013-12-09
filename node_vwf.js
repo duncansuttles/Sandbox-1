@@ -1569,6 +1569,8 @@ function startVWF(){
 		}
 		
 		Landing.setAvatarsList(avatarManifest);
+		DAL.setAvatarsList(avatarManifest);
+		SandboxAPI.setAvatarsList(avatarManifest);
 		
 		DAL.startup(function(){
 			
