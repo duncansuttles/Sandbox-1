@@ -11,6 +11,7 @@ var safePathRE = RegExp('/\//'+(libpath.sep=='/' ? '\/' : '\\')+'/g');
 var datapath = '.'+libpath.sep+'data';
 var DAL = null;	
 var analyticsObj;
+var currentChar = 0;
 // default path to data. over written by setup flags
 
 //generate a random id.
@@ -804,6 +805,73 @@ function Publish(URL, SID, publishdata, response){
 	});
 }
 
+function nextLine(str){
+	
+	var lineOut = "";
+	
+	while(str.charAt(currentChar) != '\n' && str.charAt(currentChar) != '\r' && currentChar < str.length){
+
+		lineOut += str.charAt(currentChar);
+		currentChar++;
+	}
+	
+	var charAt = str.charAt(currentChar), nextCharAt = str.charAt(currentChar + 1);
+	
+	if(((charAt == '\r' && nextCharAt == '\n') || (charAt == '\n' && nextCharAt == '\r')) && currentChar < str.length){
+		lineOut += charAt + nextCharAt;
+		currentChar += 2;
+	}
+
+	else if((charAt == '\n' || charAt == '\r') && currentChar < str.length){
+		lineOut += charAt;
+		currentChar++;
+	}
+	
+	return lineOut;
+}
+	
+function SaveAvatar(URL,SID,body,response)
+{
+
+	/*if(!URL.loginData || global.adminUID != URL.loginData.UID)
+	{
+		respond(response,401,'Non-administrator users cannot upload avatars');
+		return;
+	}*/
+
+	var startLine = 5, totalLines = 0, outStr = "", temp = "";
+	currentChar = 0;
+	
+	while(nextLine(body)){
+		totalLines++;
+	}
+
+	currentChar = 0;
+	for(var i = 1; i < totalLines; i++){
+		temp = nextLine(body);
+		if(i >= startLine){
+			outStr += (i-startLine + 1) + ": " + temp;
+		}
+	}
+	
+	var filename = body.match(/(filename=")(.*?)"/gi,'')[0] || "";
+	filename = libpath.join(datapath, '/Avatars/models/', filename.substr(10, filename.length-11));
+	outStr = body;
+	fs.writeFile(filename, body, function(err){
+		if(err){
+			console.log("Error writing file", err);
+			return;
+		}
+		
+		else{
+			console.log("File written");
+			
+		}
+	});
+	
+	respond(response, 200, outStr);
+}
+
 function SaveThumbnail(URL,SID,body,response)
 {
 
@@ -1447,7 +1515,7 @@ function serve (request, response)
 		
 		//Have to do this here! throw does not work quite as you would think 
 		//with all the async stuff. Do error checking first.
-		if(command != 'thumbnail')   //excpetion for the base64 encoded thumbnails
+		if(command != 'thumbnail' && command != 'avatarupload')   //excpetion for the base64 encoded thumbnails
 		{
 			try{
 				JSON.parse(body);
@@ -1460,6 +1528,9 @@ function serve (request, response)
 		switch(command)
 		{	
 
+			case "avatarupload":{
+				SaveAvatar(URL,SID,body,response);	
+			} break;
 			case "thumbnail":{
 				SaveThumbnail(URL,SID,body,response);	
 			} break;

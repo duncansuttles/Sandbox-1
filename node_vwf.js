@@ -1492,16 +1492,6 @@ function startVWF(){
 		console.log("Error: Unable to load config file");
 	}
 	
-	//Load avatar manifest file
-	try{
-		avatarManifest = JSON.parse(fs.readFileSync('./avatars/manifest.json').toString());
-	}
-	
-	catch(e){
-		avatarManifest = {};
-		console.log("Error: Unable to load avatar manifest file");
-	}
-	
 	var p = process.argv.indexOf('-p'), port = 0, datapath = "";
 	
 	//This is a bit ugly, but it does beat putting a ton of if/else statements everywhere
@@ -1567,7 +1557,18 @@ function startVWF(){
 		SandboxAPI.setDataPath(datapath);
 		Shell.setDAL(DAL);
 		Landing.setDAL(DAL);		
-		Landing.setAvatarsList(avatarManifest);		
+
+		//Try to load avatar manifest file
+		try{
+			avatarManifest = JSON.parse(fs.readFileSync(datapath  + '/Avatars/manifest.json').toString());
+		}
+		
+		catch(e){
+			avatarManifest = {};
+			console.log("Error: Unable to load avatar manifest file");
+		}
+		
+		Landing.setAvatarsList(avatarManifest);
 		
 		DAL.startup(function(){
 			
@@ -1745,8 +1746,10 @@ function startVWF(){
 				else
 					next();
 			});
-
+			
+			//Express routes support
 			app.use(app.router);
+			
 			app.get('/adl/sandbox/help', Landing.help);
 			app.get('/adl/sandbox/help/:page([a-zA-Z]+)', Landing.help);
 			app.get('/adl/sandbox/world/:page([a-zA-Z0-9]+)', Landing.world);

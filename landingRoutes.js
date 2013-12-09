@@ -117,14 +117,7 @@ exports.handlePostRequest = function(req, res, next){
 		return;
 	}
 	
-	switch(tempAction){
-	
-		case "avatars":		
-			console.log("MODEL UPLOAD!");
-			console.log(req.files);
-			res.end(req.files);
-			break;
-	
+	switch(tempAction){	
 		case "delete_users":			
 			DAL.deleteUsers(data, function(){
 				res.end("done");

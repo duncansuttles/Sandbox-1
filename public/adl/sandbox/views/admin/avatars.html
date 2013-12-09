@@ -19,7 +19,7 @@
 			</tbody>
 		</table>
 		<p>Upload a model file:</p>
-		<form method="post" action="{{root}}/admin/avatars">
+		<form method="post" action="{{root}}/vwfDataManager.svc/avatarupload" enctype="multipart/form-data">
 			<input type="file" name="modelFile" /><br/>
 			<input type="submit" value="Upload" />
 		</form>
