@@ -830,6 +830,43 @@ function nextLine(str){
 	
 	return lineOut;
 }
+
+function getFilesArray(str){
+	
+	console.log(str);
+	return;
+	var startLine = 5, outArr = [], temp = "", files = str.split('------');
+	files = files.slice(1, files.length-1);
+
+	for(var g = 0; g < files.length; g++){
+		
+		//Create file obj.. match first file name
+		outArr.push({
+			filename: (files[g].match(/filename="(.*?)"/gi,'')[0] || "").replace(/filename=|"/gi, ''), 
+			name: (files[g].match(/ name="(.*?)"/gi,'')[0] || "").replace(/ name=|"| /gi, ''),
+			file: ""
+		});
+		
+		//If there is no filename, this is probably not a file
+		if(!outArr[g].filename){
+			outArr.splice(g);
+			continue;
+		}
+		
+		//Remove excess garbage from filename, restart currentChar
+		outArr[g].filename = outArr[g].filename.substr(10, outArr[g].filename.length-11);
+		currentChar = 0;
+		
+		//Loop through the lines.. removing more garbage (first 4 lines)
+		for(var i = 1; temp = nextLine(files[g]); i++){
+			if(i >= startLine){
+				outArr[g].file += temp;
+			}
+		}
+	}
+
+	return outArr;
+}
 	
 function SaveAvatar(URL,SID,body,response)
 {
@@ -840,25 +877,16 @@ function SaveAvatar(URL,SID,body,response)
 		return;
 	}*/
 
-	var startLine = 5, totalLines = 0, outStr = "", temp = "", filename = body.match(/(filename=")(.*?)"/gi,'')[0] || "", filepath = "";
+	var temp = "", filepath = "", fileArr = getFilesArray(body);
 	
-	filename = filename.substr(10, filename.length-11);
-	filepath = libpath.join(datapath, '/Avatars/models/', filename);
-	currentChar = 0;
-	
-	while(nextLine(body)){
-		totalLines++;
-	}
-
-	currentChar = 0;
-	for(var i = 1; i < totalLines; i++){
-		temp = nextLine(body);
-		if(i >= startLine){
-			outStr += temp;
-		}
+	if(!fileArr.length > 0){
+		respond(response, 500, "Error saving uploaded 'model' file");
+		return;
 	}
 	
-	fs.writeFile(filepath, outStr, function(err){
+	filepath = libpath.join(datapath, '/Avatars/models/', fileArr[0].filename);
+	
+	fs.writeFile(filepath, fileArr[0].file, function(err){
 		if(err){
 			console.log("Error saving uploaded 'model' file", err);
 			respond(response, 500, "Error saving uploaded 'model' file");
@@ -868,7 +896,7 @@ function SaveAvatar(URL,SID,body,response)
 		console.log("Uploaded 'model' file saved");
 		
 		avatarsList = avatarsList instanceof Array ? avatarsList : [];
-		avatarsList.push({model:filename, textures:[]});
+		avatarsList.push({model:fileArr[0].filename, textures:[]});
 		
 		DAL.updateAvatarManifest(avatarsList, function(e){
 		
@@ -882,6 +910,76 @@ function SaveAvatar(URL,SID,body,response)
 			}
 		});
 	});
+}	
+
+function SaveTexture(URL,SID,body,response)
+{
+
+	/*if(!URL.loginData || global.adminUID != URL.loginData.UID)
+	{
+		respond(response,401,'Non-administrator users cannot upload avatars');
+		return;
+	}*/
+	
+	console.log(URL);
+
+	var temp = "", filePath = "", fileArr = getFilesArray(body), type = "";
+	respond(response, 500, body);
+	return;
+	if(!fileArr.length > 0){
+		respond(response, 500, "Error saving uploaded 'texture' and 'screenshot' files");
+		return;
+	}
+
+		/*if(fileArr[i].file.name == "textureFile"){
+			type = "texture";
+		}
+		
+		else if(fileArr[i].file.name == "thumbnailFile"){
+			type = "thumbnail";
+		}
+		
+		else continue;
+		
+				filePath = libpath.join(datapath, '/Avatars/', type + "s", fileArr[i].filename);
+				
+		async.series([
+			function(cb){
+			
+				fs.writeFile(filePath, fileArr[i].file, function(err){
+					if(err){
+						console.log("Error saving uploaded " + type, err);
+						respond(response, 500, "Error saving uploaded " + type);
+						cb(true);
+						return;
+					}
+					
+					console.log("Uploaded " + type + " file saved");
+					
+					avatarsList = avatarsList instanceof Array ? avatarsList : [];
+					avatarsList.push({model:fileArr[i].filename, textures:[]});
+					
+					DAL.updateAvatarManifest(avatarsList, function(e){
+					
+						if(e){ 
+							respond(response, 200, "Avatar manifest file saved");
+							console.log("Avatar manifest file saved");
+						}
+						else{
+							respond(response, 500, "Error saving avatar manifest file");
+							console.log("Error saving avatar manifest file");
+						}
+					});
+				});
+			
+			
+				
+			}
+		
+		
+		
+		]);*/
+				
 }
 
 function SaveThumbnail(URL,SID,body,response)
@@ -1527,7 +1625,7 @@ function serve (request, response)
 		
 		//Have to do this here! throw does not work quite as you would think 
 		//with all the async stuff. Do error checking first.
-		if(command != 'thumbnail' && command != 'avatarupload')   //excpetion for the base64 encoded thumbnails
+		if(command != 'thumbnail' && command != 'avatarupload' && command != 'textureupload')   //excpetion for the base64 encoded thumbnails
 		{
 			try{
 				JSON.parse(body);
@@ -1542,6 +1640,9 @@ function serve (request, response)
 
 			case "avatarupload":{
 				SaveAvatar(URL,SID,body,response);	
+			} break;
+			case "textureupload":{
+				SaveTexture(URL,SID,body,response);	
 			} break;
 			case "thumbnail":{
 				SaveThumbnail(URL,SID,body,response);	
