@@ -416,6 +416,18 @@ define(
 		{
 			_Editor.CreateBehavior('distancetrigger', _UserManager.GetCurrentUserName());
 		});
+
+		//trigger section
+		$('#MenuCreateTriggerProperty').click(function (e)
+		{
+			_Editor.CreateBehavior('propertytrigger', _UserManager.GetCurrentUserName());
+		});
+
+		//trigger section
+		$('#MenuCreateTriggerMethod').click(function (e)
+		{
+			_Editor.CreateBehavior('methodtrigger', _UserManager.GetCurrentUserName());
+		});
 		
 		
 		
