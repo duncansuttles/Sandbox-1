@@ -1306,7 +1306,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                         
                     
                     }
-		    if(propertyName == 'worldtransform')
+		    if(propertyName == 'worldtransform' || propertyName == 'worldTransform')
                     {
                         threeObject.updateMatrixWorld(true);
                         var value = matCpy(threeObject.matrixWorld.elements); 

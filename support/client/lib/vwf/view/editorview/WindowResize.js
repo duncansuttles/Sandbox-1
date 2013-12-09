@@ -101,6 +101,7 @@ define({
 			_Editor.findcamera().updateProjectionMatrix();
 			_Editor.SelectObject(null);
 			_Editor.SetSelectMode('none');
+			_Editor.hidePeerSelections();
 		}
 		window.showTools = function()
 		{

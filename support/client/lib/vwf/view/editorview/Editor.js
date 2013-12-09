@@ -752,7 +752,102 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			{
 				this.Paste();
 			}
+			if (e.keyCode == 83 && e.ctrlKey)
+			{
+				_DataManager.saveToServer();
+				e.preventDefault();
+			}
 		}.bind(this);
+		this.NotifyPeersOfSelection = function()
+		{
+
+			var ids = [];
+			for(var i = 0; i < SelectedVWFNodes.length; i++)
+				ids.push(SelectedVWFNodes[i].id);
+
+			vwf_view.kernel.callMethod('index-vwf','PeerSelection',[ids]);
+
+		}
+		//remove all the peer selection gizmos
+		this.hidePeerSelections = function()
+		{
+			for(var i in this.peerSelections)
+			{
+				var peerselection = this.peerSelections[i];
+				for(var i = 0; i < peerselection.bounds.length;i++)
+				{
+					var bound = peerselection.bounds[i];
+					bound.parent.remove(bound);
+				}
+			}
+			this.peerSelections = {};
+		}
+		this.calledMethod = function(id,method,args)
+		{
+			//we're being notified that a peer has selected an object
+			if(method == 'PeerSelection')
+			{
+				if(vwf.client() != vwf.moniker())
+				{
+					var ids = args[0];
+					if(!this.peerSelections)
+						this.peerSelections = {};
+					if(!this.peerSelections[vwf.client()])
+					{
+						this.peerSelections[vwf.client()] = {color:new THREE.Color(),nodes:[],bounds:[]};
+					}
+					var peerselection = this.peerSelections[vwf.client()];
+					for(var i = 0; i < peerselection.bounds.length;i++)
+					{
+						var bound = peerselection.bounds[i];
+						bound.parent.remove(bound);
+					}
+					peerselection.bounds = [];
+					peerselection.nodes = [];
+					peerselection.nodes = ids;
+					for(var i = 0; i < peerselection.nodes.length;i++)
+					{
+						var boundingbox = this.createBoundingBox(peerselection.nodes[i]);
+						//hard coded color for now. TODO: randomly assign colors
+						boundingbox.children[0].material.color.r = 1;
+						boundingbox.children[0].material.color.g = .75;
+						boundingbox.children[0].material.color.b = .5;
+						peerselection.bounds.push(boundingbox);
+						this.SelectionBoundsContainer.add(boundingbox);
+					}
+				}
+			}
+		}
+		this.satProperty = function(id,propname,val)
+		{
+				//when an object moves, check that it's not hilighted by the peer selection display.
+				//if it is, update the matrix of the selection rectangle.
+				if(vwf.client() != vwf.moniker() && propname == 'transform')
+				{
+					
+					if(!this.peerSelections)
+						this.peerSelections = {};
+					if(this.peerSelections[vwf.client()])
+					{
+						
+						
+						var peerselection = this.peerSelections[vwf.client()];
+						
+						for(var i = 0; i < peerselection.nodes.length;i++)
+						{
+							var boundingbox = peerselection.bounds[i];
+							if(boundingbox.vwfid == id)
+							{
+								
+								boundingbox.matrix = self.findviewnode(id).matrixWorld.clone();
+								boundingbox.updateMatrixWorld(true);
+
+							}
+						}
+					}
+				}
+
+		}
 		this.SelectParent = function ()
 		{
 			if (self.GetSelectedVWFNode()) self.SelectObject(vwf.parent(self.GetSelectedVWFID()));
@@ -1849,7 +1944,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.getTranslation = function(id)
 		{
-			var mat = matCpy(this.findviewnode(id).matrixWorld.elements);
+			var mat = vwf.getProperty(id,"worldTransform");
 			return [mat[12],mat[13],mat[14]];
 		}
 		this.getScale = function(id)
@@ -1888,7 +1983,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			if (CoordSystem == LocalCoords && SelectedVWFNodes[0])
 			{
 				var aa = vwf.getProperty(SelectedVWFNodes[0].id, 'rotation');
-				var rotmat = this.GetRotationMatrix(toGMat(this.findviewnode(SelectedVWFNodes[0].id).matrixWorld)); //MATH.angleAxis(aa[3] * 0.0174532925,[aa[0],aa[1],aa[2]]);
+				var rotmat = this.GetRotationMatrix(MATH.transposeMat4(vwf.getProperty(this.GetSelectedVWFID(),'worldTransform'))); //MATH.angleAxis(aa[3] * 0.0174532925,[aa[0],aa[1],aa[2]]);
 				var invRot = MATH.inverseMat4(rotmat);
 				var invRotT = MATH.transposeMat4(invRot);
 				MoveGizmo.parent.matrixAutoUpdate = false;
@@ -1931,10 +2026,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var viewnode = this.findviewnode(this.GetSelectedVWFID());
 			if(!viewnode)
 				return;
-			var childmat = toGMat(viewnode.matrixWorld);
-			lastpos[0] = [childmat[3], childmat[7], childmat[11]];
+			var childmat = vwf.getProperty(this.GetSelectedVWFID(),'worldTransform');
+			lastpos[0] = [childmat[12], childmat[13], childmat[14]];
 			var gizpos = [0, 0, 0];
-			gizpos = [childmat[3], childmat[7], childmat[11]];
+			gizpos = [childmat[12], childmat[13], childmat[14]];
 			
 			
 			//new fix to allow drivers to trick editor with fake transform data
@@ -1947,10 +2042,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			{
 				
 				//this.findviewnode(SelectedVWFNodes[s].id).updatethis.Matrix();
-				var nextchildmat = toGMat(this.findviewnode(SelectedVWFNodes[s].id).matrixWorld);
-				gizpos[0] += nextchildmat[3];
-				gizpos[1] += nextchildmat[7];
-				gizpos[2] += nextchildmat[11];
+				var nextchildmat = vwf.getProperty(SelectedVWFNodes[s].id,"worldTransform");
+				gizpos[0] += nextchildmat[12];
+				gizpos[1] += nextchildmat[13];
+				gizpos[2] += nextchildmat[14];
 				var trans = this.getTranslationCallback(SelectedVWFNodes[s].id);
 				lastpos[s] = trans;
 				lastscale[s] = this.getScaleCallback(SelectedVWFNodes[s].id);
@@ -1973,44 +2068,49 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				//for nodes that have no 3D viewnode
 				if(!self.findviewnode(SelectedVWFNodes[i].id))
 					continue;
-					
-				var box;
-				var mat;
-				box = self.findviewnode(SelectedVWFNodes[i].id).getBoundingBox(true);
-				mat = toGMat(self.findviewnode(SelectedVWFNodes[i].id).matrixWorld).slice(0);
-				var color = [1, 1, 1, 1];
-				if (this.findviewnode(SelectedVWFNodes[i].id).initializedFromAsset) color = [1, 0, 0, 1];
-				if (vwf.getProperty(SelectedVWFNodes[i].id, 'type') == 'Group' && vwf.getProperty(SelectedVWFNodes[i].id, 'open') == false) color = [0, 1, 0, 1];
-				if (vwf.getProperty(SelectedVWFNodes[i].id, 'type') == 'Group' && vwf.getProperty(SelectedVWFNodes[i].id, 'open') == true) color = [.7, 1.0, .7, 1];
-				SelectionBounds[i] = new THREE.Object3D();
-				SelectionBounds[i].name = "Bounds_+" + SelectedVWFNodes[i].id;
-				SelectionBounds[i].add(this.BuildBox([box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z], [box.min.x + (box.max.x - box.min.x) / 2, box.min.y + (box.max.y - box.min.y) / 2, box.min.z + (box.max.z - box.min.z) / 2], color), true);
-				SelectionBounds[i].children[0].name = "Bounds_+" + SelectedVWFNodes[i].id + "_Mesh";
-				SelectionBounds[i].matrixAutoUpdate = false;
-				SelectionBounds[i].matrix.elements = MATH.transposeMat4(mat);
-				SelectionBounds[i].updateMatrixWorld(true);
-				SelectionBounds[i].children[0].material = new THREE.MeshBasicMaterial();
-				SelectionBounds[i].children[0].material.wireframe = true;
-				SelectionBounds[i].children[0].material.transparent = true;
-				SelectionBounds[i].children[0].renderDepth = -10000 - 3;
-				SelectionBounds[i].children[0].material.depthTest = false;
-				SelectionBounds[i].children[0].material.depthWrite = false;
-				SelectionBounds[i].children[0].material.color.r = color[0];
-				SelectionBounds[i].children[0].material.color.g = color[1];
-				SelectionBounds[i].children[0].material.color.b = color[2];
-				SelectionBounds[i].children[0].PickPriority = -1;
-				// SelectionBounds[i].InvisibleToCPUPick = true;
-				// SelectionBounds[i].setCastShadows(false);
-				// SelectionBounds[i].setDrawType(MATH.DRAW_LINELOOPS);
-				// SelectionBounds[i].setDepthTest(false);
-				// SelectionBounds[i].setZtransparent(true);
-				// SelectionBounds[i].setCull(MATH.NONE);
-				// SelectionBounds[i].setPickable(false);
-				// SelectionBounds[i].RenderPriority = 999;
-				SelectionBounds[i].vwfid = SelectedVWFNodes[i].id;
+				SelectionBounds[i] = this.createBoundingBox(SelectedVWFNodes[i].id);
+				
 				//	SelectionBounds[i].setMaterial(MATH.MaterialManager.findMaterialRecord(SelectionBounds[i].getMaterial()).material);
 				this.SelectionBoundsContainer.add(SelectionBounds[i], true);
 			}
+		}
+		this.createBoundingBox = function(id)
+		{
+				var box;
+				var mat;
+				box = self.findviewnode(id).getBoundingBox(true);
+				mat = toGMat(self.findviewnode(id).matrixWorld).slice(0);
+				var color = [1, 1, 1, 1];
+				if (this.findviewnode(id).initializedFromAsset) color = [1, 0, 0, 1];
+				if (vwf.getProperty(id, 'type') == 'Group' && vwf.getProperty(id, 'open') == false) color = [0, 1, 0, 1];
+				if (vwf.getProperty(id, 'type') == 'Group' && vwf.getProperty(id, 'open') == true) color = [.7, 1.0, .7, 1];
+				var boundingbox = new THREE.Object3D();
+				boundingbox.name = "Bounds_+" + id;
+				boundingbox.add(this.BuildBox([box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z], [box.min.x + (box.max.x - box.min.x) / 2, box.min.y + (box.max.y - box.min.y) / 2, box.min.z + (box.max.z - box.min.z) / 2], color), true);
+				boundingbox.children[0].name = "Bounds_+" + id + "_Mesh";
+				boundingbox.matrixAutoUpdate = false;
+				boundingbox.matrix.elements = MATH.transposeMat4(mat);
+				boundingbox.updateMatrixWorld(true);
+				boundingbox.children[0].material = new THREE.MeshBasicMaterial();
+				boundingbox.children[0].material.wireframe = true;
+				boundingbox.children[0].material.transparent = true;
+				boundingbox.children[0].renderDepth = -10000 - 3;
+				boundingbox.children[0].material.depthTest = false;
+				boundingbox.children[0].material.depthWrite = false;
+				boundingbox.children[0].material.color.r = color[0];
+				boundingbox.children[0].material.color.g = color[1];
+				boundingbox.children[0].material.color.b = color[2];
+				boundingbox.children[0].PickPriority = -1;
+				// boundingbox.InvisibleToCPUPick = true;
+				// boundingbox.setCastShadows(false);
+				// boundingbox.setDrawType(MATH.DRAW_LINELOOPS);
+				// boundingbox.setDepthTest(false);
+				// boundingbox.setZtransparent(true);
+				// boundingbox.setCull(MATH.NONE);
+				// boundingbox.setPickable(false);
+				// boundingbox.RenderPriority = 999;
+				boundingbox.vwfid = id;
+				return boundingbox;
 		}
 		this.updateBoundsTransform = function (id)
 		{
@@ -2173,7 +2273,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						for(var i = 1; i < 	SelectedVWFNodes.length; i++)
 							$('#StatusSelectedName').text($('#StatusSelectedName').text() + ', ' + vwf.getProperty(SelectedVWFNodes[i].id,'DisplayName'));
 					}
-					
+			//send a signal over the reflector to let others know that I have selected something.
+			this.NotifyPeersOfSelection();
 		}.bind(this);
 		this.ResetTransforms = function()
 		{

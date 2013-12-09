@@ -78,6 +78,14 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 						window._InventoryManager = require("vwf/view/editorview/InventoryManager").getSingleton();;
 						window.HierarchyManager = require("vwf/view/editorview/HeirarchyManager").getSingleton();;
 						window._PermissionsManager = require("vwf/view/editorview/_PermissionsManager").getSingleton();
+						this.addManager(_ScriptEditor);
+						this.addManager(_ModelLibrary);
+						this.addManager(_Notifier);
+						this.addManager(_MaterialEditor);
+						this.addManager(_PrimitiveEditor);
+						this.addManager(_InventoryManager);
+						this.addManager(_PermissionsManager);
+						this.addManager(HierarchyManager);
 					}
 					window._LocationTools = require("vwf/view/editorview/LocationTools").getSingleton();
 					window._UserManager = require("vwf/view/editorview/UserManager").getSingleton();;
@@ -102,23 +110,13 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 					
 					
 					this.addManager(_UserManager);
-					this.addManager(_InventoryManager);
-					this.addManager(HierarchyManager);
-					this.addManager(_PermissionsManager);
-					this.addManager(_ScriptEditor);
-					this.addManager(_ModelLibrary);
-					this.addManager(_Notifier);
-					this.addManager(_MaterialEditor);
-					this.addManager(_PrimitiveEditor);
 					this.addManager(_DataManager);
+					this.addManager(_Editor);
 
-
-					//  $(document).ready(function(){
-					//	});
 				
 			}
 		},
-		managers:[],
+		managers:[],     //list of objects that need notification of events
 		addManager:function(manager)
 		{
 			this.managers.push(manager);
@@ -126,6 +124,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 			manager.getParent = function(){return this;}.bind(this);
 
 		},
+		//actual sending of messages. Stops and returns when a manager returns a value
 		_sendMessage:function(message,data,sender)
 		{
 			
@@ -150,10 +149,20 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 			}
 			return null;
 		},
-		sendMessage:function(message,data)
+		//handle that is applied to each registered manager, allowing them to send messages over the bus
+		/* message,data */
+		sendMessage:function(/* message,data */)
 		{
-			return this.getParent()._sendMessage(message,data,this);
+			var args = []
+			for(var i =0; i < arguments.length; i++)
+			{
+				args.push(arguments[i]);
+			}
+			
+			var message = args.shift();
+			return this.getParent()._sendMessage(message,args,this);
 		},
+		// send the VWF events down to all registered objects
 		viewAPINotify:function(functionName,data)
 		{
 			for(var i=0; i < this.managers.length; i++)
