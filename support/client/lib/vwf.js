@@ -2740,13 +2740,13 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 
             // Bubbling phase.
 
-            phase = undefined; // invoke all handlers
+            phase = 'bubble'; // invoke all handlers
 
             handled = handled || ancestorIDs.reverse().some( function( ancestorID ) {  // TODO: reverse updates the array in place every time and we'd rather not
 
                 targetEventParameters =
                     eventParameters.concat( cascadedEventNodeParameters[ancestorID], phase );
-
+                targetEventParameters.phase = phase;
                 return this.fireEvent( ancestorID, eventName, targetEventParameters );
 
             }, this );

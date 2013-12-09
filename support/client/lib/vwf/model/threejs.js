@@ -1222,11 +1222,16 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                     if ( propertyName == 'intensity' ) {
                         threeObject.intensity = propertyValue;
 						//threeObject.updateMatrix();
-                    }   
-					if ( propertyName == 'distance' ) {
-                        threeObject.distance = propertyValue;
-						//threeObject.updateMatrix();
-                    } 					
+                    }  
+                    if ( propertyName == 'castShadows' ) {
+                        threeObject.castShadows = propertyValue;
+                        rebuildAllMaterials.call(this);
+                        //threeObject.updateMatrix();
+                    }    
+					if(propertyName == "spotCosCutOff")
+                    {
+                        threeObject.exponent= propertyValue;   
+                    }				
                     if ( propertyName == 'castShadows' ) {
                         threeObject.castShadow = propertyValue;
                     }
@@ -1388,6 +1393,14 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                     if(propertyName == "intensity")
                     {
 						return threeObject.intensity;     
+                    }
+                    if(propertyName == "castShadows")
+                    {
+                        return threeObject.castShadows;     
+                    }
+                    if(propertyName == "spotCosCutOff")
+                    {
+                        return threeObject.exponent;     
                     }
 					if(propertyName == "distance")
                     {

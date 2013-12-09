@@ -834,6 +834,13 @@ node.id = childID; // TODO: move to vwf/model/object
 
         settingProperty: function( nodeID, propertyName, propertyValue ) {
 
+            //notify all nodes of property changes
+            for(var i in this.nodes)
+            {
+                if(this.nodes[i].private.bodies["satProperty"])
+                    this.nodes[i].private.bodies["satProperty"].apply(this.nodes[i],[nodeID, propertyName, propertyValue]);
+            }
+
             var node = this.nodes[nodeID];
 
 if ( ! node ) return;  // TODO: patch until full-graph sync is working; drivers should be able to assume that nodeIDs refer to valid objects
@@ -1076,6 +1083,13 @@ node.hasOwnProperty( methodName ) ||  // TODO: recalculate as properties, method
         callingMethod: function( nodeID, methodName, methodParameters ) {
 
 		
+            //notify all nodes of property changes
+            for(var i in this.nodes)
+            {
+                if(this.nodes[i].private.bodies["calledMethod"])
+                    this.nodes[i].private.bodies["calledMethod"].apply(this.nodes[i],[nodeID, propertyName, propertyValue]);
+            }
+
             var node = this.nodes[nodeID];
 			if(!node) return undefined;
 			
@@ -1313,33 +1327,23 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
             // up from its target.
 
             var handled = listeners && listeners.reduce( function( handled, listener ) {
-
                 // Call the handler. If a phase is provided, only call handlers tagged for that
                 // phase.
-
-          //      try {
-                    if ( ! phase || listener.phases && listener.phases.indexOf( phase ) >= 0 ) {
-                        var result = listener.handler.apply( listener.context || jsDriverSelf.nodes[0], eventParameters ); // default context is the global root  // TODO: this presumes this.creatingNode( undefined, 0 ) is retained above
-                        return handled || result || result === undefined; // interpret no return as "return true"
-                    }
-           //     } catch ( e ) {
-            //        jsDriverSelf.logger.warnc( "firingEvent", nodeID, eventName, eventParameters,  // TODO: limit eventParameters for log
-            //            "exception:", utility.exceptionMessage( e ) );
-            //    }
-
+                if ( ! phase || listener.phases && listener.phases.indexOf( phase ) >= 0 ) {
+                    var result = listener.handler.apply( listener.context || jsDriverSelf.nodes[0], eventParameters ); // default context is the global root  // TODO: this presumes this.creatingNode( undefined, 0 ) is retained above
+                    return handled || result; // interpret no return as "return true"
+                }
                 return handled;
 
             }, false );
 			
-			for( var i =0; i < node.children.length; i++)
-			{
-				
-				if(this.isBehavior(node.children[i]))
-				{
-					this.firingEvent(node.children[i].id,eventName, eventParameters);
-				}
-			
-			}
+
+            //if not handled, iterate over all children.
+            handled = phase != 'bubble' && node.children && node.children.reduce( function( handled, child ) {
+                        var result = handled || jsDriverSelf.firingEvent(child.id,eventName, eventParameters); // default context is the global root  // TODO: this presumes this.creatingNode( undefined, 0 ) is retained above
+                        return handled || result; // interpret no return as "return true"
+            }, handled );
+
 			
             return handled;
         },

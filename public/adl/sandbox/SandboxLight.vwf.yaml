@@ -33,6 +33,13 @@ properties:
       displayname: "Diffuse Color"
       property: color
       type: color
+    spotAngle:
+      displayname: "Spot Angle"
+      property: "spotCosCutOff"  
+      type: slider
+      min: 0
+      max: 5
+      step: .01
     ZZZLightType:
       displayname: "Light Type"
       property: lightType

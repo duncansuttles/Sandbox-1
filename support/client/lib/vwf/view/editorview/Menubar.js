@@ -373,6 +373,7 @@ define(
 		{
 			_Editor.CreateBehavior('rotator', _UserManager.GetCurrentUserName());
 		});
+
 		$('#MenuCreateBehaviorDialog').click(function (e)
 		{
 			_Editor.CreateBehavior('DialogSystem', _UserManager.GetCurrentUserName());
@@ -409,6 +410,12 @@ define(
 		});
 		
 		
+
+		//trigger section
+		$('#MenuCreateTriggerDistance').click(function (e)
+		{
+			_Editor.CreateBehavior('distancetrigger', _UserManager.GetCurrentUserName());
+		});
 		
 		
 		
