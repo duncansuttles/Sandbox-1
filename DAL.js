@@ -1613,6 +1613,33 @@ exports.setDataPath = function(p)
 				else if( err.code != 'EEXIST' )
 					global.error('Error checking Thumbnails dir:', err);
 			});
+			
+			/*
+				Make Avatar related dirs
+			*/
+			fs.mkdir( libpath.join(datapath, 'Avatars'), '755', function(err){
+				if( !err || err.code == 'EEXIST'){
+					global.log('Created Avatars dir');
+					
+					
+					fs.mkdir( libpath.join(datapath, 'Avatars/', 'models'), '755', function(err){
+						if( !err )
+							global.log('Created Avatars/models dir');
+						else if( err.code != 'EEXIST' )
+							global.error('Error checking Avatars/models dir:', err);
+					});
+					
+					fs.mkdir( libpath.join(datapath, 'Avatars/', 'textures'), '755', function(err){
+						if( !err )
+							global.log('Created Avatars/textures dir');
+						else if( err.code != 'EEXIST' )
+							global.error('Error checking Avatars/textures dir:', err);
+					});
+					
+				}
+				else if( err.code != 'EEXIST' )
+					global.error('Error checking Avatars dir:', err);
+			});
 		}
 	}); // end mkdirp
 }
