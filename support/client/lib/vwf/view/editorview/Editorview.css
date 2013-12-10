@@ -715,12 +715,15 @@ overflow-x: hidden;
 
 .PrivateMessageWindowText
 {
-width: 100%;
 margin: 0px;
 padding: 0px;
 overflow: auto;
-border: none;
-height: 94%;
+border: 1px solid lightgray;
+bottom: 38px;
+left: 1%;
+position: absolute;
+width: 98%;
+top: 0%;
 
 background: rgb(241,242,247); /* Old browsers */
 background: -moz-linear-gradient(-45deg,  rgba(241,242,247,1) 0%, rgba(243,245,249,1) 50%, rgba(242,243,248,1) 52%, rgba(248,249,252,1) 100%); /* FF3.6+ */
@@ -735,11 +738,21 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f1f2f7', end
 }
 .PrivateMessageWindow input
 {
-width: 95%;
+right: 1%;
 position: absolute;
-padding: 0px;
-font-size: 1.2em;
+padding: 5px 0 5px 10px;
+font-size: 1.5em;
+bottom: 0px;
+left: 1%;
+box-shadow: 3px 2px 10px lightgray inset;
 }
+
+.PrivateMessageWindow input:focus
+{
+border:1px solid blue;
+box-shadow: 3px 2px 10px lightgray inset;
+}
+
 .ChatFromOtherLabel
 {
 vertical-align: top;
@@ -778,7 +791,7 @@ vertical-align: top;
 color: gray;
 text-align: right;
 right: -3%;
-margin-right: 10px;
+margin-right: 5px;
 }
 
 .ChatFromMeText
@@ -787,8 +800,8 @@ color: black;
 text-align: right;
 font-size: 1.5em;
 background: lightgreen;
-margin-right: 10px;
-padding: 10px;
+margin-right: 5px;
+padding:10px;
 border-radius: 10px;
 width: 50%;
 margin-left: auto;
@@ -823,11 +836,19 @@ box-shadow: 5px 5px 10px lightgray
 }
 #ChatInput
 {
-	width: 99%;
-	top: 92%;
-	position: absolute;
-	padding: 0px;
-	font-size: 1.2em;
+bottom: 0px;
+position: absolute;
+padding: 5px 0px 5px 10px;
+font-size: 1.5em;
+left: 1%;
+right: 1%;
+box-shadow: 3px 2px 10px lightgray inset;
+}
+#ChatInput:focus
+{
+
+	border:1px solid blue;
+box-shadow: 3px 2px 10px lightgray inset;
 }
 #ChatLog
 {
@@ -836,14 +857,26 @@ box-shadow: 5px 5px 10px lightgray
 }
 #ChatBodyInner
 {
-	background-image: -webkit-linear-gradient(top, white 0%, #D9EEEF 100%);
-	width: 99%;
-	top: 0%; 
-	height:90%;
-	padding:0px;
-	margin:0px;
-	position: absolute;
-	overflow-y:auto
+	
+background: rgb(241,242,247); /* Old browsers */
+background: -moz-linear-gradient(-45deg,  rgba(241,242,247,1) 0%, rgba(243,245,249,1) 50%, rgba(242,243,248,1) 52%, rgba(248,249,252,1) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,rgba(241,242,247,1)), color-stop(50%,rgba(243,245,249,1)), color-stop(52%,rgba(242,243,248,1)), color-stop(100%,rgba(248,249,252,1))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(-45deg,  rgba(241,242,247,1) 0%,rgba(243,245,249,1) 50%,rgba(242,243,248,1) 52%,rgba(248,249,252,1) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(-45deg,  rgba(241,242,247,1) 0%,rgba(243,245,249,1) 50%,rgba(242,243,248,1) 52%,rgba(248,249,252,1) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(-45deg,  rgba(241,242,247,1) 0%,rgba(243,245,249,1) 50%,rgba(242,243,248,1) 52%,rgba(248,249,252,1) 100%); /* IE10+ */
+background: linear-gradient(135deg,  rgba(241,242,247,1) 0%,rgba(243,245,249,1) 50%,rgba(242,243,248,1) 52%,rgba(248,249,252,1) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f1f2f7', endColorstr='#f8f9fc',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+
+
+width: 99%;
+top: 0%;
+
+padding: 0px;
+margin: 0px;
+position: absolute;
+overflow-y: auto;
+bottom: 38px;
+
 }
 #ChatWindow
 {
@@ -854,15 +887,21 @@ box-shadow: 5px 5px 10px lightgray
 
 .ChatFromOther
 {
-padding: 10px;
 margin: 5px;
+
 
 }
 .ChatFromMe
 {
 width: 95%;
 border-radius: 10px;
-padding: 10px;
-margin: 5px 9px 18px 5px;
+margin: 5px 5px 9px 5px;
 right: 1%;
+}
+
+.ChatFromMeText a {
+word-break: break-all;
+}
+.ChatFromOtherText a {
+word-break: break-all;
 }

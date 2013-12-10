@@ -2,7 +2,7 @@ define(
 {
 	initialize: function ()
 	{
-		$(document.body).append('<div id="ChatWindow" >' + '<div id="ChatBodyInner" class="text ui-widget-content ui-corner-all" >' + '	<table id="ChatLog" >' + '	</table>' + '</div>' + '<input type="text" name="ChatInput" id="ChatInput" class="text ui-widget-content ui-corner-all"/>		' + '</div>');
+		$(document.body).append('<div id="ChatWindow" >' + '<div id="ChatBodyInner" class="text ui-widget-content ui-corner-all" >' + '	<div id="ChatLog" >' + '	</div>' + '</div>' + '<input type="text" name="ChatInput" id="ChatInput" class="text ui-widget-content ui-corner-all"/>		' + '</div>');
 
 		
 		function SendChatMessage()
@@ -123,8 +123,8 @@ define(
 		}
 
 		function replaceURLWithHTMLLinks(text) {
-		    var exp = /([(\b(https?|ftp|file):\/\/)(www\.)][-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-		    return text.replace(exp,"<a href='$1'>$1</a>"); 
+		    var exp = /((\b(https?|ftp|file):\/\/)[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+		    return text.replace(exp,"<a href='$1' target='_blank'>$1</a>"); 
 		}
 
 		function PMReceived(e)
@@ -148,8 +148,13 @@ define(
 		{
 			var message = JSON.parse(e);
 			var color = 'darkred';
-			if (message.sender == document.PlayerNumber) color = 'darkblue';
-			$('#ChatLog').append('<tr><td class="GlobalChatLabel">' + message.sender + '</td><td class="GlobalChatText">' + message.text + '</td></tr>');
+
+			var text = replaceURLWithHTMLLinks(message.text);
+
+			if (message.sender == document.PlayerNumber) 
+				$('#ChatLog').append('<div class="ChatFromMe"><div class="ChatFromMeLabel">' + message.sender + '</div><div class="ChatFromMeText">' + text + '</div></div>');
+			else	
+				$('#ChatLog').append('<div class="ChatFromOther"><div class="ChatFromOtherLabel">' + message.sender + '</div><div class="ChatFromOtherText">' + text + '</div></div>');
 			_Notifier.notify(message.sender + ": " + message.text);
 			$('#ChatLog').parent().animate({ scrollTop: $('#ChatLog').height() }, "slow");
 		}
