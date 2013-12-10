@@ -4,7 +4,12 @@ define(
 	{
 		$(document.body).append('<div id="ChatWindow" >' + '<div id="ChatBodyInner" class="text ui-widget-content ui-corner-all" >' + '	<div id="ChatLog" >' + '	</div>' + '</div>' + '<input type="text" name="ChatInput" id="ChatInput" class="text ui-widget-content ui-corner-all"/>		' + '</div>');
 
-		
+		$('#ChatBodyInner').on('mousewheel',function(e){
+			if(e.deltaY > 0) 
+					$('#ChatBodyInner').scrollTop($('#ChatBodyInner').scrollTop() - 20)
+			if(e.deltaY < 0)	
+				    $('#ChatBodyInner').scrollTop($('#ChatBodyInner').scrollTop() + 20)
+		});
 		function SendChatMessage()
 		{
 			if (document.PlayerNumber == null)
@@ -70,7 +75,18 @@ define(
 '<input type="text" name="ChatInput" id="ChatInput' + e + '" class="text ui-widget-content ui-corner-all" '+
 	'/>'
 				;
+
+
+
 				$('#PM' + e).append(setup);
+
+				$('#PM' + e +' .PrivateMessageWindowText').on('mousewheel',function(je){
+			if(je.deltaY > 0) 
+					$(this).scrollTop($(this).scrollTop() - 20)
+			if(je.deltaY < 0)	
+				    $(this).scrollTop($(this).scrollTop() + 20)
+		});
+
 				$('#ChatInput' + e).attr('receiver', s);
 				$('#ChatInput' + e).keypress(function (e)
 				{
@@ -129,6 +145,7 @@ define(
 
 		function PMReceived(e)
 		{
+			vwf.callMethod('index-vwf','playSound',['./sounds/ChatDing.wav'])
 			e = JSON.parse(e);
 			if (e.sender != document.PlayerNumber && e.receiver != document.PlayerNumber) return;
 			if (e.sender != document.PlayerNumber && e.receiver == document.PlayerNumber) setupPmWindow(e.sender);
@@ -137,26 +154,38 @@ define(
 			
 			var text = replaceURLWithHTMLLinks(e.text);
 
-			if (e.sender != document.PlayerNumber) $('#ChatLog' + ToSafeID(e.sender)).append('<div class="ChatFromOther"><div class="ChatFromOtherLabel">' + e.sender + '</div><div class="ChatFromOtherText">' + text + '</div></div>');
-			else $('#ChatLog' + ToSafeID(e.receiver)).append('<div class="ChatFromMe"><div class="ChatFromMeLabel">' + e.sender + '</div><div class="ChatFromMeText">' + text + '</div></div>');
+			if (e.sender != document.PlayerNumber) $('#ChatLog' + ToSafeID(e.sender)).append('<div class="ChatFromOther"><div class="ChatFromOtherText">' + text + '</div><div class="ChatFromOtherLabel">' + e.sender + '</div></div>');
+			else $('#ChatLog' + ToSafeID(e.receiver)).append('<div class="ChatFromMe"><div class="ChatFromMeText">' + text + '</div><div class="ChatFromMeLabel">' + e.sender + '</div></div>');
 			
 			$('#ChatLog' + ToSafeID(e.receiver)).parent().animate({ scrollTop: $('#ChatLog' + ToSafeID(e.receiver)).height() }, "slow");
 			$('#ChatLog' + ToSafeID(e.sender)).parent().animate({ scrollTop: $('#ChatLog' + ToSafeID(e.sender)).height() }, "slow");
+		
+			if (e.sender == document.PlayerNumber) 
+				$('#ChatLog').children().last().hide().show('slide',{direction:'right'});
+			else
+				$('#ChatLog').children().last().hide().show('slide',{direction:'left'});
+
 		}
 
 		function ChatMessageReceived(e)
 		{
+			vwf.callMethod('index-vwf','playSound',['./sounds/ChatDing.wav'])
 			var message = JSON.parse(e);
 			var color = 'darkred';
 
 			var text = replaceURLWithHTMLLinks(message.text);
 
 			if (message.sender == document.PlayerNumber) 
-				$('#ChatLog').append('<div class="ChatFromMe"><div class="ChatFromMeLabel">' + message.sender + '</div><div class="ChatFromMeText">' + text + '</div></div>');
+				$('#ChatLog').append('<div class="ChatFromMe"><div class="ChatFromMeText">' + text + '</div><div class="ChatFromMeLabel">' + message.sender + '</div></div>');
 			else	
-				$('#ChatLog').append('<div class="ChatFromOther"><div class="ChatFromOtherLabel">' + message.sender + '</div><div class="ChatFromOtherText">' + text + '</div></div>');
+				$('#ChatLog').append('<div class="ChatFromOther"><div class="ChatFromOtherText">' + text + '</div><div class="ChatFromOtherLabel">' + message.sender + '</div></div>');
 			_Notifier.notify(message.sender + ": " + message.text);
 			$('#ChatLog').parent().animate({ scrollTop: $('#ChatLog').height() }, "slow");
+			
+			if (message.sender == document.PlayerNumber) 
+				$('#ChatLog').children().last().hide().show('slide',{direction:'right'});
+			else
+				$('#ChatLog').children().last().hide().show('slide',{direction:'left'});
 		}
 
 		function disableEnterKey(e)

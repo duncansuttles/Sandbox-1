@@ -709,7 +709,7 @@ cursor: pointer;
 {
 width: 100%;
 background-color: transparent;
-overflow-y: auto;
+overflow-y: hidden;
 overflow-x: hidden;
 }
 
@@ -717,7 +717,7 @@ overflow-x: hidden;
 {
 margin: 0px;
 padding: 0px;
-overflow: auto;
+overflow: hidden;
 border: 1px solid lightgray;
 bottom: 38px;
 left: 1%;
@@ -769,7 +769,7 @@ padding-left: 4px;
 color: black;
 background: lightblue;
 padding: 10px;
-border-radius: 10px;
+border-radius: 30px;
 font-size: 1.5em;
 width: 50%;
 
@@ -782,7 +782,10 @@ background: -ms-linear-gradient(top,  rgba(143,158,233,1) 0%,rgba(167,185,239,1)
 background: linear-gradient(to bottom,  rgba(143,158,233,1) 0%,rgba(167,185,239,1) 50%,rgba(157,176,239,1) 51%,rgba(202,214,246,1) 100%); /* W3C */
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8f9ee9', endColorstr='#cad6f6',GradientType=0 ); /* IE6-9 */
 border: 1px solid lightgray;
-box-shadow: 5px 5px 10px lightgray
+box-shadow: 5px 5px 10px lightgray;
+border-bottom-left-radius: 1px;
+border-top-left-radius: 25px;
+border-bottom-color: #AAA
 }
 
 .ChatFromMeLabel
@@ -802,7 +805,7 @@ font-size: 1.5em;
 background: lightgreen;
 margin-right: 5px;
 padding:10px;
-border-radius: 10px;
+border-radius: 30px;
 width: 50%;
 margin-left: auto;
 
@@ -815,8 +818,10 @@ background: -ms-linear-gradient(top,  rgba(143,233,167,1) 0%,rgba(167,239,180,1)
 background: linear-gradient(to bottom,  rgba(143,233,167,1) 0%,rgba(167,239,180,1) 50%,rgba(157,239,173,1) 51%,rgba(202,246,210,1) 100%); /* W3C */
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8fe9a7', endColorstr='#caf6d2',GradientType=0 ); /* IE6-9 */
 border: 1px solid lightgray;
-box-shadow: 5px 5px 10px lightgray
-
+box-shadow: 5px 5px 10px lightgray;
+border-bottom-right-radius: 0px;
+border-top-right-radius: 25px;
+border-bottom-color: #AAA
 }
 
 .GlobalChatLabel
@@ -874,7 +879,7 @@ top: 0%;
 padding: 0px;
 margin: 0px;
 position: absolute;
-overflow-y: auto;
+overflow-y: hidden;
 bottom: 38px;
 
 }
