@@ -2,7 +2,7 @@ define(
 {
 	initialize: function ()
 	{
-		$(document.body).append('<div id="ChatWindow" style="width: 100%;margin:0px;padding:0px">' + '<div class="text ui-widget-content ui-corner-all" style="background-image: -webkit-linear-gradient(top, white 0%, #D9EEEF 100%);width: 99%;top: 0%; height:90%;padding:0px;margin:0px;position: absolute;overflow-y:auto">' + '	<table id="ChatLog" style="width:100%;background-color: transparent;">' + '	</table>' + '</div>' + '<input type="text" name="ChatInput" id="ChatInput" class="text ui-widget-content ui-corner-all" style="width: 99%;top: 92%;position: absolute;padding: 0px;font-size: 1.2em;"/>		' + '</div>');
+		$(document.body).append('<div id="ChatWindow" >' + '<div id="ChatBodyInner" class="text ui-widget-content ui-corner-all" >' + '	<table id="ChatLog" >' + '	</table>' + '</div>' + '<input type="text" name="ChatInput" id="ChatInput" class="text ui-widget-content ui-corner-all"/>		' + '</div>');
 
 		
 		function SendChatMessage()
@@ -54,7 +54,7 @@ define(
 			}
 			else
 			{
-				$(document.body).prepend("<div id='" + 'PM' + e + "' style='width: 100%;margin:0px;padding:0px;overflow:hidden'/>");
+				$(document.body).prepend("<div id='" + 'PM' + e + "' class='PrivateMessageWindow'/>");
 				$('#PM' + e).dialog(
 				{
 					title: "Chat with " + s,
@@ -63,14 +63,12 @@ define(
 				});
 				$('#PM' + e).attr('receiver', s);
 				var setup = 
-'<div class="text ui-widget-content ui-corner-all" '+
-'	style="background-image: -webkit-linear-gradient(top, white 0%, #D9EEEF 100%);width: 99%;top: 0%;'+
-'	height:80%;padding:0px;margin:0px;position: absolute;overflow-y:auto">' + 
-'	<table id="ChatLog' + e + '" style="width:100%;background-color: transparent;">' + 
-'	</table>' + 
+'<div class="text ui-widget-content ui-corner-all PrivateMessageWindowText">' + 
+'	<div class="PrivateMessageTable" id="ChatLog' + e + '">' + 
+'	</div>' + 
 '</div>' + 
 '<input type="text" name="ChatInput" id="ChatInput' + e + '" class="text ui-widget-content ui-corner-all" '+
-	'style="width: 99%;top: 82%;position: absolute;padding: 0px;font-size: 1.2em;"/>'
+	'/>'
 				;
 				$('#PM' + e).append(setup);
 				$('#ChatInput' + e).attr('receiver', s);
@@ -124,6 +122,11 @@ define(
 			}
 		}
 
+		function replaceURLWithHTMLLinks(text) {
+		    var exp = /([(\b(https?|ftp|file):\/\/)(www\.)][-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+		    return text.replace(exp,"<a href='$1'>$1</a>"); 
+		}
+
 		function PMReceived(e)
 		{
 			e = JSON.parse(e);
@@ -131,8 +134,11 @@ define(
 			if (e.sender != document.PlayerNumber && e.receiver == document.PlayerNumber) setupPmWindow(e.sender);
 			var color = 'darkred';
 			if (e.sender == document.PlayerNumber) color = 'darkblue';
-			if (e.sender != document.PlayerNumber) $('#ChatLog' + ToSafeID(e.sender)).append('<tr><td style="vertical-align: top;width: 25%;min-width: 25%;margin-right: 1em;color:' + color + ';display: table-cell;">' + e.sender + '</td><td style="color:' + color + ';width: 75%;max-width: 75%;">' + e.text + '</td></tr>');
-			else $('#ChatLog' + ToSafeID(e.receiver)).append('<tr><td style="vertical-align: top;width: 25%;min-width: 25%;margin-right: 1em;color:' + color + ';display: table-cell;">' + e.sender + '</td><td style="color:' + color + ';width: 75%;max-width: 75%;">' + e.text + '</td></tr>');
+			
+			var text = replaceURLWithHTMLLinks(e.text);
+
+			if (e.sender != document.PlayerNumber) $('#ChatLog' + ToSafeID(e.sender)).append('<div class="ChatFromOther"><div class="ChatFromOtherLabel">' + e.sender + '</div><div class="ChatFromOtherText">' + text + '</div></div>');
+			else $('#ChatLog' + ToSafeID(e.receiver)).append('<div class="ChatFromMe"><div class="ChatFromMeLabel">' + e.sender + '</div><div class="ChatFromMeText">' + text + '</div></div>');
 			
 			$('#ChatLog' + ToSafeID(e.receiver)).parent().animate({ scrollTop: $('#ChatLog' + ToSafeID(e.receiver)).height() }, "slow");
 			$('#ChatLog' + ToSafeID(e.sender)).parent().animate({ scrollTop: $('#ChatLog' + ToSafeID(e.sender)).height() }, "slow");
@@ -143,7 +149,7 @@ define(
 			var message = JSON.parse(e);
 			var color = 'darkred';
 			if (message.sender == document.PlayerNumber) color = 'darkblue';
-			$('#ChatLog').append('<tr><td style="vertical-align: top;width: 25%;min-width: 25%;margin-right: 1em;color:' + color + ';display: table-cell;">' + message.sender + '</td><td style="color:' + color + ';width: 75%;max-width: 75%;">' + message.text + '</td></tr>');
+			$('#ChatLog').append('<tr><td class="GlobalChatLabel">' + message.sender + '</td><td class="GlobalChatText">' + message.text + '</td></tr>');
 			_Notifier.notify(message.sender + ": " + message.text);
 			$('#ChatLog').parent().animate({ scrollTop: $('#ChatLog').height() }, "slow");
 		}
