@@ -4,7 +4,8 @@ var libpath = require('path'),
     url = require("url"),
     mime = require('mime'),
 	sio = require('socket.io'),
-	YAML = require('js-yaml');
+	YAML = require('js-yaml'),
+	async = require('async');
 	require('./hash.js');
 	
 var safePathRE = RegExp('/\//'+(libpath.sep=='/' ? '\/' : '\\')+'/g');
@@ -833,34 +834,32 @@ function nextLine(str){
 
 function getFilesArray(str){
 	
-	console.log(str);
-	return;
 	var startLine = 5, outArr = [], temp = "", files = str.split('------');
 	files = files.slice(1, files.length-1);
 
 	for(var g = 0; g < files.length; g++){
 		
+		temp = (files[g].match(/filename="(.*?)"/gi,'')[0] || "").replace(/filename=|"/gi, '');
+		
+		//If there is no filename, this is probably not a file
+		if(!temp){
+			continue;
+		}
+		
 		//Create file obj.. match first file name
 		outArr.push({
-			filename: (files[g].match(/filename="(.*?)"/gi,'')[0] || "").replace(/filename=|"/gi, ''), 
+			filename: temp, 
 			name: (files[g].match(/ name="(.*?)"/gi,'')[0] || "").replace(/ name=|"| /gi, ''),
 			file: ""
 		});
 		
-		//If there is no filename, this is probably not a file
-		if(!outArr[g].filename){
-			outArr.splice(g);
-			continue;
-		}
-		
-		//Remove excess garbage from filename, restart currentChar
-		outArr[g].filename = outArr[g].filename.substr(10, outArr[g].filename.length-11);
+		//Reset currentChar
 		currentChar = 0;
 		
 		//Loop through the lines.. removing more garbage (first 4 lines)
 		for(var i = 1; temp = nextLine(files[g]); i++){
 			if(i >= startLine){
-				outArr[g].file += temp;
+				outArr[outArr.length-1].file += temp;
 			}
 		}
 	}
@@ -876,6 +875,25 @@ function SaveAvatar(URL,SID,body,response)
 		respond(response,401,'Non-administrator users cannot upload avatars');
 		return;
 	}*/
+	
+	/*var apiKey = '1F-8C-7B', searchTerm = 'door';
+	var reqOptions = {
+		host: '3dr.adlnet.gov',
+		port: '80',
+		method: 'POST',
+		path: '/api/rest/Search' + searchTerm + '/JSON/id=' + apiKey,
+		auth: 'mick:mnm123'
+	};
+	
+	
+	http.request(reqOptions, function(res){
+	
+		console.log(res);
+	});
+	*/
+	
+	respond(response, 500, "Error saving uploaded 'model' file");
+	return;
 
 	var temp = "", filepath = "", fileArr = getFilesArray(body);
 	
@@ -920,66 +938,93 @@ function SaveTexture(URL,SID,body,response)
 		respond(response,401,'Non-administrator users cannot upload avatars');
 		return;
 	}*/
-	
-	console.log(URL);
 
-	var temp = "", filePath = "", fileArr = getFilesArray(body), type = "";
-	respond(response, 500, body);
-	return;
+	var fileArr = getFilesArray(body), textureName = "", thumbnailName = "";
+	
 	if(!fileArr.length > 0){
 		respond(response, 500, "Error saving uploaded 'texture' and 'screenshot' files");
 		return;
 	}
-
-		/*if(fileArr[i].file.name == "textureFile"){
-			type = "texture";
-		}
-		
-		else if(fileArr[i].file.name == "thumbnailFile"){
-			type = "thumbnail";
-		}
-		
-		else continue;
-		
-				filePath = libpath.join(datapath, '/Avatars/', type + "s", fileArr[i].filename);
-				
-		async.series([
-			function(cb){
+	
+	async.eachSeries(fileArr, 
+		function(item, cb){
+			var filePath = "", type = "";
+			if(item.name == "textureFile"){
+				type = "texture";
+				textureName = item.filename;
+			}
 			
-				fs.writeFile(filePath, fileArr[i].file, function(err){
-					if(err){
-						console.log("Error saving uploaded " + type, err);
-						respond(response, 500, "Error saving uploaded " + type);
-						cb(true);
+			else if(item.name == "thumbnailFile"){
+				type = "thumbnail";
+				thumbnailName = item.filename;
+			}
+			
+			else {
+				console.log(item);
+				cb(true);
+				return;
+			}
+			
+			filePath = libpath.join(datapath, '/Avatars/', type + "s", item.filename);
+
+			fs.writeFile(filePath, item.file, function(err){
+			
+				if(err){
+					console.log("Error saving uploaded " + type, err);
+					respond(response, 500, "Error saving uploaded " + type);
+					cb(err);
+					return;
+				}
+				
+				console.log("Uploaded " + type + " file saved");
+				cb();
+			});		
+		}, 
+		function(err){
+		
+			if(err){
+				console.log("Error saving uploaded file(s)", err);
+				respond(response, 500, "Error saving uploaded file(s)");
+				return;
+			}
+			
+			if(URL.query && URL.query.model && avatarsList instanceof Array){
+
+				for(var i = 0; i < avatarsList.length; i++){
+				
+					if(URL.query.model == avatarsList[i].model){
+					
+						avatarsList[i].textures = avatarsList[i].textures instanceof Array ? avatarsList[i].textures : [];
+						avatarsList[i].textures.push({texture:textureName, thumbnail:thumbnailName});
+						
+						DAL.updateAvatarManifest(avatarsList, function(e){
+						
+							if(e){ 
+								respond(response, 200, "Avatar manifest file saved");
+								console.log("Avatar manifest file saved");
+							}
+							else{
+								respond(response, 500, "Error saving avatar manifest file");
+								console.log("Error saving avatar manifest file");
+							}
+						});
+
 						return;
 					}
-					
-					console.log("Uploaded " + type + " file saved");
-					
-					avatarsList = avatarsList instanceof Array ? avatarsList : [];
-					avatarsList.push({model:fileArr[i].filename, textures:[]});
-					
-					DAL.updateAvatarManifest(avatarsList, function(e){
-					
-						if(e){ 
-							respond(response, 200, "Avatar manifest file saved");
-							console.log("Avatar manifest file saved");
-						}
-						else{
-							respond(response, 500, "Error saving avatar manifest file");
-							console.log("Error saving avatar manifest file");
-						}
-					});
-				});
-			
-			
-				
+				}
 			}
-		
-		
-		
-		]);*/
-				
+			
+			
+			else{
+			
+				console.log("Error: associated model not found");
+				respond(response, 500, "Error: associated model not found");
+				return;
+			}
+			
+			console.log("Error: associated model not found");
+			respond(response, 500, "Error: associated model not found");
+		});		
 }
 
 function SaveThumbnail(URL,SID,body,response)

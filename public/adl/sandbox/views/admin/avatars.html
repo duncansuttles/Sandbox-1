@@ -39,11 +39,13 @@
 		<table class="table table-striped" style="border: 1px solid #ddd;padding-top:20px;">
 			<tr>
 				<th style="border:none; background:#FFF"><input type="checkbox" id="selectAllWorldBox" class="checkAllBox" data-bind="click:handleSelectAll" /></th>
-				<th style="border:none; background:#FFF">Texture Filename</th>
+				<th style="border:none; background:#FFF">Texture</th>
+				<th style="border:none; background:#FFF">Thumbnail</th>
 			</tr>
 			<tbody data-bind="foreach:currentAdminItem().textures" style="border:none">
 				<td><input type="checkbox" class="worldCheckboxes" /></td>
-				<td><a data-bind="text:$data, attr:{href:'{{root}}/admin/worlds#'+$data}" href=""></a></td>
+				<td><a data-bind="text:$data.texture?$data.texture:'Upload texture', attr:{href:'{{root}}/admin/worlds#'+$data.texture}" href=""></a></td>
+				<td><a data-bind="text:$data.thumbnail?$data.thumbnail:'Upload thumbnail', attr:{href:'{{root}}/admin/worlds#'+$data.thumbnail}" href=""></a></td>
 			</tbody>
 		</table>
 	</div>
