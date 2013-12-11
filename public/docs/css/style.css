@@ -1,0 +1,126 @@
+
+
+pre
+{
+white-space: pre;
+margin: 1em 1em 1em 5em;
+background: #EFEFEF;
+border: 3px solid grey;
+border-radius: 10px;
+padding: 1em;
+font-family: monospace;
+font-size: 1.2em;
+}
+img
+{
+margin: 1em 1em 1em 2em;
+border: 1px solid lightgray;
+box-shadow: 10px 10px 10px lightgray;
+}
+
+body
+{
+background: grey;
+}
+em
+{
+   font-weight:bold;
+}
+.article
+{
+width: 1200px;
+font-family: sans-serif;
+margin: auto;
+background: white;
+box-shadow: 10px 10px 39px black, 0px 0px 39px lightblue inset;
+padding: 2em
+}
+
+
+
+h2
+{
+font-size: 27pt;
+Color: #BB4444;
+text-decoration: underline;
+margin-top: 2em;
+}
+
+
+
+h1
+{
+font-size: 44pt;
+Color: #BB4444;
+}
+
+.info
+{
+	background: #DDF;
+	border: 3px solid #AAF;
+    margin: 1em 1em 1em 2em;
+padding: 1em;
+border-radius: 10px;
+}
+
+.remember
+{
+	background: #DFE;
+	border: 3px solid #497245;
+    margin: 1em 1em 1em 2em;
+padding: 1em;
+border-radius: 10px;
+}
+
+.note
+{
+	background: #FEA;
+	border: 3px solid #944;
+    margin: 1em 1em 1em 2em;
+padding: 1em;
+border-radius: 10px;
+}
+p
+{
+    margin-left: 2em;
+}
+
+
+h6
+{
+float: left;
+font-weight: bold;
+float: left;
+font-weight: bold;
+font-size: 1em;
+-webkit-margin-before: 0em;
+-webkit-margin-after: 0em;
+}
+
+.toclink
+{
+    display: block;
+    margin-left: 2em;
+}
+
+.toplink
+{
+
+    font-size: .25em;
+margin-left: 1em;
+color: lightgray;
+text-decoration: none;
+vertical-align: top;
+}
+.breadcrumb
+{
+color: black;
+text-decoration: none;
+margin-right: 1em;
+text-transform: capitalize;
+font-family: sans-serif;
+background: lightgray;
+border-radius: 4px;
+padding: 3px;
+border: 1px solid gray;
+}

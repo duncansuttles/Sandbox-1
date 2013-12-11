@@ -1257,6 +1257,34 @@ function getAnalytics(req, res){
 	res.end(tempStr);
 }
 
+//get the document directories
+function dirTree(filename) {
+    var stats = fs.lstatSync(filename),
+        info = {
+            path: filename,
+            name: libpath.basename(filename)
+        };
+
+    if (stats.isDirectory()) {
+        info.type = "folder";
+        info.children = [];
+        var dirinfo = fs.readdirSync(filename);
+        for(var i =0; i < dirinfo.length; i++)
+        {
+        	var ret = dirTree(filename + '/' + dirinfo[i])
+        	if(ret)
+        		info.children.push(ret);
+        }
+        if(info.children.length > 0)
+        return info;
+    } 
+    if(filename.indexOf('index.html') > -1)
+    {
+    	info.type='file';
+    	return info;
+    }
+}
+
 //router
 function serve (request, response)
 {
@@ -1299,6 +1327,9 @@ function serve (request, response)
 	{
 		switch(command)
 		{	
+			case "docdir":{
+				ServeJSON(dirTree("./public/docs"),response,URL);
+			} break;
 			case "getanalytics.js": {
 				getAnalytics(request, response);
 			} break;

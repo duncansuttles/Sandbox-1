@@ -28,6 +28,14 @@ function strEndsWith(str, suffix) {
     return str.match(suffix+"$")==suffix;
 }
 
+//302 redirect
+function _302(url,response)
+{
+  response.writeHead(302, {
+    "Location": url 
+  });
+  response.end();
+}
 
 // pick the application name out of the URL by finding the index.vwf.yaml
 // Cache - this means that adding applications to the server will requrie a restart
@@ -260,7 +268,10 @@ function ServeYAML(filename,response, URL)
             var safePathRE = RegExp('/\//'+(libpath.sep=='/' ? '\/' : '\\')+'/g');
             var path = "./public".replace(safePathRE);
             
+
+
             var URL = url.parse(request.url,true);
+            URL.pathname = decodeURIComponent(URL.pathname);
             var uri = URL.pathname.replace(safePathRE);
             //global.log( URL.pathname );
             
