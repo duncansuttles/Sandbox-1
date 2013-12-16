@@ -902,7 +902,7 @@
 						_MaterialCache.setMaterial(list[i],propval);
 							
 						
-						//list[i].materialUpdated();
+						list[i].materialUpdated();
 					}
 					
 					if(this.dirtyStack && needRebuild)

@@ -861,6 +861,13 @@ define(
 			_LocationTools.AddPlacemark();
 		});
 		
+		$('#ToolsShowID').click(function (e)
+		{
+			alertify.prompt(vwf.getProperty(_Editor.GetSelectedVWFID(),"DisplayName"),function(){},_Editor.GetSelectedVWFID());
+		});
+
+		
+
 		$('#LocationMoveToGround').click(function (e)
 		{
 			_LocationTools.MoveToGround();

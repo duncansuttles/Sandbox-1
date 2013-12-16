@@ -23,6 +23,7 @@ require.config({
             "vwf/model/jiglib",
             "vwf/model/threejs",
             "vwf/model/scenejs",
+            "vwf/model/wires",
             "vwf/model/object",
             "vwf/model/stage/log",
             "vwf/kernel/view",
@@ -71,6 +72,7 @@ require.config({
                     [
                         "vwf/model/javascript",
                         "vwf/model/jiglib",
+                        "vwf/model/wires",
                         "vwf/model/threejs",
                         "vwf/model/object",
                     ],
