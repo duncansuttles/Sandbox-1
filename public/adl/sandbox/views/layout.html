@@ -157,8 +157,14 @@
 					<div class="linkMenu">
 						<a href="{{root}}">Home</a> 
 						<a href="{{root}}/worlds">Worlds</a> 
-						<a href="http://www.youtube.com/watch?list=PLbhwHX3OvksljQcxLkRT3YvyjgQaIY8m2&v=aWRQJJnBi5c">Videos</a> 
-						<a href="{{root}}/help">Help</a>
+						{{#blog}}
+							<a href="/blog">Blog</a> 
+							<a href="/blog/?docs">Docs</a>
+						{{/blog}}
+						{{^blog}}
+							<a href="http://www.youtube.com/watch?list=PLbhwHX3OvksljQcxLkRT3YvyjgQaIY8m2&v=aWRQJJnBi5c">Videos</a> 
+							<a href="{{root}}/help">Help</a>				
+						{{/blog}}
 					</div>
 				</div>
 			</div>	

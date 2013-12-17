@@ -5,7 +5,8 @@ DAL = {},
 fs = require('fs'),
 async = require('async'),
 URL = require('url'),
-avatar = false;
+avatar = false,
+blog = false;
 
 fs.readdir(__dirname + '/public' + root + '/views/help', function(err, files){
 	var tempArr = [];
@@ -20,6 +21,9 @@ fs.readdir(__dirname + '/public' + root + '/views/help', function(err, files){
 
 exports.setDAL = function(d){
 	DAL = d;
+};
+exports.setBlog = function(b){
+	blog = b;
 };
 
 exports.acceptedRoutes = ['test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
@@ -64,7 +68,7 @@ exports.generalHandler = function(req, res, next){
 			avatar = routesMap[currentAcceptedRoute].avatar ? routesMap[currentAcceptedRoute].avatar : false;	
 		}
 		
-		res.locals = {sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar};
+		res.locals = {sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog};
 		res.render(template);
 	}
 	
