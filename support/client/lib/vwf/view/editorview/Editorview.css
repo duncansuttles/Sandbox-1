@@ -910,3 +910,197 @@ word-break: break-all;
 .ChatFromOtherText a {
 word-break: break-all;
 }
+
+.targetpropchoice
+{
+padding-left: 1em;
+cursor:pointer;
+color:gray;
+border-bottom: 1px solid #EEE;
+}
+
+.sourcepropchoice
+{
+padding-left: 1em;
+cursor:pointer;
+border-bottom: 1px solid #EEE;
+}
+
+.wirepropselected
+{
+font-weight: bold;
+text-shadow: 1px 1px 1px #AAA;
+color:blue;
+background: #DDF;
+}
+
+#WireEditorSelectedName
+{
+height: 1em;
+background: #EFEFEF;
+padding: .5em 0em .5em 1em;
+margin: 1em 1em 1em 1em;
+border-radius: 15px;
+border: 1px outset #AAA;
+box-shadow: 3px 3px 3px #CCC,-3px -3px 3px #CCC inset;
+white-space: nowrap;
+overflow: hidden;
+cursor:pointer;
+}
+
+#WireEditorSourceName
+{
+height: 1em;
+background: #EFEFEF;
+padding: .5em 0em .5em 1em;
+margin: 1em 1em 1em 1em;
+border-radius: 15px;
+border: 1px outset #AAA;
+box-shadow: 3px 3px 3px #CCC,-3px -3px 3px #CCC inset;
+white-space: nowrap;
+overflow: hidden;
+cursor:pointer;
+}
+
+#WireEditorSelectedProps
+{
+
+margin-left: 1em;
+overflow: auto;
+bottom: 18px;
+position: absolute;
+top: 5em;
+width: 94%
+}
+
+#WireEditorSourceProps
+{
+margin-left: 1em;
+overflow: auto;
+bottom: 18px;
+position: absolute;
+top: 5em;
+width: 94%
+
+}
+
+#WireEditor
+{
+padding: 0px;
+margin: 0px;
+font-size: 1.2em;
+}
+.wireeditorleft
+{
+position: absolute;
+top: 0%;
+width: 50%;
+background: #FFF;
+height: 80%;
+padding: 0em 0em 0em 0em;
+border-right: 1px solid #AAA;
+z-index: 1;
+border-radius: 6px;
+box-shadow: 0px 0px 10px #CCC inset;
+
+}
+.wireeditorright
+{
+position: absolute;
+width: 50%;
+left: 50%;
+background: #FFF;
+height: 80%;
+top: 0%;
+box-shadow: 0px 0px 10px #CCC inset;
+padding: 0em 0em 0em 0em;
+border-radius: 6px;
+
+}
+
+#wireeditorbuttons
+{
+position: absolute;
+top: 80%;
+width: 100%;
+text-align: center;
+}
+
+#wireeditorLink
+{
+
+height: 1em;
+background: #EFEFEF;
+padding: 1.5em 0em 1.5em 0em;
+margin: 1em 0em 1em 0em;
+border-radius: 15px;
+border: 1px outset #AAA;
+box-shadow: 3px 3px 3px #CCC,-3px -3px 3px #CCC inset;
+white-space: nowrap;
+overflow: hidden;
+margin-left: auto;
+margin-right: auto;
+width: 33%;
+text-align: center;
+cursor: pointer;
+display: inline-block;
+}
+.wiredisabled
+{
+	color:lightgray;
+}
+#wireeditordisable
+{
+position:absolute;
+top:0%;
+bottom:0%;
+left:0%;
+right:0;
+background: black;
+opacity: .05;
+}
+
+.wirepropwired
+{
+text-shadow: 1px 1px 1px gray;
+color: darkblue
+}
+
+#SubExp2
+{
+height: 1em;
+background: #EFEFEF;
+padding: 1.5em 0em 1.5em 0em;
+margin: 1em 0em 1em 0em;
+border-radius: 15px;
+border: 1px outset #AAA;
+box-shadow: 3px 3px 3px #CCC,-3px -3px 3px #CCC inset;
+white-space: nowrap;
+overflow: hidden;
+margin-left: auto;
+margin-right: auto;
+width: 33%;
+text-align: center;
+cursor: pointer;
+display: inline-block;
+
+}
+#SubExp1
+{
+height: 1em;
+background: #EFEFEF;
+padding: 1.5em 0em 1.5em 0em;
+margin: 1em 0em 1em 0em;
+border-radius: 15px;
+border: 1px outset #AAA;
+box-shadow: 3px 3px 3px #CCC,-3px -3px 3px #CCC inset;
+white-space: nowrap;
+overflow: hidden;
+margin-left: auto;
+margin-right: auto;
+width: 33%;
+text-align: center;
+cursor: pointer;
+display: inline-block;
+
+}
