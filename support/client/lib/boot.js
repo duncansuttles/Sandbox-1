@@ -34,10 +34,12 @@ require.config({
 			"vwf/view/WebRTC",
 			"vwf/view/audio",
 			"messageCompress",
-			"vwf/view/xapi"
+			"vwf/view/xapi",
+            "polyfills",
 
         ], function( ready ) {
 
+            require("polyfills").setup();
             require("vwf/view/editorview/ObjectPools").getSingleton();
             ready( function() {
 
@@ -95,3 +97,4 @@ require.config({
             } );
 
         } );
+$('#sidepanel .jspContainer .jspPane').css('left',0)
