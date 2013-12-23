@@ -98,6 +98,8 @@ function startVWF(){
 		console.log("Error: Unable to load config file");
 	}
 	
+	//save configuration into global scope so other modules can use.
+	global.configuration = configSettings;
 	var p = process.argv.indexOf('-p'), port = 0, datapath = "";
 	
 	//This is a bit ugly, but it does beat putting a ton of if/else statements everywhere

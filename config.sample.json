@@ -1,10 +1,15 @@
 {
-	"port": 3000,
-	"datapath": "./data",
-	"logLevel": 1,
-	"build": false,
-	"minify": false,
-	"compile": false,
-	"version": 1,
-	"useVersioning": false
+	"port": 3000,             //the port to serve on
+	"datapath": "./data",     //the database location
+	"logLevel": 1,            //the vebosity of the console output
+	"build": false,           //build the require js modules
+	"minify": false,          //minify javascript on serve
+	"compile": false,         //compile with the closure conpiler
+	"version": 1,             //the version number to use for URL versioning. Must be an integer!
+	"useVersioning": false,   //when true, the server will use a url prefix to identify the software version
+    "_3DRAPI": null,          //the endpoint to use to access the service
+    "_3DRAPIKey": null,       //the api key to use for all requests
+    "_3DRUser": null,         //username server identifies itself as
+    "_3DRPassword": null,     //password for the server user
+    "_3DRUseAuth": false,     //use anonymous access or not
 }
