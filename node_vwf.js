@@ -163,7 +163,7 @@ function startVWF(){
 		SandboxAPI.setDataPath(datapath);
 		Shell.setDAL(DAL);
 		Landing.setDAL(DAL);
-		Landing.setBlog(configSettings.blog);
+		Landing.setDocumentation(configSettings);
 		reflector.setDAL(DAL);
 		appserver.setDAL(DAL);
 		
