@@ -6,7 +6,7 @@ var libpath = require('path'),
 	sio = require('socket.io'),
 	YAML = require('js-yaml');
 	require('./hash.js');
-	
+	var _3DR_proxy = require('./3DR_proxy.js');
 var safePathRE = RegExp('/\//'+(libpath.sep=='/' ? '\/' : '\\')+'/g');
 var datapath = '.'+libpath.sep+'data';
 var DAL = null;	
@@ -1329,6 +1329,21 @@ function serve (request, response)
 		{	
 			case "docdir":{
 				ServeJSON(dirTree("./public/docs"),response,URL);
+			} break;
+			case "3drsearch":{
+				_3DR_proxy.proxySearch(URL,response);
+			} break;
+			case "3drmetadata":{
+				_3DR_proxy.proxyMetadata(URL,response);
+			} break;
+			case "3drdownload":{
+				_3DR_proxy.proxyDownload(URL,response);
+			} break;
+			case "3drtexture":{
+				_3DR_proxy.proxyTexture(URL,response);
+			} break;
+			case "3drthumbnail":{
+				_3DR_proxy.proxyThumbnail(URL,response);
 			} break;
 			case "getanalytics.js": {
 				getAnalytics(request, response);

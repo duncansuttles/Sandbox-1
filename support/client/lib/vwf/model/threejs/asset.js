@@ -136,7 +136,7 @@
 					this.loadFailed();
 					return;
 				}
-				this.getRoot().add(asset.scene);
+				
 				$(document).trigger('EndParse',['Loading...',assetSource]);
 				
 				
@@ -183,10 +183,14 @@
 							}
 											
 							list[i].materialUpdated();
+						}else
+						{
+
+							debugger;
 						}
 				
 					
-				
+				this.getRoot().add(reg.node.clone());
 				
 				this.settingProperty('materialDef',this.materialDef);
 				//if any callbacks were waiting on the asset, call those callbacks
