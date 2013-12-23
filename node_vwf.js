@@ -96,6 +96,7 @@ function startVWF(){
 	catch(e){
 		configSettings = {};
 		console.log("Error: Unable to load config file");
+		console.log(e.message);
 	}
 	
 	//save configuration into global scope so other modules can use.

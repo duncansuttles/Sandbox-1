@@ -31,14 +31,9 @@ function GetUseAuth()
 }
 function proxy(string,response)
 {
-	if(GetUseAuth())
-	{
+	
  		request['get'](string).auth(Get3DRUser(),Get3DRPassword(), true).pipe(response);
-	}
-	else
-	{	
-	 	request['get'](string).pipe(response);
-	}
+	
 }
 function proxySearch(URL,response)
 {
@@ -65,7 +60,7 @@ function proxyMetadata(URL,response)
 function proxyTexture(URL,response)
 {
 //https://3dr.adlnet.gov/api/_3DRAPI.svc/"+decodeURIComponent(URL.query.pid)+"/textures/"+decodeURIComponent(URL.query.pid)+"?ID=00-00-00
- var searchstring = Get3DRAPI() +"/"+decodeURIComponent(URL.query.pid)+"/textures/"+decodeURIComponent(URL.query.file)+Get3DRAPIKey();
+ var searchstring = Get3DRAPI() +"/"+decodeURIComponent(URL.query.pid)+"/Textures/"+decodeURIComponent(URL.query.file)+"?ID="+Get3DRAPIKey();
  proxy(searchstring,response)
 
 }
@@ -74,7 +69,7 @@ function proxyThumbnail(URL,response)
 {
 //https://3dr.adlnet.gov/api/_3DRAPI.svc/"+decodeURIComponent(URL.query.pid)+"/Thumbnail?ID=00-00-00
  var searchstring = Get3DRAPI() +"/"+decodeURIComponent(URL.query.pid)+"/Thumbnail?ID="+Get3DRAPIKey();
-
+ proxy(searchstring,response)
 }
 exports.proxySearch = proxySearch;
 exports.proxyDownload = proxyDownload;
