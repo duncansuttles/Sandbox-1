@@ -117,6 +117,8 @@
 					
 					src = src.replace("AnonymousUser:@","");
 					
+                    if(this.url.toLowerCase().indexOf('vwfdatamanager') != -1)
+                        src = './vwfdatamanager.svc/3drtexture?pid=' +  this.url.substr(this.url.indexOf("pid=")+4) + "&file=" + encodeURIComponent(texturename)
 					var tex = _SceneManager.getTexture(src);
 					
 					return tex;

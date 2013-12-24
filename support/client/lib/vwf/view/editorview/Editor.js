@@ -2018,7 +2018,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}.bind(this);
 		this.triggerSelectionTransformed = function (VWFNode)
 		{
-			$(document).trigger('selectionTransformedLocal', [VWFNode]);
+			//this is no longer needed, since we set the GUI from reflector messages
+			//$(document).trigger('selectionTransformedLocal', [VWFNode]);
 		}.bind(this);
 		this.updateGizmoLocation = function ()
 		{
@@ -3201,7 +3202,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var newintersectxy = self.GetInsertPoint();
 			Proto.properties.owner = _UserManager.GetCurrentUserName();
 			Proto.properties.translation = newintersectxy;
-			vwf_view.kernel.createChild('index-vwf', url, Proto);
+			vwf_view.kernel.createChild('index-vwf', this.GetUniqueName(url), Proto);
 			
 		}
 		this.initialize = function ()

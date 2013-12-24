@@ -76,9 +76,9 @@ define(function ()
 		'<div>' +
 		"<div class='EditorLabel'>Translation</div>" +
 		"<div id='Translation'>" +
-		"<input type='number' step='.001' class='TransformEditorInput' id='PositionX'/>" +
-		"<input type='number' step='.001' class='TransformEditorInput' id='PositionY'/>" +
-		"<input type='number' step='.001' class='TransformEditorInput' id='PositionZ'/>" +
+		"<input type='number'  class='TransformEditorInput' id='PositionX'/>" +
+		"<input type='number'  class='TransformEditorInput' id='PositionY'/>" +
+		"<input type='number'  class='TransformEditorInput' id='PositionZ'/>" +
 		"</div>" + "<div class='EditorLabel'>Rotation</div>" +
 		"<div id='Rotation'>" +
 		"<input type='number' class='TransformEditorInput' id='RotationX'/>" +
@@ -88,9 +88,9 @@ define(function ()
 		"</div>" +
 		"<div class='EditorLabel'>Scale</div>" +
 		"<div id='Scale'>" +
-		"<input type='number' class='TransformEditorInput' id='ScaleX'/>" +
-		"<input type='number' class='TransformEditorInput' id='ScaleY'/>" +
-		"<input type='number' class='TransformEditorInput' id='ScaleZ'/>" +
+		"<input type='number'  class='TransformEditorInput' id='ScaleX'/>" +
+		"<input type='number'  class='TransformEditorInput' id='ScaleY'/>" +
+		"<input type='number'  class='TransformEditorInput' id='ScaleZ'/>" +
 		"</div>" +
 		'</div>' +
 		'</div>');
@@ -323,7 +323,7 @@ define(function ()
 						$('#receiveShadows').removeAttr('checked');
 					}
 					$('#BaseSectionTitle').text(node.properties.type || "Type" + ": " + node.id);
-					this.SelectionTransformed(null, node,true);
+					this.SelectionTransformed(null, node);
 					this.setupAnimationGUI(node, true);
 					this.setupEditorData(node, true);
 					this.recursevlyAddModifiers(node);
@@ -947,55 +947,43 @@ define(function ()
 		}
 		this.positionChanged = function ()
 		{
+			this.setTransform();
+		}
+		this.setTransform = function()
+		{
+			
 			var val = [0, 0, 0];
-			val[0] = $('#PositionX').val();
-			val[1] = $('#PositionY').val();
-			val[2] = $('#PositionZ').val();
-			this.setProperty(_Editor.GetSelectedVWFNode().id, 'translation', val);
+			val[0] = $('#RotationX').val();
+			val[1] = $('#RotationY').val();
+			val[2] = $('#RotationZ').val();
+			
+			var rotmat = goog.vec.Mat4.makeEulerZXZ(goog.vec.Mat4.createIdentity(),parseFloat(val[0])/57.2957795,parseFloat(val[1])/57.2957795,parseFloat(val[2])/57.2957795);
+			var scale = [parseFloat($('#ScaleX').val()),parseFloat($('#ScaleY').val()),parseFloat($('#ScaleZ').val())];
+			var pos = [parseFloat($('#PositionX').val()),parseFloat($('#PositionY').val()),parseFloat($('#PositionZ').val())];
+
+			
+			rotmat = goog.vec.Mat4.scale(rotmat,scale[0],scale[1],scale[2]);
+
+			pos = goog.vec.Mat4.translate(goog.vec.Mat4.createIdentity(),pos[0],pos[1],pos[2])
+			
+			var val = goog.vec.Mat4.multMat(pos,rotmat,[]);
+
+			this.setProperty(_Editor.GetSelectedVWFNode().id, 'transform', val);
 		}
 		this.rotationChanged = function ()
 		{
-			var val = [0, 0, 0, 0];
-			val[2] = $('#RotationX').val();
-			val[0] = $('#RotationY').val();
-			val[1] = $('#RotationZ').val();
-			//val[3] = $('#RotationW').val();
-			val[0] /= 57.2957795;
-			val[1] /= 57.2957795;
-			val[2] /= 57.2957795;
-			var c1 = Math.cos(val[0] / 2);
-			var c2 = Math.cos(val[1] / 2);
-			var c3 = Math.cos(val[2] / 2);
-			var s1 = Math.sin(val[0] / 2);
-			var s2 = Math.sin(val[1] / 2);
-			var s3 = Math.sin(val[2] / 2);
-			var w = c1 * c2 * c3 - s1 * s2 * s3;
-			var x = s1 * s2 * c3 + c1 * c2 * s3;
-			var y = s1 * c2 * c3 + c1 * s2 * s3;
-			var z = c1 * s2 * c3 - s1 * c2 * s3;
-			var q = goog.vec.Quaternion.createFloat32FromValues(x, y, z, w);
-			var axis = [0, 0, 0];
-			var angle = goog.vec.Quaternion.toAngleAxis(q, axis);
-			axis.push(angle * 57.2957795);
-			this.setProperty(_Editor.GetSelectedVWFNode().id, 'rotation', axis);
+			this.setTransform();
 		}
 		this.scaleChanged = function ()
 		{
-			var val = [0, 0, 0];
-			val[0] = $('#ScaleX').val();
-			val[1] = $('#ScaleY').val();
-			val[2] = $('#ScaleZ').val();
-			this.setProperty(_Editor.GetSelectedVWFNode().id, 'scale', val);
+			this.setTransform();	
 		}
 		this.rotationMatrix_2_XYZ = function (m)
 		{
-			var theta1 = Math.atan2(m[6], m[10]);
-			var c2 = Math.sqrt((m[0] * m[0] + m[1] * m[1]));
-			var theta2 = Math.atan2(-m[2], c2);
-			var s1 = Math.sin(theta1);
-			var c1 = Math.cos(theta1);
-			var theta3 = Math.atan2(s1 * m[8] - c1 * m[4], c1 * m[5] - s1 * m[9]);
-			return [theta1, theta2, theta3];
+
+			var ret = [];
+			 goog.vec.Mat4.toEulerZXZ(m,ret);
+			return ret;
 		}
 		this.NodePropertyUpdate = function(nodeID,propName,propVal)
 		{
@@ -1029,13 +1017,14 @@ define(function ()
 		{
 			this.propertyEditorDialogs=[];
 		}
-		this.SelectionTransformed = function (e, node, rot)
+		this.SelectionTransformed = function (e, node)
 		{
 			try
 			{
 				if (node)
 				{
-					var mat = MATH.transposeMat4(_Editor.findviewnode(node.id).matrix.elements);
+					
+					var mat = vwf.getProperty(node.id,'transform');
 					var angles = this.rotationMatrix_2_XYZ(mat);
 					var pos = vwf.getProperty(node.id, 'translation');
 					
@@ -1045,16 +1034,14 @@ define(function ()
 					$('#PositionZ').val(Math.floor(pos[2]*1000)/1000);
 				
 					//since there is ambiguity in the matrix, we need to keep these values aroud. otherwise , the typeins don't really do what you would think		
-					if(rot)
-					{
-						$('#RotationX').val(Math.floor(.05 + angles[0] * -57.2957795));
-						$('#RotationY').val(Math.floor(.05 + angles[1] * -57.2957795));
-						$('#RotationZ').val(Math.floor(.05 + angles[2] * -57.2957795));
-					}
+						$('#RotationX').val(Math.floor(angles[0]*57.2957795));
+						$('#RotationY').val(Math.floor(angles[1]*57.2957795));
+						$('#RotationZ').val(Math.floor(angles[2]*57.2957795));
+					
 					//$('#RotationW').val(rot[3]);
-					$('#ScaleX').val(scl[0]);
-					$('#ScaleY').val(scl[1]);
-					$('#ScaleZ').val(scl[2]);
+					$('#ScaleX').val(Math.floor(scl[0]*1000)/1000);
+					$('#ScaleY').val(Math.floor(scl[1]*1000)/1000);
+					$('#ScaleZ').val(Math.floor(scl[2]*1000)/1000);
 				}
 			}
 			catch (e)
