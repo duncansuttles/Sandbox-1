@@ -22,3 +22,6 @@ properties:
   tilex: 1
   tiley: 1
   rotate: 0
+  uoffset: 0
+  voffset: 0
+
