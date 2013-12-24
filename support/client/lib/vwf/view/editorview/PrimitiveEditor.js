@@ -88,9 +88,9 @@ define(function ()
 		"</div>" +
 		"<div class='EditorLabel'>Scale</div>" +
 		"<div id='Scale'>" +
-		"<input type='number'  class='TransformEditorInput' id='ScaleX'/>" +
-		"<input type='number'  class='TransformEditorInput' id='ScaleY'/>" +
-		"<input type='number'  class='TransformEditorInput' id='ScaleZ'/>" +
+		"<input type='number' step='5'  class='TransformEditorInput' id='ScaleX'/>" +
+		"<input type='number' step='5' class='TransformEditorInput' id='ScaleY'/>" +
+		"<input type='number' step='5' class='TransformEditorInput' id='ScaleZ'/>" +
 		"</div>" +
 		'</div>' +
 		'</div>');
@@ -949,6 +949,43 @@ define(function ()
 		{
 			this.setTransform();
 		}
+		this.makeRotMat = function(x,y,z)
+		{
+			var xm = [
+
+			1,           0,            0,     0,
+			0, Math.cos(x), -Math.sin(x),     0,
+			0, Math.sin(x),  Math.cos(x),     0,
+			0,           0,            0,     1
+
+			];
+
+			var ym = [
+
+			 Math.cos(y),  0,  Math.sin(y),   0,
+			           0,  1,            0,   0,
+			-Math.sin(y),  0,  Math.cos(y),   0,
+			           0,  0,            0,   1
+			];
+
+			var zm = [
+
+			Math.cos(z) , -Math.sin(z),  0,  0,
+			 Math.sin(z),  Math.cos(z),  0,  0,
+			           0,            0,  1,  0,
+			           0,            0,  0,  1
+
+			];
+			return goog.vec.Mat4.multMat(xm,goog.vec.Mat4.multMat(ym,zm,[]),[]);
+
+		}
+		this.rotationMatrix_2_XYZ = function(m)
+		{
+			var x = Math.atan2(m[9],m[10]);
+			var y = Math.atan2(-m[8],Math.sqrt(m[9]*m[9] + m[10]*m[10]));
+			var z = Math.atan2(m[4],m[0]);
+			return [x,y,z];
+		}
 		this.setTransform = function()
 		{
 			
@@ -957,7 +994,7 @@ define(function ()
 			val[1] = $('#RotationY').val();
 			val[2] = $('#RotationZ').val();
 			
-			var rotmat = goog.vec.Mat4.makeEulerZXZ(goog.vec.Mat4.createIdentity(),parseFloat(val[0])/57.2957795,parseFloat(val[1])/57.2957795,parseFloat(val[2])/57.2957795);
+			var rotmat = this.makeRotMat(parseFloat(val[0])/57.2957795,parseFloat(val[1])/57.2957795,parseFloat(val[2])/57.2957795);
 			var scale = [parseFloat($('#ScaleX').val()),parseFloat($('#ScaleY').val()),parseFloat($('#ScaleZ').val())];
 			var pos = [parseFloat($('#PositionX').val()),parseFloat($('#PositionY').val()),parseFloat($('#PositionZ').val())];
 
@@ -977,13 +1014,6 @@ define(function ()
 		this.scaleChanged = function ()
 		{
 			this.setTransform();	
-		}
-		this.rotationMatrix_2_XYZ = function (m)
-		{
-
-			var ret = [];
-			 goog.vec.Mat4.toEulerZXZ(m,ret);
-			return ret;
 		}
 		this.NodePropertyUpdate = function(nodeID,propName,propVal)
 		{
@@ -1034,9 +1064,9 @@ define(function ()
 					$('#PositionZ').val(Math.floor(pos[2]*1000)/1000);
 				
 					//since there is ambiguity in the matrix, we need to keep these values aroud. otherwise , the typeins don't really do what you would think		
-						$('#RotationX').val(Math.floor(angles[0]*57.2957795));
-						$('#RotationY').val(Math.floor(angles[1]*57.2957795));
-						$('#RotationZ').val(Math.floor(angles[2]*57.2957795));
+						$('#RotationX').val(Math.round(angles[0]*57.2957795));
+						$('#RotationY').val(Math.round(angles[1]*57.2957795));
+						$('#RotationZ').val(Math.round(angles[2]*57.2957795));
 					
 					//$('#RotationW').val(rot[3]);
 					$('#ScaleX').val(Math.floor(scl[0]*1000)/1000);
