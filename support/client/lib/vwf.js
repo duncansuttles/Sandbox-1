@@ -772,11 +772,11 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 		   
 
 		 // Call tick() on each tickable node.
-		
-		for(var i =0; i < this.tickable.nodeIDs.length; i ++)
-		{	
-		  this.callMethod( this.tickable.nodeIDs[i], "tick", [ this.now ] );
-		}
+		//this is really a bad idea. swtiching to a depth first recurse on only actually existing nodes within the JS driver
+		//for(var i =0; i < this.tickable.nodeIDs.length; i ++)
+		//{	
+		 // this.callMethod( this.tickable.nodeIDs[i], "tick", [ this.now ] );
+		//}
 		
 		for(var i =0; i < this.views.length; i ++)
 		{	
@@ -1160,11 +1160,11 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
                 // Load the UI chrome if available.
 				
                 if ( nodeURI ) {  // TODO: normalizedComponent() on component["extends"] and use component.extends || component.source?
-if ( ! nodeURI.match( RegExp( "^http://vwf.example.com/|appscene.vwf$" ) ) ) {  // TODO: any better way to only attempt to load chrome for the main application and not the prototypes?
+                if ( nodeComponent == "index-vwf" ) {  // TODO: any better way to only attempt to load chrome for the main application and not the prototypes?
                     jQuery("body").append( "<div />" ).children( ":last" ).load( remappedURI( nodeURI ) + ".html", function() {  // TODO: move to index.html; don't reach out to the window from the kernel; connect through a future vwf.initialize callback.
                         // remove 'loading' overlay
                     } );
-}
+                }
                 }
 				
 				if(nodeComponent == "index-vwf")
@@ -2009,6 +2009,26 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
             return parent;
         };
 
+        this.decendants = function(nodeID)
+        {
+
+            var list = [];
+            var walk = function(nodeid)
+            {
+                var children = vwf.children(nodeid);
+                if(children)
+                {
+                    list = list.concat(children);
+                    for(var i =0; i < children.length; i++ )
+                    {
+                        walk(children[i])
+                    }
+                }
+
+            }
+            walk(nodeID);
+            return list;
+        };
         // -- children -----------------------------------------------------------------------------
 
         this.children = function( nodeID ) {  // TODO: no need to pass through all models; maintain a single truth in vwf/model/object and delegate there directly
@@ -2720,13 +2740,13 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 
             // Bubbling phase.
 
-            phase = undefined; // invoke all handlers
+            phase = 'bubble'; // invoke all handlers
 
             handled = handled || ancestorIDs.reverse().some( function( ancestorID ) {  // TODO: reverse updates the array in place every time and we'd rather not
 
                 targetEventParameters =
                     eventParameters.concat( cascadedEventNodeParameters[ancestorID], phase );
-
+                targetEventParameters.phase = phase;
                 return this.fireEvent( ancestorID, eventName, targetEventParameters );
 
             }, this );

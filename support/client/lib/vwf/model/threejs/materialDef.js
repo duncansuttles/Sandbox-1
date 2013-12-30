@@ -17,11 +17,11 @@
 						if(oldmat)
 						{
 							//because we are reusing the material, we need to remove it from the cache
-							delete this.materials[JSON.stringify(oldmat.def)];
+							delete this.materials[oldmat.def];
 						}
 						this.materials[id] =  this.setMaterialByDef(oldmat,def);
 						if(this.materials[id])
-						this.materials[id].def = def;
+						this.materials[id].def = id;
 					}else
 						return null;
 					return this.materials[id];				
@@ -31,6 +31,7 @@
 			//assign the new material to the mesh, keep reference count of material use
 			this.setMaterial = function(mesh,def)
 			{
+				
 				
 
 				var oldmat = mesh.material;
@@ -367,7 +368,7 @@
 						if(value.layers[i].mapTo == 2)
 						{
 							mapname = 'bumpMap';
-							currentmat.bumpScale = value.layers[i].alpha;
+							currentmat.bumpScale = value.layers[i].alpha/10.0;
 						}
 						if(value.layers[i].mapTo == 3)
 						{
@@ -777,7 +778,7 @@
 						""
 					].join('\n');
 
-					config.fragmentShader = shader.slice(0,13).join('\n') + myUniforms + shader.slice(14,184).join('\n') + myShaderFrag + shader.slice(185).join('\n');
+					config.fragmentShader = shader.slice(0,13).join('\n') + myUniforms + shader.slice(14,185).join('\n') + myShaderFrag + shader.slice(186).join('\n');
 
 					// apply renderer flags
 					currentmat = new THREE.ShaderMaterial(config);
@@ -901,7 +902,7 @@
 						_MaterialCache.setMaterial(list[i],propval);
 							
 						
-						list[i].materialUpdated();
+						//list[i].materialUpdated();
 					}
 					
 					if(this.dirtyStack && needRebuild)

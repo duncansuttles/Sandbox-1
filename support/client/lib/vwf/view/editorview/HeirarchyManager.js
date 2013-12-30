@@ -289,7 +289,7 @@ define(function ()
 		{
 		
 			
-			$('#hierarchyManagertitletext').text(vwf.getProperty(this.selectedID,'DisplayName') + ' Hierarchy');
+			$('#hierarchyManagertitletext').text((vwf.getProperty(this.selectedID,'DisplayName')||"") + ' Hierarchy');
 			$('#hierarchyDisplay').empty();
 			$('#InventoryRename').hide();
 			$('#InventoryRename').keypress(HierarchyManager.rename)
@@ -377,6 +377,14 @@ define(function ()
 			catch (e)
 			{
 				console.log(e);
+			}
+		}
+		this.createdNode = function(id)
+		{
+			
+			if(this.selectedID == id || vwf.decendants(this.selectedID ).indexOf(id) != -1)
+			{
+				this.BuildGUI;
 			}
 		}
 		$(document).bind('selectionChanged', this.SelectionChanged.bind(this));

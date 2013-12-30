@@ -245,34 +245,11 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 		{
 			$('#ModelLibrary').dialog('close');
 		}
-		this.Get3DRUsername = function ()
-		{
-			var ret = jQuery('#username').val();
-			if (!ret || ret == "") ret = "AnonymousUser";
-			return ret;
-		}
-		this.Get3DRPassword = function ()
-		{
-			var ret = jQuery('#password').val();
-			if (!ret || ret == "") ret = "";
-			return ret;
-		}
-		this.Get3DREndpoint = function ()
-		{
-			var ret = jQuery('#endpoint').val();
-			if (!ret || ret == "") ret = "http://3dr.adlnet.gov/Federation/3dr_Federation.svc/";
-			ret = "https://3dr.adlnet.gov/api/_3DRAPI.svc/";
-			if (_ModelLibrary.Get3DRUsername() != "AnonymousUser") ret = ret.replace("http://", "http://" + encodeURIComponent(_ModelLibrary.Get3DRUsername()) + ":" + encodeURIComponent(_ModelLibrary.Get3DRPassword()) + "@");
-			return ret;
-		}
-		this.BuildAccessRequest = function (pid)
-		{
-			return _ModelLibrary.Get3DREndpoint() + "/" + pid + "/Permissions/Groups/AnonymousUsers/json?ID=00-00-00";
-		}
+		
 		this.BuildModelRequest = function (pid)
 		{
-			if (_ModelLibrary.Get3DREndpoint().indexOf('3dr_Federation') == -1) return _ModelLibrary.Get3DREndpoint() + "/" + pid + "/Model/json/uncompressed?ID=00-00-00";
-			else return _ModelLibrary.Get3DREndpoint() + "/" + pid + "/Model/NoRedirect/json/uncompressed?ID=00-00-00";
+			return "./vwfdatamanager.svc/3drdownload?pid=" + pid;
+			
 		}
 		this.insertObject = function (pid)
 		{
@@ -322,7 +299,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 		{
 			var result = "<div style='list-style-type:none;border-style:solid;border-color:#999999;border-width:1px;vertical-align: top;overflow:hidden;border-radius:5px 5px 5px 5px;margin: 1px 1px 1px 1px;width:100px;height:100px;display:inline-block'>";
 			result += "<div style='text-align:center'>";
-			result += "<img style='box-shadow:2px 2px 10px gray;width:50px;margin: 5px 5px 0px 5px;' id='Thumb" + i + "' src='" + _ModelLibrary.Get3DREndpoint() + obj.PID + "/Thumbnail?ID=00-00-00' />";
+			result += "<img style='box-shadow:2px 2px 10px gray;width:50px;margin: 5px 5px 0px 5px;' id='Thumb" + i + "' src='./vwfdatamanager.svc/3drthumbnail?pid=" + obj.PID + "' />";
 			result += "<p id='Title" + i + "' style='text-decoration:underline;cursor:pointer;text-overflow: ellipsis;overflow: hidden;margin: 3px;'>" + obj.Title + "</p>";
 			result += "</div>";
 			result += "</div>";
@@ -331,7 +308,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 		this.DisplayMetadata = function (obj, i)
 		{
 			var ret = "";
-			ret += "<div style='text-align: center;'><img style='box-shadow:2px 2px 10px gray;width:150px;margin: 5px 5px 0px 5px;' src='" + _ModelLibrary.Get3DREndpoint() + _ModelLibrary.DetailsPID + "/Thumbnail?ID=00-00-00' />";
+			ret += "<div style='text-align: center;'><img style='box-shadow:2px 2px 10px gray;width:150px;margin: 5px 5px 0px 5px;' + src='./vwfdatamanager.svc/3drthumbnail?pid=" + obj.PID + "' />";
 			ret += "<p style='text-decoration:underline;text-overflow: ellipsis;overflow: hidden;margin: 3px;'>" + obj.Title + "</p></div>";
 			ret += "<p> Keywords:" + obj.Keywords + "</p>";
 			ret += "<p> Artist:" + obj.ArtistName + "</p>";
@@ -355,8 +332,10 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 				$.ajax(
 				{
 					type: "GET",
-					url: _ModelLibrary.Get3DREndpoint() + "/" + pid + "/Metadata/jsonp?ID=00-00-00&callback=?",
-					dataType: "jsonp",
+					//the below is no longer valid - the server proxies all request, and has its own endpoint and auth
+					//url: _ModelLibrary.Get3DREndpoint() + "/" + pid + "/Metadata/jsonp?ID=00-00-00&callback=?",
+					url:"./vwfdatamanager.svc/3drmetadata?pid=" + pid,
+					dataType: "json",
 					success: function (object, responseStatus, request)
 					{
 						var metadata = object;
@@ -421,20 +400,14 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 		this.Search3DR = function (e)
 		{
 			var searchterms = jQuery('#ModelSearchTerm').val();
-			var base64 = Base64.encode(_ModelLibrary.Get3DRUsername() + ":" + _ModelLibrary.Get3DRPassword());
-			jQuery.ajaxSetup(
-			{
-				beforeSend: function (xhr, settings)
-				{
-					xhr.setRequestHeader("Authorization", "Basic " + base64);
-					//alert("Auth is " + base64);
-				}
-			});
+			
 			$.ajax(
 			{
 				type: "GET",
-				url: _ModelLibrary.Get3DREndpoint() + "/Search/" + searchterms + "/jsonp?ID=00-00-00&callback=?",
-				dataType: "jsonp",
+				//the below is no longer valid - the server proxies all request, and has its own endpoint and auth
+				//url: _ModelLibrary.Get3DREndpoint() + "/Search/" + searchterms + "/jsonp?ID=00-00-00&callback=?",
+				url:"./vwfdatamanager.svc/3drsearch?search=" + searchterms,
+				dataType: "json",
 				success: function (object, responseStatus, request)
 				{
 					jQuery('#ModelSearchResults').html("");

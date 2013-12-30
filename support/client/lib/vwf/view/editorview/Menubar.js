@@ -121,6 +121,11 @@ define(
 			localStorage.setItem("language","ru");
 			location.reload();
 		});
+		$('#MenuEs_ES').click(function (e)
+		{
+			localStorage.setItem("language","es_ES");
+			location.reload();
+		});
 
 
 		//make the menu items disappear when you click one
@@ -373,6 +378,7 @@ define(
 		{
 			_Editor.CreateBehavior('rotator', _UserManager.GetCurrentUserName());
 		});
+
 		$('#MenuCreateBehaviorDialog').click(function (e)
 		{
 			_Editor.CreateBehavior('DialogSystem', _UserManager.GetCurrentUserName());
@@ -409,6 +415,24 @@ define(
 		});
 		
 		
+
+		//trigger section
+		$('#MenuCreateTriggerDistance').click(function (e)
+		{
+			_Editor.CreateBehavior('distancetrigger', _UserManager.GetCurrentUserName());
+		});
+
+		//trigger section
+		$('#MenuCreateTriggerProperty').click(function (e)
+		{
+			_Editor.CreateBehavior('propertytrigger', _UserManager.GetCurrentUserName());
+		});
+
+		//trigger section
+		$('#MenuCreateTriggerMethod').click(function (e)
+		{
+			_Editor.CreateBehavior('methodtrigger', _UserManager.GetCurrentUserName());
+		});
 		
 		
 		

@@ -818,7 +818,7 @@ define(function ()
 
 		this.show = function ()
 		{
-			//window.clearInterval(window.scripthideinterval);
+			
 			if (!this.isOpen())
 			{
 				if(!this.currentNode)
@@ -831,17 +831,9 @@ define(function ()
 					alertify.alert('The Scene object cannot accept scripts. Try creating a behavior on the scene instead.');
 					return;
 				}
-				
-				//window.scripthideinterval = window.setInterval(function(){
-				//		$('#ScriptEditorTabs').css('height',$('#ScriptEditor').height() + 'px');
-				//		$('#index-vwf').css('height',window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - //$('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top-25) + 'px');
-				//		_Editor.findscene().camera.setAspect($('#index-vwf').width()/$('#index-vwf').height());
-				//		
-				//	},33);
-				//$('#ScriptEditor').show('slide',{direction:'down'},function(){window.clearInterval(window.scripthideinterval);window.scripthideinterval=null;});
 				$('#ScriptEditor').show();
 				var newtop = $(window).height() - $('#ScriptEditor').height() - $('#statusbar').height() + 'px';
-				//console.log(newtop);
+				
 				$('#ScriptEditor').animate(
 				{
 					'top': newtop
@@ -867,15 +859,6 @@ define(function ()
 		}
 		this.hide = function ()
 		{
-			//$('#ScriptEditor').dialog('close');
-			//window.clearInterval(window.scripthideinterval);
-			//window.scripthideinterval = window.setInterval(function(){
-			//		$('#ScriptEditorTabs').css('height',$('#ScriptEditor').height() + 'px');
-			//		$('#index-vwf').css('height',window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - //$('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top-25) + 'px');
-			//		_Editor.findscene().camera.setAspect($('#index-vwf').width()/$('#index-vwf').height());
-			//		
-			//	},33);
-			//$('#ScriptEditor').hide('slide',{direction:'down'},function(){ window.clearInterval(window.scripthideinterval);window.scripthideinterval=null;});
 			if (this.isOpen())
 			{
 				$('#ScriptEditor').animate(
@@ -1041,7 +1024,7 @@ define(function ()
 		{
 			
 			_ScriptEditor.selectedMethod = name;
-			_ScriptEditor.methodEditor.setValue(js_beautify(text,{braces_on_own_line:true,opt_keep_array_indentation:true}));
+			_ScriptEditor.methodEditor.setValue($.trim(js_beautify(text,{max_preserve_newlines:2,braces_on_own_line:true,opt_keep_array_indentation:true})));
 			_ScriptEditor.methodEditor.selection.clearSelection();
 			if (this.methodlist && this.methodlist[name] !== undefined)
 			{
@@ -1069,6 +1052,7 @@ define(function ()
 		
 		this.setSelectedProperty_internal = function (name, text)
 		{
+			text = text || null;
 			_ScriptEditor.selectedProperty = name;
 			_ScriptEditor.propertyEditor.setValue(js_beautify(text.toString(),{braces_on_own_line:true,opt_keep_array_indentation:true}));
 			_ScriptEditor.propertyEditor.selection.clearSelection();
@@ -1098,7 +1082,7 @@ define(function ()
 		this.setSelectedEvent_internal = function (name, text)
 		{
 			_ScriptEditor.selectedEvent = name;
-			_ScriptEditor.eventEditor.setValue(js_beautify(text,{braces_on_own_line:true,opt_keep_array_indentation:true}));
+			_ScriptEditor.eventEditor.setValue($.trim(js_beautify(text,{max_preserve_newlines:2,braces_on_own_line:true,opt_keep_array_indentation:true})));
 			_ScriptEditor.eventEditor.selection.clearSelection();
 			if (this.eventlist && this.eventlist[name] !== undefined)
 			{
@@ -1158,6 +1142,7 @@ define(function ()
 				$('#propertytext').find(".ace_content").css('background', 'url(vwf/view/editorview/images/ui-bg_diagonals-thick_8_cccccc_40x40.png) 50% 50% repeat');
 				_ScriptEditor.eventEditor.setValue('');
 				_ScriptEditor.methodEditor.setValue('');
+				_ScriptEditor.propertyEditor.setValue('');
 			}
 			if (!this.currentNode) return;
 			$('#methodlist').empty();
@@ -1174,13 +1159,7 @@ define(function ()
 			{
 				$('#methodlist').append('<div class="scriptchoice" style="' + style + '" id="method' + i + '"></div>');
 				$('#method' + i).text(i);
-				$('#method' + i).qtip(
-				{
-					content: "Edit the " + i + " method",
-					show: {
-						delay: 1000
-					}
-				});
+				
 				$('#method' + i).attr('method', i);
 				$('#method' + i).click(function ()
 				{
@@ -1206,13 +1185,7 @@ define(function ()
 			{
 				$('#propertylist').append('<div class="scriptchoice" style="' + style + '" id="property' + i + '"></div>');
 				$('#property' + i).text(i);
-				$('#property' + i).qtip(
-				{
-					content: "Edit the " + i + " property",
-					show: {
-						delay: 1000
-					}
-				});
+				
 				$('#property' + i).attr('property', i);
 				$('#property' + i).click(function ()
 				{
@@ -1237,13 +1210,7 @@ define(function ()
 				$('#eventlist').append('<div  style="' + style + '"  id="event' + i + '"></div>');
 				$('#event' + i).text(i);
 				$('#event' + i).attr('event', i);
-				$('#event' + i).qtip(
-				{
-					content: "Edit the " + i + " event",
-					show: {
-						delay: 1000
-					}
-				});
+				
 				$('#event' + i).click(function ()
 				{
 					$("#eventlist").children().css('border-color', 'gray');
@@ -1340,6 +1307,7 @@ define(function ()
 			$('#methodlist').children().sortElements(function(a,b){return ($(a).text().toLowerCase() > $(b).text().toLowerCase()  ? 1 : -1)});
 			$('#eventlist').children().sortElements(function(a,b){return ($(a).text().toLowerCase() > $(b).text().toLowerCase()  ? 1 : -1)});
 			$('#propertylist').children().sortElements(function(a,b){return ($(a).text().toLowerCase() > $(b).text().toLowerCase()  ? 1 : -1)});
+
 		}
 		this.getMethods = function()
 		{
@@ -1511,7 +1479,7 @@ define(function ()
 						
 							_ScriptEditor.activeEditor.focus();
 						
-						},15);
+						},0);
 						return true;
 					
 					
@@ -1598,7 +1566,7 @@ define(function ()
 										$('#AutoComplete').hide();
 										_ScriptEditor.activeEditor.focus();
 										
-									},15);
+									},0);
 									e.preventDefault();
 									return;
 								}
@@ -1615,7 +1583,7 @@ define(function ()
 								
 								self.setupAutocomplete(self.keys,_ScriptEditor.activeEditor,self.filter);
 								
-							},15);
+							},0);
 						}else
 						{	
 							//any key that is not a character or backspace cancels the autocomplete
@@ -1624,7 +1592,7 @@ define(function ()
 								$('#AutoComplete').hide();
 									_ScriptEditor.activeEditor.focus();
 								
-							},15);
+							},0);
 						
 						}
 						//this is important for keypresses, so that they will filter down into ACE
@@ -1675,7 +1643,7 @@ define(function ()
 						
 							_ScriptEditor.activeEditor.focus();
 						
-						},15);
+						},0);
 						return true;
 					
 				});
@@ -1694,7 +1662,7 @@ define(function ()
 			{
 				$('#AutoComplete').focus();
 				
-			},15);
+			},0);
 		}
 		this.beginAutoComplete =function(editor,chr,line,filter)
 		{
@@ -1750,7 +1718,7 @@ define(function ()
 							self.filter = filter;
 							self.setupAutocomplete(self.keys,editor,filter);
 							
-						},15);
+						},0);
 						
 					}
 				
@@ -1808,7 +1776,7 @@ define(function ()
 						{
 							self.setupFunctionTip(text,editor,$(editor.renderer.$cursorLayer.cursor).offset(),$(editor.renderer.$cursorLayer.cursor).width());
 							
-						},15);
+						},0);
 						
 					}
 				

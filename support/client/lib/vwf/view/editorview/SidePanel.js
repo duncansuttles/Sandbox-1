@@ -56,6 +56,7 @@ define(
 			window.clearInterval(window.sizeTimeoutHandle);
 			window.sizeTimeoutHandle = window.setInterval(sizeWindowTimer, 33);
 			$('#togglesidepanelicon').attr('src', '../vwf/view/editorview/images/icons/right.png');
+			$('#sidepanel .jspContainer .jspPane').css('left',0);
 			$('#sidepanel').animate(
 			{
 				'left': $(window).width() - $('#sidepanel').width()

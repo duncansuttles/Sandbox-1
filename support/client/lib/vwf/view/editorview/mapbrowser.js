@@ -88,6 +88,14 @@ define(function ()
 			stringdata = stringdata.replace(/\\"/g, "\"")
 			stringdata = stringdata.replace(/\\/g, "\\\\")
 			data = JSON.parse(stringdata);
+
+			var SceneUsed = {"Scene":[]};
+			var used = _SceneManager.GetLoadedTextures();
+			for(var i =0; i < used.length; i++)
+			{
+				SceneUsed.Scene.push(used[i])
+			}
+			data.root.push(SceneUsed);
 			return data;
 		}
 		this.dirpicked = function ()
@@ -104,6 +112,7 @@ define(function ()
 		this.BuildGUI = function ()
 		{
 			$('#MapBrowser').empty();
+
 			var _TextureList = this.GetTextures().root;
 			for (var i = 0; i < this.filter.length; i++)
 			{
@@ -115,14 +124,52 @@ define(function ()
 				$('#UpButton').attr('src', '../vwf/view/editorview/images/icons/up_folder.gif');
 				$('#UpButton').click(this.dirup);
 			}
+			var self = this;
 			for (var i = 0; i < _TextureList.length; i++)
 			{
+				
 				if (typeof _TextureList[i] == 'string')
 				{
 					$('#MapBrowser').append('<img id="MapChoice' + i + '" class="textureChoice" />');
-					$('#MapChoice' + i).attr('src', PersistanceServer + '/vwfDataManager.svc/texturethumbnail?UID=' + _TextureList[i]);
+					
 					$('#MapChoice' + i).attr('texture', PersistanceServer + '/vwfDataManager.svc/texture?UID=' + _TextureList[i]);
+					$('#MapChoice' + i).attr('rawtexture',  _TextureList[i]);
 					$('#MapChoice' + i).click(this.texturePicked);
+					$('#MapChoice' + i).error(function(){
+
+						var id = $(this).attr('id');
+						var texture = $(this).attr('texture');
+						var rawtexture = $(this).attr('rawtexture');
+						$(this).remove();
+
+						$('#MapBrowser').append('<img id="'+id+'" class="textureChoice" />');	
+						$('#' + id).attr('texture', texture);
+						$('#' + id).attr('rawtexture',  rawtexture);
+						$('#' + id).click(self.texturePicked);
+						$('#' + id).error(function(){	
+
+
+							var id = $(this).attr('id');
+							var texture = $(this).attr('texture');
+							var rawtexture = $(this).attr('rawtexture');
+							$(this).remove();
+
+							$('#MapBrowser').append('<img id="'+id+'" class="textureChoice" />');	
+							$('#' + id).attr('texture', rawtexture);
+							$('#' + id).attr('rawtexture',  rawtexture);
+							$('#' + id).click(self.texturePicked);
+							$('#' + id).error(function(){
+								$(this).attr('src', "./checker.jpg");
+							});
+							$('#' + id).attr('src', rawtexture);
+
+
+						});
+						$('#' + id).attr('src', texture);
+
+
+					});
+					$('#MapChoice' + i).attr('src', PersistanceServer + '/vwfDataManager.svc/texturethumbnail?UID=' + _TextureList[i]);
 				}
 				else
 				{

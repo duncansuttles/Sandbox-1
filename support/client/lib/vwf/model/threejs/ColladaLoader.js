@@ -526,11 +526,11 @@ THREE.ColladaLoader = function () {
 			if ( found >= 0 ) {
 
 				var inv = skin.invBindMatrices[ found ];
-				console.log(inv);
+				
 				bone.invBindMatrix = inv;
 				bone.skinningMatrix = new THREE.Matrix4();
 				bone.skinningMatrix.multiplyMatrices(bone.world, inv); // (IBMi * JMi)
-				console.log(bone.world);
+				
 				
 				bone.weights = [];
 

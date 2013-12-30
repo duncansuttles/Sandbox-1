@@ -7,7 +7,7 @@ var libpath = require('path'),
 	YAML = require('js-yaml'),
 	async = require('async');
 	require('./hash.js');
-	
+	var _3DR_proxy = require('./3dr_proxy.js');
 var safePathRE = RegExp('/\//'+(libpath.sep=='/' ? '\/' : '\\')+'/g');
 var datapath = '.'+libpath.sep+'data';
 var DAL = null;	
@@ -1480,6 +1480,34 @@ function getAnalytics(req, res){
 	res.end(tempStr);
 }
 
+//get the document directories
+function dirTree(filename) {
+    var stats = fs.lstatSync(filename),
+        info = {
+            path: filename,
+            name: libpath.basename(filename)
+        };
+
+    if (stats.isDirectory()) {
+        info.type = "folder";
+        info.children = [];
+        var dirinfo = fs.readdirSync(filename);
+        for(var i =0; i < dirinfo.length; i++)
+        {
+        	var ret = dirTree(filename + '/' + dirinfo[i])
+        	if(ret)
+        		info.children.push(ret);
+        }
+        if(info.children.length > 0)
+        return info;
+    } 
+    if(filename.indexOf('index.html') > -1)
+    {
+    	info.type='file';
+    	return info;
+    }
+}
+
 //router
 function serve (request, response)
 {
@@ -1522,6 +1550,24 @@ function serve (request, response)
 	{
 		switch(command)
 		{	
+			case "docdir":{
+				ServeJSON(dirTree("./public/docs"),response,URL);
+			} break;
+			case "3drsearch":{
+				_3DR_proxy.proxySearch(URL,response);
+			} break;
+			case "3drmetadata":{
+				_3DR_proxy.proxyMetadata(URL,response);
+			} break;
+			case "3drdownload":{
+				_3DR_proxy.proxyDownload(URL,response);
+			} break;
+			case "3drtexture":{
+				_3DR_proxy.proxyTexture(URL,response);
+			} break;
+			case "3drthumbnail":{
+				_3DR_proxy.proxyThumbnail(URL,response);
+			} break;
 			case "getanalytics.js": {
 				getAnalytics(request, response);
 			} break;

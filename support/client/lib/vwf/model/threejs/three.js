@@ -15071,18 +15071,24 @@ THREE.ShaderChunk = {
 
 			"vec3 perturbNormal2Arb( vec3 eye_pos, vec3 surf_norm ) {",
 
-				"vec3 q0 = dFdx( eye_pos.xyz );",
-				"vec3 q1 = dFdy( eye_pos.xyz );",
-				"vec2 st0 = dFdx( vUv.st );",
-				"vec2 st1 = dFdy( vUv.st );",
+				"vec3 q0 = normalize(dFdx( eye_pos.xyz ));",
+				"vec3 q1 = normalize(dFdy( eye_pos.xyz ));",
+				"vec2 st0 = normalize(dFdx( vUv.st ));",
+				"vec2 st1 = normalize(dFdy( vUv.st ));",
 
 				"vec3 S = normalize(  q0 * st1.t - q1 * st0.t );",
 				"vec3 T = normalize( -q0 * st1.s + q1 * st0.s );",
+				
+				
+				
+				
 				"vec3 N = normalize( surf_norm );",
 
 				"vec3 mapN = texture2D( normalMap, vUv ).xyz * 2.0 - 1.0;",
 				"mapN.xy = normalScale * mapN.xy;",
+				"mapN = normalize(mapN);",
 				"mat3 tsn = mat3( S, T, N );",
+				
 				"return normalize( tsn * mapN );",
 
 			"}",
@@ -15191,11 +15197,11 @@ THREE.ShaderChunk = {
 
 	lights_lambert_vertex: [
 
-		"vLightFront = vec3( 0.0 );",
+		"vLightFront = vec3( 0.0, 0.0, 0.0 );",
 
 		"#ifdef DOUBLE_SIDED",
 
-			"vLightBack = vec3( 0.0 );",
+			"vLightBack = vec3( 0.0, 0.0, 0.0 );",
 
 		"#endif",
 
@@ -15452,8 +15458,8 @@ THREE.ShaderChunk = {
     	"#endif",
     	"#ifdef USE_NORMALMAP",
 
-    	"tnorm  = perturbNormal3Arb( -vViewPosition, normalize( vNormal ));",
-
+    	"tnorm  = perturbNormal2Arb( vWorldPosition.xzy, normalize( tnorm ));",
+    	
     	"#endif",
     	"shAmbient =  C1 * L22 * (tnorm.x * tnorm.x - tnorm.y * tnorm.y) +",
         "            C3 * L20 * tnorm.z * tnorm.z +",
@@ -15637,8 +15643,8 @@ THREE.ShaderChunk = {
 
 		"#ifdef USE_NORMALMAP",
 
-			"normal = perturbNormal2Arb( -viewPosition, normal );",
-
+			"normal = normalize(perturbNormal2Arb( -normalize(viewPosition), normal ));",
+			
 		"#elif defined( USE_BUMPMAP )",
 
 			"normal = perturbNormalArb( -vViewPosition, normal, dHdxy_fwd() );",
@@ -15647,8 +15653,8 @@ THREE.ShaderChunk = {
 
 		"#if MAX_POINT_LIGHTS > 0",
 
-			"vec3 pointDiffuse  = vec3( 0.0 );",
-			"vec3 pointSpecular = vec3( 0.0 );",
+			"vec3 pointDiffuse  = vec3( 0.0, 0.0, 0.0 );",
+			"vec3 pointSpecular = vec3( 0.0, 0.0, 0.0 );",
 
 			"for ( int i = 0; i < MAX_POINT_LIGHTS; i ++ ) {",
 
@@ -15716,8 +15722,8 @@ THREE.ShaderChunk = {
 
 		"#if MAX_SPOT_LIGHTS > 0",
 
-			"vec3 spotDiffuse  = vec3( 0.0 );",
-			"vec3 spotSpecular = vec3( 0.0 );",
+			"vec3 spotDiffuse  = vec3( 0.0, 0.0, 0.0 );",
+			"vec3 spotSpecular = vec3( 0.0, 0.0, 0.0 );",
 
 			"for ( int i = 0; i < MAX_SPOT_LIGHTS; i ++ ) {",
 
@@ -15793,8 +15799,8 @@ THREE.ShaderChunk = {
 
 		"#if MAX_DIR_LIGHTS > 0",
 
-			"vec3 dirDiffuse  = vec3( 0.0 );",
-			"vec3 dirSpecular = vec3( 0.0 );" ,
+			"vec3 dirDiffuse  = vec3( 0.0, 0.0, 0.0 );",
+			"vec3 dirSpecular = vec3( 0.0, 0.0, 0.0 );" ,
 
 			"for( int i = 0; i < MAX_DIR_LIGHTS; i ++ ) {",
 
@@ -15868,8 +15874,8 @@ THREE.ShaderChunk = {
 
 		"#if MAX_HEMI_LIGHTS > 0",
 
-			"vec3 hemiDiffuse  = vec3( 0.0 );",
-			"vec3 hemiSpecular = vec3( 0.0 );" ,
+			"vec3 hemiDiffuse  = vec3( 0.0, 0.0, 0.0 );",
+			"vec3 hemiSpecular = vec3( 0.0, 0.0, 0.0 );" ,
 
 			"for( int i = 0; i < MAX_HEMI_LIGHTS; i ++ ) {",
 
@@ -15921,8 +15927,8 @@ THREE.ShaderChunk = {
 
 		"#endif",
 
-		"vec3 totalDiffuse = vec3( 0.0 );",
-		"vec3 totalSpecular = vec3( 0.0 );",
+		"vec3 totalDiffuse = vec3( 0.0, 0.0, 0.0 );",
+		"vec3 totalSpecular = vec3( 0.0, 0.0, 0.0 );",
 
 		"#if MAX_DIR_LIGHTS > 0",
 
@@ -16123,7 +16129,7 @@ THREE.ShaderChunk = {
 
 		"#ifdef USE_MORPHTARGETS",
 
-			"vec3 morphed = vec3( 0.0 );",
+			"vec3 morphed = vec3( 0.0, 0.0, 0.0 );",
 			"morphed += ( morphTarget0 - position ) * morphTargetInfluences[ 0 ];",
 			"morphed += ( morphTarget1 - position ) * morphTargetInfluences[ 1 ];",
 			"morphed += ( morphTarget2 - position ) * morphTargetInfluences[ 2 ];",
@@ -16174,7 +16180,7 @@ THREE.ShaderChunk = {
 
 		"#ifdef USE_MORPHNORMALS",
 
-			"vec3 morphedNormal = vec3( 0.0 );",
+			"vec3 morphedNormal = vec3( 0.0, 0.0, 0.0 );",
 
 			"morphedNormal +=  ( morphNormal0 - normal ) * morphTargetInfluences[ 0 ];",
 			"morphedNormal +=  ( morphNormal1 - normal ) * morphTargetInfluences[ 1 ];",
@@ -16291,7 +16297,7 @@ shadowmap_fragment_basic: [
 			"#endif",
 
 			"float fDepth;",
-			"vec3 shadowColor = vec3( 0.0 );",
+			"vec3 shadowColor = vec3( 0.0, 0.0, 0.0 );",
 
 			"for( int i = 0; i < MAX_SHADOWS; i ++ ) {",
 
@@ -16549,7 +16555,7 @@ shadowmap_fragment_basic: [
 			"#endif",
 
 			"float fDepth;",
-			"vec3 shadowColor = vec3( 0.0 );",
+			"vec3 shadowColor = vec3( 0.0, 0.0, 0.0 );",
 
 			"for( int i = 0; i < MAX_SHADOWS; i ++ ) {",
 
@@ -16745,7 +16751,7 @@ shadowmap_fragment_basic: [
 						
 						//"shadowColor *= vec3(dotProduct);",
 						//"shadowColor = shadowColor * vec3( ( 1.0 - shadowDarkness[ i ] * shadow * dotProduct ) );",
-						"shadowColor = mix(shadowColor,vec3(0.0,0.0,0.0),clamp(0.0,1.0,pow(length(shadowCoord.xy - .5)*2.0,4.0)));",
+						"shadowColor = mix(shadowColor,vec3(0.0,0.0,0.0),clamp(pow(length(shadowCoord.xy - .5)*2.0,4.0),0.0,1.0));",
 						
 					"#else",
 
@@ -17733,8 +17739,8 @@ THREE.ShaderLib = {
 
 				"#if MAX_POINT_LIGHTS > 0",
 
-					"vec3 pointDiffuse = vec3( 0.0 );",
-					"vec3 pointSpecular = vec3( 0.0 );",
+					"vec3 pointDiffuse = vec3( 0.0, 0.0, 0.0 );",
+					"vec3 pointSpecular = vec3( 0.0, 0.0, 0.0 );",
 
 					"for ( int i = 0; i < MAX_POINT_LIGHTS; i ++ ) {",
 
@@ -17793,8 +17799,8 @@ THREE.ShaderLib = {
 
 				"#if MAX_SPOT_LIGHTS > 0",
 
-					"vec3 spotDiffuse = vec3( 0.0 );",
-					"vec3 spotSpecular = vec3( 0.0 );",
+					"vec3 spotDiffuse = vec3( 0.0, 0.0, 0.0 );",
+					"vec3 spotSpecular = vec3( 0.0, 0.0, 0.0 );",
 
 					"for ( int i = 0; i < MAX_SPOT_LIGHTS; i ++ ) {",
 
@@ -17861,8 +17867,8 @@ THREE.ShaderLib = {
 
 				"#if MAX_DIR_LIGHTS > 0",
 
-					"vec3 dirDiffuse = vec3( 0.0 );",
-					"vec3 dirSpecular = vec3( 0.0 );",
+					"vec3 dirDiffuse = vec3( 0.0, 0.0, 0.0 );",
+					"vec3 dirSpecular = vec3( 0.0, 0.0, 0.0 );",
 
 					"for( int i = 0; i < MAX_DIR_LIGHTS; i++ ) {",
 
@@ -17915,8 +17921,8 @@ THREE.ShaderLib = {
 
 				"#if MAX_HEMI_LIGHTS > 0",
 
-					"vec3 hemiDiffuse  = vec3( 0.0 );",
-					"vec3 hemiSpecular = vec3( 0.0 );" ,
+					"vec3 hemiDiffuse  = vec3( 0.0, 0.0, 0.0 );",
+					"vec3 hemiSpecular = vec3( 0.0, 0.0, 0.0 );" ,
 
 					"for( int i = 0; i < MAX_HEMI_LIGHTS; i ++ ) {",
 
@@ -17971,8 +17977,8 @@ THREE.ShaderLib = {
 
 				// all lights contribution summation
 
-				"vec3 totalDiffuse = vec3( 0.0 );",
-				"vec3 totalSpecular = vec3( 0.0 );",
+				"vec3 totalDiffuse = vec3( 0.0, 0.0, 0.0 );",
+				"vec3 totalSpecular = vec3( 0.0, 0.0, 0.0 );",
 
 				"#if MAX_DIR_LIGHTS > 0",
 
