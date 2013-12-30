@@ -153,6 +153,7 @@
 					
 					this.GetAllLeafMeshes(reg.node,list);
 					for(var i =0; i < list.length; i++)
+					{
 						if(list[i].material)
 						{
 							list[i].material = list[i].material.clone();
@@ -185,9 +186,23 @@
 							list[i].materialUpdated();
 						}else
 						{
-
-							debugger;
+							list[i].material = new THREE.MeshPhongMaterial();
+							list[i].material.map =  _SceneManager.getTexture('white.png');		
 						}
+						
+						//If the incomming mesh does not have UVs on channel one, fill with zeros.
+						if(!list[i].geometry.faceVertexUvs[0] || list[i].geometry.faceVertexUvs[0].length == 0)
+						{
+							list[i].faceVertexUvs[0] = [];
+							for(var k = 0; k < list[i].faces.length; k++)
+							{
+								if(!list[i].faces[k].d)
+									list[i].faceVertexUvs[0].push([new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]);
+								else
+									list[i].faceVertexUvs[0].push([new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]);
+							}
+						}
+					}
 				
 					
 				this.getRoot().add(reg.node.clone());

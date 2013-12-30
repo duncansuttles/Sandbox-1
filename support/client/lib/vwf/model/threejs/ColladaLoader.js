@@ -643,22 +643,7 @@ THREE.ColladaLoader = function () {
 				geometry.vertices[i] = skinned[i];
 			}	
 
-		//hardware skinned meshes need to deal with this even when upconversion is off
-		if(colladaUp == 'Z')
-			{			
-				
-				for(var i =0; i < geometry.faces.length; i++)
-				{
-					for(var h =0; h < geometry.faces[i].vertexNormals.length; h++)
-					{
-							var temp = geometry.faces[i].vertexNormals[h].clone().normalize();
-							
-							geometry.faces[i].vertexNormals[h].x = temp.x;
-							geometry.faces[i].vertexNormals[h].y = temp.z;
-							geometry.faces[i].vertexNormals[h].z = -temp.y;
-					}
-				}
-			}
+		
 
 	}
 	function applySkin ( geometry, instanceCtrl, frame ) {
@@ -670,7 +655,7 @@ THREE.ColladaLoader = function () {
 			//this does not really find the proper minimum
 			maxbones = 	Math.min(maxbones,Math.floor((_dRenderer.context.getParameter( _dRenderer.context.MAX_VERTEX_UNIFORM_VECTORS ) - 20)/4));
 		}
-
+		
 		var skinController = controllers[ instanceCtrl.url ];
 
 		frame = frame !== undefined ? frame : 40;
@@ -737,7 +722,18 @@ THREE.ColladaLoader = function () {
 		
 		for ( i = 0; i < geometry.vertices.length; i ++ ) {
 					geometry.vertices[i].applyMatrix4( skinController.skin.bindShapeMatrix );
+		}
+
+		var bindshapeNormal = skinController.skin.bindShapeMatrix.clone();
+		bindshapeNormal[12] = bindshapeNormal[13] =bindshapeNormal[14]  = 0;
+			for(var i =0; i < geometry.faces.length; i++)
+			{
+				for(var h =0; h < geometry.faces[i].vertexNormals.length; h++)
+				{
+					geometry.faces[i].vertexNormals[h].applyMatrix4(bindshapeNormal);
 				}
+			}
+
 
 		var skinIndices = [];
 		var skinWeights = [];
@@ -794,8 +790,27 @@ THREE.ColladaLoader = function () {
 		if(sortedbones.length < maxbones)
 		{
 			skinToBindPose(geometry,skeleton,skinController);
-		}
+			//hardware skinned meshes need to deal with this even when upconversion is off
+				if(colladaUp == 'Z')
+					{			
+						
+						for(var i =0; i < geometry.faces.length; i++)
+						{
+							for(var h =0; h < geometry.faces[i].vertexNormals.length; h++)
+							{
+									var temp = geometry.faces[i].vertexNormals[h].clone().normalize();
+									
+									geometry.faces[i].vertexNormals[h].x = temp.x;
+									geometry.faces[i].vertexNormals[h].y = temp.z;
+									geometry.faces[i].vertexNormals[h].z = -temp.y;
+							}
+						}
+					}
+		}else
+		{
 
+		}
+		
 		
 
 		for ( frame = 0; frame < animationBounds.frames; frame ++ ) {
@@ -845,7 +860,7 @@ THREE.ColladaLoader = function () {
 			else
 			{
 				
-
+				
 				for ( i = 0; i < geometry.vertices.length; i++ ) {
 
 					skinned.push( new THREE.Vector3() );
@@ -874,12 +889,13 @@ THREE.ColladaLoader = function () {
 						s.x += (v.x * weight);
 						s.y += (v.y * weight);
 						s.z += (v.z * weight);
-
 					}
 
 				}
 
 				geometry.morphTargets.push( { name: "target_" + frame, vertices: skinned } );
+
+
 			}
 		}
 
