@@ -3,6 +3,7 @@
 {
     "port": 3000,             //the port to serve on
     "datapath": "c:/vwfData", //the database location
+	"admin": "admin",         //the username of the administrator
     "logLevel": 1,            //the vebosity of the console output
     "build": false,           //build the require js modules
     "minify": false,          //minify javascript on serve
@@ -13,5 +14,5 @@
     "_3DRAPIKey": null,       //the api key to use for all requests. Null defaults to the public API key
     "_3DRUser": null,         //username server identifies itself as. Null defaults to Anonymous
     "_3DRPassword": null,     //password for the server user. Null defaults to Anonymous
-    "_3DRUseAuth": false,     //use anonymous access or not. Null defaults to anonymous.
+    "_3DRUseAuth": false      //use anonymous access or not. Null defaults to anonymous.
 }

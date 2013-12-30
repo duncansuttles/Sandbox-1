@@ -6,7 +6,7 @@ var libpath = require('path'),
 	sio = require('socket.io'),
 	YAML = require('js-yaml');
 	require('./hash.js');
-	var _3DR_proxy = require('./3DR_proxy.js');
+	var _3DR_proxy = require('./3dr_proxy.js');
 var safePathRE = RegExp('/\//'+(libpath.sep=='/' ? '\/' : '\\')+'/g');
 var datapath = '.'+libpath.sep+'data';
 var DAL = null;	

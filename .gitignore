@@ -9,3 +9,4 @@ cleanup.bat
 /data/*
 startup.bat
 config.json
+.directory
