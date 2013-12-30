@@ -18,6 +18,30 @@ implements:
 properties:
   lookAxis: 2
   upAxis: [ 0, 0, 1]
+  audioAPI:
+    get: |
+         return {
+            playSound:function(soundURL /* the url of the sound */, loop /* loop or not */)
+            {
+                this.playSound(soundURL,loop);
+               
+            }.bind(this),
+            stopSound:function(soundURL /* the url of the sound */)
+            {
+                this.stopSound(soundURL);
+               
+            }.bind(this),
+            pauseSound:function(soundURL /* the url of the sound */)
+            {
+                this.pauseSound(soundURL);
+               
+            }.bind(this),
+            deleteSound:function(soundURL /* the url of the sound */)
+            {
+                this.deleteSound(soundURL);
+               
+            }.bind(this),
+          }
   transformAPI:
     get: |
         if(!this._tapi)

@@ -30470,6 +30470,27 @@ THREE.Animation.prototype.setKey = function(keyf)
 				object.debugobject.matrix.copy(object.matrix);
 				object.debugobject.updateMatrixWorld();
 			}
+		}else if (key)
+		{
+
+			object.position.x = key.pos[0] 
+			object.position.y = key.pos[1] 
+			object.position.z = key.pos[2] 
+
+			object.scale.x = key.scl[0] 
+			object.scale.y = key.scl[1] 
+			object.scale.z = key.scl[2] 
+			object.quaternion.w = key.rot.w;
+			object.quaternion.y = key.rot.y;
+			object.quaternion.z = key.rot.z;
+			object.quaternion.x = key.rot.x;
+			object.updateMatrixWorld();
+			if(object.debugobject)
+			{
+				object.debugobject.matrix.copy(object.matrix);
+				object.debugobject.updateMatrixWorld();
+			}
+
 		}
 
 	}
