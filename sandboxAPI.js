@@ -892,8 +892,8 @@ function SaveAvatar(URL,SID,body,response)
 	});
 	*/
 	
-	respond(response, 500, "Error saving uploaded 'model' file");
-	return;
+	//respond(response, 500, "Error saving uploaded 'model' file");
+	//return;
 
 	var temp = "", filepath = "", fileArr = getFilesArray(body);
 	

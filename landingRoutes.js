@@ -50,7 +50,7 @@ routesMap = {
 	'admin/edit': {fileList: fileList},
 	'admin/avatars': {avatarsList: true},
 	'index': {home:true},
-	'avatar': {avatar:true}
+	'avatar': {avatar:true, avatarsList: true}
 };
 
 exports.generalHandler = function(req, res, next){
@@ -60,10 +60,10 @@ exports.generalHandler = function(req, res, next){
 	if(!req.params.page)
 		req.params.page = 'index';
 
-	if(req.params.page.indexOf('admin') > -1 && (!sessionData || sessionData.UID != global.adminUID)){
+	/*if(req.params.page.indexOf('admin') > -1 && (!sessionData || sessionData.UID != global.adminUID)){
 		next();
 		return;
-	}
+	}*/
 		
 	var routeIndex = exports.acceptedRoutes.indexOf(req.params.page);
 
@@ -121,10 +121,10 @@ exports.handlePostRequest = function(req, res, next){
 	var sessionData = global.SandboxAPI.getSessionData(req);
 	
 	//Temporarily commenting out authorization
-	if(!sessionData || sessionData.UID != global.adminUID){
+	/*if(!sessionData || sessionData.UID != global.adminUID){
 		next();
 		return;
-	}
+	}*/
 	
 	switch(tempAction){	
 		case "delete_users":			

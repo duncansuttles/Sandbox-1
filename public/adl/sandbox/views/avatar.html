@@ -1,9 +1,9 @@
 <div class="row">
 	<div class="col-md-7" data-bind="foreach:avatarInfo">
-		<!-- ko foreach: $root.makeAvatarArr($data) -->
+		<!-- ko foreach: $data.textures -->
 			<div class="col-md-3">
-				<div class="avatarchoice" data-bind="click:function(data, e){$root.handleAvatarClick({data:data, parent:$parent}, e)}, attr:{id:$parent.model+'_' + $data.join('-')}">
-					<img data-bind="attr:{src:'./avatars/' + $parent.texture + $data[0] +'-'+ $data[1] +'.png'}" class="avatarPortrait">
+				<div class="avatarchoice" data-bind="click:function(data, e){$root.handleAvatarClick({data:data, parent:$parent}, e)}">
+					<img data-bind="attr:{src:'./avatars/' +  $data.thumbnail}" class="avatarPortrait">
 				</div>
 			</div>
 		<!-- /ko -->
@@ -33,15 +33,12 @@
 	//For example: There exist VWS_Business_Female1.DAE and VWS_Business_Female2.DAE (so the length of texturesArr is 2)
 	//VWS_Business_Female1.DAE has 3 different textures (texturesArr[0]) while VWS_Business_Female2.DAE only has 1 (texturesArr[1])
 	init();
+	console.log('Hi there',{{{avatarsList}}});
 	spinner.spin($("#avatarSpinner")[0]);
 	vwfPortalModel.usersPage = true;
 	vwfPortalModel.saveStatus = ko.observable("");
 	vwfPortalModel.spinnerVisible = ko.observable(true);
-	vwfPortalModel.avatarInfo = [
-		{model: "VWS_Business_Female", texture: 'VWS_B_Female', texturesArr: [3, 1]},
-		{model: "VWS_Business_Male", texture: 'VWS_B_Male', texturesArr: [2, 4, 4]},
-		{model: "VWS_AA_Female", texture: 'Business_AAFemale', texturesArr: [3, 3]},
-	];
+	vwfPortalModel.avatarInfo = {{{avatarsList}}};
 	
 	vwfPortalModel.currentAvatar = ko.observable(false);
 	vwfPortalModel.saveAvatar = function(){
@@ -84,12 +81,11 @@
 	};
 	
 	vwfPortalModel.handleAvatarClick = function(obj, event){
-		var tempModel = './avatars/' + obj.parent.model + obj.data[0] + '.DAE',
-		tempTexture = './avatars/' + obj.parent.texture + obj.data[0] + '-' + obj.data[1] + '.jpg';
-		
+		var tempModel = './avatars/' + obj.parent.model, tempTexture = './avatars/' + obj.data.texture;
+
 		if(geometry){
 			//If new model and old model are the same, load texture
-			if(obj.parent.model + obj.data[0] == vwfPortalModel.currentAvatar().parent.model + vwfPortalModel.currentAvatar().data[0]){
+			if(obj.parent.model == vwfPortalModel.currentAvatar().parent.model){
 				replaceChildrenMaterial(geometry.scene.children, tempTexture);
 			}
 			
