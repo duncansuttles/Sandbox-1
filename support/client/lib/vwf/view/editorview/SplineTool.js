@@ -113,7 +113,7 @@ function SplineTool()
 				self.display.remove(self.display.children[0]);
 			_dScene.add(self.display);	
 			self.updateDisplay();	
-			$(document).bind('prerender',self.prerender);
+			_dView.bind('prerender',self.prerender);
 	}
 	self.updateDisplay = function()
 	{
@@ -187,7 +187,7 @@ function SplineTool()
 			_Editor.updateGizmoLocation();
 			_Editor.setActiveTool('Gizmo');
 			_dScene.remove(this.display);
-			$(document).unbind('prerender',self.prerender);
+			_dView.unbind('prerender',self.prerender);
 	}
 	$('#SplineToolGUIRefine').change(function(e){
 		
