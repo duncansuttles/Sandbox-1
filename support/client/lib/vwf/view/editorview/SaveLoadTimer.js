@@ -11,8 +11,12 @@ define({
 			if(_UserManager.GetCurrentUserName())
 			{
 				_DataManager.saveToServer(true);
-				return "Are you sure you want to leave this VWF world?";
+				return "Are you sure you want to leave this Sandbox world?";
 			}		
 		};
+		$(window).unload(function ()
+		{
+			vwf.close();
+		});
 	}
 });

@@ -1664,6 +1664,8 @@ define(function ()
 				
 			},0);
 		}
+		// a list of idenifiers to always ignore in the autocomplete
+		this.ignoreKeys = ["defineProperty"];
 		this.beginAutoComplete =function(editor,chr,line,filter)
 		{
 		
@@ -1677,6 +1679,34 @@ define(function ()
 					if(self.keys)
 					{
 					
+						//first, remove from the list all keys beginning with "___" and the set list of ignoreable keys
+						var i = 0;
+
+						while(i < self.keys.length)
+						{
+							if(self.keys[i][0].search(/^___/) != -1)
+							{
+								self.keys.splice(i,1);
+							}else
+							{
+							i++;
+							}
+						}
+
+						i = 0;
+
+						while(i < self.keys.length)
+						{
+							for(var j =0; j < self.ignoreKeys.length; j++)
+							{
+								if(self.keys[i][0] == self.ignoreKeys[j])
+								{
+									self.keys.splice(i,1);
+									break;
+								}
+							}
+							i++;
+						}
 						//if the character that started the autocomplete is a dot, then remove the keys that have
 						//spaces or special characters, as they are not valid identifiers
 						if(chr == '.')
