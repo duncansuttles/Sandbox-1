@@ -77,9 +77,16 @@
 	.AutoCompleteOption
 	{
 		font-size: 1.5em;
-		font-family: sans-serif;
-		padding: 0px 5px 0px 5px;
-		color: #9CB4D3;
+		font-family: Monaco, Menlo, 'Ubuntu Mono', Consolas, source-code-pro, monospace;
+		padding: 0px 50px 0px 5px;
+		color: #000;
+		border-bottom: 1px dashed #EDEDED;
+	}
+	.AutoCompleteOption:hover
+	{
+		
+		color: #00D;
+		
 	}
 	.AutoCompleteOptionFunction
 	{
@@ -88,14 +95,14 @@
 	#AutoComplete
 	{
 	
-		display: block;
 		position: absolute;
 		z-index: 10000000;
-	
 		background: white;
-		border: 1px solid black;
-		box-shadow: 5px 5px 10px;
+		border: 1px solid #888;
+		box-shadow: 5px 5px 10px #888;
 		border-radius: 5px;
+		overflow-y: auto !important;
+		overflow-x: hidden !important;
 
 	}
 	input:focus,input[type="number"]:focus,input[type="text"]:focus,input[type="password"]:focus
