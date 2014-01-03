@@ -97,7 +97,8 @@ THREE.ColladaLoader = function () {
 
 						if ( length == 0 ) {
 
-							length = request.getResponseHeader( "x-vwf-length" );
+							//this just throws an error from xdomain, lets give up
+							//length = request.getResponseHeader( "x-vwf-length" );
 
 						}
 

@@ -2926,6 +2926,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			$('#ContextMenu').append('<div id="ContextMenuPaste" class="ContextMenuItem">Paste</div>');
 			$('#ContextMenu').append('<div id="ContextMenuDuplicate" class="ContextMenuItem" style="border-bottom: 1px solid gray;">Duplicate</div>');
 			$('#ContextMenu').append('<div id="ContextMenuDelete" class="ContextMenuItem" style="border-bottom: 1px solid gray;">Delete</div>');
+			$('#ContextMenu').append('<div id="ContextMenuWires" class="ContextMenuItem" style="border-bottom: 1px solid gray;">Wire Properties</div>');
 			$('#ContextMenu').disableSelection();
 			$('#ContextMenuSelect').click(function ()
 			{
@@ -2934,6 +2935,15 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				$('#ContextMenu').css('z-index', '-1');
 				$(".ddsmoothmenu").find('li').trigger('mouseleave');
 				$('#index-vwf').focus();
+			});
+			$('#ContextMenuWires').click(function ()
+			{
+				self.SelectObject($('#ContextMenuName').attr('VWFID'));
+				$('#ContextMenu').hide();
+				$('#ContextMenu').css('z-index', '-1');
+				$(".ddsmoothmenu").find('li').trigger('mouseleave');
+				$('#index-vwf').focus();
+				_WireEditor.Show();
 			});
 			$('#ContextMenuSelectNone').click(function ()
 			{

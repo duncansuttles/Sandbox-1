@@ -63,6 +63,7 @@ define(function ()
 		{
 			if(self.hasWire())
 			{
+
 				var i = 0;
 				for(i =0; i < self.currentWires.length; i++)
 				{
@@ -72,16 +73,37 @@ define(function ()
 						break;
 					}
 				}
-				self.currentWires.splice(i,1);
-				vwf_view.kernel.setProperty(self.selectedNodeID,'wires',self.currentWires);
+
+				var prompt = "Do you want to break the wire " + vwf.getProperty(self.selectedNodeID,'DisplayName') + "." + self.currentWires[i][1] + "." + ((self.currentWires[i][3] || []).join('.')) +" <== " + vwf.getProperty(self.currentWires[i][0],'DisplayName') +"." + self.currentWires[i][2] + "." + ((self.currentWires[i][4] || []).join('.'));
+				alertify.confirm(prompt,function(ok){
+					if(ok)
+					{
+						self.currentWires.splice(i,1);
+						vwf_view.kernel.setProperty(self.selectedNodeID,'wires',self.currentWires);
+						self.selectProp(self.selectedProp);
+					}
+				}
+				);
 			}
 			else
 			{
-				self.currentWires.push([self.pickSourceID,self.selectedProp,self.pickSourceProp,self.subExp1,self.subExp2,null])
-				vwf_view.kernel.setProperty(self.selectedNodeID,'wires',self.currentWires);
+				var prompt = "Do you want to create the wire " + vwf.getProperty(self.selectedNodeID,'DisplayName') + "." + self.selectedProp + "." + ((self.subExp1 || []).join('.')) +" <== " + vwf.getProperty(self.pickSourceID,'DisplayName') +"." + self.pickSourceProp + "." + ((self.subExp2 || []).join('.'));
+				
+
+				alertify.confirm(prompt,function(ok){
+					if(ok)
+					{
+						self.currentWires.push([self.pickSourceID,self.selectedProp,self.pickSourceProp,self.subExp1,self.subExp2,null])
+						vwf_view.kernel.setProperty(self.selectedNodeID,'wires',self.currentWires);
+						self.selectProp(self.selectedProp);
+					}
+				}
+				);
+
+				
 
 			}	
-			self.selectProp(self.selectedProp);
+			
 
 		}
 		$('#wireeditorLink').click(this.linkOrUnlink);
@@ -93,7 +115,11 @@ define(function ()
 			modal: true,
 			autoOpen: false,
 			resizable: true,
-			title:"Wire Editor"
+			title:"Wire Editor",
+			height:500,
+			width:700,
+			position:'center',
+			movable:false
 		});
 		this.Show = function()
 		{
