@@ -1437,6 +1437,46 @@ define(function ()
 			$('#FunctionTip').css('left',(offset.left) + 'px');
 			$('#FunctionTip').show();
 		}
+		this.insetKeySuggestion = function(suggestedText)
+		{
+			$('#AutoComplete').hide();
+			if(suggestedText != "")
+			{
+				//backspace letters up to the dot or bracket
+				for(var i = 0; i < self.filter.length; i++)
+					_ScriptEditor.activeEditor.remove('left');
+				//insert
+				var isfunction = false;
+				for(var i =0; i < self.keys.length; i++)
+					if(self.keys[i][0] == suggestedText && self.keys[i][1] == Function) isfunction = true;
+
+
+				if(self.autoCompleteTriggerKey == '[')
+				{
+
+					suggestedText = suggestedText + "]";
+				}
+
+				if(isfunction)
+				{
+					suggestedText = suggestedText + "(";
+					//focus on the editor
+					window.setTimeout(function(){
+						_ScriptEditor.activeEditor.focus();
+						self.triggerFunctionTip(_ScriptEditor.activeEditor,true);
+					},0);
+				}else
+				{
+					window.setTimeout(function(){
+						_ScriptEditor.activeEditor.focus();
+					},0);
+				}
+
+				_ScriptEditor.activeEditor.insert(suggestedText);
+			}
+
+
+		}
 		//Setup the div for the autocomplete interface
 		this.setupAutocomplete = function(keys,editor)
 		{
@@ -1463,23 +1503,12 @@ define(function ()
 					{
 						//find the selected text
 						var index = $(this).attr('autocompleteindex');
-						$('#AutoComplete').hide();
 						
-						//backspace letters up to the dot or bracket
+						
+						
 						var text = $($(this).children()[index]).text();
-						if(text != "")
-						{
-							for(var i = 0; i < self.filter.length; i++)
-								_ScriptEditor.activeEditor.remove('left');
-							//insert	
-							_ScriptEditor.activeEditor.insert(text);
-						}
-						//focus on the editor
-						window.setTimeout(function(){
-						
-							_ScriptEditor.activeEditor.focus();
-						
-						},0);
+
+						_ScriptEditor.insetKeySuggestion(text);
 						return true;
 					
 					
@@ -1494,8 +1523,8 @@ define(function ()
 						$(this).attr('autocompleteindex',index);
 						
 						//deal with the scrolling
-						if((index+1) * $(children[0]).height() > 150 + $('#AutoComplete').scrollTop() )
-							$('#AutoComplete').scrollTop((index+1) * $(children[0]).height() - 150);
+						
+						$('#AutoComplete').scrollTop((index) * $(children[0]).height() + index - 75);
 						
 						//show the selection
 						for(var i = 0; i < children.length; i++)
@@ -1506,6 +1535,8 @@ define(function ()
 							}else
 								$(children[i]).css('background','white');
 						}
+						e.preventDefault();
+						return false;
 					}
 					else if(e.which == 38) //up
 					{
@@ -1518,9 +1549,9 @@ define(function ()
 						$(this).attr('autocompleteindex',index);
 						
 						//deal with scrolling drama
-						if((index) * $(children[0]).height() < $('#AutoComplete').scrollTop() )
-							$('#AutoComplete').scrollTop(index * $(children[0]).height());
+						$('#AutoComplete').scrollTop((index) * $(children[0]).height() + index - 75);
 						
+
 						//show the selected text
 						for(var i = 0; i < children.length; i++)
 						{
@@ -1530,6 +1561,8 @@ define(function ()
 							}else
 								$(children[i]).css('background','white');
 						}
+						e.preventDefault();
+						return false;
 					}
 					else if(e.which == 27) //esc
 					{
@@ -1629,21 +1662,8 @@ define(function ()
 				//Clicking on the div just inserts the text, and hides the GUI
 				$('#AutoComplete_'+i).click(function()
 				{
-					
-					
-						$('#AutoComplete').hide();
-						
 						var text = $(this).text();
-						//Remove up the the last dot or bracket
-						for(var i = 0; i < self.filter.length; i++)
-							_ScriptEditor.activeEditor.remove('left');
-						_ScriptEditor.activeEditor.insert(text);
-						
-						window.setTimeout(function(){
-						
-							_ScriptEditor.activeEditor.focus();
-						
-						},0);
+						_ScriptEditor.insetKeySuggestion(text);
 						return true;
 					
 				});
@@ -1664,6 +1684,8 @@ define(function ()
 				
 			},0);
 		}
+		// a list of idenifiers to always ignore in the autocomplete
+		this.ignoreKeys = ["defineProperty"];
 		this.beginAutoComplete =function(editor,chr,line,filter)
 		{
 		
@@ -1677,6 +1699,35 @@ define(function ()
 					if(self.keys)
 					{
 					
+						//first, remove from the list all keys beginning with "___" and the set list of ignoreable keys
+						var i = 0;
+
+						while(i < self.keys.length)
+						{
+							if(self.keys[i][0].search(/^___/) != -1)
+							{
+								self.keys.splice(i,1);
+							}else
+							{
+							i++;
+							}
+						}
+
+						i = 0;
+
+						while(i < self.keys.length)
+						{
+							for(var j =0; j < self.ignoreKeys.length; j++)
+							{
+								if(self.keys[i][0] == self.ignoreKeys[j])
+								{
+									self.keys.splice(i,1);
+									break;
+								}
+							}
+							i++;
+						}
+						this.autoCompleteTriggerKey = chr;
 						//if the character that started the autocomplete is a dot, then remove the keys that have
 						//spaces or special characters, as they are not valid identifiers
 						if(chr == '.')
@@ -1730,7 +1781,8 @@ define(function ()
 			var cur = editor.getCursorPosition();
 			var session = editor.getSession();
 			var line = session.getLine(cur.row);
-			var chr = line[cur.column] ;
+			var chr = line[cur.column];
+
 			//Open on . or [
 			if(chr== '.' || chr == '[')
 			{
@@ -1748,14 +1800,16 @@ define(function ()
 		
 		}
 		//Test for an open paren, then show the parameter help
-		this.triggerFunctionTip = function(editor)
+		this.triggerFunctionTip = function(editor, inserted)
 		{
 			var cur = editor.getCursorPosition();
 			var session = editor.getSession();
 			var line = session.getLine(cur.row);
 			//Only show for open paren
-			if(line[cur.column] == '(')
+
+			if(line[cur.column] == '(' || (inserted && line[cur.column-1] == '('))
 			{
+
 				//Get the line
 				line = line.substr(0,cur.column);
 				var splits = line.split(' ');
@@ -1764,6 +1818,12 @@ define(function ()
 				line = splits[splits.length-1];
 				//Don't show for lines that have ( or ) (other than the one that triggered the autocomplete) because function calls
 				//might have side effects
+
+				if(inserted && line.indexOf('(') == line.length -1)
+				{
+					line = line.substring(0, line.length - 1);
+				}
+
 				if(line.indexOf('(') == -1 && line.indexOf('=') == -1)
 				{
 					//Get the text for the tooltip

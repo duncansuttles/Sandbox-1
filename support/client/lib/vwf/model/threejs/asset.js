@@ -30,7 +30,9 @@
 						
 						var list = [];
 						this.GetAllLeafMeshes(this.rootnode,list);
-						return this.getDefForMaterial(list[0].material);
+						if(list[0])
+							return this.getDefForMaterial(list[0].material);
+						else return undefined;
 					
 					}else
 					{
@@ -136,7 +138,7 @@
 					this.loadFailed();
 					return;
 				}
-				this.getRoot().add(asset.scene);
+				
 				$(document).trigger('EndParse',['Loading...',assetSource]);
 				
 				
@@ -153,6 +155,7 @@
 					
 					this.GetAllLeafMeshes(reg.node,list);
 					for(var i =0; i < list.length; i++)
+					{
 						if(list[i].material)
 						{
 							list[i].material = list[i].material.clone();
@@ -183,10 +186,28 @@
 							}
 											
 							list[i].materialUpdated();
+						}else
+						{
+							list[i].material = new THREE.MeshPhongMaterial();
+							list[i].material.map =  _SceneManager.getTexture('white.png');		
 						}
+						
+						//If the incomming mesh does not have UVs on channel one, fill with zeros.
+						if(!list[i].geometry.faceVertexUvs[0] || list[i].geometry.faceVertexUvs[0].length == 0)
+						{
+							list[i].faceVertexUvs[0] = [];
+							for(var k = 0; k < list[i].faces.length; k++)
+							{
+								if(!list[i].faces[k].d)
+									list[i].faceVertexUvs[0].push([new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]);
+								else
+									list[i].faceVertexUvs[0].push([new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]);
+							}
+						}
+					}
 				
 					
-				
+				this.getRoot().add(reg.node.clone());
 				
 				this.settingProperty('materialDef',this.materialDef);
 				//if any callbacks were waiting on the asset, call those callbacks

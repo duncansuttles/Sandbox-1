@@ -133,6 +133,7 @@
 
         var socket = this.private.socket = undefined;
 
+
         // When saving and loading the application, we need to read and write node state without
         // coloring from any scripts. When isolateProperties is non-zero, property readers and
         // writers suppress kernel reentry to prevent drivers from modifying state while the
@@ -187,7 +188,13 @@
         //     [4] vwf.initialize( ..., [ "vwf/model/javascript" ], [ ... ] )
         //     [5] vwf.initialize( ..., [ { "vwf/model/glge": [ "#scene, "second param" ] } ], [ ... ] )
         //     [6] vwf.initialize( ..., [ { "vwf/model/glge": "#scene" } ], [ ... ] )
-
+        this.close = function()
+        {
+            
+            socket.removeListener( "disconnect", vwf.disconnected);
+            socket.disconnect();
+            socket = null;
+        }
         this.initialize = function( /* [ componentURI|componentObject ] [ modelInitializers ]
             [ viewInitializers ] */ ) {
 

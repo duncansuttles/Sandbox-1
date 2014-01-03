@@ -368,7 +368,7 @@
 						if(value.layers[i].mapTo == 2)
 						{
 							mapname = 'bumpMap';
-							currentmat.bumpScale = value.layers[i].alpha;
+							currentmat.bumpScale = value.layers[i].alpha/10.0;
 						}
 						if(value.layers[i].mapTo == 3)
 						{

@@ -17,9 +17,12 @@ function startup(listen)
                 //VWF requries websocket. We will not allow socket.io to fallback on flash or long polling
                 sio.set('transports', ['websocket']);
                 //Somehow, we still need to get the timeouts lower. This does tot seem to do it.
-                sio.set('heartbeat interval', 5);
+                sio.set('heartbeat interval', 20);
+                sio.set('heartbeat timeout', 30);
             
             });
+            sio.set('heartbeat interval', 20);
+            sio.set('heartbeat timeout', 30);
             //When there is a new connection, goto WebSocketConnection.
             sio.sockets.on('connection', WebSocketConnection);
 }

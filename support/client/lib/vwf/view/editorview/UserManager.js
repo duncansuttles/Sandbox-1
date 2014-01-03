@@ -552,7 +552,7 @@ define(function ()
 					{
 						
 						window.onbeforeunload = '';
-						$(window).unbind();
+						
 						window.location = _DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substr(13) + window.location.hash;
 					}.bind(this)
 				});
@@ -560,7 +560,8 @@ define(function ()
 		}
 		$(window).unload(function ()
 		{
-			this.Logout();
+			if(this.GetCurrentUserName())
+				this.Logout();
 		}.bind(this));
 		//$('#Players').dialog({ position:['left','bottom'],width:300,height:200,title: "Players",autoOpen:false});
 		

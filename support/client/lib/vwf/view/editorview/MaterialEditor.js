@@ -584,7 +584,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				var rootid = 'Layer' + i + 'Settings';
 				$('#' + rootid).append('<img id="' + rootid + 'thumb" class="BigTextureThumb"/>');
 				$('#' + rootid + 'thumb').attr('src', this.currentMaterial.layers[i].src);
-				$('#' + rootid).append('<div id="' + rootid + 'thumbsrc" class="BigTextureThumb" style="overflow:hidden; text-overflow:ellipsis; text-align: center;font-weight: bold;border: none;"/>');
+				$('#' + rootid).append('<div id="' + rootid + 'thumbsrc" class="BigTextureThumbSrc" style="overflow:hidden; text-overflow:ellipsis; text-align: center;font-weight: bold;border: none;"/>');
 				$('#' + rootid + 'thumbsrc').text(this.currentMaterial.layers[i].src);
 				$('#' + rootid + 'thumb').attr('layer', i);
 				$('#' + rootid + 'thumb').click(function ()

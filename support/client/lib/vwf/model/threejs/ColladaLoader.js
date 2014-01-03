@@ -49,7 +49,7 @@ THREE.ColladaLoader = function () {
 	};
 
 	var colladaUnit = 1.0;
-	var colladaUp = 'Y';
+	var colladaUp = null;
 	var upConversion = null;
 
 	function load ( url, readyCallback, progressCallback ) {
@@ -530,7 +530,10 @@ THREE.ColladaLoader = function () {
 				bone.invBindMatrix = inv;
 				bone.skinningMatrix = new THREE.Matrix4();
 				bone.skinningMatrix.multiplyMatrices(bone.world, inv); // (IBMi * JMi)
-				
+				bone.skinningMatrixNormal = bone.skinningMatrix.clone();
+				bone.skinningMatrixNormal.elements[12] = 0;
+				bone.skinningMatrixNormal.elements[13] = 0;
+				bone.skinningMatrixNormal.elements[14] = 0;
 				
 				bone.weights = [];
 
@@ -588,16 +591,21 @@ THREE.ColladaLoader = function () {
 
 	};
 	//Move the vertices into the pose that is proper for the start of the animation
-	function skinToBindPose(geometry,skeleton,skinController)
+	function skinToBindPose(geometry,skeleton,skinController,flipy)
 	{
 			var bones = [];
 			setupSkeleton( skeleton, bones, -1 );
 			setupSkinningMatrices( bones, skinController.skin );
 			v = new THREE.Vector3();
 			var skinned = [];
+			var skinnedNormals = [];
 			for(var i =0; i < geometry.vertices.length; i++)
 			{
 				skinned.push(new THREE.Vector3());
+			}
+			for(var i =0; i < geometry.faces.length; i++)
+			{
+				skinnedNormals.push([]);
 			}
 			for ( i = 0; i < bones.length; i ++ ) {
 
@@ -624,6 +632,8 @@ THREE.ColladaLoader = function () {
 						s.z += (v.z * weight);
 
 						
+						
+						
 
 					}
 
@@ -632,6 +642,8 @@ THREE.ColladaLoader = function () {
 			{
 				geometry.vertices[i] = skinned[i];
 			}	
+
+		
 
 	}
 	function applySkin ( geometry, instanceCtrl, frame ) {
@@ -643,7 +655,7 @@ THREE.ColladaLoader = function () {
 			//this does not really find the proper minimum
 			maxbones = 	Math.min(maxbones,Math.floor((_dRenderer.context.getParameter( _dRenderer.context.MAX_VERTEX_UNIFORM_VECTORS ) - 20)/4));
 		}
-
+		
 		var skinController = controllers[ instanceCtrl.url ];
 
 		frame = frame !== undefined ? frame : 40;
@@ -710,7 +722,18 @@ THREE.ColladaLoader = function () {
 		
 		for ( i = 0; i < geometry.vertices.length; i ++ ) {
 					geometry.vertices[i].applyMatrix4( skinController.skin.bindShapeMatrix );
+		}
+
+		var bindshapeNormal = skinController.skin.bindShapeMatrix.clone();
+		bindshapeNormal[12] = bindshapeNormal[13] =bindshapeNormal[14]  = 0;
+			for(var i =0; i < geometry.faces.length; i++)
+			{
+				for(var h =0; h < geometry.faces[i].vertexNormals.length; h++)
+				{
+					geometry.faces[i].vertexNormals[h].applyMatrix4(bindshapeNormal);
 				}
+			}
+
 
 		var skinIndices = [];
 		var skinWeights = [];
@@ -767,7 +790,28 @@ THREE.ColladaLoader = function () {
 		if(sortedbones.length < maxbones)
 		{
 			skinToBindPose(geometry,skeleton,skinController);
+			//hardware skinned meshes need to deal with this even when upconversion is off
+				if(colladaUp == 'Z')
+					{			
+						
+						for(var i =0; i < geometry.faces.length; i++)
+						{
+							for(var h =0; h < geometry.faces[i].vertexNormals.length; h++)
+							{
+									var temp = geometry.faces[i].vertexNormals[h].clone().normalize();
+									
+									geometry.faces[i].vertexNormals[h].x = temp.x;
+									geometry.faces[i].vertexNormals[h].y = temp.z;
+									geometry.faces[i].vertexNormals[h].z = -temp.y;
+							}
+						}
+					}
+		}else
+		{
+
 		}
+		
+		
 
 		for ( frame = 0; frame < animationBounds.frames; frame ++ ) {
 
@@ -816,7 +860,7 @@ THREE.ColladaLoader = function () {
 			else
 			{
 				
-
+				
 				for ( i = 0; i < geometry.vertices.length; i++ ) {
 
 					skinned.push( new THREE.Vector3() );
@@ -845,12 +889,13 @@ THREE.ColladaLoader = function () {
 						s.x += (v.x * weight);
 						s.y += (v.y * weight);
 						s.z += (v.z * weight);
-
 					}
 
 				}
 
 				geometry.morphTargets.push( { name: "target_" + frame, vertices: skinned } );
+
+
 			}
 		}
 
