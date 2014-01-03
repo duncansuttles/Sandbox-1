@@ -30,7 +30,9 @@
 						
 						var list = [];
 						this.GetAllLeafMeshes(this.rootnode,list);
-						return this.getDefForMaterial(list[0].material);
+						if(list[0])
+							return this.getDefForMaterial(list[0].material);
+						else return undefined;
 					
 					}else
 					{

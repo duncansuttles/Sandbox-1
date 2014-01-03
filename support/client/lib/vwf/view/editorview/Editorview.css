@@ -187,8 +187,20 @@
 		display: block;
 		border: 1px solid black;
 		width:128px;
+		height:128px;
 		margin-bottom: 10px;
 		cursor:pointer;
+	}
+	.BigTextureThumbSrc
+	{
+		margin-left: auto;
+		margin-right: auto;
+		display: block;
+		border: 1px solid black;
+		
+		margin-bottom: 10px;
+		cursor:pointer;
+		word-break: break-all;
 	}
 	#ContextMenu
 	{
