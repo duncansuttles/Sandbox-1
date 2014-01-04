@@ -37,6 +37,8 @@ require.config({
 			"messageCompress",
 			"vwf/view/xapi",
             "polyfills",
+            "vwf/model/jqueryui",
+            "vwf/view/jqueryui",
 
         ], function( ready ) {
 
@@ -76,6 +78,7 @@ require.config({
                         "vwf/model/jiglib",
                         "vwf/model/wires",
                         "vwf/model/threejs",
+                        "vwf/model/jqueryui",
                         "vwf/model/object",
                     ],
 
@@ -91,7 +94,8 @@ require.config({
                     	"vwf/view/googleEarth",
 						"vwf/view/WebRTC",
 						"vwf/view/audio",
-						"vwf/view/xapi"
+						"vwf/view/xapi",
+                        "vwf/view/jqueryui",
                     ]
 
                 );

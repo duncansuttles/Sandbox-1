@@ -1123,3 +1123,23 @@ cursor: pointer;
 display: inline-block;
 
 }
+
+.guinode
+{
+
+}
+
+.guipick:hover
+{
+	outline: 3px solid lightblue !important;
+
+}
+
+.guiselected
+{
+	outline: 3px solid blue !important;
+}
+.guiselected:hover
+{
+	outline: 3px solid blue !important;
+}

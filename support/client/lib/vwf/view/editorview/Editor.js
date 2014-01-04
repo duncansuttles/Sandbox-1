@@ -777,7 +777,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				for(var i = 0; i < peerselection.bounds.length;i++)
 				{
 					var bound = peerselection.bounds[i];
-					bound.parent.remove(bound);
+					if(bound)
+						bound.parent.remove(bound);
 				}
 			}
 			this.peerSelections = {};
@@ -800,7 +801,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					for(var i = 0; i < peerselection.bounds.length;i++)
 					{
 						var bound = peerselection.bounds[i];
-						bound.parent.remove(bound);
+						if(bound)
+							bound.parent.remove(bound);
 					}
 					peerselection.bounds = [];
 					peerselection.nodes = [];
@@ -808,12 +810,15 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					for(var i = 0; i < peerselection.nodes.length;i++)
 					{
 						var boundingbox = this.createBoundingBox(peerselection.nodes[i]);
+						if(boundingbox)
+						{
 						//hard coded color for now. TODO: randomly assign colors
 						boundingbox.children[0].material.color.r = 1;
 						boundingbox.children[0].material.color.g = .75;
 						boundingbox.children[0].material.color.b = .5;
-						peerselection.bounds.push(boundingbox);
 						this.SelectionBoundsContainer.add(boundingbox);
+						}
+						peerselection.bounds.push(boundingbox);
 					}
 				}
 			}
@@ -836,7 +841,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						for(var i = 0; i < peerselection.nodes.length;i++)
 						{
 							var boundingbox = peerselection.bounds[i];
-							if(boundingbox.vwfid == id)
+							if(boundingbox && boundingbox.vwfid == id)
 							{
 								
 								boundingbox.matrix = self.findviewnode(id).matrixWorld.clone();
@@ -2077,6 +2082,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.createBoundingBox = function(id)
 		{
+				if(!self.findviewnode(id)) return null;
 				var box;
 				var mat;
 				box = self.findviewnode(id).getBoundingBox(true);
@@ -2172,6 +2178,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		this.SelectObject = function (VWFNode, selectmod)
 		{
 			this.waitingForSet.length = 0;
+			//stop the GUI drag function
+			
+			this.guiNodeDragEnd();
 			if (VWFNode && VWFNode.constructor == Array)
 			{
 				for (var i = 0; i < VWFNode.length; i++) VWFNode[i] = vwf.getNode(VWFNode[i]);
@@ -2274,6 +2283,21 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						for(var i = 1; i < 	SelectedVWFNodes.length; i++)
 							$('#StatusSelectedName').text($('#StatusSelectedName').text() + ', ' + vwf.getProperty(SelectedVWFNodes[i].id,'DisplayName'));
 					}
+			// do some hilighting of GUI nodes to refect selection
+			$('.guiselected').off('dblclick',this.guiNodeDragStart);
+			$('.guiselected').off('dblclick',this.guiNodeDragEnd);
+			
+			$('.guiselected').removeClass('guiselected');
+			for(var i =0; i < SelectedVWFNodes.length; i++)
+			{
+				var id = SelectedVWFNodes[i].id;
+				$('#guioverlay_' + id).addClass('guiselected');
+
+			}		
+			$('.guiselected').on('dblclick',this.guiNodeDragStart);
+			
+			
+
 			//send a signal over the reflector to let others know that I have selected something.
 			this.NotifyPeersOfSelection();
 		}.bind(this);
@@ -2772,6 +2796,80 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 			this.SelectObject('index-vwf');
 		}
+		this.guiNodeDragStart = function(e)
+		{
+			
+			if(_Editor.GUIdragging) 
+			{
+				
+				_Editor.guiNodeDragEnd(e);
+			}
+			else
+			{
+				_Editor.GUIdragging = true;
+				$('#guioverlay_index-vwf').on('mousemove',_Editor.guiNodeDraged);
+				$('#guioverlay_index-vwf').on('mousedown',_Editor.guiNodeDragEnd);
+				$('#guioverlay_index-vwf').css('pointer-events','all');
+
+
+			}
+			e.stopImmediatePropagation();
+			return false;
+		}
+		this.guiNodeDraged = function(e)
+		{
+			
+			if(_Editor.GUIdragging)
+			{
+				
+				var val = goog.vec.Mat4.createIdentity();
+				val[12] = e.clientX - 5;
+				val[13] = e.clientY - 5;
+
+				var div = '#guioverlay_' + vwf.parent(_Editor.GetSelectedVWFID());
+				var l = $(div).offset().left;
+				var t = $(div).offset().top;
+				val[12] -= l;
+				val[13] -= t;
+				vwf_view.kernel.setProperty(_Editor.GetSelectedVWFID(),'transform',matcpy(val))
+			}
+			e.stopImmediatePropagation();
+			return false;
+		}
+		this.guiNodeDragEnd = function(e)
+		{
+			_Editor.GUIdragging = false;
+			$('#guioverlay_index-vwf').off('mousemove',_Editor.guiNodeDraged);
+			$('#guioverlay_index-vwf').css('pointer-events','none');
+			$('#guioverlay_index-vwf').off('mousedown',_Editor.guiNodeDragEnd);
+		}
+		this.guiNodePick = function(e)
+		{	
+			if (SelectMode == 'TempPick')
+			{
+				if (_Editor.TempPickCallback)
+					 _Editor.TempPickCallback(this.vwfID);
+			}else
+				_Editor.SelectObject(this.vwfID);
+
+			e.stopImmediatePropagation();
+			return false;
+		}
+		this.bindGuiNodePick =function()
+		{
+			
+			$('.guinode').addClass('guipick');
+			$('.guinode').on('mouseup',this.guiNodePick);
+			$('.guinode').on('mousedown',this.guiNodePick);
+			$('.guinode').on('click',this.guiNodePick);
+		}
+		this.unbindGuiNodePick =function()
+		{
+			$('.guinode').removeClass('guipick');
+			$('.guinode').off('mouseup',this.guiNodePick)
+			$('.guinode').off('mousedown',this.guiNodePick)
+			$('.guinode').off('click',this.guiNodePick);
+		}
 		this.SetSelectMode = function (e)
 		{
 			SelectMode = e;
@@ -2780,19 +2878,30 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			{	
 				$('#MenuSelectPickicon').css('background', "#9999FF");
 				$('#glyphOverlay').show();
+				
 			}
 			else {
 			
 				$('#MenuSelectPickicon').css('background', "")
 				$('#glyphOverlay').hide();
+				
 			}
 			if (SelectMode == 'TempPick')
 			{
 				$('#index-vwf').css('cursor', 'crosshair');
+				
 			}
 			else
 			{
 				$('#index-vwf').css('cursor', 'default');
+				
+			}
+			if(SelectMode == "Pick" || SelectMode == "TempPick")
+			{
+				this.bindGuiNodePick();
+			}else
+			{
+				this.unbindGuiNodePick();
 			}
 		}.bind(this);
 		this.SetCoordSystem = function (e)
