@@ -19,7 +19,7 @@
 			</tbody>
 		</table>
 		<p>Upload a model file:</p>
-		<form method="post" action="{{root}}/vwfDataManager.svc/avatarupload" enctype="multipart/form-data">
+		<form method="post" action="{{root}}/vwfDataManager.svc/avatarupload?parted=true" enctype="multipart/form-data">
 			<input type="file" name="modelFile" /><br/>
 			<input type="submit" value="Upload" />
 		</form>
@@ -53,7 +53,7 @@
 <div class="row"  data-bind="visible:currentAdminItem() != false">
 	<div class="col-md-offset-4 col-md-4" style="border-top:1px solid #eee;padding-top:20px;">
 		<p>Upload a texture image:</p>
-		<form method="post" data-bind="attr:{action: '{{root}}/vwfDataManager.svc/textureupload?model=' + currentAdminItem().model}" enctype="multipart/form-data">
+		<form method="post" data-bind="attr:{action: '{{root}}/vwfDataManager.svc/textureupload?parted=true&amp;model=' + currentAdminItem().model}" enctype="multipart/form-data">
 			<input type="file" name="textureFile" /><br/>
 			<input type="file" name="thumbnailFile" /><br/>
 			<input type="submit" value="Upload" />

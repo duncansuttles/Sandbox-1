@@ -816,20 +816,27 @@ function nextLine(str){
 		lineOut += str.charAt(currentChar);
 		currentChar++;
 	}
-	
-	var charAt = str.charAt(currentChar), nextCharAt = str.charAt(currentChar + 1);
-	
-	if(((charAt == '\r' && nextCharAt == '\n') || (charAt == '\n' && nextCharAt == '\r')) && currentChar < str.length){
-		lineOut += charAt + nextCharAt;
-		currentChar += 2;
-	}
+	console.log(currentChar, "BEFORE NEWLINE");
+	if(currentChar < str.length - 1){
+		var charAt = str.charAt(currentChar), nextCharAt = currentChar < str.length + 1 ? str.charAt(currentChar + 1) : '';
+		
+		if((charAt == '\r' && nextCharAt == '\n') || (charAt == '\n' && nextCharAt == '\r')){
+			lineOut += charAt + nextCharAt;
+			currentChar += 2;
+		}
 
-	else if((charAt == '\n' || charAt == '\r') && currentChar < str.length){
-		lineOut += charAt;
-		currentChar++;
+		else if(charAt == '\n' || charAt == '\r'){
+			//lineOut += charAt;
+			currentChar++;
+		}
+	
+		console.log(lineOut);
+		
+		
+		return lineOut;
 	}
 	
-	return lineOut;
+	else return "";
 }
 
 function getFilesArray(str){
@@ -862,6 +869,12 @@ function getFilesArray(str){
 				outArr[outArr.length-1].file += temp;
 			}
 		}
+		
+		temp = outArr[outArr.length-1].file;
+		for(var i = temp.length - 1; temp.charAt(i) == '\n' || temp.charAt(i) == '\r'; i--){
+			temp = temp.substr(0, i);
+		}
+		outArr[outArr.length-1].file = temp;
 	}
 
 	return outArr;
@@ -869,6 +882,7 @@ function getFilesArray(str){
 	
 function SaveAvatar(URL,SID,body,response)
 {
+	
 
 	/*if(!URL.loginData || global.adminUID != URL.loginData.UID)
 	{
@@ -894,7 +908,7 @@ function SaveAvatar(URL,SID,body,response)
 	
 	//respond(response, 500, "Error saving uploaded 'model' file");
 	//return;
-
+	
 	var temp = "", filepath = "", fileArr = getFilesArray(body);
 	
 	if(!fileArr.length > 0){
@@ -930,15 +944,20 @@ function SaveAvatar(URL,SID,body,response)
 	});
 }	
 
-function SaveTexture(URL,SID,body,response)
+function SaveTexture(URL,SID,body,res, req)
 {
+	
 
+		res.end("test");
+
+	
+	return;
 	/*if(!URL.loginData || global.adminUID != URL.loginData.UID)
 	{
 		respond(response,401,'Non-administrator users cannot upload avatars');
 		return;
 	}*/
-
+	console.log(body);
 	var fileArr = getFilesArray(body), textureName = "", thumbnailName = "";
 	
 	if(!fileArr.length > 0){
@@ -967,7 +986,7 @@ function SaveTexture(URL,SID,body,response)
 			
 			filePath = libpath.join(datapath, '/Avatars/', type + "s", item.filename);
 
-			fs.writeFile(filePath, item.file, function(err){
+			fs.writeFile(filePath, body, function(err){
 			
 				if(err){
 					console.log("Error saving uploaded " + type, err);
@@ -1480,6 +1499,23 @@ function getAnalytics(req, res){
 	res.end(tempStr);
 }
 
+function serveAvatarAsset(URL, request, response){
+	
+	URL.query.name = URL.query.name.replace(/[^a-zA-Z0-9_.-]/gi, '');
+	var path = libpath.join(datapath, 'Avatars', URL.query.hasOwnProperty('texture') ? 'textures' : 'models', URL.query.name);
+	
+	global.FileCache.ServeFile(request, path, response,request.url);	
+	
+	fs.readFile(path, function(err, data){
+	
+	//	response.writeHead(200, { "Content-Type": "image/jpeg"});
+		response.end(data);
+	});
+	
+	console.log(path);
+	//response.end();
+}
+
 //get the document directories
 function dirTree(filename) {
     var stats = fs.lstatSync(filename),
@@ -1550,6 +1586,9 @@ function serve (request, response)
 	{
 		switch(command)
 		{	
+			case "avatar.jpg":{
+				serveAvatarAsset(URL, request, response);
+			} break;	
 			case "docdir":{
 				ServeJSON(dirTree("./public/docs"),response,URL);
 			} break;
@@ -1733,7 +1772,7 @@ function serve (request, response)
 				SaveAvatar(URL,SID,body,response);	
 			} break;
 			case "textureupload":{
-				SaveTexture(URL,SID,body,response);	
+				SaveTexture(URL,SID,body,response, request);	
 			} break;
 			case "thumbnail":{
 				SaveThumbnail(URL,SID,body,response);	

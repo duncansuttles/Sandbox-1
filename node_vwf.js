@@ -25,10 +25,6 @@ var appserver = require("./appserver.js");
 var ServerFeatures = require("./serverFeatures.js");
 
 
-
-
-
-
 global.error = function()
 {
     var red, brown, reset;
@@ -167,6 +163,17 @@ function startVWF(){
 		Shell.setDAL(DAL);
 		Landing.setDAL(DAL);
 		Landing.setDocumentation(configSettings);
+		ServerFeatures.setPartedOptions({
+			// custom file path
+			path: libpath.join(datapath, 'avatars', 'temp'),
+			// memory usage limit per request
+			limit: 30 * 1024,
+			// disk usage limit per request
+			diskLimit: 30 * 1024 * 1024,
+			// enable streaming for json/qs
+			stream: true
+		});
+
 		//Try to load avatar manifest file
 		try{
 			avatarManifest = JSON.parse(fs.readFileSync(datapath  + '/Avatars/manifest.json').toString());
@@ -209,6 +216,7 @@ function startVWF(){
 			
 			//Wait until all data is loaded before continuing
 			app.use (ServerFeatures.waitForAllBody);
+			
 			//CORS support
 			app.use(ServerFeatures.CORSSupport);
 

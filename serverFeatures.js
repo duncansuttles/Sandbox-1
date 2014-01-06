@@ -1,4 +1,4 @@
-
+var parted;
 
 
 //302 redirect
@@ -10,20 +10,31 @@ function _302(url,response)
   response.end();
 }
 
+function setPartedOptions(opt){
+	parted = require('parted')(opt);
+}
+
 //wait until the entire body is posted before proceding
 function waitForAllBody(req, res, next) {
-                
-               var data='';
-               req.setEncoding('utf8');
-               req.on('data', function(chunk) { 
-                  data += chunk;
-               });
 
-               req.on('end', function() {
-                req.body = data;
-                next();
-               });
-            }
+	if(req.query.parted){
+		parted(req, res, next);
+	}
+	
+	else{
+		var data='';
+		req.setEncoding('utf8');
+		req.on('data', function(chunk) { 
+		  data += chunk;
+		});
+
+		req.on('end', function() {
+			req.body = data;
+			next();
+		});
+	}
+}
+
 //set the headers so we can support cross origin resource requests
 function CORSSupport(req, res, next) {
         
@@ -173,3 +184,4 @@ exports.versioning = versioning;
 exports.prettyWorldURL = prettyWorldURL;
 exports.waitForAllBody = waitForAllBody;
 exports.CORSSupport = CORSSupport;
+exports.setPartedOptions = setPartedOptions;
