@@ -25,9 +25,9 @@ properties:
             Object.defineProperty(this,"_audioAPI",{enumerable:false,writable:true});
             this._audioAPI = {};
             this._audioAPI.___self = this;
-            this._audioAPI.playSound=function(soundURL /* the url of the sound */, loop /* loop or not */)
+            this._audioAPI.playSound=function(soundURL /* the url of the sound */, loop /* loop or not */, volume)
             {
-                this.___self.playSound(soundURL,loop);
+                this.___self.playSound(soundURL,loop,volume);
             }
             this._audioAPI.stopSound=function(soundURL /* the url of the sound */)
             {
@@ -125,6 +125,13 @@ properties:
                 },
                 rotate:function(x,y,z,coordinateSystem)
                 {
+                    if(x.length)
+                    {
+                        y = x[1];
+                        z = x[2];
+                        x = x[0];
+                    }
+
                     self.transformAPI.rotateX(x,coordinateSystem);
                     self.transformAPI.rotateY(y,coordinateSystem);
                     self.transformAPI.rotateZ(z,coordinateSystem);
