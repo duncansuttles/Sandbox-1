@@ -838,6 +838,7 @@ define(function ()
 					$('#' + nodeid + i + '').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;">' + editordata[i].displayname + ': </div>');
 					$('#' + nodeid + i + '').append('<div id="' + nodeid + i + 'ColorPicker" style="' + colorswatchstyle + '"></div>')
 					var colorval = vwf.getProperty(node.id, editordata[i].property);
+					if(!colorval) colorval = [1,1,1];
 					colorval = 'rgb(' + parseInt(colorval[0] * 255) + ',' + parseInt(colorval[1] * 255) + ',' + parseInt(colorval[2] * 255) + ')';
 					$('#' + nodeid + i + 'ColorPicker').css('background-color', colorval);
 					var parentid = nodeid + i + 'ColorPicker';

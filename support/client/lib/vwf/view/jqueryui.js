@@ -25,9 +25,7 @@ define( [ "module", "vwf/view"], function( module, view ) {
 		},
 		createDialog : function(title)
 		{
-			debugger;
-			var parent = _Editor.GetSelectedVWFID();
-			if(!this.isGUINode(parent)) parent = "index-vwf";
+			var parent = this.getCreateParentNode();
 
 			vwf_view.kernel.createChild(parent,GUID(),{
 				extends: "http://vwf.example.com/dialog.vwf",
@@ -38,8 +36,7 @@ define( [ "module", "vwf/view"], function( module, view ) {
 		},
 		createSlider : function(title)
 		{
-			var parent = _Editor.GetSelectedVWFID();
-			if(!this.isGUINode(parent)) parent = "index-vwf";
+			var parent = this.getCreateParentNode();
 
 			vwf_view.kernel.createChild(parent,GUID(),{
 				extends: "http://vwf.example.com/slider.vwf",
@@ -52,6 +49,58 @@ define( [ "module", "vwf/view"], function( module, view ) {
 					top:0
 				}
 			});
+		},
+		createButton : function(title)
+		{
+			
+			var parent = this.getCreateParentNode();
+			vwf_view.kernel.createChild(parent,GUID(),{
+				extends: "http://vwf.example.com/button.vwf",
+				properties:{
+					width:100,
+					height:100,
+					text:"Button",
+					left:0,
+					top:0
+				}
+			});
+		},
+		createLabel : function(title)
+		{
+			var parent = this.getCreateParentNode();
+
+			vwf_view.kernel.createChild(parent,GUID(),{
+				extends: "http://vwf.example.com/label.vwf",
+				properties:{
+					width:100,
+					height:100,
+					text:"Button",
+					left:0,
+					top:0
+				}
+			});
+		},
+		createPanel : function(title)
+		{
+			var parent = this.getCreateParentNode();
+			vwf_view.kernel.createChild(parent,GUID(),{
+				extends: "http://vwf.example.com/panel.vwf",
+				properties:{
+					width:100,
+					height:100,
+					left:0,
+					top:0,
+					background_color: [1,1,1],
+					background_visible: true,
+					border_color: [1,1,1]
+				}
+			});
+		},
+		getCreateParentNode:function()
+		{
+			var parent = _Editor.GetSelectedVWFID();
+			if(this.isPanel(parent) || this.isDialog(parent)) return parent;
+			return  "index-vwf";
 		},
 		isGUINode:function(childExtendsID)
 		{
@@ -83,6 +132,18 @@ define( [ "module", "vwf/view"], function( module, view ) {
 			if(childExtendsID == 'http-vwf-example-com-checkbox-vwf') return true;
 			return this.isCheckbox(vwf.prototype(childExtendsID));
 		},
+		isLabel:function(childExtendsID)
+		{
+			if(!childExtendsID) return false;
+			if(childExtendsID == 'http-vwf-example-com-label-vwf') return true;
+			return this.isLabel(vwf.prototype(childExtendsID));
+		},
+		isPanel:function(childExtendsID)
+		{
+			if(!childExtendsID) return false;
+			if(childExtendsID == 'http-vwf-example-com-panel-vwf') return true;
+			return this.isPanel(vwf.prototype(childExtendsID));
+		},
 		createdNode: function (nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType, childURI, childName, callback /* ( ready ) */ )
 		{
 			
@@ -95,6 +156,13 @@ define( [ "module", "vwf/view"], function( module, view ) {
 				node.name = childName;
 				node.parentnode = this.guiNodes[nodeID];
 				node.parentdiv = $('#guioverlay_' + node.parentid)[0];
+
+				//don't need to do anything for the root node
+				if(!node.parentid) return
+				//because it only makes sense to make children on dialogs, panels, or the root
+				if((!node.parentnode) || ((!this.isDialog(node.parentnode.type)) && (!this.isPanel(node.parentnode.type))))
+					node.parentdiv = $('#guioverlay_' + 'index-vwf')[0];
+
 				if(this.isDialog(node.type))
 				{
 					$(node.parentdiv).append('<div id="guioverlay_'+node.id+'"/>' )
@@ -140,6 +208,7 @@ define( [ "module", "vwf/view"], function( module, view ) {
 						if(this.inSetter) return;
 						if($(this).hasClass('guiselected')) return false;
 						vwf_view.kernel.setProperty(this.vwfID,'value',ui.value);
+						vwf_view.kernel.fireEvent(this.vwfID,'change');
 
 					} );
 					$(node.div).on( "slide", function( event, ui ) {
@@ -147,6 +216,7 @@ define( [ "module", "vwf/view"], function( module, view ) {
 						if(this.inSetter) return;
 						if($(this).hasClass('guiselected')) return false;
 						vwf_view.kernel.setProperty(this.vwfID,'value',ui.value);
+						vwf_view.kernel.fireEvent(this.vwfID,'change');
 
 					} );
 					$(node.div).on( "slidestart", function( event, ui ) {
@@ -158,8 +228,30 @@ define( [ "module", "vwf/view"], function( module, view ) {
 				}
 				if(this.isButton(node.type))
 				{
+					$(node.parentdiv).append('<div id="guioverlay_'+node.id+'"/>' )
+					node.div = $('#guioverlay_' + node.id)[0];
+					$(node.div).text('');
+					$(node.div).button();
 
-					
+					$(node.div).on( "click", function( event, ui ) {
+							if($(this).hasClass('guiselected')) return false;
+							vwf_view.kernel.fireEvent(this.vwfID,'click');						
+					} );
+				}
+				if(this.isLabel(node.type))
+				{
+					$(node.parentdiv).append('<div id="guioverlay_'+node.id+'"/>' )
+					node.div = $('#guioverlay_' + node.id)[0];
+					$(node.div).text('');
+					$(node.div).css('position','absolute');
+					$(node.div).css('font-family','Verdana, Arial, sans-serif')
+				}
+				if(this.isPanel(node.type))
+				{
+					$(node.parentdiv).append('<div id="guioverlay_'+node.id+'"/>' )
+					node.div = $('#guioverlay_' + node.id)[0];
+					$(node.div).text('');
+					$(node.div).css('position','absolute');
 				}
 				if(this.isCheckbox(node.type))
 				{
@@ -285,6 +377,135 @@ define( [ "module", "vwf/view"], function( module, view ) {
 					node.div.inSetter = false;
 				}
 			}
+			if(this.isButton(node.type))
+			{
+				if(propertyName == 'text')
+				{
+					$('#guioverlay_'+node.id+' span').text(propertyValue);
+				}
+				if(propertyName == 'transform')
+				{
+					var x = propertyValue[12];
+					var y = propertyValue[13];
+					var z = propertyValue[14];
+					node.div.inSetter = true;
+					$(node.div).css('left',x);
+					$(node.div).css('top',y);
+					$(node.div).css('z-index',z);
+					node.div.inSetter = false;
+				}
+				if(propertyName == 'width')
+				{
+					node.div.inSetter = true;
+					$(node.div).css('width',propertyValue);
+					node.div.inSetter = false;
+				}
+				if(propertyName == 'height')
+				{
+					node.div.inSetter = true;
+					$(node.div).css('height',propertyValue);
+					node.div.inSetter = false;
+				}
+			}
+			if(this.isLabel(node.type))
+			{
+				if(propertyName == 'text')
+				{
+					$(node.div).text(propertyValue);
+				}
+				if(propertyName == 'transform')
+				{
+					var x = propertyValue[12];
+					var y = propertyValue[13];
+					var z = propertyValue[14];
+					node.div.inSetter = true;
+					$(node.div).css('left',x);
+					$(node.div).css('top',y);
+					$(node.div).css('z-index',z);
+					node.div.inSetter = false;
+				}
+				if(propertyName == 'width')
+				{
+					node.div.inSetter = true;
+					$(node.div).css('width',propertyValue);
+					node.div.inSetter = false;
+				}
+				if(propertyName == 'height')
+				{
+					node.div.inSetter = true;
+					$(node.div).css('height',propertyValue);
+					node.div.inSetter = false;
+				}
+				if(propertyName == 'font_color')
+				{
+					
+					$(node.div).css('color',toCSSColor(propertyValue));
+				}
+				if(propertyName == 'font_size')
+				{
+					
+					$(node.div).css('font-size',propertyValue + 'px');
+				}
+				if(propertyName == 'text_align')
+				{	
+					$(node.div).css('text-align',propertyValue);
+				}
+			}
+			if(this.isPanel(node.type))
+			{
+				if(propertyName == 'transform')
+				{
+					var x = propertyValue[12];
+					var y = propertyValue[13];
+					var z = propertyValue[14];
+					node.div.inSetter = true;
+					$(node.div).css('left',x);
+					$(node.div).css('top',y);
+					$(node.div).css('z-index',z);
+					node.div.inSetter = false;
+				}
+				if(propertyName == 'width')
+				{
+					node.div.inSetter = true;
+					$(node.div).css('width',propertyValue);
+					node.div.inSetter = false;
+				}
+				if(propertyName == 'height')
+				{
+					node.div.inSetter = true;
+					$(node.div).css('height',propertyValue);
+					node.div.inSetter = false;
+				}
+				if(propertyName == 'background_visible')
+				{
+					if(!propertyValue)
+					$(node.div).css('background-color','rgba(0,0,0,0)');
+					else
+					{
+						propertyName = 'background_color';
+						propertyValue = vwf.getProperty(node.id,'background_color');
+					}
+				}
+				if(propertyName == 'background_color')
+				{
+					
+					$(node.div).css('background-color',toCSSColor(propertyValue));
+				}
+				if(propertyName == 'border_width')
+				{
+					$(node.div).css('border-width',propertyValue);
+					$(node.div).css('border-style','solid');
+				}
+				if(propertyName == 'border_radius')
+				{
+					$(node.div).css('border-radius',propertyValue);
+				}
+				if(propertyName == 'border_color')
+				{
+					
+					$(node.div).css('border-color',toCSSColor(propertyValue));
+				}
+			}
 		},
 		calledMethod : function(id,name,params)
 		{
@@ -299,4 +520,11 @@ define( [ "module", "vwf/view"], function( module, view ) {
 		
 		
 	})
+	function toCSSColor(array)
+	{
+		if(!array)
+			array = [0,0,0];
+		array = [Math.floor(array[0]*255),Math.floor(array[1]*255),Math.floor(array[2]*255)];
+		return 'rgb('+(array.join(',')+')');
+	}
 });
