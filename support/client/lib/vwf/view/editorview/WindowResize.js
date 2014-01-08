@@ -127,7 +127,7 @@ define({
 			if(!toolsLoaded) return false;
 			return !toolsHidden;
 		}
-		$(window).keypress(function(e)
+		$('#vwf-root').keypress(function(e)
 		{
 			if( e.charCode == 92)
 			{

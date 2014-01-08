@@ -47,6 +47,10 @@ define({
 				
 			}
 		});
+		$(window).keypress(function(e)
+		{
+			
+		});
 		
 		
 		
