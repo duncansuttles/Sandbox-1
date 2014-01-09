@@ -880,7 +880,7 @@ function getFilesArray(str){
 	return outArr;
 }
 	
-function SaveAvatar(URL,SID,body,response)
+function SaveAvatar(URL,SID,body,res, req)
 {
 	
 
@@ -909,35 +909,36 @@ function SaveAvatar(URL,SID,body,response)
 	//respond(response, 500, "Error saving uploaded 'model' file");
 	//return;
 	
-	var temp = "", filepath = "", fileArr = getFilesArray(body);
+	var temp = "", filepath = "";
 	
-	if(!fileArr.length > 0){
-		respond(response, 500, "Error saving uploaded 'model' file");
+	if(!req.files || !req.files.modelFile){
+		respond(res, 500, "Error saving uploaded 'model' file");
 		return;
 	}
 	
-	filepath = libpath.join(datapath, '/Avatars/models/', fileArr[0].filename);
+	req.files.modelFile.name = req.files.modelFile.name.replace(/[^a-zA-Z0-9 ._-]|\.\./gi, '');
+	filepath = libpath.join(datapath, '/Avatars/models/', req.files.modelFile.name);
 	
-	fs.writeFile(filepath, fileArr[0].file, function(err){
+	fs.rename(req.files.modelFile.path, filepath, function(err){
 		if(err){
 			console.log("Error saving uploaded 'model' file", err);
-			respond(response, 500, "Error saving uploaded 'model' file");
+			respond(res, 500, "Error saving uploaded 'model' file");
 			return;
 		}
 		
 		console.log("Uploaded 'model' file saved");
 		
 		avatarsList = avatarsList instanceof Array ? avatarsList : [];
-		avatarsList.push({model:fileArr[0].filename, textures:[]});
+		avatarsList.push({model:req.files.modelFile.name, textures:[]});
 		
 		DAL.updateAvatarManifest(avatarsList, function(e){
 		
 			if(e){ 
-				respond(response, 200, "Avatar manifest file saved");
+				respond(res, 200, "Avatar manifest file saved");
 				console.log("Avatar manifest file saved");
 			}
 			else{
-				respond(response, 500, "Error saving avatar manifest file");
+				respond(res, 500, "Error saving avatar manifest file");
 				console.log("Error saving avatar manifest file");
 			}
 		});
@@ -946,36 +947,31 @@ function SaveAvatar(URL,SID,body,response)
 
 function SaveTexture(URL,SID,body,res, req)
 {
-	
+	console.log(req.body, req.files);
 
-		res.end("test");
-
-	
-	return;
 	/*if(!URL.loginData || global.adminUID != URL.loginData.UID)
 	{
-		respond(response,401,'Non-administrator users cannot upload avatars');
+		respond(res,401,'Non-administrator users cannot upload avatars');
 		return;
 	}*/
-	console.log(body);
-	var fileArr = getFilesArray(body), textureName = "", thumbnailName = "";
+	var textureName = "", thumbnailName = "";
 	
-	if(!fileArr.length > 0){
-		respond(response, 500, "Error saving uploaded 'texture' and 'screenshot' files");
+	if(!req.files){
+		respond(res, 500, "Error saving uploaded 'texture' and 'screenshot' files");
 		return;
 	}
 	
-	async.eachSeries(fileArr, 
+	async.eachSeries(Object.keys(req.files), 
 		function(item, cb){
 			var filePath = "", type = "";
-			if(item.name == "textureFile"){
+			if(item == "textureFile"){
 				type = "texture";
-				textureName = item.filename;
+				textureName = req.files[item].name;
 			}
 			
-			else if(item.name == "thumbnailFile"){
+			else if(item == "thumbnailFile"){
 				type = "thumbnail";
-				thumbnailName = item.filename;
+				thumbnailName = req.files[item].name;
 			}
 			
 			else {
@@ -984,13 +980,14 @@ function SaveTexture(URL,SID,body,res, req)
 				return;
 			}
 			
-			filePath = libpath.join(datapath, '/Avatars/', type + "s", item.filename);
+			req.files[item].name = req.files[item].name.replace(/[^a-zA-Z0-9 ._-]|\.\./gi, '');
+			filePath = libpath.join(datapath, '/Avatars/', type + "s", req.files[item].name);
 
-			fs.writeFile(filePath, body, function(err){
+			fs.rename(req.files[item].path, filePath, function(err){
 			
 				if(err){
 					console.log("Error saving uploaded " + type, err);
-					respond(response, 500, "Error saving uploaded " + type);
+					respond(res, 500, "Error saving uploaded " + type);
 					cb(err);
 					return;
 				}
@@ -1003,7 +1000,7 @@ function SaveTexture(URL,SID,body,res, req)
 		
 			if(err){
 				console.log("Error saving uploaded file(s)", err);
-				respond(response, 500, "Error saving uploaded file(s)");
+				respond(res, 500, "Error saving uploaded file(s)");
 				return;
 			}
 			
@@ -1019,11 +1016,11 @@ function SaveTexture(URL,SID,body,res, req)
 						DAL.updateAvatarManifest(avatarsList, function(e){
 						
 							if(e){ 
-								respond(response, 200, "Avatar manifest file saved");
+								respond(res, 200, "Avatar manifest file saved");
 								console.log("Avatar manifest file saved");
 							}
 							else{
-								respond(response, 500, "Error saving avatar manifest file");
+								respond(res, 500, "Error saving avatar manifest file");
 								console.log("Error saving avatar manifest file");
 							}
 						});
@@ -1037,12 +1034,12 @@ function SaveTexture(URL,SID,body,res, req)
 			else{
 			
 				console.log("Error: associated model not found");
-				respond(response, 500, "Error: associated model not found");
+				respond(res, 500, "Error: associated model not found");
 				return;
 			}
 			
 			console.log("Error: associated model not found");
-			respond(response, 500, "Error: associated model not found");
+			respond(res, 500, "Error: associated model not found");
 		});		
 }
 
@@ -1769,7 +1766,7 @@ function serve (request, response)
 		{	
 
 			case "avatarupload":{
-				SaveAvatar(URL,SID,body,response);	
+				SaveAvatar(URL,SID,body,response, request);	
 			} break;
 			case "textureupload":{
 				SaveTexture(URL,SID,body,response, request);	

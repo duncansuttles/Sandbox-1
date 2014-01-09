@@ -180,7 +180,7 @@ function startVWF(){
 		}
 		
 		catch(e){
-			avatarManifest = {};
+			avatarManifest = [];
 			console.log("Error: Unable to load avatar manifest file");
 		}
 		
