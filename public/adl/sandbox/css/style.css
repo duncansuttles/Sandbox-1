@@ -140,11 +140,16 @@ height:315px;
 }
 
 #footer {
-	height: 80px;
 	clear:both;
 	background: #bbb;
 	padding: 0 15px;
 } 
+
+#footer p {
+	width: 70%;
+	margin: 0 auto 15px auto;
+	color: #FAFAFA;
+}
 
 #footer, h1, .alert-success, .coldstate{
 
