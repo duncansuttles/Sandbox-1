@@ -3,7 +3,7 @@
 		<!-- ko foreach: $data.textures -->
 			<div class="col-md-3">
 				<div class="avatarchoice" data-bind="click:function(data, e){$root.handleAvatarClick({data:data, parent:$parent}, e)}">
-					<img data-bind="attr:{src:'./avatars/' +  $data.thumbnail}" class="avatarPortrait">
+					<img data-bind="attr:{src:'{{root}}/vwfDataManager.svc/avatar.jpg?thumb=1&amp;name=' +  $data.thumbnail}" class="avatarPortrait">
 				</div>
 			</div>
 		<!-- /ko -->
@@ -81,7 +81,7 @@
 	};
 	
 	vwfPortalModel.handleAvatarClick = function(obj, event){
-		var tempModel = './avatars/' + obj.parent.model, tempTexture = './avatars/' + obj.data.texture;
+		var tempModel = '{{root}}/vwfDataManager.svc/avatar.dae?name=' + obj.parent.model, tempTexture = '{{root}}/vwfDataManager.svc/avatar.jpg?texture=1&name=' + obj.data.texture;
 
 		if(geometry){
 			//If new model and old model are the same, load texture

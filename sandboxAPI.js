@@ -1499,15 +1499,15 @@ function getAnalytics(req, res){
 function serveAvatarAsset(URL, request, response){
 	
 	URL.query.name = URL.query.name.replace(/[^a-zA-Z0-9_.-]/gi, '');
-	var path = libpath.join(datapath, 'Avatars', URL.query.hasOwnProperty('texture') ? 'textures' : 'models', URL.query.name);
+	var path = libpath.join(datapath, 'Avatars', URL.query.hasOwnProperty('texture') ? 'textures' : (URL.query.hasOwnProperty('thumb') ? 'thumbnails' : 'models'), URL.query.name);
 	
 	global.FileCache.ServeFile(request, path, response,request.url);	
 	
-	fs.readFile(path, function(err, data){
+	/*fs.readFile(path, function(err, data){
 	
 	//	response.writeHead(200, { "Content-Type": "image/jpeg"});
 		response.end(data);
-	});
+	});*/
 	
 	console.log(path);
 	//response.end();
@@ -1583,6 +1583,9 @@ function serve (request, response)
 	{
 		switch(command)
 		{	
+			case "avatar.dae":{
+				serveAvatarAsset(URL, request, response);
+			} break;	
 			case "avatar.jpg":{
 				serveAvatarAsset(URL, request, response);
 			} break;	

@@ -44,8 +44,8 @@
 			</tr>
 			<tbody data-bind="foreach:currentAdminItem().textures" style="border:none">
 				<td><input type="checkbox" class="worldCheckboxes" /></td>
-				<td><a data-bind="text:$data.texture?$data.texture:'Upload texture', attr:{href:'{{root}}/admin/worlds#'+$data.texture}" href=""></a></td>
-				<td><a data-bind="text:$data.thumbnail?$data.thumbnail:'Upload thumbnail', attr:{href:'{{root}}/admin/worlds#'+$data.thumbnail}" href=""></a></td>
+				<td><a data-bind="text:$data.texture?$data.texture:'Upload texture', attr:{href:'{{root}}/vwfDataManager.svc/avatar.jpg?texture=1&amp;name='+$data.texture}" target="_blank" href=""></a></td>
+				<td><a data-bind="text:$data.thumbnail?$data.thumbnail:'Upload thumbnail', attr:{href:'{{root}}/vwfDataManager.svc/avatar.jpg?thumb=1&amp;name='+$data.thumbnail}" target="_blank" href=""></a></td>
 			</tbody>
 		</table>
 	</div>
