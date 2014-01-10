@@ -389,9 +389,12 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 					node.parentID= nodeID;
 					node.type= childExtendsID;
 					node.sourceType= childType;
-					
+					JSON.parse('err or');
 					var scenenode = FindChildByName(parentNode.threeObject,childSource);
 					
+                    if(!scenenode)
+                        scenenode = new THREE.Object3D();
+
 					node.setAsset(scenenode);
 					node.threeObject = scenenode;
 					//we need to mark this node - because the VWF node is layered onto a GLGE node loaded from the art asset, deleteing the VWF node should not

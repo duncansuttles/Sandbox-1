@@ -354,6 +354,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.ShowContextMenu = function (e)
 		{
+			
 			e.preventDefault();
 			e.stopPropagation();
 			var ray = this.GetWorldPickRay(e);
@@ -361,7 +362,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var pickopts = new THREE.CPUPickOptions();
 			pickopts.OneHitPerMesh = true;
 			MoveGizmo.InvisibleToCPUPick = true;
-			var pick = this.ThreeJSPick(campos, ray,{OneHitPerMesh:true});
+			var pick = this.ThreeJSPick(campos, ray,{OneHitPerMesh:false});
 			MoveGizmo.InvisibleToCPUPick = false;
 			var vwfnode;
 			while (pick && pick.object && !pick.object.vwfID) pick.object = pick.object.parent;

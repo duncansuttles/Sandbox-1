@@ -462,10 +462,13 @@ function ServeJSON(jsonobject,response,URL)
 			response.writeHead(200, {
 				"Content-Type": "text/json"
 			});
-			if (jsonobject.constructor != String)
-				response.write(JSON.stringify(jsonobject), "utf8");
-			else
-				response.write(jsonobject, "utf8");
+			if(jsonobject)
+			{
+				if (jsonobject.constructor != String)
+					response.write(JSON.stringify(jsonobject), "utf8");
+				else
+					response.write(jsonobject, "utf8");
+			}
 			response.end();
 			
 }
@@ -1285,6 +1288,13 @@ function dirTree(filename) {
     }
 }
 
+function LogError(URL,error,response)
+{
+	global.error(JSON.stringify(JSON.parse(error),null,4));
+	response.writeHead(200,{});
+	response.end();
+}
+
 //router
 function serve (request, response)
 {
@@ -1506,6 +1516,9 @@ function serve (request, response)
 		switch(command)
 		{	
 
+			case "error":{
+				LogError(URL,body,response);	
+			} break;
 			case "thumbnail":{
 				SaveThumbnail(URL,SID,body,response);	
 			} break;

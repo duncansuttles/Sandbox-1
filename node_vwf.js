@@ -28,7 +28,7 @@ var ServerFeatures = require("./serverFeatures.js");
 
 
 
-
+var errorlog = null;
 global.error = function()
 {
     var red, brown, reset;
@@ -37,6 +37,8 @@ global.error = function()
                     reset = '\u001b[0m';
                     
     var args = Array.prototype.slice.call(arguments);
+    if(errorlog)
+    errorlog.write(args[0]+'\n');
     args[0] = red + args[0] + reset;
     var level = args.splice(args.length-1)[0];
     
@@ -49,6 +51,7 @@ global.error = function()
         args.push(level)
         level = 1;
     };
+    
     
     if(level <= global.logLevel)
         console.log.apply(this,args);
@@ -158,12 +161,18 @@ function startVWF(){
 	}	
 	
 
+	//global error handler
+	process.on('uncaughtException', function(err) {
+    // handle the error safely
+    	global.error(err.message);
+	});
 	
 	//Boot up sequence. May call immediately, or after build step	
 	function StartUp()
 	{
 		SandboxAPI.setDAL(DAL);
 		SandboxAPI.setDataPath(datapath);
+		errorlog = fs.createWriteStream(SandboxAPI.getDataPath()+'//Logs/errors_'+(((new Date()).toString())).replace(/[^0-9A-Za-z]/g,'_'), {'flags': 'a'});
 		Shell.setDAL(DAL);
 		Landing.setDAL(DAL);
 		Landing.setDocumentation(configSettings);

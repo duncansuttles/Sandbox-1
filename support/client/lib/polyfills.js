@@ -6,6 +6,7 @@ function() { return(
 		{
 			
 			this.performanceNow();
+			this.errorHandler();
 		},
 		performanceNow:function()
 		{
@@ -29,6 +30,39 @@ function() { return(
 				      return Date.now() - nowOffset;
 				    }
 			   }
-		}	 
+		},
+		errorHandler:function()
+		{
+
+			window.onerror = function(message,source,line,column, errorObj){
+			   
+			   var user = _UserManager.GetCurrentUserName();
+			   var session = _DataManager.getCurrentSession();
+			   var time = (new Date());
+			   var stack = (errorObj || (new Error())).stack;
+			   var error = {user:user,sesssion:session,time:time,message:message,source:source,line:line,stack:stack,column:column};
+			   jQuery.ajax(
+			   {
+					type: 'POST',
+					url:  './vwfDataManager.svc/error',
+					data: JSON.stringify(error),
+					success: function(err,data,xhr)
+					{
+						if (xhr.status != 200)
+						{
+							alertify.error('Sorry, an error has occured, but could not be logged');
+						}else
+							alertify.error('Sorry, an error has occured and was logged to the server.');
+
+					},
+					error: function(e)
+					{
+						alertify.error('Sorry, an error has occured, but could not be logged');
+					},
+					async: true,
+					dataType: "text"
+				});
+			};
+		}
 	});
 });

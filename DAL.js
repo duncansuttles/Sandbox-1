@@ -185,7 +185,13 @@ function getInventoryItemAssetData(userID,inventoryID,cb)
 		{
 			fs.readFile((datapath+'/Profiles/'+userID+'_Data'+'/'+inventoryID).replace(safePathRE),"utf8",function(err,data)
 			{
+				try{
 				cb(JSON.parse(data));
+				}
+				catch(e)
+				{
+					cb(null);
+				}	
 			});			
 		}
 		else

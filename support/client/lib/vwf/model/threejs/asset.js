@@ -50,27 +50,29 @@
 			//for the subNode case
 			this.setAsset = function(asset)
 			{
-				this.initializedFromAsset = true;
-				this.backupmats = [];
-				this.backupMatrix = asset.matrix.clone();
-				this.rootnode = asset;
-				this.rootnode = asset;
-				asset.initializedFromAsset = true;
-				var list = [];
-				this.GetAllLeafMeshes(this.rootnode,list);
-				for(var i =0; i < list.length; i++)
+				if(asset)
 				{
-					if(list[i].material)
+					this.initializedFromAsset = true;
+					this.backupmats = [];
+					this.backupMatrix = asset.matrix.clone();
+					this.rootnode = asset;
+					this.rootnode = asset;
+					asset.initializedFromAsset = true;
+					var list = [];
+					this.GetAllLeafMeshes(this.rootnode,list);
+					for(var i =0; i < list.length; i++)
 					{
-						this.backupmats.push([list[i],list[i].material.clone()]);
-					}					
+						if(list[i].material)
+						{
+							this.backupmats.push([list[i],list[i].material.clone()]);
+						}					
+					}
+					asset.matrixAutoUpdate = false;
+					asset.updateMatrixWorld(true);      
+					_SceneManager.setDirty(asset);	
+					
+					this.settingProperty('transform',this.gettingProperty('transform'));
 				}
-				asset.matrixAutoUpdate = false;
-				asset.updateMatrixWorld(true);      
-				_SceneManager.setDirty(asset);	
-				
-				this.settingProperty('transform',this.gettingProperty('transform'));
-			
 			}
 			this.deletingNode = function()
 			{
