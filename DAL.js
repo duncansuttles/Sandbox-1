@@ -55,13 +55,19 @@ function getUser (id,cb)
 {
 	getUsers(function(UserIndex){
 	
-		if(UserIndex.indexOf(id) != -1)
+		if(UserIndex && UserIndex.indexOf(id) != -1)
 		{
 			DB.get(id,function(err,doc,key){
 			
 				//make super sure that the object that is returned is a copy of the data in memory, not a reference
+				try{
 				var doc = JSON.parse(JSON.stringify(doc));
 				cb(doc);
+				}
+				catch(e)
+				{
+					cb(null);
+				}
 			});
 		}
 		else
@@ -362,6 +368,20 @@ function getInventoryDisplayData(userID,cb)
 }
 function createUser (id,data,cb)
 {
+	if(!id || id.length == 0 || !data)
+	{
+		cb(false,'bad data');
+		return;
+	}
+	try{
+
+		JSON.parse(data);
+	}
+	catch(e)
+	{
+		cb(false,'bad data');
+		return;
+	}
 	getUser(id,function(user){
 	
 		if(user)
@@ -482,6 +502,22 @@ function getInstance (id,cb)
 }
 function updateInstance (id,data,cb)
 {
+
+	if(!id || id.length == 0 || !data)
+	{
+		cb(false,'bad data');
+		return;
+	}
+	try{
+
+		JSON.parse(data);
+	}
+	catch(e)
+	{
+		cb(false,'bad data');
+		return;
+	}
+
 	async.waterfall([
 		function(cb2)
 		{
@@ -700,6 +736,21 @@ function saveInstanceState(id,data,cb)
 
 function createInstance (id,data,cb)
 {
+	if(!id || id.length == 0 || !data)
+	{
+		cb(false,'bad data');
+		return;
+	}
+	try{
+
+		JSON.parse(data);
+	}
+	catch(e)
+	{
+		cb(false,'bad data');
+		return;
+	}
+
 	getInstance(id,function(instance){
 	
 		if(instance)
@@ -1058,8 +1109,10 @@ function getAllUsersInfo(cb){
 	getUsers(function(users){	
 		async.eachSeries(users, function(val,cb2)
 		{
+			console.log(val);
 			getUser(val, function(doc){
 				userInfoList.push(doc);
+				console.log('done');
 				cb2();
 			});
 		}, function(){cb(userInfoList)});
@@ -1255,6 +1308,22 @@ function getHistory(id,cb)
 //cb with the ID of the new state
 function Publish(id, publishSettings, cb)
 {
+
+	if(!id || id.length == 0 || !publishSettings)
+	{
+		cb(false,'bad data');
+		return;
+	}
+	try{
+
+		JSON.parse(publishSettings);
+	}
+	catch(e)
+	{
+		cb(false,'bad data');
+		return;
+	}
+	
 	//get the orignial instance
 	getInstance(id, function(instance){
 		

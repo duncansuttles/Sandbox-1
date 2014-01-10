@@ -169,7 +169,11 @@ function startVWF(){
 		Landing.setDocumentation(configSettings);
 		reflector.setDAL(DAL);
 		appserver.setDAL(DAL);
+		ServerFeatures.setDAL(DAL);
 		
+
+		
+
 		DAL.startup(function(){
 			
 			global.sessions = [];
@@ -217,6 +221,7 @@ function startVWF(){
 			global.log(brown+'minify is ' + FileCache.minify+reset,0);
 			Shell.StartShellInterface();  
 			reflector.startup(listen);
+			
 		});
 	} //end StartUp
 	//Use Require JS to optimize and the main application file.
