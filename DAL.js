@@ -373,15 +373,7 @@ function createUser (id,data,cb)
 		cb(false,'bad data');
 		return;
 	}
-	try{
-
-		JSON.parse(data);
-	}
-	catch(e)
-	{
-		cb(false,'bad data');
-		return;
-	}
+	
 	getUser(id,function(user){
 	
 		if(user)
@@ -741,15 +733,7 @@ function createInstance (id,data,cb)
 		cb(false,'bad data');
 		return;
 	}
-	try{
-
-		JSON.parse(data);
-	}
-	catch(e)
-	{
-		cb(false,'bad data');
-		return;
-	}
+	
 
 	getInstance(id,function(instance){
 	
