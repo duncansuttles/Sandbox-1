@@ -563,7 +563,8 @@
 	position: relative;
 	height:100%;
 	z-index: 5;
-	background: #515151;
+	background: #515151 url(../../../images/ui-bg_diagonals-thick_8_333333_40x40.png) 0% 0% repeat;
+	background-size: 5%;
 }
 
 .jspPane
@@ -1122,4 +1123,50 @@ text-align: center;
 cursor: pointer;
 display: inline-block;
 
+}
+
+.hierarchyItemSelected
+{
+	background: lightblue url(../../../images/ui-bg_glass_75_cfe4ef_1x400.png) repeat;
+background-size: 100% 100%;
+border: 1px solid lightgray;
+}
+
+#hierarchyDisplay
+{
+	font: 1.5em sans-serif;
+	padding-bottom: 5px;
+	background: ##E9E9E9;
+	border: 1px black solid;
+	margin: 3px 3px 3px 3px;
+	height: auto;
+	background-size: 1% 100%;
+	font-family: Monaco, Menlo, 'Ubuntu Mono', Consolas, source-code-pro, monospace;
+}
+
+.hierarchyItem
+{
+	font-weight: normal;
+white-space: nowrap;
+text-overflow: ellipsis;
+height: 1.3em;
+overflow: hidden;
+padding-left: 0px;
+border-bottom: 1px solid #E4E4E4;
+}
+
+.hierarchyItem:hover
+{
+background: lightblue url(../../../images/ui-bg_glass_75_cfe4ef_1x400.png) repeat;
+}
+
+.hierarchySpacer
+{
+padding-bottom: 5px;
+border-left: 1px solid lightgray;
+margin-right: 10px;
+margin-left: 0px;
+display: inline;
+height: 1.3em;
+white-space: nowrap;
 }
