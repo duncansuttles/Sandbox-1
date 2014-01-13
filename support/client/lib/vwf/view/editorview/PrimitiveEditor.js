@@ -416,6 +416,16 @@ define(function ()
 			$(slider).slider('value', amount);
 			_PrimitiveEditor.setProperty(id, prop, parseFloat(amount));
 		}
+		this.primSpinner = function (e, ui)
+		{		
+			var id = $(this).attr('nodename');
+			var prop = $(this).attr('propname');
+			var amount = $(this).val();
+			var slider = $(this).attr('slider');
+			$(slider).slider('value', ui.value);
+			_PrimitiveEditor.setProperty(id, prop, parseFloat(ui.value));
+			
+		}
 		this.primPropertyValue = function (e, ui)
 		{
 			var id = $(this).attr('nodename');
@@ -572,11 +582,20 @@ define(function ()
 					var inputstyle = "";
 					$('#basicSettings' + nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">' + editordata[i].displayname + ': </div>');
 					$('#basicSettings' + nodeid).append('<input class="primeditorinputbox" style="' + inputstyle + '" type="number" id="' + nodeid + editordata[i].property + 'value"></input>');
-					$('#' + nodeid + editordata[i].property + 'value').val(vwf.getProperty(node.id, editordata[i].property));
-					$('#' + nodeid + editordata[i].property + 'value').change(this.primPropertyTypein);
+				//	$('#' + nodeid + editordata[i].property + 'value').val(vwf.getProperty(node.id, editordata[i].property));
+				//	$('#' + nodeid + editordata[i].property + 'value').change(this.primPropertyTypein);
 					$('#' + nodeid + editordata[i].property + 'value').attr("nodename", nodeid);
 					$('#' + nodeid + editordata[i].property + 'value').attr("propname", editordata[i].property);
 					$('#' + nodeid + editordata[i].property + 'value').attr("slider", '#' + nodeid + i);
+					$('#' + nodeid + editordata[i].property + 'value').spinner({
+						step:parseFloat(editordata[i].step) || 1,
+						change:this.primPropertyTypein,
+						spin:this.primSpinner
+						
+					})
+					$('#' + nodeid + editordata[i].property + 'value').spinner('value',vwf.getProperty(node.id, editordata[i].property));
+					$('#' + nodeid + editordata[i].property + 'value').parent().css('float','right');
+					
 					$('#basicSettings' + nodeid).append('<div id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/>');
 					var val = vwf.getProperty(node.id, editordata[i].property);
 					if (val == undefined) val = 0;

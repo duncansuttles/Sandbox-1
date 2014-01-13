@@ -435,9 +435,12 @@ function AlignTool()
 		_Editor.addTool('AlignTool',this);
 		_Editor.setActiveTool('AlignTool');
 		_AlignTool.open =true;
-		_dScene.add(this.xDisplay,true);
-		_dScene.add(this.yDisplay,true);
-		_dScene.add(this.zDisplay,true);
+		if(window._dScene)
+		{
+			_dScene.add(this.xDisplay,true);
+			_dScene.add(this.yDisplay,true);
+			_dScene.add(this.zDisplay,true);
+		}
 		
 	}
 	this.hide = function()
@@ -446,9 +449,12 @@ function AlignTool()
 		if(this.backcolor)
 			$('#AlignToolGUI_PickTarget').css('background',this.backcolor);
 		this.pickMode = "";	
-		_dScene.remove(this.xDisplay,true);
-		_dScene.remove(this.yDisplay,true);
-		_dScene.remove(this.zDisplay,true);
+		if(window._dScene)
+		{
+			_dScene.remove(this.xDisplay,true);
+			_dScene.remove(this.yDisplay,true);
+			_dScene.remove(this.zDisplay,true);
+		}
 	}
 	this.isOpen = function()
 	{

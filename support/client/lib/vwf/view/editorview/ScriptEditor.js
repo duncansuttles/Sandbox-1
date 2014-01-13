@@ -136,6 +136,8 @@ define(function ()
 			$('#saveMethod').css('top', $('#ScriptEditor').height() - 75);
 			$('#saveEvent').css('top', $('#ScriptEditor').height() - 75);
 			$('#saveProperty').css('top', $('#ScriptEditor').height() - 75);
+			$('.ace_scroller').css('left',40);
+			$('.ace_gutter-layer').css('width',40);
 		}
 		$(document.body).append('<script src="../vwf/view/editorview/ace/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>');
 		$(document.body).append("<div id='ScriptEditorAbandonChanges'>You have are about to load a different script,but you have unsaved changes to this script. Do you want to continue and abandon the changes? This action cannot be undone.</div>");
@@ -868,6 +870,7 @@ define(function ()
 				{
 					step: function ()
 					{
+						if(!$('#ScriptEditor').is(':visible')) return;
 						$('#ScriptEditorTabs').css('height', $('#ScriptEditor').height() + 'px');
 						$('#index-vwf').css('height', window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top - 25) + 'px');
 						_Editor.findcamera().aspect = ($('#index-vwf').width() / $('#index-vwf').height());
@@ -875,6 +878,7 @@ define(function ()
 					},
 					complete: function ()
 					{
+						
 						$('#ScriptEditor').hide();
 					}
 				});
@@ -1367,9 +1371,11 @@ define(function ()
 		{
 			if(!node)
 			{
+
 				if (this.isOpen()) this.hide();
+
 			}
-			if(node.id == 'index-vwf')
+			if(node && node.id == 'index-vwf')
 			{
 				if (this.isOpen()) this.hide();
 			}
