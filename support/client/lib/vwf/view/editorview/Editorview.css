@@ -1142,6 +1142,8 @@ border: 1px solid lightgray;
 	height: auto;
 	background-size: 1% 100%;
 	font-family: Monaco, Menlo, 'Ubuntu Mono', Consolas, source-code-pro, monospace;
+	
+	padding-left: 5px;
 }
 
 .hierarchyItem
@@ -1163,7 +1165,6 @@ background: lightblue url(../../../images/ui-bg_glass_75_cfe4ef_1x400.png) repea
 .hierarchySpacer
 {
 padding-bottom: 5px;
-border-left: 1px solid lightgray;
 margin-right: 10px;
 margin-left: 0px;
 display: inline;

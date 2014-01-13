@@ -18,11 +18,12 @@ define(
 				$(this).css('background: -webkit-linear-gradient(left, rgb(317, 138, 139) 0%, rgb(217, 238, 239) 100%);');
 				$(".ddsmoothmenu").find('li').trigger('mouseleave');
 			});
-			$('#' + iconname).qtip(
+			$('#' + iconname).tooltip(
 			{
 				content: translatedTooltip,
+				items: "img",
 				show: {
-					delay: 1000
+					delay:500
 				}
 			});
 		}

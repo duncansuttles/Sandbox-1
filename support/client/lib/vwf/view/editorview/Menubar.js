@@ -316,6 +316,11 @@ define(
 		});
 
 		
+		$('#MenuSelectName').click(function (e)
+		{
+			_SelectionEditor.Show();
+		});
+		
 		$('#MenuPaste').click(function (e)
 		{
 			_Editor.Paste();
