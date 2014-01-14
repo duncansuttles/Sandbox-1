@@ -50,6 +50,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			$(document).on('setstatecomplete',function()
 			{
 				this.paused = false;
+				$('#index-vwf').fadeIn();
 			}.bind(this));
 			
 			this.nodes = {};
@@ -276,8 +277,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 
                 
                 this.canvasQuery = jQuery(this.rootSelector).append("<canvas id='" + this.state.sceneRootID + "' width='"+this.width+"' height='"+this.height+"' class='vwf-scene'/>"
+                	 
                 ).children(":last");
-                
+                this.canvasQuery.css('display','none');
                 initScene.call(this,this.state.scenes[childID]);
             }
         },
@@ -999,7 +1001,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				sceneNode.renderer.shadowMapEnabled = true;
 				sceneNode.renderer.shadowMapType = THREE.PCFSoftShadowMap;
 				sceneNode.renderer.autoClear = false;
-				sceneNode.renderer.setClearColor({r:0,g:0,b:0},1.0);
+				sceneNode.renderer.setClearColor({r:1,g:1,b:1},1.0);
             }else
             {
                 sceneNode.renderer = new THREE.CanvasRenderer({canvas:mycanvas,antialias:true});

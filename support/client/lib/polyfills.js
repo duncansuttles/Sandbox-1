@@ -33,11 +33,18 @@ function() { return(
 		},
 		errorHandler:function()
 		{
-
+			window.errorCount = 0;
+			return;
 			window.onerror = function(message,source,line,column, errorObj){
 			   
-			   var user = _UserManager.GetCurrentUserName();
-			   var session = _DataManager.getCurrentSession();
+			   window.errorCount ++;
+			   if(window.errorCount > 30) return;
+			   var user = null;
+			   if(window._UserManager)
+			   		user = _UserManager.GetCurrentUserName();
+			   var session = null;
+			   if(window._DataManager)
+			   		session = _DataManager.getCurrentSession();
 			   var time = (new Date());
 			   var stack = (errorObj || (new Error())).stack;
 			   var error = {user:user,sesssion:session,time:time,message:message,source:source,line:line,stack:stack,column:column};

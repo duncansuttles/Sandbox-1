@@ -717,7 +717,7 @@ var fixIDs = function(node)
                     if(global.instances[namespace].requestTimer)
                         global.instances[namespace].requestTimer.deleteMe();
                     var state = message.result;
-                    
+                    global.instances[namespace].cachedState  = JSON.parse(JSON.stringify(state));
                     
                     
                     

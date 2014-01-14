@@ -147,27 +147,14 @@ define(function ()
 								ok     : "Login",
 								cancel : "Continue As Guest"
 							} });
-							alertify.confirm("You are viewing this world as a guest. You will be able to view the world, but not interact with it. Would you like to go back and log in?",
-							function(e)
-							{
-								alertify.set({ labels: {
-									ok     : "Ok",
-									cancel : "Cancel"
-								} });
 							
-								if(e)
-									window.location = _DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substr(13) + window.location.hash;
-								else
-								{
 									
 									$(document.body).append('<a href="#" id="GuestLogin" style="font-family: sans-serif;z-index:99;position:fixed;font-size: 2em;" class="alertify-button alertify-button-ok" id="alertify-ok">Login</a>');
 									$('#GuestLogin').click(function()
 									{
 										window.location = _DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substr(13) + window.location.hash;
 									});
-								}
-							}
-							);
+								
 						}.bind(this)
 					});
 				}else
@@ -373,7 +360,7 @@ define(function ()
 			this.PlayerProto.properties.ownerClientID = vwf.moniker();
 			this.PlayerProto.properties.profile = profile;
 			this.PlayerProto.properties.translation = newintersectxy;
-			this.PlayerProto.properties.scale = [proto.svatarHeight || 1.15,proto.svatarHeight || 1.15,proto.svatarHeight || 1.15];
+			this.PlayerProto.properties.scale = [profile.avatarHeight || 1.15,profile.avatarHeight || 1.15,profile.avatarHeight || 1.15];
 
 			vwf.models.javascript.nodes['index-vwf'].orbitPoint(newintersectxy);
 			document[username + 'link'] = null;

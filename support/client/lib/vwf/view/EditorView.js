@@ -8,17 +8,8 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 		{
 			
 			
-			$(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/ddsmoothmenu.css" />');
-			$(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/ddsmoothmenu-v.css" />')
-			$(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/Editorview.css" />')
-			$(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/alertify.js-0.3.9/themes/alertify.core.css" />')
-			$(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/alertify.js-0.3.9/themes/alertify.bootstrap.css" />')
-			
-			
-			$(document.head).append('<script src="vwf/model/threejs/helvetiker_regular.typeface.js"></script>');
-			$(document.head).append('<script src="vwf/model/threejs/tinyxmlw3cdom.js"></script>');
-			$(document.head).append('<script src="vwf/model/threejs/tinyxmlsax.js"></script>');
-			$(document.head).append('<script src="vwf/model/threejs/tinyxmlxpath.js"></script>');
+
+
 			
 			if (!window._EditorInitialized)
 			{
@@ -91,7 +82,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 					}
 					window._LocationTools = require("vwf/view/editorview/LocationTools").getSingleton();
 					window._UserManager = require("vwf/view/editorview/UserManager").getSingleton();;
-					window.alertify = require("vwf/view/editorview/alertify.js-0.3.9/src/alertify");
+					
 
 					if(needTools)
 					{

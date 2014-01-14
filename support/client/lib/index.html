@@ -29,6 +29,7 @@
 
     <script type="text/javascript" src="require.js"></script>
 
+
     <script type="text/javascript" src="jquery-2.0.3.min.js"></script>
     <script type="text/javascript" src="jquery-migrate-1.2.1.min.js"></script>
     <script type="text/javascript" src="jquery-ui-1.10.3.custom.min.js"></script>
@@ -216,7 +217,45 @@ if(ay.arrowScrollOnHover){ax.bind("mouseover.jsp",aD(-1,0,ax));x.bind("mouseover
 	window.Mat4 = goog.vec.Mat4;
 	window.Quaternion = goog.vec.Quaternion;
 
-	require(['boot'], function () {});
+              $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/alertify.js-0.3.9/themes/alertify.core.css" />')
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/alertify.js-0.3.9/themes/alertify.bootstrap.css" />')
+   $.ajax({url:'/vwfdatamanager.svc/profile',
+    success:function(data2,status2,xhr2)
+    {
+        require(['boot'], function () {});
+    },
+    error:function()
+    {
+
+      require(['vwf/view/editorview/alertify.js-0.3.9/src/alertify'], function (alertify) {
+         
+        alertify.set({ labels: {
+                  ok     : "Login",
+                  cancel : "Continue as Guest"
+                } });
+
+         alertify.confirm("You are viewing this world as a guest. You will be able to view the world, but not interact with it. Would you like to go back and log in?",
+              function(e)
+              {
+                alertify.set({ labels: {
+                  ok     : "Ok",
+                  cancel : "Cancel"
+                } });
+              
+                if(e)
+                  window.location =  "../login?return=" + window.location.pathname.substr(13) + window.location.hash;
+                else
+                {
+                   require(['boot'], function () {});
+                }
+              }
+              );
+
+
+       });
+    }});
+
+	
 
     </script>
 
@@ -228,7 +267,7 @@ if(ay.arrowScrollOnHover){ax.bind("mouseover.jsp",aD(-1,0,ax));x.bind("mouseover
 	<script type="text/javascript" src="/vwfDataManager.svc/getanalytics.js"></script>
   </head>
 
-  <body>
+  <body style="background: white;box-shadow: 0px 0px 300px #666 inset;">
 
     <!-- Generic clients may have nearly empty pages, but pages for custom clients may be laid   -->
     <!-- out in any manner desired. Any view and models that render to the page should be        -->

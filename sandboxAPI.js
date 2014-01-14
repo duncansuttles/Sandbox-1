@@ -11,6 +11,7 @@ var safePathRE = RegExp('/\//'+(libpath.sep=='/' ? '\/' : '\\')+'/g');
 var datapath = '.'+libpath.sep+'data';
 var DAL = null;	
 var analyticsObj;
+var assetPreload = require('./AssetPreload.js');
 // default path to data. over written by setup flags
 
 //generate a random id.
@@ -1482,6 +1483,9 @@ function serve (request, response)
 			case "globalassetmetadata":{
 				getGlobalInventoryItemMetaData(URL,response);
 			} break;
+			case "getassets":{
+				assetPreload.getAssets(request,response,URL);
+			} break;
 			default:
 			{
 				_404(response);
@@ -1599,6 +1603,7 @@ exports.setDataPath = function(p)
 exports.setDAL = function(p)
 {
 	DAL = p;
+	assetPreload.setSandboxAPI(this);
 }
 exports.getDataPath = function()
 {

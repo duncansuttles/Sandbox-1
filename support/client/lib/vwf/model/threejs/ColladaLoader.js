@@ -651,7 +651,7 @@ THREE.ColladaLoader = function () {
 
 		
 		var maxbones = 32;
-		if(_dRenderer)
+		if(window._dRenderer)
 		{
 			//this does not really find the proper minimum
 			maxbones = 	Math.min(maxbones,Math.floor((_dRenderer.context.getParameter( _dRenderer.context.MAX_VERTEX_UNIFORM_VECTORS ) - 20)/4));

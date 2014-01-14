@@ -1714,7 +1714,7 @@ if ( ! childComponent.source ) {
                     // Call creatingNode() on each model. The node is considered to be constructed after
                     // each model has run.
 
-                    async.forEachSeries( vwf.models, function( model, each_callback /* ( err ) */ ) {
+                    async.forEach( vwf.models, function( model, each_callback /* ( err ) */ ) {
 
                         var driver_ready = true;
 
