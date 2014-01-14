@@ -373,7 +373,7 @@ define(function ()
 			this.PlayerProto.properties.ownerClientID = vwf.moniker();
 			this.PlayerProto.properties.profile = profile;
 			this.PlayerProto.properties.translation = newintersectxy;
-			this.PlayerProto.properties.scale = [proto.svatarHeight || 1.15,proto.svatarHeight || 1.15,proto.svatarHeight || 1.15];
+			this.PlayerProto.properties.scale = [profile.avatarHeight || 1.0, profile.avatarHeight || 1.0, profile.avatarHeight || 1.0];
 
 			vwf.models.javascript.nodes['index-vwf'].orbitPoint(newintersectxy);
 			document[username + 'link'] = null;
