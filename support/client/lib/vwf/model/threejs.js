@@ -99,7 +99,7 @@
 		return true;	
 	}
 	
-define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/threejs/backgroundLoader" ], function( module, model, utility, Color, backgroundLoader ) {
+define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/threejs/backgroundLoader","vwf/model/threejs/scenemanager"], function( module, model, utility, Color, backgroundLoader,sceneManager ) {
 
 
     return model.load( module, {

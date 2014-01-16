@@ -27,7 +27,7 @@ define(["../../../jstree.min"],function (jstree)
 			modal: true,
 			autoOpen: false,
 			resizable: true,
-			title:"Wire Editor",
+			title:"Selection Editor",
 			height:500,
 			width:700,
 			position:'center',

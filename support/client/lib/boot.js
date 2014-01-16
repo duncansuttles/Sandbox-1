@@ -7,7 +7,12 @@ require.config({
 			'vwf/view/xapi/xapiwrapper': {
 				deps: ['vwf/view/editorview/sha256', "vwf/view/editorview/_3DRIntegration"],
 				exports: 'XAPIWrapper'
-			}
+			},
+            
+                "vwf/model/threejs/three":{
+                    exports : 'THREE'
+                }
+            
 		},
 	    waitSeconds: 15
 	  });		
@@ -50,10 +55,8 @@ require( [
                 // With the scripts loaded, we must initialize the framework. vwf.initialize()
                 // accepts three parameters: a world specification, model configuration parameters,
                 // and view configuration parameters.
-				$(document.body).append('<div id="glyphOverlay" style="display:none"/>');
-                $(document.head).append('<script type="text/javascript" src="vwf/view/editorview/_THREERayTracer.js"></script>');
-                $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/scenemanager.js"></script>');
-                            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/ddsmoothmenu.css" />');
+			$(document.body).append('<div id="glyphOverlay" style="display:none"/>');
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/ddsmoothmenu.css" />');
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/ddsmoothmenu-v.css" />')
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/Editorview.css" />')
 
