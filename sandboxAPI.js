@@ -37,7 +37,7 @@ function GUID()
 	
 
 
-//simple functio to write a response
+//simple function to write a response
 function respond(response,status,message)
 {
 	response.writeHead(status, {
@@ -45,6 +45,15 @@ function respond(response,status,message)
 				});
 	response.write(message + "\n");
 	global.log(message,2);
+	response.end();
+}
+
+//simple function to redirect
+function redirect(response, url)
+{
+	response.writeHead(303, {
+					"Location": url
+				});
 	response.end();
 }
 //Just serve a simple file
@@ -909,7 +918,7 @@ function SaveAvatar(URL,SID,body,res, req)
 	//respond(response, 500, "Error saving uploaded 'model' file");
 	//return;
 	
-	var temp = "", filepath = "";
+	var filepath = "";
 	
 	if(!req.files || !req.files.modelFile){
 		respond(res, 500, "Error saving uploaded 'model' file");
@@ -934,7 +943,7 @@ function SaveAvatar(URL,SID,body,res, req)
 		DAL.updateAvatarManifest(avatarsList, function(e){
 		
 			if(e){ 
-				respond(res, 200, "Avatar manifest file saved");
+				redirect(res, "../admin/avatars");
 				console.log("Avatar manifest file saved");
 			}
 			else{
@@ -943,12 +952,11 @@ function SaveAvatar(URL,SID,body,res, req)
 			}
 		});
 	});
+	
 }	
 
 function SaveTexture(URL,SID,body,res, req)
 {
-	console.log(req.body, req.files);
-
 	/*if(!URL.loginData || global.adminUID != URL.loginData.UID)
 	{
 		respond(res,401,'Non-administrator users cannot upload avatars');
@@ -960,6 +968,7 @@ function SaveTexture(URL,SID,body,res, req)
 		respond(res, 500, "Error saving uploaded 'texture' and 'screenshot' files");
 		return;
 	}
+
 	
 	async.eachSeries(Object.keys(req.files), 
 		function(item, cb){
@@ -983,11 +992,12 @@ function SaveTexture(URL,SID,body,res, req)
 			req.files[item].name = req.files[item].name.replace(/[^a-zA-Z0-9 ._-]|\.\./gi, '');
 			filePath = libpath.join(datapath, '/Avatars/', type + "s", req.files[item].name);
 
+			
+			console.log(req.files[item].path, filePath);
 			fs.rename(req.files[item].path, filePath, function(err){
 			
 				if(err){
 					console.log("Error saving uploaded " + type, err);
-					respond(res, 500, "Error saving uploaded " + type);
 					cb(err);
 					return;
 				}
@@ -999,7 +1009,6 @@ function SaveTexture(URL,SID,body,res, req)
 		function(err){
 		
 			if(err){
-				console.log("Error saving uploaded file(s)", err);
 				respond(res, 500, "Error saving uploaded file(s)");
 				return;
 			}
@@ -1016,7 +1025,7 @@ function SaveTexture(URL,SID,body,res, req)
 						DAL.updateAvatarManifest(avatarsList, function(e){
 						
 							if(e){ 
-								respond(res, 200, "Avatar manifest file saved");
+								redirect(res, "../admin/avatars#" + avatarsList[i].model);
 								console.log("Avatar manifest file saved");
 							}
 							else{

@@ -163,9 +163,10 @@ function startVWF(){
 		Shell.setDAL(DAL);
 		Landing.setDAL(DAL);
 		Landing.setDocumentation(configSettings);
+
 		ServerFeatures.setPartedOptions({
-			// custom file path
-			path: libpath.join(datapath, 'avatars', 'temp'),
+			// custom file path with drive letter and colon removed
+			path: libpath.join(datapath, 'Avatars', 'temp').replace(/^[a-zA-Z]*:/gi,''),
 			// memory usage limit per request
 			limit: 30 * 1024,
 			// disk usage limit per request

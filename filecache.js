@@ -38,8 +38,10 @@ function _FileCache()
         path = libpath.resolve(__dirname, path);
         
         //Cannot escape above the application paths!!!!
-        if(path.toLowerCase().indexOf(__dirname.toLowerCase()) != 0 && path.toLowerCase().indexOf(global.datapath.toLowerCase()) != 0)
+        if(path.toLowerCase().indexOf(__dirname.toLowerCase()) != 0 && path.toLowerCase().indexOf(libpath.resolve(global.datapath).toLowerCase()) != 0)
         {
+		
+			//console.log();
             global.error(path + " is illegal");
             callback(null);
             return;

@@ -1634,6 +1634,20 @@ exports.setDataPath = function(p)
 							global.log('Created Avatars/textures dir');
 						else if( err.code != 'EEXIST' )
 							global.error('Error checking Avatars/textures dir:', err);
+					});		
+					
+					fs.mkdir( libpath.join(datapath, 'Avatars/', 'thumbnails'), '755', function(err){
+						if( !err )
+							global.log('Created Avatars/thumbnails dir');
+						else if( err.code != 'EEXIST' )
+							global.error('Error checking Avatars/thumbnails dir:', err);
+					});				
+					
+					fs.mkdir( libpath.join(datapath, 'Avatars/', 'temp'), '755', function(err){
+						if( !err )
+							global.log('Created Avatars/temp dir');
+						else if( err.code != 'EEXIST' )
+							global.error('Error checking Avatars/temp dir:', err);
 					});
 					
 				}
