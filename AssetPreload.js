@@ -24,8 +24,25 @@ function ServeJSON(jsonobject,response,URL)
 //walk the whole data structure and pick out the url references
 function walk(object, list)
 {
-	for(var i in object)
+	if(object && object.terrainType == "heightmapTerrainAlgorithm")
 	{
+		//so, we must be in the properties for a terrain object
+		//todo - deal with img or bt switch
+		var terraindata;
+		if(object.terrainParams)
+			terraindata = {name:"Terrain",type:"terrainBT",url:object.terrainParams.url};
+		else if(object.url)
+		{
+			terraindata = {name:"Terrain",type:"terrainBT",url:object.url};
+		}
+		if(terraindata)
+		{
+			list.push(terraindata);
+			return;
+		}
+	}
+	for(var i in object)
+	{		
 		if(i == 'source')
 		{
 
@@ -45,10 +62,11 @@ function walk(object, list)
 			else
 				list.push({type:"unknown",url:object[i]});
 		}
-		if(i == 'url')
+		if(i == 'url' || i == 'uri')
 		{
 				list.push({type:"unknown",url:object[i]});
 		}
+
 		if(typeof object[i] != 'string')
 		walk(object[i],list);
 	}

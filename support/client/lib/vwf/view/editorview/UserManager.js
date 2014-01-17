@@ -143,10 +143,7 @@ define(function ()
 							hideTools();
 							//$('#NotifierAlertMessage').dialog('open');
 							//$('#NotifierAlertMessage').html('You are viewing this world as a guest. Please <a style="color:blue" href="'+_DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substr(13)+'">sign in</a> to participate');
-							alertify.set({ labels: {
-								ok     : "Login",
-								cancel : "Continue As Guest"
-							} });
+							
 							
 									
 									$(document.body).append('<a href="#" id="GuestLogin" style="font-family: sans-serif;z-index:99;position:fixed;font-size: 2em;" class="alertify-button alertify-button-ok" id="alertify-ok">Login</a>');

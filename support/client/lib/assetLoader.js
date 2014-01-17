@@ -75,10 +75,19 @@ function ()
         this.collada = {},
         this.utf8Json = {},
         this.subDriver = {},
-
+        this.unknown = {};
+        this.terrain = {};
         this.getCollada = function(url)
         {
             return this.collada[url];
+        },
+        this.getTerrain = function(url)
+        {
+            return this.terrain[url];
+        },
+        this.getUnknown = function(url)
+        {
+            return this.unknown[url];
         },
         this.getUtf8Json = function(url)
         {
@@ -115,6 +124,114 @@ function ()
                     cb2();
                 });
         },
+        this.loadUnknown = function(url,cb2)
+        {
+            $.ajax({url:url,
+            success:function(data2,status2,xhr2)
+            {
+                assetLoader.unknown[url] = xhr2;
+                cb2();
+            },
+            error:function()
+            {
+               cb2();
+            }
+            });
+        };
+        this.loadImgTerrain  = function(url,cb2)
+        {
+
+            canvas = document.createElement('canvas');
+                
+            var img = new Image();
+            img.src = this.url;
+            
+            img.onload = function()
+            {
+                
+                var dataHeight = img.naturalHeight;
+                var dataWidth = img.naturalWidth;
+                canvas.height = this.dataHeight;
+                canvas.width = this.dataWidth;
+                var context = canvas.getContext('2d');
+                context.drawImage(img, 0, 0);
+                var data = context.getImageData(0, 0, dataHeight, dataWidth).data;
+                
+                var array = new Uint8Array(dataHeight*dataWidth);
+                for(var i =0; i < dataHeight*dataWidth * 4; i+=4)
+                    array[Math.floor(i/4)] = Math.pow(data[i]/255.0,1.0) * 255;
+                var data = new Uint8Array(dataHeight*dataWidth);
+                for(var i = 0; i < dataWidth; i++)
+                {
+                    for(var j = 0; j < dataHeight; j++)
+                    {
+                        var c = i * dataWidth + j;
+                        var c2 = j * dataHeight + i;
+                        data[c] = array[c2];
+                    }
+                }
+                var terraindata = {dataHeight:this.dataHeight,dataWidth:this.dataWidth,min:0,data:data};
+                assetLoader.terrain[url] = terraindata;
+                cb2();
+            }
+            img.onerror = function()
+            {
+                cb2();
+            }
+        }
+        this.loadBTTerrain = function(url,cb2)
+        {
+            var buff;
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = 'arraybuffer';
+            xhr.onload = function(e) {
+                if (xhr.status === 200) {
+                  buff = xhr.response;
+                
+                  
+                  var terraindata = assetLoader.parseBT(buff);
+                  assetLoader.terrain[url] = terraindata;
+                  cb2();
+                } else
+                {
+                    cb2();
+                }
+            };
+            xhr.open('GET', url);
+            xhr.send();
+        }
+        this.parseBT = function(arraybuf)
+        {
+            var DV = new DataView(arraybuf);
+            var dataWidth = DV.getInt32(10,true);
+            var dataHeight = DV.getInt32(14,true);
+            var dataSize = DV.getInt16(18,true);
+            var isfloat = DV.getInt16(20,true);
+            var scale = DV.getFloat32(62,true);
+            var data;
+            if(isfloat == 1)
+            {
+                data = new Float32Array(dataWidth*dataHeight);
+            }
+            else
+            {
+                data = new Int16Array(dataWidth*dataHeight);
+            }
+            var min = Infinity;
+            for(var i =0; i < dataWidth*dataHeight; i++)
+            {
+                if(isfloat == 1)
+                {
+                    data[i] = DV.getFloat32(256 + 4 * i,true);          
+                }else
+                {
+                    data[i] = DV.getInt16(256 + 2 * i,true);
+                }
+                if(data[i] < min)
+                    min = data[i];
+            }
+            return {worldLength:null,worldWidth:null,dataHeight:dataHeight,dataWidth:dataWidth,min:min,data:data}
+        };
         this.loadSubDriver = function(url,cb2)
         {
             cb2();
@@ -132,7 +249,6 @@ function ()
              $('#preloadguiText').text((data.name? data.name + ": " : "") + data.url);
              $('#preloadprogress .progress-label').text("Loading Assets: " + parseInt(count*100)+"%");
         },
-
         this.closeProgressGui = function()
         {
             window.setTimeout(function(){
@@ -171,7 +287,16 @@ function ()
                     assetLoader.loadUTf8Json(url,cb2);
                 }else if(type == 'unknown')
                 {
-                    cb2();
+                    assetLoader.loadUnknown(url,cb2);
+                }
+                else if(type == 'terrainBT')
+                {
+                    
+                    assetLoader.loadBTTerrain(url,cb2);
+                }
+                else if(type == 'terrainIMG')
+                {
+                    assetLoader.loadImgTerrain(url,cb2);
                 }else
                 {
                     cb2();
@@ -180,7 +305,8 @@ function ()
 
             },function(err)
             {
-                assetLoader.closeProgressGui();
+                //assetLoader.closeProgressGui();
+                $(window).bind('setstatecomplete',function(){assetLoader.closeProgressGui();return false});
                 cb();
             })
             

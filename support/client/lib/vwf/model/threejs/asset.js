@@ -227,6 +227,7 @@
 				this.cleanTHREEJSnodes(reg.node);
 				
 				this.getRoot().add(reg.node.clone());
+				this.getRoot().sceneManagerUpdate();
 				
 				this.settingProperty('materialDef',this.materialDef);
 				//if any callbacks were waiting on the asset, call those callbacks
@@ -268,6 +269,7 @@
 			assetRegistry[assetSource].pending = false;
 			assetRegistry[assetSource].callbacks = [];
 
+			//see if it was preloaded
 			if(childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed' && _assetLoader.getUtf8Json(assetSource))
 			{
 
@@ -323,7 +325,7 @@
 			{
 				
 				this.getRoot().add(reg.node.clone());
-				
+				this.getRoot().sceneManagerUpdate();
 				var list = [];
 					
 					this.GetAllLeafMeshes(this.rootnode,list);

@@ -30,15 +30,15 @@ define(
 			window.clearInterval(window.sizeTimeoutHandle);
 			window.sizeTimeoutHandle = window.setInterval(sizeWindowTimer, 33);
 			$('#togglesidepanelicon').attr('src', '../vwf/view/editorview/images/icons/left.png');
-			$('#sidepanel').animate(
+			$('#sidepanel').transit(
 			{
 				'left': $(window).width()
 			});
-			$('#ScriptEditor').animate(
+			$('#ScriptEditor').transit(
 			{
 				'width': $(window).width()
 			});
-			$('#index-vwf').animate(
+			$('#index-vwf').transit(
 			{
 				'width': $(window).width()
 			}, function ()
@@ -57,15 +57,15 @@ define(
 			window.sizeTimeoutHandle = window.setInterval(sizeWindowTimer, 33);
 			$('#togglesidepanelicon').attr('src', '../vwf/view/editorview/images/icons/right.png');
 			$('#sidepanel .jspContainer .jspPane').css('left',0);
-			$('#sidepanel').animate(
+			$('#sidepanel').transit(
 			{
 				'left': $(window).width() - $('#sidepanel').width()
 			});
-			$('#ScriptEditor').animate(
+			$('#ScriptEditor').transit(
 			{
 				'width': $(window).width() - $('#sidepanel').width()
 			});
-			$('#index-vwf').animate(
+			$('#index-vwf').transit(
 			{
 				'width': $(window).width() - $('#sidepanel').width()
 			}, function ()

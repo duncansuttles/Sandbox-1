@@ -15,7 +15,7 @@ var maxObjects = 5;
 var maxDepth = 16;
 var batchAtLevel = 8;
 var drawSceneManagerRegions = false;
-var maxSize = 64000;
+var maxSize = 6400;
 function SceneManager(scene)
 {
 	

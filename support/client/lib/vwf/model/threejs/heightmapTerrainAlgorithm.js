@@ -62,35 +62,45 @@ function heightmapTerrainAlgorithm()
 		}
 		if(this.type == 'bt')
 		{
-			var buff;
-			var self2 = this;
-			var xhr = new XMLHttpRequest();
-			xhr.responseType = 'arraybuffer';
-			xhr.onload = function(e) {
-				if (xhr.status === 200) {
-				  buff = xhr.response;
-				  
-				  var t = new Date();
-					while((new Date()) - t < 10000){};
-				  
-				  self2.parseBT(buff,cb);
-				} else
-				{
-					cb(null);
-				}
-			};
-			xhr.open('GET', this.url);
-			
 			this.worldLength = params && parseFloat(params.worldLength) || 13500;
 			this.worldWidth =  params && parseFloat(params.worldWidth) || 9500;
 			
-			xhr.send();
+			//check if it was preloaded
+			if(_assetLoader.getTerrain(this.url))
+			{
+				var terraindata = _assetLoader.getTerrain(this.url);
+				terraindata.worldLength = this.worldLength;
+				terraindata.worldWidth = this.worldWidth;
+				
+				window.setTimeout(function(){
+					cb(terraindata);	
+				},0);
+				
+			}
+			else
+			{
+				var buff;
+				var self2 = this;
+				var xhr = new XMLHttpRequest();
+				xhr.responseType = 'arraybuffer';
+				xhr.onload = function(e) {
+					if (xhr.status === 200) {
+					  buff = xhr.response;
+					  cb(self2.parseBT(buff));
+					} else
+					{
+						cb(null);
+					}
+				};
+				xhr.open('GET', this.url);
+				xhr.send();
+			}
 		}
 		
 		//signal the pool that we need an async startup
 		return false;
 	}
-	this.parseBT = function(arraybuf,cb)
+	this.parseBT = function(arraybuf)
 	{
 		
 		var DV = new DataView(arraybuf);
@@ -123,7 +133,7 @@ function heightmapTerrainAlgorithm()
 		}
 		this.min = min;
 		this.data = data;
-		cb({worldLength:this.worldLength,worldWidth:this.worldWidth,dataHeight:this.dataHeight,dataWidth:this.dataWidth,min:min,data:data});
+		return {worldLength:this.worldLength,worldWidth:this.worldWidth,dataHeight:this.dataHeight,dataWidth:this.dataWidth,min:min,data:data}
 	}
 	//This is the settings data, set both main and pool side
 	this.getEditorData = function(data)

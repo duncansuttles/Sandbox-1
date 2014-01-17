@@ -53,8 +53,9 @@ function testWS()
  //   }
 }
 
-function updateOverlay()
+function updateOverlay(cb)
 {
+    var supported = true;
     // Test for WebGL
     if(testWGL())
     {
@@ -62,6 +63,7 @@ function updateOverlay()
     }
     else
     {
+        supported = false;
         $('#WGL').prepend("<img src='images/x.png' alt=' ' width='20px'/>");
     }
 
@@ -72,6 +74,7 @@ function updateOverlay()
     }
     else
     {
+        supported = false;
         $('#ES5').prepend("<img src='images/x.png' alt=' ' width='20px'/>");
     }
 
@@ -85,6 +88,8 @@ function updateOverlay()
     // Test to to see if VWF can run
     if(! (testWGL() && testES5()) )
     {
+        supported = false;
         $('#loadText').html("<span class='loadError'>This browser is not compatible. <br/>Please review <a href='/web/docs/reqs.html'>documentation</a> for specific <br/>requirements. </span>");
     }
+    cb(supported);
 }

@@ -94,7 +94,7 @@
             var test = 1+1;
             //async decompress UTF8 data in webworker
 			
-            alertify.log('Decompressing ' + this.url);
+            
 			
 			
 			

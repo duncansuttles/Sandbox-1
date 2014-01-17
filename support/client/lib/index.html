@@ -33,6 +33,7 @@
     <script type="text/javascript" src="jquery-2.0.3.min.js"></script>
     <script type="text/javascript" src="jquery-migrate-1.2.1.min.js"></script>
     <script type="text/javascript" src="jquery-ui-1.10.3.custom.min.js"></script>
+    <script type="text/javascript" src="jquery.transit.min.js"></script>
     <script type="text/javascript" src="async.js"></script>
 
 
@@ -183,8 +184,10 @@ if(ay.arrowScrollOnHover){ax.bind("mouseover.jsp",aD(-1,0,ax));x.bind("mouseover
     <script type="text/javascript" src="../vwf/view/localization/json2.min.js"></script>
     <script type="text/javascript" src="../vwf/view/localization/l10n.min.js"></script>
     <script type="text/javascript" src="../vwf/view/localization/localizations.js"></script>
+    <link rel="stylesheet" type="text/css" href="vwf/view/editorview/alertify.js-0.3.9/themes/alertify.core.css" />
+    <link rel="stylesheet" type="text/css" href="vwf/view/editorview/alertify.js-0.3.9/themes/alertify.bootstrap.css" />
 
-    
+    <script type="text/javascript" src="compatibility.js"></script>
     <script type="text/javascript">
 
 	//remove the instnace name from requests to make things cache
@@ -215,8 +218,32 @@ if(ay.arrowScrollOnHover){ax.bind("mouseover.jsp",aD(-1,0,ax));x.bind("mouseover
 	window.Mat4 = goog.vec.Mat4;
 	window.Quaternion = goog.vec.Quaternion;
 
-              $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/alertify.js-0.3.9/themes/alertify.core.css" />')
-            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/alertify.js-0.3.9/themes/alertify.bootstrap.css" />')
+  $(window).ready(function(){
+  updateOverlay(function(supported){
+
+    if(!supported)
+    {
+      window.setTimeout(function(){
+
+        $('#loadstatus').fadeOut();
+              require(['vwf/view/editorview/alertify.js-0.3.9/src/alertify'], function (alertify) {
+                alertify.alert('Sorry, this browser is not supported. Click ok to view the browser test page.',
+                             function(){
+                              
+                              window.location = window.location +"../test";
+                             });
+                 });
+
+
+      },1500);
+      
+
+      return;
+    }
+
+    $('#loadstatus').fadeOut();
+
+
    $.ajax({url:'/vwfdatamanager.svc/profile',
     success:function(data2,status2,xhr2)
     {
@@ -232,18 +259,21 @@ if(ay.arrowScrollOnHover){ax.bind("mouseover.jsp",aD(-1,0,ax));x.bind("mouseover
                   cancel : "Continue as Guest"
                 } });
 
+
          alertify.confirm("You are viewing this world as a guest. You will be able to view the world, but not interact with it. Would you like to go back and log in?",
               function(e)
               {
-                alertify.set({ labels: {
-                  ok     : "Ok",
-                  cancel : "Cancel"
-                } });
+                
               
                 if(e)
                   window.location =  "../login?return=" + window.location.pathname.substr(13) + window.location.hash;
                 else
                 {
+
+                    alertify.set({ labels: {
+                  ok     : "Ok",
+                  cancel : "Cancel"
+                } });
                    require(['boot'], function () {});
                 }
               }
@@ -252,6 +282,8 @@ if(ay.arrowScrollOnHover){ax.bind("mouseover.jsp",aD(-1,0,ax));x.bind("mouseover
 
        });
     }});
+    });
+}) ;
 
 	
 
@@ -291,10 +323,7 @@ if(ay.arrowScrollOnHover){ax.bind("mouseover.jsp",aD(-1,0,ax));x.bind("mouseover
       </div>
     </div>
 
-    <script type="text/javascript" src="compatibility.js"></script>
-    <script type="text/javascript">
-        updateOverlay();
-    </script>
+  
 
 	
 	<script type="text/javascript">
