@@ -330,14 +330,14 @@ define(function ()
 					this.addBehaviors(node);
 					$("#accordion").accordion(
 					{
-						fillSpace: true,
-						change: function ()
+						heightStyle: 'fill',
+						activate: function ()
 						{
 							if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 						}
 					});
 					$(".ui-accordion-content").css('height', 'auto');
-					this.updateOtherWindows();
+					
 				}
 				else
 				{
@@ -349,15 +349,7 @@ define(function ()
 				console.log(e);
 			}
 		}
-		this.updateOtherWindows = function ()
-		{
-			$('#materialeditor').dialog('option', 'position', [1282, 40]);
-			if (this.isOpen())
-			{
-				var t = $('#PrimitiveEditor').closest('.ui-dialog').height() + $('#PrimitiveEditor').offset().top;
-				$('#materialeditor').dialog('option', 'position', [1282, t - 20]);
-			}
-		}
+		
 		this.recursevlyAddModifiers = function (node)
 		{
 			for (var i in node.children)

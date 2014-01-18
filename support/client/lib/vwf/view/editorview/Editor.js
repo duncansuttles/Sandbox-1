@@ -2080,7 +2080,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 				var box;
 				var mat;
-				box = self.findviewnode(id).getBoundingBox(true);
+				
+				box = self.findviewnode(id).GetBoundingBox(true);
 				mat = toGMat(self.findviewnode(id).matrixWorld).slice(0);
 				var color = [1, 1, 1, 1];
 				if (this.findviewnode(id).initializedFromAsset) color = [1, 0, 0, 1];
@@ -2088,7 +2089,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				if (vwf.getProperty(id, 'type') == 'Group' && vwf.getProperty(id, 'open') == true) color = [.7, 1.0, .7, 1];
 				var boundingbox = new THREE.Object3D();
 				boundingbox.name = "Bounds_+" + id;
-				boundingbox.add(this.BuildBox([box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z], [box.min.x + (box.max.x - box.min.x) / 2, box.min.y + (box.max.y - box.min.y) / 2, box.min.z + (box.max.z - box.min.z) / 2], color), true);
+				boundingbox.add(this.BuildBox([box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]], [box.min[0] + (box.max[0] - box.min[0]) / 2, box.min[1] + (box.max[1] - box.min[1]) / 2, box.min[2] + (box.max[2] - box.min[2]) / 2], color), true);
 				boundingbox.children[0].name = "Bounds_+" + id + "_Mesh";
 				boundingbox.matrixAutoUpdate = false;
 				boundingbox.matrix.elements = MATH.transposeMat4(mat);
