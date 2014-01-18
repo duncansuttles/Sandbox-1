@@ -6,9 +6,9 @@ var Vec3 = goog.vec.Vec3;
 // add cpu side ray casting to MATH. Faster then GPU based picking in many cases
 
 //Max number of faces a octree node may have before subdivding
-var OCTMaxFaces = 10;
+var OCTMaxFaces = 30;
 //max depth of the octree
-var OCTMaxDepth = 6;
+var OCTMaxDepth = 4;
 
 
 

@@ -12,10 +12,10 @@ function GUID()
 
 //values tuned for VTCE
 var maxObjects = 5; 
-var maxDepth = 16;
-var batchAtLevel = 8;
+var maxDepth = 8;
+var batchAtLevel = 2;
 var drawSceneManagerRegions = false;
-var maxSize = 6400;
+var maxSize = 640;
 function SceneManager(scene)
 {
 	
