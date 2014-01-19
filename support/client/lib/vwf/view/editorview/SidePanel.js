@@ -16,7 +16,7 @@ define(
 		function createPanelShowHide()
 		{
 			var iconname = "togglesidepanelicon";
-			$('#toolbar').append('<img src="../vwf/view/editorview/images/icons/left.png" id="' + iconname + '" class="icon" />');
+			$('#toolbar').append('<div id="togglesidepanelicon" class="icon left" />');
 			$('#togglesidepanelicon').css('float', 'right');
 			$('#' + iconname).click(function ()
 			{
@@ -29,7 +29,8 @@ define(
 		{
 			window.clearInterval(window.sizeTimeoutHandle);
 			window.sizeTimeoutHandle = window.setInterval(sizeWindowTimer, 33);
-			$('#togglesidepanelicon').attr('src', '../vwf/view/editorview/images/icons/left.png');
+			$('#togglesidepanelicon').removeClass('right');
+			$('#togglesidepanelicon').addClass('left');
 			$('#sidepanel').transit(
 			{
 				'left': $(window).width()
@@ -55,7 +56,8 @@ define(
 		{
 			window.clearInterval(window.sizeTimeoutHandle);
 			window.sizeTimeoutHandle = window.setInterval(sizeWindowTimer, 33);
-			$('#togglesidepanelicon').attr('src', '../vwf/view/editorview/images/icons/right.png');
+			$('#togglesidepanelicon').addClass('right');
+			$('#togglesidepanelicon').removeClass('left');
 			$('#sidepanel .jspContainer .jspPane').css('left',0);
 			$('#sidepanel').transit(
 			{

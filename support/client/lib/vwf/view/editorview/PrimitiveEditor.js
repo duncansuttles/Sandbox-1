@@ -95,7 +95,7 @@ define(function ()
 		'</div>' +
 		'</div>');
 		$('#primeditortitle').append('<a id="primitiveeditorclose" href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
-		$('#primeditortitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/properties.png" />');
+		$('#primeditortitle').prepend('<div class="headericon properties" />');
 		$('#primitiveeditorclose').click(function ()
 		{
 			_PrimitiveEditor.hide();

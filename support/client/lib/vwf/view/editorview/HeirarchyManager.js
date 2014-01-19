@@ -38,7 +38,7 @@ define(function ()
 			label: 'Select'
 		});
 		$('#hierarchyManagertitle').append('<a id="hierarchyclose" href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
-		$('#hierarchyManagertitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/hierarchy.gif" />');
+		$('#hierarchyManagertitle').prepend('<div class="headericon hierarchy" />');
 		$('#hierarchyManager').css('border-bottom', '5px solid #444444')
 		$('#hierarchyManager').css('border-left', '2px solid #444444')
 		$('#hierarchyclose').click(function ()

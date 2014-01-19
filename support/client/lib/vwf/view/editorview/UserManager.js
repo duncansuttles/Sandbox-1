@@ -37,7 +37,7 @@ define(function ()
 		//$('#UserProfileWindow').dialog({title:'Profile',autoOpen:false});
 		$('#UserProfileWindow').css('border-bottom', '5px solid #444444')
 		$('#UserProfileWindow').css('border-left', '2px solid #444444')
-		$('#userprofiletitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/user.png" />');
+		$('#userprofiletitle').prepend('<div class="headericon user" />');
 		$("#UserProfileWindow").append("<div id='FollowUser'></div>");
 		$("#UserProfileWindow").append("<div id='PrivateMessage'></div>");
 		$("#UserProfileWindow").append("<div id='CallUser'></div>");
@@ -62,7 +62,7 @@ define(function ()
 				if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 			});
 		});
-		$('#playerstitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/users.png" />');
+		$('#playerstitle').prepend('<div class="headericon users"  />');
 		$('#Players').css('border-bottom', '5px solid #444444')
 		$('#Players').css('border-left', '2px solid #444444')
 		$(document.body).append('<div id="CreateProfileDialog"/>');

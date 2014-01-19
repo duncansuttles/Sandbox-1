@@ -135,13 +135,6 @@ function startVWF(){
 	   console.log('server cache disabled');
 	}
 	
-	p = process.argv.indexOf('-build') >= 0 ? true : configSettings.build;
-	if(p)
-	{
-	  //build the VWF AMD with requrie optimizer
-	  BuildVWF();
-	}
-	
 	FileCache.minify = process.argv.indexOf('-min') >= 0 ? true : !!configSettings.minify;
 	var compile = process.argv.indexOf('-compile') >= 0 ? true  : !!configSettings.compile;
 	if(compile)
@@ -252,10 +245,10 @@ function startVWF(){
 				
 				console.log('Closure Build start');
 				//lets do the most agressive compile possible here!
-				if(fs.existsSync("./build/compiler.jar"))
+				if(false && fs.existsSync("./build/compiler.jar"))
 				{
 
-					var c1 = exec('java -jar compiler.jar --js boot.js --compilation_level ADVANCED_OPTIMIZATIONS --js_output_file boot-c.js',{cwd:"./build/"},
+					var c1 = exec('java -jar compiler.jar --js boot.js --compilation_level ADVANCED_OPTIMIZATIONS --js_output_file boot-c.js',{cwd:"./build/",maxBuffer:1024*1024},
 					function (error, stdout, stderr) {
 					  
 					 	//console.log('stdout: ' + stdout);
@@ -295,7 +288,7 @@ function startVWF(){
 					    newentry.stats = fs.statSync(config.out);
 					    newentry.zippeddata = zippeddata;
 					    newentry.datatype = "utf8";
-					    newentry.hash = hash(contents);
+					    newentry.hash = require("./filecache.js").hash(contents);
 					    FileCache.files.push(newentry); 
 					    //now that it's loaded into the filecache, we can delete it
 					    //fs.unlinkSync(config.out);

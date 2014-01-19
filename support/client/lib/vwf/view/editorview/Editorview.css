@@ -311,6 +311,8 @@
 		vertical-align: middle;
 		width: 30px;
 		height: 30px;
+		display:inline-block;
+		zoom:1.2;
 	}
 	.icon
 	{

@@ -186,9 +186,9 @@ define(function ()
 		this.MethodChanged = false;
 		this.EventChanged = false;
 		//$('#ScriptEditor').resize(function(){_ScriptEditor.resize()});
-		$('#scripteditortitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/script.png" />');
-		$('#scripteditortitle').append('<img id="maximizescripteditor" style="float:right" class="icon" src="../vwf/view/editorview/images/icons/up2.png" />');
-		$('#scripteditortitle').append('<img id="hidescripteditor" class="icon" style="float:right" src="../vwf/view/editorview/images/icons/down.png" />');
+		$('#scripteditortitle').prepend('<div class="headericon script"  />');
+		$('#scripteditortitle').append('<div id="maximizescripteditor" style="float:right" class="icon up2" />');
+		$('#scripteditortitle').append('<div id="hidescripteditor" class="icon down" style="float:right"  />');
 		$('#hidescripteditor').click(function ()
 		{
 			_ScriptEditor.hide();

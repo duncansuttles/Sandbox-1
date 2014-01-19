@@ -152,7 +152,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$("#materialeditor").empty();
 			$("#materialeditor").append("<div id='materialeditortitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span class='ui-dialog-title' id='ui-dialog-title-Players'>Material Editor</span></div>");
 			$('#materialeditortitle').append('<a href="#" id="materialeditorclose" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
-			$('#materialeditortitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/material.png" />');
+			$('#materialeditortitle').prepend('<div class="headericon material" />');
 			$("#materialeditor").append('<div id="materialaccordion" style="height:100%;overflow:hidden">' + '	<h3>' + '		<a href="#">Material Base</a>' + '	</h3>' + '	<div id="MaterialBasicSettings">' + '	</div>' + '</div>');
 			$("#materialeditorclose").click(function ()
 			{
