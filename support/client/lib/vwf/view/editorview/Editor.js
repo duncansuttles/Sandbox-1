@@ -2683,12 +2683,12 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			$('#StatusPickMode').text('Pick: ' + e);
 			if (e == 'Pick') 
 			{	
-				$('#MenuSelectPickicon').css('background', "#9999FF");
+				$('#MenuSelectPickicon').addClass('iconselected')
 				$('#glyphOverlay').show();
 			}
 			else {
 			
-				$('#MenuSelectPickicon').css('background', "")
+				$('#MenuSelectPickicon').removeClass('iconselected')
 				$('#glyphOverlay').hide();
 			}
 			if (SelectMode == 'TempPick')
@@ -2706,14 +2706,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			if (e == WorldCoords)
 			{
 				$('#StatusCoords').text('World Coords');
-				$('#MenuWorldicon').css('background', "#9999FF");
-				$('#MenuLocalicon').css('background', "");
+				$('#MenuWorldicon').addClass('iconselected')
+				$('#MenuLocalicon').removeClass('iconselected');
 			}
 			else
 			{
 				$('#StatusCoords').text('Local Coords');
-				$('#MenuWorldicon').css('background', "");
-				$('#MenuLocalicon').css('background', "#9999FF");
+				$('#MenuWorldicon').removeClass('iconselected');
+				$('#MenuLocalicon').addClass('iconselected')
 			}
 		}.bind(this);
 		this.GetMoveGizmo = function (e)

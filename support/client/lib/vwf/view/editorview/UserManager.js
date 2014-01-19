@@ -254,8 +254,8 @@ define(function ()
 					return;
 				}
 			}
-			$('#MenuLogInicon').css('background', "#555555");
-			$('#MenuLogOuticon').css('background', "");
+			$('#MenuLogInicon').addClass('icondisabled')
+			$('#MenuLogOuticon').removeClass('icondisabled');
 			$('#MenuLogIn').attr('disabled', 'disabled');
 			$('#MenuLogOut').removeAttr('disabled');
 			
@@ -460,8 +460,8 @@ define(function ()
 				needlogin = false;
 			
 
-			$('#MenuLogOuticon').css('background', "#555555");
-			$('#MenuLogInicon').css('background', "");
+			$('#MenuLogOuticon').addClass('icondisabled')
+			$('#MenuLogInicon').removeClass('icondisabled')
 			$('#MenuLogIn').removeAttr('disabled');
 			$('#MenuLogOut').attr('disabled', 'disabled');
 			//var parms = new Array();

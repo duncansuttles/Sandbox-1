@@ -321,20 +321,31 @@
 		border: 1px solid #505050;
 		margin-left: 3px;
 		border-radius: 6px;
-		background: -webkit-linear-gradient(right, white 0%, rgb(217, 238, 239) 100%);
-		background:white;
+		background-color: -webkit-linear-gradient(right, white 0%, rgb(217, 238, 239) 100%);
+		background-color:white;
 		padding: 1px;
 		cursor:pointer;
+		display:inline-block;
+
 	}
 	.icon:hover
 	{
-		background: -webkit-linear-gradient(left, rgb(117, 138, 339) 0%, rgb(217, 238, 239) 100%);
+		background-color: -webkit-linear-gradient(left, rgb(117, 138, 339) 0%, rgb(217, 238, 239) 100%);
 		margin-top: 1px;
 		margin-left: 1px;
 		margin-right: 2px;
 		margin-bottom: 2px;
-		background:lightblue;
+		background-color:lightblue;
 	}
+	.iconselected
+	{
+		background-color:rgb(153, 153, 255);
+	}
+	.icondisabled
+	{
+		background-color:#555555;
+	}
+	
 	.seperator
 	{
 		width:25px;

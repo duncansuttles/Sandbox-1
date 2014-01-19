@@ -11,17 +11,17 @@ define(
 					
 			var iconname = menuitemname + "icon";
 			var mn = menuitemname;
-			$('#toolbar').append('<img src="' + src + '" id="' + iconname + '" class="icon" />');
+			$('#toolbar').append('<div src="' + src + '" id="' + iconname + '" class="icon '+src+'" />');
 			$('#' + iconname).click(function ()
 			{
 				$('#' + mn).click();
-				$(this).css('background: -webkit-linear-gradient(left, rgb(317, 138, 139) 0%, rgb(217, 238, 239) 100%);');
+				
 				$(".ddsmoothmenu").find('li').trigger('mouseleave');
 			});
 			$('#' + iconname).tooltip(
 			{
 				content: translatedTooltip,
-				items: "img",
+				items: "div",
 				show: {
 					delay:500
 				}
@@ -34,52 +34,52 @@ define(
 		{
 			$('#toolbar').append('<div class="seperator" />');
 		}
-		createIcon('../vwf/view/editorview/images/icons/logout.png', 'MenuLogIn', 'Log In');
-		createIcon('../vwf/view/editorview/images/icons/login.png', 'MenuLogOut', 'Log Out');
+		createIcon('logout', 'MenuLogIn', 'Log In');
+		createIcon('login', 'MenuLogOut', 'Log Out');
 		createSeperator();
-		createIcon('../vwf/view/editorview/images/icons/move.png', 'MenuMove', 'Move Tool');
-		createIcon('../vwf/view/editorview/images/icons/rotate.png', 'MenuRotate', 'Rotate Tool');
-		createIcon('../vwf/view/editorview/images/icons/scale.png', 'MenuScale', 'Scale Tool');
+		createIcon('move', 'MenuMove', 'Move Tool');
+		createIcon('rotate', 'MenuRotate', 'Rotate Tool');
+		createIcon('scale', 'MenuScale', 'Scale Tool');
 		createSeperator();
-		createIcon('../vwf/view/editorview/images/icons/worldspace.png', 'MenuWorld', 'Use World Coordinates');
-		createIcon('../vwf/view/editorview/images/icons/localspace.png', 'MenuLocal', 'Use Local Coordinates');
+		createIcon('worldspace', 'MenuWorld', 'Use World Coordinates');
+		createIcon('localspace', 'MenuLocal', 'Use Local Coordinates');
 		createSeperator();
-		createIcon('../vwf/view/editorview/images/icons/pick.png', 'MenuSelectPick', 'Select by clicking');
-		createIcon('../vwf/view/editorview/images/icons/selectnone.png', 'MenuSelectNone', 'Select None');
+		createIcon('pick', 'MenuSelectPick', 'Select by clicking');
+		createIcon('selectnone', 'MenuSelectNone', 'Select None');
 		createSeperator();
-		createIcon('../vwf/view/editorview/images/icons/copy.png', 'MenuCopy', 'Copy');
-		createIcon('../vwf/view/editorview/images/icons/paste.png', 'MenuPaste', 'Paste');
-		createIcon('../vwf/view/editorview/images/icons/duplicate.png', 'MenuDuplicate', 'Duplicate');
-		createIcon('../vwf/view/editorview/images/icons/save.png', 'MenuSaveCopy', 'Save to Inventory');
-		createIcon('../vwf/view/editorview/images/icons/delete.png', 'MenuDelete', 'Delete');
+		createIcon('copy', 'MenuCopy', 'Copy');
+		createIcon('paste', 'MenuPaste', 'Paste');
+		createIcon('duplicate', 'MenuDuplicate', 'Duplicate');
+		createIcon('save', 'MenuSaveCopy', 'Save to Inventory');
+		createIcon('delete', 'MenuDelete', 'Delete');
 		createSeperator();
-		createIcon('../vwf/view/editorview/images/icons/link.png', 'MenuSetParent', 'Link');
-		createIcon('../vwf/view/editorview/images/icons/unlink.png', 'MenuRemoveParent', 'Unlink');
-		createIcon('../vwf/view/editorview/images/icons/up.png', 'MenuSelectParent', 'Select Parent');
+		createIcon('link', 'MenuSetParent', 'Link');
+		createIcon('unlink', 'MenuRemoveParent', 'Unlink');
+		createIcon('up', 'MenuSelectParent', 'Select Parent');
 		createSeperator();
-		createIcon('../vwf/view/editorview/images/icons/camera.png', 'MenuCameraOrbit', 'Orbit Camera');
-		createIcon('../vwf/view/editorview/images/icons/firstperson.png', 'MenuCamera3RDPerson', 'First Person Camera');
-		createIcon('../vwf/view/editorview/images/icons/navigate.png', 'MenuCameraNavigate', 'Navigation Camera');
-		createIcon('../vwf/view/editorview/images/icons/free.png', 'MenuCameraFree', 'Free Camera');
-		createIcon('../vwf/view/editorview/images/icons/target.png', 'MenuFocusSelected', 'Focus to selected object');
+		createIcon('camera', 'MenuCameraOrbit', 'Orbit Camera');
+		createIcon('firstperson', 'MenuCamera3RDPerson', 'First Person Camera');
+		createIcon('navigate', 'MenuCameraNavigate', 'Navigation Camera');
+		createIcon('free', 'MenuCameraFree', 'Free Camera');
+		createIcon('target', 'MenuFocusSelected', 'Focus to selected object');
 		createSeperator();
-		createIcon('../vwf/view/editorview/images/icons/sphere.png', 'MenuCreateSphere', 'Create Sphere');
-		createIcon('../vwf/view/editorview/images/icons/cube.png', 'MenuCreateBox', 'Create Box');
-		createIcon('../vwf/view/editorview/images/icons/cylinder.png', 'MenuCreateCylinder', 'Create Cylinder');
-		createIcon('../vwf/view/editorview/images/icons/cone.png', 'MenuCreateCone', 'Create Cone');
-		createIcon('../vwf/view/editorview/images/icons/plane.png', 'MenuCreatePlane', 'Create Plane');
+		createIcon('sphere', 'MenuCreateSphere', 'Create Sphere');
+		createIcon('cube', 'MenuCreateBox', 'Create Box');
+		createIcon('cylinder', 'MenuCreateCylinder', 'Create Cylinder');
+		createIcon('cone', 'MenuCreateCone', 'Create Cone');
+		createIcon('plane', 'MenuCreatePlane', 'Create Plane');
 		createSeperator();
-		createIcon('../vwf/view/editorview/images/icons/users.png', 'MenuUsers', 'Show Users Window');
-		createIcon('../vwf/view/editorview/images/icons/chat.png', 'MenuChat', 'Show Chat Window');
-		createIcon('../vwf/view/editorview/images/icons/material.png', 'MenuMaterialEditor', 'Show Material Editor Window');
-		createIcon('../vwf/view/editorview/images/icons/script.png', 'MenuScriptEditor', 'Show Script Editor Window');
-		createIcon('../vwf/view/editorview/images/icons/properties.png', 'MenuObjectProperties', 'Show Object Properties Window');
-		createIcon('../vwf/view/editorview/images/icons/models.png', 'MenuModels', 'Show Model Library Window');
-		createIcon('../vwf/view/editorview/images/icons/inventory.png', 'MenuInventory', 'Show Inventory Window');
-		createIcon('../vwf/view/editorview/images/icons/hierarchy.gif', 'MenuHierarchyManager', 'Show Hierarchy Window');
-		$('#MenuCameraOrbiticon').css('background', '#9999FF');
-		$('#MenuMoveicon').css('background', "#9999FF");
-		$('#MenuWorldicon').css('background', "#9999FF");
-		$('#MenuLogOuticon').css('background', "#555555");
+		createIcon('users', 'MenuUsers', 'Show Users Window');
+		createIcon('chat', 'MenuChat', 'Show Chat Window');
+		createIcon('material', 'MenuMaterialEditor', 'Show Material Editor Window');
+		createIcon('script', 'MenuScriptEditor', 'Show Script Editor Window');
+		createIcon('properties', 'MenuObjectProperties', 'Show Object Properties Window');
+		createIcon('models', 'MenuModels', 'Show Model Library Window');
+		createIcon('inventory', 'MenuInventory', 'Show Inventory Window');
+		createIcon('hierarchy', 'MenuHierarchyManager', 'Show Hierarchy Window');
+		$('#MenuCameraOrbiticon').addClass('iconselected');
+		$('#MenuMoveicon').addClass('iconselected');
+		$('#MenuWorldicon').addClass('iconselected');
+		$('#MenuLogOuticon').addClass('icondisabled');
 	}
 });

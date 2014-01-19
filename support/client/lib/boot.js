@@ -59,6 +59,7 @@ require( [
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/ddsmoothmenu.css" />');
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/ddsmoothmenu-v.css" />')
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/Editorview.css" />')
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/images/icons/sprites.css" />')
 
             
             
