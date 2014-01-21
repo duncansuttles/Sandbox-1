@@ -37,7 +37,7 @@ define(function ()
 		//$('#UserProfileWindow').dialog({title:'Profile',autoOpen:false});
 		$('#UserProfileWindow').css('border-bottom', '5px solid #444444')
 		$('#UserProfileWindow').css('border-left', '2px solid #444444')
-		$('#userprofiletitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/user.png" />');
+		$('#userprofiletitle').prepend('<div class="headericon user" />');
 		$("#UserProfileWindow").append("<div id='FollowUser'></div>");
 		$("#UserProfileWindow").append("<div id='PrivateMessage'></div>");
 		$("#UserProfileWindow").append("<div id='CallUser'></div>");
@@ -62,7 +62,7 @@ define(function ()
 				if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 			});
 		});
-		$('#playerstitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/users.png" />');
+		$('#playerstitle').prepend('<div class="headericon users"  />');
 		$('#Players').css('border-bottom', '5px solid #444444')
 		$('#Players').css('border-left', '2px solid #444444')
 		$(document.body).append('<div id="CreateProfileDialog"/>');
@@ -143,31 +143,15 @@ define(function ()
 							hideTools();
 							//$('#NotifierAlertMessage').dialog('open');
 							//$('#NotifierAlertMessage').html('You are viewing this world as a guest. Please <a style="color:blue" href="'+_DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substr(13)+'">sign in</a> to participate');
-							alertify.set({ labels: {
-								ok     : "Login",
-								cancel : "Continue As Guest"
-							} });
-							alertify.confirm("You are viewing this world as a guest. You will be able to view the world, but not interact with it. Would you like to go back and log in?",
-							function(e)
-							{
-								alertify.set({ labels: {
-									ok     : "Ok",
-									cancel : "Cancel"
-								} });
 							
-								if(e)
-									window.location = _DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substr(13) + window.location.hash;
-								else
-								{
+							
 									
 									$(document.body).append('<a href="#" id="GuestLogin" style="font-family: sans-serif;z-index:99;position:fixed;font-size: 2em;" class="alertify-button alertify-button-ok" id="alertify-ok">Login</a>');
 									$('#GuestLogin').click(function()
 									{
 										window.location = _DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substr(13) + window.location.hash;
 									});
-								}
-							}
-							);
+								
 						}.bind(this)
 					});
 				}else
@@ -270,8 +254,8 @@ define(function ()
 					return;
 				}
 			}
-			$('#MenuLogInicon').css('background', "#555555");
-			$('#MenuLogOuticon').css('background', "");
+			$('#MenuLogInicon').addClass('icondisabled')
+			$('#MenuLogOuticon').removeClass('icondisabled');
 			$('#MenuLogIn').attr('disabled', 'disabled');
 			$('#MenuLogOut').removeAttr('disabled');
 			
@@ -373,7 +357,7 @@ define(function ()
 			this.PlayerProto.properties.ownerClientID = vwf.moniker();
 			this.PlayerProto.properties.profile = profile;
 			this.PlayerProto.properties.translation = newintersectxy;
-			this.PlayerProto.properties.scale = [proto.svatarHeight || 1.15,proto.svatarHeight || 1.15,proto.svatarHeight || 1.15];
+			this.PlayerProto.properties.scale = [profile.avatarHeight || 1.0, profile.avatarHeight || 1.0, profile.avatarHeight || 1.0];
 
 			vwf.models.javascript.nodes['index-vwf'].orbitPoint(newintersectxy);
 			document[username + 'link'] = null;
@@ -476,8 +460,8 @@ define(function ()
 				needlogin = false;
 			
 
-			$('#MenuLogOuticon').css('background', "#555555");
-			$('#MenuLogInicon').css('background', "");
+			$('#MenuLogOuticon').addClass('icondisabled')
+			$('#MenuLogInicon').removeClass('icondisabled')
 			$('#MenuLogIn').removeAttr('disabled');
 			$('#MenuLogOut').attr('disabled', 'disabled');
 			//var parms = new Array();

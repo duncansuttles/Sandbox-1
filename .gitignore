@@ -10,3 +10,4 @@ cleanup.bat
 startup.bat
 config.json
 .directory
+*.sublime-workspace

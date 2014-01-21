@@ -28,7 +28,7 @@ var ServerFeatures = require("./serverFeatures.js");
 
 
 
-
+var errorlog = null;
 global.error = function()
 {
     var red, brown, reset;
@@ -37,6 +37,8 @@ global.error = function()
                     reset = '\u001b[0m';
                     
     var args = Array.prototype.slice.call(arguments);
+    if(errorlog)
+    errorlog.write(args[0]+'\n');
     args[0] = red + args[0] + reset;
     var level = args.splice(args.length-1)[0];
     
@@ -49,6 +51,7 @@ global.error = function()
         args.push(level)
         level = 1;
     };
+    
     
     if(level <= global.logLevel)
         console.log.apply(this,args);
@@ -132,13 +135,6 @@ function startVWF(){
 	   console.log('server cache disabled');
 	}
 	
-	p = process.argv.indexOf('-build') >= 0 ? true : configSettings.build;
-	if(p)
-	{
-	  //build the VWF AMD with requrie optimizer
-	  BuildVWF();
-	}
-	
 	FileCache.minify = process.argv.indexOf('-min') >= 0 ? true : !!configSettings.minify;
 	var compile = process.argv.indexOf('-compile') >= 0 ? true  : !!configSettings.compile;
 	if(compile)
@@ -158,18 +154,28 @@ function startVWF(){
 	}	
 	
 
+	//global error handler
+	process.on('uncaughtException', function(err) {
+    // handle the error safely
+    	global.error(err.message);
+	});
 	
 	//Boot up sequence. May call immediately, or after build step	
 	function StartUp()
 	{
 		SandboxAPI.setDAL(DAL);
 		SandboxAPI.setDataPath(datapath);
+		errorlog = fs.createWriteStream(SandboxAPI.getDataPath()+'//Logs/errors_'+(((new Date()).toString())).replace(/[^0-9A-Za-z]/g,'_'), {'flags': 'a'});
 		Shell.setDAL(DAL);
 		Landing.setDAL(DAL);
 		Landing.setDocumentation(configSettings);
 		reflector.setDAL(DAL);
 		appserver.setDAL(DAL);
+		ServerFeatures.setDAL(DAL);
 		
+
+		
+
 		DAL.startup(function(){
 			
 			global.sessions = [];
@@ -217,6 +223,7 @@ function startVWF(){
 			global.log(brown+'minify is ' + FileCache.minify+reset,0);
 			Shell.StartShellInterface();  
 			reflector.startup(listen);
+			
 		});
 	} //end StartUp
 	//Use Require JS to optimize and the main application file.
@@ -224,24 +231,25 @@ function startVWF(){
 	{
 		var config = {
 		    baseUrl: './support/client/lib',
-		    name:'boot',
-		    out:'./build/boot.js'
+		    name:'load',
+		    out:'./build/load.js'
 		};
 		
 		//This will concatenate almost 50 of the project JS files, and serve one file in it's place
 		requirejs.optimize(config, function (buildResponse) {
 		
 			console.log('RequrieJS Build complete');
+			console.log(buildResponse);
 			async.series([
 			function(cb3)
 			{
 				
 				console.log('Closure Build start');
 				//lets do the most agressive compile possible here!
-				if(fs.existsSync("./build/compiler.jar"))
+				if(false && fs.existsSync("./build/compiler.jar"))
 				{
 
-					var c1 = exec('java -jar compiler.jar --js boot.js --compilation_level ADVANCED_OPTIMIZATIONS --js_output_file boot-c.js',{cwd:"./build/"},
+					var c1 = exec('java -jar compiler.jar --js boot.js --compilation_level ADVANCED_OPTIMIZATIONS --js_output_file boot-c.js',{cwd:"./build/",maxBuffer:1024*1024},
 					function (error, stdout, stderr) {
 					  
 					 	//console.log('stdout: ' + stdout);
@@ -270,7 +278,7 @@ function startVWF(){
 				console.log('loading '+ config.out);
 				var contents = fs.readFileSync(config.out, 'utf8');
 				//here, we read the contents of the built boot.js file
-				var path = libpath.normalize('./support/client/lib/boot.js');
+				var path = libpath.normalize('./support/client/lib/load.js');
 				path = libpath.resolve(__dirname, path);			
 				//we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
 				zlib.gzip(contents,function(_,zippeddata)
@@ -281,7 +289,7 @@ function startVWF(){
 					    newentry.stats = fs.statSync(config.out);
 					    newentry.zippeddata = zippeddata;
 					    newentry.datatype = "utf8";
-					    newentry.hash = hash(contents);
+					    newentry.hash = require("./filecache.js").hash(contents);
 					    FileCache.files.push(newentry); 
 					    //now that it's loaded into the filecache, we can delete it
 					    //fs.unlinkSync(config.out);

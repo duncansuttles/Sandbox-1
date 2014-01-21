@@ -8,6 +8,10 @@ var zlib = require('zlib');
 var compressor = require('node-minify');
 var async = require('async');
 
+    //***node, uses REGEX, escape properly!
+function strEndsWith(str, suffix) {
+    return str.match(suffix+"$")==suffix;
+}
 
 function hash(str)
 {
@@ -259,3 +263,4 @@ function _FileCache()
 }  //end FileCache
 
 exports._FileCache = _FileCache;
+exports.hash = hash;

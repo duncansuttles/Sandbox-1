@@ -50,27 +50,29 @@
 			//for the subNode case
 			this.setAsset = function(asset)
 			{
-				this.initializedFromAsset = true;
-				this.backupmats = [];
-				this.backupMatrix = asset.matrix.clone();
-				this.rootnode = asset;
-				this.rootnode = asset;
-				asset.initializedFromAsset = true;
-				var list = [];
-				this.GetAllLeafMeshes(this.rootnode,list);
-				for(var i =0; i < list.length; i++)
+				if(asset)
 				{
-					if(list[i].material)
+					this.initializedFromAsset = true;
+					this.backupmats = [];
+					this.backupMatrix = asset.matrix.clone();
+					this.rootnode = asset;
+					this.rootnode = asset;
+					asset.initializedFromAsset = true;
+					var list = [];
+					this.GetAllLeafMeshes(this.rootnode,list);
+					for(var i =0; i < list.length; i++)
 					{
-						this.backupmats.push([list[i],list[i].material.clone()]);
-					}					
+						if(list[i].material)
+						{
+							this.backupmats.push([list[i],list[i].material.clone()]);
+						}					
+					}
+					asset.matrixAutoUpdate = false;
+					asset.updateMatrixWorld(true);      
+					_SceneManager.setDirty(asset);	
+					
+					this.settingProperty('transform',this.gettingProperty('transform'));
 				}
-				asset.matrixAutoUpdate = false;
-				asset.updateMatrixWorld(true);      
-				_SceneManager.setDirty(asset);	
-				
-				this.settingProperty('transform',this.gettingProperty('transform'));
-			
 			}
 			this.deletingNode = function()
 			{
@@ -130,30 +132,25 @@
 				}
 
 			}
-			this.loaded = function(asset)
+			this.GetAllLeafMeshes = function(threeObject,list)
 			{
-				_ProgressBar.hide();
-				if(!asset)
+				if(threeObject instanceof THREE.Mesh)
 				{
-					this.loadFailed();
-					return;
+					list.push(threeObject);
 				}
-				
-				$(document).trigger('EndParse',['Loading...',assetSource]);
-				
-				
-				//get the entry from the asset registry
-				reg = this.assetRegistry[this.assetSource];
-				//it's not pending, and it is loaded
-				reg.pending = false;
-				reg.loaded = true;
-				//store this asset in the registry
-
-				reg.node = asset.scene.clone();
-				
-				var list = [];
+				if(threeObject.children)
+				{
+					for(var i=0; i < threeObject.children.length; i++)
+					{
+						GetAllLeafMeshes(threeObject.children[i],list);
+					}               
+				}     
+			}
+			this.cleanTHREEJSnodes = function(node)
+			{
+					var list = [];
 					
-					this.GetAllLeafMeshes(reg.node,list);
+					this.GetAllLeafMeshes(node,list);
 					for(var i =0; i < list.length; i++)
 					{
 						if(list[i].material)
@@ -205,9 +202,32 @@
 							}
 						}
 					}
+			}
+			this.loaded = function(asset)
+			{
+				_ProgressBar.hide();
+				if(!asset)
+				{
+					this.loadFailed();
+					return;
+				}
 				
-					
+				$(document).trigger('EndParse',['Loading...',assetSource]);
+				
+				
+				//get the entry from the asset registry
+				reg = this.assetRegistry[this.assetSource];
+				//it's not pending, and it is loaded
+				reg.pending = false;
+				reg.loaded = true;
+				//store this asset in the registry
+
+				reg.node = asset.scene.clone();
+				
+				this.cleanTHREEJSnodes(reg.node);
+				
 				this.getRoot().add(reg.node.clone());
+				this.getRoot().sceneManagerUpdate();
 				
 				this.settingProperty('materialDef',this.materialDef);
 				//if any callbacks were waiting on the asset, call those callbacks
@@ -248,21 +268,26 @@
 			assetRegistry[assetSource].loaded = false;
 			assetRegistry[assetSource].pending = false;
 			assetRegistry[assetSource].callbacks = [];
-		}
-		this.GetAllLeafMeshes = function(threeObject,list)
+
+			//see if it was preloaded
+			if(childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed' && _assetLoader.getUtf8Json(assetSource))
 			{
-				if(threeObject instanceof THREE.Mesh)
-				{
-					list.push(threeObject);
-				}
-				if(threeObject.children)
-				{
-					for(var i=0; i < threeObject.children.length; i++)
-					{
-						GetAllLeafMeshes(threeObject.children[i],list);
-					}               
-				}     
+
+				assetRegistry[assetSource].loaded = true;
+				assetRegistry[assetSource].pending = false;
+				assetRegistry[assetSource].node = _assetLoader.getUtf8Json(assetSource).scene;
+				this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
 			}
+			if(childType == 'subDriver/threejs/asset/vnd.collada+xml' && _assetLoader.getCollada(assetSource))
+			{
+				
+				assetRegistry[assetSource].loaded = true;
+				assetRegistry[assetSource].pending = false;
+				assetRegistry[assetSource].node = _assetLoader.getCollada(assetSource).scene;
+				this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
+			}
+		}
+		
 			
 			//grab the registry entry for this asset
 			var reg = assetRegistry[assetSource];
@@ -280,14 +305,14 @@
 				{
 					this.loader = new THREE.ColladaLoader();
 					
-					this.loader.load(assetSource,this.loaded,this.loadFailed.bind(this));
+					this.loader.load(assetSource,this.loaded.bind(this),this.loadFailed.bind(this));
 					
 					asyncCallback(false);
 				}
 				if(childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed')
 				{
 					
-					this.loader = new UTF8JsonLoader({source:assetSource},this.loaded,this.loadFailed);
+					this.loader = new UTF8JsonLoader({source:assetSource},this.loaded.bind(this),this.loadFailed.bind(this));
 					
 					asyncCallback(false);
 				}
@@ -300,7 +325,7 @@
 			{
 				
 				this.getRoot().add(reg.node.clone());
-				
+				this.getRoot().sceneManagerUpdate();
 				var list = [];
 					
 					this.GetAllLeafMeshes(this.rootnode,list);

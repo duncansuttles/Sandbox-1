@@ -1,8 +1,21 @@
+define( ["vwf/model/threejs/three","vwf/model/threejs/_THREERayTracer"], function( three, tracer ) {
+	
+
+function GUID()
+{
+	var S4 = function ()
+	{
+		return Math.floor(Math.random() * 0x10000 /* 65536 */ ).toString(16);
+	};
+	return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
+} 
+
+//values tuned for VTCE
 var maxObjects = 5; 
-var maxDepth = 16;
-var batchAtLevel = 8;
+var maxDepth = 8;
+var batchAtLevel = 2;
 var drawSceneManagerRegions = false;
-var maxSize = 64000;
+var maxSize = 640;
 function SceneManager(scene)
 {
 	
@@ -24,12 +37,19 @@ function GetAllLeafMeshes(threeObject,list)
 }
 SceneManager.prototype.forceBatchAll = function()
 {
+
 	var list = [];
 	GetAllLeafMeshes(this.scene,list);
 	for(var i = 0; i < list.length; i++)
 	{
+		if(list[i].material.skinning) 
+		continue;
+		if(list[i] instanceof THREE.SkinnedMesh)
+		continue;
+
 		if(list[i].setStatic)
-			list[i].setStatic(true);
+			
+				list[i].setStatic(true);
 	}
 }
 SceneManager.prototype.forceUnbatchAll = function()
@@ -53,7 +73,9 @@ SceneManager.prototype.rebuild = function(mo,md)
 	this.max = [maxSize,maxSize,maxSize];
 	this.root = new SceneManagerRegion(this.min,this.max,0,this.scene,0);
 	for(var i =0; i < children.length; i++)
+	{
 		this.root.addChild(children[i]);
+	}
 }
 SceneManager.prototype.show = function()
 {
@@ -185,16 +207,14 @@ SceneManager.prototype.update = function(dt)
 		//only update at most one batch manager per frame
 		if(this.BatchManagers[i].dirty)
 		{	
-			_ProgressBar.show()
-			_ProgressBar.setMessage('Batching');
-			_ProgressBar.setProgress(1- dirtybatchcount/this.BatchManagers.length);
+			
 			this.BatchManagers[i].update();
 			break;
 		}
 	}
 	if(dirtybatchcount == 0)
 	{
-		_ProgressBar.hide();
+		
 	}
 	var removelist = [];
 	for(var i =0; i < this.tempDebatchList.length; i++)
@@ -381,7 +401,7 @@ SceneManager.prototype.initialize = function(scene)
 	THREE.Object3D.prototype.add_internal = THREE.Object3D.prototype.add;
 	THREE.Object3D.prototype.add = function(child,SceneManagerIgnore)
 	{
-		
+		if(!child) return;
 		this.add_internal(child);
 		
 		
@@ -410,6 +430,12 @@ SceneManager.prototype.initialize = function(scene)
 		GetAllLeafMeshes(child,list);
 		for(var i =0; i < list.length; i++)
 		{
+			delete list[i].tempbounds;
+			list[i].updateMatrixWorld(true);
+			
+		}
+		for(var i =0; i < list.length; i++)
+		{
 			_SceneManager.addChild(list[i]);
 		}
 		
@@ -430,6 +456,16 @@ SceneManager.prototype.initialize = function(scene)
 		for(var i =0; i < meshes.length; i++)
 		{
 			meshes[i].sceneManagerDelete();
+			//_SceneManager.removeChild(meshes[i]);
+		}
+	}
+	THREE.Object3D.prototype.materialUpdated = function()
+	{
+		var meshes = [];
+		GetAllLeafMeshes(this,meshes);		
+		for(var i =0; i < meshes.length; i++)
+		{
+			meshes[i].materialUpdated();
 			//_SceneManager.removeChild(meshes[i]);
 		}
 	}
@@ -494,6 +530,7 @@ SceneManager.prototype.initialize = function(scene)
 	}
 	THREE.Object3D.prototype.sceneManagerUpdate = function()
 	{
+		this.updateMatrixWorld(true);
 		if(this.isDynamic && this.isDynamic()) return;
 		for(var i =0; i <  this.children.length; i++)
 		{
@@ -683,6 +720,17 @@ SceneManagerRegion.prototype.desplit = function()
 	
 	this.childRegions = [];
 }
+SceneManagerRegion.prototype.getLeaves = function(list)
+{
+	if(!list)
+		list = [];
+	for(var i = 0; i < this.childRegions.length; i++)
+	{
+		this.childRegions[i].getLeaves(list);
+	}
+	if(this.childRegions.length == 0)
+		list.push(this);
+}
 SceneManagerRegion.prototype.completelyContains = function(object)
 {
 	
@@ -766,9 +814,13 @@ SceneManagerRegion.prototype.distributeObject = function(object)
 					_SceneManager.tempDebatchList.push(this);
 				}	
 				
-				this.updateMatrixWorld();
+				this.updateMatrixWorld(true);
+
 				this.tempbounds = object.GetBoundingBox(true).transformBy(this.getModelMatrix());
+
+
 				this.sceneManagerNode.updateObject(this);
+				
 			}.bind(object)
 			object.sceneManagerDelete = function()
 			{
@@ -909,7 +961,6 @@ SceneManagerRegion.prototype.CPUPick = function(o,d,opts)
 {
 	
 	var hits = [];
-	
 	//if no faces, can be no hits. 
 	//remember, faces is all faces in this node AND its children
 	if(this.getChildCount().length == 0)
@@ -919,6 +970,12 @@ SceneManagerRegion.prototype.CPUPick = function(o,d,opts)
 	if(this.testBoundsRay(o,d) == false)
 		return hits;
 	
+	//use the render batch. Note that this will not give a VWFID, only good when you don't care what you hit
+	if(this.RenderBatchManager && opts && opts.useRenderBatches)
+	{
+		return this.RenderBatchManager.CPUPick(o,d,opts);
+	}
+
 	//the the opts specify a max dist
 	//if the start is not in me, and im to far, don't bother with my children or my objcts
 	if(opts.maxDist > 0 && this.r + MATH.distanceVec3(o,this.c) > opts.maxDist)
@@ -1055,10 +1112,10 @@ SceneManagerRegion.prototype.SphereCast = function(center,r,opts)
 	return hits;
 }
 
-SceneManagerRegion.prototype.testBoundsRay = BoundingBoxRTAS.prototype.intersect;
-SceneManagerRegion.prototype.testBoundsSphere = BoundingBoxRTAS.prototype.intersectSphere;
-SceneManagerRegion.prototype.intersect = BoundingBoxRTAS.prototype.intersect;
-SceneManagerRegion.prototype.testBoundsFrustrum = BoundingBoxRTAS.prototype.intersectFrustrum;
+SceneManagerRegion.prototype.testBoundsRay = tracer.BoundingBoxRTAS.prototype.intersect;
+SceneManagerRegion.prototype.testBoundsSphere = tracer.BoundingBoxRTAS.prototype.intersectSphere;
+SceneManagerRegion.prototype.intersect = tracer.BoundingBoxRTAS.prototype.intersect;
+SceneManagerRegion.prototype.testBoundsFrustrum = tracer.BoundingBoxRTAS.prototype.intersectFrustrum;
 
 _SceneManager = new SceneManager();
 
@@ -1086,6 +1143,8 @@ THREE.RenderBatch = function(material,scene)
 {
 	this.objects = [];
 	this.material = material;
+	//hack for VTCE - should probably find and deal with mirrored meshes better
+	
 	this.dirty = false;
 	this.scene = scene;
 	this.totalVerts = 0;
@@ -1126,6 +1185,7 @@ THREE.RenderBatch.prototype.update = function()
 }
 THREE.RenderBatch.prototype.checkSuitability = function(object)
 {
+
 	if(this.totalFaces + object.geometry.faces.length > 32767 || this.totalVerts + object.geometry.vertices.length > 32767) return false;
 	return compareMaterials(this.material,object.material);
 }
@@ -1134,9 +1194,40 @@ THREE.RenderBatch.prototype.deinitialize = function()
 	if(this.mesh)
 		this.scene.remove_internal(this.mesh);
 }
+THREE.RenderBatch.prototype.CPUPick =function(o,d,opts)
+{
+	if(this.mesh)
+		return this.mesh.CPUPick(o,d,opts);
+	return [];
+}
+THREE.RenderBatch.prototype.testForMirroredMatrix = function(matrix)
+{
+	
+	if(!matrix)
+		throw new Error('matrix was null');
+
+	var xAxis = new THREE.Vector3(matrix.elements[0],matrix.elements[4],matrix.elements[8]);
+	var yAxis = new THREE.Vector3(matrix.elements[1],matrix.elements[5],matrix.elements[9]);
+	var zAxis = new THREE.Vector3(matrix.elements[2],matrix.elements[6],matrix.elements[10]);
+
+	xAxis.normalize();
+	yAxis.normalize();
+	zAxis.normalize();
+
+	var xDot = xAxis.clone().cross(yAxis).dot(zAxis);
+	var yDot = yAxis.clone().cross(zAxis).dot(xAxis);
+	var zDot = zAxis.clone().cross(xAxis).dot(yAxis);
+
+	if(xDot * yDot * zDot < 0) 
+	{
+		
+		return true;
+	}
+	return false;
+}
 THREE.RenderBatch.prototype.build = function()
 {
-	console.log('Building batch ' + this.name + ' : objects = ' + this.objects.length); 
+	//console.log('Building batch ' + this.name + ' : objects = ' + this.objects.length); 
 	
 	//do the merge:
 	if(this.mesh)
@@ -1158,7 +1249,7 @@ THREE.RenderBatch.prototype.build = function()
 	{
 		totalUVSets = Math.max(totalUVSets,this.objects[i].geometry.faceVertexUvs.length);
 	}
-	console.log(totalUVSets);
+	//console.log(totalUVSets);
 	for(var i = 0; i < totalUVSets; i++)
 	{
 		geo.faceVertexUvs[i] = [];
@@ -1168,6 +1259,8 @@ THREE.RenderBatch.prototype.build = function()
 		
 		var tg = this.objects[i].geometry;
 		var matrix = this.objects[i].matrixWorld.clone();
+		var matrixIsMirrored = this.testForMirroredMatrix(matrix);
+		
 		var normalMatrix = new THREE.Matrix3();
 		normalMatrix.getInverse(matrix);
 		normalMatrix.transpose();
@@ -1183,13 +1276,28 @@ THREE.RenderBatch.prototype.build = function()
 					newface = new THREE.Face4();
 				else
 					newface = new THREE.Face3();
-					
-				newface.a = face.a + geo.vertices.length;	
-				newface.b = face.b + geo.vertices.length;
-				newface.c = face.c + geo.vertices.length;
-				if(face.d !== undefined)
-					newface.d = face.d + geo.vertices.length;
-
+				
+				if(!matrixIsMirrored)
+				{	
+					newface.a = face.a + geo.vertices.length;	
+					newface.b = face.b + geo.vertices.length;
+					newface.c = face.c + geo.vertices.length;
+					if(face.d !== undefined)
+						newface.d = face.d + geo.vertices.length;
+				}else
+				{
+					newface.b = face.a + geo.vertices.length;	
+					newface.a = face.b + geo.vertices.length;
+					if(face.d !== undefined)
+					{
+						newface.d = face.c + geo.vertices.length;
+						newface.c = face.d + geo.vertices.length;
+					}else
+					{
+						newface.c = face.c + geo.vertices.length;
+					}
+						
+				}
 				//newface.materialIndex = face.materialIndex;
 				newface.centroid.copy( face.centroid );
 				newface.normal.copy(face.normal);		
@@ -1265,9 +1373,117 @@ function compareMaterials(m1,m2)
 	
 	if(!m1 || !m2) return false;
 
-	if(!(m1 instanceof THREE.MeshPhongMaterial)) return false;
-	if(!(m2 instanceof THREE.MeshPhongMaterial)) return false;
+	// this does not catch all!!!!
+	if(m1.constructor != m2.constructor)
+	{
+		return false;
+	}
+	if(m1 instanceof THREE.MeshPhongMaterial && m2 instanceof THREE.MeshPhongMaterial)
+	{
+		return compareMaterialsPhong(m1,m2);
+	}
+	if(m1 instanceof THREE.MeshBasicMaterial && m2 instanceof THREE.MeshBasicMaterial)
+	{
+		return compareMaterialsBasic(m1,m2);
+	}
+	if(m1 instanceof THREE.MeshLambertMaterial && m2 instanceof THREE.MeshLambertMaterial)
+	{
+		return compareMaterialsLambert(m1,m2);
+	}
+	if(m1 instanceof THREE.MeshFaceMaterial && m2 instanceof THREE.MeshFaceMaterial)
+	{
+		return compareMaterialsFace(m1,m2);
+	}
+	return false;
+}
 
+function compareMaterialsFace(m1,m2)
+{
+	//TODO: not used in VTCE
+}
+
+function compareMaterialsBasic(m1,m2)
+{
+	//TODO: not used in VTCE
+}
+
+function compareMaterialsLambert(m1,m2)
+{
+	
+	var delta = 0;
+	delta += Math.abs(m1.color.r - m2.color.r);
+	delta += Math.abs(m1.color.g - m2.color.g);
+	delta += Math.abs(m1.color.b - m2.color.b);
+	
+	delta += Math.abs(m1.ambient.r - m2.ambient.r);
+	delta += Math.abs(m1.ambient.g - m2.ambient.g);
+	delta += Math.abs(m1.ambient.b - m2.ambient.b);
+	
+	delta += Math.abs(m1.emissive.r - m2.emissive.r);
+	delta += Math.abs(m1.emissive.g - m2.emissive.g);
+	delta += Math.abs(m1.emissive.b - m2.emissive.b);
+
+	delta += Math.abs(m1.opacity - m2.opacity);
+	
+	delta += Math.abs(m1.transparent - m2.transparent);
+	
+	delta += Math.abs(m1.reflectivity - m2.reflectivity);
+	delta += Math.abs(m1.alphaTest - m2.alphaTest);	
+	
+	delta += m1.side != m2.side ? 1000 : 0;
+		var mapnames = ['map','lightMap','specularMap'];
+        for(var i =0; i < mapnames.length; i++)
+        {
+				var mapname = mapnames[i];
+				
+				
+				
+				
+				
+				if(m1[mapname] && !m2[mapname])
+				{
+					delta += 1000;
+				}
+				if(!m1[mapname] && m2[mapname])
+				{
+					delta += 1000;
+				}
+				if(m1[mapname] && m2[mapname])
+				{
+					if(m1[mapname].image && m2[mapname].image)
+					if(m1[mapname].image.src && m1[mapname].image.src)
+					{
+						if(m1[mapname].image.src.toString() != m2[mapname].image.src.toString())
+							delta += 1000;
+						if(m1[mapname]._SMsrc != m2[mapname]._SMsrc)
+							delta += 1000;
+					}else
+					{
+						if(m1[mapname].image != m2[mapname].image)
+							delta += 1000;
+					}
+				
+				
+               
+                delta += m1[mapname].wrapS != m1[mapname].wrapS;
+				delta += m1[mapname].wrapT != m1[mapname].wrapT;
+                delta += Math.abs(m1[mapname].mapping.constructor != m2[mapname].mapping.constructor) * 1000;	
+				delta += Math.abs(m1[mapname].repeat.x - m2[mapname].repeat.x);
+				delta += Math.abs(m1[mapname].repeat.y - m2[mapname].repeat.y);
+				delta += Math.abs(m1[mapname].offset.x - m2[mapname].offset.x);
+				delta += Math.abs(m1[mapname].offset.y - m2[mapname].offset.y);
+				}
+			
+        }
+   		
+	if(delta < .001)
+		return true;
+	return false;	
+}
+
+function compareMaterialsPhong(m1,m2)
+{
+	
 	var delta = 0;
 	delta += Math.abs(m1.color.r - m2.color.r);
 	delta += Math.abs(m1.color.g - m2.color.g);
@@ -1317,10 +1533,17 @@ function compareMaterials(m1,m2)
 				if(m1[mapname] && m2[mapname])
 				{
 					if(m1[mapname].image && m2[mapname].image)
-					if(m1[mapname].image.src.toString() != m2[mapname].image.src.toString())
-						delta += 1000;
-					if(m1[mapname]._SMsrc != m2[mapname]._SMsrc)
-						delta += 1000;
+					if(m1[mapname].image.src && m1[mapname].image.src)
+					{
+						if(m1[mapname].image.src.toString() != m2[mapname].image.src.toString())
+							delta += 1000;
+						if(m1[mapname]._SMsrc != m2[mapname]._SMsrc)
+							delta += 1000;
+					}else
+					{
+						if(m1[mapname].image != m2[mapname].image)
+							delta += 1000;
+					}
 				
 				
                
@@ -1351,7 +1574,14 @@ THREE.RenderBatchManager = function(scene,name)
 	this.batches = [];
 	
 }
+THREE.RenderBatchManager.prototype.CPUPick =function(o,d,opts)
+{
+	var hits = [];
+		for(var i =0; i < this.batches.length; i++)
+			hits = hits.concat(this.batches[i].CPUPick(o,d,opts));
+	return hits;	
 
+}
 THREE.RenderBatchManager.prototype.update = function()
 {
 	
@@ -1446,3 +1676,10 @@ THREE.RenderBatchManager.prototype.deinitialize = function(child)
 		this.batches[i].deinitialize();
 	}	
 }
+
+
+
+return _SceneManager;
+});
+
+

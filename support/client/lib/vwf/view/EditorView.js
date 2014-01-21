@@ -1,5 +1,5 @@
 "use strict";
-define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/src/alertify","vwf/view/editorview/Menubar","vwf/view/editorview/ObjectPools","vwf/view/editorview/LocationTools", "vwf/view/editorview/WindowResize","vwf/view/editorview/_PermissionsManager", "vwf/view/editorview/InputSetup", "vwf/view/editorview/SaveLoadTimer", "vwf/view/editorview/TouchHandler", "vwf/view/editorview/SidePanel", "vwf/view/editorview/Toolbar", "vwf/view/editorview/ChatSystemGUI", "vwf/view/editorview/PrimitiveEditor", "vwf/view/editorview/MaterialEditor", "vwf/view/editorview/Notifier", "vwf/view/editorview/ScriptEditor", "vwf/view/editorview/Editor", "vwf/view/editorview/_3DRIntegration", "vwf/view/editorview/InventoryManager", "vwf/view/editorview/HeirarchyManager",  "vwf/view/editorview/DataManager", "vwf/view/editorview/UserManager", "vwf/view/editorview/help","vwf/view/editorview/SideTabs","vwf/view/editorview/wireeditor"], function (module, version, view)
+define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/src/alertify","vwf/view/editorview/Menubar","vwf/view/editorview/ObjectPools","vwf/view/editorview/LocationTools", "vwf/view/editorview/WindowResize","vwf/view/editorview/_PermissionsManager", "vwf/view/editorview/InputSetup", "vwf/view/editorview/SaveLoadTimer", "vwf/view/editorview/TouchHandler", "vwf/view/editorview/SidePanel", "vwf/view/editorview/Toolbar", "vwf/view/editorview/ChatSystemGUI", "vwf/view/editorview/PrimitiveEditor", "vwf/view/editorview/MaterialEditor", "vwf/view/editorview/Notifier", "vwf/view/editorview/ScriptEditor", "vwf/view/editorview/Editor", "vwf/view/editorview/_3DRIntegration", "vwf/view/editorview/InventoryManager", "vwf/view/editorview/HeirarchyManager",  "vwf/view/editorview/DataManager", "vwf/view/editorview/UserManager", "vwf/view/editorview/help","vwf/view/editorview/SideTabs","vwf/view/editorview/wireeditor","vwf/view/editorview/selectionEditor"], function (module, version, view)
 {
 	return view.load(module,
 	{
@@ -8,17 +8,8 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 		{
 			
 			
-			$(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/ddsmoothmenu.css" />');
-			$(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/ddsmoothmenu-v.css" />')
-			$(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/Editorview.css" />')
-			$(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/alertify.js-0.3.9/themes/alertify.core.css" />')
-			$(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/alertify.js-0.3.9/themes/alertify.bootstrap.css" />')
-			
-			
-			$(document.head).append('<script src="vwf/model/threejs/helvetiker_regular.typeface.js"></script>');
-			$(document.head).append('<script src="vwf/model/threejs/tinyxmlw3cdom.js"></script>');
-			$(document.head).append('<script src="vwf/model/threejs/tinyxmlsax.js"></script>');
-			$(document.head).append('<script src="vwf/model/threejs/tinyxmlxpath.js"></script>');
+
+
 			
 			if (!window._EditorInitialized)
 			{
@@ -79,6 +70,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 						window.HierarchyManager = require("vwf/view/editorview/HeirarchyManager").getSingleton();;
 						window._PermissionsManager = require("vwf/view/editorview/_PermissionsManager").getSingleton();
 						window._WireEditor = require("vwf/view/editorview/wireeditor").getSingleton();
+						window._SelectionEditor = require("vwf/view/editorview/selectionEditor").getSingleton();
 						this.addManager(_ScriptEditor);
 						this.addManager(_ModelLibrary);
 						this.addManager(_Notifier);
@@ -90,7 +82,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 					}
 					window._LocationTools = require("vwf/view/editorview/LocationTools").getSingleton();
 					window._UserManager = require("vwf/view/editorview/UserManager").getSingleton();;
-					window.alertify = require("vwf/view/editorview/alertify.js-0.3.9/src/alertify");
+					
 
 					if(needTools)
 					{

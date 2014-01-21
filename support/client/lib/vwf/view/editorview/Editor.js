@@ -21,106 +21,9 @@ function FindMaxMin(positions)
 	return [min, max];
 }
 
-function TransformBoundingBox(matrix, bb)
-{
-	var mat = matCpy(matrix.elements);
-	mat = MATH.transposeMat4(mat);
-	//mat = MATH.inverseMat4(mat); 
-	var points = [];
-	var allpoints = [];
-	var min = bb.min;
-	var max = bb.max;
-	//list of all corners
-	points.push([min.x, min.y, min.z]);
-	points.push([min.x, min.y, max.z]);
-	points.push([min.x, max.y, min.z]);
-	points.push([min.x, max.y, max.z]);
-	points.push([max.x, min.y, min.z]);
-	points.push([max.x, min.y, max.z]);
-	points.push([max.x, max.y, min.z]);
-	points.push([max.x, max.y, max.z]);
-	for (var i = 0; i < points.length; i++)
-	{
-		//transform all points
-		allpoints = allpoints.concat(MATH.mulMat4Vec3(mat, points[i]));
-	}
-	//find new axis aligned bounds
-	var bounds = FindMaxMin(allpoints);
-	var min2 = bounds[0];
-	var max2 = bounds[1];
-	return {
-		min: new THREE.Vector3(min2[0], min2[1], min2[2]),
-		max: new THREE.Vector3(max2[0], max2[1], max2[2])
-	}
-}
-THREE.Object3D.prototype.getBoundingBoxes = function (bbxes, donttransform)
-{
-	var object = this;
-	if (object.geometry)
-	{
-		object.geometry.computeBoundingBox();
-		var bb = object.geometry.boundingBox;
-		if (!donttransform) bb = TransformBoundingBox(this.matrix, bb);
-		bbxes.push(bb);
-	}
-	else
-	{
-		for (i in object.children)
-		{
-			child = object.children[i];
-			var bbs = [];
-			child.getBoundingBoxes(bbs);
-			if (!donttransform)
-			{
-				for (var i = 0; i < bbs.length; i++) bbs[i] = TransformBoundingBox(this.matrix, bbs[i]);
-			}
-			for (var i = 0; i < bbs.length; i++) bbxes.push(bbs[i]);
-		}
-	}
-}
-THREE.Object3D.prototype.getBoundingBox = function (donttransform)
-{
-	var object = this;
-	var boundingBox = {};
-	var max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
-	var min = new THREE.Vector3(Infinity, Infinity, Infinity);
-	var bboxes = [];
-	object.getBoundingBoxes(bboxes, donttransform);
-	for (i in bboxes)
-	{
-		var bbox = bboxes[i];
-		var bbmin = bbox.min;
-		var bbmax = bbox.max;
-		if (bbmin.x < min.x)
-		{
-			min.x = bbmin.x;
-		}
-		if (bbmin.y < min.y)
-		{
-			min.y = bbmin.y;
-		}
-		if (bbmin.z < min.z)
-		{
-			min.z = bbmin.z;
-		}
-		if (bbmax.x > max.x)
-		{
-			max.x = bbmax.x;
-		}
-		if (bbmax.y > max.y)
-		{
-			max.y = bbmax.y;
-		}
-		if (bbmax.z > max.z)
-		{
-			max.z = bbmax.z;
-		}
-	}
-	boundingBox.max = max;
-	boundingBox.min = min;
-	object.boundingBox = boundingBox;
-	return object.boundingBox;
-}
+
+
+
 
 define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (Log,ProgressBar)
 {
@@ -354,6 +257,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.ShowContextMenu = function (e)
 		{
+			
 			e.preventDefault();
 			e.stopPropagation();
 			var ray = this.GetWorldPickRay(e);
@@ -361,7 +265,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var pickopts = new THREE.CPUPickOptions();
 			pickopts.OneHitPerMesh = true;
 			MoveGizmo.InvisibleToCPUPick = true;
-			var pick = this.ThreeJSPick(campos, ray,{OneHitPerMesh:true});
+			var pick = this.ThreeJSPick(campos, ray,{OneHitPerMesh:false});
 			MoveGizmo.InvisibleToCPUPick = false;
 			var vwfnode;
 			while (pick && pick.object && !pick.object.vwfID) pick.object = pick.object.parent;
@@ -2085,7 +1989,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				if(!self.findviewnode(id)) return null;
 				var box;
 				var mat;
-				box = self.findviewnode(id).getBoundingBox(true);
+				
+				box = self.findviewnode(id).GetBoundingBox(true);
 				mat = toGMat(self.findviewnode(id).matrixWorld).slice(0);
 				var color = [1, 1, 1, 1];
 				if (this.findviewnode(id).initializedFromAsset) color = [1, 0, 0, 1];
@@ -2093,7 +1998,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				if (vwf.getProperty(id, 'type') == 'Group' && vwf.getProperty(id, 'open') == true) color = [.7, 1.0, .7, 1];
 				var boundingbox = new THREE.Object3D();
 				boundingbox.name = "Bounds_+" + id;
-				boundingbox.add(this.BuildBox([box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z], [box.min.x + (box.max.x - box.min.x) / 2, box.min.y + (box.max.y - box.min.y) / 2, box.min.z + (box.max.z - box.min.z) / 2], color), true);
+				boundingbox.add(this.BuildBox([box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]], [box.min[0] + (box.max[0] - box.min[0]) / 2, box.min[1] + (box.max[1] - box.min[1]) / 2, box.min[2] + (box.max[2] - box.min[2]) / 2], color), true);
 				boundingbox.children[0].name = "Bounds_+" + id + "_Mesh";
 				boundingbox.matrixAutoUpdate = false;
 				boundingbox.matrix.elements = MATH.transposeMat4(mat);
@@ -2876,13 +2781,13 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			$('#StatusPickMode').text('Pick: ' + e);
 			if (e == 'Pick') 
 			{	
-				$('#MenuSelectPickicon').css('background', "#9999FF");
+				$('#MenuSelectPickicon').addClass('iconselected')
 				$('#glyphOverlay').show();
 				
 			}
 			else {
 			
-				$('#MenuSelectPickicon').css('background', "")
+				$('#MenuSelectPickicon').removeClass('iconselected')
 				$('#glyphOverlay').hide();
 				
 			}
@@ -2910,14 +2815,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			if (e == WorldCoords)
 			{
 				$('#StatusCoords').text('World Coords');
-				$('#MenuWorldicon').css('background', "#9999FF");
-				$('#MenuLocalicon').css('background', "");
+				$('#MenuWorldicon').addClass('iconselected')
+				$('#MenuLocalicon').removeClass('iconselected');
 			}
 			else
 			{
 				$('#StatusCoords').text('Local Coords');
-				$('#MenuWorldicon').css('background', "");
-				$('#MenuLocalicon').css('background', "#9999FF");
+				$('#MenuWorldicon').removeClass('iconselected');
+				$('#MenuLocalicon').addClass('iconselected')
 			}
 		}.bind(this);
 		this.GetMoveGizmo = function (e)

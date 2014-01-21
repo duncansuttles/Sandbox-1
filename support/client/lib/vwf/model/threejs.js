@@ -99,7 +99,7 @@
 		return true;	
 	}
 	
-define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/threejs/backgroundLoader" ], function( module, model, utility, Color, backgroundLoader ) {
+define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/threejs/backgroundLoader","vwf/model/threejs/scenemanager"], function( module, model, utility, Color, backgroundLoader,sceneManager ) {
 
 
     return model.load( module, {
@@ -119,8 +119,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 			
             this.delayedProperties = {};
 			this.subDriverFactory = new SubDriverFactory();
-			$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/_THREERayTracer.js"></script>');
-			$(document.head).append('<script type="text/javascript" src="vwf/model/threejs/scenemanager.js"></script>');
+			
 			
 			window.rebuildAllMaterials=function (start)
 			{
@@ -392,6 +391,9 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 					
 					var scenenode = FindChildByName(parentNode.threeObject,childSource);
 					
+                    if(!scenenode)
+                        scenenode = new THREE.Object3D();
+
 					node.setAsset(scenenode);
 					node.threeObject = scenenode;
 					//we need to mark this node - because the VWF node is layered onto a GLGE node loaded from the art asset, deleteing the VWF node should not

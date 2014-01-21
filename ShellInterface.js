@@ -177,6 +177,10 @@ function StartShellInterface()
 		{
 			DAL.compactDatabase();
 		}
+		if(commands[0] == 'exec')
+		{
+			eval(commands[1]);
+		}
 		if(commands[0] && commands[0] == 'import' && commands[1])
 		{
 			if(commands[1] == 'users')

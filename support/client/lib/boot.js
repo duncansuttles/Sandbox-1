@@ -7,11 +7,16 @@ require.config({
 			'vwf/view/xapi/xapiwrapper': {
 				deps: ['vwf/view/editorview/sha256', "vwf/view/editorview/_3DRIntegration"],
 				exports: 'XAPIWrapper'
-			}
+			},
+            
+                "vwf/model/threejs/three":{
+                    exports : 'THREE'
+                }
+            
 		},
 	    waitSeconds: 15
 	  });		
-        require( [
+define( [
             
             "domReady",
             "vwf/view/editorview/ObjectPools",
@@ -37,20 +42,34 @@ require.config({
 			"messageCompress",
 			"vwf/view/xapi",
             "polyfills",
+			"assetLoader",
             "vwf/model/jqueryui",
             "vwf/view/jqueryui",
 
         ], function( ready ) {
 
+            return function(){
             require("polyfills").setup();
             require("vwf/view/editorview/ObjectPools").getSingleton();
+            window.alertify = require("vwf/view/editorview/alertify.js-0.3.9/src/alertify");
+            var assetLoader = require("assetLoader").getSingleton();
             ready( function() {
 
                 // With the scripts loaded, we must initialize the framework. vwf.initialize()
                 // accepts three parameters: a world specification, model configuration parameters,
                 // and view configuration parameters.
-				$(document.body).append('<div id="glyphOverlay" style="display:none"/>');
-                vwf.initialize(
+			$(document.body).append('<div id="glyphOverlay" style="display:none"/>');
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/ddsmoothmenu.css" />');
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/ddsmoothmenu-v.css" />')
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/Editorview.css" />')
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/images/icons/sprites.css" />')
+
+            
+            
+            $(document.head).append('<script src="vwf/model/threejs/helvetiker_regular.typeface.js"></script>');
+
+                assetLoader.load(function(){
+                    vwf.initialize(
 
                     // This is the world specification. The world may be specified using a component
                     // literal as shown here, or the specification may be placed in a network-
@@ -82,8 +101,8 @@ require.config({
                         "vwf/model/object",
                     ],
 
-                    // These are the view configurations. They use the same format as the model
-                    // configurations.
+                        // These are the view configurations. They use the same format as the model
+                        // configurations.
 
                     [
 						
@@ -98,9 +117,10 @@ require.config({
                         "vwf/view/jqueryui",
                     ]
 
-                );
+                    );
+                });
 
             } );
 
-        } );
+        }} );
 $('#sidepanel .jspContainer .jspPane').css('left',0)

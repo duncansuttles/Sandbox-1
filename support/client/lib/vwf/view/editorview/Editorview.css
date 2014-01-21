@@ -311,6 +311,8 @@
 		vertical-align: middle;
 		width: 30px;
 		height: 30px;
+		display:inline-block;
+		zoom:1.2;
 	}
 	.icon
 	{
@@ -321,20 +323,31 @@
 		border: 1px solid #505050;
 		margin-left: 3px;
 		border-radius: 6px;
-		background: -webkit-linear-gradient(right, white 0%, rgb(217, 238, 239) 100%);
-		background:white;
+		background-color: -webkit-linear-gradient(right, white 0%, rgb(217, 238, 239) 100%);
+		background-color:white;
 		padding: 1px;
 		cursor:pointer;
+		display:inline-block;
+
 	}
 	.icon:hover
 	{
-		background: -webkit-linear-gradient(left, rgb(117, 138, 339) 0%, rgb(217, 238, 239) 100%);
+		background-color: -webkit-linear-gradient(left, rgb(117, 138, 339) 0%, rgb(217, 238, 239) 100%);
 		margin-top: 1px;
 		margin-left: 1px;
 		margin-right: 2px;
 		margin-bottom: 2px;
-		background:lightblue;
+		background-color:lightblue;
 	}
+	.iconselected
+	{
+		background-color:rgb(153, 153, 255);
+	}
+	.icondisabled
+	{
+		background-color:#555555;
+	}
+	
 	.seperator
 	{
 		width:25px;
@@ -563,7 +576,8 @@
 	position: relative;
 	height:100%;
 	z-index: 5;
-	background: #515151;
+	background: #515151 url(../../../images/ui-bg_diagonals-thick_8_333333_40x40.png) 0% 0% repeat;
+	background-size: 5%;
 }
 
 .jspPane
@@ -1123,7 +1137,136 @@ cursor: pointer;
 display: inline-block;
 
 }
+.hierarchyItemSelected
+{
+	background: lightblue url(../../../images/ui-bg_glass_75_cfe4ef_1x400.png) repeat;
+background-size: 100% 100%;
+border: 1px solid lightgray;
+}
 
+#hierarchyDisplay
+{
+	font: 1.5em sans-serif;
+	padding-bottom: 5px;
+	background: ##E9E9E9;
+	border: 1px black solid;
+	margin: 3px 3px 3px 3px;
+	height: auto;
+	background-size: 1% 100%;
+	font-family: Monaco, Menlo, 'Ubuntu Mono', Consolas, source-code-pro, monospace;
+	
+	padding-left: 5px;
+}
+
+.hierarchyItem
+{
+	font-weight: normal;
+white-space: nowrap;
+text-overflow: ellipsis;
+height: 1.3em;
+overflow: hidden;
+padding-left: 0px;
+border-bottom: 1px solid #E4E4E4;
+}
+
+.hierarchyItem:hover
+{
+background: lightblue url(../../../images/ui-bg_glass_75_cfe4ef_1x400.png) repeat;
+}
+
+.hierarchySpacer
+{
+padding-bottom: 5px;
+margin-right: 10px;
+margin-left: 0px;
+display: inline;
+height: 1.3em;
+white-space: nowrap;
+}
+
+#preloadGUI
+{
+
+position: absolute;
+width: 30%;
+height: 15%;
+background: white;
+border: 1px solid gray;
+border-radius: 6px;
+margin-left: auto;
+vertical-align: middle;
+text-align: center;
+left: 35%;
+top: 42.5%;
+overflow: hidden;
+box-shadow: 0 3px 7px rgba(0,0,0,.3);
+font-family: sans-serif;
+font-size: 17px;
+
+
+}
+
+#preloadGUI .preloadCenter
+{
+	height: 60%;
+	-webkit-margin-after: 0;
+	-webkit-margin-before: 0;
+}
+
+#preloadguiText
+{
+background: #F5F5F5;
+height: 40%;
+border-bottom-left-radius: 6px;
+border-bottom-right-radius: 6px;
+border-top-color: rgb(221, 221, 221);
+border-top-left-radius: 0px;
+border-top-right-radius: 0px;
+border-top-style: solid;
+border-top-width: 1px;
+box-shadow: rgb(255, 255, 255) 0px 1px 0px 0px inset;
+display: block;
+margin: -1px;
+position: absolute;
+width: 100%;
+color: #ccc;
+font-size: .7em;
+}
+
+#preloadprogress
+{
+	vertical-align: middle;
+margin-top: auto;
+margin-bottom: auto;
+position: absolute;
+height: 28%;
+width: 95%;
+top: 16%;
+left: 2.5%;
+}
+.progress-label {
+    position: absolute;
+font-weight: bold;
+text-shadow: 1px 1px 3px #fff;
+width: 100%;
+margin-left: auto;
+text-align: center;
+height: 100%;
+margin: 0px;
+  }
+
+  #preloadGUIBack
+  {
+position: absolute;
+width: 100%;
+height: 100%;
+left: 0%;
+top: 0%;
+background: white;
+z-index: 1000;
+box-shadow: 0px 0px 300px #666 inset;
+
+  }
 .guinode
 {
    position:absolute;

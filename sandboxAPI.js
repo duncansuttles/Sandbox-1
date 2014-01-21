@@ -11,6 +11,7 @@ var safePathRE = RegExp('/\//'+(libpath.sep=='/' ? '\/' : '\\')+'/g');
 var datapath = '.'+libpath.sep+'data';
 var DAL = null;	
 var analyticsObj;
+var assetPreload = require('./AssetPreload.js');
 // default path to data. over written by setup flags
 
 //generate a random id.
@@ -462,10 +463,13 @@ function ServeJSON(jsonobject,response,URL)
 			response.writeHead(200, {
 				"Content-Type": "text/json"
 			});
-			if (jsonobject.constructor != String)
-				response.write(JSON.stringify(jsonobject), "utf8");
-			else
-				response.write(jsonobject, "utf8");
+			if(jsonobject)
+			{
+				if (jsonobject.constructor != String)
+					response.write(JSON.stringify(jsonobject), "utf8");
+				else
+					response.write(jsonobject, "utf8");
+			}
 			response.end();
 			
 }
@@ -1285,6 +1289,13 @@ function dirTree(filename) {
     }
 }
 
+function LogError(URL,error,response)
+{
+	global.error(JSON.stringify(JSON.parse(error),null,4));
+	response.writeHead(200,{});
+	response.end();
+}
+
 //router
 function serve (request, response)
 {
@@ -1472,6 +1483,9 @@ function serve (request, response)
 			case "globalassetmetadata":{
 				getGlobalInventoryItemMetaData(URL,response);
 			} break;
+			case "getassets":{
+				assetPreload.getAssets(request,response,URL);
+			} break;
 			default:
 			{
 				_404(response);
@@ -1506,6 +1520,9 @@ function serve (request, response)
 		switch(command)
 		{	
 
+			case "error":{
+				LogError(URL,body,response);	
+			} break;
 			case "thumbnail":{
 				SaveThumbnail(URL,SID,body,response);	
 			} break;
@@ -1586,6 +1603,7 @@ exports.setDataPath = function(p)
 exports.setDAL = function(p)
 {
 	DAL = p;
+	assetPreload.setSandboxAPI(this);
 }
 exports.getDataPath = function()
 {

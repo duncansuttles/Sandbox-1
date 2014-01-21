@@ -127,6 +127,7 @@ properties:
                 {
                     if(x.length)
                     {
+                        coordinateSystem = y;
                         y = x[1];
                         z = x[2];
                         x = x[0];

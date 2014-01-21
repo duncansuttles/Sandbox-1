@@ -95,7 +95,7 @@ define(function ()
 		'</div>' +
 		'</div>');
 		$('#primeditortitle').append('<a id="primitiveeditorclose" href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
-		$('#primeditortitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/properties.png" />');
+		$('#primeditortitle').prepend('<div class="headericon properties" />');
 		$('#primitiveeditorclose').click(function ()
 		{
 			_PrimitiveEditor.hide();
@@ -330,14 +330,14 @@ define(function ()
 					this.addBehaviors(node);
 					$("#accordion").accordion(
 					{
-						fillSpace: true,
-						change: function ()
+						heightStyle: 'fill',
+						activate: function ()
 						{
 							if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 						}
 					});
 					$(".ui-accordion-content").css('height', 'auto');
-					this.updateOtherWindows();
+					
 				}
 				else
 				{
@@ -349,15 +349,7 @@ define(function ()
 				console.log(e);
 			}
 		}
-		this.updateOtherWindows = function ()
-		{
-			$('#materialeditor').dialog('option', 'position', [1282, 40]);
-			if (this.isOpen())
-			{
-				var t = $('#PrimitiveEditor').closest('.ui-dialog').height() + $('#PrimitiveEditor').offset().top;
-				$('#materialeditor').dialog('option', 'position', [1282, t - 20]);
-			}
-		}
+		
 		this.recursevlyAddModifiers = function (node)
 		{
 			for (var i in node.children)
@@ -415,6 +407,16 @@ define(function ()
 			var slider = $(this).attr('slider');
 			$(slider).slider('value', amount);
 			_PrimitiveEditor.setProperty(id, prop, parseFloat(amount));
+		}
+		this.primSpinner = function (e, ui)
+		{		
+			var id = $(this).attr('nodename');
+			var prop = $(this).attr('propname');
+			var amount = $(this).val();
+			var slider = $(this).attr('slider');
+			$(slider).slider('value', ui.value);
+			_PrimitiveEditor.setProperty(id, prop, parseFloat(ui.value));
+			
 		}
 		this.primPropertyValue = function (e, ui)
 		{
@@ -572,11 +574,20 @@ define(function ()
 					var inputstyle = "";
 					$('#basicSettings' + nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">' + editordata[i].displayname + ': </div>');
 					$('#basicSettings' + nodeid).append('<input class="primeditorinputbox" style="' + inputstyle + '" type="number" id="' + nodeid + editordata[i].property + 'value"></input>');
-					$('#' + nodeid + editordata[i].property + 'value').val(vwf.getProperty(node.id, editordata[i].property));
-					$('#' + nodeid + editordata[i].property + 'value').change(this.primPropertyTypein);
+				//	$('#' + nodeid + editordata[i].property + 'value').val(vwf.getProperty(node.id, editordata[i].property));
+				//	$('#' + nodeid + editordata[i].property + 'value').change(this.primPropertyTypein);
 					$('#' + nodeid + editordata[i].property + 'value').attr("nodename", nodeid);
 					$('#' + nodeid + editordata[i].property + 'value').attr("propname", editordata[i].property);
 					$('#' + nodeid + editordata[i].property + 'value').attr("slider", '#' + nodeid + i);
+					$('#' + nodeid + editordata[i].property + 'value').spinner({
+						step:parseFloat(editordata[i].step) || 1,
+						change:this.primPropertyTypein,
+						spin:this.primSpinner
+						
+					})
+					$('#' + nodeid + editordata[i].property + 'value').spinner('value',vwf.getProperty(node.id, editordata[i].property));
+					$('#' + nodeid + editordata[i].property + 'value').parent().css('float','right');
+					
 					$('#basicSettings' + nodeid).append('<div id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/>');
 					var val = vwf.getProperty(node.id, editordata[i].property);
 					if (val == undefined) val = 0;

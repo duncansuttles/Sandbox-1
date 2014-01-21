@@ -1,6 +1,6 @@
 
 
-
+var DAL;
 //302 redirect
 function _302(url,response)
 {
@@ -173,3 +173,7 @@ exports.versioning = versioning;
 exports.prettyWorldURL = prettyWorldURL;
 exports.waitForAllBody = waitForAllBody;
 exports.CORSSupport = CORSSupport;
+exports.setDAL = function(d)
+{
+DAL = d;
+}

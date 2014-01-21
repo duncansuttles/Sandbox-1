@@ -136,6 +136,8 @@ define(function ()
 			$('#saveMethod').css('top', $('#ScriptEditor').height() - 75);
 			$('#saveEvent').css('top', $('#ScriptEditor').height() - 75);
 			$('#saveProperty').css('top', $('#ScriptEditor').height() - 75);
+			$('.ace_scroller').css('left',40);
+			$('.ace_gutter-layer').css('width',40);
 		}
 		$(document.body).append('<script src="../vwf/view/editorview/ace/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>');
 		$(document.body).append("<div id='ScriptEditorAbandonChanges'>You have are about to load a different script,but you have unsaved changes to this script. Do you want to continue and abandon the changes? This action cannot be undone.</div>");
@@ -184,9 +186,9 @@ define(function ()
 		this.MethodChanged = false;
 		this.EventChanged = false;
 		//$('#ScriptEditor').resize(function(){_ScriptEditor.resize()});
-		$('#scripteditortitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/script.png" />');
-		$('#scripteditortitle').append('<img id="maximizescripteditor" style="float:right" class="icon" src="../vwf/view/editorview/images/icons/up2.png" />');
-		$('#scripteditortitle').append('<img id="hidescripteditor" class="icon" style="float:right" src="../vwf/view/editorview/images/icons/down.png" />');
+		$('#scripteditortitle').prepend('<div class="headericon script"  />');
+		$('#scripteditortitle').append('<div id="maximizescripteditor" style="float:right" class="icon up2" />');
+		$('#scripteditortitle').append('<div id="hidescripteditor" class="icon down" style="float:right"  />');
 		$('#hidescripteditor').click(function ()
 		{
 			_ScriptEditor.hide();
@@ -868,6 +870,7 @@ define(function ()
 				{
 					step: function ()
 					{
+						if(!$('#ScriptEditor').is(':visible')) return;
 						$('#ScriptEditorTabs').css('height', $('#ScriptEditor').height() + 'px');
 						$('#index-vwf').css('height', window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top - 25) + 'px');
 						_Editor.findcamera().aspect = ($('#index-vwf').width() / $('#index-vwf').height());
@@ -875,6 +878,7 @@ define(function ()
 					},
 					complete: function ()
 					{
+						
 						$('#ScriptEditor').hide();
 					}
 				});
@@ -1367,9 +1371,11 @@ define(function ()
 		{
 			if(!node)
 			{
+
 				if (this.isOpen()) this.hide();
+
 			}
-			if(node.id == 'index-vwf')
+			if(node && node.id == 'index-vwf')
 			{
 				if (this.isOpen()) this.hide();
 			}
