@@ -70,7 +70,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 						window.HierarchyManager = require("vwf/view/editorview/HeirarchyManager").getSingleton();;
 						window._PermissionsManager = require("vwf/view/editorview/_PermissionsManager").getSingleton();
 						window._WireEditor = require("vwf/view/editorview/wireeditor").getSingleton();
-						window._SelectionEditor = require("vwf/view/editorview/selectioneditor").getSingleton();
+						window._SelectionEditor = require("vwf/view/editorview/selectionEditor").getSingleton();
 						this.addManager(_ScriptEditor);
 						this.addManager(_ModelLibrary);
 						this.addManager(_Notifier);
