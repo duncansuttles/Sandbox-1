@@ -1,4 +1,4 @@
-		
+
 define([], 
 function() { return( 
 	{
@@ -7,6 +7,7 @@ function() { return(
 			
 			this.performanceNow();
 			this.errorHandler();
+			this.websocket();
 		},
 		performanceNow:function()
 		{
@@ -30,6 +31,10 @@ function() { return(
 				      return Date.now() - nowOffset;
 				    }
 			   }
+		},
+		websocket:function()
+		{
+			if (!window.WebSocket && window.MozWebSocket) window.WebSocket=window.MozWebSocket;
 		},
 		errorHandler:function()
 		{

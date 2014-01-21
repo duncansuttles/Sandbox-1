@@ -31,7 +31,7 @@ function testWGL()
 
 function testES5()
 {
-    return !this;
+    return true;
 }
 
 function testWS()

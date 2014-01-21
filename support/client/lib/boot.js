@@ -16,7 +16,7 @@ require.config({
 		},
 	    waitSeconds: 15
 	  });		
-require( [
+define( [
             
             "domReady",
             "vwf/view/editorview/ObjectPools",
@@ -46,6 +46,7 @@ require( [
 
         ], function( ready ) {
 
+            return function(){
             require("polyfills").setup();
             require("vwf/view/editorview/ObjectPools").getSingleton();
             window.alertify = require("vwf/view/editorview/alertify.js-0.3.9/src/alertify");
@@ -117,5 +118,5 @@ require( [
 
             } );
 
-        } );
+        }} );
 $('#sidepanel .jspContainer .jspPane').css('left',0)

@@ -231,14 +231,15 @@ function startVWF(){
 	{
 		var config = {
 		    baseUrl: './support/client/lib',
-		    name:'boot',
-		    out:'./build/boot.js'
+		    name:'load',
+		    out:'./build/load.js'
 		};
 		
 		//This will concatenate almost 50 of the project JS files, and serve one file in it's place
 		requirejs.optimize(config, function (buildResponse) {
 		
 			console.log('RequrieJS Build complete');
+			console.log(buildResponse);
 			async.series([
 			function(cb3)
 			{
@@ -277,7 +278,7 @@ function startVWF(){
 				console.log('loading '+ config.out);
 				var contents = fs.readFileSync(config.out, 'utf8');
 				//here, we read the contents of the built boot.js file
-				var path = libpath.normalize('./support/client/lib/boot.js');
+				var path = libpath.normalize('./support/client/lib/load.js');
 				path = libpath.resolve(__dirname, path);			
 				//we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
 				zlib.gzip(contents,function(_,zippeddata)
