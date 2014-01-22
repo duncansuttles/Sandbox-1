@@ -11,10 +11,10 @@ function GUID()
 } 
 
 //values tuned for VTCE
-var maxObjects = 5; 
-var maxDepth = 8;
+var maxObjects = 1; 
+var maxDepth = 16;
 var batchAtLevel = 2;
-var drawSceneManagerRegions = false;
+var drawSceneManagerRegions = true;
 var maxSize = 640;
 function SceneManager(scene)
 {
@@ -26,6 +26,10 @@ function GetAllLeafMeshes(threeObject,list)
 	if(threeObject instanceof THREE.Mesh || threeObject instanceof THREE.Line)
 	{
 		list.push(threeObject);
+		for(var i=0; i < threeObject.children.length; i++)
+		{
+			GetAllLeafMeshes(threeObject.children[i],list);
+		}               
 	}
 	if(threeObject.children)
 	{
@@ -74,7 +78,11 @@ SceneManager.prototype.rebuild = function(mo,md)
 	this.root = new SceneManagerRegion(this.min,this.max,0,this.scene,0);
 	for(var i =0; i < children.length; i++)
 	{
-		this.root.addChild(children[i]);
+		if(!children[i].isDynamic())
+			this.root.addChild(children[i]);
+		else
+			this.addToRoot(children[i]);
+		
 	}
 }
 SceneManager.prototype.show = function()
@@ -103,7 +111,15 @@ SceneManager.prototype.CPUPick = function(o,d,opts)
 		return null;
 	//console.profile("PickProfile");
 
-	
+	if(opts) opts.faceTests = 0;
+	if(opts) opts.objectTests = 0;
+	if(opts) opts.regionTests = 0;
+	if(opts) opts.regionsRejectedByDist = 0;
+	if(opts) opts.regionsRejectedByBounds = 0;
+	if(opts) opts.objectsRejectedByBounds = 0;
+	if(opts) opts.objectRegionsRejectedByDist = 0;
+	if(opts)  opts.objectRegionsRejectedByBounds = 0;
+	if(opts)  opts.objectRegionsTested = 0;
 	var hitlist = this.root.CPUPick(o,d,opts|| this.defaultPickOptions);
 	
 	for(var i = 0; i < this.specialCaseObjects.length; i++)
@@ -184,9 +200,9 @@ SceneManager.prototype.setDirty = function(object)
 SceneManager.prototype.update = function(dt)
 {
 	if(!this.initialized) return;
+
 	for(var i = 0; i < this.dirtyObjects.length; i++)
 	{
-		
 		this.dirtyObjects[i].sceneManagerUpdate();
 		
 	}
@@ -389,8 +405,8 @@ SceneManager.prototype.getTexture = function(src,noclone)
 }
 SceneManager.prototype.initialize = function(scene)
 {
-	this.min = [-64000,-64000,-64000];
-	this.max = [64000,64000,64000];
+	this.min = [-maxSize,-maxSize,-maxSize];
+	this.max = [maxSize,maxSize,maxSize];
 	this.BatchManagers = [];
 	this.specialCaseObjects = [];
 	this.tempDebatchList = [];
@@ -430,16 +446,20 @@ SceneManager.prototype.initialize = function(scene)
 		GetAllLeafMeshes(child,list);
 		for(var i =0; i < list.length; i++)
 		{
-			delete list[i].tempbounds;
+			
 			list[i].updateMatrixWorld(true);
 			
 		}
 		for(var i =0; i < list.length; i++)
 		{
-			_SceneManager.addChild(list[i]);
+			if(!list[i].isDynamic())
+				_SceneManager.addChild(list[i]);
+			else
+				_SceneManager.addToRoot(list[i]);
+			_SceneManager.setDirty(list[i]);
 		}
 		
-		
+		_SceneManager.setDirty(this);
 	}
 	THREE.Object3D.prototype.remove_internal = THREE.Object3D.prototype.remove;
 	THREE.Object3D.prototype.remove = function(child,SceneManagerIgnore)
@@ -576,6 +596,7 @@ function SceneManagerRegion(min, max, depth,scene,order)
 	
 	this.min = min;
 	this.max = max;
+	this.r = Vec3.distance(min,max)/2;
 	this.childCount = 0;
 	this.c = [(this.max[0]+this.min[0])/2,(this.max[1]+this.min[1])/2,(this.max[2]+this.min[2])/2];
 	this.childRegions = [];
@@ -599,6 +620,7 @@ function SceneManagerRegion(min, max, depth,scene,order)
 		this.mesh.InvisibleToCPUPick =  true;
 		this.mesh.renderDepth = this.depth * 8 + this.order;
 		this.scene.add(this.mesh,true);
+		this.mesh.updateMatrixWorld(true);
 	}
 	if(this.depth <= batchAtLevel)
 	{
@@ -735,18 +757,19 @@ SceneManagerRegion.prototype.completelyContains = function(object)
 {
 	
 	//changing transforms make this cache not work
-	if(!object.tempbounds) 
-	{
-		object.updateMatrixWorld();
-		
-		object.tempbounds = object.GetBoundingBox(true).transformBy(object.getModelMatrix());
-	}
-	var box = object.tempbounds;
+	var box =  object.GetBoundingBox(true).transformBy(object.getModelMatrix());
+	return this.completelyContainsBox(box);
+}
+SceneManagerRegion.prototype.completelyContainsBox = function(box)
+{
+
+	
 	if(box.min[0] > this.min[0] && box.max[0] < this.max[0])
 	if(box.min[1] > this.min[1] && box.max[1] < this.max[1])
 	if(box.min[2] > this.min[2] && box.max[2] < this.max[2])
 		return true;
 	return false;	
+
 }
 SceneManagerRegion.prototype.addChild= function(child)
 {
@@ -801,6 +824,10 @@ SceneManagerRegion.prototype.distributeObject = function(object)
 			
 			object.sceneManagerUpdate = function()
 			{
+				for(var i =0; i < this.children.length; i++)
+				{
+					this.children[i].sceneManagerUpdate();
+				}
 				if(this.SceneManagerIgnore)
 					return;
 				
@@ -816,15 +843,18 @@ SceneManagerRegion.prototype.distributeObject = function(object)
 				
 				this.updateMatrixWorld(true);
 
-				this.tempbounds = object.GetBoundingBox(true).transformBy(this.getModelMatrix());
+				
 
-
+				
 				this.sceneManagerNode.updateObject(this);
 				
 			}.bind(object)
 			object.sceneManagerDelete = function()
 			{
-				
+				for(var i =0; i < this.children.length; i++)
+				{
+					this.children[i].sceneManagerDelete();
+				}
 				if(this.RenderBatchManager)
 					this.RenderBatchManager.remove(this);
 				_SceneManager.removeChild(this);
@@ -968,23 +998,31 @@ SceneManagerRegion.prototype.CPUPick = function(o,d,opts)
 		
 	//reject this node if the ray does not intersect it's bounding box
 	if(this.testBoundsRay(o,d) == false)
+	{
+		opts.regionsRejectedByBounds++
 		return hits;
+	}
 	
 	//use the render batch. Note that this will not give a VWFID, only good when you don't care what you hit
 	if(this.RenderBatchManager && opts && opts.useRenderBatches)
 	{
+		opts.batchesTested++;
 		return this.RenderBatchManager.CPUPick(o,d,opts);
 	}
 
 	//the the opts specify a max dist
 	//if the start is not in me, and im to far, don't bother with my children or my objcts
-	if(opts.maxDist > 0 && this.r + MATH.distanceVec3(o,this.c) > opts.maxDist)
+	if(opts.maxDist > 0)
 	{
-		
-		if(!this.contains(o))
-			return hits;
+
+		if( ( MATH.distanceVec3(o,this.c) - this.r) > opts.maxDist)
+		{
+				opts.regionsRejectedByDist++;
+				return hits;
+		}
 	}	
 	
+	opts.regionTests++;
 	//check either this nodes faces, or the not distributed faces. for a leaf, this will just loop all faces,
 	//for a non leaf, this will iterate over the faces that for some reason are not in children, which SHOULD be none
 	for(var i = 0; i < this.childRegions.length; i++)

@@ -53,6 +53,7 @@ define( [ "module", "vwf/view"], function( module, view ) {
 		createButton : function(title)
 		{
 			
+			
 			var parent = this.getCreateParentNode();
 			vwf_view.kernel.createChild(parent,GUID(),{
 				extends: "http://vwf.example.com/button.vwf",
@@ -99,8 +100,9 @@ define( [ "module", "vwf/view"], function( module, view ) {
 		getCreateParentNode:function()
 		{
 			var parent = _Editor.GetSelectedVWFID();
-			if(this.isPanel(parent) || this.isDialog(parent)) return parent;
-			return  "index-vwf";
+			//if(this.isPanel(parent) || this.isDialog(parent)) return parent;
+			//return  "index-vwf";
+			return parent;
 		},
 		isGUINode:function(childExtendsID)
 		{
@@ -149,6 +151,7 @@ define( [ "module", "vwf/view"], function( module, view ) {
 			
 			if(this.isGUINode(childExtendsID))
 			{
+				
 				var node = this.guiNodes[childID] = {};
 				node.id = childID;
 				node.parentid = nodeID;
@@ -228,6 +231,7 @@ define( [ "module", "vwf/view"], function( module, view ) {
 				}
 				if(this.isButton(node.type))
 				{
+					
 					$(node.parentdiv).append('<div id="guioverlay_'+node.id+'"/>' )
 					node.div = $('#guioverlay_' + node.id)[0];
 					$(node.div).text('');
@@ -235,7 +239,7 @@ define( [ "module", "vwf/view"], function( module, view ) {
 
 					$(node.div).on( "click", function( event, ui ) {
 							if($(this).hasClass('guiselected')) return false;
-							vwf_view.kernel.fireEvent(this.vwfID,'click');						
+							vwf_view.kernel.fireEvent(this.vwfID,'pointerClick');						
 					} );
 				}
 				if(this.isLabel(node.type))

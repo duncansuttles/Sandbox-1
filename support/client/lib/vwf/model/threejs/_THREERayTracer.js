@@ -6,9 +6,9 @@ var Vec3 = goog.vec.Vec3;
 // add cpu side ray casting to MATH. Faster then GPU based picking in many cases
 
 //Max number of faces a octree node may have before subdivding
-var OCTMaxFaces = 30;
+var OCTMaxFaces = 20;
 //max depth of the octree
-var OCTMaxDepth = 4;
+var OCTMaxDepth = 8;
 
 
 
@@ -285,7 +285,7 @@ face.prototype.intersectFrustrum = function(frustrum,opts)
 	for(var i=0; i < 4; i ++)
 	{
 		
-		if(this.intersect1(frustrum.cornerRays[i].o,frustrum.cornerRays[i].d))
+		if(this.intersect1(frustrum.cornerRays[i].o,frustrum.cornerRays[i].d,opts))
 		{
 			var point = this.c;
 			var norm = this.norm;
@@ -309,13 +309,14 @@ function FaceIntersect()
 
 var temparray = [];
 //intersect a ray with a face
-face.prototype.intersect1 = function(p,d)
+face.prototype.intersect1 = function(p,d,opts)
 {
 	
 	//huh. profiling shows this is much slower.
 	//var hit = intersectRaySphere(p,d,this.c,this.r)
 	//if(hit < 0) return null;
-	
+	if(opts)
+		opts.faceTests++;
 	
 	var v0 = this.v0;
 	var v1 = this.v1;
@@ -436,7 +437,7 @@ var A ;
 
 
 //p = [x,y,z] of center
-face.prototype.intersectSphere = function(P,r)
+face.prototype.intersectSphere = function(P,r,opts)
 {
 	 
 	 A = MATH.subVec3(this.v0 , P);
@@ -481,14 +482,14 @@ face.prototype.intersectSphere = function(P,r)
 		 var point;
 		 if(d < 0)
 		 {
-			point = this.intersect1(P,this.norm)
+			point = this.intersect1(P,this.norm,opts)
 			if(point) point =  point.point;
 			else
 			point = intersectLinePlane(this.norm,P,this.v0,this.norm);
 		 }
 		 if(d >= 0)
 		 {
-			point = this.intersect1(P,MATH.scaleVec3(this.norm,-1));
+			point = this.intersect1(P,MATH.scaleVec3(this.norm,-1),opts);
 				if(point) point =  point.point;
 			else
 			point = intersectLinePlane(MATH.scaleVec3(this.norm,-1),P,this.v0,this.norm);
@@ -544,7 +545,7 @@ SimpleFaceListRTAS.prototype.intersect = function(origin,direction,opts)
 	intersects.length = 0;
     for(var i =0; i < this.faces.length; i++)
 	{
-		var intersect = this.faces[i].intersect1(origin,direction);
+		var intersect = this.faces[i].intersect1(origin,direction,opts);
 		if(intersect)
 		{
 			intersects.push(intersect);
@@ -781,7 +782,12 @@ function OctreeRegion(min,max,depth)
 		this.facesNotDistributed = this.faces;
 	this.min = min;
 	this.max = max;
-	
+	this.c = [0,0,0]
+	this.c[0] = this.min[0] + (this.max[0] - this.min[0])/2;
+	this.c[1] = this.min[1] + (this.max[1] - this.min[1])/2;
+	this.c[2] = this.min[2] + (this.max[2] - this.min[2])/2;
+
+	this.r = MATH.distanceVec3(this.min,this.max)/2;
 	//Should never reach any of this;
 	if(this.min[0] > this.max[0])
 		alert();
@@ -895,7 +901,7 @@ OctreeRegion.prototype.intersect = function(o,d,opts)
 	//for a non leaf, this will iterate over the faces that for some reason are not in children, which SHOULD be none
 	for(var i = 0; i < facelist.length; i++)
 	{
-		var facehits = facelist[i].intersect1(o,d);
+		var facehits = facelist[i].intersect1(o,d,opts);
 		if(facehits)
 		{
 			hits.push(facehits);
@@ -911,9 +917,21 @@ OctreeRegion.prototype.intersect = function(o,d,opts)
 	if(this.testBounds(o,d)== false)
 	{
 		//console.log('region rejected');
+		if(opts)
+			opts.objectRegionsRejectedByBounds++;
 		return hits;
 	}
 	
+	if(opts && opts.maxDist)
+	{
+		if(MATH.distanceVec3(o,this.c) - this.r > opts.maxDist)
+		{
+				opts.objectRegionsRejectedByDist++;
+				return hits;
+		}
+
+	}
+	if(opts) opts.objectRegionsTested++;
 	//if the node is split, concat the hits from all children
 	if(this.isSplit)
 	{
@@ -1279,8 +1297,13 @@ THREE.Geometry.prototype.CPUPick = function(origin,direction,options,collisionTy
 					
 				 }
 				 //do actual mesh intersection
-				 
+				 if(options)
+				 	options.objectTests ++;
 				 intersections = this.RayTraceAccelerationStructure.intersect(origin,direction,options); 		 
+			 }else
+			 {
+			 	 if(options)
+			 	 	options.objectsRejectedByBounds++;
 			 }
 		 }
 		 if(collisionType == 'box')

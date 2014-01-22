@@ -37,4 +37,4 @@ properties:
       property: text
       displayname: text       
 events:
-  click:
+  click: 

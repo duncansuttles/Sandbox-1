@@ -122,7 +122,7 @@ scripts:
             filter:function(o){
                 if(o instanceof THREE.Line) return false;
                 return !(o.isAvatar === true || o.passable===true)
-              },maxDist: 100,
+              },maxDist: 2,
               ignore:[this.mesh,_Editor.GetMoveGizmo()]
             }
     }
@@ -423,6 +423,7 @@ scripts:
                 var testpos = MATH.subVec3(finalt,MATH.scaleVec3(motionvec,-.15));
                 
                 var intersectfront = _SceneManager.CPUPick(MATH.addVec3(testpos,[0,0,1]),motionvec,this.pickoptions);
+                console.log(this.pickoptions);
                 if(intersectfront)
                 {
                     if(intersectfront.distance < .3)

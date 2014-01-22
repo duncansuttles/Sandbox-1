@@ -157,7 +157,7 @@ function startVWF(){
 	//global error handler
 	process.on('uncaughtException', function(err) {
     // handle the error safely
-    	global.error(err.message);
+    	global.error(err);
 	});
 	
 	//Boot up sequence. May call immediately, or after build step	

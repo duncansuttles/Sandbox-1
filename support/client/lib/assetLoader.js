@@ -267,37 +267,44 @@ function ()
                 assetLoader.updateProgressGui(count/total,i);
                 var type = i.type;
                 var url = i.url;
-                if(type == 'texture')
+                if(url)
                 {
-                    //because of the way texture loads are handled in the scenemanager, we can actually go ahead and continue immediately here
-                    //though we might as well let the scenemanager know to set started
-                    _SceneManager.getTexture(url);
-                    cb2();
+                    if(type == 'texture')
+                    {
+                        //because of the way texture loads are handled in the scenemanager, we can actually go ahead and continue immediately here
+                        //though we might as well let the scenemanager know to set started
+                        _SceneManager.getTexture(url);
+                        cb2();
+                    }
+                    else if(type == 'subDriver/threejs')
+                    {
+                        assetLoader.loadSubDriver(url,cb2);
+                    }
+                    else if(type == 'subDriver/threejs/asset/vnd.collada+xml')
+                    {
+                        assetLoader.loadCollada(url,cb2);
+                    }
+                    else if(type == 'subDriver/threejs/asset/vnd.osgjs+json+compressed')
+                    {
+                        assetLoader.loadUTf8Json(url,cb2);
+                    }else if(type == 'unknown')
+                    {
+                        assetLoader.loadUnknown(url,cb2);
+                    }
+                    else if(type == 'terrainBT')
+                    {
+                        
+                        assetLoader.loadBTTerrain(url,cb2);
+                    }
+                    else if(type == 'terrainIMG')
+                    {
+                        assetLoader.loadImgTerrain(url,cb2);
+                    }else
+                    {
+                        cb2();
+                    }
                 }
-                else if(type == 'subDriver/threejs')
-                {
-                    assetLoader.loadSubDriver(url,cb2);
-                }
-                else if(type == 'subDriver/threejs/asset/vnd.collada+xml')
-                {
-                    assetLoader.loadCollada(url,cb2);
-                }
-                else if(type == 'subDriver/threejs/asset/vnd.osgjs+json+compressed')
-                {
-                    assetLoader.loadUTf8Json(url,cb2);
-                }else if(type == 'unknown')
-                {
-                    assetLoader.loadUnknown(url,cb2);
-                }
-                else if(type == 'terrainBT')
-                {
-                    
-                    assetLoader.loadBTTerrain(url,cb2);
-                }
-                else if(type == 'terrainIMG')
-                {
-                    assetLoader.loadImgTerrain(url,cb2);
-                }else
+                else
                 {
                     cb2();
                 }

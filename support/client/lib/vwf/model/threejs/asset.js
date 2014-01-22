@@ -137,12 +137,16 @@
 				if(threeObject instanceof THREE.Mesh)
 				{
 					list.push(threeObject);
+					for(var i=0; i < threeObject.children.length; i++)
+					{
+						this.GetAllLeafMeshes(threeObject.children[i],list);
+					}           
 				}
 				if(threeObject.children)
 				{
 					for(var i=0; i < threeObject.children.length; i++)
 					{
-						GetAllLeafMeshes(threeObject.children[i],list);
+						this.GetAllLeafMeshes(threeObject.children[i],list);
 					}               
 				}     
 			}
@@ -227,7 +231,7 @@
 				this.cleanTHREEJSnodes(reg.node);
 				
 				this.getRoot().add(reg.node.clone());
-				this.getRoot().sceneManagerUpdate();
+				
 				
 				this.settingProperty('materialDef',this.materialDef);
 				//if any callbacks were waiting on the asset, call those callbacks
@@ -325,7 +329,7 @@
 			{
 				
 				this.getRoot().add(reg.node.clone());
-				this.getRoot().sceneManagerUpdate();
+				
 				var list = [];
 					
 					this.GetAllLeafMeshes(this.rootnode,list);
@@ -432,7 +436,7 @@
 						
 						this.settingProperty('materialDef',this.materialDef);
 						this.getRoot().updateMatrixWorld(true);
-						this.getRoot().sceneManagerUpdate();
+						
 					}
 					tcal( true );
 				}.bind(this));

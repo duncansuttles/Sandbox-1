@@ -2732,6 +2732,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				val[13] = e.clientY - 5;
 
 				var div = '#guioverlay_' + vwf.parent(_Editor.GetSelectedVWFID());
+				if(!$(div)[0])
+					div = $('#guioverlay_' + _Editor.GetSelectedVWFID()).parent()[0];
 				var l = $(div).offset().left;
 				var t = $(div).offset().top;
 				val[12] -= l;
