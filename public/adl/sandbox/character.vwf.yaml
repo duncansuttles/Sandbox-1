@@ -422,8 +422,10 @@ scripts:
                 motionvec = motionvec ? MATH.toUnitVec3(motionvec) : [0,0,0];
                 var testpos = MATH.subVec3(finalt,MATH.scaleVec3(motionvec,-.15));
                 
+                
+
                 var intersectfront = _SceneManager.CPUPick(MATH.addVec3(testpos,[0,0,1]),motionvec,this.pickoptions);
-                console.log(this.pickoptions);
+                
                 if(intersectfront)
                 {
                     if(intersectfront.distance < .3)
@@ -446,6 +448,7 @@ scripts:
                 _DEALLOC(intersectfront);
                 var falldist = 1000;
                
+
                 var intersect = _SceneManager.CPUPick(MATH.addVec3(finalt,[0,0,1.7]),[0,0,-1],this.pickoptions);
               
                 

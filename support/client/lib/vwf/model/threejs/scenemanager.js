@@ -14,7 +14,7 @@ function GUID()
 var maxObjects = 1; 
 var maxDepth = 16;
 var batchAtLevel = 2;
-var drawSceneManagerRegions = true;
+var drawSceneManagerRegions = false;
 var maxSize = 640;
 function SceneManager(scene)
 {
@@ -111,6 +111,7 @@ SceneManager.prototype.CPUPick = function(o,d,opts)
 		return null;
 	//console.profile("PickProfile");
 
+	opts = opts|| this.defaultPickOptions
 	if(opts) opts.faceTests = 0;
 	if(opts) opts.objectTests = 0;
 	if(opts) opts.regionTests = 0;
@@ -120,7 +121,8 @@ SceneManager.prototype.CPUPick = function(o,d,opts)
 	if(opts) opts.objectRegionsRejectedByDist = 0;
 	if(opts)  opts.objectRegionsRejectedByBounds = 0;
 	if(opts)  opts.objectRegionsTested = 0;
-	var hitlist = this.root.CPUPick(o,d,opts|| this.defaultPickOptions);
+	if(opts)  opts.objectsTested = [];
+	var hitlist = this.root.CPUPick(o,d,opts);
 	
 	for(var i = 0; i < this.specialCaseObjects.length; i++)
 	{
@@ -1017,6 +1019,7 @@ SceneManagerRegion.prototype.CPUPick = function(o,d,opts)
 
 		if( ( MATH.distanceVec3(o,this.c) - this.r) > opts.maxDist)
 		{
+
 				opts.regionsRejectedByDist++;
 				return hits;
 		}
@@ -1282,10 +1285,12 @@ THREE.RenderBatch.prototype.build = function()
 	
 	var totalUVSets = 1;
 	
-	
+	var needColors = false;
 	for(var i =0; i < this.objects.length; i++)
 	{
+
 		totalUVSets = Math.max(totalUVSets,this.objects[i].geometry.faceVertexUvs.length);
+		needColors = needColors || (this.objects[i].geometry.vertexColors && this.objects[i].geometry.vertexColors.length); 
 	}
 	//console.log(totalUVSets);
 	for(var i = 0; i < totalUVSets; i++)
@@ -1338,10 +1343,13 @@ THREE.RenderBatch.prototype.build = function()
 				}
 				//newface.materialIndex = face.materialIndex;
 				newface.centroid.copy( face.centroid );
-				newface.normal.copy(face.normal);		
+				newface.normal.copy(face.normal);	
+
 				newface.normal.applyMatrix3( normalMatrix ).normalize();
 				for(var k = 0; k < face.vertexNormals.length; k++)
 					newface.vertexNormals.push(face.vertexNormals[k].clone().applyMatrix3(normalMatrix).normalize());
+				for(var k = 0; k < face.vertexColors.length; k++)
+					newface.vertexColors.push(face.vertexColors[k].clone());
 				
 				geo.faces.push(newface);
 			
@@ -1356,6 +1364,8 @@ THREE.RenderBatch.prototype.build = function()
 				geo.normals.push(tg.normals[j].clone().applyMatrix4(matrix));
 			}
 			
+			
+
 			
 			for(var l = 0; l < totalUVSets; l++)
 			{

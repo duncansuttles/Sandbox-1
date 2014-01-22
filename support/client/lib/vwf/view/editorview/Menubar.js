@@ -605,7 +605,7 @@ define(
 					
 					var t = _Editor.GetMoveGizmo().parent.matrixWorld.getPosition();
 					var gizpos = [t.x, t.y, t.z];
-					var box = _Editor.findviewnode(focusID).getBoundingBox();
+					var box = _Editor.findviewnode(focusID).GetBoundingBox();
 					
 					var dist = 1;
 					if(box)

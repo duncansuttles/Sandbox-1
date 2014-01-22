@@ -6,9 +6,9 @@ var Vec3 = goog.vec.Vec3;
 // add cpu side ray casting to MATH. Faster then GPU based picking in many cases
 
 //Max number of faces a octree node may have before subdivding
-var OCTMaxFaces = 20;
+var OCTMaxFaces = 10;
 //max depth of the octree
-var OCTMaxDepth = 8;
+var OCTMaxDepth = 16;
 
 
 
@@ -691,8 +691,8 @@ BoundingBoxRTAS.prototype.intersectFrustrum = function(frustrum,opts)
 BoundingBoxRTAS.prototype.intersect = function(o,d)
 {	
 		//TODO: are these loose bounds necessary?
-		var min = [0,0,0]; min[0] = this.min[0]-.01; min[1] = this.min[1]-.01; min[2] = this.min[2]-.01;
-		var max = [0,0,0]; max[0] = this.max[0]+.01; max[1] = this.max[1]+.01; max[2] = this.max[2]+.01;
+		var min = [0,0,0]; min[0] = this.min[0]; min[1] = this.min[1]; min[2] = this.min[2];
+		var max = [0,0,0]; max[0] = this.max[0]; max[1] = this.max[1]; max[2] = this.max[2];
  		var dirfrac = [0,0,0]; dirfrac[0] = 0; dirfrac[1] = 0; dirfrac[2] = 0; 
 		var t;
 		// d is unit direction vector of ray
@@ -788,6 +788,13 @@ function OctreeRegion(min,max,depth)
 	this.c[2] = this.min[2] + (this.max[2] - this.min[2])/2;
 
 	this.r = MATH.distanceVec3(this.min,this.max)/2;
+	var delta = this.r/1000;
+	/*this.min[0] -= delta;
+	this.min[1] -= delta;
+	this.min[2] -= delta;
+	this.max[0] += delta;
+	this.max[1] += delta;
+	this.max[2] += delta;*/
 	//Should never reach any of this;
 	if(this.min[0] > this.max[0])
 		alert();
@@ -845,21 +852,98 @@ OctreeRegion.prototype.addFace = function(face)
 //point inside a region
 OctreeRegion.prototype.pointInside = function(point)
 {
-	if(point[0] > this.max[0] || point[0] < this.min[0])
-		return false;
-	if(point[1] > this.max[1] || point[1] < this.min[1])
-		return false;
-	if(point[2] > this.max[2] || point[2] < this.min[2])
-		return false;
-	return true;	
+
+	if(point[0] > this.min[0] && point[0] < this.max[0])
+		if(point[1] > this.min[1] && point[1] < this.max[1])
+			if(point[2] > this.min[2] && point[2] < this.max[2])
+				return true;	
+	return false;		
 }
+//a face is inside if any of the verts are inside;
+//OctreeRegion.prototype.testFace = function(face)
+//{
+//	if(this.pointInside(face.v0) && this.pointInside(face.v1) && this.pointInside(face.v2))
+//		return true;
+//    return false;
+//}
+
+function Project(points,norm)
+{
+	var min = Infinity;
+	var max = -Infinity;
+
+	for(var i =0; i < points.length; i++)
+	{
+		var val = MATH.dotVec3(norm,points[i]);
+		if(val < min) min = val;
+		if(val > max) max = val;
+	}
+	return [min,max];
+}
+function getCorners(box)
+{
+	return [
+	[box.min[0],box.min[1],box.min[2]],
+	[box.min[0],box.min[1],box.max[2]],
+	[box.min[0],box.max[1],box.min[2]],
+	[box.min[0],box.max[1],box.max[2]],
+	[box.max[0],box.min[1],box.min[2]],
+	[box.max[0],box.min[1],box.max[2]],
+	[box.max[0],box.max[1],box.min[2]],
+	[box.max[0],box.max[1],box.max[2]],
+	];
+}
+function AABBTriTest(box,tri)
+{
+	var triMin, triMax;
+	var boxMin, boxMax;
+
+	var boxNorms = [[1,0,0],[0,1,0],[0,0,1]];
+	for(var i = 0; i < 3; i++)
+	{
+		var n = boxNorms[i];
+		var ret = Project([tri.v0,tri.v1,tri.v2],n);
+		triMin = ret[0];
+		triMax = ret[1];
+		if(triMax < box.min[i] || triMin > box.max[i])
+			return false;
+	}
+
+	var boxVerts = getCorners(box);
+	var triOffset = MATH.dotVec3(tri.norm,tri.v0);
+	var ret = Project(boxVerts,tri.norm);
+	boxMin = ret[0];
+	boxMax = ret[1];
+	if(boxMax < triOffset || boxMin > triOffset)
+			return false;
+
+	var triEdges = [MATH.subVec3(tri.v0,tri.v1),MATH.subVec3(tri.v1,tri.v2),MATH.subVec3(tri.v2,tri.v0)];
+	for (var i = 0; i < 3; i++)
+    for (var j = 0; j < 3; j++)
+    {
+    	var axis = MATH.crossVec3(triEdges[i],boxNorms[j]);
+    	var ret = Project(boxVerts,axis);
+    	boxMin = ret[0];
+    	boxMax = ret[1];
+    	var ret = Project([tri.v0,tri.v1,tri.v2],axis);
+    	triMin = ret[0];
+		triMax = ret[1];
+		if(boxMax <= triMin ||boxMin >= triMax)
+			return false;
+    }
+    return true;
+}
+
 //a face is inside if any of the verts are inside;
 OctreeRegion.prototype.testFace = function(face)
 {
-	if(this.pointInside(face.v0) || this.pointInside(face.v1) || this.pointInside(face.v2))
+	if(this.pointInside(face.v0) && this.pointInside(face.v1)&& this.pointInside(face.v2))
 		return true;
-    return false;
+	
+	return AABBTriTest(this,face);
+    
 }
+
 //distriubte a face to the child nodes. 
 //NOTE: the face in region test could place the face in multiple sub nodes
 OctreeRegion.prototype.distributeFace = function(face)
@@ -868,6 +952,7 @@ OctreeRegion.prototype.distributeFace = function(face)
 	var addchild = null;
 	for(var i = 0; i < this.children.length; i++)
 	{
+		
 		if(this.children[i].testFace(face))
 		{
 			this.children[i].addFace(face);
@@ -876,10 +961,27 @@ OctreeRegion.prototype.distributeFace = function(face)
 	}
 	//if for some reason, the face is not added to any child, keep the face in a special list at this level
 	//NOTE: after some bug fixes, have not seen any faces here, but keeping just in case.
+	//no, makes sense.
 	if(added == 0)
 	{
+		
 		this.facesNotDistributed.push(face);
 	}
+}
+OctreeRegion.prototype.getFaces = function(list)
+{
+	if(!list) list = [];
+	if(this.isSplit)
+		list = list.concat(this.facesNotDistributed)
+	else
+		list = list.concat(this.faces)
+
+	if(this.isSplit)
+		for(var i =0; i < this.children.length; i++)
+			list = this.children[i].getFaces(list);
+
+		return list;
+
 }
 //Test a ray against an octree region
 OctreeRegion.prototype.intersect = function(o,d,opts)
@@ -896,11 +998,23 @@ OctreeRegion.prototype.intersect = function(o,d,opts)
 	var facelist = this.faces;
 	if(this.isSplit)
 	   facelist = this.facesNotDistributed;
-	
+
+	if(opts && opts.maxDist)
+	{
+		if(MATH.distanceVec3(o,this.c) - this.r > opts.maxDist)
+		{
+				opts.objectRegionsRejectedByDist++;
+				return hits;
+		}
+
+	}
+
 	//check either this nodes faces, or the not distributed faces. for a leaf, this will just loop all faces,
 	//for a non leaf, this will iterate over the faces that for some reason are not in children, which SHOULD be none
 	for(var i = 0; i < facelist.length; i++)
 	{
+		
+		
 		var facehits = facelist[i].intersect1(o,d,opts);
 		if(facehits)
 		{
@@ -913,46 +1027,40 @@ OctreeRegion.prototype.intersect = function(o,d,opts)
 		}
 	}
 	
-	//reject this node if the ray does not intersect it's bounding box
-	if(this.testBounds(o,d)== false)
-	{
-		//console.log('region rejected');
-		if(opts)
-			opts.objectRegionsRejectedByBounds++;
-		return hits;
-	}
 	
-	if(opts && opts.maxDist)
-	{
-		if(MATH.distanceVec3(o,this.c) - this.r > opts.maxDist)
-		{
-				opts.objectRegionsRejectedByDist++;
-				return hits;
-		}
-
-	}
+	
+	
 	if(opts) opts.objectRegionsTested++;
+	
 	//if the node is split, concat the hits from all children
 	if(this.isSplit)
 	{
 		for(var i = 0; i < this.children.length; i++)
 		{
-			var childhits = this.children[i].intersect(o,d,opts);
-			if(childhits)
+
+			//reject this node if the ray does not intersect it's bounding box
+			if(this.children[i].testBounds(o,d)== true)
 			{
-				for(var j = 0; j < childhits.length; j++)
+				//console.log('region rejected');
+				var childhits = this.children[i].intersect(o,d,opts);
+				if(childhits)
 				{
-				    hits.push(childhits[j]);
-					if(opts && opts.OneHitPerMesh)
+					for(var j = 0; j < childhits.length; j++)
 					{
-						childhits[j] = null;
-						
-						return hits;
+					    hits.push(childhits[j]);
+						if(opts && opts.OneHitPerMesh)
+						{
+							childhits[j] = null;
+							
+							return hits;
+						}
 					}
+					childhits.length = 0;
+					
 				}
-				childhits.length = 0;
-				
 			}
+			else if(opts)
+					opts.objectRegionsRejectedByBounds++;
 		}
 	}
 	return hits;
@@ -1177,6 +1285,7 @@ function OctreeRTAS(faces,verts,min,max)
 //just intersect with the root octant
 OctreeRTAS.prototype.intersect = function(o,d,opts)
 {
+	
 	return this.root.intersect(o,d,opts);
 }
 OctreeRTAS.prototype.intersectFrustrum = function(frustrum,opts)
@@ -1250,21 +1359,24 @@ THREE.Geometry.prototype.setPickGeometry = function(PickGeometry)
 	  this.PickGeometry = PickGeometry;
 }
 //Do the actuall intersection with the mesh;
-THREE.Geometry.prototype.CPUPick = function(origin,direction,options,collisionType)
+THREE.Geometry.prototype.CPUPick = function(origin,direction,options,collisionType,meshparent)
 {
+		
+		//sseems like it's possible that nan can creep into the three.matrix, reject this whole mesh in that case.
+	  if(isNaN(origin[0]) || isNaN(direction[0]))
+	  	return [];
 
-	  
 	  if(!collisionType)
 		collisionType = 'mesh';
 		
 	  if(this.InvisibleToCPUPick)
-		return null;
+		return [];
 	  
 	  //allow a picking mesh that differs from the visible mesh
 	  if(this.PickGeometry)
 	  {
 		
-		return this.PickGeometry.CPUPick(origin,direction,options,collisionType);
+		return this.PickGeometry.CPUPick(origin,direction,options,collisionType,meshparent);
 	  }
 		
       //if for some reason dont have good bounds, generate	 
@@ -1290,16 +1402,21 @@ THREE.Geometry.prototype.CPUPick = function(origin,direction,options,collisionTy
 			 if(bbhit)
 			 {
 				
+				var oldTests = options? options.faceTests : 0;
 				 //build the octree or the facelist
 				 if(!this.RayTraceAccelerationStructure || this.dirtyMesh)
 				 {
 					 this.BuildRayTraceAccelerationStructure();
 					
 				 }
+				 
+				 intersections = this.RayTraceAccelerationStructure.intersect(origin,direction,options); 
 				 //do actual mesh intersection
 				 if(options)
+				 {
 				 	options.objectTests ++;
-				 intersections = this.RayTraceAccelerationStructure.intersect(origin,direction,options); 		 
+				 	options.objectsTested && options.objectsTested.push({object:meshparent,hits:( options.faceTests - oldTests)});
+				 }		 
 			 }else
 			 {
 			 	 if(options)
@@ -1506,7 +1623,7 @@ THREE.Object3D.prototype.CPUPick = function(origin,direction,options)
 		  if(this instanceof THREE.Mesh)
 		  {
 				//collide with the mesh
-				var ret2 = this.geometry.CPUPick(newo,newd,options);
+				var ret2 = this.geometry.CPUPick(newo,newd,options,null,this);
 				
 				for(var i = 0; i < ret2.length; i++)
 				{	
