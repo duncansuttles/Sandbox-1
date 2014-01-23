@@ -30,8 +30,7 @@ define( ["module", "vwf/view", "vwf/view/xapi/xapiwrapper", "vwf/view/xapi/2.5.3
 				'sendStatements':2};
 
 			// process only if prefixed method is handled, and this client or the system initiated the event
-			if( fn.slice(0,5) == 'xapi_' && Object.keys(methods).indexOf(fn.slice(5)) != -1
-			&& (vwf.client() == null || vwf.client() == vwf.moniker()) )
+			if( fn.slice(0,5) == 'xapi_' && Object.keys(methods).indexOf(fn.slice(5)) != -1)
 			{
 				//console.log('XAPI:', id, fn, params);
 				var wrapper;
@@ -57,8 +56,17 @@ define( ["module", "vwf/view", "vwf/view/xapi/xapiwrapper", "vwf/view/xapi/2.5.3
 				var method = fn.slice(5);
 
 				// fail request if they are trying to anonymously post
-				if( vwf.client() == null && /^send/.test(method) ){
+				/*if( vwf.client() == null && /^send/.test(method) ){
 					console.error(id, ': posting to an LRS is only allowed from within events');
+					return;
+				}*/
+				var firstId = _UserManager.getPlayers()[0].ownerClientID;
+				var clientId = _UserManager.GetClientIDForPlayername(_UserManager.GetCurrentUserName());
+				if( /^send/.test(method) && !(
+					vwf.client() == vwf.moniker() ||
+					vwf.client() == null && clientId == firstId)
+				){
+					console.log('xAPI pass');
 					return;
 				}
 
