@@ -32,6 +32,14 @@
 	//Each element in texturesArr should be the number of textures that correspond to a base model
 	//For example: There exist VWS_Business_Female1.DAE and VWS_Business_Female2.DAE (so the length of texturesArr is 2)
 	//VWS_Business_Female1.DAE has 3 different textures (texturesArr[0]) while VWS_Business_Female2.DAE only has 1 (texturesArr[1])
+	
+	function SetSoldier()
+	{
+		vwfPortalModel.profile.avatarTexture = "./avatars/AA_Soldier_Male.jpg";
+		vwfPortalModel.profile.avatarModel="./avatars/AA_Soldier_Male.DAE";
+	}
+
+
 	init();
 	spinner.spin($("#avatarSpinner")[0]);
 	vwfPortalModel.usersPage = true;
