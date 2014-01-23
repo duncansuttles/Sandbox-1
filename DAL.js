@@ -1533,6 +1533,22 @@ function startup(callback)
 		},
 		function(cb)
 		{
+			getUser('___Global___',function(user)
+			{
+				if(user)
+					cb();
+				else
+				{
+					console.log('creating global user')
+					createUser('___Global___',{},function(ok){
+						console.log('created global user')
+						cb();
+					});
+				}
+			});
+		},
+		function(cb)
+		{
 			global.log('DAL startup complete',0);
 			exports.getUser = getUser;
 			exports.updateUser = updateUser;
