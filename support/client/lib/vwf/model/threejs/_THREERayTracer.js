@@ -633,6 +633,11 @@ BoundingBoxRTAS.prototype.expandBy = function(bb)
 //transform the boundging box by a matrix, then re-axis align.
 BoundingBoxRTAS.prototype.transformBy = function(matrix)
 {
+
+	//avoid flipping min and max when they are infinity
+	if(this.min[0] == Infinity || this.max[0] == -Infinity)
+		return this;
+	
 	var mat = [];
 	for(var i = 0; i < matrix.length; i++)
 	 mat.push(matrix[i]);
@@ -1347,7 +1352,7 @@ THREE.Geometry.prototype.BuildRayTraceAccelerationStructure = function()
 THREE.Geometry.prototype.clone_internal = THREE.Geometry.prototype.clone;
 THREE.Geometry.prototype.clone = function()
 {
-	
+
 	var ret = this.clone_internal();
 	ret.RayTraceAccelerationStructure = this.RayTraceAccelerationStructure;
 	return ret;
@@ -1535,6 +1540,7 @@ THREE.Object3D.prototype.GetBoundingBox = function(local)
 	{
 		box.expandBy(this.geometry.GetBoundingBox());	
 	}
+	
 	//Transform by the local matrix.
 	//set local to true to get the bounds without this top node transform
 	//useful for drawing the bounds in non AABB form

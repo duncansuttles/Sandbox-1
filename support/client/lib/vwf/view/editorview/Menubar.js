@@ -605,11 +605,11 @@ define(
 					
 					var t = _Editor.GetMoveGizmo().parent.matrixWorld.getPosition();
 					var gizpos = [t.x, t.y, t.z];
-					var box = _Editor.findviewnode(focusID).GetBoundingBox();
+					var box = _Editor.findviewnode(focusID).GetBoundingBox(true).transformBy(_Editor.findviewnode(focusID).matrixWorld.elements)
 					
 					var dist = 1;
 					if(box)
-						dist = MATH.distanceVec3([box.max.x, box.max.y, box.max.z], [box.min.x, box.min.y, box.min.z]);
+						dist = MATH.distanceVec3([box.max[0], box.max[1], box.max[2]], [box.min[0], box.min[1], box.min[2]]);
 					if(dist == Infinity)
 						dist = 1;
 					vwf.models[0].model.nodes['index-vwf'].orbitPoint(gizpos);
