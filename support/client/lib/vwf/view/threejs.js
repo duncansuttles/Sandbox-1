@@ -343,6 +343,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		},
 		selectionChanged: function(e,selection)
 		{
+
 			this.selection = selection;
 			
 			if(this.cameraHelper)
@@ -352,10 +353,14 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			}
 			if(this.selection && vwf.getProperty(this.selection.id,'type') =='Camera')
 			{
-				var selcam = _Editor.findviewnode(this.selection.id).children[0];
-				this.cameraHelper = new THREE.CameraHelper(selcam);
-				this.cameraHelper.InvisibleToCPUPick = true;
-				selcam.add(this.cameraHelper,true);
+				var selnode = _Editor.findviewnode(this.selection.id);
+				if(selnode)
+				{
+					var selcam = selnode.children[0];
+					this.cameraHelper = new THREE.CameraHelper(selcam);
+					this.cameraHelper.InvisibleToCPUPick = true;
+					selcam.add(this.cameraHelper,true);
+				}
 			}
 			
 			
@@ -838,50 +843,54 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
 			if(self.selection && vwf.getProperty(self.selection.id,'type') =='Camera' && self.cameraID != self.selection.id)
 			{
-				selcam = _Editor.findviewnode(self.selection.id).children[0];
-				oldaspect = selcam.aspect;
-				selcam.aspect = 1;
-				selcam.updateProjectionMatrix();
+				var selnode = _Editor.findviewnode(self.selection.id);
+				if(selnode)
+				{
+					selcam = selnode.children[0];
+					oldaspect = selcam.aspect;
+					selcam.aspect = 1;
+					selcam.updateProjectionMatrix();
+					
+					t = $('#toolbar').offset().top + $('#toolbar').height() + 10;
+					l = 10;
+					w = ww/3;
+					h = wh/3;
+					
+					
+					
+					renderer.setViewport(0,0,w,w);
+					_Editor.hideMoveGizmo();
+					_dRenderer.setScissor(0,0,w,w);
+					renderer.enableScissorTest(true);
+					
+					
+					
+					camback = self.cameraID;
+					self.cameraID = self.selection.id;
+					
 				
-				t = $('#toolbar').offset().top + $('#toolbar').height() + 10;
-				l = 10;
-				w = ww/3;
-				h = wh/3;
-				
-				
-				
-				renderer.setViewport(0,0,w,w);
-				_Editor.hideMoveGizmo();
-				_dRenderer.setScissor(0,0,w,w);
-				renderer.enableScissorTest(true);
-				
-				
-				
-				camback = self.cameraID;
-				self.cameraID = self.selection.id;
-				
-			
-				selcam.matrixWorldInverse.getInverse( selcam.matrixWorld );
-				
-				_viewProjectionMatrix.multiplyMatrices( selcam.projectionMatrix, selcam.matrixWorldInverse );
-				insetvp =  MATH.transposeMat4(_viewProjectionMatrix.flattenToArray(temparray));
-				
-				
-				self.trigger('postprerender',[insetvp,w,w]);
-				
-				renderer.clear(true,true,true);
-				renderer.render(backgroundScene,selcam);
-				
-				renderer.clear(false,true,false);
-				renderer.render(scene,selcam);
-				
-				self.cameraID = camback;
-				_Editor.showMoveGizmo();
-				_dRenderer.setViewport(0,0,$('#index-vwf').attr('width'),$('#index-vwf').attr('height'));
-				_dRenderer.setScissor(0,0,$('#index-vwf').attr('width'),$('#index-vwf').attr('height'));
-				renderer.enableScissorTest(false);
-				selcam.aspect = oldaspect;
-				selcam.updateProjectionMatrix();
+					selcam.matrixWorldInverse.getInverse( selcam.matrixWorld );
+					
+					_viewProjectionMatrix.multiplyMatrices( selcam.projectionMatrix, selcam.matrixWorldInverse );
+					insetvp =  MATH.transposeMat4(_viewProjectionMatrix.flattenToArray(temparray));
+					
+					
+					self.trigger('postprerender',[insetvp,w,w]);
+					
+					renderer.clear(true,true,true);
+					renderer.render(backgroundScene,selcam);
+					
+					renderer.clear(false,true,false);
+					renderer.render(scene,selcam);
+					
+					self.cameraID = camback;
+					_Editor.showMoveGizmo();
+					_dRenderer.setViewport(0,0,$('#index-vwf').attr('width'),$('#index-vwf').attr('height'));
+					_dRenderer.setScissor(0,0,$('#index-vwf').attr('width'),$('#index-vwf').attr('height'));
+					renderer.enableScissorTest(false);
+					selcam.aspect = oldaspect;
+					selcam.updateProjectionMatrix();
+				}
 			
 			}
 			
