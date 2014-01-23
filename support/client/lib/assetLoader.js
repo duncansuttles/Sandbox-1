@@ -77,6 +77,23 @@ function ()
         this.subDriver = {},
         this.unknown = {};
         this.terrain = {};
+        this.BuildCollisionData = function(root)
+        {
+            if(root instanceof THREE.Geometry)
+            {
+               
+                root.GenerateBounds();
+                root.BuildRayTraceAccelerationStructure();
+            }
+            if(root.children)
+            {
+                for(var i =0;i < root.children.length; i++)
+                    this.BuildCollisionData(root.children[i]);
+            }
+            if(root.geometry)
+                this.BuildCollisionData(root.geometry);
+
+        }
         this.getCollada = function(url)
         {
             return this.collada[url];
@@ -104,6 +121,7 @@ function ()
                 {
                     
                     assetLoader.collada[url] = asset;
+                    assetLoader.BuildCollisionData(asset.scene);
                     cb2();
                 },function(progress)
                 {
@@ -118,6 +136,7 @@ function ()
                 {
                     
                     assetLoader.utf8Json[url] = asset;
+                    assetLoader.BuildCollisionData(asset.scene);
                     cb2();
                 },function(err)
                 {

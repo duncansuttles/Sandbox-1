@@ -1,4 +1,4 @@
-define( ["vwf/model/threejs/three","vwf/model/threejs/_THREERayTracer"], function( three, tracer ) {
+//define( ["vwf/model/threejs/three","vwf/model/threejs/_THREERayTracer"], function( three, tracer ) {
 	
 
 function GUID()
@@ -1153,10 +1153,10 @@ SceneManagerRegion.prototype.SphereCast = function(center,r,opts)
 	return hits;
 }
 
-SceneManagerRegion.prototype.testBoundsRay = tracer.BoundingBoxRTAS.prototype.intersect;
-SceneManagerRegion.prototype.testBoundsSphere = tracer.BoundingBoxRTAS.prototype.intersectSphere;
-SceneManagerRegion.prototype.intersect = tracer.BoundingBoxRTAS.prototype.intersect;
-SceneManagerRegion.prototype.testBoundsFrustrum = tracer.BoundingBoxRTAS.prototype.intersectFrustrum;
+SceneManagerRegion.prototype.testBoundsRay = BoundingBoxRTAS.prototype.intersect;
+SceneManagerRegion.prototype.testBoundsSphere = BoundingBoxRTAS.prototype.intersectSphere;
+SceneManagerRegion.prototype.intersect = BoundingBoxRTAS.prototype.intersect;
+SceneManagerRegion.prototype.testBoundsFrustrum = BoundingBoxRTAS.prototype.intersectFrustrum;
 
 _SceneManager = new SceneManager();
 
@@ -1727,7 +1727,7 @@ THREE.RenderBatchManager.prototype.deinitialize = function(child)
 
 
 
-return _SceneManager;
-});
+//return _SceneManager;
+//});
 
 

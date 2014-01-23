@@ -63,7 +63,9 @@ define( [
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/ddsmoothmenu-v.css" />')
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/Editorview.css" />')
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/images/icons/sprites.css" />')
-
+            $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/MATH.js"></script>');
+            $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/_THREERayTracer.js"></script>');
+            $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/scenemanager.js"></script>');
             
             
             $(document.head).append('<script src="vwf/model/threejs/helvetiker_regular.typeface.js"></script>');

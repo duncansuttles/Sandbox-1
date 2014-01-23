@@ -1,4 +1,4 @@
-define( ["vwf/model/threejs/three","vwf/model/threejs/MATH"], function(three, MATH ) {
+//define( ["vwf/model/threejs/three","vwf/model/threejs/MATH"], function(three, MATH ) {
 
 var Mat4 = goog.vec.Mat4;
 var Vec3 = goog.vec.Vec3;
@@ -1344,6 +1344,14 @@ THREE.Geometry.prototype.BuildRayTraceAccelerationStructure = function()
 	}
 	
 }
+THREE.Geometry.prototype.clone_internal = THREE.Geometry.prototype.clone;
+THREE.Geometry.prototype.clone = function()
+{
+	
+	var ret = this.clone_internal();
+	ret.RayTraceAccelerationStructure = this.RayTraceAccelerationStructure;
+	return ret;
+}
 //Get the bounds for an object
 THREE.Geometry.prototype.GetBoundingBox = function()
 {
@@ -2124,9 +2132,9 @@ THREE.Scene.prototype.FrustrumCast =  function(frustrum)
 }
 
 
-window.Frustrum = Frustrum;
-return {
-	BoundingBoxRTAS:BoundingBoxRTAS
-
-};
-});
+//window.Frustrum = Frustrum;
+//return {
+//	BoundingBoxRTAS:BoundingBoxRTAS
+//
+//};
+//});

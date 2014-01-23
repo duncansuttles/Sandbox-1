@@ -1407,6 +1407,6 @@ MATH_mathUnitTest() ;
 
 
 
-define( [], function(  ) {
-return MATH;
-});
+//define( [], function(  ) {
+//return MATH;
+//});
