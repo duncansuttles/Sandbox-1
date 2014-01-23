@@ -19,10 +19,10 @@ if(!window.jQuery)
 {
   //so,we are doing a regular load, and the optimizer has not run. 
   //this is somewhat carefully scripted to specify which files can download in parallel.
-  require(["jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js","md5.js","closure/deps.js"],
+  require(["jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js","closure/deps.js"],
   	function()
   	{
-	    require(["jquery-migrate-1.2.1.min.js","jquery-ui-1.10.3.custom.min.js","jquery.transit.min.js","jquery-mousewheel.js","jquery-scrollpane.min.js","../vwf/model/threejs/three.js","closure/vec/float32array.js","closure/vec/float64array.js"],
+	    require(["jquery-migrate-1.2.1.min.js","jquery-ui-1.10.3.custom.min.js","md5.js","jquery.transit.min.js","jquery-mousewheel.js","jquery-scrollpane.min.js","../vwf/model/threejs/three.js","closure/vec/float32array.js","closure/vec/float64array.js"],
 	    	function()
 	    	{
 		       require(["../vwf/model/threejs/ColladaLoader.js","../vwf/model/threejs/UTF8JSONLoader.js","../vwf/view/localization/json2.min.js","../vwf/view/localization/l10n.min.js","../vwf/view/localization/localizations.js","compatibility.js","closure/vec/vec.js","../vwf.js"],
