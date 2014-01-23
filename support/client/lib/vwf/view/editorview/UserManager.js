@@ -420,6 +420,11 @@ define(function ()
 				playerNodes.push(vwf.models.javascript.nodes[this.getPlayerIDs()[i]]);
 				
 			}
+			playerNodes.sort(function(a,b){
+
+				if( a.ownerClientID > b.ownerClientID) return 1;
+				return -1;
+			})
 			return playerNodes;
 		}
 		this.PlayerCreated = function (e, id)
