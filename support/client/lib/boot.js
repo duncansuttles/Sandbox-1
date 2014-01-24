@@ -66,6 +66,7 @@ define( [
             $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/MATH.js"></script>');
             $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/_THREERayTracer.js"></script>');
             $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/scenemanager.js"></script>');
+            $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/GeometryExporter.js"></script>');
             
             
             $(document.head).append('<script src="vwf/model/threejs/helvetiker_regular.typeface.js"></script>');

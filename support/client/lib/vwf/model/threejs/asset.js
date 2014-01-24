@@ -157,6 +157,7 @@
 					this.GetAllLeafMeshes(node,list);
 					for(var i =0; i < list.length; i++)
 					{
+						list[i].geometry.dynamic = false;
 						if(list[i].material)
 						{
 							list[i].material = list[i].material.clone();
