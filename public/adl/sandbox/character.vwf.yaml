@@ -450,7 +450,7 @@ scripts:
                
 
                 var intersect = _SceneManager.CPUPick(MATH.addVec3(finalt,[0,0,1.7]),[0,0,-1],this.pickoptions);
-              
+                console.log(this.pickoptions);
                 
                 falldist = intersect?intersect.distance:falldist;
                 

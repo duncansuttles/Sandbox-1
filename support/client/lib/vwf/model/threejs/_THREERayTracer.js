@@ -8,7 +8,7 @@ var Vec3 = goog.vec.Vec3;
 //Max number of faces a octree node may have before subdivding
 var OCTMaxFaces = 10;
 //max depth of the octree
-var OCTMaxDepth = 16;
+var OCTMaxDepth = 8;
 
 
 
@@ -794,19 +794,22 @@ function OctreeRegion(min,max,depth)
 
 	this.r = MATH.distanceVec3(this.min,this.max)/2;
 	var delta = this.r/1000;
-	/*this.min[0] -= delta;
-	this.min[1] -= delta;
-	this.min[2] -= delta;
-	this.max[0] += delta;
-	this.max[1] += delta;
-	this.max[2] += delta;*/
-	//Should never reach any of this;
-	if(this.min[0] > this.max[0])
-		alert();
-	if(this.min[1] > this.max[1])
-		alert();
-	if(this.min[2] > this.max[2])
-		alert();		
+
+	if(this.min[0] == this.max[0])
+	{
+		this.min[0] -= delta;
+		this.max[0] += delta;
+	}
+	if(this.min[1] == this.max[1])
+	{
+		this.min[1] -= delta;
+		this.max[1] += delta;
+	}
+	if(this.min[2] == this.max[2])
+	{
+		this.min[2] -= delta;
+		this.max[2] += delta;
+	}	
 	this.isSplit = false;
 	//The list of child regions
 	this.children = [null,null,null,null,null,null,null,null];
@@ -1004,15 +1007,17 @@ OctreeRegion.prototype.intersect = function(o,d,opts)
 	if(this.isSplit)
 	   facelist = this.facesNotDistributed;
 
-	if(opts && opts.maxDist)
-	{
-		if(MATH.distanceVec3(o,this.c) - this.r > opts.maxDist)
-		{
-				opts.objectRegionsRejectedByDist++;
-				return hits;
-		}
 
-	}
+//cant do this until can figure way to deal with 1D distance move into nonuniform scale space
+//	if(opts && opts.maxDist)
+//	{
+//		if(MATH.distanceVec3(o,this.c) - this.r > opts.maxDist)
+//		{
+//				opts.objectRegionsRejectedByDist++;
+//				return hits;
+//		}
+//
+//	}
 
 	//check either this nodes faces, or the not distributed faces. for a leaf, this will just loop all faces,
 	//for a non leaf, this will iterate over the faces that for some reason are not in children, which SHOULD be none
@@ -1195,6 +1200,22 @@ OctreeRegion.prototype.intersectSphere = function(center,r,opts)
 	}
 	return hits;
 }
+
+OctreeRegion.prototype.getLeaves = function(leaves)
+{
+	if (!leaves)
+		leaves = [];
+	if(this.isSplit)
+	{
+		for(var i = 0; i < this.children.length; i++)
+			leaves = this.children[i].getLeaves(leaves);
+	}else
+	{
+		if(this.faces.length > 0)
+		leaves.push({min:this.min,max:this.max,center:this.c});
+	}
+	return leaves;
+}
 //generate the children nodes from this node, and set the proper min and max
 //boy, getting this right is a bit tricky.
 OctreeRegion.prototype.split = function()
@@ -1342,6 +1363,7 @@ THREE.Geometry.prototype.BuildRayTraceAccelerationStructure = function()
 	{
 	
 		this.RayTraceAccelerationStructure = new OctreeRTAS(facedata,positions,this.BoundingBox.min,this.BoundingBox.max);
+		
 	}
 	else
 	{
@@ -1419,8 +1441,34 @@ THREE.Geometry.prototype.CPUPick = function(origin,direction,options,collisionTy
 				 //build the octree or the facelist
 				 if(!this.RayTraceAccelerationStructure || this.dirtyMesh)
 				 {
+				 	 
 					 this.BuildRayTraceAccelerationStructure();
-					
+					 
+					 if(false && this.RayTraceAccelerationStructure.root)
+					 {
+					 	var leafBounds = this.RayTraceAccelerationStructure.root.getLeaves();
+						console.log(leafBounds);
+						var mat = new THREE.MeshPhongMaterial();
+						mat.color.r = 1;
+						mat.color.g = 0;
+						mat.color.b = 0;
+						mat.ambient.r = 1;
+						mat.ambient.g = 0;
+						mat.ambient.b = 0;
+						mat.opacity = .2;
+						mat.transparent = true;
+						for(var i =0; i < leafBounds.length; i++)
+						{
+							var geo = new THREE.CubeGeometry(leafBounds[i].max[0] - leafBounds[i].min[0],leafBounds[i].max[1] - leafBounds[i].min[1],leafBounds[i].max[2] - leafBounds[i].min[2]);
+							var mesh = new THREE.Mesh(geo,mat);
+							mesh.matrix.elements[12]=leafBounds[i].center[0];
+							mesh.matrix.elements[13]=leafBounds[i].center[1];
+							mesh.matrix.elements[14]=leafBounds[i].center[2];
+							mesh.matrixAutoUpdate = false;
+							meshparent.add_internal(mesh);
+							mesh.updateMatrixWorld(true);
+						}	
+					}
 				 }
 				 
 				 intersections = this.RayTraceAccelerationStructure.intersect(origin,direction,options); 

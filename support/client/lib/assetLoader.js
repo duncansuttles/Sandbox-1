@@ -81,7 +81,7 @@ function ()
         {
             if(root instanceof THREE.Geometry)
             {
-               
+
                 root.GenerateBounds();
                 root.BuildRayTraceAccelerationStructure();
             }
@@ -117,9 +117,10 @@ function ()
         this.loadCollada = function(url,cb2)
         {
             var loader = new THREE.ColladaLoader();
+            var time = performance.now();
             loader.load(url,function(asset)
                 {
-                    
+                    console.log(url,performance.now() - time);
                     assetLoader.collada[url] = asset;
                     assetLoader.BuildCollisionData(asset.scene);
                     cb2();
@@ -132,9 +133,10 @@ function ()
         },
         this.loadUTf8Json = function(url,cb2)
         {
+            var time = performance.now();
             this.loader = new UTF8JsonLoader({source:url},function(asset)
                 {
-                    
+                    console.log(url,performance.now() - time);
                     assetLoader.utf8Json[url] = asset;
                     assetLoader.BuildCollisionData(asset.scene);
                     cb2();
