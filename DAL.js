@@ -504,15 +504,7 @@ function updateInstance (id,data,cb)
 	if(!id || id.length == 0 || !data)
 	{
 		cb(false,'bad data');
-		return;
-	}
-	try{
-
-		JSON.parse(data);
-	}
-	catch(e)
-	{
-		cb(false,'bad data');
+		console.log('bad data')
 		return;
 	}
 
@@ -522,6 +514,7 @@ function updateInstance (id,data,cb)
 			//first, get the existing record
 			getInstance(id,function(instance)
 			{
+
 				cb2(null,instance);
 			});
 		},
@@ -530,6 +523,7 @@ function updateInstance (id,data,cb)
 			//if the record does not exist, callback false
 			if(instance == null)
 			{
+				
 				cb2('instance does not exist');
 			}else
 			{
@@ -538,6 +532,7 @@ function updateInstance (id,data,cb)
 		},
 		function(instance,cb2)
 		{
+			
 			for(var key in data)
 			{
 				instance[key] = data[key];
@@ -552,6 +547,7 @@ function updateInstance (id,data,cb)
 		{
 			if(err)
 			{
+				console.log(err)
 				global.log(err,0);
 				cb(false);
 				return;
@@ -1038,7 +1034,7 @@ function importUsers()
 function importStates()
 {
 	fs.readdir((datapath+"/states/").replace(safePathRE),function(err,files){
-		async.each(files,
+		async.eachSeries(files,
 			function(i,cb)
 			{
 				console.log(i);
@@ -1051,6 +1047,9 @@ function importStates()
 					}
 					else
 					{
+						var stateexists = fs.existsSync((datapath+"/states/"+i+"/state").replace(safePathRE),'utf8');
+						if(stateexists)
+						{
 						var instdata = fs.readFileSync((datapath+"/states/"+i+"/state").replace(safePathRE),'utf8');
 						instdata = JSON.parse(instdata);
 						var statedata = {};
@@ -1063,6 +1062,11 @@ function importStates()
 							console.log('imported' + i);
 							cb();
 						});
+						}else
+						{
+							console.log('state file not found: ' + i);
+							cb();
+						}
 					}
 				});
 				
