@@ -817,7 +817,7 @@ define(
 		{
 			alertify.choice("Choose the mesh format",function(ok,type)
 			{
-				debugger;
+				
 				if(ok)
 				{
 					alertify.prompt('Input a URL to the mesh. Please note: this must serve from a CORS capable host!',function(ok,val)
