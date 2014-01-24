@@ -1308,15 +1308,6 @@ function Publish(id, publishSettings, cb)
 		cb(false,'bad data');
 		return;
 	}
-	try{
-
-		JSON.parse(publishSettings);
-	}
-	catch(e)
-	{
-		cb(false,'bad data');
-		return;
-	}
 	
 	//get the orignial instance
 	getInstance(id, function(instance){
