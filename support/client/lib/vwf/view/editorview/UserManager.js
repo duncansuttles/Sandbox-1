@@ -266,7 +266,9 @@ define(function ()
 			type: 'subDriver/threejs/asset/vnd.collada+xml',
 			properties: {
 				PlayerNumber: 1,
-				isDynamic: true
+				isDynamic: true,
+				castShadows: true,
+				receiveShadows: true
 			},
 			events: {
 				ShowProfile: null,
