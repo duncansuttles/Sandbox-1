@@ -812,12 +812,29 @@ define(
 			_Editor.CreatePrim('terrain', [0,0,0], [1, 1, 1], 'checker.jpg', document.PlayerNumber, '');
 		});
 		
+
 		$('#MenuCreateLoadMeshURL').click(function (e)
 		{
-			alertify.prompt('Input a URL to a COLLADA mesh. Please note: this must serve from a CORS capable host!',function(ok,val){
-			if(ok)
-				_Editor.loadMesh(val);
-			},'http://');
+			alertify.choice("Choose the mesh format",function(ok,type)
+			{
+				debugger;
+				if(ok)
+				{
+					alertify.prompt('Input a URL to the mesh. Please note: this must serve from a CORS capable host!',function(ok,val)
+					{
+						if(ok)
+						{
+							if(type == 'Collada')
+								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.collada+xml');
+							if(type == '3DR JSON')
+								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.osgjs+json+compressed');
+						}
+					},'http://');
+				}
+
+			},
+			["Collada","3DR JSON"])	
+			
 		});
 		
 		

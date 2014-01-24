@@ -117,10 +117,12 @@ function ()
         this.loadCollada = function(url,cb2)
         {
             var loader = new THREE.ColladaLoader();
+            console.profile();
             var time = performance.now();
             loader.load(url,function(asset)
                 {
                     console.log(url,performance.now() - time);
+                    console.profileEnd();
                     assetLoader.collada[url] = asset;
                     assetLoader.BuildCollisionData(asset.scene);
                     cb2();

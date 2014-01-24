@@ -3210,19 +3210,16 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.loadMesh = function(url,type)
 		{
-			
+			debugger;
 			var Proto = 
 			{
 				extends: 'asset.vwf',
 				source: url,
-				type : 'subDriver/threejs/asset/vnd.collada+xml',
+				type : type || 'subDriver/threejs/asset/vnd.collada+xml',
 				properties: {
 					owner: _UserManager.GetCurrentUserName()
 				}
 			};
-			
-			
-		
 			
 			
 			var newintersectxy = self.GetInsertPoint();
