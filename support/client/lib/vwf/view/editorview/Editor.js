@@ -3210,7 +3210,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.loadMesh = function(url,type)
 		{
-			debugger;
+			
 			var Proto = 
 			{
 				extends: 'asset.vwf',
