@@ -682,7 +682,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				{
 					var bound = peerselection.bounds[i];
 					if(bound)
+					{
 						bound.parent.remove(bound);
+						bound.dispose();
+						bound.children[0].geometry.dispose();
+					}
 				}
 			}
 			this.peerSelections = {};
@@ -706,7 +710,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					{
 						var bound = peerselection.bounds[i];
 						if(bound)
+						{
 							bound.parent.remove(bound);
+							bound.children[0].geometry.dispose();
+						}
 					}
 					peerselection.bounds = [];
 					peerselection.nodes = [];
@@ -1971,6 +1978,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			for (var i = 0; i < SelectionBounds.length; i++)
 			{
 				SelectionBounds[i].parent.remove(SelectionBounds[i], true);
+				SelectionBounds[i].children[0].geometry.dispose()
 			}
 			SelectionBounds = [];
 			for (var i = 0; i < SelectedVWFNodes.length; i++)
@@ -2170,6 +2178,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					for (var i = 0; i < SelectionBounds.length; i++)
 					{
 						SelectionBounds[i].parent.remove(SelectionBounds[i], true);
+						SelectionBounds[i].children[0].geometry.dispose()
 					}
 					SelectionBounds = [];
 				}

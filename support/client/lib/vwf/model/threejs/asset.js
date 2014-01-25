@@ -158,7 +158,7 @@
 					for(var i =0; i < list.length; i++)
 					{
 						list[i].geometry.dynamic = false;
-						if(list[i].material)
+					/*	if(list[i].material)
 						{
 							list[i].material = list[i].material.clone();
 							list[i].material.needsUpdate = true;
@@ -193,6 +193,7 @@
 							list[i].material = new THREE.MeshPhongMaterial();
 							list[i].material.map =  _SceneManager.getTexture('white.png');		
 						}
+						*/
 						
 						//If the incomming mesh does not have UVs on channel one, fill with zeros.
 						if(!list[i].geometry.faceVertexUvs[0] || list[i].geometry.faceVertexUvs[0].length == 0)
@@ -329,61 +330,15 @@
 			else if(reg.loaded == true && reg.pending == false)
 			{
 				
-				this.getRoot().add(reg.node.clone());
-				
-				var list = [];
-					
-					this.GetAllLeafMeshes(this.rootnode,list);
-					for(var i =0; i < list.length; i++)
-						if(list[i].material)
-						{
-							list[i].material = list[i].material.clone();
-							list[i].material.needsUpdate = true;
-							
-				
-							if(list[i].material.map)
-							{
-								
-								list[i].material.map =  _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
-								list[i].material.map.needsUpdate = true;
-							}else
-							{
-								list[i].material.map =  _SceneManager.getTexture('white.png');
-								list[i].material.map.needsUpdate = true;
-							}
-							if(list[i].material.bumpMap)
-							{
-								list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
-								list[i].material.bumpMap.needsUpdate = true;
-							}
-							if(list[i].material.lightMap)
-							{
-								list[i].material.lightMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
-								list[i].material.lightMap.needsUpdate = true;
-							}
-							if(list[i].material.normalMap)
-							{
-								list[i].material.normalMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
-								list[i].material.normalMap.needsUpdate = true;								
-							}
-							
-						
-							
-							
-							list[i].materialUpdated();
-						}
-					
-					
-					this.settingProperty('materialDef',this.materialDef);
+				this.getRoot().add(reg.node.clone());		
+				this.cleanTHREEJSnodes(this.getRoot());
+				this.settingProperty('materialDef',this.materialDef);
 				$(document).trigger('EndParse');
 			}
 			//if it's pending but not done, register a callback so that when it is done, it can be attached.
 			else if(reg.loaded == false && reg.pending == true)
 			{	
-				
-			
 				asyncCallback( false );
-				
 				var tcal = asyncCallback;
 				reg.callbacks.push(function(node)
 				{
@@ -395,49 +350,9 @@
 					if(node)
 					{
 						this.getRoot().add(node.clone());
-						
-						var list = [];
-						
-						this.GetAllLeafMeshes(this.rootnode,list);
-						for(var i =0; i < list.length; i++)
-							if(list[i].material)
-							{
-								list[i].material = list[i].material.clone();
-								list[i].material.needsUpdate = true;
-								
-								if(list[i].material.map)
-								{
-									list[i].material.map =  _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
-									list[i].material.map.needsUpdate = true;
-								}else
-								{
-									list[i].material.map =  _SceneManager.getTexture('white.png');
-									list[i].material.map.needsUpdate = true;
-								}
-								if(list[i].material.bumpMap)
-								{
-									list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
-									list[i].material.bumpMap.needsUpdate = true;
-								}
-								if(list[i].material.lightMap)
-								{
-									list[i].material.lightMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
-									list[i].material.lightMap.needsUpdate = true;
-								}
-								if(list[i].material.normalMap)
-								{
-									list[i].material.normalMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
-									list[i].material.normalMap.needsUpdate = true;								
-								}
-								
-								
-								list[i].materialUpdated();
-							}
-						
-						
+						this.cleanTHREEJSnodes(this.getRoot());
 						this.settingProperty('materialDef',this.materialDef);
 						this.getRoot().updateMatrixWorld(true);
-						
 					}
 					tcal( true );
 				}.bind(this));

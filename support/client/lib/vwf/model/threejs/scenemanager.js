@@ -1272,7 +1272,10 @@ THREE.RenderBatch.prototype.build = function()
 	
 	//do the merge:
 	if(this.mesh)
+	{
 		this.scene.remove_internal(this.mesh);
+		this.mesh.geometry.dispose();
+	}
 	
 	if(this.objects.length == 0) return;	
 	
@@ -1349,7 +1352,8 @@ THREE.RenderBatch.prototype.build = function()
 				for(var k = 0; k < face.vertexNormals.length; k++)
 					newface.vertexNormals.push(face.vertexNormals[k].clone().applyMatrix3(normalMatrix).normalize());
 				for(var k = 0; k < face.vertexColors.length; k++)
-					newface.vertexColors.push(face.vertexColors[k].clone());
+					if(face.vertexColors[k])
+						newface.vertexColors.push(face.vertexColors[k].clone());
 				
 				geo.faces.push(newface);
 			

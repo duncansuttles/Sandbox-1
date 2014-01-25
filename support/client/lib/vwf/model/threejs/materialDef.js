@@ -39,14 +39,29 @@
 				
 				if(oldmat == newmat) return;
 
-				if(oldmat && oldmat.refCount === undefined)
-					oldmat.refCount = 1;
-				if(oldmat)
+				//so, since the loader now does not clone materails on load, it's possible that the material is shared by other meshes
+				//even though we have not ref counted it. So, we can't dispose materials that have a refcount of undefined, since we have
+				//no idea if they are used elsewhere. Only dispose when refcount === 0
+				//if(oldmat && oldmat.refCount === undefined)
+				//	oldmat.refCount = 1;
+				if(oldmat && oldmat.refCount)
 					oldmat.refCount--;	
-				if(oldmat.refCount == 0)
+				if(oldmat.refCount === 0)
 				{
 					if(oldmat.dispose)
+					{
+						var mapnames = ['bumpMap','normalMap','map','specularMap','lightMap'];
+						for(var i =0; i < mapnames.length; i++)
+						{
+							if(oldmat[mapnames[i]] && oldmat[mapnames[i]].dispose)
+							{
+								oldmat[mapnames[i]].dispose();
+							}
+						}
+						//if we are disposing, then we know that this material was allocated by the materialdef system. Since this system does not
+						//cache maps independantly of materails, we can dispose all the maps as well.
 						oldmat.dispose();
+					}
 					var olddef = oldmat.def;
 					delete this.materials[olddef];
 				}				
