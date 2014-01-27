@@ -207,6 +207,7 @@ define(function ()
 				
 				if((statedata && statedata.publishSettings && !statedata.publishSettings.camera) || !statedata || !statedata.publishSettings)
 				{
+					
 					_dView.setCameraDefault();
 					clearCameraModeIcons();
 					$('#MenuCamera3RDPersonicon').css('background-color', '#9999FF');

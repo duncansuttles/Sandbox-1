@@ -13,7 +13,7 @@ function GUID()
 //values tuned for VTCE
 var maxObjects = 1; 
 var maxDepth = 16;
-var batchAtLevel = 2;
+var batchAtLevel = 0;
 var drawSceneManagerRegions = false;
 var maxSize = 640;
 function SceneManager(scene)
@@ -74,6 +74,11 @@ SceneManager.prototype.setMaxObjects = function(mo)
 SceneManager.prototype.setMaxDepth = function(mo)
 {
 	maxDepth = mo;
+	this.rebuild();
+}
+SceneManager.prototype.setBatchLevel = function(bl)
+{
+	batchAtLevel = bl;
 	this.rebuild();
 }
 SceneManager.prototype.setShowRegions = function(bool)

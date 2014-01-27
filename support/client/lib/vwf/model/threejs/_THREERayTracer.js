@@ -1579,6 +1579,45 @@ THREE.Geometry.prototype.SphereCast = function(center,r,opts)
       return intersections;
 }
 
+THREE.BufferGeometry.prototype.GetBoundingBox = THREE.Geometry.prototype.GetBoundingBox;
+THREE.BufferGeometry.prototype.FrustrumCast  = THREE.Geometry.prototype.FrustrumCast;
+THREE.BufferGeometry.prototype.CPUPick  = THREE.Geometry.prototype.CPUPick;
+THREE.BufferGeometry.prototype.SphereCast  = THREE.Geometry.prototype.SphereCast;
+THREE.BufferGeometry.prototype.GenerateBounds = function()
+{
+
+	var positions = this.attributes.position.array;
+	var bounds = FindMaxMin(positions);
+	var min = bounds[0];
+	var max = bounds[1];
+	
+	this.BoundingSphere = new BoundingSphereRTAS(min,max);
+	this.BoundingBox = new BoundingBoxRTAS(min,max);
+}
+
+THREE.BufferGeometry.prototype.BuildRayTraceAccelerationStructure = function()
+{
+
+	
+	var positions = this.attributes.position.array;
+	//decompose the face3 and face4 data from the THREEjs faces into a list of tri indexes
+	var facedata = this.attributes.index.array;
+
+	
+	if(this.attributes.index.array.length/3 > OCTMaxFaces)
+	{
+	
+		this.RayTraceAccelerationStructure = new OctreeRTAS(facedata,positions,this.BoundingBox.min,this.BoundingBox.max);
+		
+	}
+	else
+	{
+		this.RayTraceAccelerationStructure = new SimpleFaceListRTAS(facedata,positions);
+	}
+
+
+
+}
 //Get the bounding box for a group
 THREE.Object3D.prototype.GetBoundingBox = function(local)
 {

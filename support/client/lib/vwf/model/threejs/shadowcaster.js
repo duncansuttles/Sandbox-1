@@ -34,7 +34,7 @@
 					this.castShadows = propval;
 					var list = this.CasterGetAllLeafMeshes(this.getRoot())
 					for(var i = 0; i < list.length; i++)
-						list[i].castShadow = this.castShadows;
+						list[i].castShadow = this.castShadows && _SettingsManager.getKey('shadows');
 					return propval;	
 				}
 				if(propname == 'receiveShadows')
@@ -43,7 +43,7 @@
 					var list = this.CasterGetAllLeafMeshes(this.getRoot())
 					for(var i = 0; i < list.length; i++)
 					{
-						list[i].receiveShadow = this.receiveShadows;
+						list[i].receiveShadow = this.receiveShadows  && _SettingsManager.getKey('shadows');
 						if(list[i].material)
 							list[i].material.needsUpdate = true
 					}

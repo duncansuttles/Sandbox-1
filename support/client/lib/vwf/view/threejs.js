@@ -1008,8 +1008,15 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 sceneNode.renderer = new THREE.WebGLRenderer({canvas:mycanvas,antialias:true,alpha:false,stencil:false});
 				sceneNode.renderer.autoUpdateScene = false;
 				sceneNode.renderer.setSize($('#index-vwf').width(),$('#index-vwf').height());
+				
 				sceneNode.renderer.shadowMapEnabled = true;
 				sceneNode.renderer.shadowMapType = THREE.PCFSoftShadowMap;
+
+				if(_SettingsManager.getKey('shadows'))
+				{
+					
+				}
+
 				sceneNode.renderer.autoClear = false;
 				sceneNode.renderer.setClearColor({r:1,g:1,b:1},1.0);
             }else

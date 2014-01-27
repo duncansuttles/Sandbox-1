@@ -77,11 +77,11 @@ function ()
         this.subDriver = {},
         this.unknown = {};
         this.terrain = {};
+        this.utf8JsonOptimized = {};
         this.BuildCollisionData = function(root)
         {
-            if(root instanceof THREE.Geometry)
+            if(root instanceof THREE.Geometry || root instanceof THREE.BufferGeometry)
             {
-
                 root.GenerateBounds();
                 root.BuildRayTraceAccelerationStructure();
             }
@@ -97,6 +97,10 @@ function ()
         this.getCollada = function(url)
         {
             return this.collada[url];
+        },
+        this.getUtf8JsonOptimized = function(url)
+        {
+            return this.utf8JsonOptimized[url];
         },
         this.getTerrain = function(url)
         {
@@ -115,6 +119,7 @@ function ()
             return this.subDriver[url];
         },
        
+
         this.loadCollada = function(url,cb2)
         {
             var loader = new THREE.ColladaLoader();
@@ -147,6 +152,23 @@ function ()
                 {
                     console.log(url,performance.now() - time);
                     assetLoader.utf8Json[url] = asset;
+                    assetLoader.BuildCollisionData(asset.scene);
+                    console.log(url,performance.now() - time);
+                    
+                    cb2();
+                },function(err)
+                {
+                    cb2();
+                });
+        },
+        this.loadUTf8JsonOptimized = function(url,cb2)
+        {
+            var time = performance.now();
+           
+            this.loader = new UTF8JsonLoader_Optimized({source:url},function(asset)
+                {
+                    console.log(url,performance.now() - time);
+                    assetLoader.utf8JsonOptimized[url] = asset;
                     assetLoader.BuildCollisionData(asset.scene);
                     console.log(url,performance.now() - time);
                     
@@ -319,7 +341,12 @@ function ()
                     else if(type == 'subDriver/threejs/asset/vnd.osgjs+json+compressed')
                     {
                         assetLoader.loadUTf8Json(url,cb2);
-                    }else if(type == 'unknown')
+                    }
+                    else if(type == 'subDriver/threejs/asset/vnd.osgjs+json+compressed+optimized')
+                    {
+                        assetLoader.loadUTf8JsonOptimized(url,cb2);
+                    }
+                    else if(type == 'unknown')
                     {
                         assetLoader.loadUnknown(url,cb2);
                     }

@@ -99,8 +99,10 @@
 		return true;	
 	}
 	
-define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/threejs/backgroundLoader"], function( module, model, utility, Color, backgroundLoader,sceneManager ) {
+define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/threejs/backgroundLoader"], function( module, model, utility, Color, backgroundLoader ) {
 
+
+   
 
     return model.load( module, {
 
@@ -109,7 +111,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
         // -- initialize ---------------------------------------------------------------------------
 
         initialize: function() {
-            
+           
             this.state.scenes = {}; // id => { MATHDocument: new MATH.Document(), MATHRenderer: new MATH.Renderer(), MATHScene: new MATH.Scene() }
             this.state.nodes = {}; // id => { name: string, MATHObject: MATH.Object, MATH.Collada, MATH.Light, or other...? }
             this.state.kernel = this.kernel.kernel.kernel;

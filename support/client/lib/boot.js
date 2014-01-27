@@ -45,6 +45,7 @@ define( [
 			"assetLoader",
             "vwf/model/jqueryui",
             "vwf/view/jqueryui",
+            "SettingsManager"
 
         ], function( ready ) {
 
@@ -52,6 +53,7 @@ define( [
             require("polyfills").setup();
             require("vwf/view/editorview/ObjectPools").getSingleton();
             window.alertify = require("vwf/view/editorview/alertify.js-0.3.9/src/alertify");
+            window._SettingsManager = require("SettingsManager").getSingleton();
             var assetLoader = require("assetLoader").getSingleton();
             ready( function() {
 

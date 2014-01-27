@@ -158,6 +158,9 @@
 					for(var i =0; i < list.length; i++)
 					{
 						list[i].geometry.dynamic = false;
+						list[i].castShadow = _SettingsManager.getKey('shadows');
+						list[i].receiveShadow = _SettingsManager.getKey('shadows');
+						if(list[i].geometry instanceof THREE.BufferGeometry) continue;
 					/*	if(list[i].material)
 						{
 							list[i].material = list[i].material.clone();
@@ -278,15 +281,20 @@
 			//see if it was preloaded
 			if(childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed' && _assetLoader.getUtf8Json(assetSource))
 			{
-
 				assetRegistry[assetSource].loaded = true;
 				assetRegistry[assetSource].pending = false;
 				assetRegistry[assetSource].node = _assetLoader.getUtf8Json(assetSource).scene;
 				this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
 			}
+			if(childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed+optimized' && _assetLoader.getUtf8JsonOptimized(assetSource))
+			{
+				assetRegistry[assetSource].loaded = true;
+				assetRegistry[assetSource].pending = false;
+				assetRegistry[assetSource].node = _assetLoader.getUtf8JsonOptimized(assetSource).scene;
+				this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
+			}
 			if(childType == 'subDriver/threejs/asset/vnd.collada+xml' && _assetLoader.getCollada(assetSource))
 			{
-				
 				assetRegistry[assetSource].loaded = true;
 				assetRegistry[assetSource].pending = false;
 				assetRegistry[assetSource].node = _assetLoader.getCollada(assetSource).scene;
@@ -313,6 +321,11 @@
 					
 					this.loader.load(assetSource,this.loaded.bind(this),this.loadFailed.bind(this));
 					
+					asyncCallback(false);
+				}
+				if(childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed+optimized')
+				{
+					this.loader = new UTF8JsonLoader_Optimized({source:assetSource},this.loaded.bind(this),this.loadFailed.bind(this));
 					asyncCallback(false);
 				}
 				if(childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed')
