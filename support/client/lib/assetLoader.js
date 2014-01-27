@@ -114,10 +114,11 @@ function ()
         {
             return this.subDriver[url];
         },
+       
         this.loadCollada = function(url,cb2)
         {
             var loader = new THREE.ColladaLoader();
-           
+            
             var time = performance.now();
             loader.load(url,function(asset)
                 {
@@ -125,22 +126,30 @@ function ()
                     
                     assetLoader.collada[url] = asset;
                     assetLoader.BuildCollisionData(asset.scene);
+                    delete asset.dae;
                     cb2();
+                    loader.cleanup();
                 },function(progress)
                 {
                     //it's really failed
                     if(!progress)
+                    {
                         cb2();
+                        loader.cleanup();
+                    }
                 });
         },
         this.loadUTf8Json = function(url,cb2)
         {
             var time = performance.now();
+           
             this.loader = new UTF8JsonLoader({source:url},function(asset)
                 {
                     console.log(url,performance.now() - time);
                     assetLoader.utf8Json[url] = asset;
                     assetLoader.BuildCollisionData(asset.scene);
+                    console.log(url,performance.now() - time);
+                    
                     cb2();
                 },function(err)
                 {

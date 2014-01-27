@@ -66,11 +66,29 @@ SceneManager.prototype.forceUnbatchAll = function()
 			list[i].setStatic(false);
 	}
 }
-SceneManager.prototype.rebuild = function(mo,md)
+SceneManager.prototype.setMaxObjects = function(mo)
+{
+	maxObjects = mo;
+	this.rebuild();
+}
+SceneManager.prototype.setMaxDepth = function(mo)
+{
+	maxDepth = mo;
+	this.rebuild();
+}
+SceneManager.prototype.setShowRegions = function(bool)
+{
+	drawSceneManagerRegions = bool;	
+	this.rebuild();
+}
+SceneManager.prototype.setExtents = function(extents)
+{
+	maxSize = extents;	
+	this.rebuild();
+}
+SceneManager.prototype.rebuild = function()
 {
 	
-	maxObjects = mo;
-	maxDepth = md;
 	var children = this.root.getChildren();
 	this.root.deinitialize();
 	this.min = [-maxSize,-maxSize,-maxSize];

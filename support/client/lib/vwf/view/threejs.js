@@ -707,6 +707,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 	var insetvp;
 	var vpargs = [];
 	var documentselector = $(document);
+
         function renderScene(time) {
 			
 			
@@ -1117,6 +1118,10 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
         var container = document.getElementById("container");
         var sceneCanvas = canvas;
+
+       
+    
+
         //var mouse = new MATH.MouseInput( sceneCanvas );
 
         var self = this;
@@ -1510,6 +1515,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             });
         }
 
+
         // == Draggable Content ========================================================================
 
 //        canvas.addEventListener( "dragenter", function( e ) {
@@ -1604,6 +1610,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
         };
          
     };
+
+    
+
     function mouseXPos(e) {
     	
         return e.clientX - e.currentTarget.offsetLeft + (window.scrollX || 0);
@@ -1613,10 +1622,13 @@ define( [ "module", "vwf/view" ], function( module, view ) {
         return e.clientY - e.currentTarget.offsetTop + (window.scrollY || 0);
     }
 
+	
    function ThreeJSPick(sceneNode,cam,SCREEN_WIDTH,SCREEN_HEIGHT)
     {
         if(!this.lastEventData) return;
         
+        if(!this.pickOptionsAvatar) this.pickOptionsAvatar = {filter:function(o){return !(o.isAvatar === true)}};
+    	if(!this.pickOptions) this.pickOptions = {};
         
         var threeCam = cam;//sceneNode.camera.threeJScameras[sceneNode.camera.ID];
         if(!this.ray) this.ray = new THREE.Ray();
@@ -1683,15 +1695,17 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		
 			
 			if(vwf.models[0].model.nodes['index-vwf'].cameramode == 'FirstPerson')
-				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[this.directionVector.x,this.directionVector.y,this.directionVector.z],{filter:function(o){return !(o.isAvatar === true)}});
+				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[this.directionVector.x,this.directionVector.y,this.directionVector.z],this.pickOptionsAvatar);
 			else
-				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[this.directionVector.x,this.directionVector.y,this.directionVector.z]);
+				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[this.directionVector.x,this.directionVector.y,this.directionVector.z],this.pickOptions);
+			
 			
 				
 			return intersects;
 		}
     
     }
+    
     function getPickObjectID(threeObject)
     {   
         

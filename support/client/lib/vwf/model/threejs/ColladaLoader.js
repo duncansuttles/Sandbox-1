@@ -52,6 +52,30 @@ THREE.ColladaLoader = function () {
 	var colladaUp = null;
 	var upConversion = null;
 
+	function cleanup()
+	{
+			COLLADA = null;
+			scene = null;
+			daeScene = null;
+
+			readyCallbackFunc = null;
+
+		 	sources  = null;
+			images  = null;
+			animations  = null;
+			controllers  = null;
+			geometries  = null;
+			materials  = null;
+			effects  = null;
+			cameras  = null;
+			lights  = null;
+
+			animData = null;
+			visualScenes = null;
+			baseUrl = null;
+			morphs = null;
+			skins = null;
+	}
 	function load ( url, readyCallback, progressCallback ) {
 
 		var length = 0;
@@ -650,7 +674,7 @@ THREE.ColladaLoader = function () {
 	function applySkin ( geometry, instanceCtrl, frame ) {
 
 		
-		var maxbones = 32;
+		var maxbones = 58;
 		if(window._dRenderer)
 		{
 			//this does not really find the proper minimum
@@ -861,7 +885,7 @@ THREE.ColladaLoader = function () {
 			else
 			{
 				
-				
+				console.warn('Too many bones on mesh',sortedbones.length, geometry);
 				for ( i = 0; i < geometry.vertices.length; i++ ) {
 
 					skinned.push( new THREE.Vector3() );
@@ -1059,7 +1083,6 @@ THREE.ColladaLoader = function () {
 
 				if ( skinController !== undefined ) {
 
-					
 					applySkin( geom, skinController );
 					
 					if(geom.morphTargets.length > 0)
@@ -4979,7 +5002,8 @@ THREE.ColladaLoader = function () {
 		setPreferredShading: setPreferredShading,
 		applySkin: applySkin,
 		geometries : geometries,
-		options: options
+		options: options,
+		cleanup:cleanup
 
 	};
 

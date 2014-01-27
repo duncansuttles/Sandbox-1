@@ -945,10 +945,10 @@ function AABBTriTest(box,tri)
 //a face is inside if any of the verts are inside;
 OctreeRegion.prototype.testFace = function(face)
 {
-	if(this.pointInside(face.v0) || this.pointInside(face.v1)|| this.pointInside(face.v2))
+	if(this.pointInside(face.v0) && this.pointInside(face.v1)&& this.pointInside(face.v2))
 		return true;
 	
-	return AABBTriTest(this,face);
+	return false;//AABBTriTest(this,face);
     
 }
 
