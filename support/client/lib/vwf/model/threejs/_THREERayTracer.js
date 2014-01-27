@@ -945,7 +945,7 @@ function AABBTriTest(box,tri)
 //a face is inside if any of the verts are inside;
 OctreeRegion.prototype.testFace = function(face)
 {
-	if(this.pointInside(face.v0) && this.pointInside(face.v1)&& this.pointInside(face.v2))
+	if(this.pointInside(face.v0) || this.pointInside(face.v1)|| this.pointInside(face.v2))
 		return true;
 	
 	return AABBTriTest(this,face);
@@ -1212,7 +1212,7 @@ OctreeRegion.prototype.getLeaves = function(leaves)
 	}else
 	{
 		if(this.faces.length > 0)
-		leaves.push({min:this.min,max:this.max,center:this.c});
+		leaves.push(this);
 	}
 	return leaves;
 }
@@ -1446,6 +1446,7 @@ THREE.Geometry.prototype.CPUPick = function(origin,direction,options,collisionTy
 					 
 					 if(false && this.RayTraceAccelerationStructure.root)
 					 {
+					 	
 					 	var leafBounds = this.RayTraceAccelerationStructure.root.getLeaves();
 						console.log(leafBounds);
 						var mat = new THREE.MeshPhongMaterial();
@@ -1455,19 +1456,23 @@ THREE.Geometry.prototype.CPUPick = function(origin,direction,options,collisionTy
 						mat.ambient.r = 1;
 						mat.ambient.g = 0;
 						mat.ambient.b = 0;
-						mat.opacity = .2;
-						mat.transparent = true;
+						//mat.opacity = .2;
+						//mat.transparent = true;
+						mat.wireframe = true;
+						var faces = 0;
 						for(var i =0; i < leafBounds.length; i++)
 						{
+							faces += leafBounds[i].faces.length;
 							var geo = new THREE.CubeGeometry(leafBounds[i].max[0] - leafBounds[i].min[0],leafBounds[i].max[1] - leafBounds[i].min[1],leafBounds[i].max[2] - leafBounds[i].min[2]);
 							var mesh = new THREE.Mesh(geo,mat);
-							mesh.matrix.elements[12]=leafBounds[i].center[0];
-							mesh.matrix.elements[13]=leafBounds[i].center[1];
-							mesh.matrix.elements[14]=leafBounds[i].center[2];
+							mesh.matrix.elements[12]=leafBounds[i].c[0];
+							mesh.matrix.elements[13]=leafBounds[i].c[1];
+							mesh.matrix.elements[14]=leafBounds[i].c[2];
 							mesh.matrixAutoUpdate = false;
 							meshparent.add_internal(mesh);
 							mesh.updateMatrixWorld(true);
 						}	
+						console.log(faces);
 					}
 				 }
 				 

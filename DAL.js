@@ -1306,8 +1306,8 @@ function getHistory(id,cb)
 //cb with the ID of the new state
 function Publish(id, publishSettings, cb)
 {
-
-	if(!id || id.length == 0 || !publishSettings)
+	//note: publishSettings may be null - means unpublish
+	if(!id || id.length == 0)
 	{
 		cb(false,'bad data');
 		return;

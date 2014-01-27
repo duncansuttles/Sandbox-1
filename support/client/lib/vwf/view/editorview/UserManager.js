@@ -157,11 +157,7 @@ define(function ()
 				}else
 				{
 					//this is a published world, and you do not need to hit the login server
-				
-					
 					this.Login('Anonymous' + _UserManager.getPlayers().length);
-				
-				
 				}
 			
 			
@@ -202,7 +198,26 @@ define(function ()
 		{
 			return 'character-vwf-' + this.currentUsername.replace(/ /g,'-');
 		}
-		
+		this.createdNode = function (nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType, childURI, childName, callback /* ( ready ) */ )
+		{
+			if(childName && childName == this.GetCurrentUserName())
+			{
+				var statedata = _DataManager.getInstanceData();
+				
+				
+				if((statedata && statedata.publishSettings && !statedata.publishSettings.camera) || !statedata || !statedata.publishSettings)
+				{
+					_dView.setCameraDefault();
+					clearCameraModeIcons();
+					$('#MenuCamera3RDPersonicon').css('background-color', '#9999FF');
+					vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
+					vwf.models[0].model.nodes['index-vwf'].setCameraMode('3RDPerson');
+				}
+
+				
+
+			}
+		}
 		this.Login = function (username)
 		{
 		
