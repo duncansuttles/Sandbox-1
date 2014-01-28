@@ -483,7 +483,7 @@ scripts:
                 }
                 _DEALLOC(intersect);
                 this.skin.PickPriority = 1;
-                
+                 
             }
             //if they are jumpping, and have been for more than a 10th of a second, start checking below them for intersections.
             //10th of second is where they start falling?
@@ -491,7 +491,7 @@ scripts:
             {
                 this.skin.PickPriority = -1;
                 var intersect = _SceneManager.CPUPick(MATH.addVec3(finalt,[0,0,2]),[0,0,-1],this.pickoptions);
-                
+
                 if(intersect)
                 {
                    

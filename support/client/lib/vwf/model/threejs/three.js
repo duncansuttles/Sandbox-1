@@ -26030,7 +26030,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			var mipmap, mipmaps = texture.mipmaps;
 
-			if ( texture instanceof THREE.DataTexture ) {
+			if ( texture instanceof THREE.DataTexture ||( texture.image && texture.image.data)) {
 
 				// use manually created mipmaps if available
 				// if there are no manual mipmaps
