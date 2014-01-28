@@ -453,7 +453,7 @@ scripts:
                 
                 
                 falldist = intersect?intersect.distance:falldist;
-                console.log(this.pickoptions);
+                
                 if(falldist && intersect)
                 {
                   

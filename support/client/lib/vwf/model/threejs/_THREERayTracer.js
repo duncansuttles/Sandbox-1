@@ -6,9 +6,9 @@ var Vec3 = goog.vec.Vec3;
 // add cpu side ray casting to MATH. Faster then GPU based picking in many cases
 
 //Max number of faces a octree node may have before subdivding
-var OCTMaxFaces = 10;
+var OCTMaxFaces = 20;
 //max depth of the octree
-var OCTMaxDepth = 8;
+var OCTMaxDepth = 4;
 
 
 
@@ -861,9 +861,9 @@ OctreeRegion.prototype.addFace = function(face)
 OctreeRegion.prototype.pointInside = function(point)
 {
 
-	if(point[0] > this.min[0] && point[0] < this.max[0])
-		if(point[1] > this.min[1] && point[1] < this.max[1])
-			if(point[2] > this.min[2] && point[2] < this.max[2])
+	if(point[0] >= this.min[0] && point[0] <= this.max[0])
+		if(point[1] >= this.min[1] && point[1] <= this.max[1])
+			if(point[2] >= this.min[2] && point[2] <= this.max[2])
 				return true;	
 	return false;		
 }
@@ -911,7 +911,7 @@ function AABBTriTest(box,tri)
 	{
 		var n = boxNorms[i];
 		var ret = Project([tri.v0,tri.v1,tri.v2],n);
-		triMin = ret[0];
+		triMin = ret[0]; 
 		triMax = ret[1];
 		if(triMax < box.min[i] || triMin > box.max[i])
 			return false;
@@ -936,7 +936,7 @@ function AABBTriTest(box,tri)
     	var ret = Project([tri.v0,tri.v1,tri.v2],axis);
     	triMin = ret[0];
 		triMax = ret[1];
-		if(boxMax <= triMin ||boxMin >= triMax)
+		if(boxMax < triMin ||boxMin > triMax)
 			return false;
     }
     return true;
@@ -945,10 +945,10 @@ function AABBTriTest(box,tri)
 //a face is inside if any of the verts are inside;
 OctreeRegion.prototype.testFace = function(face)
 {
-	if(this.pointInside(face.v0) && this.pointInside(face.v1)&& this.pointInside(face.v2))
+	if(this.pointInside(face.v0) || this.pointInside(face.v1)|| this.pointInside(face.v2))
 		return true;
 	
-	return false;//AABBTriTest(this,face);
+	return AABBTriTest(this,face);
     
 }
 
@@ -970,9 +970,11 @@ OctreeRegion.prototype.distributeFace = function(face)
 	//if for some reason, the face is not added to any child, keep the face in a special list at this level
 	//NOTE: after some bug fixes, have not seen any faces here, but keeping just in case.
 	//no, makes sense.
+	// no it doesn't. There can be no faces that are in this region but intersect no child regions
 	if(added == 0)
 	{
-		
+		debugger;
+		this.distributeFace(face);
 		this.facesNotDistributed.push(face);
 	}
 }
@@ -1463,13 +1465,13 @@ THREE.Geometry.prototype.CPUPick = function(origin,direction,options,collisionTy
 						for(var i =0; i < leafBounds.length; i++)
 						{
 							faces += leafBounds[i].faces.length;
-							var geo = new THREE.CubeGeometry(leafBounds[i].max[0] - leafBounds[i].min[0],leafBounds[i].max[1] - leafBounds[i].min[1],leafBounds[i].max[2] - leafBounds[i].min[2]);
-							var mesh = new THREE.Mesh(geo,mat);
+							var mesh = SceneManagerRegion.prototype.BuildWireBox([leafBounds[i].max[0] - leafBounds[i].min[0],leafBounds[i].max[1] - leafBounds[i].min[1],leafBounds[i].max[2] - leafBounds[i].min[2]],[0,0,0],[0,0,0]);
+							
 							mesh.matrix.elements[12]=leafBounds[i].c[0];
 							mesh.matrix.elements[13]=leafBounds[i].c[1];
 							mesh.matrix.elements[14]=leafBounds[i].c[2];
 							mesh.matrixAutoUpdate = false;
-							meshparent.add_internal(mesh);
+							meshparent.add(mesh,true);
 							mesh.updateMatrixWorld(true);
 						}	
 						console.log(faces);
