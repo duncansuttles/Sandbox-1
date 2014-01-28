@@ -151,7 +151,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				OldY = e.clientY;
 				this.updateGizmoOrientation(true);
 				var t = new THREE.Vector3();
-				t.getPositionFromMatrix(MoveGizmo.parent.matrixWorld);
+				t.setFromMatrixPosition(MoveGizmo.parent.matrixWorld);
 				var gizpos = [t.x, t.y, t.z];
 				var campos = this.getCameraPosition();
 
@@ -1030,7 +1030,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				return;
 			}
 			var tpos = new THREE.Vector3();
-			tpos.getPositionFromMatrix(MoveGizmo.parent.matrixWorld);
+			tpos.setFromMatrixPosition(MoveGizmo.parent.matrixWorld);
 			originalGizmoPos = [tpos.x, tpos.y, tpos.z];
 			//updateGizmoSize();
 			this.updateGizmoOrientation(false);
@@ -1068,7 +1068,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 							}
 							
 				var t = new THREE.Vector3();
-				t.getPositionFromMatrix(MoveGizmo.parent.matrixWorld);
+				t.setFromMatrixPosition(MoveGizmo.parent.matrixWorld);
 				var gizpos = this.mouseDownGizPos;
 				$('#StatusGizmoLocation').text(this.displayVec(gizpos));
 				var campos = this.mouseDownCamPos;
@@ -1767,7 +1767,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				if(t.properties && t.properties.transform)
 				{
 					var tpos = new THREE.Vector3();
-					tpos.getPositionFromMatrix(MoveGizmo.parent.matrixWorld);
+					tpos.setFromMatrixPosition(MoveGizmo.parent.matrixWorld);
 					originalGizmoPos = [tpos.x, tpos.y, tpos.z];
 					var gizoffset = MATH.subVec3(vwf.getProperty(tocopy[i].id, this.translationPropertyName), originalGizmoPos);
 					t.properties.transform[12] = gizoffset[0];
@@ -2006,13 +2006,13 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				if (vwf.getProperty(id, 'type') == 'Group' && vwf.getProperty(id, 'open') == true) color = [.7, 1.0, .7, 1];
 				var boundingbox = new THREE.Object3D();
 				boundingbox.name = "Bounds_+" + id;
-				boundingbox.add(this.BuildBox([box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]], [box.min[0] + (box.max[0] - box.min[0]) / 2, box.min[1] + (box.max[1] - box.min[1]) / 2, box.min[2] + (box.max[2] - box.min[2]) / 2], color), true);
+				boundingbox.add(this.BuildWireBox([box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]], [box.min[0] + (box.max[0] - box.min[0]) / 2, box.min[1] + (box.max[1] - box.min[1]) / 2, box.min[2] + (box.max[2] - box.min[2]) / 2], color), true);
 				boundingbox.children[0].name = "Bounds_+" + id + "_Mesh";
 				boundingbox.matrixAutoUpdate = false;
 				boundingbox.matrix.elements = MATH.transposeMat4(mat);
 				boundingbox.updateMatrixWorld(true);
-				boundingbox.children[0].material = new THREE.MeshBasicMaterial();
-				boundingbox.children[0].material.wireframe = true;
+			//	boundingbox.children[0].material = new THREE.MeshBasicMaterial();
+			//	boundingbox.children[0].material.wireframe = true;
 				boundingbox.children[0].material.transparent = true;
 				boundingbox.children[0].renderDepth = -10000 - 3;
 				boundingbox.children[0].material.depthTest = false;
@@ -2514,6 +2514,61 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				mesh.geometry.vertices[i].y += offset[1];
 				mesh.geometry.vertices[i].z += offset[2];
 			}
+			mesh.matrixAutoUpdate = false;
+			mesh.updateMatrixWorld(true);
+			return mesh;
+		}.bind(this);
+		this.BuildWireBox = function (size, offset, color)
+		{
+			
+			var mesh = new THREE.Line(new THREE.Geometry(), new THREE.LineBasicMaterial(), THREE.LinePieces );
+			mesh.material.color.r = color[0];
+			mesh.material.color.g = color[1];
+			mesh.material.color.b = color[2];
+		
+			
+				var vertices = [
+					new THREE.Vector3(   size[0]/2,   size[1]/2,   size[2]/2 ),
+					new THREE.Vector3( - size[0]/2,   size[1]/2,   size[2]/2  ),
+					new THREE.Vector3( - size[0]/2, - size[1]/2,   size[2]/2  ),
+					new THREE.Vector3(   size[0]/2, - size[1]/2,   size[2]/2  ),
+
+					new THREE.Vector3(   size[0]/2,   size[1]/2, - size[2]/2  ),
+					new THREE.Vector3( - size[0]/2,   size[1]/2, - size[2]/2 ),
+					new THREE.Vector3( - size[0]/2, - size[1]/2, - size[2]/2  ),
+					new THREE.Vector3(   size[0]/2, - size[1]/2, - size[2]/2  )
+				];
+
+				//mesh.matrix.setPosition(new THREE.Vector3(offset[0],offset[1],offset[2]));
+				for (var i = 0; i < vertices.length; i++)
+				{
+					vertices[i].x += offset[0];
+					vertices[i].y += offset[1];
+					vertices[i].z += offset[2];
+				}
+
+				// TODO: Wouldn't be nice if Line had .segments?
+
+				var geometry = mesh.geometry;
+				geometry.vertices.push(
+					vertices[ 0 ], vertices[ 1 ],
+					vertices[ 1 ], vertices[ 2 ],
+					vertices[ 2 ], vertices[ 3 ],
+					vertices[ 3 ], vertices[ 0 ],
+
+					vertices[ 4 ], vertices[ 5 ],
+					vertices[ 5 ], vertices[ 6 ],
+					vertices[ 6 ], vertices[ 7 ],
+					vertices[ 7 ], vertices[ 4 ],
+
+					vertices[ 0 ], vertices[ 4 ],
+					vertices[ 1 ], vertices[ 5 ],
+					vertices[ 2 ], vertices[ 6 ],
+					vertices[ 3 ], vertices[ 7 ]
+				);
+
+			
+
 			mesh.matrixAutoUpdate = false;
 			mesh.updateMatrixWorld(true);
 			return mesh;

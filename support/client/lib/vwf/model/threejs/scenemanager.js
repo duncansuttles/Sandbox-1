@@ -310,7 +310,9 @@ SceneManager.prototype.getDefaultTexture = function()
 }
 SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) {
 
+		
 		var image = new Image();
+		
 		var texture = new THREE.Texture( this.getDefaultTexture().image, mapping );
 		texture.format = this.getDefaultTexture().format;
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
@@ -322,25 +324,25 @@ SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) 
 		texture.wrapT = THREE.RepeatWrapping;
 		var loader = new THREE.ImageLoader();
 
-		loader.addEventListener( 'load', function ( event ) {
+		var load = function ( event ) {
 
 
-			texture.image = event.content;
+			texture.image = event;
 			texture.format = THREE.RGBAFormat;
 			texture.needsUpdate = true;
 
 			if ( onLoad ) onLoad( texture );
 
-		} );
+		} ;
 
-		loader.addEventListener( 'error', function ( event ) {
+		var error = function ( event ) {
 
 			if ( onError ) onError( event.message );
 
-		} );
+		} ;
 
 		loader.crossOrigin = 'anonymous';
-		loader.load( url, image );
+		loader.load( url, load, null, error, image );
 
 		texture.sourceFile = url;
 
@@ -367,7 +369,7 @@ SceneManager.prototype.GetLoadedTextures = function()
 }
 SceneManager.prototype.getTexture = function(src,noclone)
 {
-	
+	//return THREE.ImageUtils.loadTexture(src);
 	var originalSrc = src;
 	var p = window.location.pathname;
 	if(p[p.length-1] == '/') {p = p.substring(0,p.length -1)};
@@ -1304,6 +1306,7 @@ THREE.RenderBatch.prototype.build = function()
 	
 	this.mesh = null;
     var geo = new THREE.Geometry();
+    geo.normals = [];
 	this.mesh = new THREE.Mesh(geo,this.objects[0].material.clone());
 	this.mesh.castShadow=true;
 	this.mesh.receiveShadow=true;
@@ -1386,6 +1389,7 @@ THREE.RenderBatch.prototype.build = function()
 				geo.vertices.push(tg.vertices[j].clone().applyMatrix4(matrix));
 			}
 			
+			if(tg.normals)
 			for(var j = 0; j < tg.normals.length; j++)
 			{
 				geo.normals.push(tg.normals[j].clone().applyMatrix4(matrix));
