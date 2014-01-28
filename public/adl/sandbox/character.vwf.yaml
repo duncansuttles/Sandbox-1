@@ -453,7 +453,7 @@ scripts:
                 
                 
                 falldist = intersect?intersect.distance:falldist;
-                
+                console.log(this.pickoptions);
                 if(falldist && intersect)
                 {
                   
@@ -491,6 +491,7 @@ scripts:
             {
                 this.skin.PickPriority = -1;
                 var intersect = _SceneManager.CPUPick(MATH.addVec3(finalt,[0,0,2]),[0,0,-1],this.pickoptions);
+                
                 if(intersect)
                 {
                    

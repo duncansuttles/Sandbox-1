@@ -1550,6 +1550,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
         node.viewInited = false;
         node.modelInited = false;
         node.threeScene = new THREE.Scene();
+        node.threeScene.autoUpdate = false;
         node.pendingLoads = 0;
         node.srcAssetObjects = [];
         node.delayedProperties = {};
