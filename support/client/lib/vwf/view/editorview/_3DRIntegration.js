@@ -408,6 +408,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 				//url: _ModelLibrary.Get3DREndpoint() + "/Search/" + searchterms + "/jsonp?ID=00-00-00&callback=?",
 				url:"./vwfdatamanager.svc/3drsearch?search=" + searchterms,
 				dataType: "json",
+				async:true,
 				success: function (object, responseStatus, request)
 				{
 					jQuery('#ModelSearchResults').html("");
@@ -418,7 +419,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 				},
 				error: function (xhr, ajaxOptions, thrownError)
 				{
-					alert(thrownError);
+					alertify.alert(thrownError);
 					_Notifier.stopWait();
 				}
 			});
