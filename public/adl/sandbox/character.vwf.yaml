@@ -18,7 +18,7 @@ properties:
   rotZ: 0       
   test:  
   motionStack: []
-  activeCycle: 'stand'
+  activeCycle: []
 methods:
   update:
   tick:
@@ -273,10 +273,10 @@ scripts:
         
       
         var standing = this.standing;
-        if(this.activeCycle)
+        if(this.activeCycle[this.activeCycle.length-1])
         {
-            
-            var newframe = this.cycles[this.activeCycle].increment(updateFreqDivisor);
+           
+            var newframe = this.cycles[this.activeCycle[this.activeCycle.length-1]].increment(updateFreqDivisor);
             newframe = Math.max(newframe,0);
            
             if(this.currentframe != newframe)
@@ -368,16 +368,7 @@ scripts:
                 {
                 
                     this.removeMotion('jump');
-                    if(this.inMotion('walk'))
-                    {
-                        this.removeMotion('walk');
-                        this.walk();
-                    }
-                    if(this.inMotion('run'))
-                    {
-                        this.removeMotion('run');
-                        this.run();
-                    }
+                    this.removeCycle('jump');
                     this.jumpcounter  = 0;
                 }
                 
@@ -414,7 +405,7 @@ scripts:
         
             //if the character is not completely still, and they're not jumpping, then check their motion vector 
             //for intersetions, and prevent penetration through objects
-            if((MATH.lengthVec3(this.originalvelocity) > .001 || motionvec) && !this.inMotion('jump'))
+            if((MATH.lengthVec3(this.originalvelocity) > .001 || motionvec))
             {
                 this.skin.PickPriority = -1;
                 
@@ -448,15 +439,19 @@ scripts:
                 _DEALLOC(intersectfront);
                 var falldist = 1000;
                
-
+                if(!this.inMotion('jump') || this.jumpcounter > 20)
+                {
                 var intersect = _SceneManager.CPUPick(MATH.addVec3(finalt,[0,0,1.7]),[0,0,-1],this.pickoptions);
-                
+                console.log(this.pickoptions);
                 
                 falldist = intersect?intersect.distance:falldist;
                 
                 if(falldist && intersect)
                 {
                   
+                    this.removeMotion('jump');
+                    this.removeCycle('jump');
+                    this.jumpcounter  = 0;
                     var zdiff = (1.7 + standing) - falldist;
                     
                     var zmove = zdiff;
@@ -465,6 +460,8 @@ scripts:
                        zmove = this.originalvelocity[2] - 1.0/24; 
                        
                        finalt = MATH.addVec3(finalt, [0,0,zmove]);
+                       if(finalt[2] < intersect.point[2])
+                         finalt[2] = intersect.point[2];
                       
                     }   
                     else if(zdiff > .33 )
@@ -482,6 +479,7 @@ scripts:
                     
                 }
                 _DEALLOC(intersect);
+              }
                 this.skin.PickPriority = 1;
                  
             }
@@ -506,6 +504,7 @@ scripts:
                         var zmove = zdiff;
                         finalt = MATH.addVec3(finalt, [0,0,zmove]);
                         this.removeMotion('jump');
+                        this.removeCycle('jump');
                         this.jumpcounter  = 0;
                     }
                 }
@@ -679,6 +678,20 @@ scripts:
         if(this.motionStack.indexOf(m) == -1) return;
                this.motionStack.splice(this.motionStack.indexOf(m),1);
     }
+    this.addCycle =function(m)
+    {
+        if(this.activeCycle.indexOf(m) != -1) return;
+        this.activeCycle.push(m);
+    }
+    this.inCycle=function(m)
+    {
+        return (this.activeCycle.indexOf(m) != -1);
+    }
+    this.removeCycle=function(m)
+    {
+        if(this.activeCycle.indexOf(m) == -1) return;
+               this.activeCycle.splice(this.activeCycle.indexOf(m),1);
+    }
     this.exclusiveMotion=function(m)
     {
         this.motionStack = [m];
@@ -688,26 +701,31 @@ scripts:
         if(this.inMotion('walk'))return;
         if(this.inMotion('jump'))return;
         this.addMotion('walk');
-        this.activeCycle = 'walk';
+        this.removeCycle('walk');
+        this.addCycle('walk');
+
     }
     this.walkback = function()
     {
         if(this.inMotion('walkback'))return;
         if(this.inMotion('jump'))return;
         this.addMotion('walkback');
-        this.activeCycle = 'walkback';
+        this.removeCycle('walkback');
+        this.addCycle('walkback');
     }
     this.run = function()
     {
         if(this.inMotion('run'))return;
         if(this.inMotion('jump'))return;
         this.addMotion('run');
-        this.activeCycle = 'run';
+        this.removeCycle('run');
+        this.addCycle('run');
     }
     this.cancelRun = function()
     {
         if(!this.inMotion('run'))return;
         this.removeMotion('run');
+        this.removeCycle('run');
         if(this.inMotion('walk'))
         { 
             this.removeMotion('walk');
@@ -717,7 +735,8 @@ scripts:
     this.stand = function()
     {
         this.motionStack = [];
-        this.activeCycle = 'stand';
+        this.removeCycle('stand');
+        this.addCycle('stand');
     }
     this.jump = function()
     {
@@ -726,7 +745,8 @@ scripts:
         this.addMotion('jump');
         this.jumpcounter = 0;
         this.cycles.jump.reset();
-        this.activeCycle = 'jump';
+        this.removeCycle('jump');
+        this.addCycle('jump');
         this.jumpstart = this.translation[2];
        
     }   
@@ -737,7 +757,8 @@ scripts:
         this.addMotion('jump');
         this.jumpcounter = 0;
         this.cycles.runningjump.reset();
-        this.activeCycle = 'runningjump';
+        this.removeCycle('runningjump');
+        this.addCycle('runningjump');
        
     }      
 
@@ -747,17 +768,17 @@ scripts:
              if(this.id == 'character-vwf') return;
             if(vwf.client() != this.ownerClientID) return;
             if(!e.keysDown.W && !e.keysDown.uparrow)
-                this.removeMotion('walk');
+             {   this.removeMotion('walk'); this.removeCycle('walk');}
             if(!e.keysDown.S && !e.keysDown.downarrow)
-                this.removeMotion('walkback');    
+                {   this.removeMotion('walkback'); this.removeCycle('walkback');} 
             if(!e.keysDown.D)
-                {this.removeMotion('straferight'); this.removeMotion('strafeleft');}
+                {this.removeMotion('straferight'); this.removeMotion('strafeleft'); this.removeCycle('straferight'); this.removeCycle('strafeleft');}
             if(!e.keysDown.C && !e.keysDown.rightarrow)
-                {this.removeMotion('turnright'); this.removeMotion('turnleft');}    
+                {this.removeMotion('turnright'); this.removeMotion('turnleft'); this.removeCycle('turnright'); this.removeCycle('turnleft');}    
             if(!e.keysDown.A  )
-                {this.removeMotion('strafeleft');this.removeMotion('straferight');}
+                {this.removeMotion('strafeleft');this.removeMotion('straferight'); this.removeCycle('strafeleft');this.removeCycle('straferight');}
             if(!e.keysDown.Z && !e.keysDown.leftarrow)
-                {this.removeMotion('turnleft'); this.removeMotion('turnright');}        
+                {this.removeMotion('turnleft'); this.removeMotion('turnright'); this.removeCycle('turnleft'); this.removeCycle('turnright');}        
             if(!e.keysDown.W  && !e.keysDown.uparrow && this.inMotion('run'))
                 this.cancelRun();       
             
@@ -780,13 +801,13 @@ scripts:
                     this.runningjump();
             }
             if(e.keysDown.D  && !this.inMotion('walkback'))
-               { this.addMotion('straferight');  this.activeCycle = 'straferight';  }
+               { this.addMotion('straferight');  this.addCycle ('straferight');  }
             if(e.keysDown.D && this.inMotion('walkback'))
-               { this.addMotion('strafeleft');  this.activeCycle = 'strafeleft';  }
+               { this.addMotion('strafeleft');  this.addCycle ('strafeleft');  }
             if(e.keysDown.A && !this.inMotion('walkback'))
-               { this.addMotion('strafeleft');    this.activeCycle = 'strafeleft';   }
+               { this.addMotion('strafeleft');    this.addCycle ( 'strafeleft');   }
             if(e.keysDown.A && this.inMotion('walkback'))
-               { this.addMotion('straferight');   this.activeCycle = 'straferight';   }
+               { this.addMotion('straferight');   this.addCycle ( 'straferight');   }
                
              if((e.keysDown.C || e.keysDown.rightarrow) && !this.inMotion('walkback'))
                { this.addMotion('turnright');   }

@@ -614,7 +614,19 @@ SceneManager.prototype.addChild = function(c)
 }
 SceneManager.prototype.removeChild = function(c)
 {
-	this.root.removeChild(c);
+	
+	//be sure to remove objects from the dirty list, so they don't get sorted back in
+	if(this.dirtyObjects.indexOf(c) != -1)
+	{
+		this.dirtyObjects.splice(this.dirtyObjects.indexOf(c),1);
+	}	
+	if(this.tempDebatchList.indexOf(c) != -1)
+	{
+		this.tempDebatchList.splice(this.tempDebatchList.indexOf(c),1);
+	}	
+
+	var removed = this.root.removeChild(c);
+	
 }
 function SceneManagerRegion(min, max, depth,scene,order)
 {
