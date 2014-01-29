@@ -21,6 +21,11 @@ function FindMaxMin(positions)
 	return [min, max];
 }
 
+function sign(x)
+{
+	if(x >= 0) return 1;
+	else return -1;
+}
 
 
 
@@ -221,8 +226,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					this.saveTransforms();
 					if (MoveGizmo.allChildren[axis].material)
 					{
-						MoveGizmo.allChildren[axis].material.color.setRGB(1, 1, 1);
-						MoveGizmo.allChildren[axis].material.emissive.setRGB(1, 1, 1);
+						MoveGizmo.allChildren[axis].material.color.setRGB(.5, .5, .5);
+						MoveGizmo.allChildren[axis].material.emissive.setRGB(.5, .5, .5);
 					}
 				}
 			}
@@ -1019,6 +1024,25 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			return MATH.transposeMat4(rmat);
 		}
 		this.waitingForSet = [];
+		this.getPlaneDots= function(ray)
+		{
+			var xDot = Math.abs(MATH.dotVec3(ray,CurrentX));
+			var yDot = Math.abs(MATH.dotVec3(ray,CurrentY));
+			var zDot = Math.abs(MATH.dotVec3(ray,CurrentZ));
+			var  best = [xDot,yDot,zDot];
+			best = best.sort(function(a,b){return b-a});
+			for(var i = 0; i < 3; i++)
+			{
+				if(best[i] == xDot)
+					best[i] = 'X';
+				if(best[i] == yDot)
+					best[i] = 'Y';
+				if(best[i] == zDot)
+					best[i] = 'Z';
+			}
+			return best;
+			
+		}
 		this.mousemove_Gizmo = function (e)
 		{
 			
@@ -1056,16 +1080,16 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			{
 			
 				var relscreeny = this.lastScalePoint - e.clientY;
-							if(relscreeny > 30 * this.ScaleSnap )
-							{
-								this.lastScalePoint = e.clientY;
-							
-							}
-							if(relscreeny < -30 * this.ScaleSnap)
-							{
-								this.lastScalePoint = e.clientY;
-								
-							}
+				if(relscreeny > 30 * this.ScaleSnap )
+				{
+					this.lastScalePoint = e.clientY;
+				
+				}
+				if(relscreeny < -30 * this.ScaleSnap)
+				{
+					this.lastScalePoint = e.clientY;
+					
+				}
 							
 				var t = new THREE.Vector3();
 				t.getPositionFromMatrix(MoveGizmo.parent.matrixWorld);
@@ -1167,23 +1191,38 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				//var tempscale = vwf.getProperty(SelectedVWFNode.id,'scale');
 				//var s = this.findviewnode(SelectedVWFNode.id).getScale();
 				var gizposoffset = null;
+				//this is a list of the plane normals sorted by dot to the ray
+				var  planeDots = this.getPlaneDots(ray);
 				if (document.AxisSelected == 0)
 				{
 					wasMoved = true;
-					if (Math.abs(MATH.dotVec3(ray, CurrentZ)) > .8) gizposoffset = this.MoveTransformGizmo(CurrentX, relintersectxy[0]);
-					else gizposoffset = this.MoveTransformGizmo(CurrentX, relintersectxz[0]);
+					
+					//if the best plane to use is X, use the second best plane
+					var plane = planeDots[0] == 'X' ? planeDots[1] : planeDots[0]
+					if(plane == 'Z')
+						gizposoffset = this.MoveTransformGizmo(CurrentX, relintersectxy[0]);
+					else if(plane == 'Y')
+						gizposoffset = this.MoveTransformGizmo(CurrentX, relintersectxz[0]);
+
+
 				}
 				if (document.AxisSelected == 1)
 				{
 					wasMoved = true;
-					if (Math.abs(MATH.dotVec3(ray, CurrentZ)) > .8) gizposoffset = this.MoveTransformGizmo(CurrentY, relintersectxy[1]);
-					else gizposoffset = this.MoveTransformGizmo(CurrentY, relintersectyz[1]);
+					var plane = planeDots[0] == 'Y' ? planeDots[1] : planeDots[0]
+					if(plane == 'X')
+						gizposoffset = this.MoveTransformGizmo(CurrentY, relintersectyz[1]);
+					else if(plane == 'Z')
+						gizposoffset = this.MoveTransformGizmo(CurrentY, relintersectxy[1]);
 				}
 				if (document.AxisSelected == 2)
 				{
 					wasMoved = true;
-					if (Math.abs(MATH.dotVec3(ray, CurrentX)) > .8) gizposoffset = this.MoveTransformGizmo(MoveAxisZ, relintersectyz[2]);
-					else gizposoffset = this.MoveTransformGizmo(MoveAxisZ, relintersectxz[2]);
+					var plane = planeDots[0] == 'Z' ? planeDots[1] : planeDots[0]
+					if(plane == 'X')
+						gizposoffset = this.MoveTransformGizmo(CurrentZ, relintersectyz[2]);
+					else if(plane == 'Y')
+						gizposoffset = this.MoveTransformGizmo(CurrentZ, relintersectxz[2]);
 				}
 				if (document.AxisSelected == 12)
 				{
@@ -1203,6 +1242,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					gizposoffset = this.MoveTransformGizmo(MoveAxisY, relintersectyz[1]);
 					gizposoffset = MATH.addVec3(gizposoffset, this.MoveTransformGizmo(MoveAxisZ, relintersectyz[2]));
 				}
+				
 				for (var s = 0; s < SelectedVWFNodes.length; s++)
 				{
 					if (SelectedVWFNodes[s])
@@ -1284,17 +1324,53 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						if (document.AxisSelected == 3 || document.AxisSelected == 16)
 						{
 							wasRotated = true;
-							rotationTransform = this.GetRotationTransform(WorldX, relrotx);
+							var amountToRotate = relroty;
+							//if the Z plane is at too hard an angle, the rel rotate around the Z axis is sort of crazy
+							//instead, use the motion on the X or Y, as found by the intersection with either the xz or yz plane
+							if(Math.abs(MATH.dotVec3(ray,CurrentX)) < .3)
+							{
+								var plane = planeDots[0] == 'X' ? planeDots[1] : planeDots[0]
+								if(plane == 'Z')
+									amountToRotate = sign(MATH.dotVec3(ray,CurrentZ)) * relintersectxy[1];
+								else if(plane == 'Y')
+									amountToRotate = -sign(MATH.dotVec3(ray,CurrentY)) *relintersectxz[2];
+							}
+							//note we use the world Z here - local / global / parent is handled in GetRotationTransform
+							rotationTransform = this.GetRotationTransform(WorldX, amountToRotate);
 						}
 						if (document.AxisSelected == 4 || document.AxisSelected == 17)
 						{
 							wasRotated = true;
-							rotationTransform = this.GetRotationTransform(WorldY, relroty);
+							var amountToRotate = relroty;
+							//if the Z plane is at too hard an angle, the rel rotate around the Z axis is sort of crazy
+							//instead, use the motion on the X or Y, as found by the intersection with either the xz or yz plane
+							if(Math.abs(MATH.dotVec3(ray,CurrentY)) < .3)
+							{
+								var plane = planeDots[0] == 'Y' ? planeDots[1] : planeDots[0]
+								if(plane == 'Z')
+									amountToRotate = -sign(MATH.dotVec3(ray,CurrentZ)) * relintersectxy[0];
+								else if(plane == 'X')
+									amountToRotate = sign(MATH.dotVec3(ray,CurrentX)) * relintersectyz[2];
+							}
+							//note we use the world Z here - local / global / parent is handled in GetRotationTransform
+							rotationTransform = this.GetRotationTransform(WorldY, amountToRotate);
 						}
 						if (document.AxisSelected == 5 || document.AxisSelected == 18)
 						{
 							wasRotated = true;
-							rotationTransform = this.GetRotationTransform(WorldZ, relrotz);
+							var amountToRotate = relrotz;
+							//if the Z plane is at too hard an angle, the rel rotate around the Z axis is sort of crazy
+							//instead, use the motion on the X or Y, as found by the intersection with either the xz or yz plane
+							if(Math.abs(MATH.dotVec3(ray,CurrentZ)) < .3)
+							{
+								var plane = planeDots[0] == 'Z' ? planeDots[1] : planeDots[0]
+								if(plane == 'X')
+									amountToRotate = -sign(MATH.dotVec3(ray,CurrentX)) * relintersectyz[1];
+								else if(plane == 'Y')
+									amountToRotate = sign(MATH.dotVec3(ray,CurrentY)) * relintersectxz[0];
+							}
+							//note we use the world Z here - local / global / parent is handled in GetRotationTransform
+							rotationTransform = this.GetRotationTransform(WorldZ, amountToRotate);
 						}
 						if (wasMoved)
 						{
