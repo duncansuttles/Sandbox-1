@@ -7,6 +7,7 @@
 			{
 				if(propname == 'isStatic')
 				{
+					
 					this.isStatic = propval;
 					if(!this.dynamic)
 						this.getRoot().setStatic(this.isStatic);
@@ -16,7 +17,7 @@
 				}
 				if(propname == 'isDynamic')
                 {
-                    //debugger;
+                    
 					this.settingProperty('isStatic',false);
 					this.dynamic = propval;
                     this.getRoot().setDynamic(propval);

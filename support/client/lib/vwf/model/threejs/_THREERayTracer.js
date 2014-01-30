@@ -911,7 +911,7 @@ function AABBTriTest(box,tri)
 	{
 		var n = boxNorms[i];
 		var ret = Project([tri.v0,tri.v1,tri.v2],n);
-		triMin = ret[0];
+		triMin = ret[0]; 
 		triMax = ret[1];
 		if(triMax < box.min[i] || triMin > box.max[i])
 			return false;

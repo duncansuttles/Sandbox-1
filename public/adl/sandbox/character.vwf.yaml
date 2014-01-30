@@ -18,11 +18,14 @@ properties:
   rotZ: 0       
   test:  
   motionStack: []
-  activeCycle: 'stand'
+  activeCycle: []
+  standingOnID:
+  standingOnOffset:
 methods:
   update:
   tick:
   attached:
+  satProperty:
 events:
   pointerOver:
   pointerOut:
@@ -256,6 +259,130 @@ scripts:
         return passed;
         
     }
+
+    //recurse a few times and try to distribute the total offset.
+    //if can't distribute enough offset, stop
+    //This algorithm deals the with following example. What if, in sliding along the wall, the sliding motion
+    //pushes you through another wall, Imagine walking into an inside corner, sliding along one wall until you hit the 
+    //corner. You need a recursive function to check that the slide along the wall vec did not need it's own slide along wall 
+    //test. At 5 steps, we sort of say, "Ok, you have well and truely hit a corner that you cant slide out of."
+    this.testRay =function(avatarPos,trans,depth,opts)
+    {
+        console.log(depth);
+          //really no point going much deeper
+          if(depth == 3) return false;
+
+            var intersectfront = _SceneManager.CPUPick([avatarPos[0],avatarPos[1],avatarPos[2]],trans,opts);
+          var avatarPosChanged = true;
+          if(intersectfront)
+          {
+            //block when something is in front
+            if(intersectfront.distance < .5)
+            {
+              //Build a space tangent to the collision normal
+              var n = intersectfront.norm;
+              var u = [0,0,1];
+              var s = MATH.toUnitVec3(MATH.crossVec3(n,u));
+              var mat = 
+              [n[0]   ,s[0]   ,u[0]   ,0   ,
+               n[1]   ,s[1]   ,u[1]   ,0   ,
+               n[2]   ,s[2]   ,u[2]   ,0   ,
+               0   ,0   ,0   ,1   ];
+               //project the offset vec into a space tanget to the surface normal.
+               var matI = MATH.inverseMat4(mat);
+               var tOffset = MATH.mulMat4Vec3(mat,trans);
+               tOffset[0] = 0;
+               //flatten against X in tanget space, then transform back
+               //this basically 0's out motion along the collision normal
+               var newoffset = MATH.mulMat4Vec3(matI,tOffset);
+               //now, we recurse, tracing from the original position to the 
+               //position given by adding this modified vector to the original position 
+               var newpos = MATH.addVec3(avatarPos, newoffset);
+               var newoff = MATH.subVec3(newpos,avatarPos);
+               var temppos = [avatarPos[0],avatarPos[1],avatarPos[2]];
+               var subtrace = this.testRay(temppos,newoff,depth+1,opts);
+               //if subtrace returns true, the that new ray did not hit anything, or that new ray could be modified
+               //in the same manor to produce a proper offset that did not hit anything. So, temppos is best answer to 
+               //trying to move the given offset while sliding along walls
+               //if subtrace is false, then we couldn't find an answer that distributed the whole motion
+               //in less than 5 steps, so we'll use current newpos (which is not quite the requested distance from the start)
+               if(subtrace)
+               {
+                avatarPos[0] = temppos[0];
+                avatarPos[1] = temppos[1];
+                avatarPos[2] = temppos[2];
+               }else
+               {
+                avatarPos[0] = newpos[0];
+                avatarPos[1] = newpos[1];
+                avatarPos[2] = newpos[2];
+               }
+            }else
+            {
+              //no collision, you are free to move this distance with no slide along walls
+              avatarPos[0] += trans[0];
+              avatarPos[1] += trans[1];
+              avatarPos[2] += trans[2];
+            }
+          }else
+            {
+              //no collision, you are free to move this distance with no slide along walls
+              avatarPos[0] += trans[0];
+              avatarPos[1] += trans[1];
+              avatarPos[2] += trans[2];
+            }
+          return avatarPosChanged;
+    }
+    this.satProperty =function(nodeID,prop,val)
+    {
+
+        if(nodeID == this.standingOnID && prop == 'transform' && this.standingOnOffset)
+        { 
+
+            var world = vwf.getProperty(nodeID,'worldTransform');
+            world = MATH.addVec3([world[12],world[13],world[14]],this.standingOnOffset.internal_val);
+            this.transformAPI.setPosition([world[0],world[1],world[2]]);
+            this.originalvelocity = [0,0,0];
+        }
+    }
+    this.recordStandingOn = function(intersect)
+    {
+       
+       
+       this.standingOnID = null;
+       this.standingOnOffset = null
+       if(!intersect) return;
+       //should eventuall get to scene at worst;
+       var object = intersect.object;
+       while(!object.vwfID)
+        object = object.parent;
+        //already standing on it, dont update offset vec, it's been done already
+        if(this.standingOnID == object.vwfID) return;
+       this.standingOnID = object.vwfID;
+       var world = vwf.getProperty(this.standingOnID,'worldTransform');
+       var offset = MATH.subVec3(this.transformAPI.getPosition(),[world[12],world[13],world[14]]);  
+       this.standingOnOffset = offset; 
+       
+    }
+    this.standingUpdate = function(newpos)
+    {
+       if(this.standingOnID)
+       {
+          var world = vwf.getProperty(this.standingOnID,'worldTransform');
+            world = MATH.addVec3([world[12],world[13],world[14]],this.standingOnOffset.internal_val);
+            this.transformAPI.setPosition([world[0],world[1],world[2]]);
+            this.originalvelocity = [0,0,0];
+       }
+    }
+    this.updateStandingOn = function(newpos)
+    {
+       if(this.standingOnID)
+       {
+         var world = vwf.getProperty(this.standingOnID,'worldTransform');
+         var offset = MATH.subVec3(newpos,[world[12],world[13],world[14]]);  
+         this.standingOnOffset = offset; 
+       }
+    }
     this.update = function(moniker)
     {
        
@@ -265,6 +392,7 @@ scripts:
         
         if(this.id == 'character-vwf') return;
        
+       this.standingUpdate();
         
         
         
@@ -273,10 +401,10 @@ scripts:
         
       
         var standing = this.standing;
-        if(this.activeCycle)
+        if(this.activeCycle[this.activeCycle.length-1])
         {
-            
-            var newframe = this.cycles[this.activeCycle].increment(updateFreqDivisor);
+           
+            var newframe = this.cycles[this.activeCycle[this.activeCycle.length-1]].increment(updateFreqDivisor);
             newframe = Math.max(newframe,0);
            
             if(this.currentframe != newframe)
@@ -356,162 +484,135 @@ scripts:
                     
             }
             
-            
+            var jumpstart = 7;
             
             if(this.cycleName == 'jump')
             {  
-                var preptime = 5.5;
-                var height = 36;
-                var heighttimeoffset = Math.sqrt(height);
-                var hangtime = 17;
-                if(this.jumpcounter >= (hangtime+preptime+preptime))
-                {
                 
+                if(Math.floor(this.jumpcounter) == jumpstart)
+                {
+                   this.originalvelocity[2] += .30;
+                }
+                
+                
+                if(this.jumpcounter > 30)
+                {
                     this.removeMotion('jump');
-                    if(this.inMotion('walk'))
-                    {
-                        this.removeMotion('walk');
-                        this.walk();
-                    }
-                    if(this.inMotion('run'))
-                    {
-                        this.removeMotion('run');
-                        this.run();
-                    }
+                    this.removeCycle('jump');
                     this.jumpcounter  = 0;
+                  
                 }
-                
-                var jumpamt = 0;
-                if(this.jumpcounter < preptime)
-                    jumpamt = -(this.jumpcounter * 0);
-                else if(this.jumpcounter > hangtime+preptime)
-                    jumpamt = -((hangtime+preptime+preptime)-this.jumpcounter) * 0;
-                else    
-                {
-                    var x = this.jumpcounter - preptime;
-                    jumpamt = .080*((-((x/1.4)-heighttimeoffset)*((x/1.4)-heighttimeoffset))+height) -(preptime * 0) ;
-                }
-                
-                finalt = [finalt[0],finalt[1],this.jumpstart + jumpamt];
-                this.jumpcounter += ((hangtime+preptime+preptime)/39.0) *updateFreqDivisor;
+               
+                this.jumpcounter += 1;
             }
             
         }
         
-        if(motionvec)
-            finalt = MATH.addVec3(motionvec,finalt);
-        if(motionvec && false)
-        {
-            var sphpt = finalt.slice(0);
-            sphpt[2] += 1;
-           
-            
-            var newpos = this.collisionOffset(motionvec,sphpt,0);
-            newpos[2] -= 1;
-            finalt = newpos;//MATH.addVec3(motionvec,finalt);
-        }
+       // if(motionvec)
+        //    finalt = MATH.addVec3(motionvec,finalt);
+        
         
         
             //if the character is not completely still, and they're not jumpping, then check their motion vector 
             //for intersetions, and prevent penetration through objects
-            if((MATH.lengthVec3(this.originalvelocity) > .001 || motionvec) && !this.inMotion('jump'))
+            if((MATH.lengthVec3(this.originalvelocity) > .001 || motionvec || this.jumpcounter > jumpstart || this.inMotion('turnleft') || this.inMotion('turnright')))
             {
                 this.skin.PickPriority = -1;
                 
                 
-                motionvec = motionvec ? MATH.toUnitVec3(motionvec) : [0,0,0];
+                motionvec = motionvec ? motionvec : [0,0,0];
                 var testpos = MATH.subVec3(finalt,MATH.scaleVec3(motionvec,-.15));
                 
                 
+                var tracefrompoint = MATH.addVec3(finalt,[0,0,1]);
 
-                var intersectfront = _SceneManager.CPUPick(MATH.addVec3(testpos,[0,0,1]),motionvec,this.pickoptions);
-                
-                if(intersectfront)
+                var changed = this.testRay(tracefrompoint,motionvec,0,this.pickoptions);
+                if(changed)
                 {
-                    if(intersectfront.distance < .3)
-                    {
-                        
-                        var offset = MATH.subVec3(originalpos,finalt);
-                        var len = MATH.lengthVec3(offset);
-                        offset = MATH.scaleVec3(offset,1/MATH.lengthVec3(offset));
-                        var norm = [intersectfront.norm[0],intersectfront.norm[1],intersectfront.norm[2]];
-                        
-                        if(Math.abs(norm[0]) < .05) norm[0] = 0;
-                        if(Math.abs(norm[1]) < .05) norm[1] = 0;
-                        if(Math.abs(norm[2]) < .05) norm[2] = 0;
-                        
-                        var R = MATH.scaleVec3(norm,.3 - intersectfront.distance); 
-                        
-                        finalt = MATH.addVec3(finalt,R);
-                    }
+                  finalt[0] = tracefrompoint[0];
+                  finalt[1] = tracefrompoint[1];
+                  finalt[2] = tracefrompoint[2] - 1;
+                  this.updateStandingOn(finalt);
                 }
-                _DEALLOC(intersectfront);
+
+                
+
                 var falldist = 1000;
                
-
+                
+                {
                 var intersect = _SceneManager.CPUPick(MATH.addVec3(finalt,[0,0,1.7]),[0,0,-1],this.pickoptions);
                 
                 
+               
                 falldist = intersect?intersect.distance:falldist;
                 console.log(this.pickoptions);
                 if(falldist && intersect)
                 {
-                  
+                   var object = intersect.object;
+               while(object && !object.vwfID)
+                object = object.parent;
+                //already standing on it, dont update offset vec, it's been done already
+                if(!object || this.standingOnID != object.vwfID) 
+                  this.recordStandingOn(null);
+
+                    
                     var zdiff = (1.7 + standing) - falldist;
                     
-                    var zmove = zdiff;
-                    if(zdiff < -.03 )
+                    if( this.originalvelocity[2] <= 0)
                     {
-                       zmove = this.originalvelocity[2] - 1.0/24; 
-                       
-                       finalt = MATH.addVec3(finalt, [0,0,zmove]);
-                      
-                    }   
-                    else if(zdiff > .33 )
-                    {   
-                      
-                       finalt = [originalpos2[0],originalpos2[1],originalpos2[2]];
+                      var zmove = zdiff;
+                      if(zdiff < -.03 )
+                      {
+                         zmove = this.originalvelocity[2] - 1.0/24; 
+                         
+                         finalt = MATH.addVec3(finalt, [0,0,zmove]);
+
+                         if(finalt[2] < intersect.point[2])
+                         {
+                           finalt[2] = intersect.point[2];
+                           this.originalvelocity[2] = 0;
+                           originalpos[2] = finalt[2];
+                           this.recordStandingOn(intersect);
+                           
+                         }
                         
-                    }
-                    else
-                    {
-                        //the 1.0 here is a fudge factor that allows for animated transitions between clamped heights.
-                        finalt = MATH.addVec3(finalt, [0,0,zmove/1.0]);
-                        
-                    }
+                      }   
+                      else if(zdiff > .33 )
+                      {   
+                         
+                         finalt = [originalpos2[0],originalpos2[1],originalpos2[2]];
+                         this.originalvelocity[2] = 0;
+                         originalpos[2] = finalt[2];
+                         this.recordStandingOn(intersect);
+                          
+                      }
+                      else
+                      {
+
+                          //the 1.0 here is a fudge factor that allows for animated transitions between clamped heights.
+                          finalt = MATH.addVec3(finalt, [0,0,zmove/1.0]);
+                          this.originalvelocity[2] = 0;
+                          originalpos[2] = finalt[2];
+                          this.recordStandingOn(intersect);
+                          
+                      }
+                      }else
+                      {
+                        finalt = MATH.addVec3(finalt, [0,0,this.originalvelocity[2]- 1.0/24]);
+                        this.recordStandingOn(null);
+                      }
                     
+                }else
+                {
+                  this.recordStandingOn(intersect);
                 }
                 _DEALLOC(intersect);
+              }
                 this.skin.PickPriority = 1;
                  
             }
-            //if they are jumpping, and have been for more than a 10th of a second, start checking below them for intersections.
-            //10th of second is where they start falling?
-            if(this.inMotion('jump') && this.jumpcounter > 10)
-            {
-                this.skin.PickPriority = -1;
-                var intersect = _SceneManager.CPUPick(MATH.addVec3(finalt,[0,0,2]),[0,0,-1],this.pickoptions);
-
-                if(intersect)
-                {
-                   
-                    var zdiff = (2+standing) - intersect.distance;
-                   
-                    //in this case, they've jumpped onto something
-                    if(zdiff > 0.17 )
-                    {
-                        
-                        var zdiff = (2+standing)  - intersect.distance;
-                        
-                        var zmove = zdiff;
-                        finalt = MATH.addVec3(finalt, [0,0,zmove]);
-                        this.removeMotion('jump');
-                        this.jumpcounter  = 0;
-                    }
-                }
-                _DEALLOC(intersect);
-                this.skin.PickPriority = 1;
-            }
+           
             
         //permenantly clamp to z=0 plane
         if(finalt[2] < 0)
@@ -519,7 +620,9 @@ scripts:
         
         // keep track of how fast they were moving at this frame, so we can accelerate properly
         this.originalvelocity = MATH.subVec3(finalt,originalpos);
-      
+    //      if(this.originalvelocity[2] < -.00001)
+    //         this.recordStandingOn(null);
+
         //every 2 seconds, update the position and rotation that tend to run out of sync
         //note that we could change the update mechanism to avoid getting out of sync
         if(this.updatecounter > 180 && document["PlayerNumber"] == this.PlayerNumber)
@@ -537,11 +640,14 @@ scripts:
       
         this.rotation = backupr;
         
+        this.updateStandingOn(this.translation.internal_val);
+
          for(var i = 0; i < this.updateCallbacks.length; i++)
         {
         
             this.updateCallbacks[i](this);
         }
+
     }
     this.collisionOffset = function(offset,opos,depth)
     {
@@ -679,6 +785,20 @@ scripts:
         if(this.motionStack.indexOf(m) == -1) return;
                this.motionStack.splice(this.motionStack.indexOf(m),1);
     }
+    this.addCycle =function(m)
+    {
+        if(this.activeCycle.indexOf(m) != -1) return;
+        this.activeCycle.push(m);
+    }
+    this.inCycle=function(m)
+    {
+        return (this.activeCycle.indexOf(m) != -1);
+    }
+    this.removeCycle=function(m)
+    {
+        if(this.activeCycle.indexOf(m) == -1) return;
+               this.activeCycle.splice(this.activeCycle.indexOf(m),1);
+    }
     this.exclusiveMotion=function(m)
     {
         this.motionStack = [m];
@@ -688,26 +808,31 @@ scripts:
         if(this.inMotion('walk'))return;
         if(this.inMotion('jump'))return;
         this.addMotion('walk');
-        this.activeCycle = 'walk';
+        this.removeCycle('walk');
+        this.addCycle('walk');
+
     }
     this.walkback = function()
     {
         if(this.inMotion('walkback'))return;
         if(this.inMotion('jump'))return;
         this.addMotion('walkback');
-        this.activeCycle = 'walkback';
+        this.removeCycle('walkback');
+        this.addCycle('walkback');
     }
     this.run = function()
     {
         if(this.inMotion('run'))return;
         if(this.inMotion('jump'))return;
         this.addMotion('run');
-        this.activeCycle = 'run';
+        this.removeCycle('run');
+        this.addCycle('run');
     }
     this.cancelRun = function()
     {
         if(!this.inMotion('run'))return;
         this.removeMotion('run');
+        this.removeCycle('run');
         if(this.inMotion('walk'))
         { 
             this.removeMotion('walk');
@@ -717,7 +842,8 @@ scripts:
     this.stand = function()
     {
         this.motionStack = [];
-        this.activeCycle = 'stand';
+        this.removeCycle('stand');
+        this.addCycle('stand');
     }
     this.jump = function()
     {
@@ -726,7 +852,8 @@ scripts:
         this.addMotion('jump');
         this.jumpcounter = 0;
         this.cycles.jump.reset();
-        this.activeCycle = 'jump';
+        this.removeCycle('jump');
+        this.addCycle('jump');
         this.jumpstart = this.translation[2];
        
     }   
@@ -737,7 +864,8 @@ scripts:
         this.addMotion('jump');
         this.jumpcounter = 0;
         this.cycles.runningjump.reset();
-        this.activeCycle = 'runningjump';
+        this.removeCycle('runningjump');
+        this.addCycle('runningjump');
        
     }      
 
@@ -747,17 +875,17 @@ scripts:
              if(this.id == 'character-vwf') return;
             if(vwf.client() != this.ownerClientID) return;
             if(!e.keysDown.W && !e.keysDown.uparrow)
-                this.removeMotion('walk');
+             {   this.removeMotion('walk'); this.removeCycle('walk');}
             if(!e.keysDown.S && !e.keysDown.downarrow)
-                this.removeMotion('walkback');    
+                {   this.removeMotion('walkback'); this.removeCycle('walkback');} 
             if(!e.keysDown.D)
-                {this.removeMotion('straferight'); this.removeMotion('strafeleft');}
+                {this.removeMotion('straferight'); this.removeMotion('strafeleft'); this.removeCycle('straferight'); this.removeCycle('strafeleft');}
             if(!e.keysDown.C && !e.keysDown.rightarrow)
-                {this.removeMotion('turnright'); this.removeMotion('turnleft');}    
+                {this.removeMotion('turnright'); this.removeMotion('turnleft'); this.removeCycle('turnright'); this.removeCycle('turnleft');}    
             if(!e.keysDown.A  )
-                {this.removeMotion('strafeleft');this.removeMotion('straferight');}
+                {this.removeMotion('strafeleft');this.removeMotion('straferight'); this.removeCycle('strafeleft');this.removeCycle('straferight');}
             if(!e.keysDown.Z && !e.keysDown.leftarrow)
-                {this.removeMotion('turnleft'); this.removeMotion('turnright');}        
+                {this.removeMotion('turnleft'); this.removeMotion('turnright'); this.removeCycle('turnleft'); this.removeCycle('turnright');}        
             if(!e.keysDown.W  && !e.keysDown.uparrow && this.inMotion('run'))
                 this.cancelRun();       
             
@@ -779,14 +907,17 @@ scripts:
                 else
                     this.runningjump();
             }
+           // if(e.keysDown.T  )
+           //    { this.originalvelocity = [0,0,.25]; }
+
             if(e.keysDown.D  && !this.inMotion('walkback'))
-               { this.addMotion('straferight');  this.activeCycle = 'straferight';  }
+               { this.addMotion('straferight');  this.addCycle ('straferight');  }
             if(e.keysDown.D && this.inMotion('walkback'))
-               { this.addMotion('strafeleft');  this.activeCycle = 'strafeleft';  }
+               { this.addMotion('strafeleft');  this.addCycle ('strafeleft');  }
             if(e.keysDown.A && !this.inMotion('walkback'))
-               { this.addMotion('strafeleft');    this.activeCycle = 'strafeleft';   }
+               { this.addMotion('strafeleft');    this.addCycle ( 'strafeleft');   }
             if(e.keysDown.A && this.inMotion('walkback'))
-               { this.addMotion('straferight');   this.activeCycle = 'straferight';   }
+               { this.addMotion('straferight');   this.addCycle ( 'straferight');   }
                
              if((e.keysDown.C || e.keysDown.rightarrow) && !this.inMotion('walkback'))
                { this.addMotion('turnright');   }

@@ -140,7 +140,7 @@ function() { return(
 		errorHandler:function()
 		{
 			window.errorCount = 0;
-			return;
+			
 			window.onerror = function(message,source,line,column, errorObj){
 			   
 			   window.errorCount ++;

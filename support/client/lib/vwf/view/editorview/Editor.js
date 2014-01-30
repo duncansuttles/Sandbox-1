@@ -21,6 +21,11 @@ function FindMaxMin(positions)
 	return [min, max];
 }
 
+function sign(x)
+{
+	if(x >= 0) return 1;
+	else return -1;
+}
 
 
 
@@ -180,6 +185,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					oldintersectxz = MATH.addVec3(campos, MATH.scaleVec3(ray, dxz));
 					dyz = this.intersectLinePlane(ray, campos, gizpos, CurrentX);
 					oldintersectyz = MATH.addVec3(campos, MATH.scaleVec3(ray, dyz));
+
 				}
 				var relgizxy = MATH.subVec3(gizpos, oldintersectxy);
 				relgizxy = MATH.scaleVec3(relgizxy, 1.0 / MATH.lengthVec3(relgizxy));
@@ -221,8 +227,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					this.saveTransforms();
 					if (MoveGizmo.allChildren[axis].material)
 					{
-						MoveGizmo.allChildren[axis].material.color.setRGB(1, 1, 1);
-						MoveGizmo.allChildren[axis].material.emissive.setRGB(1, 1, 1);
+						MoveGizmo.allChildren[axis].material.color.setRGB(.5, .5, .5);
+						MoveGizmo.allChildren[axis].material.emissive.setRGB(.5, .5, .5);
 					}
 				}
 			}
@@ -1019,6 +1025,25 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			return MATH.transposeMat4(rmat);
 		}
 		this.waitingForSet = [];
+		this.getPlaneDots= function(ray)
+		{
+			var xDot = Math.abs(MATH.dotVec3(ray,CurrentX));
+			var yDot = Math.abs(MATH.dotVec3(ray,CurrentY));
+			var zDot = Math.abs(MATH.dotVec3(ray,CurrentZ));
+			var  best = [xDot,yDot,zDot];
+			best = best.sort(function(a,b){return b-a});
+			for(var i = 0; i < 3; i++)
+			{
+				if(best[i] == xDot)
+					best[i] = 'X';
+				if(best[i] == yDot)
+					best[i] = 'Y';
+				if(best[i] == zDot)
+					best[i] = 'Z';
+			}
+			return best;
+			
+		}
 		this.mousemove_Gizmo = function (e)
 		{
 			
@@ -1056,16 +1081,16 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			{
 			
 				var relscreeny = this.lastScalePoint - e.clientY;
-							if(relscreeny > 30 * this.ScaleSnap )
-							{
-								this.lastScalePoint = e.clientY;
-							
-							}
-							if(relscreeny < -30 * this.ScaleSnap)
-							{
-								this.lastScalePoint = e.clientY;
-								
-							}
+				if(relscreeny > 30 * this.ScaleSnap )
+				{
+					this.lastScalePoint = e.clientY;
+				
+				}
+				if(relscreeny < -30 * this.ScaleSnap)
+				{
+					this.lastScalePoint = e.clientY;
+					
+				}
 							
 				var t = new THREE.Vector3();
 				t.setFromMatrixPosition(MoveGizmo.parent.matrixWorld);
@@ -1100,24 +1125,36 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				var relintersectxy = MATH.subVec3(newintersectxy, oldintersectxy);
 				var relintersectxz = MATH.subVec3(newintersectxz, oldintersectxz);
 				var relintersectyz = MATH.subVec3(newintersectyz, oldintersectyz);
-				var relgizxy = MATH.subVec3(gizpos, newintersectxy);
+				
+				var relgizxy = MATH.toUnitVec3(MATH.subVec3(gizpos, newintersectxy));
+				var relgizxz = MATH.toUnitVec3(MATH.subVec3(gizpos, newintersectxz));
+				var relgizyz = MATH.toUnitVec3(MATH.subVec3(gizpos, newintersectyz));
+				
 				var newrotz;
-				relgizxy = MATH.scaleVec3(relgizxy, 1.0 / MATH.lengthVec3(relgizxy));
-				newrotz = Math.acos(MATH.dotVec3(CurrentX, relgizxy));
-				if (MATH.dotVec3(CurrentY, relgizxy) > -.01) newrotz *= -1;
-				var relgizxz = MATH.subVec3(gizpos, newintersectxz);
 				var newroty;
-				relgizxz = MATH.scaleVec3(relgizxz, 1.0 / MATH.lengthVec3(relgizxz));
-				newroty = -Math.acos(MATH.dotVec3(CurrentX, relgizxz));
-				if (MATH.dotVec3(CurrentZ, relgizxz) > -.01) newroty *= -1;
-				var relgizyz = MATH.subVec3(gizpos, newintersectyz);
 				var newrotx;
-				relgizyz = MATH.scaleVec3(relgizyz, 1.0 / MATH.lengthVec3(relgizyz));
-				newrotx = -Math.acos(MATH.dotVec3(CurrentZ, relgizyz));
-				if (MATH.dotVec3(CurrentY, relgizyz) > -.01) newrotx *= -1;
+
+				
+
+				
+
+				newrotz = Math.acos(MATH.dotVec3(CurrentX, MATH.toUnitVec3(relgizxy)));
+				if (MATH.dotVec3(CurrentY, relgizxy) > -.01) newrotz *= -1;
+				
+				
+				
+				newroty = -Math.acos(MATH.dotVec3(CurrentX, MATH.toUnitVec3(relgizxz)));
+				if (MATH.dotVec3(CurrentZ, relgizxz) > -.01) newroty *= -1;
+				
+				
+				
+				newrotx = Math.acos(MATH.dotVec3(CurrentY, MATH.toUnitVec3(relgizyz)));
+				if (MATH.dotVec3(CurrentZ, relgizyz) > -.01) newrotx *= -1;
+
 				var relrotz = oldzrot - newrotz;
 				var relroty = oldyrot - newroty;
 				var relrotx = oldxrot - newrotx;
+				
 				if (Math.abs(relrotz) < 6) relrotz *= 1.33;
 				if (Math.abs(relroty) < 6) relroty *= 1.33;
 				if (Math.abs(relrotx) < 6) relrotx *= 1.33;
@@ -1167,23 +1204,38 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				//var tempscale = vwf.getProperty(SelectedVWFNode.id,'scale');
 				//var s = this.findviewnode(SelectedVWFNode.id).getScale();
 				var gizposoffset = null;
+				//this is a list of the plane normals sorted by dot to the ray
+				var  planeDots = this.getPlaneDots(ray);
 				if (document.AxisSelected == 0)
 				{
 					wasMoved = true;
-					if (Math.abs(MATH.dotVec3(ray, CurrentZ)) > .8) gizposoffset = this.MoveTransformGizmo(CurrentX, relintersectxy[0]);
-					else gizposoffset = this.MoveTransformGizmo(CurrentX, relintersectxz[0]);
+					
+					//if the best plane to use is X, use the second best plane
+					var plane = planeDots[0] == 'X' ? planeDots[1] : planeDots[0]
+					if(plane == 'Z')
+						gizposoffset = this.MoveTransformGizmo(CurrentX, relintersectxy[0]);
+					else if(plane == 'Y')
+						gizposoffset = this.MoveTransformGizmo(CurrentX, relintersectxz[0]);
+
+
 				}
 				if (document.AxisSelected == 1)
 				{
 					wasMoved = true;
-					if (Math.abs(MATH.dotVec3(ray, CurrentZ)) > .8) gizposoffset = this.MoveTransformGizmo(CurrentY, relintersectxy[1]);
-					else gizposoffset = this.MoveTransformGizmo(CurrentY, relintersectyz[1]);
+					var plane = planeDots[0] == 'Y' ? planeDots[1] : planeDots[0]
+					if(plane == 'X')
+						gizposoffset = this.MoveTransformGizmo(CurrentY, relintersectyz[1]);
+					else if(plane == 'Z')
+						gizposoffset = this.MoveTransformGizmo(CurrentY, relintersectxy[1]);
 				}
 				if (document.AxisSelected == 2)
 				{
 					wasMoved = true;
-					if (Math.abs(MATH.dotVec3(ray, CurrentX)) > .8) gizposoffset = this.MoveTransformGizmo(MoveAxisZ, relintersectyz[2]);
-					else gizposoffset = this.MoveTransformGizmo(MoveAxisZ, relintersectxz[2]);
+					var plane = planeDots[0] == 'Z' ? planeDots[1] : planeDots[0]
+					if(plane == 'X')
+						gizposoffset = this.MoveTransformGizmo(CurrentZ, relintersectyz[2]);
+					else if(plane == 'Y')
+						gizposoffset = this.MoveTransformGizmo(CurrentZ, relintersectxz[2]);
 				}
 				if (document.AxisSelected == 12)
 				{
@@ -1203,6 +1255,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					gizposoffset = this.MoveTransformGizmo(MoveAxisY, relintersectyz[1]);
 					gizposoffset = MATH.addVec3(gizposoffset, this.MoveTransformGizmo(MoveAxisZ, relintersectyz[2]));
 				}
+				
 				for (var s = 0; s < SelectedVWFNodes.length; s++)
 				{
 					if (SelectedVWFNodes[s])
@@ -1284,17 +1337,53 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						if (document.AxisSelected == 3 || document.AxisSelected == 16)
 						{
 							wasRotated = true;
-							rotationTransform = this.GetRotationTransform(WorldX, relrotx);
+							var amountToRotate = relrotx;
+							//if the Z plane is at too hard an angle, the rel rotate around the Z axis is sort of crazy
+							//instead, use the motion on the X or Y, as found by the intersection with either the xz or yz plane
+							if(Math.abs(MATH.dotVec3(ray,CurrentX)) < .3)
+							{
+								var plane = planeDots[0] == 'X' ? planeDots[1] : planeDots[0]
+								if(plane == 'Z')
+									amountToRotate = sign(MATH.dotVec3(ray,CurrentZ)) * relintersectxy[1];
+								else if(plane == 'Y')
+									amountToRotate = -sign(MATH.dotVec3(ray,CurrentY)) *relintersectxz[2];
+							}
+							//note we use the world Z here - local / global / parent is handled in GetRotationTransform
+							rotationTransform = this.GetRotationTransform(WorldX, amountToRotate);
 						}
 						if (document.AxisSelected == 4 || document.AxisSelected == 17)
 						{
 							wasRotated = true;
-							rotationTransform = this.GetRotationTransform(WorldY, relroty);
+							var amountToRotate = relroty;
+							//if the Z plane is at too hard an angle, the rel rotate around the Z axis is sort of crazy
+							//instead, use the motion on the X or Y, as found by the intersection with either the xz or yz plane
+							if(Math.abs(MATH.dotVec3(ray,CurrentY)) < .3)
+							{
+								var plane = planeDots[0] == 'Y' ? planeDots[1] : planeDots[0]
+								if(plane == 'Z')
+									amountToRotate = -sign(MATH.dotVec3(ray,CurrentZ)) * relintersectxy[0];
+								else if(plane == 'X')
+									amountToRotate = sign(MATH.dotVec3(ray,CurrentX)) * relintersectyz[2];
+							}
+							//note we use the world Z here - local / global / parent is handled in GetRotationTransform
+							rotationTransform = this.GetRotationTransform(WorldY, amountToRotate);
 						}
 						if (document.AxisSelected == 5 || document.AxisSelected == 18)
 						{
 							wasRotated = true;
-							rotationTransform = this.GetRotationTransform(WorldZ, relrotz);
+							var amountToRotate = relrotz;
+							//if the Z plane is at too hard an angle, the rel rotate around the Z axis is sort of crazy
+							//instead, use the motion on the X or Y, as found by the intersection with either the xz or yz plane
+							if(Math.abs(MATH.dotVec3(ray,CurrentZ)) < .3)
+							{
+								var plane = planeDots[0] == 'Z' ? planeDots[1] : planeDots[0]
+								if(plane == 'X')
+									amountToRotate = -sign(MATH.dotVec3(ray,CurrentX)) * relintersectyz[1];
+								else if(plane == 'Y')
+									amountToRotate = sign(MATH.dotVec3(ray,CurrentY)) * relintersectxz[0];
+							}
+							//note we use the world Z here - local / global / parent is handled in GetRotationTransform
+							rotationTransform = this.GetRotationTransform(WorldZ, amountToRotate);
 						}
 						if (wasMoved)
 						{
