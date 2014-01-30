@@ -640,6 +640,8 @@ scripts:
       
         this.rotation = backupr;
         
+        this.updateStandingOn(this.translation.internal_val);
+
          for(var i = 0; i < this.updateCallbacks.length; i++)
         {
         
