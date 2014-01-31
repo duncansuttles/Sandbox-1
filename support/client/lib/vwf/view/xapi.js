@@ -88,9 +88,9 @@ define( ["module", "vwf/view", "vwf/view/xapi/xapiwrapper", "vwf/view/xapi/2.5.3
 
 						// build a callback that replicates response to other clients
 						var successCallback = params[0];
-						var callback = function(xhr){
+						var callback = function(){
 							if( successCallback ){
-								vwf_view.kernel.callMethod(id, successCallback, [xhr]);
+								vwf_view.kernel.callMethod(id, successCallback, Array.prototype.slice.call(arguments));
 							}
 						};
 
