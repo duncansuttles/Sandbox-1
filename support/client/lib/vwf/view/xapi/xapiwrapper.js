@@ -155,7 +155,7 @@ if ( !Date.prototype.toISOString ) {
     XAPIWrapper.prototype.xapiVersion = "1.0.1";
 
     // This wrapper was built on:
-    XAPIWrapper.prototype.build = "2013-10-09T12:13Z";
+    XAPIWrapper.prototype.build = "2013-12-09T20:00Z";
 
     /*
      * prepareStatement
@@ -167,7 +167,10 @@ if ( !Date.prototype.toISOString ) {
     XAPIWrapper.prototype.prepareStatement = function(stmt)
     {
         if(stmt.actor === undefined){
-            stmt.actor = JSON.parse(lrs.actor);
+            stmt.actor = JSON.parse(this.lrs.actor);
+        }
+        else if(typeof stmt.actor === "string") {
+            stmt.actor = JSON.parse(stmt.actor);
         }
         if (this.lrs.grouping || 
             this.lrs.registration || 
@@ -395,12 +398,17 @@ if ( !Date.prototype.toISOString ) {
                     headers = headers || {};
                     headers["Content-Type"] ="application/json";
                 }
-                if (stateval instanceof Object)
+                else if (stateval instanceof Object)
                 {
                     stateval = JSON.stringify(stateval);
                     headers = headers || {};
                     headers["Content-Type"] ="application/json";
                     method = "POST";
+                }
+                else
+                {
+                    headers = headers || {};
+                    headers["Content-Type"] ="application/octect-stream";
                 }
             }
             else
@@ -513,12 +521,17 @@ if ( !Date.prototype.toISOString ) {
                     headers = headers || {};
                     headers["Content-Type"] ="application/json";
                 }
-                if (profileval instanceof Object)
+                else if (profileval instanceof Object)
                 {
                     profileval = JSON.stringify(profileval);
                     headers = headers || {};
                     headers["Content-Type"] ="application/json";
                     method = "POST";
+                }
+                else
+                {
+                    headers = headers || {};
+                    headers["Content-Type"] ="application/octect-stream";
                 }
             }
             else
@@ -658,12 +671,17 @@ if ( !Date.prototype.toISOString ) {
                     headers = headers || {};
                     headers["Content-Type"] ="application/json";
                 }
-                if (profileval instanceof Object)
+                else if (profileval instanceof Object)
                 {
                     profileval = JSON.stringify(profileval);
                     headers = headers || {};
                     headers["Content-Type"] ="application/json";
                     method = "POST";
+                }
+                else
+                {
+                    headers = headers || {};
+                    headers["Content-Type"] ="application/octect-stream";
                 }
             }
             else
@@ -766,11 +784,19 @@ if ( !Date.prototype.toISOString ) {
                 } 
                 else 
                 {
+                  if (obj1 == undefined)
+                  {
+                    obj1 = new Object();
+                  }
                     obj1[p] = obj2[p];
                 } 
             } 
             catch(e) 
             {
+              if (obj1 == undefined)
+              {
+                obj1 = new Object();
+              }              
               // Property in destination object not set; create it and set its value.
               obj1[p] = obj2[p];
             }
@@ -904,7 +930,7 @@ if ( !Date.prototype.toISOString ) {
     ADL.dateFromISOString = function(isostr) 
     {
         var regexp = "([0-9]{4})(-([0-9]{2})(-([0-9]{2})" +
-            "(T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?" +
+            "([T| ]([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?" +
             "(Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?";
         var d = isostr.match(new RegExp(regexp));
 
@@ -961,18 +987,7 @@ if ( !Date.prototype.toISOString ) {
             extended,
             prop,
             until;
-
-        // add extended LMS-specified values to the URL
-        if (lrs !== null && lrs.extended !== undefined) {
-            extended = new Array();
-            for (prop in lrs.extended) {
-                extended.push(prop + "=" + encodeURIComponent(lrs.extended[prop]));
-            }
-            if (extended.length > 0) {
-                url += (url.indexOf("?") > -1 ? "&" : "?") + extended.join("&");
-            }
-        }
-         
+ 
         //Consolidate headers
         var headers = {};
         headers["Content-Type"] = "application/json";
@@ -1017,7 +1032,18 @@ if ( !Date.prototype.toISOString ) {
                 var notFoundOk = (ignore404 && xhr.status === 404);
                 if (xhr.status === undefined || (xhr.status >= 200 && xhr.status < 400) || notFoundOk) {
                     if (callback) {
-                        callback(xhr, callbackargs);
+                        if(callbackargs){
+                            callback(xhr, callbackargs);
+                        }
+                        else {
+                            try {
+                                var body = JSON.parse(xhr.responseText);
+                                callback(xhr,body);
+                            }
+                            catch(e){
+                                callback(xhr,xhr.responseText);
+                            }
+                        }
                     } else {
                         result = xhr;
                         return xhr;
