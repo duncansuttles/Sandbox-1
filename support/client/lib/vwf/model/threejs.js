@@ -2143,6 +2143,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "uniform float minOrientation;\n"+
 			"uniform float textureTiles;\n"+
 			"uniform float alphaTest;\n"+
+            THREE.ShaderChunk.fog_pars_fragment +"\n"+
             "void main() {\n"+
 			            " vec2 coord = vec2(0.0,0.0);"+
 			" vec2 orig_coord = vec2(gl_PointCoord.s,1.0-gl_PointCoord.t);"+
@@ -2158,6 +2159,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "   vec4 outColor = (vColor * texture2D( texture, coord  )) *useTexture + vColor * (1.0-useTexture);\n"+
             
             "   gl_FragColor = outColor;\n"+
+             THREE.ShaderChunk.fog_fragment + "\n"+
             "}\n";
 			
 			//the default shader - the one used by the analytic solver, just has some simple stuff
@@ -2186,7 +2188,11 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 endColor:{type: "v4", value:new THREE.Vector4(0,0,0,1)},
                 startSize:{type:"f", value:1},
                 endSize:{type:"f", value:1},
-				alphaTest:{type:"f", value:.5}
+				alphaTest:{type:"f", value:.5},
+                fogColor:{type: "c", value:new THREE.Color(0,0,0,1)},
+                fogNear:{type:"f", value:.5},
+                fogFar:{type:"f", value:.5},
+                fogDensity:{type:"f", value:.5},
             };
             uniforms_default.texture.value.wrapS = uniforms_default.texture.value.wrapT = THREE.RepeatWrapping;
             var shaderMaterial_default = new THREE.ShaderMaterial( {
@@ -2196,7 +2202,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 fragmentShader: fragShader_default
 
                   });
-
+            shaderMaterial_default.fog = true;
 			//the interpolate shader blends from one simulation step to the next on the shader
 			//this	allows for a complex sim to run at a low framerate, but still have smooth motion
             //this is very efficient, as it only requires sending data up to the gpu on each sim tick		
@@ -2291,6 +2297,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "uniform float minOrientation;\n"+
 			"uniform float textureTiles;\n"+
 			"uniform float alphaTest;\n"+
+            THREE.ShaderChunk.fog_pars_fragment + "\n"+
             "void main() {\n"+
            
 			//bit of drama for dividing into 4 or 9 'virtual' textures
@@ -2311,6 +2318,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 			" vec4 outColor = (vColor * texture2D( texture, coord )) *useTexture + vColor * (1.0-useTexture);\n"+
             " if(outColor.a < alphaTest) discard;\n" + 
             "   gl_FragColor = outColor;\n"+
+            THREE.ShaderChunk.fog_fragment + "\n"+
             "}\n";
             var attributes_analytic = {
                 acceleration:   {   type: 'v3', value: [] },
@@ -2329,7 +2337,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 fragmentShader: fragShader_analytic
             });
 
-
+            shaderMaterial_analytic.fog = true;
             // create the particle system
             var particleSystem = new THREE.ParticleSystem(particles,shaderMaterial_default);
             
