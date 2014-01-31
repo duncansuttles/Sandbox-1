@@ -80,7 +80,6 @@ scripts:
         
           this.prerendercallback = this.placeNameTag.bind(this);
           _dView.bind('postprerender',this.prerendercallback);
-           //this.callbacknum = findVWFscene().addUpdateCallback(this.placeNameTag.bind(this));
           this.updatecounter = 0;
           this.mesh = findChildViewNode(findscene(),this.id);
           //debugger;
@@ -195,7 +194,7 @@ scripts:
     
       
       var div = this.nametag;
-      var pos = this.tbak;
+      var pos = this.translation;
       if(!pos) return;
       pos = [pos[0],pos[1],pos[2]+1.75,1];
          

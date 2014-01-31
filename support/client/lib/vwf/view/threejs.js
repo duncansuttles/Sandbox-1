@@ -824,7 +824,12 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			//var far = cam.far;
 			//var near = cam.near;
 			
-			
+
+			_viewProjectionMatrix.multiplyMatrices( cam.projectionMatrix, cam.matrixWorldInverse );
+			vp =  _viewProjectionMatrix.transpose().flattenToArray(temparray);
+			vpargs[0] = vp.slice(0);
+
+			self.trigger('postprerender',vpargs);
 			renderer.render(backgroundScene,cam);
 			
 			renderer.clear(false,true,false);
@@ -895,7 +900,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
 			}
 			
-			self.trigger('postprerender',vpargs);
+			
 			
 			
 			

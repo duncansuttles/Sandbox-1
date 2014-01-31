@@ -298,9 +298,9 @@ scripts:
          if(this.id == 'Scene-vwf') return;
           this.prerendercallback = this.prerender.bind(this);
           this.glyphrendercallback = this.glyphRender.bind(this);
-          this.postrendercallback = this.postrender.bind(this);
+          this.postprerendercallback = this.postprerender.bind(this);
           _dView.bind('prerender',this.prerendercallback);
-          _dView.bind('postprerender',this.postrendercallback);
+          _dView.bind('postprerender',this.postprerendercallback);
           _dView.bind('glyphRender',this.glyphrendercallback);
           this.createNameTag();
           this.updateCamera();
@@ -1205,7 +1205,7 @@ scripts:
     this.deinitialize = function()
     {
        _dView.unbind('prerender',this.prerendercallback);
-       _dView.unbind('postprerender',this.postrendercallback);
+       _dView.unbind('postprerender',this.postprerendercallback);
        _dView.unbind('glyphRender',this.glyphrendercallback);
        $(this.nametag).remove();
     }
@@ -1235,7 +1235,7 @@ scripts:
         
         
         this.updateCamera();
-        this.updateCamera();
+        
     }
     this.tempmatrix = (new THREE.Matrix4());
     this.lightvec = new THREE.Vector3(0,0,-3);
@@ -1281,7 +1281,7 @@ scripts:
       }
 
     }
-    this.postrender = function(e,viewprojection, wh, ww)
+    this.postprerender = function(e,viewprojection, wh, ww)
     {
         //set the skybox position
       
@@ -1289,7 +1289,7 @@ scripts:
         this.skycube.position.y = findcamera().matrixWorld.elements[13];
         this.skycube.position.z = findcamera().matrixWorld.elements[14];
         this.skycube.updateMatrixWorld();
-    
+      
       
       
       
