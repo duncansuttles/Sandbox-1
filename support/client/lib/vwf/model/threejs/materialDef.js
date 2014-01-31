@@ -306,6 +306,7 @@
 				currentmat.specular.b = value.specularColor.b * value.specularLevel;
 				
 				currentmat.side = value.side || 0;
+				if(window.isIE() && currentmat.side == 2)  currentmat.side = 0;
 				currentmat.opacity = value.alpha;
 				//if the alpha value less than 1, and the blendmode is defined but not noblending
 				if(value.alpha < 1 || (value.blendMode !== undefined && value.blendMode !== THREE.NoBlending))
@@ -367,20 +368,26 @@
 					currentmat.vertexColors = 0;
 				}
 					
-				var mapnames = ['map','bumpMap','lightMap','normalMap','specularMap','envMap'];
+				var mapnames = ['map','lightMap','specularMap','envMap'];
+				if(_dRenderer.supportsStandardDerivatives())
+				{
+					mapnames.push('normalMap');
+					mapnames.push('bumpMap');
+
+				}
 				currentmat.reflectivity = value.reflect/10;
 				
 				
 				for(var i =0; i < value.layers.length; i++)
 				{
-						var mapname;
+						var mapname = null;
 						if(value.layers[i].mapTo == 1)
 						{
 							mapname = 'map';
 							currentmat.alphaTest = 1 - value.layers[i].alpha;
 							
 						}
-						if(value.layers[i].mapTo == 2)
+						if(value.layers[i].mapTo == 2 && _dRenderer.supportsStandardDerivatives())
 						{
 							mapname = 'bumpMap';
 							currentmat.bumpScale = value.layers[i].alpha/10.0;
@@ -389,7 +396,7 @@
 						{
 							mapname = 'lightMap';
 						}	
-						if(value.layers[i].mapTo == 4)
+						if(value.layers[i].mapTo == 4 && _dRenderer.supportsStandardDerivatives())
 						{
 							mapname = 'normalMap';
 							currentmat.normalScale.x = value.layers[i].alpha;
@@ -405,47 +412,50 @@
 							mapname = 'envMap';
 						}
 						
-						mapnames.splice(mapnames.indexOf(mapname),1);				
-						
-						String.prototype.endsWith = function(suffix) {
-							return this.indexOf(suffix, this.length - suffix.length) !== -1;
-						};
-
-						if((currentmat[mapname] && currentmat[mapname]._SMsrc != value.layers[i].src) || !currentmat[mapname])
+						if(mapname)
 						{
-							 _SceneManager.releaseTexture(currentmat[mapname]);
-							currentmat[mapname] = _SceneManager.getTexture(value.layers[i].src);
-							currentmat[mapname].needsUpdate = true;
-							currentmat.needsUpdate = true;
-							//currentmat[mapname] = THREE.ImageUtils.loadTexture(value.layers[i].src);
+							mapnames.splice(mapnames.indexOf(mapname),1);				
 							
+							String.prototype.endsWith = function(suffix) {
+								return this.indexOf(suffix, this.length - suffix.length) !== -1;
+							};
+
+							if((currentmat[mapname] && currentmat[mapname]._SMsrc != value.layers[i].src) || !currentmat[mapname])
+							{
+								 _SceneManager.releaseTexture(currentmat[mapname]);
+								currentmat[mapname] = _SceneManager.getTexture(value.layers[i].src);
+								currentmat[mapname].needsUpdate = true;
+								currentmat.needsUpdate = true;
+								//currentmat[mapname] = THREE.ImageUtils.loadTexture(value.layers[i].src);
+								
+							}
+							if(value.layers[i].mapInput == 0)
+							{
+								currentmat[mapname].mapping = new THREE.UVMapping();
+							}
+							if(value.layers[i].mapInput == 1)
+							{
+								currentmat[mapname].mapping = new THREE.CubeReflectionMapping();
+							}
+							if(value.layers[i].mapInput == 2)
+							{
+								currentmat[mapname].mapping = new THREE.CubeRefractionMapping();
+							}
+							if(value.layers[i].mapInput == 3)
+							{
+								currentmat[mapname].mapping = new THREE.SphericalReflectionMapping();
+							}
+							if(value.layers[i].mapInput == 4)
+							{
+								currentmat[mapname].mapping = new THREE.SphericalRefractionMapping();
+							}
+							currentmat[mapname].wrapS = THREE.RepeatWrapping;
+							currentmat[mapname].wrapT = THREE.RepeatWrapping;
+							currentmat[mapname].repeat.x = value.layers[i].scalex;
+							currentmat[mapname].repeat.y = value.layers[i].scaley;
+							currentmat[mapname].offset.x = value.layers[i].offsetx;
+							currentmat[mapname].offset.y = value.layers[i].offsety;
 						}
-						if(value.layers[i].mapInput == 0)
-						{
-							currentmat[mapname].mapping = new THREE.UVMapping();
-						}
-						if(value.layers[i].mapInput == 1)
-						{
-							currentmat[mapname].mapping = new THREE.CubeReflectionMapping();
-						}
-						if(value.layers[i].mapInput == 2)
-						{
-							currentmat[mapname].mapping = new THREE.CubeRefractionMapping();
-						}
-						if(value.layers[i].mapInput == 3)
-						{
-							currentmat[mapname].mapping = new THREE.SphericalReflectionMapping();
-						}
-						if(value.layers[i].mapInput == 4)
-						{
-							currentmat[mapname].mapping = new THREE.SphericalRefractionMapping();
-						}
-						currentmat[mapname].wrapS = THREE.RepeatWrapping;
-						currentmat[mapname].wrapT = THREE.RepeatWrapping;
-						currentmat[mapname].repeat.x = value.layers[i].scalex;
-						currentmat[mapname].repeat.y = value.layers[i].scaley;
-						currentmat[mapname].offset.x = value.layers[i].offsetx;
-						currentmat[mapname].offset.y = value.layers[i].offsety;
 				}
 				for(var i in mapnames)
 				{
@@ -512,6 +522,7 @@
 				
 				
 				currentmat.side = value.side || 0;
+				if(window.isIE() && currentmat.side == 2)  currentmat.side = 0;
 				currentmat.opacity = value.alpha;
 				//if the alpha value less than 1, and the blendmode is defined but not noblending
 				if(value.alpha < 1 || (value.blendMode !== undefined && value.blendMode !== THREE.NoBlending))
@@ -667,6 +678,7 @@
 				
 				
 				currentmat.side = value.side || 0;
+				if(window.isIE() && currentmat.side == 2)  currentmat.side = 0;
 				currentmat.opacity = value.alpha;
 				//if the alpha value less than 1, and the blendmode is defined but not noblending
 				if(value.alpha < 1 || (value.blendMode !== undefined && value.blendMode !== THREE.NoBlending))
@@ -846,7 +858,7 @@
 							//config.uniforms.map.value = _SceneManager.getTexture(layer.src);
 
 						}
-						else if( layer.mapTo == 2 )
+						else if( layer.mapTo == 2 && _dRenderer.supportsStandardDerivatives())
 						{
 							render_flags['bumpMap'] = true;
 							config.uniforms.bumpMap.value = _SceneManager.getTexture(layer.src);
@@ -857,7 +869,7 @@
 							render_flags['lightMap'] = true;
 							config.uniforms.lightMap.value = _SceneManager.getTexture(layer.src);
 						}
-						else if( layer.mapTo == 4 )
+						else if( layer.mapTo == 4 && _dRenderer.supportsStandardDerivatives())
 						{
 							render_flags['normalMap'] = true;
 							config.uniforms.normalMap.value = _SceneManager.getTexture(layer.src);
@@ -894,6 +906,7 @@
 					config.uniforms.shininess.value = value.shininess * 5;
 					config.uniforms.opacity.value = value.alpha;
 					render_flags['side'] = value.side || 0;
+					if(window.isIE() && render_flags.side == 2)  render_flags.side = 0;
 
 					if(value.alpha < 1 || (value.blendMode !== undefined && value.blendMode !== THREE.NoBlending)){
 						render_flags['transparent'] = true;

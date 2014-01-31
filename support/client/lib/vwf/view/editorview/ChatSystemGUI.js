@@ -240,6 +240,7 @@ define(
 			},
 			autoOpen: false
 		});
+		
 		window.SendChatMessage = SendChatMessage;
 		window.ChatMessageReceived = ChatMessageReceived;
 		window.PMReceived = PMReceived;

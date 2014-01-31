@@ -44,7 +44,7 @@ scripts:
 
         
         if(this.id == 'character-vwf') return;
-        
+     
          this.DownKeys= [];
         // this.motionStack= [];
          this.jumpcounter = 0;
@@ -103,10 +103,14 @@ scripts:
           }
 
           this.skin = findSkin(this.mesh);
-          this.skin.material.ambient.r = 1;
-          this.skin.material.ambient.g = 1;
-          this.skin.material.ambient.b = 1;
-          this.skin.castShadow = true;
+          if(this.skin.material.ambient)
+          {
+             this.skin.material.ambient.r = 1;
+             this.skin.material.ambient.g = 1;
+             this.skin.material.ambient.b = 1;
+          }
+
+          
           this.skin.isAvatar = true;
           this.jumpcounter = 0.0;
           //this.stand();

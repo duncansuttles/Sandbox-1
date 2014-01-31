@@ -9,6 +9,7 @@ function() { return(
 			this.errorHandler();
 			this.websocket();
 			this.localStorage();
+			this.detectIE11();
 		},
 		performanceNow:function()
 		{
@@ -132,6 +133,11 @@ function() { return(
 			if (typeof window.sessionStorage == 'undefined') window.sessionStorage = new Storage('session');
 			 
 			})();
+		},
+		detectIE11:function()
+		{
+			window.isIE  = function() { return ((navigator.appName == 'Microsoft Internet Explorer') || ((navigator.appName == 'Netscape') && (new RegExp("Trident/.*rv:([0-9]{1,}[\.0-9]{0,})").exec(navigator.userAgent) != null))); }
+
 		},
 		websocket:function()
 		{

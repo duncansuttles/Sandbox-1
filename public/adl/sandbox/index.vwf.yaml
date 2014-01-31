@@ -1113,10 +1113,12 @@ scripts:
     }
     this.receiveChat = function(e)
     {
-        ChatMessageReceived(e);
+        if(window.ChatMessageReceived)
+          ChatMessageReceived(e);
     }
     this.PM = function(e)
     {
+        if(window.PMReceived)
         PMReceived(e);
     }
     function nodeExists(tempid)
