@@ -610,6 +610,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				$('#index-vwf').css('cursor', 'default');
 			}
 		}.bind(this);
+		this.blur = function()
+		{
+			this.PickMod = NewSelect;
+			$('#index-vwf').css('cursor', 'default');
+		}
 		this.keydown_Gizmo = function (e)
 		{
 			////console.log(e);

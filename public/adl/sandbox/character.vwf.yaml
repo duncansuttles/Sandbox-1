@@ -26,7 +26,8 @@ methods:
   tick:
   attached:
   satProperty:
-  deletingNode: 
+  deletingNode:
+  setPosition:  
 events:
   pointerOver:
   pointerOut:
@@ -80,7 +81,6 @@ scripts:
         
           this.prerendercallback = this.placeNameTag.bind(this);
           _dView.bind('postprerender',this.prerendercallback);
-           //this.callbacknum = findVWFscene().addUpdateCallback(this.placeNameTag.bind(this));
           this.updatecounter = 0;
           this.mesh = findChildViewNode(findscene(),this.id);
           //debugger;
@@ -195,7 +195,7 @@ scripts:
     
       
       var div = this.nametag;
-      var pos = this.tbak;
+      var pos = this.translation;
       if(!pos) return;
       pos = [pos[0],pos[1],pos[2]+1.75,1];
          
@@ -334,6 +334,24 @@ scripts:
             }
           return avatarPosChanged;
     }
+    this.setPosition = function(trans)
+    {
+       if(!trans) return;
+       this.standinOnOffset = null;
+       this.standingOnID = null;
+       this.originalvelocity[2] = 0;
+       if(trans.length == 3)
+       {
+           this.transform[12] = trans[0];
+           this.transform[13] = trans[1];
+           this.transform[14] = trans[2];
+       }
+       if(trans.length == 16)
+       {
+           this.transform = trans;
+       }
+        
+    }
     this.deletingNode = function(nodeID)
     {
         if(nodeID == this.standingOnID )
@@ -348,9 +366,9 @@ scripts:
 
         if(nodeID == this.standingOnID && prop == 'transform' && this.standingOnOffset)
         { 
-
             this.standingUpdate();
         }
+
     }
     this.recordStandingOn = function(intersect)
     {
