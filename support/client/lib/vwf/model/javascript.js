@@ -367,6 +367,7 @@ node.id = childID; // TODO: move to vwf/model/object
 
 			
             var child = this.nodes[nodeID];
+            this.callMethodTraverse(this.nodes['index-vwf'],'deletingNode',[nodeID]);
             var node = child.parent;
 
 			
@@ -980,7 +981,7 @@ if ( ! node ) return;  // TODO: patch until full-graph sync is working; drivers 
         creatingMethod: function( nodeID, methodName, methodParameters, methodBody ) {
 
             var node = this.nodes[nodeID];
-            
+            this.callMethodTraverse(this.nodes['index-vwf'],'creatingMethod',[methodName, methodParameters, methodBody]);
 
             Object.defineProperty( node.methods, methodName, { // "this" is node.methods in get/set
                 get: function() {
@@ -1037,7 +1038,10 @@ node.hasOwnProperty( methodName ) ||  // TODO: recalculate as properties, method
 
 			
             var node = this.nodes[nodeID];
-			if(!node) return undefined;
+			this.callMethodTraverse(this.nodes['index-vwf'],'deletingMethod',[nodeID,methodName]);
+            if(!node) return undefined;
+
+
             var body = node.private.bodies && node.private.bodies[methodName];
 
             if ( body ) {

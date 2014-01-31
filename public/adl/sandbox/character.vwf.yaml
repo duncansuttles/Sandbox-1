@@ -26,6 +26,7 @@ methods:
   tick:
   attached:
   satProperty:
+  deletingNode: 
 events:
   pointerOver:
   pointerOut:
@@ -333,16 +334,22 @@ scripts:
             }
           return avatarPosChanged;
     }
+    this.deletingNode = function(nodeID)
+    {
+        if(nodeID == this.standingOnID )
+        { 
+            this.standingOnOffset = null;
+            this.standingOnID = null;
+            this.originalvelocity[2] = -.01;
+        }
+    }
     this.satProperty =function(nodeID,prop,val)
     {
 
         if(nodeID == this.standingOnID && prop == 'transform' && this.standingOnOffset)
         { 
 
-            var world = vwf.getProperty(nodeID,'worldTransform');
-            world = MATH.addVec3([world[12],world[13],world[14]],this.standingOnOffset.internal_val);
-            this.transformAPI.setPosition([world[0],world[1],world[2]]);
-            this.originalvelocity = [0,0,0];
+            this.standingUpdate();
         }
     }
     this.recordStandingOn = function(intersect)
@@ -359,18 +366,17 @@ scripts:
         //already standing on it, dont update offset vec, it's been done already
         if(this.standingOnID == object.vwfID) return;
        this.standingOnID = object.vwfID;
-       var world = vwf.getProperty(this.standingOnID,'worldTransform');
-       var offset = MATH.subVec3(this.transformAPI.getPosition(),[world[12],world[13],world[14]]);  
-       this.standingOnOffset = offset; 
-       
+       this.updateStandingOn(this.transformAPI.getPosition());
     }
     this.standingUpdate = function(newpos)
     {
        if(this.standingOnID)
        {
-          var world = vwf.getProperty(this.standingOnID,'worldTransform');
-            world = MATH.addVec3([world[12],world[13],world[14]],this.standingOnOffset.internal_val);
-            this.transformAPI.setPosition([world[0],world[1],world[2]]);
+            var world = vwf.getProperty(this.standingOnID,'worldTransform');
+            //world = MATH.addVec3([world[12],world[13],world[14]],this.standingOnOffset.internal_val);
+            //this.transformAPI.setPosition([world[0],world[1],world[2]]);
+            var offset = Mat4.multMat(world,this.standingOnOffset.internal_val,[]);
+            this.transform = offset;
             this.originalvelocity = [0,0,0];
        }
     }
@@ -379,7 +385,9 @@ scripts:
        if(this.standingOnID)
        {
          var world = vwf.getProperty(this.standingOnID,'worldTransform');
-         var offset = MATH.subVec3(newpos,[world[12],world[13],world[14]]);  
+         var iWorld = [];
+         Mat4.invert(world,iWorld);
+         var offset = Mat4.multMat(iWorld,this.transform.internal_val,[]);
          this.standingOnOffset = offset; 
        }
     }
@@ -403,7 +411,7 @@ scripts:
         var standing = this.standing;
         if(this.activeCycle[this.activeCycle.length-1])
         {
-            
+
             var newframe = this.cycles[this.activeCycle[this.activeCycle.length-1]].increment(updateFreqDivisor);
             newframe = Math.max(newframe,0);
            
