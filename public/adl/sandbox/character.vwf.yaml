@@ -403,7 +403,7 @@ scripts:
         var standing = this.standing;
         if(this.activeCycle[this.activeCycle.length-1])
         {
-           
+            
             var newframe = this.cycles[this.activeCycle[this.activeCycle.length-1]].increment(updateFreqDivisor);
             newframe = Math.max(newframe,0);
            
@@ -897,7 +897,11 @@ scripts:
            if(vwf.client() != this.ownerClientID) return;
             
             if(e.keysDown.W || e.keysDown.uparrow)
+            {
+                
                 this.walk();
+
+            }
             if(e.keysDown.S || e.keysDown.downarrow)
                 this.walkback();
             if(e.keysDown.space && !e.mods.shift)
