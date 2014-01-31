@@ -889,15 +889,24 @@ function getFilesArray(str){
 	return outArr;
 }
 	
-function SaveAvatar(URL,SID,body,res, req)
+function DeleteAvatar(URL,res, req)
+{	
+
+}
+
+function SaveAvatar(URL,res, req)
 {
 	
-
-	/*if(!URL.loginData || global.adminUID != URL.loginData.UID)
+	if(!URL.loginData || global.adminUID != URL.loginData.UID)
 	{
-		respond(response,401,'Non-administrator users cannot upload avatars');
+		respond(res,401,'Non-administrator users cannot upload avatars');
 		return;
-	}*/
+	}
+	
+	else if(!req.files || !req.files.modelFile){
+		respond(res, 500, "Error saving uploaded 'model' file");
+		return;
+	}
 	
 	/*var apiKey = '1F-8C-7B', searchTerm = 'door';
 	var reqOptions = {
@@ -919,12 +928,7 @@ function SaveAvatar(URL,SID,body,res, req)
 	//return;
 	
 	var filepath = "";
-	
-	if(!req.files || !req.files.modelFile){
-		respond(res, 500, "Error saving uploaded 'model' file");
-		return;
-	}
-	
+
 	req.files.modelFile.name = req.files.modelFile.name.replace(/[^a-zA-Z0-9 ._-]|\.\./gi, '');
 	filepath = libpath.join(datapath, '/Avatars/models/', req.files.modelFile.name);
 	
@@ -955,21 +959,20 @@ function SaveAvatar(URL,SID,body,res, req)
 	
 }	
 
-function SaveTexture(URL,SID,body,res, req)
+function SaveTexture(URL,res, req)
 {
-	/*if(!URL.loginData || global.adminUID != URL.loginData.UID)
+	if(!URL.loginData || global.adminUID != URL.loginData.UID)
 	{
-		respond(res,401,'Non-administrator users cannot upload avatars');
+		respond(res,401,'Non-administrator users cannot upload textures and thumbnails');
 		return;
-	}*/
-	var textureName = "", thumbnailName = "";
+	}
 	
-	if(!req.files){
+	else if(!req.files){
 		respond(res, 500, "Error saving uploaded 'texture' and 'screenshot' files");
 		return;
 	}
 
-	
+	var textureName = "", thumbnailName = "";
 	async.eachSeries(Object.keys(req.files), 
 		function(item, cb){
 			var filePath = "", type = "";
@@ -1777,11 +1780,14 @@ function serve (request, response)
 		switch(command)
 		{	
 
+			case "deleteavatar":{
+				DeleteAvatar(URL,response, request);	
+			} break;
 			case "avatarupload":{
-				SaveAvatar(URL,SID,body,response, request);	
+				SaveAvatar(URL,response, request);	
 			} break;
 			case "textureupload":{
-				SaveTexture(URL,SID,body,response, request);	
+				SaveTexture(URL,response, request);	
 			} break;
 			case "thumbnail":{
 				SaveThumbnail(URL,SID,body,response);	
