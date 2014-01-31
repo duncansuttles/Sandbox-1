@@ -82,8 +82,8 @@ function ()
         {
             if(root instanceof THREE.Geometry || root instanceof THREE.BufferGeometry)
             {
-                root.GenerateBounds();
-                root.BuildRayTraceAccelerationStructure();
+            //    root.GenerateBounds();
+          //      root.BuildRayTraceAccelerationStructure();
             }
             if(root.children)
             {

@@ -1178,7 +1178,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             var worldCamPos, worldCamTrans, camInverse;
             if ( camera ) { 
                 worldCamTrans = new THREE.Vector3();
-				worldCamTrans.getPositionFromMatrix(camera.matrix);
+				worldCamTrans.setFromMatrixPosition(camera.matrix);
                 worldCamPos = [ worldCamTrans.x, worldCamTrans.y, worldCamTrans.y];
                 //worldCamPos = [ camera.getLocX(), camera.getLocY(), camera.getLocZ() ]; 
 //                worldCamTrans = goog.vec.Mat4.createFromArray( camera.getLocalMatrix() );
@@ -1652,7 +1652,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
         this.projector.unprojectVector(this.directionVector, threeCam);
         var pos = new THREE.Vector3();
 		var pos2 = new THREE.Vector3();
-		pos2.getPositionFromMatrix(threeCam.matrixWorld);
+		pos2.x = threeCam.matrixWorld.elements[12];
+		pos2.y = threeCam.matrixWorld.elements[13];
+		pos2.z = threeCam.matrixWorld.elements[14];
         pos.copy(pos2);
         this.directionVector.sub(pos);
         this.directionVector.normalize();

@@ -310,7 +310,9 @@ SceneManager.prototype.getDefaultTexture = function()
 }
 SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) {
 
+		
 		var image = new Image();
+		
 		var texture = new THREE.Texture( this.getDefaultTexture().image, mapping );
 		texture.format = this.getDefaultTexture().format;
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
@@ -322,25 +324,25 @@ SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) 
 		texture.wrapT = THREE.RepeatWrapping;
 		var loader = new THREE.ImageLoader();
 
-		loader.addEventListener( 'load', function ( event ) {
+		var load = function ( event ) {
 
 
-			texture.image = event.content;
+			texture.image = event;
 			texture.format = THREE.RGBAFormat;
 			texture.needsUpdate = true;
 
 			if ( onLoad ) onLoad( texture );
 
-		} );
+		} ;
 
-		loader.addEventListener( 'error', function ( event ) {
+		var error = function ( event ) {
 
 			if ( onError ) onError( event.message );
 
-		} );
+		} ;
 
 		loader.crossOrigin = 'anonymous';
-		loader.load( url, image );
+		loader.load( url, load, null, error, image );
 
 		texture.sourceFile = url;
 
@@ -367,7 +369,7 @@ SceneManager.prototype.GetLoadedTextures = function()
 }
 SceneManager.prototype.getTexture = function(src,noclone)
 {
-	
+	//return THREE.ImageUtils.loadTexture(src);
 	var originalSrc = src;
 	var p = window.location.pathname;
 	if(p[p.length-1] == '/') {p = p.substring(0,p.length -1)};
@@ -628,6 +630,7 @@ SceneManager.prototype.removeChild = function(c)
 	var removed = this.root.removeChild(c);
 	
 }
+
 function SceneManagerRegion(min, max, depth,scene,order)
 {
 	
@@ -643,14 +646,11 @@ function SceneManagerRegion(min, max, depth,scene,order)
 	this.order = order;
 	if(drawSceneManagerRegions)
 	{
-		this.mesh = new THREE.Mesh(new THREE.CubeGeometry(this.max[0]-this.min[0],this.max[0]-this.min[0],this.max[0]-this.min[0]),new THREE.MeshBasicMaterial(0xFF0000));
-		this.mesh.material.wireframe = true;
+		this.mesh = this.BuildWireBox([this.max[0]-this.min[0],this.max[0]-this.min[0],this.max[0]-this.min[0]],[0,0,0],[(this.depth/maxDepth) * 2,0,0]);
+		
 		this.mesh.material.depthTest = false;
 		this.mesh.material.depthWrite = false;
 		this.mesh.material.transparent = true;
-		this.mesh.material.color.r = (this.depth/maxDepth) * 2;
-		this.mesh.material.color.g = 0;
-		this.mesh.material.color.b = 0;
 		this.mesh.position.x = this.c[0];
 		this.mesh.position.y = this.c[1];
 		this.mesh.position.z = this.c[2];
@@ -665,6 +665,61 @@ function SceneManagerRegion(min, max, depth,scene,order)
 		_SceneManager.BatchManagers.push(this.RenderBatchManager);
 	}
 }
+SceneManagerRegion.prototype.BuildWireBox = function (size, offset, color)
+	{
+		
+		var mesh = new THREE.Line(new THREE.Geometry(), new THREE.LineBasicMaterial(), THREE.LinePieces );
+		mesh.material.color.r = color[0];
+		mesh.material.color.g = color[1];
+		mesh.material.color.b = color[2];
+	
+		
+			var vertices = [
+				new THREE.Vector3(   size[0]/2,   size[1]/2,   size[2]/2 ),
+				new THREE.Vector3( - size[0]/2,   size[1]/2,   size[2]/2  ),
+				new THREE.Vector3( - size[0]/2, - size[1]/2,   size[2]/2  ),
+				new THREE.Vector3(   size[0]/2, - size[1]/2,   size[2]/2  ),
+
+				new THREE.Vector3(   size[0]/2,   size[1]/2, - size[2]/2  ),
+				new THREE.Vector3( - size[0]/2,   size[1]/2, - size[2]/2 ),
+				new THREE.Vector3( - size[0]/2, - size[1]/2, - size[2]/2  ),
+				new THREE.Vector3(   size[0]/2, - size[1]/2, - size[2]/2  )
+			];
+
+			//mesh.matrix.setPosition(new THREE.Vector3(offset[0],offset[1],offset[2]));
+			for (var i = 0; i < vertices.length; i++)
+			{
+				vertices[i].x += offset[0];
+				vertices[i].y += offset[1];
+				vertices[i].z += offset[2];
+			}
+
+			// TODO: Wouldn't be nice if Line had .segments?
+
+			var geometry = mesh.geometry;
+			geometry.vertices.push(
+				vertices[ 0 ], vertices[ 1 ],
+				vertices[ 1 ], vertices[ 2 ],
+				vertices[ 2 ], vertices[ 3 ],
+				vertices[ 3 ], vertices[ 0 ],
+
+				vertices[ 4 ], vertices[ 5 ],
+				vertices[ 5 ], vertices[ 6 ],
+				vertices[ 6 ], vertices[ 7 ],
+				vertices[ 7 ], vertices[ 4 ],
+
+				vertices[ 0 ], vertices[ 4 ],
+				vertices[ 1 ], vertices[ 5 ],
+				vertices[ 2 ], vertices[ 6 ],
+				vertices[ 3 ], vertices[ 7 ]
+			);
+
+		
+
+		mesh.matrixAutoUpdate = true;
+		mesh.updateMatrixWorld(true);
+		return mesh;
+	}
 SceneManagerRegion.prototype.deinitialize = function()
 {
 	if(this.mesh)
@@ -1316,6 +1371,7 @@ THREE.RenderBatch.prototype.build = function()
 	
 	this.mesh = null;
     var geo = new THREE.Geometry();
+    geo.normals = [];
 	this.mesh = new THREE.Mesh(geo,this.objects[0].material.clone());
 	this.mesh.castShadow=true;
 	this.mesh.receiveShadow=true;
@@ -1398,6 +1454,7 @@ THREE.RenderBatch.prototype.build = function()
 				geo.vertices.push(tg.vertices[j].clone().applyMatrix4(matrix));
 			}
 			
+			if(tg.normals)
 			for(var j = 0; j < tg.normals.length; j++)
 			{
 				geo.normals.push(tg.normals[j].clone().applyMatrix4(matrix));

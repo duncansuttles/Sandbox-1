@@ -599,12 +599,15 @@ THREE.ColladaLoader = function () {
 			bone.name = node.sid;
 			bone.parent = parentid;
 			bone.matrix = node.matrix;
-			var data = bone.matrix.decompose();
+			
+			var pos = new THREE.Vector3();
+			var scl = new THREE.Vector3();
+			var rotq = new THREE.Quaternion();
+			 bone.matrix.decompose(pos,rotq,scl);
 							
-			bone.pos = [data[0].x,data[0].y,data[0].z];
-							
-			bone.scl = [data[2].x,data[2].y,data[2].z];
-			bone.rotq = [data[1].x,data[1].y,data[1].z,data[1].w];
+			bone.pos = [pos.x,pos.y,pos.z];			
+			bone.scl = [scl.x,scl.y,scl.z];
+			bone.rotq = [rotq.x,rotq.y,rotq.z,rotq.w];
 			list.push(bone);
 			for(var i in node.nodes)
 			{
@@ -865,12 +868,15 @@ THREE.ColladaLoader = function () {
 							if(frame == 0)
 								bones[i].matrix = key.matrix;
 
-							var data = key.matrix.decompose();
+							var pos = new THREE.Vector3();
+							var scl = new THREE.Vector3();
+							var rotq = new THREE.Quaternion();
+							var data = key.matrix.decompose(pos,rotq,scl);
 							
-							key.pos = [data[0].x,data[0].y,data[0].z];
+							key.pos = [pos.x,pos.y,pos.z];
 							
-							key.scl = [data[2].x,data[2].y,data[2].z];
-							key.rot = data[1];
+							key.scl = [scl.x,scl.y,scl.z];
+							key.rot = rotq;
 
 							animationdata.hierarchy[j].keys.push(key);
 						}
@@ -1203,11 +1209,14 @@ THREE.ColladaLoader = function () {
 		obj.name = node.name || node.id || "";
 		obj.matrix = node.matrix;
 
-		var props = node.matrix.decompose();
-		obj.position = props[ 0 ];
-		obj.quaternion = props[ 1 ];
-		obj.useQuaternion = true;
-		obj.scale = props[ 2 ];
+		obj.position = new THREE.Vector3();
+		obj.quaternion = new THREE.Quaternion();
+		obj.scale = new THREE.Vector3();
+
+		var props = node.matrix.decompose(obj.position,obj.quaternion,obj.scale);
+		
+		//obj.useQuaternion = true;
+		
 
 		if ( options.centerGeometry && obj.geometry ) {
 

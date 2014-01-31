@@ -284,7 +284,8 @@ define(function ()
 				PlayerNumber: 1,
 				isDynamic: true,
 				castShadows: true,
-				receiveShadows: true
+				receiveShadows: true,
+				activeCycle : []
 			},
 			events: {
 				ShowProfile: null,
