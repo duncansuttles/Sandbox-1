@@ -33,22 +33,16 @@
 	//For example: There exist VWS_Business_Female1.DAE and VWS_Business_Female2.DAE (so the length of texturesArr is 2)
 	//VWS_Business_Female1.DAE has 3 different textures (texturesArr[0]) while VWS_Business_Female2.DAE only has 1 (texturesArr[1])
 	
-	function SetSoldier()
-	{
-		vwfPortalModel.profile.avatarTexture = "./avatars/AA_Soldier_Male.jpg";
-		vwfPortalModel.profile.avatarModel="./avatars/AA_Soldier_Male.DAE";
-	}
-
-
 	init();
 	spinner.spin($("#avatarSpinner")[0]);
 	vwfPortalModel.usersPage = true;
 	vwfPortalModel.saveStatus = ko.observable("");
 	vwfPortalModel.spinnerVisible = ko.observable(true);
 	vwfPortalModel.avatarInfo = [
+		{model: "AA_Soldier_Male", texture: 'AA_Soldier_Male', texturesArr: [1]},
 		{model: "VWS_Business_Female", texture: 'VWS_B_Female', texturesArr: [3, 1]},
 		{model: "VWS_Business_Male", texture: 'VWS_B_Male', texturesArr: [2, 4, 4]},
-		{model: "VWS_AA_Female", texture: 'Business_AAFemale', texturesArr: [3, 3]},
+		{model: "VWS_AA_Female", texture: 'Business_AAFemale', texturesArr: [3, 3]}
 	];
 	
 	vwfPortalModel.currentAvatar = ko.observable(false);
