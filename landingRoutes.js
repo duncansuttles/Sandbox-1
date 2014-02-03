@@ -31,19 +31,19 @@ exports.setDocumentation = function(cs){
 		doc = cs.documentation;
 };
 
-exports.acceptedRoutes = ['test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
+exports.acceptedRoutes = ['updatepassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
 routesMap = {
 	'sandbox': {template:'index'},
 	'home': {template:'index'},
-	'edit': {sid: true},
-	'publish': {sid: true},
+	'edit': {sid: true,requiresLogin:true},
+	'publish': {sid: true,requiresLogin:true},
 	'history': {sid: true},
-	'remove': {sid:true, title: 'Warning!'},
-	'user': {sid:true, title: 'Account'},
-	'admin': {sid:true, title:'Admin', fileList: fileList, template: 'admin/admin'},
-	'admin/edit': {fileList: fileList},
+	'remove': {sid:true, title: 'Warning!',requiresLogin:true},
+	'user': {sid:true, title: 'Account',requiresLogin:true},
+	'admin': {sid:true, title:'Admin', fileList: fileList, template: 'admin/admin',requiresLogin:true},
+	'admin/edit': {fileList: fileList,requiresLogin:true},
 	'index': {home:true},
-	'avatar': {avatar:true}
+	'avatar': {avatar:true,requiresLogin:true}
 };
 
 exports.generalHandler = function(req, res, next){
@@ -63,6 +63,7 @@ exports.generalHandler = function(req, res, next){
 	if(routeIndex >= 0){
 		
 		var currentAcceptedRoute = exports.acceptedRoutes[routeIndex], title = '', sid = '', template = currentAcceptedRoute, fileList = [], home = false;
+		
 		if(routesMap[currentAcceptedRoute]){
 			
 			title = routesMap[currentAcceptedRoute].title ? routesMap[currentAcceptedRoute].title : '';
@@ -71,9 +72,16 @@ exports.generalHandler = function(req, res, next){
 			fileList = routesMap[currentAcceptedRoute].fileList ? routesMap[currentAcceptedRoute].fileList : [];	
 			home = routesMap[currentAcceptedRoute].home ? routesMap[currentAcceptedRoute].home : false;	
 			avatar = routesMap[currentAcceptedRoute].avatar ? routesMap[currentAcceptedRoute].avatar : false;	
+
+		}
+
+		//if the page requires login, force a redirect to the login page
+		if(!sessionData && routesMap[currentAcceptedRoute] && routesMap[currentAcceptedRoute].requiresLogin)
+		{
+			res.redirect(root + '/login?return=' + currentAcceptedRoute);
 		}
 		
-		res.locals = {sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc};
+		res.locals = {sessionData:sessionData, sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc};
 		res.render(template);
 	}
 	
@@ -83,6 +91,12 @@ exports.generalHandler = function(req, res, next){
 		
 		next();
 	}
+};
+
+exports._404 = function(req, res){
+	
+	res.locals = {url:req.url,root:root};
+	res.status(404).render('_404');
 };
 
 exports.help = function(req, res){

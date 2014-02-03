@@ -261,7 +261,7 @@ function ServeYAML(filename,response, URL)
 }
 
 
-    function handleRequest(request, response) 
+    function handleRequest(request, response,next) 
     {
     
         try{
@@ -275,6 +275,7 @@ function ServeYAML(filename,response, URL)
             var uri = URL.pathname.replace(safePathRE);
             //global.log( URL.pathname );
             
+            //lets try to move this into the main app.get om node_vwf
             if(URL.pathname.toLowerCase().indexOf('/vwfdatamanager.svc/') != -1)
             {
                 //Route to DataServer
@@ -398,7 +399,7 @@ function ServeYAML(filename,response, URL)
                                                     if(indexexists)
                                                         ServeFile(request,filename + libpath.sep + "index.html",response,URL);
                                                     else
-                                                        _404(response);
+                                                        next();//_404(response);
 
                                                 });
                                             }
@@ -438,7 +439,8 @@ function ServeYAML(filename,response, URL)
                             else
                             {
                                 global.log("404 : " + filename)
-                                _404(response);
+                                //_404(response);
+                                next();
                                 
                                 return;
                             }

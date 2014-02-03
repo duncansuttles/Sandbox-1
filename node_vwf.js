@@ -160,6 +160,12 @@ function startVWF(){
     	global.error(err);
 	});
 	
+    //***node, uses REGEX, escape properly!
+	function strEndsWith(str, suffix) {
+	    return str.match(suffix+"$")==suffix;
+	}
+
+
 	//Boot up sequence. May call immediately, or after build step	
 	function StartUp()
 	{
@@ -189,12 +195,21 @@ function startVWF(){
 			app.engine('.html', require('hogan-express'));
 			
 			
+			app.use(
+			    function(req,res,next){
+					if(strEndsWith(req.url,'/adl/sandbox'))
+						res.redirect('/adl/sandbox/');
+					else next();	
+				}
+			);
+
 			//This first handler in the pipeline deal with the version numbers
 			// we append a version to the front if every request to keep the clients fresh
 			// otherwise, a user would have to know to refresh the cache every time we release
 			app.use(ServerFeatures.versioning);
 			
 			
+
 			//find pretty world URL's, and redirect to the non-pretty url for the world
 			app.use(ServerFeatures.prettyWorldURL);
 			
@@ -205,6 +220,7 @@ function startVWF(){
 			//CORS support
 			app.use(ServerFeatures.CORSSupport);
 			app.use(app.router);
+
 			app.get('/adl/sandbox/help', Landing.help);
 			app.get('/adl/sandbox/help/:page([a-zA-Z]+)', Landing.help);
 			app.get('/adl/sandbox/world/:page([a-zA-Z0-9]+)', Landing.world);
@@ -221,6 +237,13 @@ function startVWF(){
 			global.log(brown+'Admin is "' + global.adminUID+"\""+reset,0);
 			global.log(brown+'Serving on port ' + port+reset,0);
 			global.log(brown+'minify is ' + FileCache.minify+reset,0);
+
+
+			//if we got this far, then it's 404
+			app.use(
+			   Landing._404
+			);
+
 			Shell.StartShellInterface();  
 			reflector.startup(listen);
 			
