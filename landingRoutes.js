@@ -43,7 +43,10 @@ routesMap = {
 	'admin': {sid:true, title:'Admin', fileList: fileList, template: 'admin/admin',requiresLogin:true},
 	'admin/edit': {fileList: fileList,requiresLogin:true},
 	'index': {home:true},
-	'avatar': {avatar:true,requiresLogin:true}
+	'avatar': {avatar:true,requiresLogin:true},
+	'create': {requiresLogin:true},
+	'logout': {requiresLogin:true},
+	'updatepassword': {requiresLogin:true},
 };
 
 exports.generalHandler = function(req, res, next){

@@ -495,10 +495,67 @@ function SaveProfile(URL,data,response)
 		return;
 	});
 }
+function validateEmail(email) { 
+    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+} 
+function validateUsername(password)
+{
+	if (password.length < 3)
+	  return 'Username should be more than three characters'
+	if (password.length > 20)
+	  return 'Username should be less than 20 characters'
+	
+	var hasNonalphas = /\W/.test(password);
+	if (hasNonalphas)
+	  return 'Username should contain only letters and numbers'
+	return true;
+}
+
+//dont check the password - it's a big hash, so complexity rules are meaningless
+function UpdatePassword(URL,response)
+{
+	if(!URL.loginData)
+	{
+		respond(response,401,'no login data saving profile');
+		return;
+	}
+	var data = {};
+	//someone could try to hit the api and create a user with a blank password. Don't allow
+	if(!URL.query.P || URL.query.P.length < 8)
+	{
+		respond(response,401,'bad password');
+		return;
+	}
+	log(URL.query.P);
+	data.Password = Hash(URL.query.P);
+	DAL.updateUser(URL.loginData.UID,data,function()
+	{
+		respond(response,200,'');
+		return;
+	});
+}
 function CreateProfile(URL,data,response)
 {
 	data = JSON.parse(data);
+	//dont check the password - it's a big hash, so complexity rules are meaningless
 	data.Password = Hash(URL.query.P);
+	if(validateUsername(data.Username) !== true)
+	{
+		respond(response,500,'Bad Username');
+		return;
+	}
+	if(validateEmail(data.Email) !== true)
+	{
+		respond(response,500,'Bad Email');
+		return;
+	}
+	//someone could try to hit the api and create a user with a blank password. Don't allow
+	if(!data.Password || data.Password.length < 8)
+	{
+		respond(response,401,'bad password');
+		return;
+	}
 	DAL.createUser(URL.query.UID,data,function(ok,err)
 	{
 		if(ok)
@@ -1338,6 +1395,9 @@ function serve (request, response)
 	{
 		switch(command)
 		{	
+			case "updatepassword":{
+				UpdatePassword(URL,response);
+			} break;
 			case "docdir":{
 				ServeJSON(dirTree("./public/docs"),response,URL);
 			} break;
