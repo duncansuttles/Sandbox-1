@@ -1,5 +1,5 @@
 //Get the instance ID from the handshake headers for a socket
-var DAL;
+var DAL = require('./DAL').DAL;
 var sio = require('socket.io');
 var fs = require('fs');
 var url = require("url");

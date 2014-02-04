@@ -17,7 +17,7 @@ url = require("url"),
 mime = require('mime'),
 
 YAML = require('js-yaml');
-var DAL;
+var DAL = require('./DAL').DAL;
 
 function setDAL(dal)
 {

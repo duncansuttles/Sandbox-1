@@ -7,7 +7,7 @@ mime = require('mime'),
 YAML = require('js-yaml'),
 SandboxAPI = require('./sandboxAPI'),
 Shell = require('./ShellInterface'),
-DAL = require('./DAL'),
+DAL = require('./DAL').DAL,
 express = require('express'),
 app = express(),
 Landing = require('./landingRoutes');
@@ -169,18 +169,14 @@ function startVWF(){
 	//Boot up sequence. May call immediately, or after build step	
 	function StartUp()
 	{
-		SandboxAPI.setDAL(DAL);
+		
 		SandboxAPI.setDataPath(datapath);
 		errorlog = fs.createWriteStream(SandboxAPI.getDataPath()+'//Logs/errors_'+(((new Date()).toString())).replace(/[^0-9A-Za-z]/g,'_'), {'flags': 'a'});
-		Shell.setDAL(DAL);
-		Landing.setDAL(DAL);
+		
+		
 		Landing.setDocumentation(configSettings);
-		reflector.setDAL(DAL);
-		appserver.setDAL(DAL);
-		ServerFeatures.setDAL(DAL);
 		
 
-		
 
 		DAL.startup(function(){
 			

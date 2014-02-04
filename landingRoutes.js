@@ -1,7 +1,7 @@
 var root = '/adl/sandbox',
 fileList = [],
 routesMap = {},
-DAL = {},
+DAL = require('./DAL').DAL;
 fs = require('fs'),
 async = require('async'),
 URL = require('url'),

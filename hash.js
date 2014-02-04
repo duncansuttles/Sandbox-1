@@ -21,3 +21,4 @@ function Hash(unencrpytedpassword)
 }
 
 global.Hash = Hash;
+exports.Hash = Hash;

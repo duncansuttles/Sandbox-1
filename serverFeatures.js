@@ -1,6 +1,6 @@
 
 
-var DAL;
+var DAL = require('./DAL').DAL;;
 //302 redirect
 function _302(url,response)
 {

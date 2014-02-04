@@ -1494,6 +1494,8 @@ function restoreBackup(id, stateFileName, cb){
 	});
 }
 
+var DAL_Singleton = {};
+exports.DAL = DAL_Singleton;
 function startup(callback)
 {
 	async.series([
@@ -1549,54 +1551,53 @@ function startup(callback)
 		function(cb)
 		{
 			global.log('DAL startup complete',0);
-			exports.getUser = getUser;
-			exports.updateUser = updateUser;
-			exports.createUser = createUser;
-			exports.deleteUser = deleteUser;
-			exports.deleteUsers = deleteUsers;
-			exports.getAllUsersInfo = getAllUsersInfo;
+			DAL_Singleton.getUser = getUser;
+			DAL_Singleton.updateUser = updateUser;
+			DAL_Singleton.createUser = createUser;
+			DAL_Singleton.deleteUser = deleteUser;
+			DAL_Singleton.deleteUsers = deleteUsers;
+			DAL_Singleton.getAllUsersInfo = getAllUsersInfo;
 			
-			exports.find = findInDB;
+			DAL_Singleton.find = findInDB;
 			
-			exports.getInstance = getInstance;
-			exports.updateInstance = updateInstance;
-			exports.createInstance = createInstance;
-			exports.deleteInstance = deleteInstance;
-			exports.deleteInstances = deleteInstances;
-			exports.copyInstance = copyInstance;
-			exports.getStatesFilelist = getStatesFilelist;
-			exports.restoreBackup = restoreBackup;
+			DAL_Singleton.getInstance = getInstance;
+			DAL_Singleton.updateInstance = updateInstance;
+			DAL_Singleton.createInstance = createInstance;
+			DAL_Singleton.deleteInstance = deleteInstance;
+			DAL_Singleton.deleteInstances = deleteInstances;
+			DAL_Singleton.copyInstance = copyInstance;
+			DAL_Singleton.getStatesFilelist = getStatesFilelist;
+			DAL_Singleton.restoreBackup = restoreBackup;
 			
-			exports.getUsers = getUsers;
-			exports.getInstances = getInstances;
+			DAL_Singleton.getUsers = getUsers;
+			DAL_Singleton.getInstances = getInstances;
 			
-			exports.searchUsers = searchUsers;
-			exports.searchInstances = searchInstances;
-			exports.saveInstanceState = saveInstanceState;
-			exports.Publish = Publish;
-			exports.importStates = importStates;
-			exports.purgeInstances = purgeInstances;
-			exports.findState = findState;
-			exports.deleteInventoryItem=deleteInventoryItem
-			exports.getInventoryForUser = getInventoryForUser;
-			exports.addToInventory = addToInventory;
-			exports.getInventoryItemMetaData = getInventoryItemMetaData;
-			exports.getInventoryItemAssetData = getInventoryItemAssetData;
-			exports.getInventoryDisplayData = getInventoryDisplayData;
-			exports.updateInventoryItemMetadata = updateInventoryItemMetadata;
-			exports.importUsers = importUsers;
-			exports.clearUsers = clearUsers;
-			exports.searchInventory = searchInventory;
-			exports.getHistory = getHistory;
+			DAL_Singleton.searchUsers = searchUsers;
+			DAL_Singleton.searchInstances = searchInstances;
+			DAL_Singleton.saveInstanceState = saveInstanceState;
+			DAL_Singleton.Publish = Publish;
+			DAL_Singleton.importStates = importStates;
+			DAL_Singleton.purgeInstances = purgeInstances;
+			DAL_Singleton.findState = findState;
+			DAL_Singleton.deleteInventoryItem=deleteInventoryItem
+			DAL_Singleton.getInventoryForUser = getInventoryForUser;
+			DAL_Singleton.addToInventory = addToInventory;
+			DAL_Singleton.getInventoryItemMetaData = getInventoryItemMetaData;
+			DAL_Singleton.getInventoryItemAssetData = getInventoryItemAssetData;
+			DAL_Singleton.getInventoryDisplayData = getInventoryDisplayData;
+			DAL_Singleton.updateInventoryItemMetadata = updateInventoryItemMetadata;
+			DAL_Singleton.importUsers = importUsers;
+			DAL_Singleton.clearUsers = clearUsers;
+			DAL_Singleton.searchInventory = searchInventory;
+			DAL_Singleton.getHistory = getHistory;
+
 			callback();
 		}
-	
-
-	]);
-	
+	]);	
 }
+DAL_Singleton.startup = startup;
 
-exports.setDataPath = function(p)
+DAL_Singleton.setDataPath = function(p)
 {
 	p = libpath.resolve(p);
 	global.log("datapath is " + p,0);
@@ -1663,4 +1664,4 @@ exports.setDataPath = function(p)
 		}
 	}); // end mkdirp
 }
-exports.startup = startup;
+

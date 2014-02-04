@@ -9,7 +9,7 @@ var libpath = require('path'),
 	var _3DR_proxy = require('./3dr_proxy.js');
 var safePathRE = RegExp('/\//'+(libpath.sep=='/' ? '\/' : '\\')+'/g');
 var datapath = '.'+libpath.sep+'data';
-var DAL = null;	
+var DAL = require('./DAL').DAL;
 var analyticsObj;
 var assetPreload = require('./AssetPreload.js');
 // default path to data. over written by setup flags

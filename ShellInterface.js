@@ -7,7 +7,8 @@ var libpath = require('path'),
 	YAML = require('js-yaml');
 	SandboxAPI = require('./sandboxAPI');
 
-	var DAL;
+var DAL = require('./DAL').DAL;
+
 	function GUID()
     {
         var S4 = function ()
