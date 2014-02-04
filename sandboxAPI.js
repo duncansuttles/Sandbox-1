@@ -12,6 +12,11 @@ var datapath = '.'+libpath.sep+'data';
 var DAL = require('./DAL').DAL;
 var analyticsObj;
 var assetPreload = require('./AssetPreload.js');
+var passwordUtils = require('./passwordUtils');
+var CheckPassword = passwordUtils.CheckPassword;
+var SiteLogin = passwordUtils.SiteLogin;
+var SiteLogout = passwordUtils.SiteLogout;
+var UpdatePassword = passwordUtils.UpdatePassword;
 // default path to data. over written by setup flags
 
 //generate a random id.
@@ -124,85 +129,8 @@ function GetLoginData(response,URL)
 		respond(response,401,JSON.stringify({username:null}));
 	return;
 }
-function SessionData()
-{
-	this.sessionId = GUID();
-	this.UID = '';
-	this.Password = '';
-	this.loginTime = new Date();
-	this.clients = {};
-	this.lastUpdate = new Date();
-}
 
-//login to the site
-function SiteLogin(response,URL)
-{
-			var UID = URL.query.UID;
-			var password = URL.query.P;
-			
-			
-			if(!UID || !password)
-			{
-				respond(response,401,'Login Format incorrect');
-				return;
-			}
-			if(URL.loginData)
-			{
-				respond(response,401,'Already Logged in');
-				return;
-			}
-			
-			CheckPassword(UID,password,function(ok)
-			{
-				global.log("Login "+ ok,2);
-				if(ok)
-				{
-					var session = new SessionData();
-					session.UID = UID;
-					session.Password = password;
-					
-					global.sessions.push(session);
-					
-					response.writeHead(200, {
-							"Content-Type":  "text/plain",
-							"Set-Cookie": "session="+session.sessionId+"; Path=/; HttpOnly;"
-					});
-					response.write("Login Successful", "utf8");
-					global.log('Client Logged in',1);
-					response.end();
-				}else
-				{
-					respond(response,401,'Password incorrect');
-					return;
-				}
-			});		
-}
 
-//login to the site
-function SiteLogout(response,URL)
-{
-			
-			if(!URL.loginData)
-			{
-				respond(response,401,"Client Not Logged In");
-				return;
-			}
-			if(global.sessions.indexOf(URL.loginData) != -1)
-			{
-				global.sessions.splice(global.sessions.indexOf(URL.loginData),1);
-				response.writeHead(200, {
-							"Content-Type":  "text/plain",
-							"Set-Cookie": "session=; HttpOnly;"
-					});
-				response.end();	
-			}else
-			{
-				respond(response,401,"Client Not Logged In");
-				return;
-			}
-			return;
-			
-}
 
 //Take ownership if a client websocket connection
 //must provide a password and name for the user, and the instance and client ids.
@@ -512,29 +440,7 @@ function validateUsername(password)
 	return true;
 }
 
-//dont check the password - it's a big hash, so complexity rules are meaningless
-function UpdatePassword(URL,response)
-{
-	if(!URL.loginData)
-	{
-		respond(response,401,'no login data saving profile');
-		return;
-	}
-	var data = {};
-	//someone could try to hit the api and create a user with a blank password. Don't allow
-	if(!URL.query.P || URL.query.P.length < 8)
-	{
-		respond(response,401,'bad password');
-		return;
-	}
-	log(URL.query.P);
-	data.Password = Hash(URL.query.P);
-	DAL.updateUser(URL.loginData.UID,data,function()
-	{
-		respond(response,200,'');
-		return;
-	});
-}
+
 function CreateProfile(URL,data,response)
 {
 	data = JSON.parse(data);
@@ -565,21 +471,7 @@ function CreateProfile(URL,data,response)
 		return;
 	});
 }
-//Read the password from the profile for the UID user, and callback with the match
-function CheckPassword(UID,Password, callback)
-{
-	DAL.getUser(UID,function(user)
-	{
-		if(!user)
-		{
-			callback(false);
-			return;
-		}	
-		callback(user.Password == Hash(Password));
-		return;
-	
-	});
-}
+
 
 //Check that the UID is the author of the asset
 function CheckAuthor(UID,assetFilename, callback)
@@ -1397,6 +1289,9 @@ function serve (request, response)
 		{	
 			case "updatepassword":{
 				UpdatePassword(URL,response);
+			} break;
+			case "forgotpassword":{
+				passwordUtils.ResetPassword(UID,response);
 			} break;
 			case "docdir":{
 				ServeJSON(dirTree("./public/docs"),response,URL);

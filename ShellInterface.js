@@ -6,7 +6,7 @@ var libpath = require('path'),
 	sio = require('socket.io'),
 	YAML = require('js-yaml');
 	SandboxAPI = require('./sandboxAPI');
-
+var passwordUtils = require('./passwordUtils');
 var DAL = require('./DAL').DAL;
 
 	function GUID()
@@ -247,6 +247,11 @@ function StartShellInterface()
 				
 				});
 			}
+		}
+		if(commands[0] == 'resetPassword')
+		{
+			console.log(commands[1]);
+			passwordUtils.ResetPassword(commands[1]);
 		}
 		if(commands[0] == 'unfeature')
 		{

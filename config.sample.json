@@ -14,5 +14,14 @@
     "_3DRAPIKey": null,       //the api key to use for all requests. Null defaults to the public API key
     "_3DRUser": null,         //username server identifies itself as. Null defaults to Anonymous
     "_3DRPassword": null,     //password for the server user. Null defaults to Anonymous
-    "_3DRUseAuth": false      //use anonymous access or not. Null defaults to anonymous.
+    "_3DRUseAuth": false,     //use anonymous access or not. Null defaults to anonymous.
+    "sendEmails" : false,     //send emails to new users and on password reset (note, password reset is really not useful without this!) 
+    "emailFrom" : "",         //the sender as it will appear in the emails to users
+    "emailService" : "",      //the service provider for outgoing emails. See the nodemailer docs
+    "emailPassword" : "",     //the service password for outgoing emails. See the nodemailer docs
+    "emailUsername" : "",     //the service username for outgoing emails. See the nodemailer docs
 }
+
+
+
+ 

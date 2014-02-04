@@ -1,0 +1,101 @@
+    <script type="text/javascript">
+	
+		
+		
+		$(document).ready(function()
+		{
+			ko.applyBindings(vwfPortalModel);
+			{{#message}}
+				alertify.alert('{{message}}');
+			{{/message}}
+
+		});	
+		
+		function redirect()
+		{
+			var ret = window.location.search.substr(window.location.search.indexOf('=')+1);
+			window.location = ret.charAt(0) == '/' ? root + ret : root + '/' + ret;
+		}
+
+		function validateEmail(email) { 
+		    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+		    return re.test(email);
+		} 
+		vwfPortalModel.handleAccountButton = function(o, e){
+		
+			
+			var email = $('#txtemail').val();
+
+			if(!validateEmail(email))
+			{
+				vwfPortalModel.errorText("Invalid Email");	
+				return;
+			}
+
+			var profile = {};
+			profile.Email = email;
+			
+			$.ajax(root + "/VWFDataManager.svc/profile",
+			{
+				cache:false,
+				data:JSON.stringify(profile),
+				type:'POST',
+				success:function(data,status,xhr)
+				{
+
+					$('#txtusername').val('');
+					$('#txtpassword').val('');
+					
+					window.location = '{{root}}';
+			
+				},
+				error:function(xhr,status,err)
+				{
+					vwfPortalModel.errorText("Error: Please ensure that all required account information is entered correctly: " + xhr.responseText);
+					window.setTimeout(function(){
+						vwfPortalModel.errorText("");				
+					}, 6000);
+				},
+				dataType:'text'
+			});
+		}
+	</script>
+{{#user}}
+<div class="row">
+	<div class="col-md-5 accountCreation" style="margin: 0 auto; float:none;">
+		<form data-bind="submit:handleAccountButton" >
+			<fieldset>
+				<legend>Required account information</legend>
+				<div class='row'>
+					<div class="col-md-10" style="margin:0 auto;float:none;">
+						<input type='text' id='txtusername' class="form-control" disabled='disabled' value='{{Username}}' placeholder='Username'/>
+						<input type='text' id='txtemail' class="form-control" value='{{Email}}' placeholder='Email'/>
+						<input type="submit" class='btn btn-default' style="float:right;"  value="Update Account"/><br/>
+						<p class="help-block" style="width:100%;margin-top:20px;" data-bind="visible:errorText,text:errorText"></p>
+					</div>
+				</div>
+				<br/><br/>
+				<legend>Optional information</legend>
+				<div class='row'>
+					<div class='col-md-10' style="margin:0 auto;float:none;">
+						<input type='text' id='dob' class='input form-control' value='{{DOB}}' placeholder='Date Of Birth'/>
+						<input type='text' id='sex' class='input form-control' value='{{Sex}}'placeholder='Sex'/>
+						<input type='text' id='relationship' class='input form-control' value='{{Relationship}}' placeholder='Relationship Status'/>
+						<input type='text' id='name' class='input form-control' value='{{Name}}' placeholder='Full Name'/>
+						<input type='text' id='location' class='input form-control' value='{{Location}}' placeholder='Location'/>
+						<input type='text' id='homepage' class='input form-control' value='{{Homepage}}' placeholder='Homepage'/>
+						<input type='text' id='employer' class='input form-control' value='{{Employer}}' placeholder='Employer'/>
+					</div>
+				</div>
+			</fieldset>
+		</form>
+	</div>
+</div>
+{{/user}}
+<div class="row">	
+	<div id='error' style="margin-top: 20px;margin-bottom:20px;font-size: 3EM;color: red;" class="span12"></div>
+</div>
+
+
+
+		
