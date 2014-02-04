@@ -2702,67 +2702,81 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			return mesh;
 		}.bind(this);
 		
+		//callback for setPArent. CAlled once a node is picked. Selected objects will become children of this node
 		this.PickParentCallback = function (parentnode)
 		{
 			if(parentnode)
 			{
-				var id = this.GetSelectedVWFID();
+				
 				var parent = parentnode.id;
-				if(id != parent)
+
+				for(var i = 0; i < this.getSelectionCount(); i++)
 				{
-					if(vwf.parent(id) != parent)
+					var id = this.GetSelectedVWFNode(i).id;
+
+					if(id != parent)
 					{
-						if(vwf.decendants(id).indexOf(parent) == -1)
+						if(vwf.parent(id) != parent)
 						{
-							var node = _DataManager.getCleanNodePrototype(this.GetSelectedVWFID());
-							var childmat = toGMat(this.findviewnode(this.GetSelectedVWFID()).matrixWorld);
-							var parentmat = toGMat(this.findviewnode(parentnode.id).matrixWorld);
-							var invparentmat = MATH.inverseMat4(parentmat);
-							childmat = MATH.mulMat4(invparentmat, childmat);
-							delete node.properties.translation;
-							delete node.properties.rotation;
-							delete node.properties.quaternion;
-							delete node.properties.scale;
-							node.properties.transform = MATH.transposeMat4(childmat);
-							this.DeleteSelection();
-							this.createChild(parentnode.id, GUID(), node);
-						}else
-						{
-							alertify.alert('This object cannot be assigned to be a child of one of its decendants')
+							if(vwf.decendants(id).indexOf(parent) == -1)
+							{
+								var node = _DataManager.getCleanNodePrototype(id);
+								var childmat = toGMat(this.findviewnode(id).matrixWorld);
+								var parentmat = toGMat(this.findviewnode(parentnode.id).matrixWorld);
+								var invparentmat = MATH.inverseMat4(parentmat);
+								childmat = MATH.mulMat4(invparentmat, childmat);
+								delete node.properties.translation;
+								delete node.properties.rotation;
+								delete node.properties.quaternion;
+								delete node.properties.scale;
+								node.properties.transform = MATH.transposeMat4(childmat);
+								
+								this.createChild(parentnode.id, GUID(), node);
+							}else
+							{
+								alertify.alert('This object cannot be assigned to be a child of one of its decendants')
+							}
 						}
-					}
-					else
+						else
+						{
+								alertify.alert('This object is already the selected objects parent');
+						}
+					}else
 					{
-							alertify.alert('This object is already the selected objects parent');
-					}
-				}else
-				{
-					alertify.alert('An object cannot be linked to itself');
-				}	
+						alertify.alert('An object cannot be linked to itself');
+					}	
+				}
 
 			}else
 			{
 					alertify.alert('No object selected')
 			}
 
+			this.DeleteSelection();
 			this.TempPickCallback = null;
 			self.SelectOnNextCreate();
 			this.SetSelectMode('Pick');
 		}
 		this.RemoveParent = function ()
 		{
-			var node = _DataManager.getCleanNodePrototype(this.GetSelectedVWFID());
-			var childmat = toGMat(this.findviewnode(this.GetSelectedVWFID()).matrixWorld);
-			delete node.properties.translation;
-			delete node.properties.rotation;
-			delete node.properties.quaternion;
-			delete node.properties.scale;
-			node.properties.transform = MATH.transposeMat4(childmat);
+			for(var i = 0; i < this.getSelectionCount(); i++)
+			{
+				var id = this.GetSelectedVWFNode(i).id;
+				var node = _DataManager.getCleanNodePrototype(id);
+				var childmat = toGMat(this.findviewnode(id).matrixWorld);
+				delete node.properties.translation;
+				delete node.properties.rotation;
+				delete node.properties.quaternion;
+				delete node.properties.scale;
+				node.properties.transform = MATH.transposeMat4(childmat);
+				this.createChild('index-vwf', GUID(), node);
+			}
+
 			this.DeleteSelection();
-			self.SelectOnNextCreate();
-			this.createChild('index-vwf', GUID(), node);
+			self.SelectOnNextCreate(this.getSelectionCount());
 			this.SetSelectMode('Pick');
 		}
+		//Choose the node to become the parent of the selected node
 		this.SetParent = function ()
 		{
 			if (!this.GetSelectedVWFNode())
