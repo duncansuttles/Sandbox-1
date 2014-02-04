@@ -1390,70 +1390,85 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 							//note we use the world Z here - local / global / parent is handled in GetRotationTransform
 							rotationTransform = this.GetRotationTransform(WorldZ, amountToRotate);
 						}
-						if (wasMoved)
+
+						//here, we need to figure out if any of the shapes the user is moving are parents of each other.
+						//this moves the object, then moves it again because its parent moves
+						//makes sense and is sort of correct, but not what the user is expecting;
+						var parentSelected = false;
+						var nodeid = SelectedVWFNodes[s].id;
+						while(vwf.parent(nodeid))
 						{
-							var gizoffset = MATH.subVec3([MoveGizmo.position.x, MoveGizmo.position.y, MoveGizmo.position.z], originalGizmoPos);
-							gizoffset = this.TransformOffset(gizposoffset, SelectedVWFNodes[s].id); //this.TransformOffset(gizoffset,SelectedVWFNodes[s].id);
-							var transform = this.getTransformCallback(SelectedVWFNodes[s].id);
-							transform[12] += gizoffset[0];
-							transform[13] += gizoffset[1];
-							transform[14] += gizoffset[2];
-							lastpos[s] = [transform[12], transform[13], transform[14]];
-							var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
-							
+							nodeid = vwf.parent(nodeid);
+							parentSelected = parentSelected || this.isSelected(nodeid);
 						}
-						if (wasScaled && tempscale[0] > 0 && tempscale[1] > 0 && tempscale[2] > 0)
+
+						if(!parentSelected)
 						{
-							var relScale = MATH.subVec3(tempscale, lastscale[s]);
-							var success = this.setScaleCallback(SelectedVWFNodes[s].id, [tempscale[0], tempscale[1], tempscale[2]]);
-							if (SelectedVWFNodes.length > 1)
+							if (wasMoved)
 							{
-								
-								var gizoffset = MATH.subVec3(lastpos[s], originalGizmoPos);
-								gizoffset[0] /= lastscale[s][0];
-								gizoffset[1] /= lastscale[s][1];
-								gizoffset[2] /= lastscale[s][2];
-								gizoffset[0] *= tempscale[0];
-								gizoffset[1] *= tempscale[1];
-								gizoffset[2] *= tempscale[2];
-								var newloc = MATH.addVec3(originalGizmoPos, gizoffset);
-								lastpos[s] = newloc;
-								
-								var success = this.setTranslationCallback(SelectedVWFNodes[s].id, newloc);
+								var gizoffset = MATH.subVec3([MoveGizmo.position.x, MoveGizmo.position.y, MoveGizmo.position.z], originalGizmoPos);
+								gizoffset = this.TransformOffset(gizposoffset, SelectedVWFNodes[s].id); //this.TransformOffset(gizoffset,SelectedVWFNodes[s].id);
+								var transform = this.getTransformCallback(SelectedVWFNodes[s].id);
+								transform[12] += gizoffset[0];
+								transform[13] += gizoffset[1];
+								transform[14] += gizoffset[2];
+								lastpos[s] = [transform[12], transform[13], transform[14]];
+								var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
 								
 							}
-							lastscale[s] = tempscale;
-						}
-						if (wasRotated)
-						{
-							var transform = this.getTransformCallback(SelectedVWFNodes[s].id);
-							var x = transform[12];
-							var y = transform[13];
-							var z = transform[14];
-							var scale = this.getScaleCallback(SelectedVWFNodes[s].id);
-							transform[12] = 0;
-							transform[13] = 0;
-							transform[14] = 0;
-							transform = MATH.mulMat4(transform, rotationTransform);
-							transform[12] = x;
-							transform[13] = y;
-							transform[14] = z;
-							lastpos[s] = [x, y, z];
-							var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
-							
-							if (SelectedVWFNodes.length > 1)
+							if (wasScaled && tempscale[0] > 0 && tempscale[1] > 0 && tempscale[2] > 0)
 							{
-								var parentmat = toGMat(self.findviewnode(SelectedVWFNodes[s].id).parent.matrixWorld);
-								var parentmatinv = MATH.inverseMat4(parentmat);
-								var parentgizloc = MATH.mulMat4Vec3(parentmatinv, originalGizmoPos);
-								var gizoffset = MATH.subVec3(lastpos[s], parentgizloc);
-								var rotmat = MATH.inverseMat4(rotationTransform);
-								gizoffset = MATH.mulMat4Vec3(rotmat, gizoffset);
-								var newloc = MATH.addVec3(parentgizloc, gizoffset);
-								lastpos[s] = newloc;
-								var success = this.setTranslationCallback(SelectedVWFNodes[s].id, newloc);
-								//console.log(newloc);
+								var relScale = MATH.subVec3(tempscale, lastscale[s]);
+								var success = this.setScaleCallback(SelectedVWFNodes[s].id, [tempscale[0], tempscale[1], tempscale[2]]);
+								if (SelectedVWFNodes.length > 1)
+								{
+									
+									var gizoffset = MATH.subVec3(lastpos[s], originalGizmoPos);
+									gizoffset[0] /= lastscale[s][0];
+									gizoffset[1] /= lastscale[s][1];
+									gizoffset[2] /= lastscale[s][2];
+									gizoffset[0] *= tempscale[0];
+									gizoffset[1] *= tempscale[1];
+									gizoffset[2] *= tempscale[2];
+									var newloc = MATH.addVec3(originalGizmoPos, gizoffset);
+									lastpos[s] = newloc;
+									
+									var success = this.setTranslationCallback(SelectedVWFNodes[s].id, newloc);
+									
+								}
+								lastscale[s] = tempscale;
+							}
+							if (wasRotated)
+							{
+								var transform = this.getTransformCallback(SelectedVWFNodes[s].id);
+								var x = transform[12];
+								var y = transform[13];
+								var z = transform[14];
+								var scale = this.getScaleCallback(SelectedVWFNodes[s].id);
+								transform[12] = 0;
+								transform[13] = 0;
+								transform[14] = 0;
+								transform = MATH.mulMat4(transform, rotationTransform);
+								transform[12] = x;
+								transform[13] = y;
+								transform[14] = z;
+								lastpos[s] = [x, y, z];
+								var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
 								
+								if (SelectedVWFNodes.length > 1)
+								{
+									var parentmat = toGMat(self.findviewnode(SelectedVWFNodes[s].id).parent.matrixWorld);
+									var parentmatinv = MATH.inverseMat4(parentmat);
+									var parentgizloc = MATH.mulMat4Vec3(parentmatinv, originalGizmoPos);
+									var gizoffset = MATH.subVec3(lastpos[s], parentgizloc);
+									var rotmat = MATH.inverseMat4(rotationTransform);
+									gizoffset = MATH.mulMat4Vec3(rotmat, gizoffset);
+									var newloc = MATH.addVec3(parentgizloc, gizoffset);
+									lastpos[s] = newloc;
+									var success = this.setTranslationCallback(SelectedVWFNodes[s].id, newloc);
+									//console.log(newloc);
+									
+								}
 							}
 						}
 						//triggerSelectionTransformed(SelectedVWFNode);
