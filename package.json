@@ -27,7 +27,8 @@
     "adl-xapiwrapper": "~0.2.1",
     "request": "~2.30.0",
     "nodemailer": "~0.6.0",
-    "cryptojs": "~2.5.3"
+    "cryptojs": "~2.5.3",
+	"i18next": "~1.7.1"
   },
   "devDependencies": {},
   "scripts": {

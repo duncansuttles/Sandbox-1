@@ -7,7 +7,7 @@ define(
 		function createIcon(src, menuitemname, tooltip)
 		{
 
-			var translatedTooltip = tooltip.toLocaleString();
+			var translatedTooltip = i18n.t(tooltip);
 					
 			var iconname = menuitemname + "icon";
 			var mn = menuitemname;

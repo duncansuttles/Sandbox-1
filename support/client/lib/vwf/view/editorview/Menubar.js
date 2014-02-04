@@ -113,17 +113,19 @@ define(
 
 		$('#MenuEn').click(function (e)
 		{
-			localStorage.setItem("language","en");
+			i18n.setLng('en', function(t) { /* loading done */ });
 			location.reload();
 		});
+
 		$('#MenuRu').click(function (e)
 		{
-			localStorage.setItem("language","ru");
+			i18n.setLng('ru', function(t) { /* loading done */ });
 			location.reload();
+			
 		});
 		$('#MenuEs_ES').click(function (e)
 		{
-			localStorage.setItem("language","es_ES");
+			i18n.setLng('es_ES', function(t) { /* loading done */ });
 			location.reload();
 		});
 

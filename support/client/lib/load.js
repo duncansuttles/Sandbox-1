@@ -4,7 +4,7 @@
 //note: the files in the below array are in a specific order, to deal with depenancies. Since the files are concatenated in this order, it's very imporant
 if(false)
 {
-	require(["jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js","md5.js","jquery-migrate-1.2.1.min.js","jquery-ui-1.10.3.custom.min.js","jquery.transit.min.js","jquery-mousewheel.js","jquery-scrollpane.min.js","./vwf/model/threejs/three.js","./vwf/model/threejs/ColladaLoader.js","./vwf/model/threejs/UTF8JSONLoader.js","./vwf/view/localization/json2.min.js","./vwf/view/localization/l10n.min.js","./vwf/view/localization/localizations.js","compatibility.js","closure/deps.js",
+	require(["jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js","md5.js","jquery-migrate-1.2.1.min.js","jquery-ui-1.10.3.custom.min.js","jquery.transit.min.js","jquery-mousewheel.js","jquery-scrollpane.min.js","./vwf/model/threejs/three.js","./vwf/model/threejs/ColladaLoader.js","./vwf/model/threejs/UTF8JSONLoader.js","./vwf/view/localization/i18next-1.7.1.min.js","compatibility.js","closure/deps.js",
     "closure/vec/float32array.js",
     "closure/vec/float64array.js",
     "closure/vec/vec.js",
@@ -25,7 +25,7 @@ if(!window.jQuery)
 	    require(["jquery-migrate-1.2.1.min.js","jquery-ui-1.10.3.custom.min.js","md5.js","closure/deps.js","jquery.transit.min.js","jquery-mousewheel.js","jquery-scrollpane.min.js","../vwf/model/threejs/three.js","closure/vec/float32array.js","closure/vec/float64array.js"],
 	    	function()
 	    	{
-		       require(["../vwf/model/threejs/ColladaLoader.js","../vwf/model/threejs/UTF8JSONLoader.js","../vwf/view/localization/json2.min.js","../vwf/view/localization/l10n.min.js","../vwf/view/localization/localizations.js","compatibility.js","closure/vec/vec.js","../vwf.js"],
+		       require(["../vwf/model/threejs/ColladaLoader.js","../vwf/model/threejs/UTF8JSONLoader.js","./vwf/view/localization/i18next-1.7.1.min.js",,"compatibility.js","closure/vec/vec.js","../vwf.js"],
 		       	function()
 		       	{
 					require(["closure/vec/vec3.js","closure/vec/vec4.js"],
@@ -86,6 +86,16 @@ else
       window.Vec4 = goog.vec.Vec4;
       window.Mat4 = goog.vec.Mat4;
       window.Quaternion = goog.vec.Quaternion;
+
+      //localization
+      var option = {
+        //lng: 'en',
+        resGetPath: 'vwf/view/localization/locales/__lng__/__ns__.json',
+        useLocalStorage: true,
+        debug: true
+      };
+      i18n.init(option);
+
 
     //start when document is ready
     $(window).ready(function(){

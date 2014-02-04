@@ -24,7 +24,9 @@ var reflector = require("./reflector.js");
 var appserver = require("./appserver.js");
 var ServerFeatures = require("./serverFeatures.js");
 
-
+//localization init
+var i18n = require("i18next");
+i18n.init();
 
 
 
