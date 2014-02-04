@@ -58,6 +58,7 @@ else
   //ok, at this point, we have all the libraries. Let's do a bit of gui logic and setup
   function startup(boot)
   {
+      
         //remove the instnace name from requests to make things cache
       $.ajaxSetup({ cache: true });
 

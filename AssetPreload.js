@@ -1,4 +1,4 @@
-var SandboxAPI;
+var SandboxAPI = require('./sandboxAPI');
 
 //we're going to allow the client to request a list of assets the system will need for this scene
 //this allows the client to load and parse some stuff before connecting to the server, so it does not build up a load 
