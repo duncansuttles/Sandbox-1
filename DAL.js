@@ -1,6 +1,6 @@
-var nStore = require('nstore');
+
 var libpath = require('path');
-nStore = nStore.extend(require('nstore/query')());
+
 var async = require('async');
 var fs = require('fs-extra');
 require('./hash.js');
@@ -1502,7 +1502,9 @@ function startup(callback)
 		
 		function(cb)
 		{
-			DB = nStore.new(DBTablePath, function () {
+			
+			require('./DB.js').new(DBTablePath, function (_DB) {
+				DB = _DB;
 				cb();		
 			});
 		},
