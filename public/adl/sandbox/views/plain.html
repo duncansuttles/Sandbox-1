@@ -70,19 +70,21 @@ margin-right: 10px;
 
 				var height = $('#content').height();
 				var wheight  = $(document).height();
-				$('#content').css('margin-top',(wheight/2) - (height/2));
+				$('#content').css('margin-top',Math.max((wheight/2) - (height/2) - $('.thinfooter').height() + $('.thinheader').height() ,0));
 				
 				$('#content').css('opacity',1);
 				$('#content').css('transition','opacity .5s ease-in');
 
-		});
-		$(window).resize(function(){
+				$(window).resize(function(){
 
 				var height = $('#content').height();
 				var wheight  = $(document).height();
-				$('#content').css('margin-top',(wheight/2) - (height/2));
+				$('#content').css('margin-top',Math.max((wheight/2) - (height/2) - $('.thinfooter').height() + $('.thinheader').height(),0 ));
 
+				});
+				$(window).resize();
 		});
+		
 
 	</script>
 </head>
