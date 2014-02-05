@@ -22,6 +22,10 @@ exports.new = function(DBTablePath,cb)
             find : function(key,data,cb)
             {
                 DB.find(key,data,cb);
+            },
+            remove : function(key,cb)
+            {
+                DB.remove(key,cb);
             }
             
         };
