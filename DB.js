@@ -26,7 +26,36 @@ exports.new = function(DBTablePath,cb)
             remove : function(key,cb)
             {
                 DB.remove(key,cb);
-            }
+            },
+            listAppend:function(listKey,value,cb)
+            {
+                var self = this;
+                self.get(listKey,function(err,list,key){
+
+                    if(!list) list = [];
+                    list.push(value);
+                    self.save(listKey,list,function(err,val,key){
+                       
+                        cb(err,val,key);
+                    })
+                });
+            },
+            listDepend:function(listKey,value,cb)
+            {
+                var self = this;
+                self.get(listKey,function(err,list,key){
+
+                    if(!list) list = [];
+                    if(list.indexOf(value) !== -1)
+                    {
+                        list.splice(list.indexOf(value),1);    
+                    }
+                    
+                    self.save(listKey,list,function(err,val,key){
+                        cb(err,val,key);
+                    })
+                });
+            },
             
         };
         DB = nStore.new(DBTablePath,function(){

@@ -75,7 +75,38 @@ exports.new = function(DBTablePath,cb)
                     });
 
                 });
-            }
+            },
+            listAppend:function(listKey,value,cb)
+            {
+                //this is really not a good way to do this!
+                var self = this;
+                self.get(listKey,function(err,list,key){
+
+                    if(!list) list = [];
+                    list.push(value);
+                    self.save(listKey,list,function(err,val,key){
+                       
+                        cb(err,val,key);
+                    })
+                });
+            },
+            listDepend:function(listKey,value,cb)
+            {
+                //this is really not a good way to do this!
+                var self = this;
+                self.get(listKey,function(err,list,key){
+
+                    if(!list) list = [];
+                    if(list.indexOf(value) !== -1)
+                    {
+                        list.splice(list.indexOf(value),1);    
+                    }
+                    
+                    self.save(listKey,list,function(err,val,key){
+                        cb(err,val,key);
+                    })
+                });
+            },
             
         };
         var Datastore = require('nedb');

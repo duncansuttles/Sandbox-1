@@ -411,25 +411,11 @@ function createUser (id,data,cb)
 				});
 			
 			},
-			function(cb2){
-				
-				
-				DB.get('UserIndex',function(err,UserIndex,key)
-				{
-					cb2(null,UserIndex);
-				});
-			
-			},
-			function(UserIndex, cb2)
+			function(cb2)
 			{
-				
-					if(!UserIndex)
-						UserIndex = [];
-					UserIndex.push(id);
-					DB.save('UserIndex',UserIndex,function()
-					{
-						cb2();
-					});
+				DB.listAppend('UserIndex',id,function(){
+					cb2();
+				})
 			},
 			function(cb2)
 			{
@@ -468,22 +454,14 @@ function deleteUser (id,cb)
 			DB.remove(idk,function(err,doc,key)
 			{
 				//remove user from user index
-				DB.get('UserIndex',function(err,UserIndex,key)
+				DB.listDepend('UserIndex',id,function(err,UserIndex,key)
 				{
-					
-					while(UserIndex.indexOf(id) != -1)
-						UserIndex.splice(UserIndex.indexOf(id),1);
-					
-					//save user index
-					DB.save('UserIndex',UserIndex,function(err,doc,key)
+					//remove user from database
+					DB.remove(id,function(err,doc,key)
 					{
-						//remove user from database
-						DB.remove(id,function(err,doc,key)
-						{
-							//delete user folder
-							deleteFolderRecursive((datapath + '/Profiles/' + id).replace(safePathRE) + '_Data');
-							cb();
-						});
+						//delete user folder
+						deleteFolderRecursive((datapath + '/Profiles/' + id).replace(safePathRE) + '_Data');
+						cb();
 					});
 				});
 			});
@@ -1502,7 +1480,7 @@ function startup(callback)
 		
 		function(cb)
 		{
-			
+
 			require('./DB.js').new(DBTablePath, function (_DB) {
 				DB = _DB;
 				cb();		
