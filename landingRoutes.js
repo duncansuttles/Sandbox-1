@@ -55,84 +55,86 @@ routesMap = {
 
 exports.generalHandler = function(req, res, next){
 	
-	var sessionData = global.SandboxAPI.getSessionData(req);
-    var postGetUser = function(user)
-    {
-		if(!req.params.page)
-			req.params.page = 'index';
+	global.SandboxAPI.getSessionData(req,function(sessionData)
+	{
+	    var postGetUser = function(user)
+	    {
+			if(!req.params.page)
+				req.params.page = 'index';
 
-		if(req.params.page.indexOf('admin') > -1 && (!sessionData || sessionData.UID != global.adminUID)){
-			next();
-			return;
-		}
-			
-		var routeIndex = exports.acceptedRoutes.indexOf(req.params.page);
-
-		if(routeIndex >= 0){
-			
-			var currentAcceptedRoute = exports.acceptedRoutes[routeIndex], title = '', sid = '', template = currentAcceptedRoute, fileList = [], home = false;
-			
-			//if someone has a temp password, they must reset it
-			if(sessionData && sessionData.PasswordIsTemp)
-			{
-				currentAcceptedRoute = 'updatepassword';
-			}
-			if(user && !user.Email)
-			{
-				currentAcceptedRoute = 'editProfile';
-			}
-
-			if(routesMap[currentAcceptedRoute]){
-				
-				title = routesMap[currentAcceptedRoute].title ? routesMap[currentAcceptedRoute].title : '';
-				sid = routesMap[currentAcceptedRoute].sid ?  root + '/' + (req.query.id?req.query.id:'') + '/' : '';
-				template = routesMap[currentAcceptedRoute].template ? routesMap[currentAcceptedRoute].template : currentAcceptedRoute;
-				fileList = routesMap[currentAcceptedRoute].fileList ? routesMap[currentAcceptedRoute].fileList : [];	
-				home = routesMap[currentAcceptedRoute].home ? routesMap[currentAcceptedRoute].home : false;	
-				avatar = routesMap[currentAcceptedRoute].avatar ? routesMap[currentAcceptedRoute].avatar : false;	
-
-			}
-
-			var layout = (routesMap[currentAcceptedRoute] && routesMap[currentAcceptedRoute].layout) || 'layout';
-
-			//if the page requires login, force a redirect to the login page
-			if(!sessionData && routesMap[currentAcceptedRoute] && routesMap[currentAcceptedRoute].requiresLogin)
-			{
-				res.redirect(root + '/login?return=' + currentAcceptedRoute);
+			if(req.params.page.indexOf('admin') > -1 && (!sessionData || sessionData.UID != global.adminUID)){
+				next();
 				return;
 			}
+				
+			var routeIndex = exports.acceptedRoutes.indexOf(req.params.page);
 
-			if(currentAcceptedRoute == 'editProfile')
-			{
-
-				res.locals = {user:user,sessionData:sessionData, sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc};
+			if(routeIndex >= 0){
+				
+				var currentAcceptedRoute = exports.acceptedRoutes[routeIndex], title = '', sid = '', template = currentAcceptedRoute, fileList = [], home = false;
+				
+				//if someone has a temp password, they must reset it
+				if(sessionData && sessionData.PasswordIsTemp)
+				{
+					currentAcceptedRoute = 'updatepassword';
+				}
 				if(user && !user.Email)
 				{
-					res.locals.message = "We've updated our database, and now require email address for users. Please update your email address below.";
+					currentAcceptedRoute = 'editProfile';
 				}
-				res.render(template,{layout:layout});
-			}else
-			{
-				res.locals = {sessionData:sessionData, sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc};
-				res.render(template,{layout:layout});
-			}
-		}
-		
-		else{
-			console.log("Not found");
-			//res.status(404).end('Error');
-			
-			next();
-		}
-	};
 
-	if(sessionData)
-	{
-		DAL.getUser(sessionData.UID,postGetUser);
-	}else
-	{
-		postGetUser(null);
-	}
+				if(routesMap[currentAcceptedRoute]){
+					
+					title = routesMap[currentAcceptedRoute].title ? routesMap[currentAcceptedRoute].title : '';
+					sid = routesMap[currentAcceptedRoute].sid ?  root + '/' + (req.query.id?req.query.id:'') + '/' : '';
+					template = routesMap[currentAcceptedRoute].template ? routesMap[currentAcceptedRoute].template : currentAcceptedRoute;
+					fileList = routesMap[currentAcceptedRoute].fileList ? routesMap[currentAcceptedRoute].fileList : [];	
+					home = routesMap[currentAcceptedRoute].home ? routesMap[currentAcceptedRoute].home : false;	
+					avatar = routesMap[currentAcceptedRoute].avatar ? routesMap[currentAcceptedRoute].avatar : false;	
+
+				}
+
+				var layout = (routesMap[currentAcceptedRoute] && routesMap[currentAcceptedRoute].layout) || 'layout';
+
+				//if the page requires login, force a redirect to the login page
+				if(!sessionData && routesMap[currentAcceptedRoute] && routesMap[currentAcceptedRoute].requiresLogin)
+				{
+					res.redirect(root + '/login?return=' + currentAcceptedRoute);
+					return;
+				}
+
+				if(currentAcceptedRoute == 'editProfile')
+				{
+
+					res.locals = {user:user,sessionData:sessionData, sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc};
+					if(user && !user.Email)
+					{
+						res.locals.message = "We've updated our database, and now require email address for users. Please update your email address below.";
+					}
+					res.render(template,{layout:layout});
+				}else
+				{
+					res.locals = {sessionData:sessionData, sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc};
+					res.render(template,{layout:layout});
+				}
+			}
+			
+			else{
+				console.log("Not found");
+				//res.status(404).end('Error');
+				
+				next();
+			}
+		};
+
+		if(sessionData)
+		{
+			DAL.getUser(sessionData.UID,postGetUser);
+		}else
+		{
+			postGetUser(null);
+		}
+	});
 };
 
 exports._404 = function(req, res){

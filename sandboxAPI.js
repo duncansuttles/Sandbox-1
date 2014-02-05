@@ -1129,7 +1129,7 @@ function getState(SID)
 }  
 
 //find the session data for a request
-function GetSessionData(request)
+function GetSessionData(request,cb)
 {
   //request should contain the session ID in the cookie header
   if(!request.headers['cookie'])
@@ -1161,17 +1161,20 @@ function GetSessionData(request)
 		{
 			global.log('session expired for ' + global.sessions[i].UID,3);
 			delete global.sessions[i];
-			return null;
+			cb(null);
+			return;
 
 		}else   //reset the clock
 		{
 			global.log('Reset session for ' + global.sessions[i].UID,3);
 			global.sessions[i].lastUpdate = now;
 		}
-		return global.sessions[i];
+		cb(global.sessions[i]);
+		return;
 	}
   }
-  return null;
+  cb(null);
+  return;
 }
 
 function Salt(URL,response)
@@ -1264,284 +1267,286 @@ function serve (request, response)
 	command = command.toLowerCase();
 	
 	//Load the session data
-	URL.loginData = GetSessionData(request);
-	
-	
-	//Allow requests to submit the username in the URL querystring if not session data
-	var UID;
-	if(URL.loginData)
-		UID = URL.loginData.UID;
-	if(URL.query.UID)
-	UID = URL.query.UID;	
-	var SID = URL.query.SID;
-	if(SID)
-	 SID = SID.replace(/[\\,\/]/g,'_');
-	 
-	//Normalize the path for max/unix
-	pathAfterCommand = pathAfterCommand.replace(/\//g,libpath.sep);
-	var basedir = datapath + libpath.sep;
-	//console.log(basedir+"DataFiles"+ pathAfterCommand);
-	
-	global.log(command,UID,3);
-	if(request.method == "GET")
-	{
-		switch(command)
-		{	
-			case "updatepassword":{
-				UpdatePassword(URL,response);
-			} break;
-			case "forgotpassword":{
-				passwordUtils.ResetPassword(UID,response);
-			} break;
-			case "docdir":{
-				ServeJSON(dirTree("./public/docs"),response,URL);
-			} break;
-			case "3drsearch":{
-				_3DR_proxy.proxySearch(URL,response);
-			} break;
-			case "3drmetadata":{
-				_3DR_proxy.proxyMetadata(URL,response);
-			} break;
-			case "3drdownload":{
-				_3DR_proxy.proxyDownload(URL,response);
-			} break;
-			case "3drtexture":{
-				_3DR_proxy.proxyTexture(URL,response);
-			} break;
-			case "3drthumbnail":{
-				_3DR_proxy.proxyThumbnail(URL,response);
-			} break;
-			case "getanalytics.js": {
-				getAnalytics(request, response);
-			} break;
-			case "texture":{
-				global.FileCache.ServeFile(request,basedir+"Textures"+libpath.sep+ URL.query.UID,response,URL);		
-			} break;
-			case "thumbnail":{
-				GetThumbnail(request,SID,response);	
-			} break;
-			case "cameras":{
-				GetCameras(SID,response,URL);
-			} break;
-			case "datafile":{
-				global.FileCache.ServeFile(request,basedir+"DataFiles"+ pathAfterCommand,response,URL);		
-			} break;
-			case "texturethumbnail":{
-				global.FileCache.ServeFile(request,basedir+"Thumbnails"+libpath.sep + URL.query.UID,response,URL);		
-			} break;
-			case "state":{
-				ServeFile((basedir+"States/"+SID+'/state').replace(safePathRE),response,URL,'GetStateResult');		
-			} break;
-			case "statedata":{
-				DAL.getInstance(SID,function(state)
+   GetSessionData(request,function(__session)
+   {
+
+   			URL.loginData = __session;
+			//Allow requests to submit the username in the URL querystring if not session data
+			var UID;
+			if(URL.loginData)
+				UID = URL.loginData.UID;
+			if(URL.query.UID)
+			UID = URL.query.UID;	
+			var SID = URL.query.SID;
+			if(SID)
+			 SID = SID.replace(/[\\,\/]/g,'_');
+			 
+			//Normalize the path for max/unix
+			pathAfterCommand = pathAfterCommand.replace(/\//g,libpath.sep);
+			var basedir = datapath + libpath.sep;
+			//console.log(basedir+"DataFiles"+ pathAfterCommand);
+			
+			global.log(command,UID,3);
+			if(request.method == "GET")
+			{
+				switch(command)
+				{	
+					case "updatepassword":{
+						UpdatePassword(URL,response);
+					} break;
+					case "forgotpassword":{
+						passwordUtils.ResetPassword(UID,response);
+					} break;
+					case "docdir":{
+						ServeJSON(dirTree("./public/docs"),response,URL);
+					} break;
+					case "3drsearch":{
+						_3DR_proxy.proxySearch(URL,response);
+					} break;
+					case "3drmetadata":{
+						_3DR_proxy.proxyMetadata(URL,response);
+					} break;
+					case "3drdownload":{
+						_3DR_proxy.proxyDownload(URL,response);
+					} break;
+					case "3drtexture":{
+						_3DR_proxy.proxyTexture(URL,response);
+					} break;
+					case "3drthumbnail":{
+						_3DR_proxy.proxyThumbnail(URL,response);
+					} break;
+					case "getanalytics.js": {
+						getAnalytics(request, response);
+					} break;
+					case "texture":{
+						global.FileCache.ServeFile(request,basedir+"Textures"+libpath.sep+ URL.query.UID,response,URL);		
+					} break;
+					case "thumbnail":{
+						GetThumbnail(request,SID,response);	
+					} break;
+					case "cameras":{
+						GetCameras(SID,response,URL);
+					} break;
+					case "datafile":{
+						global.FileCache.ServeFile(request,basedir+"DataFiles"+ pathAfterCommand,response,URL);		
+					} break;
+					case "texturethumbnail":{
+						global.FileCache.ServeFile(request,basedir+"Thumbnails"+libpath.sep + URL.query.UID,response,URL);		
+					} break;
+					case "state":{
+						ServeFile((basedir+"States/"+SID+'/state').replace(safePathRE),response,URL,'GetStateResult');		
+					} break;
+					case "statedata":{
+						DAL.getInstance(SID,function(state)
+						{
+							if(state)
+								ServeJSON(state,response,URL);
+							else
+								respond(response,500,'state not found' );
+						});
+					} break;
+					case "statehistory":{
+						console.log("statehistory");
+						DAL.getHistory(SID,function(statehistory)
+						{
+							if(statehistory)
+								ServeJSON(statehistory,response,URL);
+							else
+								respond(response,500,'state not found' );
+						});
+					} break;
+					case "copyinstance":{
+						CopyInstance(URL, SID, response);		
+					} break;
+					case "stateslist":{
+						GetStateList(URL, SID, response);		
+					} break;
+					case "restorebackup":{
+						RestoreBackupState(URL, SID, response);		
+					} break;
+					case "salt":{
+						Salt(URL,response);		
+					} break;
+					case "profile":{
+						ServeProfile(UID,response,URL);		
+					} break;
+					case "login":{
+						InstanceLogin(response,URL);		
+					} break;
+					case "sitelogin":{
+						SiteLogin(response,URL);		
+					} break;
+					case "sitelogout":{
+						SiteLogout(response,URL);		
+					} break;
+					case "logindata":{
+						GetLoginData(response,URL);		
+					} break;
+					case "logout":{
+						InstanceLogout(response,URL);		
+					} break;
+					case "profiles":{
+						DAL.getUsers(function(users)
+						{
+							if(users)
+								ServeJSON(users,response,URL);
+							else
+								respond(response,500,'users not found' );
+						});
+					} break;
+				    case "inventory":{
+						getInventory(URL,response);
+					}break;
+					case "inventoryitemassetdata":{
+						getInventoryItemAssetData(URL,response);
+					}break;
+					case "inventoryitemmetadata":{
+						getInventoryItemMetaData(URL,response);
+					}break;
+					case "states":{
+						DAL.getInstances(function(state)
+						{
+							if(state)
+								ServeJSON(state,response,URL);
+							else
+								respond(response,500,'state not found' );
+						});
+					} break;
+					case "textures":{
+						if(global.textures)
+						{
+							ServeJSON(global.textures,response,URL);
+							return;
+						}
+						fs.readdir(basedir+"Textures"+libpath.sep,function(err,files){
+							RecurseDirs(basedir+"Textures"+libpath.sep, "",files);
+							files.sort(function(a,b){
+							   if(typeof a == "string" && typeof b == "string") return (a<b ? -1 : 1);
+							   if(typeof a == "object" && typeof b == "string") return  1;
+							   if(typeof a == "string" && typeof b == "object") return  -1;
+							   return -1;
+							});
+							var o = {};
+							o.GetTexturesResult = JSON.stringify({root:files}).replace(/\\\\/g,"\\").replace(/\/\//g, '/');
+							global.textures = o;
+							ServeJSON(o,response,URL);
+						});
+							
+					} break;
+					case "globalassets":{
+						getGlobalInventory(URL,response);
+					} break;
+					case "globalassetassetdata":{
+						getGlobalInventoryItemAssetData(URL,response);
+					} break;
+					case "globalassetmetadata":{
+						getGlobalInventoryItemMetaData(URL,response);
+					} break;
+					case "getassets":{
+						assetPreload.getAssets(request,response,URL);
+					} break;
+					default:
+					{
+						_404(response);
+						return;
+					}
+				
+				}
+			}
+			if(request.method == "POST")
+			{
+				var body = request.body;
+
+				if(body == '')
 				{
-					if(state)
-						ServeJSON(state,response,URL);
-					else
-						respond(response,500,'state not found' );
-				});
-			} break;
-			case "statehistory":{
-				console.log("statehistory");
-				DAL.getHistory(SID,function(statehistory)
-				{
-					if(statehistory)
-						ServeJSON(statehistory,response,URL);
-					else
-						respond(response,500,'state not found' );
-				});
-			} break;
-			case "copyinstance":{
-				CopyInstance(URL, SID, response);		
-			} break;
-			case "stateslist":{
-				GetStateList(URL, SID, response);		
-			} break;
-			case "restorebackup":{
-				RestoreBackupState(URL, SID, response);		
-			} break;
-			case "salt":{
-				Salt(URL,response);		
-			} break;
-			case "profile":{
-				ServeProfile(UID,response,URL);		
-			} break;
-			case "login":{
-				InstanceLogin(response,URL);		
-			} break;
-			case "sitelogin":{
-				SiteLogin(response,URL);		
-			} break;
-			case "sitelogout":{
-				SiteLogout(response,URL);		
-			} break;
-			case "logindata":{
-				GetLoginData(response,URL);		
-			} break;
-			case "logout":{
-				InstanceLogout(response,URL);		
-			} break;
-			case "profiles":{
-				DAL.getUsers(function(users)
-				{
-					if(users)
-						ServeJSON(users,response,URL);
-					else
-						respond(response,500,'users not found' );
-				});
-			} break;
-		    case "inventory":{
-				getInventory(URL,response);
-			}break;
-			case "inventoryitemassetdata":{
-				getInventoryItemAssetData(URL,response);
-			}break;
-			case "inventoryitemmetadata":{
-				getInventoryItemMetaData(URL,response);
-			}break;
-			case "states":{
-				DAL.getInstances(function(state)
-				{
-					if(state)
-						ServeJSON(state,response,URL);
-					else
-						respond(response,500,'state not found' );
-				});
-			} break;
-			case "textures":{
-				if(global.textures)
-				{
-					ServeJSON(global.textures,response,URL);
+					
+					respond(response,500,"Error in post: data is null");
 					return;
 				}
-				fs.readdir(basedir+"Textures"+libpath.sep,function(err,files){
-					RecurseDirs(basedir+"Textures"+libpath.sep, "",files);
-					files.sort(function(a,b){
-					   if(typeof a == "string" && typeof b == "string") return (a<b ? -1 : 1);
-					   if(typeof a == "object" && typeof b == "string") return  1;
-					   if(typeof a == "string" && typeof b == "object") return  -1;
-					   return -1;
-					});
-					var o = {};
-					o.GetTexturesResult = JSON.stringify({root:files}).replace(/\\\\/g,"\\").replace(/\/\//g, '/');
-					global.textures = o;
-					ServeJSON(o,response,URL);
-				});
-					
-			} break;
-			case "globalassets":{
-				getGlobalInventory(URL,response);
-			} break;
-			case "globalassetassetdata":{
-				getGlobalInventoryItemAssetData(URL,response);
-			} break;
-			case "globalassetmetadata":{
-				getGlobalInventoryItemMetaData(URL,response);
-			} break;
-			case "getassets":{
-				assetPreload.getAssets(request,response,URL);
-			} break;
-			default:
-			{
-				_404(response);
-				return;
-			}
-		
-		}
-	}
-	if(request.method == "POST")
-	{
-		var body = request.body;
+				
+				//Have to do this here! throw does not work quite as you would think 
+				//with all the async stuff. Do error checking first.
+				if(command != 'thumbnail')   //excpetion for the base64 encoded thumbnails
+				{
+					try{
+						JSON.parse(body);
+					}catch(e)
+					{
+						respond(response,500,"Error in post: data is not json");
+						return;
+					}
+				}
+				switch(command)
+				{	
 
-		if(body == '')
-		{
-			
-			respond(response,500,"Error in post: data is null");
-			return;
-		}
-		
-		//Have to do this here! throw does not work quite as you would think 
-		//with all the async stuff. Do error checking first.
-		if(command != 'thumbnail')   //excpetion for the base64 encoded thumbnails
-		{
-			try{
-				JSON.parse(body);
-			}catch(e)
+					case "error":{
+						LogError(URL,body,response);	
+					} break;
+					case "thumbnail":{
+						SaveThumbnail(URL,SID,body,response);	
+					} break;
+					case "state":{
+						SaveState(URL,SID,body,response);
+					}break;
+					case "createstate":{
+						createState(URL,body,response);
+					}break;
+					case "statedata":{
+						setStateData(URL,body,response);
+					}break;
+					case "globalasset":{
+						addGlobalInventoryItem(URL,body,response);
+					}break;
+					case "profile":{
+						SaveProfile(URL,body,response);
+					}break;
+					case "createprofile":{
+						CreateProfile(URL,body,response);
+					}break;
+					case "inventoryitem":{
+						addInventoryItem(URL,body,response);
+					}break;
+					case "inventoryitemmetadata":{
+						updateInventoryItemMetadata(URL,body,response);
+					} break;
+					case "publish":{
+						Publish(URL, SID,body, response);		
+					} break;
+					default:
+					{
+						global.log("POST",2);
+						_404(response);
+						return;
+					}
+				}
+			}	
+			if(request.method == "DELETE")
 			{
-				respond(response,500,"Error in post: data is not json");
-				return;
-			}
-		}
-		switch(command)
-		{	
+				var body = request.body;
 
-			case "error":{
-				LogError(URL,body,response);	
-			} break;
-			case "thumbnail":{
-				SaveThumbnail(URL,SID,body,response);	
-			} break;
-			case "state":{
-				SaveState(URL,SID,body,response);
-			}break;
-			case "createstate":{
-				createState(URL,body,response);
-			}break;
-			case "statedata":{
-				setStateData(URL,body,response);
-			}break;
-			case "globalasset":{
-				addGlobalInventoryItem(URL,body,response);
-			}break;
-			case "profile":{
-				SaveProfile(URL,body,response);
-			}break;
-			case "createprofile":{
-				CreateProfile(URL,body,response);
-			}break;
-			case "inventoryitem":{
-				addInventoryItem(URL,body,response);
-			}break;
-			case "inventoryitemmetadata":{
-				updateInventoryItemMetadata(URL,body,response);
-			} break;
-			case "publish":{
-				Publish(URL, SID,body, response);		
-			} break;
-			default:
-			{
-				global.log("POST",2);
-				_404(response);
-				return;
-			}
-		}
-	}	
-	if(request.method == "DELETE")
-	{
-		var body = request.body;
-
-		switch(command)
-		{	
-			case "state":{
-				DeleteState(URL,SID,response);
-			}break;
-			case "inventoryitem":{
-				deleteInventoryItem(URL,response);
-			} break;
-			case "globalasset":{
-				 deleteGlobalInventoryItem(URL,response);
-			}break;
-			case "profile":{
-				DeleteProfile(URL, basedir+"Profiles"+libpath.sep+UID,response);
-			}break;
-			default:
-			{
-				global.log("DELETE",2);
-				_404(response);
-				return;
-			}
-		}
-	}	
+				switch(command)
+				{	
+					case "state":{
+						DeleteState(URL,SID,response);
+					}break;
+					case "inventoryitem":{
+						deleteInventoryItem(URL,response);
+					} break;
+					case "globalasset":{
+						 deleteGlobalInventoryItem(URL,response);
+					}break;
+					case "profile":{
+						DeleteProfile(URL, basedir+"Profiles"+libpath.sep+UID,response);
+					}break;
+					default:
+					{
+						global.log("DELETE",2);
+						_404(response);
+						return;
+					}
+				}
+			}	
+	});
 }
 
 exports.serve = serve;
