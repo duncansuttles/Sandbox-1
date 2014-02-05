@@ -45,10 +45,12 @@ routesMap = {
 	'index': {home:true},
 	'avatar': {avatar:true,requiresLogin:true},
 	'create': {requiresLogin:true},
-	'logout': {requiresLogin:true},
-	'updatepassword': {requiresLogin:true},
-	'editProfile': {requiresLogin:true},
-	'forgotPassword': {},
+	'logout': {layout:'plain',requiresLogin:true},
+	'login': {layout:'plain'},
+	'signup': {layout:'plain'},
+	'updatepassword': {layout:'plain',requiresLogin:true},
+	'editProfile': {layout:'plain',requiresLogin:true},
+	'forgotPassword': {layout:'plain'},
 };
 
 exports.generalHandler = function(req, res, next){
@@ -91,6 +93,8 @@ exports.generalHandler = function(req, res, next){
 
 			}
 
+			var layout = (routesMap[currentAcceptedRoute] && routesMap[currentAcceptedRoute].layout) || 'layout';
+
 			//if the page requires login, force a redirect to the login page
 			if(!sessionData && routesMap[currentAcceptedRoute] && routesMap[currentAcceptedRoute].requiresLogin)
 			{
@@ -106,11 +110,11 @@ exports.generalHandler = function(req, res, next){
 				{
 					res.locals.message = "We've updated our database, and now require email address for users. Please update your email address below.";
 				}
-				res.render(template);
+				res.render(template,{layout:layout});
 			}else
 			{
 				res.locals = {sessionData:sessionData, sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc};
-				res.render(template);
+				res.render(template,{layout:layout});
 			}
 		}
 		

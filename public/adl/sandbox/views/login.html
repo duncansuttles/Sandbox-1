@@ -53,11 +53,11 @@
 		});
 	};
 </script>
-<div class="row">
+<div id="content" class="row" style="margin-top: 421px;position: absolute;width: 100%;">
 	<div class="col-md-5" style="margin:10px auto;float:none;text-align:center;height:260px;">
 		<form data-bind="submit:handleLoginButton" >
 			<fieldset>
-				<legend style="padding-bottom:5px;">Enter your username and password below</legend>
+				<legend style="padding-bottom:5px;">Log in</legend>
 				<div class="col-md-10" style="margin:0 auto;float:none;">
 					<input type='text' id='txtusername' placeholder='Username' class="form-control" /><br/>
 					<input type='password' id='txtpassword' placeholder='Password' class="form-control"/><br/>
@@ -65,9 +65,10 @@
 
 					<p class="help-block" style="width:100%;margin-top:20px;" data-bind="visible:errorText,text:errorText"></p>
 				</div>
+				<legend style="padding-bottom:5px;"></legend>
 			</fieldset>
 		</form>
-		<a href='signup' class='' style=""  value="" >Sign Up</a><br/>
+		<a href='signup' class='' style=""  value="" >Sign Up</a><span style="margin-left:3em" />   
 		<a href='forgotPassword' class='' style=""  value="" >Forgot your password?</a>
 	</div>
 </div>
