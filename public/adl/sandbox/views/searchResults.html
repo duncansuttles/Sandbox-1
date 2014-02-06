@@ -18,12 +18,15 @@
 display: inline-block;
 width: 200px;
 height: 150px;
+opacity:0;
 }
 .searchresult img{
 width: 180px;
 height: 93px;
 border-radius: 5px;
 box-shadow: 0px 0px 5px #DDD;
+background: white;
+
 }	
 .worldtitle{
 	font-family: sans-serif;
@@ -35,14 +38,113 @@ box-shadow: 0px 0px 5px #DDD;
 font-weight: bold;
 color: lightgray;
 }
+
+
+#results
+			{
+				margin-left: -200px;
+				margin-right: -200px;
+			}
+@media (max-width: 1420px){
+			#gitBanner{
+				display: none;
+			}
+			#results
+			{
+				margin-left: -200px;
+				margin-right: -200px;
+			}
+		}	
+		@media (max-width: 1522px){
+			
+			#results
+			{
+				margin-left: -300px;
+				margin-right: -300px;
+			}
+		}			
+		@media (max-width: 1220px){
+			#logo{
+				left: 0;
+			}
+			
+		}		
+		@media (max-width: 990px){
+			.linkMenu{
+				left: 546px;
+			}
+			#results
+			{
+				margin-left: 0px;
+				margin-right: 0px;
+			}
+		}	
+		@media (max-width: 607px){
+			.searchresult{
+			height: 120px;
+			
+			}
+		}	
+		@media (max-width: 407px){
+			.searchresult{
+			height: 100px;
+			width: 150px;
+			
+			}
+			.searchresult img{
+			width: 140px;
+			height: 73px;
+
+}	
+		}	
+
 </style>
+<script type="text/javascript">
+
+$(document).ready(function()
+{
+	$('#txtTerms').focus();
+	var i =0;
+	$('.searchresult').each(function(v,obj)
+	{
+
+		window.setTimeout(function(){
+
+			$(obj).css('opacity',1);
+				$(obj).css('transition','opacity .25s ease-in');
+
+		},i*100);
+		i++;
+
+	})
+
+
+});
+
+</script>
 <div id='content' class="row">
 	<div class="col-md-5" style="margin:10px auto;float:none;text-align:center;">
 		
-		
-		<legend style="padding-bottom:5px;">{{total}} Results for "{{search}}"</legend>
-		
-		<div id='results' style="margin-left: -200px;margin-right: -200px;">
+		{{#search}}
+		<legend style="padding-bottom:5px;">{{total}} Results for "{{searchterm}}"</legend>
+		{{/search}}
+
+		{{#my}}
+		<legend style="padding-bottom:5px;">All These {{total}} Worlds are Yours</legend>
+		{{/my}}
+
+		{{#all}}
+		<legend style="padding-bottom:5px;">All Worlds</legend>
+		{{/all}}
+
+		{{#featured}}
+		<legend style="padding-bottom:5px;">Featured Worlds</legend>
+		{{/featured}}
+
+		{{#new}}
+		<legend style="padding-bottom:5px;">Newest Worlds</legend>
+		{{/new}}
+		<div id='results' >
 		{{#results}}
 			
 			<div class='searchresult'>
@@ -61,23 +163,47 @@ color: lightgray;
 		{{#hadprev}}<a href='./{{previous}}' class='' style="margin-right: 497px"  value="" >< previous</a><span style="margin-left:0em" />{{/hadprev}}
 		{{#next}}<a href='./{{next}}' class='' style=""  value="" >next ></a><span style="margin-left:0em" />{{/next}}
 		
-{{#total}}
+		{{#search}}
+		{{#total}}
 			<div class='count' >{{start}} - {{end}} of {{total}}</div>
 		{{/total}}
-		
+		{{/search}}
+
+		{{#all}}
+		{{#total}}
+			<div class='count' >{{start}} - {{end}} of {{total}}</div>
+		{{/total}}
+		{{/all}}
+
+		{{#my}}
+		{{#total}}
+			<div class='count' >{{start}} - {{end}} of {{total}}</div>
+		{{/total}}
+		{{/my}}
+
+		{{#featured}}
+		{{#total}}
+			<div class='count' >{{start}} - {{end}} of {{total}}</div>
+		{{/total}}
+		{{/featured}}
 
 		<form id='form'>
 			<fieldset>
 				<div class="col-md-10" style="margin:0 auto;float:none;">
-					<input type='text' id='txtTerms' placeholder='Search terms' class="form-control"/><br/>
-					<input type="submit" class='btn btn-default' style="float:right;" id='submitBtn' value="Search"/><br/>
+					<input type='text' id='txtTerms' placeholder='Search terms' class="form-control" style="display:inline-block;width:80%"/>
+					<input type="submit" class='btn btn-default' style="float:right;" id='submitBtn' style="padding: 6px;display:inline-block;width:20%" value="Search"/><br/><br/>
 					<p class="help-block" style="width:100%;margin-top:20px;" data-bind="visible:errorText,text:errorText"></p>
 				</div>
 				<legend style="padding-bottom:5px;"></legend>
 			</fieldset>
 			
 		</form>
-		{{^sessionData}}<a href='../../login?return=search' class='' style=""  value="" >Log in</a><span style="margin-left:0em" />{{/sessionData}}   
-		{{#sessionData}}<a href='../../create' class='' style=""  value="" >Create World</a><span style="margin-left:0em" />{{/sessionData}}   
+		<a href='{{root}}/featuredWorlds/0' class='' style=""  value="" >Featured</a><span style="margin-left:2em" />
+		<a href='{{root}}/allWorlds/0' class='' style=""  value="" >All Worlds</a><span style="margin-left:2em" />
+		{{#sessionData}}<a href='{{root}}/myWorlds/0' class='' style=""  value="" >My Worlds</a><span style="margin-left:2em" />{{/sessionData}}   
+		<a href='{{root}}/newWorlds/' class='' style=""  value="" >New Worlds</a><span style="margin-left:2em" />
+		{{#sessionData}}<a href='{{root}}/create' class='' style=""  value="" >Create</a><span style="margin-left:2em" />{{/sessionData}}   
+		<a href='{{root}}/search' class='' style=""  value="" >Search</a><span style="margin-left:0em" />
+		   
 	</div>
 </div>

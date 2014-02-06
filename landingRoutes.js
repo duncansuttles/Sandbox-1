@@ -141,8 +141,11 @@ exports.generalHandler = function(req, res, next){
 
 exports._404 = function(req, res){
 	
-	res.locals = {url:req.url,root:root};
-	res.status(404).render('_404');
+	sessions.GetSessionData(req,function(sessionData)
+	{
+		res.locals = {sessionData:sessionData,url:req.url,root:root};
+		res.status(404).render('_404');
+	})
 };
 
 exports.help = function(req, res){
@@ -161,27 +164,97 @@ exports.world = function(req, res, next){
 	});
 };
 
-exports.searchResults = function(req, res, next){
-	var search = decodeURIComponent( req.params.term);
+function ShowSearchPage(mode, req, res, next)
+{
+
+var search = decodeURIComponent( req.params.term).toLowerCase();
 	var perpage = req.params.perpage;
 	var page = parseInt(req.params.page);
 
-sessions.GetSessionData(req,function(sessionData)
+	sessions.GetSessionData(req,function(sessionData)
 		{
 	DAL.getInstances(function(allinstances)
 	{
-
+		console.log(search);
 		var results = [];
-		console.log(allinstances);
-
-		for(var i in allinstances)
+		
+		if(mode == 'search')
 		{
-			var inst = allinstances[i];
-			inst.id = i;
-			inst.shortid = i.substr(13,16)
-			if(inst.title.indexOf(search) != -1 || inst.description.indexOf(search) != -1 || inst.owner.indexOf(search) != -1 || !search)
-				results.push(inst);
+			for(var i in allinstances)
+			{
+				var inst = allinstances[i];
+				inst.id = i;
+				inst.shortid = i.substr(13,16)
+				if(inst.title.toLowerCase().indexOf(search) != -1 || inst.description.toLowerCase().indexOf(search) != -1 || inst.owner.toLowerCase().indexOf(search) != -1 || inst.shortid.toLowerCase().indexOf(search) != -1)
+					results.push(inst);
+			}
+			results.sort(function(a,b)
+			{
+				return Date.parse(b.created|| b.lastUpdate) - Date.parse(a.created || a.lastUpdate);
+			});
 		}
+		
+		if(mode == 'my'&& sessionData)
+		{
+			for(var i in allinstances)
+			{
+				var inst = allinstances[i];
+				inst.id = i;
+				inst.shortid = i.substr(13,16)
+				if(inst.owner == sessionData.UID)
+					results.push(inst);
+			}
+			results.sort(function(a,b)
+			{
+				return Date.parse(b.created|| b.lastUpdate) - Date.parse(a.created || a.lastUpdate);
+			});
+		}
+		if(mode == 'featured')
+		{
+			for(var i in allinstances)
+			{
+				var inst = allinstances[i];
+				inst.id = i;
+				inst.shortid = i.substr(13,16)
+				if(inst.featured)
+					results.push(inst);
+			}
+			results.sort(function(a,b)
+			{
+				return Date.parse(b.created|| b.lastUpdate) - Date.parse(a.created || a.lastUpdate);
+			});
+		}
+
+		if(mode == 'all')
+		{
+			for(var i in allinstances)
+			{
+				var inst = allinstances[i];
+				inst.id = i;
+				inst.shortid = i.substr(13,16)				
+				results.push(inst);
+			}
+			results.sort(function(a,b)
+			{
+				return Date.parse(b.created|| b.lastUpdate) - Date.parse(a.created || a.lastUpdate);
+			});
+		}
+		if(mode == 'new')
+		{
+			for(var i in allinstances)
+			{
+				var inst = allinstances[i];
+				inst.id = i;
+				inst.shortid = i.substr(13,16)				
+				results.push(inst);
+			}
+			results.sort(function(a,b)
+			{
+				return Date.parse(b.created|| b.lastUpdate) - Date.parse(a.created || a.lastUpdate);
+			});
+			results.splice(10);
+		} 
+		console.log(results);
 		var total = results.length;
 		var next = page + 1;
 		console.log(next,Math.ceil(results.length/10))
@@ -199,13 +272,32 @@ sessions.GetSessionData(req,function(sessionData)
 		}
 		var start = 10 * page;
 		var end = start+results.length;
-		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:root,search:search,results:results,next:next,previous:previous,hadprev:(previous >= 0)};
+		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:root,searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0)};
+		res.locals[mode] = true;
 		res.render('searchResults',{layout:'plain'});
 
 	})
 	})
+
+}
+
+exports.searchResults = function(req, res, next){
+	ShowSearchPage('search', req, res, next);
 };
 
+exports.newWorlds = function(req, res, next){
+	ShowSearchPage('new', req, res, next);
+};
+
+exports.allWorlds = function(req, res, next){
+	ShowSearchPage('all', req, res, next);
+};
+exports.myWorlds = function(req, res, next){
+	ShowSearchPage('my', req, res, next);
+};
+exports.featuredWorlds = function(req, res, next){
+	ShowSearchPage('featured', req, res, next);
+}
 exports.handlePostRequest = function(req, res, next){
 
 	var data = req.body ? JSON.parse(req.body) : '';

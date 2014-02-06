@@ -11,6 +11,7 @@
 			#gitBanner{
 				display: none;
 			}
+			
 		}			
 		@media (max-width: 1220px){
 			#logo{
@@ -22,26 +23,31 @@
 				left: 546px;
 			}
 		}	
+		.content-col
+			{
+				width:30%;
+			}
 		.thinheader
 		{
-text-align: right;
-background-color: #E5e5EE;
-border-bottom: 1px solid lightgray;
+			text-align: right;
+			background-color: #DDE7F0;
+			border-bottom: 1px solid lightgray;
 		}
 		.thinfooter
 		{
-position: absolute;
-bottom: 1%;
-text-align: center;
-width: 100%;
-line-height: 1em;
-color: lightgray;
-font-size: 12px;
+			position: absolute;
+			bottom: 1%;
+			text-align: center;
+			width: 100%;
+			line-height: 1em;
+			color: lightgray;
+			font-size: 12px;
 		}
 		.thinheaderlink
 		{
-margin-left: 13px;
-margin-right: 10px;
+			margin-left: 13px;
+			margin-right: 10px;
+			color:#7297AC;
 		}
 		#content
 		{
@@ -90,6 +96,11 @@ margin-right: 10px;
 </head>
 <body style="overflow:hidden">
 	<div class='thinheader'>
+		
+		<a class='thinheaderlink' href='{{root}}/search'>
+			Search
+		</a>
+		
 		{{^sessionData}}
 		<a class='thinheaderlink' href='{{root}}/signup'>
 			Sign up
@@ -131,5 +142,6 @@ margin-right: 10px;
 	</div>	
 	<a href="https://github.com/adlnet/Sandbox" id="gitBanner"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
 	<script type="text/javascript" src="{{root}}/js/alertify.min.js"></script>
+	<img src="{{root}}/img/VWS_Logo.png" style="position: absolute;bottom: 0px;right: 0px;opacity: .25;width: 10%;">
 </body>
 </html>
