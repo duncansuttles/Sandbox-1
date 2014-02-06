@@ -145,11 +145,8 @@ function deleteInventoryItem(userID,inventoryID,cb)
 		//item must be in list of user
 		if(inventory.indexOf(inventoryID) != -1)
 		{
-			//remove from user inventory list
-			while(inventory.indexOf(inventoryID) != -1)
-				inventory.splice(inventory.indexOf(inventoryID),1);
 			//save user inventory list	
-			DB.save(Ikey,inventory,function()
+			DB.listDepend(Ikey,inventoryID,function()
 			{
 				//remove database entry
 				DB.remove(inventoryID,function(){
@@ -273,11 +270,8 @@ function addToInventory(userID,data,assetdata,cb)
 		//save the data
 		DB.save(null,data,function(err,key)
 		{	
-			//put the key for the data in the inventory
-			inventory.push(key);
-			
 			//save the inventory
-			DB.save(Ikey,inventory,function(err)
+			DB.listAppend(Ikey,key,function(err)
 			{
 				var file = datapath+'/Profiles/' + userID + '_Data/' + key;
 				fs.writeFile( file.replace(safePathRE),JSON.stringify(assetdata),function(err)
@@ -727,19 +721,15 @@ function createInstance (id,data,cb)
 			data.created = new Date();
 			DB.save(id,data,function(err,doc,key)
 			{
-				DB.get('StateIndex',function(err,stateIndex,key)
-				{
-					if(!stateIndex)
-						stateIndex = [];
-					stateIndex.push(id);
-					DB.save('StateIndex',stateIndex,function()
+				
+					DB.listAppend('StateIndex',id,function()
 					{
 						MakeDirIfNotExist((datapath + '/States/' + id).replace(safePathRE),function() 
 						{
 							cb(true);
 						});
 					});
-				});
+				
 			});
 		}
 	});
@@ -856,21 +846,15 @@ function deleteInstance (id,cb)
 	function(cb2)
 	{
 		
-		DB.get('StateIndex',function(err,stateIndex,key)
-		{
-			if(!stateIndex)
-			{
-				cb();
-				return;
-			}
+		
 			
-			stateIndex.splice(stateIndex.indexOf(id),1);
-			DB.save('StateIndex',stateIndex,function()
+			
+			DB.listDepend('StateIndex',id,function()
 			{
 				
 				cb();
 			});
-		});
+		
 	}]);
 };
 
