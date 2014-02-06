@@ -2,15 +2,7 @@ var hash = require('./hash');
 var CryptoJS = require('cryptojs');
 var DAL = require('./DAL').DAL;
 var mailTools = require('./mailTools');
-function SessionData()
-{
-	this.sessionId = GUID();
-	this.UID = '';
-	this.Password = '';
-	this.loginTime = new Date();
-	this.clients = {};
-	this.lastUpdate = new Date();
-}
+var sessions = require('./sessions');
 
 //simple functio to write a response
 function respond(response,status,message)
@@ -181,11 +173,7 @@ exports.SiteLogin = function (response,URL)
 				global.log("Login "+ ok,2);
 				if(ok)
 				{
-					var session = new SessionData();
-					session.UID = UID;
-					session.Password = password;
-					session.PasswordIsTemp = isTemp;
-					global.sessions.push(session);
+					var session = sessions.createSession(UID,password,isTemp);
 					
 					response.writeHead(200, {
 							"Content-Type":  "text/plain",
@@ -211,18 +199,14 @@ exports.SiteLogout = function (response,URL)
 				respond(response,401,"Client Not Logged In");
 				return;
 			}
-			if(global.sessions.indexOf(URL.loginData) != -1)
+			else
 			{
-				global.sessions.splice(global.sessions.indexOf(URL.loginData),1);
+				sessions.deleteSession(URL.loginData);
 				response.writeHead(200, {
 							"Content-Type":  "text/plain",
 							"Set-Cookie": "session=; HttpOnly;"
 					});
 				response.end();	
-			}else
-			{
-				respond(response,401,"Client Not Logged In");
-				return;
 			}
 			return;
 			

@@ -8,7 +8,7 @@ URL = require('url'),
 avatar = false,
 blog = false,
 doc = false;
-
+var sessions = require('./sessions');
 fs.readdir(__dirname + '/public' + root + '/views/help', function(err, files){
 	var tempArr = [];
 	
@@ -31,7 +31,7 @@ exports.setDocumentation = function(cs){
 		doc = cs.documentation;
 };
 
-exports.acceptedRoutes = ['forgotPassword','editProfile','updatepassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
+exports.acceptedRoutes = ['search','forgotPassword','editProfile','updatepassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
 routesMap = {
 	'sandbox': {template:'index'},
 	'home': {template:'index'},
@@ -51,11 +51,13 @@ routesMap = {
 	'updatepassword': {layout:'plain',requiresLogin:true},
 	'editProfile': {layout:'plain',requiresLogin:true},
 	'forgotPassword': {layout:'plain'},
+	'search': {layout:'plain'},
+
 };
 
 exports.generalHandler = function(req, res, next){
 	
-	global.SandboxAPI.getSessionData(req,function(sessionData)
+	sessions.GetSessionData(req,function(sessionData)
 	{
 	    var postGetUser = function(user)
 	    {
@@ -157,13 +159,63 @@ exports.world = function(req, res, next){
 		res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getFrontEndRoot(req), world: doc, id: req.params.page?req.params.page:''};
 		res.render('worldTemplate');
 	});
+};
 
+exports.searchResults = function(req, res, next){
+	var search = decodeURIComponent( req.params.term);
+	var perpage = req.params.perpage;
+	var page = parseInt(req.params.page);
+
+sessions.GetSessionData(req,function(sessionData)
+		{
+	DAL.getInstances(function(allinstances)
+	{
+
+		var results = [];
+		console.log(allinstances);
+
+		for(var i in allinstances)
+		{
+			var inst = allinstances[i];
+			inst.id = i;
+			inst.shortid = i.substr(13,16)
+			if(inst.title.indexOf(search) != -1 || inst.description.indexOf(search) != -1 || inst.owner.indexOf(search) != -1 || !search)
+				results.push(inst);
+		}
+		var total = results.length;
+		var next = page + 1;
+		console.log(next,Math.ceil(results.length/10))
+		if(Math.ceil(results.length/10) == next || results.length == 0)
+			next = false;
+		var previous = page -1;
+		
+
+		for(var i =0; i < 10 * page; i++)	
+			results.shift();
+
+		if(results.length > 10)
+		{
+			results.splice(10);
+		}
+		var start = 10 * page;
+		var end = start+results.length;
+		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:root,search:search,results:results,next:next,previous:previous,hadprev:(previous >= 0)};
+		res.render('searchResults',{layout:'plain'});
+
+	})
+	})
 };
 
 exports.handlePostRequest = function(req, res, next){
 
 	var data = req.body ? JSON.parse(req.body) : '';
-	var sessionData = global.SandboxAPI.getSessionData(req);
+	sessions.GetSessionData(req,function(sessionData)
+		{
+
+
+
+
+		
 	
 	//Temporarily commenting out authorization
 	if(!sessionData || sessionData.UID != global.adminUID){
@@ -277,6 +329,7 @@ exports.handlePostRequest = function(req, res, next){
 			next();
 			break;
 	}
+	});
 };
 
 function getFrontEndRoot(req){

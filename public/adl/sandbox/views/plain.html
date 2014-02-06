@@ -91,28 +91,28 @@ margin-right: 10px;
 <body style="overflow:hidden">
 	<div class='thinheader'>
 		{{^sessionData}}
-		<a class='thinheaderlink' href='signup'>
+		<a class='thinheaderlink' href='{{root}}/signup'>
 			Sign up
 		</a>
 		{{/sessionData}}
-		<a class='thinheaderlink' href='./'>
+		<a class='thinheaderlink' href='{{root}}/'>
 			Home
 		</a>
-		<a class='thinheaderlink' href='worlds'>
+		<a class='thinheaderlink' href='{{root}}/worlds'>
 			Worlds
 		</a>
 		{{^sessionData}}
-		<a class='thinheaderlink' href='login'>
+		<a class='thinheaderlink' href='{{root}}/login'>
 			Log in
 		</a>
 		{{/sessionData}}
 		{{#sessionData}}
-		<a class='thinheaderlink' href='logout'>
+		<a class='thinheaderlink' href='{{root}}/logout'>
 			Log out
 		</a>
 		{{/sessionData}}
 		{{#sessionData}}
-		<a class='thinheaderlink' href='user'>
+		<a class='thinheaderlink' href='{{root}}/user'>
 			{{sessionData.UID}}
 		</a>
 		{{/sessionData}}

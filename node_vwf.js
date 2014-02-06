@@ -182,7 +182,7 @@ function startVWF(){
 
 		DAL.startup(function(){
 			
-			global.sessions = [];
+			
 			global.adminUID = adminUID;
 			
 			//var srv = http.createServer(OnRequest).listen(port);
@@ -222,6 +222,7 @@ function startVWF(){
 			app.get('/adl/sandbox/help', Landing.help);
 			app.get('/adl/sandbox/help/:page([a-zA-Z]+)', Landing.help);
 			app.get('/adl/sandbox/world/:page([a-zA-Z0-9]+)', Landing.world);
+			app.get('/adl/sandbox/searchResults/:term([a-zA-Z0-9%]+)/:page([0-9]+)', Landing.searchResults);
 			app.get('/adl/sandbox', Landing.generalHandler);
 			app.get('/adl/sandbox/:page([a-zA-Z/]+)', Landing.generalHandler);		
 			

@@ -1,0 +1,83 @@
+<script type="text/javascript">
+	
+	$(document).ready(function()
+	{	
+		ko.applyBindings(vwfPortalModel);
+		$('#form').submit( function(o, e){
+		
+			var terms =  $('#txtTerms').val();
+			window.location = '{{root}}/searchResults/' + terms +'/0'; 
+			o.preventDefault();
+		});
+	});	
+	
+</script>
+<style>
+
+.searchresult{
+display: inline-block;
+width: 200px;
+height: 150px;
+}
+.searchresult img{
+width: 180px;
+height: 93px;
+border-radius: 5px;
+box-shadow: 0px 0px 5px #DDD;
+}	
+.worldtitle{
+	font-family: sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+}
+.count{
+	font-size: 10px;
+font-weight: bold;
+color: lightgray;
+}
+</style>
+<div id='content' class="row">
+	<div class="col-md-5" style="margin:10px auto;float:none;text-align:center;">
+		
+		
+		<legend style="padding-bottom:5px;">{{total}} Results for "{{search}}"</legend>
+		
+		<div id='results' style="margin-left: -200px;margin-right: -200px;">
+		{{#results}}
+			
+			<div class='searchresult'>
+			<a href = '{{root}}/world/{{shortid}}'>
+			<div class='worldtitle'> {{title}} </div>
+			<div> <img src="./vwfdatamanager.svc/thumbnail?SID={{id}}" onerror = "this.src = '/adl/sandbox/img/thumbnotfound.png'"></img> </div>
+			</a>
+			</div>
+		{{/results}}
+		
+		</div>		
+		
+		
+		
+
+		{{#hadprev}}<a href='./{{previous}}' class='' style="margin-right: 497px"  value="" >< previous</a><span style="margin-left:0em" />{{/hadprev}}
+		{{#next}}<a href='./{{next}}' class='' style=""  value="" >next ></a><span style="margin-left:0em" />{{/next}}
+		
+{{#total}}
+			<div class='count' >{{start}} - {{end}} of {{total}}</div>
+		{{/total}}
+		
+
+		<form id='form'>
+			<fieldset>
+				<div class="col-md-10" style="margin:0 auto;float:none;">
+					<input type='text' id='txtTerms' placeholder='Search terms' class="form-control"/><br/>
+					<input type="submit" class='btn btn-default' style="float:right;" id='submitBtn' value="Search"/><br/>
+					<p class="help-block" style="width:100%;margin-top:20px;" data-bind="visible:errorText,text:errorText"></p>
+				</div>
+				<legend style="padding-bottom:5px;"></legend>
+			</fieldset>
+			
+		</form>
+		{{^sessionData}}<a href='../../login?return=search' class='' style=""  value="" >Log in</a><span style="margin-left:0em" />{{/sessionData}}   
+		{{#sessionData}}<a href='../../create' class='' style=""  value="" >Create World</a><span style="margin-left:0em" />{{/sessionData}}   
+	</div>
+</div>

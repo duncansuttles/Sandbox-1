@@ -95,17 +95,9 @@ exports.new = function(DBTablePath,cb)
         var Datastore = require('nedb');
         DB = new Datastore({ filename: DBTablePath, autoload: false });
         
-
         DB.loadDatabase(function (err) {    // Callback is optional
- 
-        cb(proxy);
-   
-
-
-
-});
-
-     
+             cb(proxy);
+        });
         
         return proxy;
 }

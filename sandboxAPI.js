@@ -17,6 +17,7 @@ var CheckPassword = passwordUtils.CheckPassword;
 var SiteLogin = passwordUtils.SiteLogin;
 var SiteLogout = passwordUtils.SiteLogout;
 var UpdatePassword = passwordUtils.UpdatePassword;
+var sessions = require('./sessions');
 // default path to data. over written by setup flags
 
 //generate a random id.
@@ -1128,54 +1129,7 @@ function getState(SID)
 	return null;
 }  
 
-//find the session data for a request
-function GetSessionData(request,cb)
-{
-  //request should contain the session ID in the cookie header
-  if(!request.headers['cookie'])
-	return null;
-	
-  //extract our session ID from the header	
-  cookies = {};
-  var cookielist = request.headers.cookie.split(';');
-  
-  for(var i = 0; i < cookielist.length; i++)
-  {
-	var parts = cookielist[i].split('=');
-    cookies[parts[0].trim()] = (parts[1] || '').trim();
-  }
 
-  var SessionID = cookies.session;
-  
-  //if there is no session ID, return ull
-  if(!SessionID) return null;
-  global.log(SessionID,3);
-  for(var i in global.sessions)
-  {	
-	//find the session record for this ID
-	if(global.sessions[i].sessionId == SessionID)
-	{	
-		var now = (new Date()) ;
-		//if it's been more than 1 hour, and the user has no open socket connections, log out
-		if(now- global.sessions[i].lastUpdate > 3600 * 1000 && Object.keys(global.sessions[i].clients).length == 0)
-		{
-			global.log('session expired for ' + global.sessions[i].UID,3);
-			delete global.sessions[i];
-			cb(null);
-			return;
-
-		}else   //reset the clock
-		{
-			global.log('Reset session for ' + global.sessions[i].UID,3);
-			global.sessions[i].lastUpdate = now;
-		}
-		cb(global.sessions[i]);
-		return;
-	}
-  }
-  cb(null);
-  return;
-}
 
 function Salt(URL,response)
 {	
@@ -1267,7 +1221,7 @@ function serve (request, response)
 	command = command.toLowerCase();
 	
 	//Load the session data
-   GetSessionData(request,function(__session)
+   sessions.GetSessionData(request,function(__session)
    {
 
    			URL.loginData = __session;
@@ -1551,7 +1505,7 @@ function serve (request, response)
 
 exports.serve = serve;
 exports.getState = getState;
-exports.getSessionData = GetSessionData;
+
 exports.setDataPath = function(p)
 {
 	p = libpath.resolve(p);
