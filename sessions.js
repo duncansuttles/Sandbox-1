@@ -32,7 +32,10 @@ exports.GetSessionData = function(request,cb)
 {
   //request should contain the session ID in the cookie header
   if(!request.headers['cookie'])
-	return null;
+  {
+	cb();
+  return null;
+}
 	
   //extract our session ID from the header	
   cookies = {};
@@ -47,7 +50,8 @@ exports.GetSessionData = function(request,cb)
   var SessionID = cookies.session;
   
   //if there is no session ID, return ull
-  if(!SessionID) return null;
+  if(!SessionID){
+  cb(); return null}
   global.log(SessionID,3);
  	
 	var thissession = this.getSessionByID(SessionID);
