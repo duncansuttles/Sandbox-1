@@ -7,7 +7,8 @@ require('./hash.js');
 var mkdirp = require('mkdirp');
 var datapath = '';
 
-var DBTablePath = libpath.sep+'users.db';
+//NOTE: upgrade your database! if your db is users.db and not users.nedb, you need to run the upgrade_db script!
+var DBTablePath = libpath.sep+'users.nedb';
 
 var DB = '';
 var safePathRE = RegExp('/\//'+(libpath.sep=='/' ? '\/' : '\\')+'/g');
@@ -1465,7 +1466,7 @@ function startup(callback)
 		function(cb)
 		{
 
-			require('./DB.js').new(DBTablePath, function (_DB) {
+			require('./DB_nedb.js').new(DBTablePath, function (_DB) {
 				DB = _DB;
 				cb();		
 			});

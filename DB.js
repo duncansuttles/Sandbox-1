@@ -27,6 +27,10 @@ exports.new = function(DBTablePath,cb)
             {
                 DB.remove(key,cb);
             },
+            all : function(cb)
+            {
+                DB.all(cb);
+            },
             listAppend:function(listKey,value,cb)
             {
                 var self = this;
