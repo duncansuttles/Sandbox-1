@@ -183,6 +183,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 			for(var i in allinstances)
 			{
 				var inst = allinstances[i];
+				if(!inst) continue;
 				inst.id = i;
 				inst.shortid = i.substr(13,16)
 				if(inst.title.toLowerCase().indexOf(search) != -1 || inst.description.toLowerCase().indexOf(search) != -1 || inst.owner.toLowerCase().indexOf(search) != -1 || inst.shortid.toLowerCase().indexOf(search) != -1)
@@ -199,6 +200,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 			for(var i in allinstances)
 			{
 				var inst = allinstances[i];
+				if(!inst) continue;
 				inst.id = i;
 				inst.shortid = i.substr(13,16)
 				if(inst.owner == sessionData.UID)
@@ -214,6 +216,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 			for(var i in allinstances)
 			{
 				var inst = allinstances[i];
+				if(!inst) continue;
 				inst.id = i;
 				inst.shortid = i.substr(13,16)
 				if(inst.featured)
@@ -230,6 +233,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 			for(var i in allinstances)
 			{
 				var inst = allinstances[i];
+				if(!inst) continue;
 				inst.id = i;
 				inst.shortid = i.substr(13,16)				
 				results.push(inst);
@@ -244,6 +248,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 			for(var i in allinstances)
 			{
 				var inst = allinstances[i];
+				if(!inst) continue;
 				inst.id = i;
 				inst.shortid = i.substr(13,16)				
 				results.push(inst);
