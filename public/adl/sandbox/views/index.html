@@ -3,8 +3,8 @@
 	<div class="row" style="margin-top:15px;">
 	<div class="col-md-12" style = "height: 82px;">
 		{{^sessionData}}<a class="col-md-3 ActionButton" href="./signup?return=./"><div class="ActionButtonlabel">Sign Up</div> <div class="ActionButtonsmalllabel">Create a new user account</div></a>{{/sessionData}}
-		<a class="col-md-3 ActionButton" {{#sessionData}} style="width:31%" href="./create" {{/sessionData}} {{^sessionData}} href="./signup?return=create" {{/sessionData}} ><div class="ActionButtonlabel">Create</div><div class="ActionButtonsmalllabel">Build a world, or copy an existing one</div></a>
-		<a class="col-md-3 ActionButton" {{#sessionData}} style="width:31%" {{/sessionData}} href="./worlds"><div class="ActionButtonlabel">Explore</div><div class="ActionButtonsmalllabel">Browse all public worlds</div></a>
+		<a class="col-md-3 ActionButton" {{#sessionData}} style="width:31%" href="./createNew/0" {{/sessionData}} {{^sessionData}} href="./signup?return=createNew/0" {{/sessionData}} ><div class="ActionButtonlabel">Create</div><div class="ActionButtonsmalllabel">Build a world, or copy an existing one</div></a>
+		<a class="col-md-3 ActionButton" {{#sessionData}} style="width:31%" {{/sessionData}} href="./featuredWorlds/0"><div class="ActionButtonlabel">Explore</div><div class="ActionButtonsmalllabel">Browse all public worlds</div></a>
 		<a class="col-md-3 ActionButton" {{#sessionData}} style="width:31%" {{/sessionData}} href="https://github.com/adlnet/Sandbox"><div class="ActionButtonlabel">Contribute</div><div class="ActionButtonsmalllabel">Edit the code or report a bug</div></a>
 	</div>
 		<div class="col-md-12">

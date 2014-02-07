@@ -34,7 +34,13 @@ define(
 				return;
 			}
 
-				jQuery.ajax(
+			window.setTimeout(function(){
+							$('#SetThumbnail').click();
+
+						},10000)
+
+			//im tired of looking at all these blank thumbs. Lets snapshot every time, instead of just once
+			/*	jQuery.ajax(
 				{
 					type: 'GET',
 					url: './vwfDataManager.svc/thumbnail?SID='+_DataManager.getCurrentSession().replace(/\//g,'_'),
@@ -45,15 +51,12 @@ define(
 					},
 					error:function(xhr,status,err)
 					{
-						window.setTimeout(function(){
-							$('#SetThumbnail').click();
-
-						},10000)
+						
 						
 						
 					},
 					dataType: "text"
-				});	
+				});	*/
 
 
 

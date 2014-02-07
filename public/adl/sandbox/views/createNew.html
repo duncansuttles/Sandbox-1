@@ -117,7 +117,11 @@ $(document).ready(function()
 		i++;
 
 	})
+	$('#dontsee').click(function(){
 
+		alertify.alert('You can make a copy of any world, and start building from there. Find the world you want, and use the "clone" option. That will create a new world with the world you selected as a template. The worlds below are listed simply as a suggestion');
+
+	})
 
 });
 
@@ -125,30 +129,13 @@ $(document).ready(function()
 <div id='content' class="row">
 	<div class="col-md-5" style="margin:10px auto;float:none;text-align:center;">
 		
-		{{#search}}
-		<legend style="padding-bottom:5px;">{{total}} Results for "{{searchterm}}"</legend>
-		{{/search}}
-
-		{{#my}}
-		<legend style="padding-bottom:5px;">All These {{total}} Worlds are Yours</legend>
-		{{/my}}
-
-		{{#all}}
-		<legend style="padding-bottom:5px;">All Worlds</legend>
-		{{/all}}
-
-		{{#featured}}
-		<legend style="padding-bottom:5px;">Featured Worlds</legend>
-		{{/featured}}
-
-		{{#new}}
-		<legend style="padding-bottom:5px;">Newest Worlds</legend>
-		{{/new}}
+		<legend style="padding-bottom:5px;">Choose A Template</legend>
+		
 		<div id='results' >
 		{{#results}}
 			
 			<div class='searchresult'>
-			<a href = '{{root}}/world/{{shortid}}'>
+			<a href = '{{root}}/createNew2/{{shortid}}'>
 			<div class='worldtitle'> {{title}} </div>
 			<div> <img src="./vwfdatamanager.svc/thumbnail?SID={{id}}" onerror = "this.src = '/adl/sandbox/img/thumbnotfound.png'"></img> </div>
 			</a>
@@ -163,47 +150,15 @@ $(document).ready(function()
 		{{#hadprev}}<a href='./{{previous}}' class='' style="margin-right: 497px"  value="" >< previous</a><span style="margin-left:0em" />{{/hadprev}}
 		{{#next}}<a href='./{{next}}' class='' style=""  value="" >next ></a><span style="margin-left:0em" />{{/next}}
 		
-		{{#search}}
+		
 		{{#total}}
 			<div class='count' >{{start}} - {{end}} of {{total}}</div>
 		{{/total}}
-		{{/search}}
+		
 
-		{{#all}}
-		{{#total}}
-			<div class='count' >{{start}} - {{end}} of {{total}}</div>
-		{{/total}}
-		{{/all}}
-
-		{{#my}}
-		{{#total}}
-			<div class='count' >{{start}} - {{end}} of {{total}}</div>
-		{{/total}}
-		{{/my}}
-
-		{{#featured}}
-		{{#total}}
-			<div class='count' >{{start}} - {{end}} of {{total}}</div>
-		{{/total}}
-		{{/featured}}
-
-		<form id='form'>
-			<fieldset>
-				<div class="col-md-10" style="margin:0 auto;float:none;">
-					<input type='text' id='txtTerms' placeholder='Search terms' class="form-control" style="display:inline-block;width:80%"/>
-					<input type="submit" class='btn btn-default' style="float:right;" id='submitBtn' style="padding: 6px;display:inline-block;width:20%" value="Search"/><br/><br/>
-					<p class="help-block" style="width:100%;margin-top:20px;" data-bind="visible:errorText,text:errorText"></p>
-				</div>
-				<legend style="padding-bottom:5px;"></legend>
-			</fieldset>
-			
-		</form>
-		<a href='{{root}}/featuredWorlds/0' class='' style=""  value="" >Featured</a><span style="margin-left:2em" />
-		<a href='{{root}}/allWorlds/0' class='' style=""  value="" >All Worlds</a><span style="margin-left:2em" />
-		{{#sessionData}}<a href='{{root}}/myWorlds/0' class='' style=""  value="" >My Worlds</a><span style="margin-left:2em" />{{/sessionData}}   
-		<a href='{{root}}/newWorlds/' class='' style=""  value="" >New Worlds</a><span style="margin-left:2em" />
-		{{#sessionData}}<a href='{{root}}/createNew/0' class='' style=""  value="" >Create</a><span style="margin-left:2em" />{{/sessionData}}   
-		<a href='{{root}}/search' class='' style=""  value="" >Search</a><span style="margin-left:0em" />
+		<div style='color: lightgray;' >Your new world will start off as a copy of the template.</div><br/>
+		<a href='{{root}}/createNew2/noTemplate' class='' style=""  value="" >No template, please</a><span style="margin-left:2em" />
+		<a id='dontsee' class='' style=""  value="" >I don't see the template I need</a><span style="margin-left:0em" />
 		   
 	</div>
 </div>

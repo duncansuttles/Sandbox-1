@@ -103,9 +103,9 @@ exports.ResetPassword = function(username,response)
 		console.log('User '+username+' reset password to ' + newPassword);
 		DAL.updateUser(username,data,function()
 		{
-			mailTools.sendMail(user1.Email,"Password Reset Notice","Your password for the Sandbox has been reset. Your new password is '" +newPassword+ "'. You must reset your password next time you log in. This temporary password is valid for 1 day, after which you may log in with your normal password, or request a new temporary password. If you did not request that your password be reset, you can still log in with your old password. In this case, we recommend you change your password as a precaution. ","",function()
-			{}
-			);
+			mailTools.resetPasswordMail(user1.Email,newPassword);
+			
+			
 			if(response)
 			{
 				respond(response,200,"");

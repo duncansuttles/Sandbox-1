@@ -228,7 +228,9 @@ function startVWF(){
 			app.get('/adl/sandbox/myWorlds/:page([0-9]+)', Landing.myWorlds);
 			app.get('/adl/sandbox/featuredWorlds/:page([0-9]+)', Landing.featuredWorlds);
 			app.get('/adl/sandbox', Landing.generalHandler);
-			app.get('/adl/sandbox/:page([a-zA-Z/]+)', Landing.generalHandler);		
+			app.get('/adl/sandbox/:page([a-zA-Z/]+)', Landing.generalHandler);
+			app.get('/adl/sandbox/createNew/:page([0-9/]+)', Landing.createNew);		
+			app.get('/adl/sandbox/createNew2/:template([a-zA-Z0-9/]+)', Landing.createNew2);		
 			
 			app.post('/adl/sandbox/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
 			app.post('/adl/sandbox/data/:action([a-zA-Z_]+)', Landing.handlePostRequest);

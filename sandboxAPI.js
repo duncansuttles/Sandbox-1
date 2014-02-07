@@ -18,6 +18,7 @@ var SiteLogin = passwordUtils.SiteLogin;
 var SiteLogout = passwordUtils.SiteLogout;
 var UpdatePassword = passwordUtils.UpdatePassword;
 var sessions = require('./sessions');
+var mailTools = require('./mailTools');
 // default path to data. over written by setup flags
 
 //generate a random id.
@@ -466,7 +467,10 @@ function CreateProfile(URL,data,response)
 	DAL.createUser(URL.query.UID,data,function(ok,err)
 	{
 		if(ok)
+		{
 			respond(response,200,'');
+			mailTools.newUser(URL.query.UID,data.Email);
+		}
 		else
 			respond(response,500,err);
 		return;
@@ -629,7 +633,11 @@ function CopyInstance(URL, SID, response){
 	
 	DAL.copyInstance(SID, URL.loginData.UID, function(newId){
 	
-		if(newId) respond(response, 200, newId);
+		if(newId) 
+		{
+			respond(response, 200, newId);
+			mailTools.newWorld(URL.loginData.UID,"copy",SID);
+		}
 		else respond(response, 500, 'Error in trying to copy world');
 	});
 }
@@ -1111,6 +1119,7 @@ function createState(URL,data,response)
 	DAL.createInstance(id,statedata,function()
 	{
 		respond(response,200,'Created state ' + id);
+		mailTools.newWorld(URL.loginData.UID,data.title,id);
 	});
 }
 //Just return the state data, dont serve a response
