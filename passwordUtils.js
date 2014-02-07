@@ -88,7 +88,7 @@ exports.ResetPassword = function(username,response)
 		var newPassword = GenerateTempPassword();
 		var clientHash = self.EncryptPassword(newPassword,username,user1.Salt);
 		console.log(clientHash);
-		var serverHash = hash.Hash(clientHash);
+		var serverHash = Hash(clientHash);
 		console.log(serverHash);
 		var data = {};
 		
