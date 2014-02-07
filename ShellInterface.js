@@ -421,6 +421,11 @@ function StartShellInterface()
 			console.log(global.logLevel,0);
 		}
 		
+		if(commands[0] && commands[0] == 'hash' )
+		{
+			console.log(require('./passwordUtils.js').EncryptPassword('Rob','Rob','Salt'));
+		}
+		
 		
 		
 		
