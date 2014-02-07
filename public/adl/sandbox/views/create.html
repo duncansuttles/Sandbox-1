@@ -93,6 +93,7 @@
 					for(var i in data)
 					{
 						var state = data[i];
+						if(!state) continue;
 						data[i].id = i;
 						if(state.featured)
 						{
