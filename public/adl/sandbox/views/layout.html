@@ -133,10 +133,10 @@
 					<a class="headerA" href="{{root}}/user" id="userOptions" data-bind="text: user().username"></a>
 				</div>
 				<div id="login">
-					{{^sessionData}}<a class="headerA" href="{{root}}/login?return=worlds"  id="login"  >Login</a>{{/sessionData}}
+					{{^sessionData}}<a class="headerA" href="{{root}}/login?return=featuredWorlds/0"  id="login"  >Login</a>{{/sessionData}}
 					{{#sessionData}}<a class="headerA" href="{{root}}/user"  id="user"  >Account</a>
 					<a class="headerA" href="{{root}}/logout?return=index" id="logout" >Logout</a>{{/sessionData}}
-					{{^sessionData}}<a class="headerA" href="{{root}}/signup?return=worlds" id="signup" >Create Account</a>{{/sessionData}}
+					{{^sessionData}}<a class="headerA" href="{{root}}/signup?return=featuredWorlds/0" id="signup" >Create Account</a>{{/sessionData}}
 				</div>
 			</div>
 		</div>		
