@@ -787,6 +787,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 {
                     var ps = threeObject;
                     var particles = ps.geometry;
+                    if(propertyValue == 'quaternion') return;
                     ps[propertyName] = propertyValue;
                     
                     
