@@ -1642,6 +1642,7 @@ THREE.Object3D.prototype.GetBoundingBox = function(local)
 		box = box.transformBy(this.getLocalMatrix());
 	return box;
 }
+THREE.Object3D.prototype.getBoundingBox = THREE.Object3D.prototype.GetBoundingBox;
 //Should I ignore this? true for yes
 THREE.Object3D.prototype.ignoreTest =function(ignore)
 {
