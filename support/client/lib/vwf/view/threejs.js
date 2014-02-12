@@ -456,8 +456,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     if(propertyName == 'enableShadows')
                     {
                         //debugger;
-                        var sceneNode = this.state.scenes[nodeID];
-                        sceneNode.renderer.shadowMapEnabled = propertyValue;
+                       // var sceneNode = this.state.scenes[nodeID];
+                       // sceneNode.renderer.shadowMapEnabled = propertyValue;
                     }
 					if(propertyName == 'fogType')
 					{
@@ -730,6 +730,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			now = ( window.performance !== undefined && window.performance.now !== undefined ) ? window.performance.now() : time;
 			
 			timepassed = now - sceneNode.lastTime;
+
 			window.deltaTime = timepassed;
 			if(_SceneManager)
 				_SceneManager.update(timepassed);
@@ -830,9 +831,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			vpargs[0] = vp.slice(0);
 
 			self.trigger('postprerender',vpargs);
-			renderer.render(backgroundScene,cam);
+		//	renderer.render(backgroundScene,cam);
 			
-			renderer.clear(false,true,false);
+		//	renderer.clear(true,true,false);
 			
 			//use this for drawing really really far. Not usually necessary
 			//cam.near = cam.far - (cam.far - cam.near)/100.0;
@@ -993,14 +994,16 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             window.onresize = function () {
                 var origWidth = self.width;
                 var origHeight = self.height;
-                if ( window && window.innerHeight ) self.height = window.innerHeight - 20;
-                if ( window && window.innerWidth ) self.width = window.innerWidth - 20;
+                if ( window && window.innerHeight ) self.height = window.innerHeight;
+                if ( window && window.innerWidth ) self.width = window.innerWidth;
+
+                var resolutionScale = _SettingsManager.getKey('resolutionScale');
 
                 if ((origWidth != self.width) || (origHeight != self.height)) {
-                    mycanvas.height = self.height;
-                    mycanvas.width = self.width;
-                    sceneNode.renderer.setViewport(0,0,window.innerWidth,window.innerHeight)
-                    sceneNode.renderer.setSize($('#index-vwf').width(),$('#index-vwf').height());
+                    mycanvas.height = self.height/resolutionScale;
+                    mycanvas.width = self.width/resolutionScale;
+                    sceneNode.renderer.setViewport(0,0,window.innerWidth/resolutionScale,window.innerHeight/resolutionScale)
+                    sceneNode.renderer.setSize($('#index-vwf').width()/resolutionScale,$('#index-vwf').height()/resolutionScale);
 					self.getCamera().aspect =  mycanvas.width / mycanvas.height;
 					self.getCamera().updateProjectionMatrix()
                    
@@ -1014,14 +1017,14 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				sceneNode.renderer.autoUpdateScene = false;
 				sceneNode.renderer.setSize($('#index-vwf').width(),$('#index-vwf').height());
 				
-				sceneNode.renderer.shadowMapEnabled = true;
-				sceneNode.renderer.shadowMapType = THREE.PCFSoftShadowMap;
-
+				
 				if(_SettingsManager.getKey('shadows'))
 				{
 					
+					
 				}
-
+				sceneNode.renderer.shadowMapType = THREE.PCFSoftShadowMap;
+				sceneNode.renderer.shadowMapEnabled = true;
 				sceneNode.renderer.autoClear = false;
 				sceneNode.renderer.setClearColor({r:1,g:1,b:1},1.0);
             }else

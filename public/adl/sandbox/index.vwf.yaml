@@ -231,7 +231,7 @@ scripts:
        findcamera().fov = 70;
        findcamera().updateProjectionMatrix();
        var ground = new THREE.Mesh(new THREE.PlaneGeometry(256,256,10,10), new THREE.MeshPhongMaterial());
-       ground.receiveShadow = true;
+       ground.receiveShadow = _SettingsManager.getKey('shadows');
        ground.PickPriority = -1;
        
        
@@ -254,7 +254,7 @@ scripts:
        var l = new THREE.DirectionalLight();
        this.sun = l;
        this.sun.name = 'Sun';
-       this.sun.castShadow = true;
+       this.sun.castShadow = _SettingsManager.getKey('shadows');
        this.sun.shadowCameraNear = 1;
        this.sun.shadowCameraFar = 100;
        //this.sun.shadowCameraVisible = true;
@@ -506,6 +506,7 @@ scripts:
                 });
             this.skymaterial.uniforms.texture.value = skyCubeTexture;    
             this.skymaterial.depthWrite = false;
+            this.skymaterial.transparent = true;
        }
        
        
@@ -516,11 +517,13 @@ scripts:
        {
            this.skycube = new THREE.Mesh(new THREE.CubeGeometry(1000,1000,1000), this.skymaterial);
            this.skycube.name = "SkyCube";
-           this.skycube.renderDepth = -1;
+           this.skycube.renderDepth = Infinity;
            this.skycube.InvisibleToCPUPick = false;
            this.skycube.depthWrite = false;
            this.skycube.depthCheck = false;
-           _dbackgroundScene.add(this.skycube);
+           this.skycube.castShadow = false;
+           this.skycube.receiveShadow = false;
+           findscene().add(this.skycube);
            window._dSky = this.skycube;
        }
         
@@ -1157,7 +1160,7 @@ scripts:
                     emit:{r:0,g:0,b:0},
                     reflect:0.8,
                     shadeless:false,
-                    shadow:true,
+                    shadow:_SettingsManager.getKey('shadows'),
                     specularColor:{r:0.5773502691896258,g:0.5773502691896258,b:0.5773502691896258},
                     specularLevel:1,
                     layers:[
