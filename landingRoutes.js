@@ -56,6 +56,29 @@ routesMap = {
 
 };
 
+
+exports.statsHandler = function(req, res, next){
+
+	sessions.GetSessionData(req,function(sessionData)
+	{
+		var allSessions = sessions.getAllSessions();
+		var instances = global.instances;
+		var allConnections = 0;
+		for(var i in instances)
+		{
+			allConnections += Object.keys(instances[i].clients).length;
+		}
+		DAL.getStats(function(states,users)
+		{
+			var instanceCount = Object.keys(instances);
+			res.locals = {instanceCount:instanceCount,states:states,users:users,allConnections:allConnections,sessions:allSessions,instances:instances || [],sessionData:sessionData,url:req.url,root:root};
+			res.render('stats',{layout:'plain'});
+
+		})
+		
+	})
+}
+
 exports.generalHandler = function(req, res, next){
 	
 	sessions.GetSessionData(req,function(sessionData)

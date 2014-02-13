@@ -26,7 +26,10 @@ function GUID()
 			S4() + S4() + S4()
 		);
 }
-
+exports.getAllSessions = function()
+{
+	return __Sessions;
+}
 //find the session data for a request
 exports.GetSessionData = function(request,cb)
 {

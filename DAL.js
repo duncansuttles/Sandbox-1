@@ -51,7 +51,20 @@ function GUID()
 function findInDB(obj, cb){
 	DB.find(obj, cb);
 }
-	
+function getStats(cb)
+{
+
+	DB.get('StateIndex',function(err,StateIndex)
+	{
+
+	DB.get('UserIndex',function(err,UserIndex)
+	{
+		cb(StateIndex,UserIndex);
+	})
+
+	});
+
+}
 function getUser (id,cb)
 {
 	getUsers(function(UserIndex){
@@ -1555,7 +1568,7 @@ function startup(callback)
 			DAL_Singleton.clearUsers = clearUsers;
 			DAL_Singleton.searchInventory = searchInventory;
 			DAL_Singleton.getHistory = getHistory;
-
+			DAL_Singleton.getStats = getStats;
 			callback();
 		}
 	]);	

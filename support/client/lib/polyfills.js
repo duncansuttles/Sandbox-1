@@ -10,6 +10,27 @@ function() { return(
 			this.websocket();
 			this.localStorage();
 			this.detectIE11();
+			this.escapeHTMLStrings();
+		},
+		escapeHTMLStrings:function()
+		{
+			var entityMap = {
+			    "&": "&amp;",
+			    "<": "&lt;",
+			    ">": "&gt;",
+			    '"': '&quot;',
+			    "'": '&#39;',
+			    "/": '&#x2F;'
+			  };
+
+			String.prototype.escape = function()
+			{
+
+				return this.replace(/[&<>"'\/]/g, function (s) {
+			      return entityMap[s];
+			    });
+			}
+
 		},
 		performanceNow:function()
 		{
