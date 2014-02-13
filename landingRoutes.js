@@ -70,7 +70,7 @@ exports.statsHandler = function(req, res, next){
 		}
 		DAL.getStats(function(states,users)
 		{
-			var instanceCount = Object.keys(instances);
+			var instanceCount = Object.keys(instances || {});
 			res.locals = {instanceCount:instanceCount,states:states,users:users,allConnections:allConnections,sessions:allSessions,instances:instances || [],sessionData:sessionData,url:req.url,root:root};
 			res.render('stats',{layout:'plain'});
 
