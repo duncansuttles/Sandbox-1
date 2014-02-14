@@ -82,7 +82,7 @@ function StartShellInterface()
 	var commands = [
 		{
 			'command': 'show instances',
-			'description': '',
+			'description': 'Lists active instances. Fails if run before any world loaded.',
 			'callback': function(commands){
 				var keys = Object.keys(global.instances);
 				for(var i in keys)
@@ -91,7 +91,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'show users',
-			'description': '',
+			'description': 'Lists all registered users',
 			'callback': function(commands){
 				DAL.getUsers(function(users)
 				{
@@ -101,7 +101,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'show user <username>',
-			'description': '',
+			'description': 'Prints the user profile for <username>',
 			'callback': function(commands){
 				
 				DAL.getUser( commands[2], function(users)
@@ -110,9 +110,9 @@ function StartShellInterface()
 				});
 			}
 		},
-		{
+		/*{
 			'command': 'show inventory <username>',
-			'description': '',
+			'description': 'List the contents of a user\'s inventory',
 			'callback': function(commands){
 				
 				DAL.getInventoryForUser(commands[2],function(inventory,key)
@@ -121,7 +121,7 @@ function StartShellInterface()
 					console.log(JSON.stringify(inventory));
 				});
 			}
-		},
+		},*/
 		{
 			'command': 'show inventorydisplay <arg>',
 			'description': '',
@@ -153,7 +153,7 @@ function StartShellInterface()
 				});
 			}
 		},
-		{
+		/*{
 			'command': 'show sessions',
 			'description': '',
 			'callback': function(commands){
@@ -161,10 +161,10 @@ function StartShellInterface()
 					console.log(global.sessions[i]);	
 				
 			}
-		},
+		},*/
 		{
 			'command': 'show states',
-			'description': '',
+			'description': 'Lists the metadata of all worlds',
 			'callback': function(commands){
 				DAL.getInstances(function(data)
 				{
@@ -175,7 +175,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'show state <state_id>',
-			'description': '',
+			'description': 'Prints the metadata for the given world of the format "_adl_sandbox_5By8Tq2RWWwgJ74W_"',
 			'callback': function(commands){
 				DAL.getInstance(commands[2],function(data)
 				{
@@ -185,7 +185,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'show clients',
-			'description': '',
+			'description': 'Lists the socket ids of connected clients',
 			'callback': function(commands){
 				for(var i in global.instances)
 				{
@@ -197,8 +197,8 @@ function StartShellInterface()
 			}
 		},
 		{
-			'command': 'show users',
-			'description': '',
+			'command': 'show active users',
+			'description': 'Lists the users logged into a world',
 			'callback': function(commands){
 				for(var i in global.instances)
 				{
@@ -217,7 +217,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'compact',
-			'description': '',
+			'description': 'Compact the database to remove overwritten data',
 			'callback': function(commands){
 				DAL.compactDatabase();
 				
@@ -225,28 +225,28 @@ function StartShellInterface()
 		},
 		{
 			'command': 'exec <command>',
-			'description': '',
+			'description': 'Run the given javascript on the server',
 			'callback': function(commands){
 				eval(commands[1]);
 			}
 		},
 		{
 			'command': 'import users',
-			'description': '',
+			'description': 'Scan the datadir for users not in the DB, and add them',
 			'callback': function(commands){
 				DAL.importUsers();
 			}
 		},
 		{
 			'command': 'import states',
-			'description': '',
+			'description': 'Scan the datadir for states not in the DB, and add them',
 			'callback': function(commands){
 				DAL.importStates();
 			}
 		},
 		{
 			'command': 'purge states',
-			'description': '',
+			'description': 'Scan the DB for states with no data in the datadir, and delete them',
 			'callback': function(commands){
 				DAL.purgeInstances();
 			}
@@ -295,7 +295,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'feature state <state_id>',
-			'description': '',
+			'description': 'Add a world to the Featured Worlds list',
 			'callback': function(commands){
 				DAL.updateInstance(commands[2],{featured:true},function()
 				{
@@ -305,8 +305,8 @@ function StartShellInterface()
 			}
 		},
 		{
-			'command': 'resetPassword <newpass>',
-			'description': '',
+			'command': 'resetPassword <username>',
+			'description': 'Generate temp password for user, and email it to them if configured',
 			'callback': function(commands){
 				console.log(commands[1]);
 				passwordUtils.ResetPassword(commands[1]);			
@@ -314,7 +314,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'unfeature state <state_id>',
-			'description': '',
+			'description': 'Remove a world from the Featured Worlds list',
 			'callback': function(commands){
 				DAL.updateInstance(commands[2],{featured:false},function()
 				{
@@ -345,7 +345,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'kick <username_or_state>',
-			'description': '',
+			'description': 'Forcibly disconnect a given user or all users in a world',
 			'callback': function(commands){
 				var name = commands[1];
 			
@@ -385,7 +385,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'message <username> <message>',
-			'description': '',
+			'description': 'Send a private message to a user (doesn\'t work)',
 			'callback': function(commands){
 				var name = commands[1];
 			
@@ -408,7 +408,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'broadcast <message>',
-			'description': '',
+			'description': 'Broadcast a message to all active worlds',
 			'callback': function(commands){
 				var name = commands[1];
 			
@@ -428,7 +428,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'delete user <username>',
-			'description': '',
+			'description': 'Delete the user with the given username',
 			'callback': function(commands){
 				DAL.deleteUser(commands[2],function(res){
 					
@@ -449,7 +449,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'clear users',
-			'description': '',
+			'description': 'Delete all users from the system',
 			'callback': function(commands){
 				DAL.clearUsers();
 			}
@@ -470,44 +470,41 @@ function StartShellInterface()
 		},
 		{
 			'command': 'create user <username>',
-			'description': '',
+			'description': 'Create a new user with no attributes',
 			'callback': function(commands){
 				DAL.createUser(commands[2],{username:commands[2],loginCount:0},function(res){
-					
 					console.log(res);
-				
 				});
 				
 			}
 		},
 		{
 			'command': 'create inventoryitem <username> <item_id>',
-			'description': '',
+			'description': 'Create a new empty inventory item',
 			'callback': function(commands){
 				DAL.addToInventory(commands[2],{title:commands[3],created:new Date()},{data:'test asset binary data'},function()
 				{
 				
 				});
-				
 			}
 		},
 		{
 			'command': 'loglevel',
-			'description': '',
+			'description': 'Retrieve the current logging level',
 			'callback': function(commands){
 				console.log(global.logLevel);
 			}
 		},
 		{
 			'command': 'setloglevel <level>',
-			'description': '',
+			'description': 'Set the current logging level',
 			'callback': function(commands){
 				global.logLevel = parseInt(commands[1]);
 			}
 		},
 		{
 			'command': 'test login <state_id> <num_bots>',
-			'description': '',
+			'description': 'Connect <num_bots> phantom clients to world <state_id>',
 			'callback': function(commands){
 				var name = commands[2];
 			
