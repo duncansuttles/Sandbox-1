@@ -123,8 +123,8 @@ function StartShellInterface()
 			}
 		},*/
 		{
-			'command': 'show inventorydisplay <arg>',
-			'description': '',
+			'command': 'show inventory <username>',
+			'description': 'Lists the inventory metadata for a given user',
 			'callback': function(commands){
 				DAL.getInventoryDisplayData(commands[2],function(data)
 				{
@@ -134,8 +134,8 @@ function StartShellInterface()
 			}
 		},
 		{
-			'command': 'show inventoryitem metadata <username> <item_id>',
-			'description': '',
+			'command': 'show inventoryitem metadata <username> <key>',
+			'description': 'Shows the metadata for a user\'s inventory item',
 			'callback': function(commands){
 				DAL.getInventoryItemMetaData(commands[3],commands[4],function(data)
 				{
@@ -144,8 +144,8 @@ function StartShellInterface()
 			}
 		},
 		{
-			'command': 'show inventoryitem assetdata <username> <item_id>',
-			'description': '',
+			'command': 'show inventoryitem assetdata <username> <key>',
+			'description': 'Shows the actual asset data for a user\'s inventory item',
 			'callback': function(commands){
 				DAL.getInventoryItemAssetData(commands[3],commands[4],function(data)
 				{
@@ -175,7 +175,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'show state <state_id>',
-			'description': 'Prints the metadata for the given world of the format "_adl_sandbox_5By8Tq2RWWwgJ74W_"',
+			'description': 'Prints the metadata for the given world',
 			'callback': function(commands){
 				DAL.getInstance(commands[2],function(data)
 				{
@@ -217,7 +217,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'compact',
-			'description': 'Compact the database to remove overwritten data',
+			'description': 'Compacts the database to remove obsolete data',
 			'callback': function(commands){
 				DAL.compactDatabase();
 				
@@ -225,33 +225,33 @@ function StartShellInterface()
 		},
 		{
 			'command': 'exec <command>',
-			'description': 'Run the given javascript on the server',
+			'description': 'Runs the given javascript on the server',
 			'callback': function(commands){
 				eval(commands[1]);
 			}
 		},
 		{
 			'command': 'import users',
-			'description': 'Scan the datadir for users not in the DB, and add them',
+			'description': 'Scans the datadir for users not in the DB, and adds them',
 			'callback': function(commands){
 				DAL.importUsers();
 			}
 		},
 		{
 			'command': 'import states',
-			'description': 'Scan the datadir for states not in the DB, and add them',
+			'description': 'Scans the datadir for states not in the DB, and adds them',
 			'callback': function(commands){
 				DAL.importStates();
 			}
 		},
 		{
 			'command': 'purge states',
-			'description': 'Scan the DB for states with no data in the datadir, and delete them',
+			'description': 'Scans the DB for states with no data in the datadir, and deletes them',
 			'callback': function(commands){
 				DAL.purgeInstances();
 			}
 		},
-		{
+		/*{
 			'command': 'find state <arg1> <arg2>',
 			'description': '',
 			'callback': function(commands){
@@ -262,10 +262,10 @@ function StartShellInterface()
 					console.log(results);
 				});
 			}
-		},
+		},*/
 		{
-			'command': 'update inventoryitem metadata <username> <item_id> <newdata>',
-			'description': '',
+			'command': 'update inventoryitem metadata <username> <key> <newdata>',
+			'description': 'Overwrites the inventory item\'s metadata with the given data',
 			'callback': function(commands){
 				DAL.updateInventoryItemMetadata(commands[3],commands[4],JSON.parse(commands[5].replace(/'/g,'"')),function()
 				{
@@ -275,7 +275,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'update user <username> <newdata>',
-			'description': '',
+			'description': 'Overwrites the user\'s data with the given data',
 			'callback': function(commands){
 				DAL.updateUser(commands[2],JSON.parse(commands[3].replace(/'/g,'"')),function()
 				{
@@ -285,7 +285,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'update state <state_id> <newdata>',
-			'description': '',
+			'description': 'Overwrites the existing state data with the given data',
 			'callback': function(commands){
 				DAL.updateInstance(commands[2],JSON.parse(commands[3].replace(/'/g,'"')),function()
 				{
@@ -295,7 +295,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'feature state <state_id>',
-			'description': 'Add a world to the Featured Worlds list',
+			'description': 'Adds a world to the Featured Worlds list',
 			'callback': function(commands){
 				DAL.updateInstance(commands[2],{featured:true},function()
 				{
@@ -306,7 +306,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'resetPassword <username>',
-			'description': 'Generate temp password for user, and email it to them if configured',
+			'description': 'Generates a temp password for a user, and emails it to them if configured',
 			'callback': function(commands){
 				console.log(commands[1]);
 				passwordUtils.ResetPassword(commands[1]);			
@@ -314,7 +314,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'unfeature state <state_id>',
-			'description': 'Remove a world from the Featured Worlds list',
+			'description': 'Removes a world from the Featured Worlds list',
 			'callback': function(commands){
 				DAL.updateInstance(commands[2],{featured:false},function()
 				{
@@ -322,7 +322,7 @@ function StartShellInterface()
 				});
 			}
 		},
-		{
+		/*{
 			'command': 'search inventory <arg1> <arg2>',
 			'description': '',
 			'callback': function(commands){
@@ -342,10 +342,10 @@ function StartShellInterface()
 				});
 				
 			}
-		},
+		},*/
 		{
 			'command': 'kick <username_or_state>',
-			'description': 'Forcibly disconnect a given user or all users in a world',
+			'description': 'Forcibly disconnects a given user or all users in a world',
 			'callback': function(commands){
 				var name = commands[1];
 			
@@ -385,7 +385,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'message <username> <message>',
-			'description': 'Send a private message to a user (doesn\'t work)',
+			'description': 'Sends a private message to a user (doesn\'t work)',
 			'callback': function(commands){
 				var name = commands[1];
 			
@@ -408,7 +408,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'broadcast <message>',
-			'description': 'Broadcast a message to all active worlds',
+			'description': 'Broadcasts a message to all active worlds',
 			'callback': function(commands){
 				var name = commands[1];
 			
@@ -428,7 +428,7 @@ function StartShellInterface()
 		},
 		{
 			'command': 'delete user <username>',
-			'description': 'Delete the user with the given username',
+			'description': 'Deletes the user with the given username',
 			'callback': function(commands){
 				DAL.deleteUser(commands[2],function(res){
 					
@@ -438,8 +438,8 @@ function StartShellInterface()
 			}
 		},
 		{
-			'command': 'delete inventoryitem <username> <item_id>',
-			'description': '',
+			'command': 'delete inventoryitem <username> <key>',
+			'description': 'Removes the inventory item with the given owner and key',
 			'callback': function(commands){
 				DAL.deleteInventoryItem(commands[2],commands[3],function()
 				{
@@ -449,28 +449,28 @@ function StartShellInterface()
 		},
 		{
 			'command': 'clear users',
-			'description': 'Delete all users from the system',
+			'description': 'Deletes all users from the system',
 			'callback': function(commands){
 				DAL.clearUsers();
 			}
 		},
-		{
+		/*{
 			'command': 'clear inventoryitem',
 			'description': '',
 			'callback': function(commands){
 				DAL.clearStates();
 			}
-		},
+		},*/
 		{
 			'command': 'clear cache',
-			'description': '',
+			'description': 'Empties the server-side file cache',
 			'callback': function(commands){
 				global.FileCache.clear();
 			}
 		},
 		{
 			'command': 'create user <username>',
-			'description': 'Create a new user with no attributes',
+			'description': 'Creates a new user with no attributes',
 			'callback': function(commands){
 				DAL.createUser(commands[2],{username:commands[2],loginCount:0},function(res){
 					console.log(res);
@@ -479,8 +479,8 @@ function StartShellInterface()
 			}
 		},
 		{
-			'command': 'create inventoryitem <username> <item_id>',
-			'description': 'Create a new empty inventory item',
+			'command': 'create inventoryitem <username> <key>',
+			'description': 'Creates a new empty inventory item',
 			'callback': function(commands){
 				DAL.addToInventory(commands[2],{title:commands[3],created:new Date()},{data:'test asset binary data'},function()
 				{
@@ -490,21 +490,21 @@ function StartShellInterface()
 		},
 		{
 			'command': 'loglevel',
-			'description': 'Retrieve the current logging level',
+			'description': 'Retrieves the current logging level',
 			'callback': function(commands){
 				console.log(global.logLevel);
 			}
 		},
 		{
 			'command': 'setloglevel <level>',
-			'description': 'Set the current logging level',
+			'description': 'Sets the current logging level',
 			'callback': function(commands){
 				global.logLevel = parseInt(commands[1]);
 			}
 		},
 		{
 			'command': 'test login <state_id> <num_bots>',
-			'description': 'Connect <num_bots> phantom clients to world <state_id>',
+			'description': 'Connects <num_bots> phantom clients to a given world',
 			'callback': function(commands){
 				var name = commands[2];
 			
@@ -566,6 +566,8 @@ function StartShellInterface()
 		// help
 		if( CheckMatch('help', cmd) ){
 			console.log('Available commands:');
+			console.log('NOTE: State IDs are of the form _adl_sandbox_uAId89a1xnE3DJXU_');
+			console.log();
 			console.log('help - Show this message');
 			console.log('exit - Shut down the server');
 			for(var i=0; i<commands.length; i++)
