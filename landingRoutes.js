@@ -31,7 +31,7 @@ exports.setDocumentation = function(cs){
 		doc = cs.documentation;
 };
 
-exports.acceptedRoutes = ['createNew','welcome','search','forgotPassword','editProfile','updatepassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
+exports.acceptedRoutes = ['createNew','welcome','search','forgotPassword','editProfile','updatePassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
 routesMap = {
 	'sandbox': {template:'index'},
 	'home': {template:'index'},
@@ -48,7 +48,7 @@ routesMap = {
 	'logout': {layout:'plain',requiresLogin:true},
 	'login': {layout:'plain'},
 	'signup': {layout:'plain'},
-	'updatepassword': {layout:'plain',requiresLogin:true},
+	'updatePassword': {layout:'plain',requiresLogin:true},
 	'editProfile': {layout:'plain',requiresLogin:true},
 	'forgotPassword': {layout:'plain'},
 	'search': {layout:'plain'},
@@ -102,7 +102,7 @@ exports.generalHandler = function(req, res, next){
 				//if someone has a temp password, they must reset it
 				if(sessionData && sessionData.PasswordIsTemp)
 				{
-					currentAcceptedRoute = 'updatepassword';
+					currentAcceptedRoute = 'updatePassword';
 				}
 				if(user && !user.Email)
 				{
