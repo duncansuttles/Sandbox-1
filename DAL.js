@@ -282,7 +282,7 @@ function addToInventory(userID,data,assetdata,cb)
 	getInventoryForUser(userID,function(inventory,Ikey)
 	{
 		//save the data
-		DB.save(null,data,function(err,key)
+		DB.save(null,data,function(err,val,key)
 		{	
 			//save the inventory
 			DB.listAppend(Ikey,key,function(err)
@@ -403,7 +403,7 @@ function createUser (id,data,cb)
 			function(cb2){
 				
 				var inventory = [];
-				DB.save(null,inventory,function(err,key)
+				DB.save(null,inventory,function(err,val,key)
 				{
 					cb2(null,key);
 				});
