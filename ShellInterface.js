@@ -75,6 +75,30 @@ function StartShellInterface()
 	global.log('Starting shell interface',0);
 	rl = readline.createInterface(process.stdin, process.stdout);
 	rl.setPrompt('> ');
+
+	// the list of available commands
+	var commands = [
+		{
+			'command': 'show instances',
+			'description': '',
+			'callback': function(commands){
+				var keys = Object.keys(global.instances);
+				for(var i in keys)
+					console.log(keys[i]);
+			}
+		},
+		{
+			'command': 'show users',
+			'description': '',
+			'callback': function(commands){
+				DAL.getUsers(function(users)
+				{
+					console.log(users);
+				});
+			}
+		}
+	];
+
 	rl.prompt();
 
 	rl.on('line', function(line)
@@ -89,19 +113,31 @@ function StartShellInterface()
 			rl.prompt();
 			return;
 		}
-		console.log(cmd);
+		//console.log(cmd);
 
 		// start going through the options
 		
 		// help
 		if( CheckMatch('help', cmd) ){
 			console.log('Available commands:');
+			console.log('help - Show this message');
 			console.log('exit - Shut down the server');
+			for(var i=0; i<commands.length; i++)
+				console.log(commands[i].command,'-',commands[i].description);
 		}
 
 		// exit
 		else if( CheckMatch('exit', cmd) ){
 			rl.close();
+		}
+
+		// all other commands
+		else {
+			for(var i=0; i<commands.length; i++)
+			{
+				if(CheckMatch(commands[i].command,cmd))
+					commands[i].callback(cmd);
+			}
 		}
 		
 		rl.prompt();
@@ -126,20 +162,6 @@ function StartShellInterface()
 		
 		if(commands[0] && commands[0] == 'show' && commands[1])
 		{
-			if(commands[1] == 'instances')
-			{
-				
-				var keys = Object.keys(global.instances);
-				for(var i in keys)
-					global.log(keys[i],0);	
-			}
-			if(commands[1] == 'users')
-			{
-				DAL.getUsers(function(users)
-				{
-					global.log(users);
-				});
-			}
 			if(commands[1] == 'user')
 			{
 				DAL.getUser( commands[2], function(users)
