@@ -1333,9 +1333,9 @@ scripts:
         currentmat.emissive.g = value.emit.g;
         currentmat.emissive.b = value.emit.b;
         
-        currentmat.specular.r = value.specularColor.r * value.specularLevel;
-        currentmat.specular.g = value.specularColor.g * value.specularLevel;
-        currentmat.specular.b = value.specularColor.b * value.specularLevel;
+        currentmat.specular.r = value.specularColor.r * value.specularLevel/10;
+        currentmat.specular.g = value.specularColor.g * value.specularLevel/10;
+        currentmat.specular.b = value.specularColor.b * value.specularLevel/10;
         
         currentmat.opacity = value.alpha;
         if(value.alpha < 1)
