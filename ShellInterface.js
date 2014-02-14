@@ -553,6 +553,12 @@ function StartShellInterface()
 
 	rl.on('line', function(line)
 	{
+		// ignore whitespace
+		if(/^\s*$/.test(line)){
+			rl.prompt();
+			return;
+		}
+
 		// parse input
 		var cmd;
 		try {
@@ -574,6 +580,7 @@ function StartShellInterface()
 			console.log('exit - Shut down the server');
 			for(var i=0; i<commands.length; i++)
 				console.log(commands[i].command,'-',commands[i].description);
+			rl.prompt();
 		}
 
 		// exit
@@ -592,11 +599,14 @@ function StartShellInterface()
 						console.log('Improper invocation, see usage.');
 						console.log(commands[i].command,'-',commands[i].description);
 					}
+					rl.prompt();
+					return;
 				}
 			}
+			console.log('No such command. See `help` for usage.');
+			rl.prompt();
 		}
 		
-		rl.prompt();
 
 	}).on('close', function()
 	{
