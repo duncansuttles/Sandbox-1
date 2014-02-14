@@ -5,7 +5,8 @@ var libpath = require('path'),
     mime = require('mime'),
 	sio = require('socket.io'),
 	YAML = require('js-yaml');
-	SandboxAPI = require('./sandboxAPI');
+	SandboxAPI = require('./sandboxAPI'),
+	readline = require('readline');
 var passwordUtils = require('./passwordUtils');
 var DAL = require('./DAL').DAL;
 
@@ -26,41 +27,92 @@ var DAL = require('./DAL').DAL;
                 S4() + S4() + S4()
             );
     }
-function IsSpace(c)
-{
-	return c == " " || c == "\t";
-}	
+
 function ParseLine(str)
 {
-	var ret = [""];
-	var inquote = false;
-	for(var i = 0; i < str.length; i++)
-	{
-		var c = str[i];
-		if(IsSpace(c) && !inquote)
-		{
-			ret.push("");
-		}else
-		{
-			if(c == "\"")
-				inquote = !inquote;
-			else
-			{
-				ret[ret.length -1] += (c);
-			}			
-		}
+	// new parse function splits on white space except between quotes
+	var ret = [];
+
+	// make sure quotes are in pairs
+	var quotelist = str.split('"');
+	if( quotelist.length%2 !== 1 ){
+		throw 'Error: cannot parse unmatched quotes';
 	}
-	while(ret.indexOf("")!= -1)
-		ret.splice(ret.indexOf(""),1);
-		
-	
+
+	for(var i=0; i<quotelist.length; i++)
+	{
+		// not quoted
+		if( i%2 === 0 ){
+			var tokens = quotelist[i].split(/\s+/);
+			for(var j=0; j<tokens.length; j++){
+				if(tokens[j] !== '')
+					ret.push(tokens[j]);
+			}
+		}
+		// quoted
+		else
+			ret.push(quotelist[i]);
+	}
+
 	return ret;
 }
+
+function CheckMatch(test, input)
+{
+	var pattern = test.split(' ');
+	for(var i=0; i<pattern.length; i++)
+	{
+		var re = new RegExp('^'+pattern[i]+'$','i');
+		if( !input[i] || !re.test(input[i]) )
+			return false;
+	}
+	return true;
+}
+
 function StartShellInterface()
 {
-//shell interface defaults
+	//shell interface defaults
 	global.log('Starting shell interface',0);
-	var stdin = process.openStdin();
+	rl = readline.createInterface(process.stdin, process.stdout);
+	rl.setPrompt('> ');
+	rl.prompt();
+
+	rl.on('line', function(line)
+	{
+		// parse input
+		var cmd;
+		try {
+			cmd = ParseLine(line);
+		}
+		catch(e){
+			console.log(e);
+			rl.prompt();
+			return;
+		}
+		console.log(cmd);
+
+		// start going through the options
+		
+		// help
+		if( CheckMatch('help', cmd) ){
+			console.log('Available commands:');
+			console.log('exit - Shut down the server');
+		}
+
+		// exit
+		else if( CheckMatch('exit', cmd) ){
+			rl.close();
+		}
+		
+		rl.prompt();
+
+	}).on('close', function()
+	{
+		global.log('Terminating server');
+		process.exit(0);
+	});
+
+	/*var stdin = process.openStdin();
 	stdin.on('data', function(chunk) {
 		if(!chunk) return;
 		
@@ -460,7 +512,7 @@ function StartShellInterface()
 					}
 				}
 		}	
-	});
+	});*/
 	
 }
 exports.setDAL = function(p)
