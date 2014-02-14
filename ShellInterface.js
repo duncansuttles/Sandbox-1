@@ -134,7 +134,7 @@ function StartShellInterface()
 			}
 		},
 		{
-			'command': 'show inventoryitem metadata <arg1> <arg2>',
+			'command': 'show inventoryitem metadata <username> <item_id>',
 			'description': '',
 			'callback': function(commands){
 				DAL.getInventoryItemMetaData(commands[3],commands[4],function(data)
@@ -144,7 +144,7 @@ function StartShellInterface()
 			}
 		},
 		{
-			'command': 'show inventoryitem assetdata <arg1> <arg2>',
+			'command': 'show inventoryitem assetdata <username> <item_id>',
 			'description': '',
 			'callback': function(commands){
 				DAL.getInventoryItemAssetData(commands[3],commands[4],function(data)
@@ -264,7 +264,7 @@ function StartShellInterface()
 			}
 		},
 		{
-			'command': 'update inventoryitem metadata <arg1> <arg2> <newdata>',
+			'command': 'update inventoryitem metadata <username> <item_id> <newdata>',
 			'description': '',
 			'callback': function(commands){
 				DAL.updateInventoryItemMetadata(commands[3],commands[4],JSON.parse(commands[5].replace(/'/g,'"')),function()
@@ -344,7 +344,7 @@ function StartShellInterface()
 			}
 		},
 		{
-			'command': 'boot <username_or_state>',
+			'command': 'kick <username_or_state>',
 			'description': '',
 			'callback': function(commands){
 				var name = commands[1];
@@ -438,7 +438,7 @@ function StartShellInterface()
 			}
 		},
 		{
-			'command': 'delete inventoryitem <arg1> <arg2>',
+			'command': 'delete inventoryitem <username> <item_id>',
 			'description': '',
 			'callback': function(commands){
 				DAL.deleteInventoryItem(commands[2],commands[3],function()
@@ -481,7 +481,7 @@ function StartShellInterface()
 			}
 		},
 		{
-			'command': 'create inventoryitem <arg1> <arg2>',
+			'command': 'create inventoryitem <username> <item_id>',
 			'description': '',
 			'callback': function(commands){
 				DAL.addToInventory(commands[2],{title:commands[3],created:new Date()},{data:'test asset binary data'},function()
@@ -505,13 +505,6 @@ function StartShellInterface()
 				global.logLevel = parseInt(commands[1]);
 			}
 		},
-		/*{
-			'command': 'hash',
-			'description': '',
-			'callback': function(commands){
-				console.log(require('./passwordUtils.js').EncryptPassword('Rob','Rob','Salt'));
-			}
-		},*/
 		{
 			'command': 'test login <state_id> <num_bots>',
 			'description': '',
