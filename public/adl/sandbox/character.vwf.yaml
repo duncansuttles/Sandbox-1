@@ -273,7 +273,7 @@ scripts:
     //test. At 5 steps, we sort of say, "Ok, you have well and truely hit a corner that you cant slide out of."
     this.testRay =function(avatarPos,trans,depth,opts)
     {
-        console.log(depth);
+        
           //really no point going much deeper
           if(depth == 3) return false;
 
@@ -576,7 +576,7 @@ scripts:
                 
                
                 falldist = intersect?intersect.distance:falldist;
-                console.log(this.pickoptions);
+               
                 if(falldist && intersect)
                 {
                    var object = intersect.object;

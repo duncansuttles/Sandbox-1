@@ -301,9 +301,9 @@
 				
 				currentmat.morphTargets = value.morphTargets || false;
 				currentmat.skinning = value.skinning || false;
-				currentmat.specular.r = value.specularColor.r * value.specularLevel;
-				currentmat.specular.g = value.specularColor.g * value.specularLevel;
-				currentmat.specular.b = value.specularColor.b * value.specularLevel;
+				currentmat.specular.r = value.specularColor.r * value.specularLevel/10;
+				currentmat.specular.g = value.specularColor.g * value.specularLevel/10;
+				currentmat.specular.b = value.specularColor.b * value.specularLevel/10;
 				
 				currentmat.side = value.side || 0;
 				if(window.isIE() && currentmat.side == 2)  currentmat.side = 0;
