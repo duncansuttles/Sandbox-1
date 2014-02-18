@@ -35,6 +35,12 @@ define( ["module", "vwf/view", "vwf/view/xapi/xapiwrapper", "vwf/view/xapi/2.5.3
 				//console.log('XAPI:', id, fn, params);
 				var wrapper;
 
+				// no-op if no users are logged in
+				if( !_UserManager.getPlayers()[0] ){
+					console.log('xAPI module disabled for anonymous clients');
+					return;
+				}
+
 				// if an obj has already initialized, use that
 				if( id in this.wrapperOf ){
 					wrapper = this.wrapperOf[id];
