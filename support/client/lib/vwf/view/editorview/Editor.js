@@ -3129,7 +3129,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			$('#ContextMenu').append('<div id="ContextMenuPaste" class="ContextMenuItem">Paste</div>');
 			$('#ContextMenu').append('<div id="ContextMenuDuplicate" class="ContextMenuItem" style="border-bottom: 1px solid gray;">Duplicate</div>');
 			$('#ContextMenu').append('<div id="ContextMenuDelete" class="ContextMenuItem" style="border-bottom: 1px solid gray;">Delete</div>');
-			$('#ContextMenu').append('<div id="ContextMenuWires" class="ContextMenuItem" style="border-bottom: 1px solid gray;">Wire Properties</div>');
+			//$('#ContextMenu').append('<div id="ContextMenuWires" class="ContextMenuItem" style="border-bottom: 1px solid gray;">Wire Properties</div>');
 			$('#ContextMenu').disableSelection();
 			$('#ContextMenuSelect').click(function ()
 			{

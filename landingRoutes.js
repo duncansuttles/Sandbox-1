@@ -78,7 +78,63 @@ exports.statsHandler = function(req, res, next){
 		
 	})
 }
+exports.redirectPasswordEmail = function(req,res,next)
+{
 
+	sessions.GetSessionData(req,function(sessionData)
+	{
+		//if no user is logged in, just forget all this
+		if(!sessionData)
+		{
+			next();
+			return;
+		}
+
+		DAL.getUser(sessionData.UID,function(user)
+		{
+			var currentAcceptedRoute = req.params.page;
+			if((/[\.]/).test(currentAcceptedRoute))
+			{
+				next();
+				return;
+			}
+			//if someone has a temp password, they must reset it
+			
+
+			if(currentAcceptedRoute == 'editProfile' || currentAcceptedRoute == 'updatePassword')
+			{
+				next();
+				return;
+			}
+			var newroute = null;
+			if(user && !user.Email)
+			{
+				newroute = 'editProfile';
+			}
+			if(sessionData && sessionData.PasswordIsTemp)
+			{
+				newroute = 'updatePassword';
+			}
+
+			//if the user needs to reset the password || they use a temp passwrod
+			if(newroute)
+			{
+				res.locals = {user:user,sessionData:sessionData,  root: getFrontEndRoot(req), title: newroute, fileList:null, home: null, avatar:false, blog:true, doc:true};
+				if(user && !user.Email)
+				{
+					res.locals.message = "We've updated our database, and now require email address for users. Please update your email address below.";
+				}
+				res.render(newroute,{layout:'plain'});
+			}else
+			{
+				next();
+			}
+		});
+
+
+
+	});
+}
 exports.generalHandler = function(req, res, next){
 	
 	sessions.GetSessionData(req,function(sessionData)
@@ -99,16 +155,6 @@ exports.generalHandler = function(req, res, next){
 				
 				var currentAcceptedRoute = exports.acceptedRoutes[routeIndex], title = '', sid = '', template = currentAcceptedRoute, fileList = [], home = false;
 				
-				//if someone has a temp password, they must reset it
-				if(sessionData && sessionData.PasswordIsTemp)
-				{
-					currentAcceptedRoute = 'updatePassword';
-				}
-				if(user && !user.Email)
-				{
-					currentAcceptedRoute = 'editProfile';
-				}
-
 				if(routesMap[currentAcceptedRoute]){
 					
 					title = routesMap[currentAcceptedRoute].title ? routesMap[currentAcceptedRoute].title : '';
@@ -117,7 +163,6 @@ exports.generalHandler = function(req, res, next){
 					fileList = routesMap[currentAcceptedRoute].fileList ? routesMap[currentAcceptedRoute].fileList : [];	
 					home = routesMap[currentAcceptedRoute].home ? routesMap[currentAcceptedRoute].home : false;	
 					avatar = routesMap[currentAcceptedRoute].avatar ? routesMap[currentAcceptedRoute].avatar : false;	
-
 				}
 
 				var layout = (routesMap[currentAcceptedRoute] && routesMap[currentAcceptedRoute].layout) || 'layout';
@@ -129,20 +174,10 @@ exports.generalHandler = function(req, res, next){
 					return;
 				}
 
-				if(currentAcceptedRoute == 'editProfile')
-				{
-
-					res.locals = {user:user,sessionData:sessionData, sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc};
-					if(user && !user.Email)
-					{
-						res.locals.message = "We've updated our database, and now require email address for users. Please update your email address below.";
-					}
-					res.render(template,{layout:layout});
-				}else
-				{
-					res.locals = {sessionData:sessionData, sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc};
-					res.render(template,{layout:layout});
-				}
+				
+				res.locals = {sessionData:sessionData, sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc};
+				res.render(template,{layout:layout});
+				
 			}
 			
 			else{
