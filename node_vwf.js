@@ -55,8 +55,12 @@ global.error = function()
     };
     
     
-    if(level <= global.logLevel)
-        console.log.apply(this,args);
+    if(level <= global.logLevel){
+        //console.log.apply(this,args);
+		var clear = '\u001b[2K', reset = '\u001b[1G'
+		var testLine = clear+reset+ args.join(' ') +'\n> ' + global.inbuffer;
+		process.stdout.write(testLine);
+	}
 }
 
 global.log = function()
@@ -74,8 +78,12 @@ global.log = function()
         level = 1;
     };
     
-    if(level <= global.logLevel)
-        console.log.apply(this,args);
+    if(level <= global.logLevel){
+        //console.log.apply(this,args);
+		var clear = '\u001b[2K', reset = '\u001b[1G'
+		var testLine = clear+reset+ args.join(' ') +'\n> ' + global.inbuffer;
+		process.stdout.write(testLine);
+	}
 }
 
 		

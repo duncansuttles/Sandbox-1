@@ -215,14 +215,14 @@ function StartShellInterface()
 
 			}
 		},
-		{
+		/*{
 			'command': 'compact',
 			'description': 'Compacts the database to remove obsolete data',
 			'callback': function(commands){
 				DAL.compactDatabase();
 				
 			}
-		},
+		},*/
 		{
 			'command': 'exec <command>',
 			'description': 'Runs the given javascript on the server',
@@ -540,6 +540,14 @@ function StartShellInterface()
 	];
 
 	rl.prompt();
+
+	global.inbuffer = '';
+	process.stdin.on('data', function(chunk){
+		if(chunk == '\u000d')
+			global.inbuffer = '';
+		else
+			global.inbuffer += chunk;
+	});
 
 	rl.on('line', function(line)
 	{
