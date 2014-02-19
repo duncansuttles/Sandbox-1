@@ -84,14 +84,14 @@ exports.ResetPassword = function(username,response)
 			respond(response,500,"User not found");
 			return;
 		}
-		console.log(user1);
+		global.log(user1);
 		var newPassword = GenerateTempPassword();
 		if(!user1.Salt) user1.Salt = GUID();
 		var clientHash = self.EncryptPassword(newPassword,username,user1.Salt);
-		console.log(newPassword,username,user1.Salt);
-		console.log(clientHash);
+		global.log(newPassword,username,user1.Salt);
+		global.log(clientHash);
 		var serverHash = Hash(clientHash);
-		console.log(serverHash);
+		global.log(serverHash);
 		var data = {};
 		
 		data.TempPassword = {
@@ -100,7 +100,7 @@ exports.ResetPassword = function(username,response)
 			
 		}
 		data.Salt = user1.Salt;
-		console.log('User '+username+' reset password to ' + newPassword);
+		global.log('User '+username+' reset password to ' + newPassword);
 		DAL.updateUser(username,data,function()
 		{
 			mailTools.resetPasswordMail(user1.Email,newPassword);

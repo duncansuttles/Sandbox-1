@@ -181,7 +181,7 @@ exports.generalHandler = function(req, res, next){
 			}
 			
 			else{
-				console.log("Not found");
+				global.log("Not found");
 				//res.status(404).end('Error');
 				
 				next();
@@ -234,7 +234,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 		{
 	DAL.getInstances(function(allinstances)
 	{
-		console.log(search);
+		global.log(search);
 		var results = [];
 		
 		if(mode == 'search')
@@ -520,7 +520,7 @@ exports.handlePostRequest = function(req, res, next){
 			function(err, results){
 			
 				var serveObj = [{},{}];
-				console.log(results);
+				global.log(results);
 				for(var key in results[0]){
 					if(results[1][key]){
 						serveObj[0][key] = results[1][key];
@@ -536,7 +536,7 @@ exports.handlePostRequest = function(req, res, next){
 		
 		case "update_user":
 			var userId = data.Username;
-			console.log(data);	
+			global.log(data);	
 			delete data.Salt;	
 			delete data.Username;				
 			//delete data.inventoryKey;				

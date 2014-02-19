@@ -7,7 +7,7 @@ exports.sendMail = function(to,subject,text,html,cb)
 
     if(!global.configuration.sendEmails || !global.configuration.emailFrom || !global.configuration.emailService || !global.configuration.emailPassword || !global.configuration.emailUsername)
     {
-        console.log('email system not configured');
+        global.log('email system not configured');
         cb(false);
         return;
     }
@@ -35,11 +35,11 @@ exports.sendMail = function(to,subject,text,html,cb)
     // send mail with defined transport object
     smtpTransport.sendMail(mailOptions, function(error, response){
         if(error){
-            console.log(error);
+            global.log(error);
             if(cb)
             cb(false);
         }else{
-            console.log("Message sent: " + response.message);
+            global.log("Message sent: " + response.message);
             if(cb)
             cb(true);
         }

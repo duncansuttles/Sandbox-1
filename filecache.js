@@ -85,7 +85,7 @@ function _FileCache()
                             //record the data
                             var newentry = {};
                             
-                            //console.log(file.length);
+                            //global.log(file.length);
                             newentry.path = path;
                             newentry.data = file;
                             newentry.stats = stats;
@@ -141,7 +141,7 @@ function _FileCache()
                     if(strEndsWith(path,'js'))
                     {
                         //compress the JS then gzip and save the results
-                        console.log('minify ' + path);
+                        global.log('minify ' + path);
                         new compressor.minify({
                             type: 'uglifyjs',
                             fileIn: path,
@@ -164,7 +164,7 @@ function _FileCache()
                     else if(strEndsWith(path,'css'))
                     {
                         //compress the css then gzip and save the results
-                        console.log('minify ' + path);
+                        global.log('minify ' + path);
                         new compressor.minify({
                             type: 'yui-css',
                             fileIn: path,

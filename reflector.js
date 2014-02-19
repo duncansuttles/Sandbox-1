@@ -10,7 +10,7 @@ YAML = require('js-yaml');
 function startup(listen)
 {
     //create socket server
-    console.log('startup refector');
+    global.log('startup refector');
             sio = sio.listen(listen,{log:false});
             sio.configure(function()
             {
@@ -121,7 +121,7 @@ var fixIDs = function(node)
 
     function ServeSinglePlayer(socket, namespace,instancedata)
     {
-        console.log('single player');
+        global.log('single player');
         var instance = namespace;
         var state = SandboxAPI.getState(instance) || [{owner:undefined}];
         var state2 = SandboxAPI.getState(instance) || [{owner:undefined}];
@@ -188,7 +188,7 @@ var fixIDs = function(node)
           {
               socket.on('setNamespace',function(msg)
               {
-                console.log(msg.space);
+                global.log(msg.space);
                 WebSocketConnection(socket,msg.space);
                 socket.emit('namespaceSet',{});
               });
@@ -292,7 +292,7 @@ var fixIDs = function(node)
                 else
                 {
                     client.pendingList.push(tickmessage);
-                    console.log('pending tick');
+                    global.log('pending tick');
                 }
             }
         
@@ -331,7 +331,7 @@ var fixIDs = function(node)
       //The client is the first, is can just load the index.vwf, and mark it not pending
       if(!loadClient)
       {
-        console.log('load from db');
+        global.log('load from db');
         
         socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Loading state from database"],"time":global.instances[namespace].time})));  
         var instance = namespace;
@@ -429,7 +429,7 @@ var fixIDs = function(node)
       //this client is not the first, we need to get the state and mark it pending
       else
       {
-        console.log('load from client');
+        global.log('load from client');
         var firstclient = loadClient;//Object.keys(global.instances[namespace].clients)[0];
         //firstclient = global.instances[namespace].clients[firstclient];
         socket.pending = true;
@@ -462,22 +462,22 @@ var fixIDs = function(node)
                         this.count++;
                         if(this.count < 5)
                         {
-                            console.log('did not get state, resending request');    
+                            global.log('did not get state, resending request');    
                             this.namespace.getStateTime = this.namespace.time;
                             loadClient.emit('message',messageCompress.pack(JSON.stringify({"action":"getState","respond":true,"time":this.namespace.time})));
                             socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Did not get state, resending request."],"time":this.namespace.time}))); 
                             this.handle = global.setTimeout(this.time.bind(this),2000); 
                         }else
                         {
-                            console.log('sending default state');
+                            global.log('sending default state');
                             var state =  this.namespace.cachedState;
                             for(var i in  this.namespace.clients)
                             {
                                 var client =  this.namespace.clients[i];
-                                console.log(state);
+                                global.log(state);
                                 if(loadClient != client && client.pending===true)
                                 {
-                                    console.log('sending default state 2');
+                                    global.log('sending default state 2');
                                     client.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State Not Received, Transmitting default"],"time": this.namespace.getStateTime}))); 
                                     socket.emit('message',messageCompress.pack(JSON.stringify({"action":"createNode","parameters":[state],"time":this.namespace.getStateTime})));
                                     client.pending = false;
@@ -495,7 +495,7 @@ var fixIDs = function(node)
 
                     }else
                     {
-                        console.log('need to load from db');    
+                        global.log('need to load from db');    
                     }
                 }catch(e){}
             }
@@ -744,7 +744,7 @@ var fixIDs = function(node)
                     if(client.pending == true)
                     {
                         client.pendingList.push(compressedMessage);
-                        console.log('PENDING');
+                        global.log('PENDING');
                         
                     }else
                     {
@@ -797,7 +797,7 @@ var fixIDs = function(node)
           {
             clearInterval(global.instances[namespace].timerID);
             delete global.instances[namespace];
-            console.log('Shutting down ' + namespace )
+            global.log('Shutting down ' + namespace )
           }
 
         });

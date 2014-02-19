@@ -1,6 +1,5 @@
 
 var libpath = require('path');
-
 var async = require('async');
 var fs = require('fs-extra');
 require('./hash.js');
@@ -124,7 +123,7 @@ function updateUser (id,data,cb)
 			}
 			for(var key in data)
 			{
-				console.log('changing ' + key + ' to ' + data[key] + ' in user ' + user.Username )
+				global.log('changing ' + key + ' to ' + data[key] + ' in user ' + user.Username )
 				user[key] = data[key];
 			}
 			
@@ -439,7 +438,7 @@ function createUser (id,data,cb)
 			function(err,results)
 			{
 				
-				console.log(err,0);
+				global.log(err,0);
 				cb(true);
 			}
 			);
@@ -490,7 +489,7 @@ function updateInstance (id,data,cb)
 	if(!id || id.length == 0 || !data)
 	{
 		cb(false,'bad data');
-		console.log('bad data')
+		global.log('bad data')
 		return;
 	}
 
@@ -533,7 +532,7 @@ function updateInstance (id,data,cb)
 		{
 			if(err)
 			{
-				console.log(err)
+				global.log(err)
 				global.log(err,0);
 				cb(false);
 				return;
@@ -1013,12 +1012,12 @@ function importStates()
 		async.eachSeries(files,
 			function(i,cb)
 			{
-				console.log(i);
+				global.log(i);
 				getInstance(i,function(inst)
 				{
 					if(inst)
 					{
-						console.log(i + " already in database");
+						global.log(i + " already in database");
 						cb();
 					}
 					else
@@ -1035,12 +1034,12 @@ function importStates()
 						statedata.description = "Imported automatically from database update";
 						createInstance(i,statedata,function()
 						{
-							console.log('imported' + i);
+							global.log('imported' + i);
 							cb();
 						});
 						}else
 						{
-							console.log('state file not found: ' + i);
+							global.log('state file not found: ' + i);
 							cb();
 						}
 					}
@@ -1049,7 +1048,7 @@ function importStates()
 			},
 			function(err)
 			{
-				console.log('done');
+				global.log('done');
 			});
 	});
 }
@@ -1079,10 +1078,10 @@ function getAllUsersInfo(cb){
 	getUsers(function(users){	
 		async.eachSeries(users, function(val,cb2)
 		{
-			console.log(val);
+			global.log(val);
 			getUser(val, function(doc){
 				userInfoList.push(doc);
-				console.log('done');
+				global.log('done');
 				cb2();
 			});
 		}, function(){cb(userInfoList)});
@@ -1106,7 +1105,7 @@ function purgeInstances()
 		{
 			if(!fs.existsSync((datapath +"/States/" + i).replace(safePathRE)))
 			{
-				console.log('delete instance ' + i);
+				global.log('delete instance ' + i);
 				deleteInstance(i,function()
 				{
 					cb();
@@ -1178,8 +1177,8 @@ function getHistory(id,cb)
 	returndata.parents = [];
 	getInstance(id, function(instance){
 
-		console.log(id);
-		console.log(instance);
+		global.log(id);
+		global.log(instance);
 		if(!instance)
 		{
 			cb({error:"inner state not found"});
@@ -1518,9 +1517,9 @@ function startup(callback)
 					cb();
 				else
 				{
-					console.log('creating global user')
+					global.log('creating global user')
 					createUser('___Global___',{},function(ok){
-						console.log('created global user')
+						global.log('created global user')
 						cb();
 					});
 				}

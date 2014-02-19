@@ -704,7 +704,7 @@ function Publish(URL, SID, publishdata, response){
 		SID = '_adl_sandbox_' + SID + '_';
 	}
 	
-	console.log(SID);
+	global.log(SID);
 	DAL.getInstance(SID,function(state)
 	{
 	
@@ -724,7 +724,7 @@ function Publish(URL, SID, publishdata, response){
 		var publishSettings = null;
 		//The settings  for the published state. 
 		//have to handle these in the client side code, with some enforcement at the server
-		console.log(publishdata);
+		global.log(publishdata);
 		if(publishdata)
 		{
 			var singlePlayer = publishdata.SinglePlayer;
@@ -1247,7 +1247,7 @@ function serve (request, response)
 			//Normalize the path for max/unix
 			pathAfterCommand = pathAfterCommand.replace(/\//g,libpath.sep);
 			var basedir = datapath + libpath.sep;
-			//console.log(basedir+"DataFiles"+ pathAfterCommand);
+			//global.log(basedir+"DataFiles"+ pathAfterCommand);
 			
 			global.log(command,UID,3);
 			if(request.method == "GET")
@@ -1309,7 +1309,7 @@ function serve (request, response)
 						});
 					} break;
 					case "statehistory":{
-						console.log("statehistory");
+						global.log("statehistory");
 						DAL.getHistory(SID,function(statehistory)
 						{
 							if(statehistory)

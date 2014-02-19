@@ -108,8 +108,8 @@ function startVWF(){
 	
 	catch(e){
 		configSettings = {};
-		console.log("Error: Unable to load config file");
-		console.log(e.message);
+		global.log("Error: Unable to load config file");
+		global.log(e.message);
 	}
 	
 	//save configuration into global scope so other modules can use.
@@ -128,7 +128,7 @@ function startVWF(){
 	global.latencySim = p >= 0 ? parseInt(process.argv[p+1]) : (configSettings.latencySim ? configSettings.latencySim : 0);
 	
 	if(global.latencySim > 0) 
-		console.log(red+'Latency Sim = ' +  global.latencySim+reset);	
+		global.log(red+'Latency Sim = ' +  global.latencySim+reset);	
 	
 	p = process.argv.indexOf('-l');
 	global.logLevel = p >= 0 ? process.argv[p+1] : (configSettings.logLevel ? configSettings.logLevel : 1);
@@ -142,24 +142,24 @@ function startVWF(){
 	FileCache.enabled = process.argv.indexOf('-nocache') >= 0 ? false : !configSettings.noCache;
 	if(!FileCache.enabled)
 	{
-	   console.log('server cache disabled');
+	   global.log('server cache disabled');
 	}
 	
 	FileCache.minify = process.argv.indexOf('-min') >= 0 ? true : !!configSettings.minify;
 	var compile = process.argv.indexOf('-compile') >= 0 ? true  : !!configSettings.compile;
 	if(compile)
 	{
-		console.log('Starting compilation process...');
+		global.log('Starting compilation process...');
 	}
 	
 	var versioning = process.argv.indexOf('-cc') >= 0 ? true : !!configSettings.useVersioning;
 	if(versioning)
 	{
 		global.version = configSettings.version ? configSettings.version : global.version;
-		console.log(brown + 'Versioning is on. Version is ' + global.version + reset);
+		global.log(brown + 'Versioning is on. Version is ' + global.version + reset);
 	}else
 	{
-		console.log(brown+'Versioning is off.'+reset);
+		global.log(brown+'Versioning is off.'+reset);
 		delete global.version;
 	}	
 	
@@ -279,13 +279,13 @@ function startVWF(){
 		//This will concatenate almost 50 of the project JS files, and serve one file in it's place
 		requirejs.optimize(config, function (buildResponse) {
 		
-			console.log('RequrieJS Build complete');
-			console.log(buildResponse);
+			global.log('RequrieJS Build complete');
+			global.log(buildResponse);
 			async.series([
 			function(cb3)
 			{
 				
-				console.log('Closure Build start');
+				global.log('Closure Build start');
 				//lets do the most agressive compile possible here!
 				if(false && fs.existsSync("./build/compiler.jar"))
 				{
@@ -293,10 +293,10 @@ function startVWF(){
 					var c1 = exec('java -jar compiler.jar --js boot.js --compilation_level ADVANCED_OPTIMIZATIONS --js_output_file boot-c.js',{cwd:"./build/",maxBuffer:1024*1024},
 					function (error, stdout, stderr) {
 					  
-					 	//console.log('stdout: ' + stdout);
-					    //console.log('stderr: ' + stderr);
+					 	//global.log('stdout: ' + stdout);
+					    //global.log('stderr: ' + stderr);
 					    if (error !== null) {
-					      console.log('exec error: ' + error);
+					      global.log('exec error: ' + error);
 					    }
 						if(fs.existsSync("./build/boot-c.js"))
 						{
@@ -310,13 +310,13 @@ function startVWF(){
 
 				}else
 				{
-					console.log('compiler.jar not found');
+					global.log('compiler.jar not found');
 					cb3();
 				}
 			},
 			function(cb3)
 			{
-				console.log('loading '+ config.out);
+				global.log('loading '+ config.out);
 				var contents = fs.readFileSync(config.out, 'utf8');
 				//here, we read the contents of the built boot.js file
 				var path = libpath.normalize('./support/client/lib/load.js');
@@ -338,12 +338,12 @@ function startVWF(){
 				});
 			}],function(err)
 			{
-				console.log(err);
+				global.log(err);
  				StartUp();
 			});
 		}, function(err) {
 			//there was a requireJS build error. Not a prob, keep going.
-			console.log(err);
+			global.log(err);
 			StartUp();
 		});
 	

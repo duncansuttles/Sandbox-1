@@ -375,7 +375,7 @@ function ServeYAML(filename,response, URL)
                                             
                                             
                                             redirect(URL.pathname+"/index.html",response);
-                                            //console.log('redirect ' + appname+"./index.html");
+                                            //global.log('redirect ' + appname+"./index.html");
                                             return;
                                         }
                                         //instance needs to end in a slash, so redirect but keep instance id
@@ -389,7 +389,7 @@ function ServeYAML(filename,response, URL)
                                         {
                                             if(!strEndsWith(URL.pathname, '/'))
                                             {
-                                                console.log(filename);
+                                                global.log(filename);
                                                 _302(URL.pathname+'/',response);
                                             }
                                             else
