@@ -157,7 +157,7 @@ function versioning(req, res, next)
            }
         }
         //if there is no version number, redirect to the current version
-        if(!version && global.version)
+        if(!version && global.version && req.method == 'GET')
         {
           
           _302('/'+global.version+''+req.url,res);
