@@ -2,7 +2,7 @@
  * Provide a per-object interface to the xAPIWrapper
  ***************************/
 
-define( ["module", "vwf/view", "vwf/view/xapi/xapiwrapper", "vwf/view/xapi/verbs", "vwf/view/xapi/2.5.3-crypto-sha1"], function( module, view ) {
+define( ["module", "vwf/view", "vwf/view/xapi/xapiwrapper.min"], function( module, view ) {
 
 	return view.load( module, {
 
@@ -36,7 +36,7 @@ define( ["module", "vwf/view", "vwf/view/xapi/xapiwrapper", "vwf/view/xapi/verbs
 				var wrapper;
 
 				// no-op if no users are logged in
-				if( !_UserManager.getPlayers()[0] ){
+				if( !_UserManager.getPlayers()[0] && fn != 'xapi_configure' ){
 					console.log('xAPI module disabled for anonymous clients');
 					return;
 				}
