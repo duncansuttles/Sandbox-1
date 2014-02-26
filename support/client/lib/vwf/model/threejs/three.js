@@ -15445,7 +15445,8 @@ THREE.FogExp2 = function ( hex, density ) {
 
 	this.color = new THREE.Color( hex );
 	this.density = ( density !== undefined ) ? density : 0.00025;
-
+	this.vFalloff = 20;
+	this.vFalloffStart = 0;
 };
 
 THREE.FogExp2.prototype.clone = function () {
@@ -16604,12 +16605,39 @@ THREE.ShaderChunk = {
 
 		"#ifdef USE_FOG",
 
-			"uniform vec3 fogColor;",
-
+			"uniform vec3 fogColor;\n" + 
+			"uniform float vFalloff;\n"+
+			"uniform float vFalloffStart;\n"+
 			"#ifdef FOG_EXP2",
 
 				"uniform float fogDensity;",
 
+				"#if MAX_DIR_LIGHTS > 0\n"+		
+					"vec3 horizonColor = vec3(0.88, 0.94, 0.999);\n"+
+					"vec3 zenithColor = vec3(0.78, 0.82, 0.999);\n"+
+					
+					"vec3 atmosphereColor(vec3 rayDirection){\n"+
+					"    float a = max(0.0, dot(rayDirection, vec3(0.0, 1.0, 0.0)));\n"+
+					"    vec3 skyColor = mix(horizonColor, zenithColor, a);\n"+
+					"    float sunTheta = max( dot(rayDirection, directionalLightDirection[0].xzy), 0.0 );\n"+
+					"    return skyColor+directionalLightColor[0]*4.0*pow(sunTheta, 16.0)*0.5;\n"+
+					"}\n"+
+
+					"vec3 applyFog(vec3 albedo, float dist, vec3 rayOrigin, vec3 rayDirection){\n"+
+					"    float fogDensityA = fogDensity ;\n"+ 
+					"    float fog = exp((-rayOrigin.y*vFalloff)*fogDensityA) * (1.0-exp(-dist*rayDirection.y*vFalloff*fogDensityA))/(rayDirection.y*vFalloff);\n"+
+					"    return mix(albedo, fogColor, clamp(fog, 0.0, 1.0));\n"+
+					"}\n"+
+
+					"vec3 aerialPerspective(vec3 albedo, float dist, vec3 rayOrigin, vec3 rayDirection){\n"+
+					" rayOrigin.y += vFalloffStart;\n" + 
+					"    float atmosphereDensity = .0005;\n"+
+					"    vec3 atmosphere = atmosphereColor(rayDirection)+vec3(0.0, 0.02, 0.04); \n"+
+					"    atmosphere = mix( atmosphere, atmosphere*.85, clamp(1.0-exp(-dist*atmosphereDensity), 0.0, 1.0));\n"+
+					"    vec3 color = mix( applyFog(albedo, dist, rayOrigin, rayDirection), atmosphere, clamp(1.0-exp(-dist*atmosphereDensity), 0.0, 1.0));\n"+
+					"    return color;\n"+
+					"}						\n"+
+				"#endif",
 			"#else",
 
 				"uniform float fogNear;",
@@ -16632,14 +16660,16 @@ THREE.ShaderChunk = {
 				"const float LOG2 = 1.442695;",
 				"float fogFactor = exp2( - fogDensity * fogDensity * depth * depth * LOG2 );",
 				"fogFactor = 1.0 - clamp( fogFactor, 0.0, 1.0 );",
-
+				"#if MAX_DIR_LIGHTS > 0\n"+		
+				"gl_FragColor.xyz = aerialPerspective(gl_FragColor.xyz, distance(vFogPosition.xyz,cameraPosition),cameraPosition.xzy, normalize(vFogPosition.xyz-cameraPosition).xzy);\n"+
+				"#endif",
 			"#else",
 
 				"float fogFactor = smoothstep( fogNear, fogFar, depth );",
-
+				"gl_FragColor = mix( gl_FragColor, vec4( fogColor, gl_FragColor.w ), fogFactor );",
 			"#endif",
 
-			"gl_FragColor = mix( gl_FragColor, vec4( fogColor, gl_FragColor.w ), fogFactor );",
+			
 
 		"#endif"
 
@@ -18831,8 +18861,9 @@ THREE.UniformsLib = {
 		"fogDensity" : { type: "f", value: 0.00025 },
 		"fogNear" : { type: "f", value: 1 },
 		"fogFar" : { type: "f", value: 2000 },
-		"fogColor" : { type: "c", value: new THREE.Color( 0xffffff ) }
-
+		"fogColor" : { type: "c", value: new THREE.Color( 0xffffff ) },
+		"vFalloff" : { type: "f", value: 20 },
+		"vFalloffStart" : { type: "f", value: 0 },
 	},
 
 	lights: {
@@ -18954,7 +18985,7 @@ THREE.ShaderLib = {
 			THREE.ShaderChunk[ "map_pars_fragment" ],
 			THREE.ShaderChunk[ "lightmap_pars_fragment" ],
 			THREE.ShaderChunk[ "envmap_pars_fragment" ],
-			THREE.ShaderChunk[ "fog_pars_fragment" ],
+		//	THREE.ShaderChunk[ "fog_pars_fragment" ],
 			THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
 			THREE.ShaderChunk[ "specularmap_pars_fragment" ],
 
@@ -18972,7 +19003,7 @@ THREE.ShaderLib = {
 
 				THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
 
-				THREE.ShaderChunk[ "fog_fragment" ],
+				//THREE.ShaderChunk[ "fog_fragment" ],
 
 			"}"
 
@@ -19093,7 +19124,7 @@ THREE.ShaderLib = {
 
 				THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
 
-				THREE.ShaderChunk[ "fog_fragment" ],
+				//THREE.ShaderChunk[ "fog_fragment" ],
 
 			"}"
 
@@ -19127,6 +19158,7 @@ THREE.ShaderLib = {
 			"#define PHONG",
 
 			"varying vec3 vViewPosition;",
+			"varying vec3 vFogPosition;",
 			"varying vec3 vNormal;",
 
 			THREE.ShaderChunk[ "map_pars_vertex" ],
@@ -19140,6 +19172,7 @@ THREE.ShaderLib = {
 			THREE.ShaderChunk[ "sphericalHarmonicAmbient_pars_vertex" ],
 			"void main() {",
 
+				"vFogPosition = (modelMatrix * vec4(position,1.0)).xyz; \n" + 
 				THREE.ShaderChunk[ "map_vertex" ],
 				THREE.ShaderChunk[ "lightmap_vertex" ],
 				THREE.ShaderChunk[ "color_vertex" ],
@@ -19176,13 +19209,14 @@ THREE.ShaderLib = {
 			"uniform vec3 emissive;",
 			"uniform vec3 specular;",
 			"uniform float shininess;",
-
+			"varying vec3 vFogPosition;",
 			THREE.ShaderChunk[ "color_pars_fragment" ],
 			THREE.ShaderChunk[ "map_pars_fragment" ],
 			THREE.ShaderChunk[ "lightmap_pars_fragment" ],
 			THREE.ShaderChunk[ "envmap_pars_fragment" ],
-			THREE.ShaderChunk[ "fog_pars_fragment" ],
+			
 			THREE.ShaderChunk[ "lights_phong_pars_fragment" ],
+			THREE.ShaderChunk[ "fog_pars_fragment" ],
 			THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
 			THREE.ShaderChunk[ "bumpmap_pars_fragment" ],
 			THREE.ShaderChunk[ "normalmap_pars_fragment" ],
@@ -19270,7 +19304,7 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "alphatest_fragment" ],
 				THREE.ShaderChunk[ "color_fragment" ],
 				THREE.ShaderChunk[ "shadowmap_fragment" ],
-				THREE.ShaderChunk[ "fog_fragment" ],
+				//THREE.ShaderChunk[ "fog_fragment" ],
 
 			"}"
 
@@ -19339,7 +19373,7 @@ THREE.ShaderLib = {
 				"gl_FragColor = vec4( diffuse, opacity );",
 
 				THREE.ShaderChunk[ "color_fragment" ],
-				THREE.ShaderChunk[ "fog_fragment" ],
+				//THREE.ShaderChunk[ "fog_fragment" ],
 
 			"}"
 
@@ -19897,7 +19931,7 @@ THREE.ShaderLib = {
 
 				THREE.ShaderChunk[ "shadowmap_fragment" ],
 				THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
-				THREE.ShaderChunk[ "fog_fragment" ],
+				//THREE.ShaderChunk[ "fog_fragment" ],
 
 			"}"
 
@@ -24709,6 +24743,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 		} else if ( fog instanceof THREE.FogExp2 ) {
 
 			uniforms.fogDensity.value = fog.density;
+			uniforms.vFalloff.value = fog.vFalloff;
+			uniforms.vFalloffStart.value = fog.vFalloffStart;
 
 		}
 

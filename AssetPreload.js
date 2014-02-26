@@ -30,10 +30,10 @@ function walk(object, list)
 		//todo - deal with img or bt switch
 		var terraindata;
 		if(object.terrainParams)
-			terraindata = {name:"Terrain",type:"terrainBT",url:object.terrainParams.url};
+			terraindata = {name:"Terrain",type:"terrain",url:object.terrainParams.url};
 		else if(object.url)
 		{
-			terraindata = {name:"Terrain",type:"terrainBT",url:object.url};
+			terraindata = {name:"Terrain",type:"terrain",url:object.url};
 		}
 		if(terraindata)
 		{

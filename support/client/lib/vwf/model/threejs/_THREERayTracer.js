@@ -973,7 +973,7 @@ OctreeRegion.prototype.distributeFace = function(face)
 	// no it doesn't. There can be no faces that are in this region but intersect no child regions
 	if(added == 0)
 	{
-		debugger;
+		
 		this.distributeFace(face);
 		this.facesNotDistributed.push(face);
 	}

@@ -350,15 +350,19 @@ function ()
                     {
                         assetLoader.loadUnknown(url,cb2);
                     }
-                    else if(type == 'terrainBT')
+                    else if(type == 'terrain')
                     {
-                        
-                        assetLoader.loadBTTerrain(url,cb2);
+                        var type = url.substr(url.lastIndexOf('.')+1).toLowerCase();
+                        if(type == 'bt')
+                        {
+                            assetLoader.loadBTTerrain(url,cb2); 
+                        }
+                        else
+                        {
+                            assetLoader.loadImgTerrain(url,cb2);
+                        }
                     }
-                    else if(type == 'terrainIMG')
-                    {
-                        assetLoader.loadImgTerrain(url,cb2);
-                    }else
+                    else
                     {
                         cb2();
                     }

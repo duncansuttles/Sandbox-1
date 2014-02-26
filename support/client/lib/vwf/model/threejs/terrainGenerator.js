@@ -117,8 +117,8 @@ new (function(){
 			if(this.currentMesh[j] === null)
 				var i = j;
 		}
-		if(this.currentMesh[i])
-			debugger;
+		//if(this.currentMesh[i])
+		//	debugger;
 		this.currentCB[i] = cb;
 		this.currentMesh[i] = mesh;
 		this.currentID[i] = Math.floor(Math.random()*10000000);
@@ -238,6 +238,8 @@ new (function(){
 			this.waitingForInit = false;
 			this.terrainAlgorithm.init(psd);
 			this.terrainAlgorithm.setAlgorithmDataPool(params);
+			
+
 			for(var i = 0; i < MAXWORKERS; i++)
 			{
 				this.worker[i] = new Worker("vwf/model/threejs/terrainGeneratorThread.js");

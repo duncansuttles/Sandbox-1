@@ -26,32 +26,32 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 				
 				this.THREENode = root;
 				this.c = [this.min[0] + (this.max[0]-this.min[0])/2,this.min[1] + (this.max[1]-this.min[1])/2]
-				
-				this.SW = function()
+			}
+				QuadtreeNode.prototype.SW = function()
 				{
 					return this.children[SW];
 				}
-				this.SE = function()
+				QuadtreeNode.prototype.SE = function()
 				{
 					return this.children[SE];
 				}
-				this.NW = function()
+				QuadtreeNode.prototype.NW = function()
 				{
 					return this.children[NW];
 				}
-				this.NE = function()
+				QuadtreeNode.prototype.NE = function()
 				{
 					return this.children[NE];
 				}
-				this.child = function(quad)
+				QuadtreeNode.prototype.child = function(quad)
 				{
 					return this.children[quad];
 				}
-				this.sibling = function(quad)
+				QuadtreeNode.prototype.sibling = function(quad)
 				{
 					return this.parent.child(quad);
 				}
-				this.twodeep = function()
+				QuadtreeNode.prototype.twodeep = function()
 				{
 					if(!this.isSplit())
 						return false;
@@ -64,16 +64,20 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					}				
 					return false;					
 				}
-				this.balance = function(removelist)
+				QuadtreeNode.prototype.balance = function(removelist)
 				{
 				
 				
 					
 					var leaves = this.getLeavesB();
+					var leafcount = leaves.length;
+					var count = 0;
+					var expectedLeaves = 4 * this.maxDepth();
 					while(leaves.length > 0)
 					{
 						var l = leaves.shift();
 						if(!l) continue;
+
 						var nn = l.NN();
 						var sn = l.SN();
 						var en = l.EN();
@@ -90,14 +94,16 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 							
 						 }
 						
-						
+						count++;
 						
 						
 						
 					}
+					var newleafcount = this.getLeavesB().length;
+					console.log('quadtree balance splits', count,"expected leaves",expectedLeaves, "starting leaves",leafcount,"ending leaves", newleafcount);
 				}
 				
-				this.northNeighbor = function()
+				QuadtreeNode.prototype.northNeighbor = function()
 				{
 					var p = this;
 					while(p.quadrent != SW && p.quadrent != SE)
@@ -127,9 +133,9 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					return p;		
 						
 				}
-				this.NN = this.northNeighbor;
+				QuadtreeNode.prototype.NN = QuadtreeNode.prototype.northNeighbor;
 				
-				this.southNeighbor = function()
+				QuadtreeNode.prototype.southNeighbor = function()
 				{
 					var p = this;
 					while(p.quadrent != NW && p.quadrent != NE)
@@ -159,9 +165,9 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					return p;		
 						
 				}
-				this.SN = this.southNeighbor;
+				QuadtreeNode.prototype.SN = QuadtreeNode.prototype.southNeighbor;
 				
-				this.eastNeighbor = function()
+				QuadtreeNode.prototype.eastNeighbor = function()
 				{
 					var p = this;
 					while(p.quadrent != NW && p.quadrent != SW)
@@ -190,9 +196,9 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					return p;		
 						
 				}
-				this.EN = this.eastNeighbor;
+				QuadtreeNode.prototype.EN = QuadtreeNode.prototype.eastNeighbor;
 				
-				this.westNeighbor = function()
+				QuadtreeNode.prototype.westNeighbor = function()
 				{
 					var p = this;
 					while(p.quadrent != NE && p.quadrent != SE)
@@ -221,9 +227,9 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					return p;		
 						
 				}
-				this.WN = this.westNeighbor;
+				QuadtreeNode.prototype.WN = QuadtreeNode.prototype.westNeighbor;
 				
-				this.northEastNeighbor = function()
+				QuadtreeNode.prototype.northEastNeighbor = function()
 				{
 					var nn = this.NN();
 					if(nn)
@@ -231,9 +237,9 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					return null;
 						
 				}
-				this.NEN = this.northEastNeighbor;
+				QuadtreeNode.prototype.NEN = QuadtreeNode.prototype.northEastNeighbor;
 				
-				this.southEastNeighbor = function()
+				QuadtreeNode.prototype.southEastNeighbor = function()
 				{
 					var sn = this.SN();
 					if(sn)
@@ -241,9 +247,9 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					return null;
 						
 				}
-				this.SEN = this.southEastNeighbor;
+				QuadtreeNode.prototype.SEN = QuadtreeNode.prototype.southEastNeighbor;
 				
-				this.northWestNeighbor = function()
+				QuadtreeNode.prototype.northWestNeighbor = function()
 				{
 					var nn = this.NN();
 					if(nn)
@@ -251,9 +257,9 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					return null;
 						
 				}
-				this.NWN = this.northWestNeighbor;
+				QuadtreeNode.prototype.NWN = QuadtreeNode.prototype.northWestNeighbor;
 				
-				this.southWestNeighbor = function()
+				QuadtreeNode.prototype.southWestNeighbor = function()
 				{
 					var sn = this.SN();
 					if(sn)
@@ -261,9 +267,29 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					return null;
 						
 				}
-				this.SWN = this.southWestNeighbor;
+				QuadtreeNode.prototype.SWN = QuadtreeNode.prototype.southWestNeighbor;
 				
-				this.getLeavesB = function(list)
+				QuadtreeNode.prototype.maxDepth = function()
+				{
+					if(!this.isSplit())
+					{
+						return this.depth;
+					}
+					else
+					{
+						return Math.max(
+							this.children[0].maxDepth(),
+							this.children[1].maxDepth(),
+							this.children[2].maxDepth(),
+							this.children[3].maxDepth()
+					
+							);
+					}
+
+
+				}
+
+				QuadtreeNode.prototype.getLeavesB = function(list)
 				{
 					if(!list)
 						list = [];
@@ -277,12 +303,15 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 						{
 							this.children[i].getLeavesB(list);
 						}
-						this.children[0].getLeavesB(list);
+						//so, there once was a bug with the balance algorithm that caused certain tiles to not split when they should have
+						//this fixed it, but at the cost of dramatically increasing the cost of the algorithm.
+						//currently calling balance twice, wich fixes the issue with much less overhead. 
+						//this.children[0].getLeavesB(list);
 					}
 					
 					return list;
 				}
-				this.getLeaves = function(list)
+				QuadtreeNode.prototype.getLeaves = function(list)
 				{
 					if(!list)
 						list = [];
@@ -301,7 +330,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					
 					return list;
 				}
-				this.sideNeeded = function()
+				QuadtreeNode.prototype.sideNeeded = function()
 				{
 					var nn = this.NN();
 					var sn = this.SN();
@@ -349,14 +378,14 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 						
 					return 0;
 				}
-				this.meshNeeded = function(i)
+				QuadtreeNode.prototype.meshNeeded = function(i)
 				{
 					if(i == 0) return 0;
 					if(i<=4) return 1;
 					if(i<=8) return 2;
 				
 				}
-				this.getRotation = function(i)
+				QuadtreeNode.prototype.getRotation = function(i)
 				{
 					
 					if(i ==0) return 0;
@@ -368,7 +397,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					if(i== 6) return Math.PI/2;
 					return 0;
 				}
-				this.debug = function(r,g,b)
+				QuadtreeNode.prototype.debug = function(r,g,b)
 				{
 					if(this.mesh)
 					{
@@ -377,7 +406,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 						this.mesh.material.uniforms.debugColor.value.b = b;
 					}
 				}
-				this.intersectBounds = function(o,d)
+				QuadtreeNode.prototype.intersectBounds = function(o,d)
 				{	
 						//TODO: are these loose bounds necessary?
 						var min = [this.min[0]-.00,this.min[1]-.00,-Infinity];
@@ -421,7 +450,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 				    return true; // if we made it here, there was an intersection - YAY
 
 				}
-				this.CPUPick = function(o,d,opts)
+				QuadtreeNode.prototype.CPUPick = function(o,d,opts)
 				{
 				
 					
@@ -446,7 +475,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					}
 					return hits;
 				}
-				this.updateMesh = function(cb,force)
+				QuadtreeNode.prototype.updateMesh = function(cb,force)
 				{
 					var rebuilt = false;
 					if(!this.isSplit())
@@ -589,7 +618,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					if(cb)
 						cb(rebuilt,force);
 				}
-				this.cleanup = function(removelist)
+				QuadtreeNode.prototype.cleanup = function(removelist)
 				{
 					this.walk(function(n)
 					{
@@ -604,8 +633,8 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 						}
 					});
 				}
-				this.isSplit = function() {if(this.setForDesplit) return false; return this.children.length > 0}
-				this.split = function(removelist)
+				QuadtreeNode.prototype.isSplit = function() {if(this.setForDesplit) return false; return this.children.length > 0}
+				QuadtreeNode.prototype.split = function(removelist)
 				{
 					
 					if(this.setForDesplit)
@@ -641,7 +670,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					
 					this._issplit =  true;
 				}
-				this.updateMinMax = function(min,max)
+				QuadtreeNode.prototype.updateMinMax = function(min,max)
 				{
 					this.minTileSize = min;
 					this.maxTileSize = max;
@@ -649,7 +678,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 						this.children[i].updateMinMax(min,max);
 				}
 				
-				this.deSplit = function(removelist)
+				QuadtreeNode.prototype.deSplit = function(removelist)
 				{
 					//this.walk(function(n)
 					//{
@@ -661,7 +690,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 						this.children[i].deSplit(removelist);
 					this.setForDesplit = true;
 				}
-				this.destroy = function(removelist)
+				QuadtreeNode.prototype.destroy = function(removelist)
 				{
 					if(this.mesh)
 					{
@@ -675,7 +704,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					for(var i=0; i < this.children.length; i++)
 						this.children[i].destroy(removelist);
 				}
-				this.contains = function(point)
+				QuadtreeNode.prototype.contains = function(point)
 				{
 					
 					var tempmin = this.min;
@@ -685,7 +714,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 						return true;
 					return false;
 				}
-				this.loosecontains = function(point)
+				QuadtreeNode.prototype.loosecontains = function(point)
 				{
 					
 					var tempmin = [this.min[0] - (this.max[0] - this.min[0])/2 , this.min[1] - (this.max[1] - this.min[1])/2]
@@ -695,7 +724,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 						return true;
 					return false;
 				}
-				this.containing = function(point)
+				QuadtreeNode.prototype.containing = function(point)
 				{
 					if(this.contains(point) && !this.isSplit())
 						return this;
@@ -713,7 +742,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					}
 					return null;
 				}
-				this.walk = function(cb)
+				QuadtreeNode.prototype.walk = function(cb)
 				{
 					cb(this);
 					if(this.isSplit())
@@ -724,7 +753,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					}
 					
 				}
-				this.getBottom = function(list)
+				QuadtreeNode.prototype.getBottom = function(list)
 				{
 					if(!list)
 						list = [];
@@ -737,7 +766,7 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					return list;	
 				}
 				//walk down the graph, unspliting nodes that to not contain target points, and spliting nodes that do
-				this.update = function(campos,removelist)
+				QuadtreeNode.prototype.update = function(campos,removelist)
 				{
 					var cont = false
 					for(var i =0; i < campos.length; i++)
@@ -783,4 +812,4 @@ function QuadtreeNode(min,max,root,depth,quad,minsize,maxsize)
 					for(var i=0; i < this.children.length; i++)
 						this.children[i].update(campos,removelist);
 				}
-			}
+			

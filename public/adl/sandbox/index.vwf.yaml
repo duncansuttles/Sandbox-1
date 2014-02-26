@@ -53,6 +53,8 @@ properties:
   fogFar: 1000
   fogType: 0
   fogDensity: .005
+  fogVFalloff: 1.3
+  fogVFalloffStart: 0  
   materialDef:
     set: |  
            this.materialDef = value;
@@ -91,8 +93,22 @@ properties:
       property: fogDensity
       type: slider
       min: 0
-      max: 1
+      max: .1
       step: .001
+    fogvFAlloff:
+      displayname: Fog Falloff
+      property: fogVFalloff
+      type: slider
+      min: .1
+      max: 10
+      step: .001 
+    fogvFAlloffStart:
+      displayname: Fog Falloff Start
+      property: fogVFalloffStart
+      type: slider
+      min: -100
+      max: 100
+      step: .1  
     sunIntensity:
       displayname: Sun Intensity
       property: sunIntensity
@@ -506,7 +522,8 @@ scripts:
                 });
             this.skymaterial.uniforms.texture.value = skyCubeTexture;    
             this.skymaterial.depthWrite = false;
-            this.skymaterial.transparent = true;
+            this.skymaterial.depthTest= false;
+            this.skymaterial.transparent = false;
        }
        
        
@@ -515,9 +532,9 @@ scripts:
        this.skymaterial.fog = false;
        if(!this.skycube)
        {
-           this.skycube = new THREE.Mesh(new THREE.CubeGeometry(1000,1000,1000), this.skymaterial);
+           this.skycube = new THREE.Mesh(new THREE.CubeGeometry(10,10,10), this.skymaterial);
            this.skycube.name = "SkyCube";
-           this.skycube.renderDepth = Infinity;
+           this.skycube.renderDepth = -Infinity;
            this.skycube.InvisibleToCPUPick = false;
            this.skycube.depthWrite = false;
            this.skycube.depthCheck = false;

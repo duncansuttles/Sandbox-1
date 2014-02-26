@@ -484,6 +484,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 							newfog.near = oldfog.near;
 							newfog.far = oldfog.far;
 							newfog.density = oldfog.density;
+							newfog.vFalloff = oldfog.vFalloff;
+							newfog.vFalloffStart = oldfog.vFalloffStart;
 						}
 						threeObject.fog = newfog;
 						rebuildAllMaterials.call(this,threeObject);
@@ -512,8 +514,26 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 						
 						if(!threeObject.fog)
 							threeObject.fog = new THREE.Fog();
-						threeObject.fog.near = propertyValue;	
+						
 						threeObject.fog.density = propertyValue;
+						rebuildAllMaterials.call(this,threeObject);
+					}
+					if(propertyName == 'fogVFalloff')
+					{
+						
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+							
+						threeObject.fog.vFalloff = propertyValue;
+						rebuildAllMaterials.call(this,threeObject);
+					}
+					if(propertyName == 'fogVFalloffStart')
+					{
+						
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+							
+						threeObject.fog.vFalloffStart = propertyValue;
 						rebuildAllMaterials.call(this,threeObject);
 					}
 					if(propertyName == 'fogFar')
