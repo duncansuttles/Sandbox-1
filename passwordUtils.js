@@ -197,7 +197,8 @@ exports.SiteLogin = function (response,URL)
 				if(ok)
 				{
 					var session = sessions.createSession(UID,password,isTemp);
-					// TODO: xapi
+					xapi.sendStatement(UID,xapi.logged_in); 
+					
 					response.writeHead(200, {
 							"Content-Type":  "text/plain",
 							"Set-Cookie": "session="+session.sessionId+"; Path=/; HttpOnly;"
@@ -225,12 +226,12 @@ exports.SiteLogout = function (response,URL)
 			else
 			{
 				sessions.deleteSession(URL.loginData);
+				xapi.sendStatement(UID,xapi.logged_out);
 				response.writeHead(200, {
 							"Content-Type":  "text/plain",
 							"Set-Cookie": "session=; HttpOnly;"
 					});
 				response.end();	
-				// TODO: xapi
 			}
 			return;
 			

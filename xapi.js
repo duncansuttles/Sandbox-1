@@ -1,12 +1,24 @@
 var request = require('request'),
 	XAPIStatement = require('./xapistatement');
 
-var creds = new Buffer(global.config.lrsUsername + ':' + global.config.lrsPassword);
-var auth = 'Basic ' + creds.toString('base64');
 
-function sendStatement(stmt)
+/*
+ * build a log statement and submit it
+ */
+function sendStatement(userId, verb, worldId, worldName, worldDescription)
 {
-	request.post({'url': liburl.resolve(global.config.lrsEndpoint, 'statements'),
+	var creds = new Buffer(global.configuration.lrsUsername + ':' + global.configuration.lrsPassword);
+	var auth = 'Basic ' + creds.toString('base64');
+
+	// build statement
+	var stmt = new Statement( new AccountAgent(userId), verb);
+	if(world)
+		stmt.object = new World(world, worldName, worldDescription);
+	else
+		stmt.object = new XAPIStatement.Activity('http://vwf.adlnet.gov/xapi/virtual_world_sandbox', 'Virtual World Sandbox');
+	stmt.context = {'platform': 'virtual world'};
+
+	request.post({'url': liburl.resolve(global.configuration.lrsEndpoint, 'statements'),
 		'headers': {'X-Experience-API-Version': '1.0.1', 'Authorization': auth},
 		'json': stmt
 	},
@@ -21,12 +33,20 @@ function sendStatement(stmt)
 	});
 }
 
+
+/*
+ * Agent subclass that truncates account info
+ */
 function AccountAgent(username)
 {
 	XAPIStatement.Agent.call({'homePage': 'http://vwf.adlnet.gov', 'name': username}, username);
 }
 AccountAgent.prototype = new XAPIStatement.Agent;
 
+
+/*
+ * Activity subclass that self-populates from a world id
+ */
 function World(id, name, description)
 {
 	var match = /_adl_sandbox_([A-Za-z0-9]{16})_/.exec(id);
@@ -40,6 +60,10 @@ function World(id, name, description)
 }
 World.prototype = new XAPIStatement.Activity;
 
+
+/*
+ * Export everything
+ */
 exports.sendStatement = sendStatement;
 
 exports.Statement = XAPIStatement;
