@@ -1,5 +1,6 @@
 var request = require('request'),
-	XAPIStatement = require('./xapistatement');
+	XAPIStatement = require('./xapistatement'),
+	liburl = require('url');
 
 
 /*
@@ -9,11 +10,11 @@ function sendStatement(userId, verb, worldId, worldName, worldDescription)
 {
 	var creds = new Buffer(global.configuration.lrsUsername + ':' + global.configuration.lrsPassword);
 	var auth = 'Basic ' + creds.toString('base64');
-
+	
 	// build statement
-	var stmt = new Statement( new AccountAgent(userId), verb);
-	if(world)
-		stmt.object = new World(world, worldName, worldDescription);
+	var stmt = new XAPIStatement( new AccountAgent(userId), verb);
+	if(worldId)
+		stmt.object = new World(worldId, worldName, worldDescription);
 	else
 		stmt.object = new XAPIStatement.Activity('http://vwf.adlnet.gov/xapi/virtual_world_sandbox', 'Virtual World Sandbox');
 	stmt.context = {'platform': 'virtual world'};
@@ -39,7 +40,7 @@ function sendStatement(userId, verb, worldId, worldName, worldDescription)
  */
 function AccountAgent(username)
 {
-	XAPIStatement.Agent.call({'homePage': 'http://vwf.adlnet.gov', 'name': username}, username);
+	XAPIStatement.Agent.call(this,{'homePage': 'http://vwf.adlnet.gov', 'name': username}, username);
 }
 AccountAgent.prototype = new XAPIStatement.Agent;
 
