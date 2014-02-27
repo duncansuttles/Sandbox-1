@@ -32,7 +32,13 @@ function GetUseAuth()
 function proxy(string,response)
 {
 	
- 		request['get'](string).auth(Get3DRUser(),Get3DRPassword(), true).pipe(response);
+ 		request['get'](string).auth(Get3DRUser(),Get3DRPassword(), true).on('error',function(e){
+
+ 			console.log(e);
+ 			response.writeHead(500);
+ 			response.end();
+
+ 		}).pipe(response);
 	
 }
 function proxySearch(URL,response)
