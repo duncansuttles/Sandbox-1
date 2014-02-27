@@ -260,10 +260,12 @@
 				
 				if(type === "choice")
 				{
+					html += '<div style="max-height: 200px;overflow-y: auto;">';
 					for(var i = 0; i < item.placeholder.length; i++)
 					{
 						html += '<div id="choice'+i+'">'+item.placeholder[i]+'</div>';
 					}
+					html += '</div>';
 				}
 				
 				if (type === "prompt" || type === "choice") html += dialogs.input;
