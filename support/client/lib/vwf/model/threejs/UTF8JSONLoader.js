@@ -251,6 +251,8 @@
     UTF8JsonLoader.prototype.texture_load_callback = function(texturename)
     {
         
+
+        
         var src = "";
         if(this.url.toLowerCase().indexOf('3dr_federation') != -1)
             src = this.url.substr(0,this.url.indexOf("Model/")) + "textures/NoRedirect/" + encodeURIComponent(texturename) +"?ID=00-00-00";
