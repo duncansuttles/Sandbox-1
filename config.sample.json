@@ -10,16 +10,22 @@
     "compile": false,         //compile with the closure conpiler
     "version": 1,             //the version number to use for URL versioning. Must be an integer!
     "useVersioning": false,   //when true, the server will use a url prefix to identify the software version
+
     "_3DRAPI": null,          //the endpoint to use to access the service. Null defaults to the public 3DR instance
     "_3DRAPIKey": null,       //the api key to use for all requests. Null defaults to the public API key
     "_3DRUser": null,         //username server identifies itself as. Null defaults to Anonymous
     "_3DRPassword": null,     //password for the server user. Null defaults to Anonymous
     "_3DRUseAuth": false,     //use anonymous access or not. Null defaults to anonymous.
+
     "sendEmails" : false,     //send emails to new users and on password reset (note, password reset is really not useful without this!) 
     "emailFrom" : "",         //the sender as it will appear in the emails to users
     "emailService" : "",      //the service provider for outgoing emails. See the nodemailer docs
     "emailPassword" : "",     //the service password for outgoing emails. See the nodemailer docs
     "emailUsername" : "",     //the service username for outgoing emails. See the nodemailer docs
+
+	"lrsEndpoint": null,
+	"lrsUsername": "",
+	"lrsPassword": "",
 }
 
 

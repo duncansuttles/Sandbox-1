@@ -1,4 +1,5 @@
-var hash = require('./hash');
+var hash = require('./hash'),
+	xapi = require('./xapi');
 
 /*
 CryptoJS v3.0.2
@@ -196,7 +197,7 @@ exports.SiteLogin = function (response,URL)
 				if(ok)
 				{
 					var session = sessions.createSession(UID,password,isTemp);
-					
+					// TODO: xapi
 					response.writeHead(200, {
 							"Content-Type":  "text/plain",
 							"Set-Cookie": "session="+session.sessionId+"; Path=/; HttpOnly;"
@@ -229,6 +230,7 @@ exports.SiteLogout = function (response,URL)
 							"Set-Cookie": "session=; HttpOnly;"
 					});
 				response.end();	
+				// TODO: xapi
 			}
 			return;
 			
