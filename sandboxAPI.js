@@ -19,6 +19,8 @@ var SiteLogout = passwordUtils.SiteLogout;
 var UpdatePassword = passwordUtils.UpdatePassword;
 var sessions = require('./sessions');
 var mailTools = require('./mailTools');
+var xapi = require('./xapi');
+
 // default path to data. over written by setup flags
 
 //generate a random id.
@@ -168,9 +170,9 @@ function InstanceLogin(response,URL)
 					global.instances[instance].state.findNode('index-vwf').properties['owner'] = URL.loginData.UID;
 					
 				respond(response,200,"Client Logged Into " + instance);
-				
-				
-				
+
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.logged_in, instance);
+
 				return;
 			}else
 			{
@@ -208,6 +210,8 @@ function InstanceLogout(response,URL)
 				
 				delete URL.loginData.clients[cid];
 				respond(response,200,"Client Logged out " + instance);
+
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.logged_out, instance);
 			}else
 			{				
 			
@@ -872,7 +876,7 @@ function DeleteState(URL,SID,response)
 		{
 			DAL.deleteInstance(SID,function()
 			{
-				// TODO: xapi
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.destroyed, SID, state.title, state.description);
 				respond(response,200,'deleted instance');
 				return;
 			});
@@ -1125,7 +1129,7 @@ function createState(URL,data,response)
 	{
 		respond(response,200,'Created state ' + id);
 		mailTools.newWorld(URL.loginData.UID,data.title,id);
-		// TODO: xapi
+		xapi.sendStatement(URL.loginData.UID, xapi.verbs.created, id, data.title, data.description);
 	});
 }
 //Just return the state data, dont serve a response

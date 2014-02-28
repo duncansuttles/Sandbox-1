@@ -1,6 +1,7 @@
 var request = require('request'),
 	XAPIStatement = require('./xapistatement'),
-	liburl = require('url');
+	liburl = require('url'),
+	DAL = require('./DAL').DAL;
 
 
 /*
@@ -8,16 +9,30 @@ var request = require('request'),
  */
 function sendStatement(userId, verb, worldId, worldName, worldDescription)
 {
+	if( !global.configuration.lrsEndpoint )
+		return;
+	
 	var creds = new Buffer(global.configuration.lrsUsername + ':' + global.configuration.lrsPassword);
 	var auth = 'Basic ' + creds.toString('base64');
 	
 	// build statement
 	var stmt = new XAPIStatement( new AccountAgent(userId), verb);
-	if(worldId)
-		stmt.object = new World(worldId, worldName, worldDescription);
+	if(worldId){
+		if(worldName === undefined || worldDescription === undefined){
+			var dalId = worldId.replace(/\//g,'_');
+			DAL.getInstance(dalId, function(state){
+				sendStatement(userId, verb, worldId, state.title, state.description);
+			});
+			return;
+		}
+		else
+			stmt.object = new World(worldId, worldName, worldDescription);
+	}
 	else
 		stmt.object = new XAPIStatement.Activity('http://vwf.adlnet.gov/xapi/virtual_world_sandbox', 'Virtual World Sandbox');
-	stmt.context = {'platform': 'virtual world'};
+
+	stmt.addParentActivity('http://vwf.adlnet.gov/xapi/virtual_world_sandbox');
+	stmt.context.platform = 'virtual world';
 
 	request.post({'url': liburl.resolve(global.configuration.lrsEndpoint, 'statements'),
 		'headers': {'X-Experience-API-Version': '1.0.1', 'Authorization': auth},
@@ -28,8 +43,11 @@ function sendStatement(userId, verb, worldId, worldName, worldDescription)
 		if(err){
 			global.error(err);
 		}
+		else if(res.statusCode === 200){
+			global.log('Action posted:', stmt.toString());
+		}
 		else {
-			global.log('Action posted', body);
+			global.log('Statement problem:', body);
 		}
 	});
 }
@@ -50,14 +68,16 @@ AccountAgent.prototype = new XAPIStatement.Agent;
  */
 function World(id, name, description)
 {
-	var match = /_adl_sandbox_([A-Za-z0-9]{16})_/.exec(id);
+	var match = /[_\/]adl[_\/]sandbox[_\/]([A-Za-z0-9]{16})[_\/]/.exec(id);
 	id = match[1];
 	var worldActivityId = 'http://vwf.adlnet.gov/xapi/'+id;
 
 	XAPIStatement.Activity.call(this,worldActivityId,name,description);
 
+	if( !this.definition ) this.definition = {};
 	this.definition.type = 'http://vwf.adlnet.gov/xapi/world';
 	this.definition.moreInfo = 'http://vwf.adlnet.gov/adl/sandbox/world/'+id;
+
 }
 World.prototype = new XAPIStatement.Activity;
 
@@ -77,4 +97,10 @@ exports.verbs = {
 	'logged_out': {
 		'id': 'http://vwf.adlnet.gov/xapi/verbs/logged_out',
 		'display': {'en-US': 'logged out of'}},
+	'created': {
+		'id': 'http://vwf.adlnet.gov/xapi/verbs/created',
+		'display': {'en-US': 'created'}},
+	'destroyed': {
+		'id': 'http://vwf.adlnet.gov/xapi/verbs/destroyed',
+		'display': {'en-US': 'destroyed'}}
 };
