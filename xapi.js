@@ -18,15 +18,20 @@ function sendStatement(userId, verb, worldId, worldName, worldDescription)
 	// build statement
 	var stmt = new XAPIStatement( new AccountAgent(userId), verb);
 	if(worldId){
-		if(worldName === undefined || worldDescription === undefined){
-			var dalId = worldId.replace(/\//g,'_');
-			DAL.getInstance(dalId, function(state){
-				sendStatement(userId, verb, worldId, state.title, state.description);
-			});
-			return;
+		if( verb.id !== exports.verbs.published_item.id ){
+			if(worldName === undefined || worldDescription === undefined){
+				var dalId = worldId.replace(/\//g,'_');
+				DAL.getInstance(dalId, function(state){
+					sendStatement(userId, verb, worldId, state.title, state.description);
+				});
+				return;
+			}
+			else
+				stmt.object = new World(worldId, worldName, worldDescription);
 		}
-		else
-			stmt.object = new World(worldId, worldName, worldDescription);
+		else {
+			stmt.object = new Item(worldId, worldName);
+		}
 	}
 	else
 		stmt.object = new XAPIStatement.Activity('http://vwf.adlnet.gov/xapi/virtual_world_sandbox', 'Virtual World Sandbox');
@@ -74,7 +79,6 @@ function World(id, name, description)
 
 	XAPIStatement.Activity.call(this,worldActivityId,name,description);
 
-	if( !this.definition ) this.definition = {};
 	this.definition.type = 'http://vwf.adlnet.gov/xapi/world';
 	this.definition.moreInfo = 'http://vwf.adlnet.gov/adl/sandbox/world/'+id;
 
@@ -83,12 +87,21 @@ World.prototype = new XAPIStatement.Activity;
 
 
 /*
+ * Activity subclass that describes an inventory item
+ */
+function Item(id, name)
+{
+	var xapiId = 'http://vwf.adlnet.gov/xapi/items/'+id;
+	XAPIStatement.Activity.call(this, xapiId, name);
+
+	this.definition.type = 'http://vwf.adlnet.gov/xapi/item';
+}
+Item.prototype = new XAPIStatement.Activity;
+
+/*
  * Export everything
  */
 exports.sendStatement = sendStatement;
-
-exports.Statement = XAPIStatement;
-exports.Statement.World = World;
 
 exports.verbs = {
 	'logged_in': {
@@ -102,5 +115,14 @@ exports.verbs = {
 		'display': {'en-US': 'created'}},
 	'destroyed': {
 		'id': 'http://vwf.adlnet.gov/xapi/verbs/destroyed',
-		'display': {'en-US': 'destroyed'}}
+		'display': {'en-US': 'destroyed'}},
+	'published': {
+		'id': 'http://vwf.adlnet.gov/xapi/verbs/published',
+		'display': {'en-US': 'published'}},
+	'unpublished': {
+		'id': 'http://vwf.adlnet.gov/xapi/verbs/unpublished',
+		'display': {'en-US': 'unpublished'}},
+	'published_item': {
+		'id': 'http://vwf.adlnet.gov/xapi/verbs/published_(item)',
+		'display': {'en-US': 'published to global inventory'}}
 };

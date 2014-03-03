@@ -362,7 +362,7 @@ function addGlobalInventoryItem(URL,data,response)
 	DAL.addToInventory('___Global___',{uploader:URL.loginData.UID,title:URL.query.title,uploaded:new Date(),description:'',type:URL.query.type},data,function(id)
 	{
 		respond(response,200,id);
-		// TODO: xapi
+		xapi.sendStatement(URL.loginData.UID, xapi.verbs.published_item, id, URL.query.title);
 	});
 }
 function deleteGlobalInventoryItem(URL,response)
@@ -744,7 +744,12 @@ function Publish(URL, SID, publishdata, response){
 		//publish the state, and get the new id for the pubished state
 		DAL.Publish(SID, publishSettings, function(newId){
 
-			// TODO: xapi
+			if( publishSettings ){
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.published, newId);
+			}
+			else {
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.unpublished, newId);
+			}
 			
 			//get the db entry for the published state
 			DAL.getInstance(newId,function(statedata)
