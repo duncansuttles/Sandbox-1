@@ -619,9 +619,10 @@
 						};
 					}					
 				}
+
 				// add placeholder value to the input field
 				if (typeof item.placeholder === "string" && item.placeholder !== "") input.value = item.placeholder;
-				if (fromQueue) this.setFocus();
+				this.setFocus();
 				this.addListeners(item.callback);
 			},
 

@@ -31,6 +31,15 @@ exports.setDocumentation = function(cs){
 		doc = cs.documentation;
 };
 
+function getRoot()
+{
+	if(!global.version)
+		return root;
+	else
+		return '/'+global.version+root;
+
+}
+
 exports.acceptedRoutes = ['createNew','welcome','search','forgotPassword','editProfile','updatePassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
 routesMap = {
 	'sandbox': {template:'index'},
@@ -71,7 +80,7 @@ exports.statsHandler = function(req, res, next){
 		DAL.getStats(function(states,users)
 		{
 			var instanceCount = Object.keys(instances || {});
-			res.locals = {instanceCount:instanceCount,states:states,users:users,allConnections:allConnections,sessions:allSessions,instances:instances || [],sessionData:sessionData,url:req.url,root:root};
+			res.locals = {instanceCount:instanceCount,states:states,users:users,allConnections:allConnections,sessions:allSessions,instances:instances || [],sessionData:sessionData,url:req.url,root:getRoot()};
 			res.render('stats',{layout:'plain'});
 
 		})
@@ -202,7 +211,7 @@ exports._404 = function(req, res){
 	
 	sessions.GetSessionData(req,function(sessionData)
 	{
-		res.locals = {sessionData:sessionData,url:req.url,root:root};
+		res.locals = {sessionData:sessionData,url:req.url,root:getRoot()};
 		res.status(404).render('_404');
 	})
 };
@@ -336,7 +345,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 		}
 		var start = 10 * page;
 		var end = start+results.length;
-		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:root,searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0)};
+		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:getRoot(),searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0)};
 		res.locals[mode] = true;
 		res.render('searchResults',{layout:'plain'});
 
@@ -377,7 +386,7 @@ exports.createNew2 = function(req, res, next){
 			{
 				
 				
-				res.locals = {worlddata:worlddata,template:(template == 'noTemplate'?false:template),root:root};
+				res.locals = {worlddata:worlddata,template:(template == 'noTemplate'?false:template),root:getRoot()};
 				res.render('createNew2',{layout:'plain'});
 			});
 			
@@ -436,7 +445,7 @@ exports.createNew = function(req, res, next){
 		}
 		var start = 10 * page;
 		var end = start+results.length;
-		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:root,searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0)};
+		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:getRoot(),searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0)};
 		
 		res.render('createNew',{layout:'plain'});
 

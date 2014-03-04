@@ -687,27 +687,7 @@ scripts:
     }
     this.GetWorldPickRay = function(e)
     {
-
-       var OldX = e.clientX - $('#index-vwf').offset().left;
-        var OldY = e.clientY - $('#index-vwf').offset().top;
-
-        var screenmousepos = [OldX/document.getElementById('index-vwf').clientWidth,OldY/document.getElementById('index-vwf').clientHeight,0,1];
-        screenmousepos[0] *= 2;
-        screenmousepos[1] *= 2;
-        screenmousepos[0] -= 1;
-        screenmousepos[1] -= 1;
-        screenmousepos[1] *= -1;
-        var worldmousepos = MATH.mulMat4Vec4(MATH.inverseMat4(getViewProjection()),screenmousepos);
-        worldmousepos[0] /= worldmousepos[3];
-        worldmousepos[1] /= worldmousepos[3];
-        worldmousepos[2] /= worldmousepos[3];
-
-
-        var campos = [_Editor.findcamera().position.x,_Editor.findcamera().position.y,_Editor.findcamera().position.z];
-        var ray = MATH.subVec3(worldmousepos,campos);
-        var dist = MATH.lengthVec3(ray);
-        ray = MATH.scaleVec3(ray,1.0/MATH.lengthVec3(ray));
-        return ray;
+       return _Editor.GetWorldPickRay(e);
     }
     this.intersectLinePlane = function(ray,raypoint,planepoint,planenormal)
     {
@@ -740,7 +720,7 @@ scripts:
       this.last_x = parms.clientX/window.screen.width;
       this.last_y = parms.clientY/window.screen.height;
       
-      if(this.cameramode == 'Navigate')
+      if(this.cameramode == 'Navigate' && parms.which == 2)
       {
             
            var campos = [_Editor.findcamera().position.x,_Editor.findcamera().position.y,_Editor.findcamera().position.z];
@@ -750,7 +730,8 @@ scripts:
          
            
             this.groundplane.PickPriority = 0;
-           var oldintersectxy = _Editor.ThreeJSPick(campos,ray,this.PickOptions).point;
+           var oldintersectxy = _Editor.ThreeJSPick(campos,ray,this.PickOptions);
+           oldintersectxy = oldintersectxy ? oldintersectxy.point : [0,0,0];
             this.groundplane.PickPriority = -1;
             var dxy2 = this.intersectLinePlane(ray,campos,[0,0,0],[0,0,1]);
            var oldintersectxy2 = MATH.addVec3(campos,MATH.scaleVec3(ray,dxy2));
@@ -846,20 +827,7 @@ scripts:
       
       if(this.cameramode == 'Navigate' && this.middledown == true)
       {   
-           
-           var campos = [_Editor.findcamera().position.x,_Editor.findcamera().position.y,_Editor.findcamera().position.z];
-           var ray = this.GetWorldPickRay(parms);
-        
-           var dxy = this.intersectLinePlane(ray,campos,[0,0,this.navpoint[2]],[0,0,1]);
-           var newintersectxy = MATH.addVec3(campos,MATH.scaleVec3(ray,dxy));
-           var dxy2 = this.intersectLinePlane(ray,campos,[0,0,0],[0,0,1]);
-           var newintersectxy2 = MATH.addVec3(campos,MATH.scaleVec3(ray,dxy2));
-            if(newintersectxy2[2] > newintersectxy[2]) newintersectxy = newintersectxy2;
-           var len  = MATH.subVec3(this.navpoint,newintersectxy)
-           
-           this.center = MATH.addVec3(this.center,MATH.subVec3(this.navpoint,newintersectxy));
-          
-         
+         this.zoom += this.rel_y*10.0;
       }
       
       this.last_x = parms.clientX/window.screen.width;
@@ -896,7 +864,18 @@ scripts:
         {
             return;
         }
-        
+        if(this.cameramode == 'Navigate' && this.navpoint)
+        {
+           var offset = MATH.subVec3(this.navpoint,this.center)
+           var len = MATH.lengthVec3(offset);
+           if(len > .01)
+           {
+              offset = MATH.scaleVec3(offset,.02);
+              this.center = MATH.addVec3(this.center,offset);
+
+           }
+
+        }
         if(this.cameramode != '3RDPerson' && this.cameramode != 'FirstPerson')
         {
             
@@ -986,7 +965,7 @@ scripts:
             findcamera().position.z = finalpos[2];
             findcamera().lookAt(TempVec3(this.center));
             
-        }
+        } 
         this.callUpdateCallbacks();
         findcamera().updateMatrixWorld();
         findcamera().updateMatrix();
@@ -1030,6 +1009,8 @@ scripts:
         this.cameramode = mode;
         if(this.cameramode == 'Orbit')
             this.followObject(null);
+        if(this.cameramode == 'Navigate')
+            this.navpoint = this.center;
         if(this.cameramode == 'Free' || this.cameramode == 'Fly')
         {
            this.ReprojectCameraCenter();
@@ -1078,7 +1059,7 @@ scripts:
     this.localpointerWheel = function( pickInfo ) {
        
         
-        if(this.cameramode != 'Navigate' && this.cameramode != 'Free'  && this.cameramode != 'Fly')
+        if(this.cameramode != 'Free'  && this.cameramode != 'Fly')
         { 
           
             
@@ -1097,11 +1078,7 @@ scripts:
                 this.zoom *= 1.1;
             }
         }
-        if(this.cameramode == 'Navigate')
-        {  
-            this.center = MATH.addVec3(this.center,MATH.scaleVec3(MATH.subVec3(this.navpoint,this.center),.05));
-            this.zoom = this.zoom + (3- this.zoom )*.01;
-        }
+       
         
         if(this.cameramode == 'Free' )
         { 

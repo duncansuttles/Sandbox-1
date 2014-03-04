@@ -208,10 +208,13 @@ define(function ()
 		}
 		this.manualEntry = function()
 		{
+			$('#MapBrowser').dialog('close');
 			alertify.prompt('Enter the URL to a texture. The texture must be WebGL compatable and served from a domain that supports CORS',function(ok,val)
 			{
+				$('#MapBrowser').dialog('open');
 				if(ok)
 				{
+
 					if (_MapBrowser.texturePickedCallback)
 					{
 						_MapBrowser.texturePickedCallback(val);
