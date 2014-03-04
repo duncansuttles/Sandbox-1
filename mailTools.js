@@ -8,7 +8,7 @@ exports.sendMail = function(to,subject,text,html,cb)
     if(!global.configuration.sendEmails || !global.configuration.emailFrom || !global.configuration.emailService || !global.configuration.emailPassword || !global.configuration.emailUsername)
     {
         global.log('email system not configured');
-        cb(false);
+        if(cb) cb(false);
         return;
     }
 
@@ -36,12 +36,10 @@ exports.sendMail = function(to,subject,text,html,cb)
     smtpTransport.sendMail(mailOptions, function(error, response){
         if(error){
             global.log(error);
-            if(cb)
-            cb(false);
+            if(cb) cb(false);
         }else{
             global.log("Message sent: " + response.message);
-            if(cb)
-            cb(true);
+            if(cb) cb(true);
         }
     });
 }
