@@ -26,7 +26,7 @@ function ()
     {
         this.load = function(cb)
         {
-
+            cb(); return;
             $.ajax({url:'../vwfdatamanager.svc/getAssets?SID=' +((/\/adl\/sandbox\/.*\//).exec(window.location.toString()).toString()),
                 success:function(data,status,xhr)
                 {

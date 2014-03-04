@@ -1102,7 +1102,6 @@ THREE.ColladaLoader = function () {
 						material.skinning = true;
 						if(geom.animation)
 						{
-							
 							geom.animation.name = Math.floor(Math.random() * 1000000) + '';
 							THREE.AnimationHandler.add(geom.animation);
 

@@ -20,6 +20,7 @@ if(false)
 //if window.jQuery is defined, than the Require Optimizer has run, and appended it to the top of this file. Thus, we don't need to worry about loading all the dependancy libraries
 if(!window.jQuery)	
 {
+ 
   //so,we are doing a regular load, and the optimizer has not run. 
   //this is somewhat carefully scripted to specify which files can download in parallel.
   require(["jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js"],

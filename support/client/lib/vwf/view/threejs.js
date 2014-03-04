@@ -20,26 +20,16 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		
         initialize: function( rootSelector ) {
            
+          rootSelector = {"application-root":'#vwf-root'}; 
 	    if(!this.events)
 				this.events = {};
 			
-		
-			
 	    $(document).on('selectionChanged',this.selectionChanged.bind(this));
 		this.renderTargetPasses = [];
-            this.rootSelector = rootSelector || '#vwf-root';
-            
-             this.canvasQuery = jQuery(this.rootSelector).append("<canvas id='" + 'index-vwf' + "' width='"+this.width+"' height='"+this.height+"' class='vwf-scene'/>"
-                ).children(":last");
-                this.canvasQuery.css('display','none');
-
-            window._dRenderer = new THREE.WebGLRenderer({canvas:($(this.canvasQuery)[0]),antialias:true,alpha:false,stencil:false});
-
-
-
+            this.rootSelector = rootSelector;
             this.height = 600;
             this.width = 800;
-            
+            this.canvasQuery = null;
             if ( window && window.innerHeight ) this.height = window.innerHeight - 20;
             if ( window && window.innerWidth ) this.width = window.innerWidth - 20;
             this.keyStates = { keysDown: {}, mods: {}, keysUp: {} };
@@ -55,7 +45,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			window.stats = stats;
 			window.stats.domElement.style.display = 'none';
 			window._dView = this;
-			this.paused = true;
+			
 			$(document).on('setstatebegin',function()
 			{
 				this.paused = true;
@@ -64,7 +54,6 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			{
 				this.paused = false;
 				$('#index-vwf').fadeIn();
-
 			}.bind(this));
 			
 			this.nodes = {};
@@ -284,13 +273,16 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
             //the created node is a scene, and has already been added to the state by the model.
             //how/when does the model set the state object? 
+            console.log('view saw: ',childID);
             if(this.state.scenes[childID])
             {
                 var threeview = this;
                 var domWin = window;
                 
                 
-               
+                this.canvasQuery = jQuery(this.rootSelector["application-root"]).append("<canvas id='" + 'index-vwf' + "' width='"+this.width+"' height='"+this.height+"' class='vwf-scene'/>"
+                ).children(":last");
+                this.canvasQuery.css('display','none');
                 initScene.call(this,this.state.scenes[childID]);
             }
         },
@@ -821,7 +813,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             
              	
                 var newPick = ThreeJSPick.call(self,sceneNode,cam,ww,wh);
-               
+
                 var newPickId = newPick ? getPickObjectID.call( view, newPick.object ) : view.state.sceneRootID;
                 
                
@@ -1040,11 +1032,11 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                    
                 }
             }
-          
+
             if(detectWebGL() && getURLParameter('disableWebGL') == 'null')
             {
             	
-                sceneNode.renderer = _dRenderer;
+                sceneNode.renderer = new THREE.WebGLRenderer({canvas:mycanvas,antialias:true,alpha:false,stencil:false});
 				sceneNode.renderer.autoUpdateScene = false;
 				sceneNode.renderer.setSize($('#index-vwf').width(),$('#index-vwf').height());
 				
@@ -1309,7 +1301,6 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
         canvas.onmousedown = function( e ) {
 		
-
 		if(window._Editor && (window._Editor.GetSelectMode() == 'Pick' || window._Editor.GetSelectMode() == 'TempPick') && e.button == 0)
 			{
 				return;
@@ -1329,7 +1320,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             var event = getEventData( e, false );
             if ( event ) {
                 pointerDownID = pointerPickID ? pointerPickID : sceneID;
-                sceneView.kernel.kernel.dispatchEvent( pointerDownID, "pointerDown", event.eventData, event.eventNodeData );
+                sceneView.kernel.dispatchEvent( pointerDownID, "pointerDown", event.eventData, event.eventNodeData );
             }
         }
 
@@ -1354,7 +1345,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             if ( eData ) {
                 var mouseUpObjectID = pointerPickID;
                 if ( mouseUpObjectID && pointerDownID && mouseUpObjectID == pointerDownID ) {
-                    sceneView.kernel.kernel.dispatchEvent( mouseUpObjectID, "pointerClick", eData.eventData, eData.eventNodeData );
+                    sceneView.kernel.dispatchEvent( mouseUpObjectID, "pointerClick", eData.eventData, eData.eventNodeData );
 
                     // TODO: hierarchy output, helpful for setting up applications
                     //var obj3js = sceneView.state.nodes[mouseUpObjectID].threeObject;
@@ -1365,7 +1356,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     //}
                 }
 				if(pointerDownID)
-                sceneView.kernel.kernel.dispatchEvent( pointerDownID, "pointerUp", eData.eventData, eData.eventNodeData );
+                sceneView.kernel.dispatchEvent( pointerDownID, "pointerUp", eData.eventData, eData.eventNodeData );
             }
             pointerDownID = undefined;
         }
@@ -1375,7 +1366,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             var eData = getEventData( e, false );
             if ( eData ) {
                 pointerOverID = pointerPickID ? pointerPickID : sceneID;
-                sceneView.kernel.kernel.dispatchEvent( pointerOverID, "pointerEnter", eData.eventData, eData.eventNodeData );
+                sceneView.kernel.dispatchEvent( pointerOverID, "pointerEnter", eData.eventData, eData.eventNodeData );
             }
         }
 		var lastpoll = performance.now();
@@ -1395,7 +1386,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 						{	
 							lastpoll = now;
 							sceneView.lastData = eData;
-							sceneView.kernel.kernel.dispatchEvent( pointerDownID, "pointerMove", eData.eventData, eData.eventNodeData );
+							sceneView.kernel.dispatchEvent( pointerDownID, "pointerMove", eData.eventData, eData.eventNodeData );
 						}
 					}
                 } else {
@@ -1403,20 +1394,20 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                         if ( pointerOverID ) {
                             if ( pointerPickID != pointerOverID ) {
 								if(pointerOverID)
-                                sceneView.kernel.kernel.dispatchEvent( pointerOverID, "pointerLeave", eData.eventData, eData.eventNodeData );
+                                sceneView.kernel.dispatchEvent( pointerOverID, "pointerLeave", eData.eventData, eData.eventNodeData );
                                 pointerOverID = pointerPickID;
 								if(pointerOverID)
-                                sceneView.kernel.kernel.dispatchEvent( pointerOverID, "pointerEnter", eData.eventData, eData.eventNodeData );
+                                sceneView.kernel.dispatchEvent( pointerOverID, "pointerEnter", eData.eventData, eData.eventNodeData );
                             }
                         } else {
                             pointerOverID = pointerPickID;
 							if(pointerOverID)
-                            sceneView.kernel.kernel.dispatchEvent( pointerOverID, "pointerEnter", eData.eventData, eData.eventNodeData );
+                            sceneView.kernel.dispatchEvent( pointerOverID, "pointerEnter", eData.eventData, eData.eventNodeData );
                         }
                     } else {
                         if ( pointerOverID ) {
 							if(pointerOverID)
-                            sceneView.kernel.kernel.dispatchEvent( pointerOverID, "pointerLeave", eData.eventData, eData.eventNodeData );
+                            sceneView.kernel.dispatchEvent( pointerOverID, "pointerLeave", eData.eventData, eData.eventNodeData );
                             pointerOverID = undefined;
                         }
                     }
@@ -1426,7 +1417,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
         canvas.onmouseout = function( e ) {
             if ( pointerOverID ) {
-                sceneView.kernel.kernel.dispatchEvent( pointerOverID, "pointerLeave" );
+                sceneView.kernel.dispatchEvent( pointerOverID, "pointerLeave" );
                 pointerOverID = undefined;
             }
             self.mouseOverCanvas = false;
@@ -1463,7 +1454,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
                     if (validKey && sceneNode && !keyAlreadyDown /*&& Object.keys( sceneView.keyStates.keysDown ).length > 0*/) {
                         //var params = JSON.stringify( sceneView.keyStates );
-                        sceneView.kernel.kernel.dispatchEvent(sceneNode.ID, "keyDown", [sceneView.keyStates]);
+                        sceneView.kernel.dispatchEvent(sceneNode.ID, "keyDown", [sceneView.keyStates]);
                     }
                 };
 	      window.document.getElementById('index-vwf').onblur = function()
@@ -1478,7 +1469,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				  var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
                     if (sceneNode) {
                         //var params = JSON.stringify( sceneView.keyStates );
-                        sceneView.kernel.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
+                        sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
                         
                     }
 				 for(var i in  sceneView.keyStates.keysUp)
@@ -1515,7 +1506,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
                     if (validKey && sceneNode) {
                         //var params = JSON.stringify( sceneView.keyStates );
-                        sceneView.kernel.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
+                        sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
                         delete sceneView.keyStates.keysUp[key.key];
                     }
 
@@ -1537,7 +1528,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     else if ( pointerOverID )
                         id = pointerOverID; 
                     if(id)    
-                    sceneView.kernel.kernel.dispatchEvent( id, "pointerWheel", eData.eventData, eData.eventNodeData );
+                    sceneView.kernel.dispatchEvent( id, "pointerWheel", eData.eventData, eData.eventNodeData );
                 }
             };
         }
@@ -1557,7 +1548,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     else if ( pointerOverID )
                         id = pointerOverID; 
                         
-                    sceneView.kernel.kernel.dispatchEvent( id, "pointerWheel", eData.eventData, eData.eventNodeData );
+                    sceneView.kernel.dispatchEvent( id, "pointerWheel", eData.eventData, eData.eventNodeData );
                 }
             });
         }

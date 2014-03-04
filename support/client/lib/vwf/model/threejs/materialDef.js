@@ -369,7 +369,7 @@
 				}
 					
 				var mapnames = ['map','lightMap','specularMap','envMap'];
-				if(_dRenderer.supportsStandardDerivatives())
+				if(window._dRenderer && _dRenderer.supportsStandardDerivatives())
 				{
 					mapnames.push('normalMap');
 					mapnames.push('bumpMap');
@@ -387,7 +387,7 @@
 							currentmat.alphaTest = 1 - value.layers[i].alpha;
 							
 						}
-						if(value.layers[i].mapTo == 2 && _dRenderer.supportsStandardDerivatives())
+						if(window._dRenderer && value.layers[i].mapTo == 2 && _dRenderer.supportsStandardDerivatives())
 						{
 							mapname = 'bumpMap';
 							currentmat.bumpScale = value.layers[i].alpha/10.0;
@@ -396,7 +396,7 @@
 						{
 							mapname = 'lightMap';
 						}	
-						if(value.layers[i].mapTo == 4 && _dRenderer.supportsStandardDerivatives())
+						if(window._dRenderer && value.layers[i].mapTo == 4 && _dRenderer.supportsStandardDerivatives())
 						{
 							mapname = 'normalMap';
 							currentmat.normalScale.x = value.layers[i].alpha;
@@ -858,7 +858,7 @@
 							//config.uniforms.map.value = _SceneManager.getTexture(layer.src);
 
 						}
-						else if( layer.mapTo == 2 && _dRenderer.supportsStandardDerivatives())
+						else if( window._dRenderer && layer.mapTo == 2 && _dRenderer.supportsStandardDerivatives())
 						{
 							render_flags['bumpMap'] = true;
 							config.uniforms.bumpMap.value = _SceneManager.getTexture(layer.src);
@@ -869,7 +869,7 @@
 							render_flags['lightMap'] = true;
 							config.uniforms.lightMap.value = _SceneManager.getTexture(layer.src);
 						}
-						else if( layer.mapTo == 4 && _dRenderer.supportsStandardDerivatives())
+						else if(window._dRenderer &&  layer.mapTo == 4 && _dRenderer.supportsStandardDerivatives())
 						{
 							render_flags['normalMap'] = true;
 							config.uniforms.normalMap.value = _SceneManager.getTexture(layer.src);

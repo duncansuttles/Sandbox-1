@@ -265,16 +265,7 @@
             var callback = args.shift();
 
             var requireConfig = {
-                shim: {
-                   
-                    "vwf/model/threejs/ColladaLoader": {
-                        deps: [ "vwf/model/threejs/three" ],
-                        exports: "THREE.ColladaLoader",
-                    },
-                     "vwf/model/threejs/three": {
-                        exports: "THREE",
-                    },
-                }
+                
             };
 
             var requireArray = [
@@ -299,8 +290,8 @@
                 { library: "vwf/view/cesium", active: false },
                 { library: "vwf/utility", active: true },
                 { library: "vwf/model/glge/glge-compiled", active: false },
-                { library: "vwf/model/threejs/three", active: true },
-                { library: "vwf/model/threejs/ColladaLoader", active: false },
+                
+              
                 { library: "vwf/model/jiglib/jiglib", active: false },
                 { library: "vwf/view/webrtc/adapter", active: false },
                 { library: "vwf/view/google-earth", active: false },
@@ -439,8 +430,8 @@
                 if(Object.keys(userLibraries["model"]).length == 0 && Object.keys(userLibraries["view"]).length == 0) {
                     requireArray["vwf/model/threejs"].active = true;
                     requireArray["vwf/view/threejs"].active = true;
-                    requireArray["vwf/model/threejs/three"].active = true;
-                    requireArray["vwf/model/threejs/ColladaLoader"].active = false;
+                   
+                   
                     initializers["model"]["vwf/model/threejs"].active = true;
                     initializers["view"]["vwf/view/threejs"].active = true;
                 }
@@ -483,6 +474,25 @@
                 } );
             });
         }
+        // -- ready --------------------------------------------------------------------------------
+        this.generateTick = function()
+        {
+            
+             var fields = {
+                time: queue.time + .05,
+                action: "tick"
+                // callback: callback,  // TODO: provisionally add fields to queue (or a holding queue) then execute callback when received back from reflector
+            };
+            this.queue( fields );
+            this.dispatch( fields.time );
+        }
+        this.goOffline = function()
+        {
+            socket.removeListener( "disconnect", vwf.disconnected);
+            socket.disconnect();
+            socket = null;
+            window.setInterval(this.generateTick.bind(this),50);
+        };      
 		this.close = function()
 		{
 			socket.removeListener( "disconnect", vwf.disconnected);
