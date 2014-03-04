@@ -75,6 +75,45 @@
 		});
 	</script>
 	{{/home}}
+	{{#avatar}}
+	<script type="text/javascript" src="{{root}}/js/spin.min.js"></script>
+	<script type="text/javascript">
+		var opts = {
+		  lines: 7, // The number of lines to draw
+		  length: 2, // The length of each line
+		  width: 5, // The line thickness
+		  radius: 15, // The radius of the inner circle
+		  corners: 1, // Corner roundness (0..1)
+		  rotate: 0, // The rotation offset
+		  direction: 1, // 1: clockwise, -1: counterclockwise
+		  color: '#000', // #rgb or #rrggbb or array of colors
+		  speed: 0.8, // Rounds per second
+		  trail: 60, // Afterglow percentage
+		  shadow: false, // Whether to render a shadow
+		  hwaccel: false, // Whether to use hardware acceleration
+		  className: 'spinner', // The CSS class to assign to the spinner
+		  zIndex: 2e9, // The z-index (defaults to 2000000000)
+		  top: 'auto', // Top position relative to parent in px
+		  left: 'auto' // Left position relative to parent in px
+		};
+		window.onscroll = function () { window.scrollTo(0, 0); };
+		$(document).ready(function(){
+			$("body").addClass("bodyLoad");
+		});
+		
+		$(window).load(function(){
+			//$("body").animate({opacity:1}, 500);
+			$("#loadOverlay").animate({opacity:0}, 500, 'swing', function(){
+				spinner.stop();
+				$("#loadOverlay").remove();
+			});
+			$("body").removeClass("bodyLoad");
+			window.onscroll = function(){};
+		});
+		var spinner = new Spinner(opts);
+	</script>	
+	{{/avatar}}
+	<script type="text/javascript" src="{{root}}/vwfDataManager.svc/getanalytics.js"></script>
 </head>
 <body style="min-width:990px;">
 	{{#home}}
@@ -94,10 +133,10 @@
 					<a class="headerA" href="{{root}}/user" id="userOptions" data-bind="text: user().username"></a>
 				</div>
 				<div id="login">
-					<a class="headerA" href="{{root}}/login?return=worlds"  id="login"  data-bind="visible:!user().isLoggedIn">Login</a>
-					<a class="headerA" href="{{root}}/user"  id="user"  data-bind="visible:user().isLoggedIn">Account</a>
-					<a class="headerA" href="{{root}}/logout?return=index" id="logout" data-bind="visible:user().isLoggedIn">Logout</a>
-					<a class="headerA" href="{{root}}/signup?return=worlds" id="signup" data-bind="visible:!user().isLoggedIn">Create Account</a>
+					{{^sessionData}}<a class="headerA" href="{{root}}/login?return=featuredWorlds/0"  id="login"  >Login</a>{{/sessionData}}
+					{{#sessionData}}<a class="headerA" href="{{root}}/user"  id="user"  >Account</a>
+					<a class="headerA" href="{{root}}/logout?return=index" id="logout" >Logout</a>{{/sessionData}}
+					{{^sessionData}}<a class="headerA" href="{{root}}/signup?return=featuredWorlds/0" id="signup" >Create Account</a>{{/sessionData}}
 				</div>
 			</div>
 		</div>		
@@ -117,9 +156,19 @@
 					</div>
 					<div class="linkMenu">
 						<a href="{{root}}">Home</a> 
-						<a href="{{root}}/worlds">Worlds</a> 
-						<a href="http://www.youtube.com/watch?list=PLbhwHX3OvksljQcxLkRT3YvyjgQaIY8m2&v=aWRQJJnBi5c">Videos</a> 
-						<a href="{{root}}/help">Help</a>
+						<a href="{{root}}/featuredWorlds/0">Worlds</a> 
+						{{#blog}}
+							<a href="{{blog}}">Blog</a> 
+						{{/blog}}
+						{{#doc}}
+							<a href="{{doc}}">Docs</a>
+						{{/doc}}
+						{{^blog}}
+							<a href="http://www.youtube.com/watch?list=PLbhwHX3OvksljQcxLkRT3YvyjgQaIY8m2&v=aWRQJJnBi5c">Videos</a> 			
+						{{/blog}}
+						{{^doc}}
+							<a href="{{root}}/help">Help</a>
+						{{/doc}}
 					</div>
 				</div>
 			</div>	
@@ -158,8 +207,13 @@
 
 			</div>
 			<div id="footer" class="container">
-				<br/><p style="color:#eee">A project from <a href='http://www.adlnet.gov'>ADL</a></p>
+				<br/><p>The views expressed on this website in the form of documentation, blog articles, or tutorials do not necessarily represent the views or policies of ADL or the U.S. Government.</p>
+
+				<p>Sponsored by the Office of the Under Secretary of Defense for Personnel and Readiness (OUSD P&amp;R).
+				This is an official website of the U.S. Government (c)2014 Advanced Distributed Learning (ADL).</p>
+				<a href="{{root}}/test">Test Browser Support</a> 
 			</div>
+
 		</div>
 	</div>
 	<a href="https://github.com/adlnet/Sandbox" id="gitBanner"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_gray_6d6d6d.png" alt="Fork me on GitHub"></a>

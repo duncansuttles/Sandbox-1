@@ -50,7 +50,7 @@ function CesiumTerrainAlgorithm(seed)
 		"uniform sampler2D diffuseSampler;\n"+
 		"vec4 getTexture(vec3 coords, vec3 norm,  vec2 uv)" +
 		"{"+
-			"vec4 diffuse = texture2D(diffuseSampler,uv * vec2(1.0,-1.0));\n"+
+			"vec4 diffuse = texture2D(diffuseSampler,uv * vec2(-1.0,-1.0));\n"+
 			"return diffuse;\n"+
 		"}")
 	}
@@ -58,8 +58,8 @@ function CesiumTerrainAlgorithm(seed)
 	{
 		
 		var mat = mesh.material;
-		var x = (mesh.position.x + 8192) / (mesh.scale.x * 100) ;
-		var y = (mesh.position.y + 6553600) / (mesh.scale.y * 100) ;
+		var x = ((mesh.position.x) ) / (mesh.scale.x * -100) ;
+		var y = ((mesh.position.y) ) / (mesh.scale.y * 100) ;
 		
 		mat.uniforms.diffuseSampler.value = _SceneManager.getTexture( "http://ecn.t0.tiles.virtualearth.net/tiles/a"+this.getQuadkey(Math.floor(x),Math.floor(y),depth-2)+".jpeg?g=1484");
 		mat.uniforms.diffuseSampler.value.wrapS = mat.uniforms.diffuseSampler.value.wrapT = THREE.RepeatWrapping;

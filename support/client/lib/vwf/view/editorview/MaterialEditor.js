@@ -93,6 +93,40 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#' + rootid + prop + 'value').val(ui.value);
 			_MaterialEditor.updateObject();
 		}
+		this.copyMaterial = function ()
+		{
+			_MaterialEditor.currentMaterialCopy = _MaterialEditor.currentMaterial;
+		}
+		this.copyLayer = function ()
+		{
+			var i = $(this).attr('i');
+			_MaterialEditor.currentMaterialLayerCopy = _MaterialEditor.currentMaterial.layers[i];
+		}
+		this.pasteMaterial = function ()
+		{
+			if(!_MaterialEditor.currentMaterialCopy)
+			{
+				_Notifier.notify('No Material to paste');
+				return;
+			}
+			
+			_MaterialEditor.currentMaterial = _MaterialEditor.currentMaterialCopy;
+			_MaterialEditor.updateObject();
+			_MaterialEditor.BuildGUI();
+		}
+		this.pasteLayer = function ()
+		{
+			if(!_MaterialEditor.currentMaterialLayerCopy)
+			{
+				_Notifier.notify('No Material Layer to paste');
+				return;
+			}
+			
+			var i = $(this).attr('i');
+			_MaterialEditor.currentMaterial.layers[i] = _MaterialEditor.currentMaterialLayerCopy;
+			_MaterialEditor.updateObject();
+			_MaterialEditor.BuildGUI();
+		}
 		this.updateObject = function ()
 		{
 			if(document.PlayerNumber == null)
@@ -118,7 +152,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$("#materialeditor").empty();
 			$("#materialeditor").append("<div id='materialeditortitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span class='ui-dialog-title' id='ui-dialog-title-Players'>Material Editor</span></div>");
 			$('#materialeditortitle').append('<a href="#" id="materialeditorclose" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
-			$('#materialeditortitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/material.png" />');
+			$('#materialeditortitle').prepend('<div class="headericon material" />');
 			$("#materialeditor").append('<div id="materialaccordion" style="height:100%;overflow:hidden">' + '	<h3>' + '		<a href="#">Material Base</a>' + '	</h3>' + '	<div id="MaterialBasicSettings">' + '	</div>' + '</div>');
 			$("#materialeditorclose").click(function ()
 			{
@@ -144,11 +178,11 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 						this.BuildGUI();
 					}
 				
-				}.bind(this),['phong','video']);
+				}.bind(this),['phong','mix','video']);
 			
 			}.bind(this));
 				
-			if(this.currentMaterial.type == 'phong')
+			if(this.currentMaterial.type == 'phong' || this.currentMaterial.type == 'mix')
 				this.BuildGUIPhong();	
 			if(this.currentMaterial.type == 'video')
 				this.BuildGUIVideo();	
@@ -268,6 +302,9 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					_MaterialEditor.currentMaterial.color.r = rgb.r / 255;
 					_MaterialEditor.currentMaterial.color.g = rgb.g / 255;
 					_MaterialEditor.currentMaterial.color.b = rgb.b / 255;
+					_MaterialEditor.currentMaterial.ambient.r = rgb.r / 255;
+					_MaterialEditor.currentMaterial.ambient.g = rgb.g / 255;
+					_MaterialEditor.currentMaterial.ambient.b = rgb.b / 255;
 					_MaterialEditor.updateObject();
 				},
 				onChange: function (hsb, hex, rgb)
@@ -276,6 +313,9 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					_MaterialEditor.currentMaterial.color.r = rgb.r / 255;
 					_MaterialEditor.currentMaterial.color.g = rgb.g / 255;
 					_MaterialEditor.currentMaterial.color.b = rgb.b / 255;
+					_MaterialEditor.currentMaterial.ambient.r = rgb.r / 255;
+					_MaterialEditor.currentMaterial.ambient.g = rgb.g / 255;
+					_MaterialEditor.currentMaterial.ambient.b = rgb.b / 255;
 					_MaterialEditor.updateObject();
 				}
 			});
@@ -313,6 +353,9 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					_MaterialEditor.updateObject();
 				}
 			});
+
+			$('#ambientdiv').hide();
+
 			$('#MaterialBasicSettings').append('<div />');
 			$('#MaterialBasicSettings').append('<div style="margin-bottom:10px" id="emitdiv" />');
 			$('#emitdiv').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;">Emission Color: </div>');
@@ -388,6 +431,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsWireFrame" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Wireframe </div></div>');
 			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsDepthTest" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Depth Test </div></div>');
 			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsDepthWrite" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Depth Write </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsVertexColors" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Vertex Colors </div></div>');
 			
 			$('#MaterialBasicSettingsFog').click(function()
 			{
@@ -416,6 +460,19 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			if (this.currentMaterial.metal === true)
 			{
 				$('#MaterialBasicSettingsMetal').attr('checked', 'checked');
+			}
+
+			$('#MaterialBasicSettingsVertexColors').click(function()
+			{
+				if ($(this).attr('checked') == 'checked') 
+					_MaterialEditor.currentMaterial.vertexColors = true;
+				else  
+					_MaterialEditor.currentMaterial.vertexColors = false;
+				_MaterialEditor.updateObject();
+			});
+			if (this.currentMaterial.vertexColors === true)
+			{
+				$('#MaterialBasicSettingsVertexColors').attr('checked', 'checked');
 			}
 			
 			$('#MaterialBasicSettingsWireFrame').click(function()
@@ -503,6 +560,23 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				label: 'Add Layer'
 			});
 			$('#' + 'MaterialBasicSettingsnewLayer').click(this.addLayer);
+
+
+			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsCopy" style=width:100%;margin-top:10px/>');
+			$('#' + 'MaterialBasicSettingsCopy').button(
+			{
+				label: 'Copy Material'
+			});
+			$('#' + 'MaterialBasicSettingsCopy').click(this.copyMaterial);
+
+			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsPaste" style=width:100%;margin-top:10px/>');
+			$('#' + 'MaterialBasicSettingsPaste').button(
+			{
+				label: 'Paste Material'
+			});
+			$('#' + 'MaterialBasicSettingsPaste').click(this.pasteMaterial);
+
+
 			for (var i = 0; i < this.currentMaterial.layers.length; i++)
 			{
 				$('#materialaccordion').append('	<h3>' + '		<a href="#">Texture Layer ' + i + '</a>' + '	</h3>' + '	<div id="Layer' + i + 'Settings">' + '	</div>');
@@ -510,7 +584,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				var rootid = 'Layer' + i + 'Settings';
 				$('#' + rootid).append('<img id="' + rootid + 'thumb" class="BigTextureThumb"/>');
 				$('#' + rootid + 'thumb').attr('src', this.currentMaterial.layers[i].src);
-				$('#' + rootid).append('<div id="' + rootid + 'thumbsrc" class="BigTextureThumb" style="overflow:hidden; text-overflow:ellipsis; text-align: center;font-weight: bold;border: none;"/>');
+				$('#' + rootid).append('<div id="' + rootid + 'thumbsrc" class="BigTextureThumbSrc" style="overflow:hidden; text-overflow:ellipsis; text-align: center;font-weight: bold;border: none;"/>');
 				$('#' + rootid + 'thumbsrc').text(this.currentMaterial.layers[i].src);
 				$('#' + rootid + 'thumb').attr('layer', i);
 				$('#' + rootid + 'thumb').click(function ()
@@ -615,6 +689,23 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				});
 				$('#' + rootid + 'deleteLayer').attr('layer', i);
 				$('#' + rootid + 'deleteLayer').click(this.deletelayer);
+
+
+				$('#' + rootid).append('<div id="' + rootid + 'copyLayer" style="width: 100%;margin-top: 10px;"/>');
+				$('#' + rootid + 'copyLayer').button(
+				{
+					label: 'Copy Layer'
+				});
+				$('#' + rootid + 'copyLayer').attr('i', i);
+				$('#' + rootid + 'copyLayer').click(this.copyLayer);
+
+				$('#' + rootid).append('<div id="' + rootid + 'pasteLayer" style="width: 100%;margin-top: 10px;"/>');
+				$('#' + rootid + 'pasteLayer').button(
+				{
+					label: 'Paste Layer'
+				});
+				$('#' + rootid + 'pasteLayer').attr('i', i);
+				$('#' + rootid + 'pasteLayer').click(this.pasteLayer);
 			}
 			
 			

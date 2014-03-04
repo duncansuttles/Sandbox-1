@@ -22,39 +22,16 @@
 
   <head>
 
-    <title>Virtual World Framework</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
-
-    <meta name="viewport" content="initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+    <title>ADL VW Sandbox</title>
 
     <!-- The Virtual World Framework makes use of the jQuery library.                            -->
 
    
 
     <script type="text/javascript" src="require.js"></script>
+    <script type="text/javascript" src="/vwfDataManager.svc/getanalytics.js"></script>
 
-    <script type="text/javascript" src="jquery-1.7.1.js"></script>
-  <script type="text/javascript" src="bootstrap.min.js"></script>
-    <script type="text/javascript" src="jquery-ui-1.8.16.custom.js"></script>
-    <script type="text/javascript" src="jquery.hammer.js"></script>
-    <script type="text/javascript" src="async.js"></script>
-
-    <script type="text/javascript" src="closure/base.js"></script>
-    <script type="text/javascript">goog.require('goog.vec.Mat4')</script>
-    <script type="text/javascript">goog.require('goog.vec.Quaternion')</script>
-
-    <script type="text/javascript">if (!window.WebSocket && window.MozWebSocket) window.WebSocket=window.MozWebSocket</script> <!-- for Firefox 5 -->
-
-    <script type="text/javascript" src="crypto.js"></script>
-    <script type="text/javascript" src="md5.js"></script>
-
-    <script type="text/javascript" src="alea.js"></script>
-    <script type="text/javascript" src="mash.js"></script>
-
-    <script type="text/javascript" src="Class.create.js"></script>
-    <script type="text/javascript" src="jquery-encoder-0.1.0.js"></script>
-    <script type="text/javascript" src="rAF.js"></script>
-    <script type="text/javascript" src="centerinclient.js"></script>
+    
     <script type="text/javascript" src="vwf/model/threejs/three.js"></script>
     <script type="text/javascript" src="vwf/view/editorView/MATH.js"></script>
 
@@ -62,7 +39,7 @@
     <!-- the global window object as window.vwf. All access to the framework is through that     -->
     <!-- reference, and no other objects are globally visible.                                   -->
 
-    <script type="text/javascript" src="vwf.js"></script>
+    
 
     <!-- The core framework manages the simulation and synchronizes it across worlds shared by   -->
     <!-- multiple users. But, the manner in which the simulation is expressed is controlled by   -->
@@ -72,64 +49,20 @@
     <!-- directives from a connection to an outside engine that is not visible to all users- but -->
     <!-- may only affect the simulation indirectly through the synchronization server.           -->
     
-    <script type="text/javascript">
-        // Users can specify which libraries the application will load by adding parameters to the URL.
-        // Model libraries are specified as a query parameter and view libraries as a hash fragment.
-        var queryString = window.location.search.substring(1);
-        var hashString = window.location.hash.substring(2);
-        var userLibraries = {model:{}, view:{}};
-        var googleEarth = false;
-        var match;
-        var application;
-        var regex = /([^&=]+)=?([^&]*)/g;
 
-        while(match = regex.exec(queryString)) {
-            var key = $.encoder.canonicalize(match[1]);
-            var parameters = $.encoder.canonicalize(match[2]);
-            if(key == "application") {
-                // Get the application specification if one is provided in the query string.
-                application = parameters;
-            }
-            else {
-                try {
-                    parameters = JSON.parse(parameters);
-                }
-                catch(e) {
-                }
-                userLibraries["model"]["vwf/model/" + key] = (parameters && parameters != "") ? parameters : undefined;
-            }
-        }
-
-        while(match = regex.exec(hashString)) {
-            var key = $.encoder.canonicalize(match[1]);
-            var parameters = $.encoder.canonicalize(match[2]);
-            try {
-                parameters = JSON.parse(parameters);
-            }
-            catch(e) {
-            }
-            userLibraries["view"]["vwf/view/" + key] = (parameters && parameters != "") ? parameters : undefined;
-            if(key == "google-earth") {
-                googleEarth = true;
-            }
-        }
-
-        googleEarth && document.write( "<scr" + "ipt type='text/javascript' src='http://www.google.com/jsapi?hl=en&amp;key=ABQIAAAAwbkbZLyhsmTCWXbTcjbgbRSzHs7K5SvaUdm8ua-Xxy_-2dYwMxQMhnagaawTo7L1FE1-amhuQxIlXw'></scr" + "ipt>")
-    </script>
-    <script type="text/javascript">googleEarth && google.load( "earth", "1" )</script>
-    
-
-    <!-- This is the common view implementation and an example view that summarizes the          -->
-    <!-- simulation state in HTML on the main page.                                              -->
-
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="vwf/view/editorview/alertify.js-0.3.9/themes/alertify.core.css" />
+    <link rel="stylesheet" type="text/css" href="vwf/view/editorview/alertify.js-0.3.9/themes/alertify.bootstrap.css" />
     <link rel="stylesheet" type="text/css" href="index.css" />
     <link rel="stylesheet" type="text/css" href="vwf/view/editor/editor.css" />
-    <link rel="stylesheet" type="text/css" href="jquery-ui-1.8.16.custom.css" />
+    <link rel="stylesheet" type="text/css" href="jquery-ui-1.10.3.custom.css" />
 
+    <script type="text/javascript">
+     //here we go! this fires a bunch of loads, and when they are don, launches the VWF
+	   require(['load']);
+    </script>
   </head>
 
-  <body>
+  <body style="background: white;box-shadow: 0px 0px 300px #666 inset;">
 
     <!-- Generic clients may have nearly empty pages, but pages for custom clients may be laid   -->
     <!-- out in any manner desired. Any view and models that render to the page should be        -->
@@ -140,65 +73,10 @@
     <div id="vwf-root"></div>
   
     <!-- Overlay div to display loading information> -->
-    <div id="loadVWFModal" class="modal">
-      <div class="modal-header">
-            <img src="images/logo.png" style="width:100%;"/>
-      </div>
-      <div class="modal-body">
-        <div>
-          <table style="width:100%;">
-            <tr>
-              <td><span id='WGL' class='req'></span></td>
-              <td><span id='ES5' class='req'></span></td>
-              <td><span id='WS' class='req'></span></td>
-            </tr>
-          </table>
-          <div class="progress progress-striped active">
-            <div class="bar" id="loadVWFProgressBar" style="width:100%;"></div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-
-        <div id='loadText' style="font-family: 'Droid Sans',sans-serif;font-size: 14px;line-height: 20px;color: #999;text-alignment:left;width:100%"> </div>
-      </div>
-    </div>
-
-    <script type="text/javascript">
-        function updateOverlay(compatibility)
-        {
-            if(compatibility.compatible) {
-                setTimeout("$('#loadVWFModal').modal('hide')",2000);
-            }
-            else {
-                if(compatibility.errors["WGL"]) {
-                    $('#WGL').prepend("<img src='images/x.png' alt=' ' width='20px'/> WebGL");       
-                }
-                if(compatibility.errors["ES5"]) {
-                    $('#ES5').prepend("<img src='images/x.png' alt=' ' width='20px'/> ECMAScript5");                    
-                }
-                if(compatibility.errors["WS"]) {
-                    $('#WS').html("<img src='images/x.png' alt=' ' width='20px'/> WebSockets");
-                }
-                $('#loadText').html("This browser is not compatible. Please review <a href='/web/docs/reqs.html'>documentation</a>.");
-            }
-        }
-
-        $("#loadVWFModal").centerInClient();
-        $('#loadVWFModal').modal('show');
-        
-        
-        window.Vec3 = goog.vec.Vec3;    
-  window.Vec4 = goog.vec.Vec4;
-  window.Mat4 = goog.vec.Mat4;
-  window.Quaternion = goog.vec.Quaternion;
-  
-        require(['boot'], function () {
-
-
-
-        });
-    </script>
+    
   </body>
 
 </html>
+
+
+

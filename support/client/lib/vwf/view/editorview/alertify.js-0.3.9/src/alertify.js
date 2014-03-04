@@ -260,10 +260,12 @@
 				
 				if(type === "choice")
 				{
+					html += '<div style="max-height: 200px;overflow-y: auto;">';
 					for(var i = 0; i < item.placeholder.length; i++)
 					{
 						html += '<div id="choice'+i+'">'+item.placeholder[i]+'</div>';
 					}
+					html += '</div>';
 				}
 				
 				if (type === "prompt" || type === "choice") html += dialogs.input;
@@ -617,9 +619,10 @@
 						};
 					}					
 				}
+
 				// add placeholder value to the input field
 				if (typeof item.placeholder === "string" && item.placeholder !== "") input.value = item.placeholder;
-				if (fromQueue) this.setFocus();
+				this.setFocus();
 				this.addListeners(item.callback);
 			},
 

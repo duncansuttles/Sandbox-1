@@ -37,7 +37,7 @@ define(function ()
 		//$('#UserProfileWindow').dialog({title:'Profile',autoOpen:false});
 		$('#UserProfileWindow').css('border-bottom', '5px solid #444444')
 		$('#UserProfileWindow').css('border-left', '2px solid #444444')
-		$('#userprofiletitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/user.png" />');
+		$('#userprofiletitle').prepend('<div class="headericon user" />');
 		$("#UserProfileWindow").append("<div id='FollowUser'></div>");
 		$("#UserProfileWindow").append("<div id='PrivateMessage'></div>");
 		$("#UserProfileWindow").append("<div id='CallUser'></div>");
@@ -62,7 +62,7 @@ define(function ()
 				if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 			});
 		});
-		$('#playerstitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/users.png" />');
+		$('#playerstitle').prepend('<div class="headericon users"  />');
 		$('#Players').css('border-bottom', '5px solid #444444')
 		$('#Players').css('border-left', '2px solid #444444')
 		$(document.body).append('<div id="CreateProfileDialog"/>');
@@ -143,41 +143,21 @@ define(function ()
 							hideTools();
 							//$('#NotifierAlertMessage').dialog('open');
 							//$('#NotifierAlertMessage').html('You are viewing this world as a guest. Please <a style="color:blue" href="'+_DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substr(13)+'">sign in</a> to participate');
-							alertify.set({ labels: {
-								ok     : "Login",
-								cancel : "Continue As Guest"
-							} });
-							alertify.confirm("You are viewing this world as a guest. You will be able to view the world, but not interact with it. Would you like to go back and log in?",
-							function(e)
-							{
-								alertify.set({ labels: {
-									ok     : "Ok",
-									cancel : "Cancel"
-								} });
 							
-								if(e)
-									window.location = _DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substr(13) + window.location.hash;
-								else
-								{
+							
 									
 									$(document.body).append('<a href="#" id="GuestLogin" style="font-family: sans-serif;z-index:99;position:fixed;font-size: 2em;" class="alertify-button alertify-button-ok" id="alertify-ok">Login</a>');
 									$('#GuestLogin').click(function()
 									{
 										window.location = _DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substr(13) + window.location.hash;
 									});
-								}
-							}
-							);
+								
 						}.bind(this)
 					});
 				}else
 				{
 					//this is a published world, and you do not need to hit the login server
-				
-					
 					this.Login('Anonymous' + _UserManager.getPlayers().length);
-				
-				
 				}
 			
 			
@@ -218,7 +198,27 @@ define(function ()
 		{
 			return 'character-vwf-' + this.currentUsername.replace(/ /g,'-');
 		}
-		
+		this.createdNode = function (nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType, childURI, childName, callback /* ( ready ) */ )
+		{
+			if(childName && childName == this.GetCurrentUserName())
+			{
+				var statedata = _DataManager.getInstanceData();
+				
+				
+				if((statedata && statedata.publishSettings && !statedata.publishSettings.camera) || !statedata || !statedata.publishSettings)
+				{
+					
+					_dView.setCameraDefault();
+					clearCameraModeIcons();
+					$('#MenuCamera3RDPersonicon').css('background-color', '#9999FF');
+					vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
+					vwf.models[0].model.nodes['index-vwf'].setCameraMode('3RDPerson');
+				}
+
+				
+
+			}
+		}
 		this.Login = function (username)
 		{
 		
@@ -270,8 +270,8 @@ define(function ()
 					return;
 				}
 			}
-			$('#MenuLogInicon').css('background', "#555555");
-			$('#MenuLogOuticon').css('background', "");
+			$('#MenuLogInicon').addClass('icondisabled')
+			$('#MenuLogOuticon').removeClass('icondisabled');
 			$('#MenuLogIn').attr('disabled', 'disabled');
 			$('#MenuLogOut').removeAttr('disabled');
 			
@@ -282,7 +282,10 @@ define(function ()
 			type: 'subDriver/threejs/asset/vnd.collada+xml',
 			properties: {
 				PlayerNumber: 1,
-				isDynamic: true
+				isDynamic: true,
+				castShadows: true,
+				receiveShadows: true,
+				activeCycle : []
 			},
 			events: {
 				ShowProfile: null,
@@ -293,6 +296,8 @@ define(function ()
 			};
 
 			//this.PlayerProto.source = 'usmale.dae'; //profile['Avatar'];
+
+			if(!profile) profile = {};
 
 			this.PlayerProto.source = profile.avatarModel || './avatars/VWS_Business_Female1.DAE';
 
@@ -347,7 +352,7 @@ define(function ()
 			            "offsetx": 0,
 			            "offsety": 0,
 			            "alpha": 1,
-			            "src": profile.avatarTexture || "http://localhost:3000/adl/sandbox/gvpGcxtL0EF2SVOQ/avatars/VWS_B_Female1-1.jpg",
+			            "src": profile.avatarTexture || "./avatars/VWS_B_Female1-1.jpg",
 			            "mapInput": 0
 			        }
 			    ],
@@ -371,7 +376,9 @@ define(function ()
 			this.PlayerProto.properties.ownerClientID = vwf.moniker();
 			this.PlayerProto.properties.profile = profile;
 			this.PlayerProto.properties.translation = newintersectxy;
-			this.PlayerProto.properties.scale = [profile.avatarHeight || 1.15,profile.avatarHeight || 1.15,profile.avatarHeight || 1.15];
+			this.PlayerProto.properties.scale = [profile.avatarHeight || 1.0, profile.avatarHeight || 1.0, profile.avatarHeight || 1.0];
+
+			vwf.models.javascript.nodes['index-vwf'].orbitPoint(newintersectxy);
 			document[username + 'link'] = null;
 			//this.PlayerProto.id = "player"+username;
 			document["PlayerNumber"] = username;
@@ -432,6 +439,11 @@ define(function ()
 				playerNodes.push(vwf.models.javascript.nodes[this.getPlayerIDs()[i]]);
 				
 			}
+			playerNodes.sort(function(a,b){
+
+				if( a.ownerClientID > b.ownerClientID) return 1;
+				return -1;
+			})
 			return playerNodes;
 		}
 		this.PlayerCreated = function (e, id)
@@ -472,8 +484,8 @@ define(function ()
 				needlogin = false;
 			
 
-			$('#MenuLogOuticon').css('background', "#555555");
-			$('#MenuLogInicon').css('background', "");
+			$('#MenuLogOuticon').addClass('icondisabled')
+			$('#MenuLogInicon').removeClass('icondisabled')
 			$('#MenuLogIn').removeAttr('disabled');
 			$('#MenuLogOut').attr('disabled', 'disabled');
 			//var parms = new Array();
@@ -548,7 +560,7 @@ define(function ()
 					{
 						
 						window.onbeforeunload = '';
-						$(window).unbind();
+						
 						window.location = _DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substr(13) + window.location.hash;
 					}.bind(this)
 				});
@@ -556,7 +568,8 @@ define(function ()
 		}
 		$(window).unload(function ()
 		{
-			this.Logout();
+			if(this.GetCurrentUserName())
+				this.Logout();
 		}.bind(this));
 		//$('#Players').dialog({ position:['left','bottom'],width:300,height:200,title: "Players",autoOpen:false});
 		

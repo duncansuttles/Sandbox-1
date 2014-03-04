@@ -38,18 +38,66 @@
 					S4() + S4() + S4()
 				);
 		}
+		function validateEmail(email) { 
+		    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+		    return re.test(email);
+		} 
+		function validatePassword(password)
+		{
+			if (password.length < 8)
+			  return 'Password must contain at least 8 characters.'
+			var hasUpperCase = /[A-Z]/.test(password);
+			var hasLowerCase = /[a-z]/.test(password);
+			var hasNumbers = /\d/.test(password);
+			var hasNonalphas = /\W/.test(password);
+			if (hasUpperCase + hasLowerCase + hasNumbers !== 3)
+			  return 'Password must contain a number, a lower case and an upper case letter.'
+			return true;
+		}
+		function validateUsername(password)
+		{
+			if (password.length < 3)
+			  return 'Username should be more than three characters'
+			if (password.length > 20)
+			  return 'Username should be less than 20 characters'
+			
+			var hasNonalphas = /\W/.test(password);
+			if (hasNonalphas)
+			  return 'Username should contain only letters and numbers'
+			return true;
+		}
 		vwfPortalModel.handleAccountButton = function(o, e){
 		
 			var username = $('#txtusername').val();
 			var password = $('#txtpassword').val();
+			var email = $('#txtemail').val();
+
+
 
 			var password2 = $('#txtpasswordconfirm').val();
 			
-			if(password != password2)
+			if(password != password2 )
 			{
 
 				vwfPortalModel.errorText("Passwords do not match");	
+				return;
+			}
 
+			if(validatePassword(password) !== true)
+			{
+				vwfPortalModel.errorText(validatePassword(password));	
+				return;
+			}
+
+			if(validateUsername(username) !== true)
+			{
+				vwfPortalModel.errorText(validateUsername(username));	
+				return;
+			}
+
+			if(!validateEmail(email))
+			{
+				vwfPortalModel.errorText("Invalid Email");	
 				return;
 			}
 
@@ -60,6 +108,7 @@
 			
 			
 			profile.Username = username;
+			profile.Email = email;
 			profile.Password = password;
 			profile.Avatar = 'usmale.dae';
 			profile.Salt = salt;
@@ -105,23 +154,24 @@
 			});
 		}
 	</script>
-<div class="row">
+<div id='content' class="row">
 	<div class="col-md-5 accountCreation" style="margin: 0 auto; float:none;">
 		<form data-bind="submit:handleAccountButton" >
 			<fieldset>
 				<legend>Required account information</legend>
-				<div class='row'>
+				<div class='row' style="margin:10px auto;float:none;text-align:center;height:260px;">
 					<div class="col-md-10" style="margin:0 auto;float:none;">
 						<input type='text' id='txtusername' class="form-control" placeholder='Username'/>
 						<input type='password' id='txtpassword' class="form-control" placeholder='Password'/>
 						<input type='password' id='txtpasswordconfirm' class="form-control" placeholder='Confirm Password'/>
+						<input type='text' id='txtemail' class="form-control" placeholder='Email'/>
 						<input type="submit" class='btn btn-default' style="float:right;"  value="Create Account"/><br/>
 						<p class="help-block" style="width:100%;margin-top:20px;" data-bind="visible:errorText,text:errorText"></p>
 					</div>
 				</div>
 				<br/><br/>
 				<legend>Optional information</legend>
-				<div class='row'>
+				<div class='row' style="margin:10px auto;float:none;text-align:center;height:260px;">
 					<div class='col-md-10' style="margin:0 auto;float:none;">
 						<input type='text' id='dob' class='input form-control' placeholder='Date Of Birth'/>
 						<input type='text' id='location' class='input form-control' placeholder='Sex'/>

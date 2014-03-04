@@ -104,6 +104,8 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 
         }
 
+   
+
     return model.load( module, {
 
         // == Module Definition ====================================================================
@@ -111,7 +113,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
         // -- initialize ---------------------------------------------------------------------------
 
         initialize: function() {
-            
+           
             this.state.scenes = {}; // id => { MATHDocument: new MATH.Document(), MATHRenderer: new MATH.Renderer(), MATHScene: new MATH.Scene() }
             this.state.nodes = {}; // id => { name: string, MATHObject: MATH.Object, MATH.Collada, MATH.Light, or other...? }
             this.state.kernel = this.kernel.kernel.kernel;
@@ -122,7 +124,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             this.delayedProperties = {};
 			this.subDriverFactory = new SubDriverFactory();
             
-			$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/_THREERayTracer.js"></script>');
+			$(document.head).append('<script type="text/javascript" src="vwf/model/threejs/_THREERayTracer.js"></script>');
 			$(document.head).append('<script type="text/javascript" src="vwf/model/threejs/scenemanager.js"></script>');
 			
 			window.rebuildAllMaterials=function (start)
@@ -395,6 +397,9 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 					
 					var scenenode = FindChildByName(parentNode.threeObject,childSource);
 					
+                    if(!scenenode)
+                        scenenode = new THREE.Object3D();
+
 					node.setAsset(scenenode);
 					node.threeObject = scenenode;
 					//we need to mark this node - because the VWF node is layered onto a GLGE node loaded from the art asset, deleteing the VWF node should not
@@ -699,7 +704,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 									var thisMatrix = new THREE.Matrix4();
 									thisMatrix.elements = matCpy(threeObject.matrix.elements);
 									
-									debugger;
+									
 									lookatPosition.set(propertyValue[0],propertyValue[1],propertyValue[2]);
 									thisPosition.getPositionFromMatrix(thisMatrix);
 									
@@ -786,6 +791,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 {
                     var ps = threeObject;
                     var particles = ps.geometry;
+                    if(propertyName == 'quaternion') return;
                     ps[propertyName] = propertyValue;
                     
                     
@@ -1225,11 +1231,16 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                     if ( propertyName == 'intensity' ) {
                         threeObject.intensity = propertyValue;
 						//threeObject.updateMatrix();
-                    }   
-					if ( propertyName == 'distance' ) {
-                        threeObject.distance = propertyValue;
-						//threeObject.updateMatrix();
-                    } 					
+                    }  
+                    if ( propertyName == 'castShadows' ) {
+                        threeObject.castShadows = propertyValue;
+                        rebuildAllMaterials.call(this);
+                        //threeObject.updateMatrix();
+                    }    
+					if(propertyName == "spotCosCutOff")
+                    {
+                        threeObject.exponent= propertyValue;   
+                    }				
                     if ( propertyName == 'castShadows' ) {
                         threeObject.castShadow = propertyValue;
                     }
@@ -1309,7 +1320,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                         
                     
                     }
-		    if(propertyName == 'worldtransform')
+		    if(propertyName == 'worldtransform' || propertyName == 'worldTransform')
                     {
                         threeObject.updateMatrixWorld(true);
                         var value = matCpy(threeObject.matrixWorld.elements); 
@@ -1391,6 +1402,14 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                     if(propertyName == "intensity")
                     {
 						return threeObject.intensity;     
+                    }
+                    if(propertyName == "castShadows")
+                    {
+                        return threeObject.castShadows;     
+                    }
+                    if(propertyName == "spotCosCutOff")
+                    {
+                        return threeObject.exponent;     
                     }
 					if(propertyName == "distance")
                     {
@@ -1536,6 +1555,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
         node.viewInited = false;
         node.modelInited = false;
         node.threeScene = new THREE.Scene();
+        node.threeScene.autoUpdate = false;
         node.pendingLoads = 0;
         node.srcAssetObjects = [];
         node.delayedProperties = {};
@@ -2128,6 +2148,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "uniform float minOrientation;\n"+
 			"uniform float textureTiles;\n"+
 			"uniform float alphaTest;\n"+
+            THREE.ShaderChunk.fog_pars_fragment +"\n"+
             "void main() {\n"+
 			            " vec2 coord = vec2(0.0,0.0);"+
 			" vec2 orig_coord = vec2(gl_PointCoord.s,1.0-gl_PointCoord.t);"+
@@ -2143,6 +2164,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "   vec4 outColor = (vColor * texture2D( texture, coord  )) *useTexture + vColor * (1.0-useTexture);\n"+
             
             "   gl_FragColor = outColor;\n"+
+             THREE.ShaderChunk.fog_fragment + "\n"+
             "}\n";
 			
 			//the default shader - the one used by the analytic solver, just has some simple stuff
@@ -2171,7 +2193,11 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 endColor:{type: "v4", value:new THREE.Vector4(0,0,0,1)},
                 startSize:{type:"f", value:1},
                 endSize:{type:"f", value:1},
-				alphaTest:{type:"f", value:.5}
+				alphaTest:{type:"f", value:.5},
+                fogColor:{type: "c", value:new THREE.Color(0,0,0,1)},
+                fogNear:{type:"f", value:.5},
+                fogFar:{type:"f", value:.5},
+                fogDensity:{type:"f", value:.5},
             };
             uniforms_default.texture.value.wrapS = uniforms_default.texture.value.wrapT = THREE.RepeatWrapping;
             var shaderMaterial_default = new THREE.ShaderMaterial( {
@@ -2181,7 +2207,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 fragmentShader: fragShader_default
 
                   });
-
+            shaderMaterial_default.fog = true;
 			//the interpolate shader blends from one simulation step to the next on the shader
 			//this	allows for a complex sim to run at a low framerate, but still have smooth motion
             //this is very efficient, as it only requires sending data up to the gpu on each sim tick		
@@ -2276,6 +2302,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "uniform float minOrientation;\n"+
 			"uniform float textureTiles;\n"+
 			"uniform float alphaTest;\n"+
+            THREE.ShaderChunk.fog_pars_fragment + "\n"+
             "void main() {\n"+
            
 			//bit of drama for dividing into 4 or 9 'virtual' textures
@@ -2296,6 +2323,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 			" vec4 outColor = (vColor * texture2D( texture, coord )) *useTexture + vColor * (1.0-useTexture);\n"+
             " if(outColor.a < alphaTest) discard;\n" + 
             "   gl_FragColor = outColor;\n"+
+            THREE.ShaderChunk.fog_fragment + "\n"+
             "}\n";
             var attributes_analytic = {
                 acceleration:   {   type: 'v3', value: [] },
@@ -2314,7 +2342,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 fragmentShader: fragShader_analytic
             });
 
-
+            shaderMaterial_analytic.fog = true;
             // create the particle system
             var particleSystem = new THREE.ParticleSystem(particles,shaderMaterial_default);
             

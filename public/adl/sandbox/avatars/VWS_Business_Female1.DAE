@@ -391,14 +391,14 @@
     </effect>
     <effect id="scene_material1">
       <profile_COMMON>
-        <newparam sid="VWS_Business_Female1-2_jpg-surface">
+        <newparam sid="VWS_B_Female1-2_jpg-surface">
           <surface type="2D">
-            <init_from>VWS_Business_Female1-2_jpg</init_from>
+            <init_from>VWS_B_Female1-2_jpg</init_from>
           </surface>
         </newparam>
-        <newparam sid="VWS_Business_Female1-2_jpg-sampler">
+        <newparam sid="VWS_B_Female1-2_jpg-sampler">
           <sampler2D>
-            <source>VWS_Business_Female1-2_jpg-surface</source>
+            <source>VWS_B_Female1-2_jpg-surface</source>
           </sampler2D>
         </newparam>
         <technique sid="common">
@@ -410,7 +410,7 @@
               <color>0.3 0.3 0.3 1</color>
             </ambient>
             <diffuse>
-              <texture texture="VWS_Business_Female1-2_jpg-sampler" texcoord="CHANNEL1"/>
+              <texture texture="VWS_B_Female1-2_jpg-sampler" texcoord="CHANNEL1"/>
             </diffuse>
             <specular>
               <color>0.2 0.2 0.2 1</color>
@@ -732,11 +732,11 @@
     </controller>
   </library_controllers>
   <library_images>
-    <image id="VWS_Business_Female1-2_jpg">
-      <init_from>file:///C:/3D_Projects/BWom0012-Tp/Backup/Sandbox_Business_Woman/VWS_Business_Female1-2.jpg</init_from>
+    <image id="VWS_B_Female1-2_jpg">
+      <init_from>VWS_B_Female1-2.jpg</init_from>
     </image>
     <image id="VWS_B_Female1-1_jpg">
-      <init_from>file:///C:/3D_Projects/BWom0012-Tp/VWS_Business_Female1/VWS_B_Female1-1.jpg</init_from>
+      <init_from>VWS_B_Female1-2.jpg</init_from>
     </image>
   </library_images>
   <library_visual_scenes>

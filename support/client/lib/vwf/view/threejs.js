@@ -23,12 +23,23 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 	    if(!this.events)
 				this.events = {};
 			
+		
+			
 	    $(document).on('selectionChanged',this.selectionChanged.bind(this));
 		this.renderTargetPasses = [];
-            this.rootSelector = rootSelector;
+            this.rootSelector = rootSelector || '#vwf-root';
+            
+             this.canvasQuery = jQuery(this.rootSelector).append("<canvas id='" + 'index-vwf' + "' width='"+this.width+"' height='"+this.height+"' class='vwf-scene'/>"
+                ).children(":last");
+                this.canvasQuery.css('display','none');
+
+            window._dRenderer = new THREE.WebGLRenderer({canvas:($(this.canvasQuery)[0]),antialias:true,alpha:false,stencil:false});
+
+
+
             this.height = 600;
             this.width = 800;
-            this.canvasQuery = null;
+            
             if ( window && window.innerHeight ) this.height = window.innerHeight - 20;
             if ( window && window.innerWidth ) this.width = window.innerWidth - 20;
             this.keyStates = { keysDown: {}, mods: {}, keysUp: {} };
@@ -44,7 +55,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			window.stats = stats;
 			window.stats.domElement.style.display = 'none';
 			window._dView = this;
-			
+			this.paused = true;
 			$(document).on('setstatebegin',function()
 			{
 				this.paused = true;
@@ -52,6 +63,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			$(document).on('setstatecomplete',function()
 			{
 				this.paused = false;
+				$('#index-vwf').fadeIn();
+
 			}.bind(this));
 			
 			this.nodes = {};
@@ -161,7 +174,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
 			if(this.tickTime > this.realTickDif)
 				this.future = this.tickTime - this.realTickDif;
-			else
+			//else
 				this.future = 0;
 			//if going slower than tick rate, don't make life harder by changing values. it would be invisible anyway
 			if(step > 2) return;
@@ -277,9 +290,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 var domWin = window;
                 
                 
-                this.canvasQuery = jQuery(this.rootSelector["application-root"]).append("<canvas id='" + 'index-vwf' + "' width='"+this.width+"' height='"+this.height+"' class='vwf-scene'/>"
-                ).children(":last");
-                
+               
                 initScene.call(this,this.state.scenes[childID]);
             }
         },
@@ -343,6 +354,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		},
 		selectionChanged: function(e,selection)
 		{
+
 			this.selection = selection;
 			
 			if(this.cameraHelper)
@@ -352,10 +364,14 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			}
 			if(this.selection && vwf.getProperty(this.selection.id,'type') =='Camera')
 			{
-				var selcam = _Editor.findviewnode(this.selection.id).children[0];
-				this.cameraHelper = new THREE.CameraHelper(selcam);
-				this.cameraHelper.InvisibleToCPUPick = true;
-				selcam.add(this.cameraHelper,true);
+				var selnode = _Editor.findviewnode(this.selection.id);
+				if(selnode)
+				{
+					var selcam = selnode.children[0];
+					this.cameraHelper = new THREE.CameraHelper(selcam);
+					this.cameraHelper.InvisibleToCPUPick = true;
+					selcam.add(this.cameraHelper,true);
+				}
 			}
 			
 			
@@ -451,8 +467,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     if(propertyName == 'enableShadows')
                     {
                         //debugger;
-                        var sceneNode = this.state.scenes[nodeID];
-                        sceneNode.renderer.shadowMapEnabled = propertyValue;
+                       // var sceneNode = this.state.scenes[nodeID];
+                       // sceneNode.renderer.shadowMapEnabled = propertyValue;
                     }
 					if(propertyName == 'fogType')
 					{
@@ -479,6 +495,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 							newfog.near = oldfog.near;
 							newfog.far = oldfog.far;
 							newfog.density = oldfog.density;
+							newfog.vFalloff = oldfog.vFalloff;
+							newfog.vFalloffStart = oldfog.vFalloffStart;
 						}
 						threeObject.fog = newfog;
 						rebuildAllMaterials.call(this,threeObject);
@@ -507,8 +525,26 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 						
 						if(!threeObject.fog)
 							threeObject.fog = new THREE.Fog();
-						threeObject.fog.near = propertyValue;	
+						
 						threeObject.fog.density = propertyValue;
+						rebuildAllMaterials.call(this,threeObject);
+					}
+					if(propertyName == 'fogVFalloff')
+					{
+						
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+							
+						threeObject.fog.vFalloff = propertyValue;
+						rebuildAllMaterials.call(this,threeObject);
+					}
+					if(propertyName == 'fogVFalloffStart')
+					{
+						
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+							
+						threeObject.fog.vFalloffStart = propertyValue;
 						rebuildAllMaterials.call(this,threeObject);
 					}
 					if(propertyName == 'fogFar')
@@ -702,6 +738,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 	var insetvp;
 	var vpargs = [];
 	var documentselector = $(document);
+
         function renderScene(time) {
 			
 			
@@ -724,6 +761,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			now = ( window.performance !== undefined && window.performance.now !== undefined ) ? window.performance.now() : time;
 			
 			timepassed = now - sceneNode.lastTime;
+
 			window.deltaTime = timepassed;
 			if(_SceneManager)
 				_SceneManager.update(timepassed);
@@ -781,12 +819,12 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 
                 sceneNode.frameCount = 0;
             
-             
+             	
                 var newPick = ThreeJSPick.call(self,sceneNode,cam,ww,wh);
-
+               
                 var newPickId = newPick ? getPickObjectID.call( view, newPick.object ) : view.state.sceneRootID;
                 
-                
+               
 				if(self.lastPickId != newPickId && self.lastEventData)
                 {
 					
@@ -818,10 +856,15 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			//var far = cam.far;
 			//var near = cam.near;
 			
+
+			_viewProjectionMatrix.multiplyMatrices( cam.projectionMatrix, cam.matrixWorldInverse );
+			vp =  _viewProjectionMatrix.transpose().flattenToArray(temparray);
+			vpargs[0] = vp.slice(0);
+
+			self.trigger('postprerender',vpargs);
+		//	renderer.render(backgroundScene,cam);
 			
-			renderer.render(backgroundScene,cam);
-			
-			renderer.clear(false,true,false);
+		//	renderer.clear(true,true,false);
 			
 			//use this for drawing really really far. Not usually necessary
 			//cam.near = cam.far - (cam.far - cam.near)/100.0;
@@ -838,54 +881,58 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
 			if(self.selection && vwf.getProperty(self.selection.id,'type') =='Camera' && self.cameraID != self.selection.id)
 			{
-				selcam = _Editor.findviewnode(self.selection.id).children[0];
-				oldaspect = selcam.aspect;
-				selcam.aspect = 1;
-				selcam.updateProjectionMatrix();
+				var selnode = _Editor.findviewnode(self.selection.id);
+				if(selnode)
+				{
+					selcam = selnode.children[0];
+					oldaspect = selcam.aspect;
+					selcam.aspect = 1;
+					selcam.updateProjectionMatrix();
+					
+					t = $('#toolbar').offset().top + $('#toolbar').height() + 10;
+					l = 10;
+					w = ww/3;
+					h = wh/3;
+					
+					
+					
+					renderer.setViewport(0,0,w,w);
+					_Editor.hideMoveGizmo();
+					_dRenderer.setScissor(0,0,w,w);
+					renderer.enableScissorTest(true);
+					
+					
+					
+					camback = self.cameraID;
+					self.cameraID = self.selection.id;
+					
 				
-				t = $('#toolbar').offset().top + $('#toolbar').height() + 10;
-				l = 10;
-				w = ww/3;
-				h = wh/3;
-				
-				
-				
-				renderer.setViewport(0,0,w,w);
-				_Editor.hideMoveGizmo();
-				_dRenderer.setScissor(0,0,w,w);
-				renderer.enableScissorTest(true);
-				
-				
-				
-				camback = self.cameraID;
-				self.cameraID = self.selection.id;
-				
-			
-				selcam.matrixWorldInverse.getInverse( selcam.matrixWorld );
-				
-				_viewProjectionMatrix.multiplyMatrices( selcam.projectionMatrix, selcam.matrixWorldInverse );
-				insetvp =  MATH.transposeMat4(_viewProjectionMatrix.flattenToArray(temparray));
-				
-				
-				self.trigger('postprerender',[insetvp,w,w]);
-				
-				renderer.clear(true,true,true);
-				renderer.render(backgroundScene,selcam);
-				
-				renderer.clear(false,true,false);
-				renderer.render(scene,selcam);
-				
-				self.cameraID = camback;
-				_Editor.showMoveGizmo();
-				_dRenderer.setViewport(0,0,$('#index-vwf').attr('width'),$('#index-vwf').attr('height'));
-				_dRenderer.setScissor(0,0,$('#index-vwf').attr('width'),$('#index-vwf').attr('height'));
-				renderer.enableScissorTest(false);
-				selcam.aspect = oldaspect;
-				selcam.updateProjectionMatrix();
+					selcam.matrixWorldInverse.getInverse( selcam.matrixWorld );
+					
+					_viewProjectionMatrix.multiplyMatrices( selcam.projectionMatrix, selcam.matrixWorldInverse );
+					insetvp =  MATH.transposeMat4(_viewProjectionMatrix.flattenToArray(temparray));
+					
+					
+					self.trigger('postprerender',[insetvp,w,w]);
+					
+					renderer.clear(true,true,true);
+					renderer.render(backgroundScene,selcam);
+					
+					renderer.clear(false,true,false);
+					renderer.render(scene,selcam);
+					
+					self.cameraID = camback;
+					_Editor.showMoveGizmo();
+					_dRenderer.setViewport(0,0,$('#index-vwf').attr('width'),$('#index-vwf').attr('height'));
+					_dRenderer.setScissor(0,0,$('#index-vwf').attr('width'),$('#index-vwf').attr('height'));
+					renderer.enableScissorTest(false);
+					selcam.aspect = oldaspect;
+					selcam.updateProjectionMatrix();
+				}
 			
 			}
 			
-			self.trigger('postprerender',vpargs);
+			
 			
 			
 			
@@ -978,29 +1025,39 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             window.onresize = function () {
                 var origWidth = self.width;
                 var origHeight = self.height;
-                if ( window && window.innerHeight ) self.height = window.innerHeight - 20;
-                if ( window && window.innerWidth ) self.width = window.innerWidth - 20;
+                if ( window && window.innerHeight ) self.height = window.innerHeight;
+                if ( window && window.innerWidth ) self.width = window.innerWidth;
+
+                var resolutionScale = _SettingsManager.getKey('resolutionScale');
 
                 if ((origWidth != self.width) || (origHeight != self.height)) {
-                    mycanvas.height = self.height;
-                    mycanvas.width = self.width;
-                    sceneNode.renderer.setViewport(0,0,window.innerWidth,window.innerHeight)
-                    sceneNode.renderer.setSize($('#index-vwf').width(),$('#index-vwf').height());
+                    mycanvas.height = self.height/resolutionScale;
+                    mycanvas.width = self.width/resolutionScale;
+                    sceneNode.renderer.setViewport(0,0,window.innerWidth/resolutionScale,window.innerHeight/resolutionScale)
+                    sceneNode.renderer.setSize($('#index-vwf').width()/resolutionScale,$('#index-vwf').height()/resolutionScale);
 					self.getCamera().aspect =  mycanvas.width / mycanvas.height;
 					self.getCamera().updateProjectionMatrix()
                    
                 }
             }
-
+          
             if(detectWebGL() && getURLParameter('disableWebGL') == 'null')
             {
-                sceneNode.renderer = new THREE.WebGLRenderer({canvas:mycanvas,antialias:true});
+            	
+                sceneNode.renderer = _dRenderer;
 				sceneNode.renderer.autoUpdateScene = false;
 				sceneNode.renderer.setSize($('#index-vwf').width(),$('#index-vwf').height());
-				sceneNode.renderer.shadowMapEnabled = true;
+				
+				
+				if(_SettingsManager.getKey('shadows'))
+				{
+					
+					
+				}
 				sceneNode.renderer.shadowMapType = THREE.PCFSoftShadowMap;
+				sceneNode.renderer.shadowMapEnabled = true;
 				sceneNode.renderer.autoClear = false;
-				sceneNode.renderer.setClearColor({r:0,g:0,b:0},1.0);
+				sceneNode.renderer.setClearColor({r:1,g:1,b:1},1.0);
             }else
             {
                 sceneNode.renderer = new THREE.CanvasRenderer({canvas:mycanvas,antialias:true});
@@ -1107,6 +1164,10 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
         var container = document.getElementById("container");
         var sceneCanvas = canvas;
+
+       
+    
+
         //var mouse = new MATH.MouseInput( sceneCanvas );
 
         var self = this;
@@ -1156,7 +1217,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             var worldCamPos, worldCamTrans, camInverse;
             if ( camera ) { 
                 worldCamTrans = new THREE.Vector3();
-				worldCamTrans.getPositionFromMatrix(camera.matrix);
+				worldCamTrans.setFromMatrixPosition(camera.matrix);
                 worldCamPos = [ worldCamTrans.x, worldCamTrans.y, worldCamTrans.y];
                 //worldCamPos = [ camera.getLocX(), camera.getLocY(), camera.getLocZ() ]; 
 //                worldCamTrans = goog.vec.Mat4.createFromArray( camera.getLocalMatrix() );
@@ -1248,6 +1309,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
         canvas.onmousedown = function( e ) {
 		
+
 		if(window._Editor && (window._Editor.GetSelectMode() == 'Pick' || window._Editor.GetSelectMode() == 'TempPick') && e.button == 0)
 			{
 				return;
@@ -1267,7 +1329,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             var event = getEventData( e, false );
             if ( event ) {
                 pointerDownID = pointerPickID ? pointerPickID : sceneID;
-                sceneView.kernel.dispatchEvent( pointerDownID, "pointerDown", event.eventData, event.eventNodeData );
+                sceneView.kernel.kernel.dispatchEvent( pointerDownID, "pointerDown", event.eventData, event.eventNodeData );
             }
         }
 
@@ -1292,7 +1354,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             if ( eData ) {
                 var mouseUpObjectID = pointerPickID;
                 if ( mouseUpObjectID && pointerDownID && mouseUpObjectID == pointerDownID ) {
-                    sceneView.kernel.dispatchEvent( mouseUpObjectID, "pointerClick", eData.eventData, eData.eventNodeData );
+                    sceneView.kernel.kernel.dispatchEvent( mouseUpObjectID, "pointerClick", eData.eventData, eData.eventNodeData );
 
                     // TODO: hierarchy output, helpful for setting up applications
                     //var obj3js = sceneView.state.nodes[mouseUpObjectID].threeObject;
@@ -1303,7 +1365,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     //}
                 }
 				if(pointerDownID)
-                sceneView.kernel.dispatchEvent( pointerDownID, "pointerUp", eData.eventData, eData.eventNodeData );
+                sceneView.kernel.kernel.dispatchEvent( pointerDownID, "pointerUp", eData.eventData, eData.eventNodeData );
             }
             pointerDownID = undefined;
         }
@@ -1313,7 +1375,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             var eData = getEventData( e, false );
             if ( eData ) {
                 pointerOverID = pointerPickID ? pointerPickID : sceneID;
-                sceneView.kernel.dispatchEvent( pointerOverID, "pointerEnter", eData.eventData, eData.eventNodeData );
+                sceneView.kernel.kernel.dispatchEvent( pointerOverID, "pointerEnter", eData.eventData, eData.eventNodeData );
             }
         }
 		var lastpoll = performance.now();
@@ -1333,7 +1395,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 						{	
 							lastpoll = now;
 							sceneView.lastData = eData;
-							sceneView.kernel.dispatchEvent( pointerDownID, "pointerMove", eData.eventData, eData.eventNodeData );
+							sceneView.kernel.kernel.dispatchEvent( pointerDownID, "pointerMove", eData.eventData, eData.eventNodeData );
 						}
 					}
                 } else {
@@ -1341,20 +1403,20 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                         if ( pointerOverID ) {
                             if ( pointerPickID != pointerOverID ) {
 								if(pointerOverID)
-                                sceneView.kernel.dispatchEvent( pointerOverID, "pointerLeave", eData.eventData, eData.eventNodeData );
+                                sceneView.kernel.kernel.dispatchEvent( pointerOverID, "pointerLeave", eData.eventData, eData.eventNodeData );
                                 pointerOverID = pointerPickID;
 								if(pointerOverID)
-                                sceneView.kernel.dispatchEvent( pointerOverID, "pointerEnter", eData.eventData, eData.eventNodeData );
+                                sceneView.kernel.kernel.dispatchEvent( pointerOverID, "pointerEnter", eData.eventData, eData.eventNodeData );
                             }
                         } else {
                             pointerOverID = pointerPickID;
 							if(pointerOverID)
-                            sceneView.kernel.dispatchEvent( pointerOverID, "pointerEnter", eData.eventData, eData.eventNodeData );
+                            sceneView.kernel.kernel.dispatchEvent( pointerOverID, "pointerEnter", eData.eventData, eData.eventNodeData );
                         }
                     } else {
                         if ( pointerOverID ) {
 							if(pointerOverID)
-                            sceneView.kernel.dispatchEvent( pointerOverID, "pointerLeave", eData.eventData, eData.eventNodeData );
+                            sceneView.kernel.kernel.dispatchEvent( pointerOverID, "pointerLeave", eData.eventData, eData.eventNodeData );
                             pointerOverID = undefined;
                         }
                     }
@@ -1364,7 +1426,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
         canvas.onmouseout = function( e ) {
             if ( pointerOverID ) {
-                sceneView.kernel.dispatchEvent( pointerOverID, "pointerLeave" );
+                sceneView.kernel.kernel.dispatchEvent( pointerOverID, "pointerLeave" );
                 pointerOverID = undefined;
             }
             self.mouseOverCanvas = false;
@@ -1401,7 +1463,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
                     if (validKey && sceneNode && !keyAlreadyDown /*&& Object.keys( sceneView.keyStates.keysDown ).length > 0*/) {
                         //var params = JSON.stringify( sceneView.keyStates );
-                        sceneView.kernel.dispatchEvent(sceneNode.ID, "keyDown", [sceneView.keyStates]);
+                        sceneView.kernel.kernel.dispatchEvent(sceneNode.ID, "keyDown", [sceneView.keyStates]);
                     }
                 };
 	      window.document.getElementById('index-vwf').onblur = function()
@@ -1416,7 +1478,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				  var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
                     if (sceneNode) {
                         //var params = JSON.stringify( sceneView.keyStates );
-                        sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
+                        sceneView.kernel.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
                         
                     }
 				 for(var i in  sceneView.keyStates.keysUp)
@@ -1453,7 +1515,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
                     if (validKey && sceneNode) {
                         //var params = JSON.stringify( sceneView.keyStates );
-                        sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
+                        sceneView.kernel.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
                         delete sceneView.keyStates.keysUp[key.key];
                     }
 
@@ -1475,7 +1537,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     else if ( pointerOverID )
                         id = pointerOverID; 
                     if(id)    
-                    sceneView.kernel.dispatchEvent( id, "pointerWheel", eData.eventData, eData.eventNodeData );
+                    sceneView.kernel.kernel.dispatchEvent( id, "pointerWheel", eData.eventData, eData.eventNodeData );
                 }
             };
         }
@@ -1495,10 +1557,11 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     else if ( pointerOverID )
                         id = pointerOverID; 
                         
-                    sceneView.kernel.dispatchEvent( id, "pointerWheel", eData.eventData, eData.eventNodeData );
+                    sceneView.kernel.kernel.dispatchEvent( id, "pointerWheel", eData.eventData, eData.eventNodeData );
                 }
             });
         }
+
 
         // == Draggable Content ========================================================================
 
@@ -1594,18 +1657,25 @@ define( [ "module", "vwf/view" ], function( module, view ) {
         };
          
     };
+
+    
+
     function mouseXPos(e) {
-        return e.clientX - e.currentTarget.offsetLeft + window.scrollX;
+    	
+        return e.clientX - e.currentTarget.offsetLeft + (window.scrollX || 0);
     }
 
     function mouseYPos(e) {
-        return e.clientY - e.currentTarget.offsetTop + window.scrollY;
+        return e.clientY - e.currentTarget.offsetTop + (window.scrollY || 0);
     }
 
+	
    function ThreeJSPick(sceneNode,cam,SCREEN_WIDTH,SCREEN_HEIGHT)
     {
         if(!this.lastEventData) return;
         
+        if(!this.pickOptionsAvatar) this.pickOptionsAvatar = {filter:function(o){return !(o.isAvatar === true)}};
+    	if(!this.pickOptions) this.pickOptions = {};
         
         var threeCam = cam;//sceneNode.camera.threeJScameras[sceneNode.camera.ID];
         if(!this.ray) this.ray = new THREE.Ray();
@@ -1622,7 +1692,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
         this.projector.unprojectVector(this.directionVector, threeCam);
         var pos = new THREE.Vector3();
 		var pos2 = new THREE.Vector3();
-		pos2.getPositionFromMatrix(threeCam.matrixWorld);
+		pos2.x = threeCam.matrixWorld.elements[12];
+		pos2.y = threeCam.matrixWorld.elements[13];
+		pos2.z = threeCam.matrixWorld.elements[14];
         pos.copy(pos2);
         this.directionVector.sub(pos);
         this.directionVector.normalize();
@@ -1672,15 +1744,17 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		
 			
 			if(vwf.models[0].model.nodes['index-vwf'].cameramode == 'FirstPerson')
-				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[directionVector.x,directionVector.y,directionVector.z],{filter:function(o){return !(o.isAvatar === true)}});
+				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[this.directionVector.x,this.directionVector.y,this.directionVector.z],this.pickOptionsAvatar);
 			else
-				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[this.directionVector.x,this.directionVector.y,this.directionVector.z]);
+				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[this.directionVector.x,this.directionVector.y,this.directionVector.z],this.pickOptions);
+			
 			
 				
 			return intersects;
 		}
     
     }
+    
     function getPickObjectID(threeObject)
     {   
         

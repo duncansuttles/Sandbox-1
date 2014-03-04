@@ -20,7 +20,7 @@ define(function ()
 		$('#sidepanel').append("<div id='hierarchyManager' class='ui-accordion-content ui-helper-reset ui-widget-content ui-corner-bottom ui-accordion-content-active' style='padding-bottom:5px;overflow:hidden;height:auto'></div>");
 		$('#hierarchyManager').append("<div id='hierarchyManagertitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span id='hierarchyManagertitletext' class='ui-dialog-title' id='ui-dialog-title-Players'>Hierarchy</span></div>");
 		$('#hierarchyManager').append("<span>Filter: </span><input type='text' id='HeirarchyFilter' class=''></input>");
-		$('#hierarchyManager').append("<div id='hierarchyDisplay' style='font:1.5em sans-serif;padding-bottom:5px;background:#FFFFF8;border: 1px black solid;margin: 3px 3px 3px 3px;height:auto'></div>");
+		$('#hierarchyManager').append("<div id='hierarchyDisplay' style=''></div>");
 		$('#hierarchyManager').append("<div id='hierarchyManagerMakeNode'></div>");
 		$('#hierarchyManager').append("<div id='hierarchyManagerSelect'></div>");
 		
@@ -38,7 +38,7 @@ define(function ()
 			label: 'Select'
 		});
 		$('#hierarchyManagertitle').append('<a id="hierarchyclose" href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
-		$('#hierarchyManagertitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/hierarchy.gif" />');
+		$('#hierarchyManagertitle').prepend('<div class="headericon hierarchy" />');
 		$('#hierarchyManager').css('border-bottom', '5px solid #444444')
 		$('#hierarchyManager').css('border-left', '2px solid #444444')
 		$('#hierarchyclose').click(function ()
@@ -197,9 +197,9 @@ define(function ()
 			}
 			if (type == 'glge') node = HierarchyManager.findTHREEChild(_Editor.findviewnode(HierarchyManager.selectedID), name);
 			HierarchyManager.makeBounds(node, color);
-			$(".hierarchyItem").css('background', '#FFFFF8');
-			$('#heirarchyParent').css('background', '#FFFFF8');
-			$('#hierarchyDisplay').find('[name="' + name + '"]').css('background', 'lightblue');
+			$(".hierarchyItem").removeClass('hierarchyItemSelected');
+			$('#heirarchyParent').removeClass('hierarchyItemSelected');
+			$('#hierarchyDisplay').find('[name="' + name + '"]').addClass('hierarchyItemSelected');
 		}
 		this.getVWFChildren = function (node, list, depth)
 		{
@@ -289,7 +289,7 @@ define(function ()
 		{
 		
 			
-			$('#hierarchyManagertitletext').text(vwf.getProperty(this.selectedID,'DisplayName') + ' Hierarchy');
+			$('#hierarchyManagertitletext').text((vwf.getProperty(this.selectedID,'DisplayName')||"") + ' Hierarchy');
 			$('#hierarchyDisplay').empty();
 			$('#InventoryRename').hide();
 			$('#InventoryRename').keypress(HierarchyManager.rename)
@@ -320,11 +320,11 @@ define(function ()
 				var dispName = vwf.getProperty(i.name, 'DisplayName');
 				if((i.name.indexOf(filter) != -1 ||(dispName && dispName.indexOf(filter) != -1)))
 				{
-					$('#VWFChildren').append('<div class="hierarchyItem" style="font-weight:normal;white-space: nowrap;text-overflow: ellipsis;height:1.3em;overflow:hidden;background:#FFFFF8;padding-left:0px;" id="' + thisid + '" />');
+					$('#VWFChildren').append('<div class="hierarchyItem" style="" id="' + thisid + '" />');
 					
 					if (dispName) $('#' + thisid).text(dispName);
 					else $('#' + thisid).text(i.name);
-					for (var t = 0; t < i.depth; t++) $('#' + thisid).prepend('<div style="padding-bottom: 5px;border-left: 1px solid lightgray;margin-right: 10px;margin-left: 0px;display: inline;height: 1.3em;white-space: nowrap;" />');
+					for (var t = 0; t < i.depth; t++) $('#' + thisid).prepend('<div class="hierarchySpacer" />');
 					$('#' + thisid).attr('name', i.name);
 					$('#' + thisid).attr('type', 'vwf');
 					$('#' + thisid).click(HierarchyManager.itemClicked);
@@ -342,9 +342,9 @@ define(function ()
 					if((i.name.indexOf(filter) != -1 ))
 					{
 						var thisid = 'THREEChild' + ToSafeID(i.name) + i.depth + count;
-						$('#THREEChildren').append('<div class="hierarchyItem" style="font-weight:normal;white-space: nowrap;text-overflow: ellipsis;height:1.3em;overflow:hidden;background:#FFFFF8;padding-left:0px;" id="' + thisid + '" />');
+						$('#THREEChildren').append('<div class="hierarchyItem" style="" id="' + thisid + '" />');
 						$('#' + thisid).text(i.name);
-						for (var t = 0; t < i.depth; t++) $('#' + thisid).prepend('<div style="padding-bottom: 5px;border-left: 1px solid lightgray;margin-right: 10px;margin-left: 0px;display: inline;height: 1.3em;white-space: nowrap;" />');
+						for (var t = 0; t < i.depth; t++) $('#' + thisid).prepend('<div class="hierarchySpacer" />');
 						$('#' + thisid).attr('name', i.name);
 						$('#' + thisid).attr('type', 'glge');
 						$('#' + thisid).click(HierarchyManager.itemClicked);
@@ -377,6 +377,14 @@ define(function ()
 			catch (e)
 			{
 				console.log(e);
+			}
+		}
+		this.createdNode = function(id)
+		{
+			
+			if(this.selectedID == id || vwf.decendants(this.selectedID ).indexOf(id) != -1)
+			{
+				this.BuildGUI;
 			}
 		}
 		$(document).bind('selectionChanged', this.SelectionChanged.bind(this));

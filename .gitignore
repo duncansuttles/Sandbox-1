@@ -8,3 +8,6 @@ cleanup.bat
 /build/*
 /data/*
 startup.bat
+config.json
+.directory
+*.sublime-workspace

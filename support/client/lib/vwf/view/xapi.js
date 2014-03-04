@@ -2,7 +2,7 @@
  * Provide a per-object interface to the xAPIWrapper
  ***************************/
 
-define( ["module", "vwf/view", "vwf/view/xapi/xapiwrapper"], function( module, view ) {
+define( ["module", "vwf/view", "vwf/view/xapi/xapiwrapper.min"], function( module, view ) {
 
 	return view.load( module, {
 
@@ -30,11 +30,16 @@ define( ["module", "vwf/view", "vwf/view/xapi/xapiwrapper"], function( module, v
 				'sendStatements':2};
 
 			// process only if prefixed method is handled, and this client or the system initiated the event
-			if( fn.slice(0,5) == 'xapi_' && Object.keys(methods).indexOf(fn.slice(5)) != -1
-			&& (vwf.client() == null || vwf.client() == vwf.moniker()) )
+			if( fn.slice(0,5) == 'xapi_' && Object.keys(methods).indexOf(fn.slice(5)) != -1)
 			{
 				//console.log('XAPI:', id, fn, params);
 				var wrapper;
+
+				// no-op if no users are logged in
+				if( !_UserManager.getPlayers()[0] && fn != 'xapi_configure' ){
+					console.log('xAPI module disabled for anonymous clients');
+					return;
+				}
 
 				// if an obj has already initialized, use that
 				if( id in this.wrapperOf ){
@@ -57,8 +62,17 @@ define( ["module", "vwf/view", "vwf/view/xapi/xapiwrapper"], function( module, v
 				var method = fn.slice(5);
 
 				// fail request if they are trying to anonymously post
-				if( vwf.client() == null && /^send/.test(method) ){
+				/*if( vwf.client() == null && /^send/.test(method) ){
 					console.error(id, ': posting to an LRS is only allowed from within events');
+					return;
+				}*/
+				var firstId = _UserManager.getPlayers()[0].ownerClientID;
+				var clientId = _UserManager.GetClientIDForPlayername(_UserManager.GetCurrentUserName());
+				if( /^send/.test(method) && !(
+					vwf.client() == vwf.moniker() ||
+					vwf.client() == null && clientId == firstId)
+				){
+					console.log('xAPI pass');
 					return;
 				}
 
@@ -80,9 +94,9 @@ define( ["module", "vwf/view", "vwf/view/xapi/xapiwrapper"], function( module, v
 
 						// build a callback that replicates response to other clients
 						var successCallback = params[0];
-						var callback = function(xhr){
+						var callback = function(){
 							if( successCallback ){
-								vwf_view.kernel.callMethod(id, successCallback, [xhr]);
+								vwf_view.kernel.callMethod(id, successCallback, Array.prototype.slice.call(arguments));
 							}
 						};
 

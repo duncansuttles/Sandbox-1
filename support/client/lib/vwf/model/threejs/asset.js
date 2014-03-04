@@ -30,7 +30,9 @@
 						
 						var list = [];
 						this.GetAllLeafMeshes(this.rootnode,list);
-						return this.getDefForMaterial(list[0].material);
+						if(list[0])
+							return this.getDefForMaterial(list[0].material);
+						else return undefined;
 					
 					}else
 					{
@@ -48,27 +50,29 @@
 			//for the subNode case
 			this.setAsset = function(asset)
 			{
-				this.initializedFromAsset = true;
-				this.backupmats = [];
-				this.backupMatrix = asset.matrix.clone();
-				this.rootnode = asset;
-				this.rootnode = asset;
-				asset.initializedFromAsset = true;
-				var list = [];
-				this.GetAllLeafMeshes(this.rootnode,list);
-				for(var i =0; i < list.length; i++)
+				if(asset)
 				{
-					if(list[i].material)
+					this.initializedFromAsset = true;
+					this.backupmats = [];
+					this.backupMatrix = asset.matrix.clone();
+					this.rootnode = asset;
+					this.rootnode = asset;
+					asset.initializedFromAsset = true;
+					var list = [];
+					this.GetAllLeafMeshes(this.rootnode,list);
+					for(var i =0; i < list.length; i++)
 					{
-						this.backupmats.push([list[i],list[i].material.clone()]);
-					}					
+						if(list[i].material)
+						{
+							this.backupmats.push([list[i],list[i].material.clone()]);
+						}					
+					}
+					asset.matrixAutoUpdate = false;
+					asset.updateMatrixWorld(true);      
+					_SceneManager.setDirty(asset);	
+					
+					this.settingProperty('transform',this.gettingProperty('transform'));
 				}
-				asset.matrixAutoUpdate = false;
-				asset.updateMatrixWorld(true);      
-				_SceneManager.setDirty(asset);	
-				
-				this.settingProperty('transform',this.gettingProperty('transform'));
-			
 			}
 			this.deletingNode = function()
 			{
@@ -90,16 +94,133 @@
 			}
 			this.loadFailed = function(id)
 			{
-				$(document).trigger('EndParse');
+				
+				
 				//the collada loader uses the failed callback as progress. data means this is not really an error;
-				if(!id && window._Notifier)
-					_Notifier.alert('error loading asset ' + this.assetSource);
-			
+				if(!id)
+				{
+					if(window._Notifier)
+					{
+						_Notifier.alert('error loading asset ' + this.assetSource);
+					}
+					//get the entry from the asset registry
+					reg = this.assetRegistry[this.assetSource];
+					$(document).trigger('EndParse');
+					//it's not pending, and it is loaded
+					reg.pending = false;
+					reg.loaded = true;
+					//store this asset in the registry
+					reg.node = null;
+					
+					//if any callbacks were waiting on the asset, call those callbacks
+					for(var i = 0; i < reg.callbacks.length; i++)
+						reg.callbacks[i](null);
+					//nothing should be waiting on callbacks now.	
+					reg.callbacks = [];	
+					
+					_ProgressBar.hide();
+					asyncCallback(true);
+				}else
+				{
+					
+					//this is actuall a progress event!
+					_ProgressBar.setProgress(id.loaded/id.total);
+					_ProgressBar.setMessage(this.assetSource);
+					_ProgressBar.show();
+
+
+				}
+
+			}
+			this.GetAllLeafMeshes = function(threeObject,list)
+			{
+				if(threeObject instanceof THREE.Mesh)
+				{
+					list.push(threeObject);
+					for(var i=0; i < threeObject.children.length; i++)
+					{
+						this.GetAllLeafMeshes(threeObject.children[i],list);
+					}           
+				}
+				if(threeObject.children)
+				{
+					for(var i=0; i < threeObject.children.length; i++)
+					{
+						this.GetAllLeafMeshes(threeObject.children[i],list);
+					}               
+				}     
+			}
+			this.cleanTHREEJSnodes = function(node)
+			{
+					var list = [];
+					
+					this.GetAllLeafMeshes(node,list);
+					for(var i =0; i < list.length; i++)
+					{
+						list[i].geometry.dynamic = false;
+						list[i].castShadow = _SettingsManager.getKey('shadows');
+						list[i].receiveShadow = _SettingsManager.getKey('shadows');
+						if(list[i].geometry instanceof THREE.BufferGeometry) continue;
+					/*	if(list[i].material)
+						{
+							list[i].material = list[i].material.clone();
+							list[i].material.needsUpdate = true;
+							if(list[i].material.map)
+							{
+								list[i].material.map =  _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
+								list[i].material.map.needsUpdate = true;
+							}else
+							{
+								list[i].material.map =  _SceneManager.getTexture('white.png');
+								list[i].material.map.needsUpdate = true;
+							}
+							if(list[i].material.bumpMap)
+							{
+								list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
+								list[i].material.bumpMap.needsUpdate = true;
+							}
+							if(list[i].material.lightMap)
+							{
+								list[i].material.lightMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
+								list[i].material.lightMap.needsUpdate = true;
+							}
+							if(list[i].material.normalMap)
+							{
+								list[i].material.normalMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
+								list[i].material.normalMap.needsUpdate = true;								
+							}
+											
+							list[i].materialUpdated();
+						}else
+						{
+							list[i].material = new THREE.MeshPhongMaterial();
+							list[i].material.map =  _SceneManager.getTexture('white.png');		
+						}
+						*/
+						
+						//If the incomming mesh does not have UVs on channel one, fill with zeros.
+						if(!list[i].geometry.faceVertexUvs[0] || list[i].geometry.faceVertexUvs[0].length == 0)
+						{
+							list[i].geometry.faceVertexUvs[0] = [];
+							for(var k = 0; k < list[i].geometry.faces.length; k++)
+							{
+								if(!list[i].geometry.faces[k].d)
+									list[i].geometry.faceVertexUvs[0].push([new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]);
+								else
+									list[i].geometry.faceVertexUvs[0].push([new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]);
+							}
+						}
+					}
 			}
 			this.loaded = function(asset)
 			{
+				_ProgressBar.hide();
+				if(!asset)
+				{
+					this.loadFailed();
+					return;
+				}
 				
-				this.getRoot().add(asset.scene);
 				$(document).trigger('EndParse',['Loading...',assetSource]);
 				
 				
@@ -109,45 +230,12 @@
 				reg.pending = false;
 				reg.loaded = true;
 				//store this asset in the registry
+
 				reg.node = asset.scene.clone();
 				
-				var list = [];
-					
-					this.GetAllLeafMeshes(reg.node,list);
-					for(var i =0; i < list.length; i++)
-						if(list[i].material)
-						{
-							list[i].material = list[i].material.clone();
-							list[i].material.needsUpdate = true;
-							if(list[i].material.map)
-							{
-								list[i].material.map =  _SceneManager.getTexture(list[i].material.map.image.src);
-								list[i].material.map.needsUpdate = true;
-							}else
-							{
-								list[i].material.map =  _SceneManager.getTexture('white.png');
-								list[i].material.map.needsUpdate = true;
-							}
-							if(list[i].material.bumpMap)
-							{
-								list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.bumpMap.image.src);
-								list[i].material.bumpMap.needsUpdate = true;
-							}
-							if(list[i].material.lightMap)
-							{
-								list[i].material.lightMap = _SceneManager.getTexture(list[i].material.lightMap.image.src);
-								list[i].material.lightMap.needsUpdate = true;
-							}
-							if(list[i].material.normalMap)
-							{
-								list[i].material.normalMap = _SceneManager.getTexture(list[i].material.normalMap.image.src);
-								list[i].material.normalMap.needsUpdate = true;								
-							}
-											
-							list[i].materialUpdated();
-						}
+				this.cleanTHREEJSnodes(reg.node);
 				
-					
+				this.getRoot().add(reg.node.clone());
 				
 				
 				this.settingProperty('materialDef',this.materialDef);
@@ -189,21 +277,31 @@
 			assetRegistry[assetSource].loaded = false;
 			assetRegistry[assetSource].pending = false;
 			assetRegistry[assetSource].callbacks = [];
-		}
-		this.GetAllLeafMeshes = function(threeObject,list)
+
+			//see if it was preloaded
+			if(childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed' && _assetLoader.getUtf8Json(assetSource))
 			{
-				if(threeObject instanceof THREE.Mesh)
-				{
-					list.push(threeObject);
-				}
-				if(threeObject.children)
-				{
-					for(var i=0; i < threeObject.children.length; i++)
-					{
-						GetAllLeafMeshes(threeObject.children[i],list);
-					}               
-				}     
+				assetRegistry[assetSource].loaded = true;
+				assetRegistry[assetSource].pending = false;
+				assetRegistry[assetSource].node = _assetLoader.getUtf8Json(assetSource).scene;
+				this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
 			}
+			if(childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed+optimized' && _assetLoader.getUtf8JsonOptimized(assetSource))
+			{
+				assetRegistry[assetSource].loaded = true;
+				assetRegistry[assetSource].pending = false;
+				assetRegistry[assetSource].node = _assetLoader.getUtf8JsonOptimized(assetSource).scene;
+				this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
+			}
+			if(childType == 'subDriver/threejs/asset/vnd.collada+xml' && _assetLoader.getCollada(assetSource))
+			{
+				assetRegistry[assetSource].loaded = true;
+				assetRegistry[assetSource].pending = false;
+				assetRegistry[assetSource].node = _assetLoader.getCollada(assetSource).scene;
+				this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
+			}
+		}
+		
 			
 			//grab the registry entry for this asset
 			var reg = assetRegistry[assetSource];
@@ -221,14 +319,19 @@
 				{
 					this.loader = new THREE.ColladaLoader();
 					
-					this.loader.load(assetSource,this.loaded,this.loadFailed.bind(this));
+					this.loader.load(assetSource,this.loaded.bind(this),this.loadFailed.bind(this));
 					
+					asyncCallback(false);
+				}
+				if(childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed+optimized')
+				{
+					this.loader = new UTF8JsonLoader_Optimized({source:assetSource},this.loaded.bind(this),this.loadFailed.bind(this));
 					asyncCallback(false);
 				}
 				if(childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed')
 				{
 					
-					this.loader = new UTF8JsonLoader({source:assetSource},this.loaded,this.loadFailed);
+					this.loader = new UTF8JsonLoader({source:assetSource},this.loaded.bind(this),this.loadFailed.bind(this));
 					
 					asyncCallback(false);
 				}
@@ -239,60 +342,16 @@
 			//if the asset registry entry is not pending and it is loaded, then just grab a copy, no download or parse necessary
 			else if(reg.loaded == true && reg.pending == false)
 			{
-				this.getRoot().add(reg.node.clone());
 				
-				var list = [];
-					
-					this.GetAllLeafMeshes(this.rootnode,list);
-					for(var i =0; i < list.length; i++)
-						if(list[i].material)
-						{
-							list[i].material = list[i].material.clone();
-							list[i].material.needsUpdate = true;
-							
-				
-							if(list[i].material.map)
-							{
-								list[i].material.map =  _SceneManager.getTexture(list[i].material.map.image.src);
-								list[i].material.map.needsUpdate = true;
-							}else
-							{
-								list[i].material.map =  _SceneManager.getTexture('white.png');
-								list[i].material.map.needsUpdate = true;
-							}
-							if(list[i].material.bumpMap)
-							{
-								list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.bumpMap.image.src);
-								list[i].material.bumpMap.needsUpdate = true;
-							}
-							if(list[i].material.lightMap)
-							{
-								list[i].material.lightMap = _SceneManager.getTexture(list[i].material.lightMap.image.src);
-								list[i].material.lightMap.needsUpdate = true;
-							}
-							if(list[i].material.normalMap)
-							{
-								list[i].material.normalMap = _SceneManager.getTexture(list[i].material.normalMap.image.src);
-								list[i].material.normalMap.needsUpdate = true;								
-							}
-							
-						
-							
-							
-							list[i].materialUpdated();
-						}
-					
-					
-					this.settingProperty('materialDef',this.materialDef);
+				this.getRoot().add(reg.node.clone());		
+				this.cleanTHREEJSnodes(this.getRoot());
+				this.settingProperty('materialDef',this.materialDef);
 				$(document).trigger('EndParse');
 			}
 			//if it's pending but not done, register a callback so that when it is done, it can be attached.
 			else if(reg.loaded == false && reg.pending == true)
 			{	
-				
-			
 				asyncCallback( false );
-				
 				var tcal = asyncCallback;
 				reg.callbacks.push(function(node)
 				{
@@ -301,50 +360,13 @@
 					//this should not clone the geometry, so much lower memory.
 					//seems to take near nothing to duplicated animated avatar
 					$(document).trigger('EndParse');
-					this.getRoot().add(node.clone());
-					
-					var list = [];
-					
-					this.GetAllLeafMeshes(this.rootnode,list);
-					for(var i =0; i < list.length; i++)
-						if(list[i].material)
-						{
-							list[i].material = list[i].material.clone();
-							list[i].material.needsUpdate = true;
-							
-							if(list[i].material.map)
-							{
-								list[i].material.map =  _SceneManager.getTexture(list[i].material.map.image.src);
-								list[i].material.map.needsUpdate = true;
-							}else
-							{
-								list[i].material.map =  _SceneManager.getTexture('white.png');
-								list[i].material.map.needsUpdate = true;
-							}
-							if(list[i].material.bumpMap)
-							{
-								list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.bumpMap.image.src);
-								list[i].material.bumpMap.needsUpdate = true;
-							}
-							if(list[i].material.lightMap)
-							{
-								list[i].material.lightMap = _SceneManager.getTexture(list[i].material.lightMap.image.src);
-								list[i].material.lightMap.needsUpdate = true;
-							}
-							if(list[i].material.normalMap)
-							{
-								list[i].material.normalMap = _SceneManager.getTexture(list[i].material.normalMap.image.src);
-								list[i].material.normalMap.needsUpdate = true;								
-							}
-							
-							
-							list[i].materialUpdated();
-						}
-					
-					
-					this.settingProperty('materialDef',this.materialDef);
-					this.getRoot().updateMatrixWorld(true);
-					this.getRoot().sceneManagerUpdate();
+					if(node)
+					{
+						this.getRoot().add(node.clone());
+						this.cleanTHREEJSnodes(this.getRoot());
+						this.settingProperty('materialDef',this.materialDef);
+						this.getRoot().updateMatrixWorld(true);
+					}
 					tcal( true );
 				}.bind(this));
 			}	

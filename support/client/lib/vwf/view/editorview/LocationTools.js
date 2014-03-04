@@ -72,7 +72,7 @@ define(function ()
 					}					
 					
 				$('#MenuCamera3RDPersonicon').click();		
-				_Editor.setProperty(_UserManager.GetCurrentUserID(),'translation',vals);
+				_Editor.vwf_view.kernel(_UserManager.GetCurrentUserID(),'setPosition',[vals]);
 				
 				
 				}
@@ -153,7 +153,7 @@ define(function ()
 						}	
 					
 						$('#MenuCamera3RDPersonicon').click();		
-						_Editor.setProperty(_UserManager.GetCurrentUserID(),'translation',[pos[0],pos[1],pos[2]]);
+						vwf_view.kernel.callMethod(_UserManager.GetCurrentUserID(),'setPosition',[[pos[0],pos[1],pos[2]]]);
 					}
 		}
 		this.AddPlacemark = function()
@@ -193,7 +193,7 @@ define(function ()
 			if(hit)
 			{
 				location[2] = hit.point[2];
-				_Editor.setProperty(_UserManager.GetCurrentUserID(),'translation',[location[0],location[1],location[2]]);
+				vwf_view.kernel.callMethod(_UserManager.GetCurrentUserID(),'setPosition',[[location[0],location[1],location[2]]]);
 				$('#MenuCamera3RDPersonicon').click();		
 			}
 		

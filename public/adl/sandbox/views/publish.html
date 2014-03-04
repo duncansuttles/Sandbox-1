@@ -2,7 +2,7 @@
 	var sid = '{{sid}}'; 
 	$(document).ready(function()
 	{
-		getLoginInfo(function(){}, redirect);
+		
 			
 		$('#txtCamera').hide();	
 		$.ajax(root + '/vwfDataManager.svc/statedata?SID=' + sid,
@@ -49,6 +49,19 @@
 				$('#error').text("Error: " + xhr.responseText);
 			}
 		});
+
+		// query cameras in the scene
+		vwfPortalModel.cameraList = ko.observableArray();
+		$.ajax(root + '/vwfDataManager.svc/cameras?SID=' + sid, {
+			cache: false,
+			success: function(data,status,xhr){
+				vwfPortalModel.cameraList(data);
+			},
+			error: function(status,xhr,err){
+				$('#error').text("Error: " + xhr.responseText);
+			}
+		});
+
 
 		$('#txtInstanceName').prop('disabled', true);
 		$('#txtInstanceDescription').prop('disabled', true);
@@ -110,14 +123,13 @@
 
 		   }
 		 }
-		)
+		);
 
-		
 		ko.applyBindings(vwfPortalModel);
 	});	
 	function redirect()
 	{
-		window.location = root + '/worlds';
+		window.location = root + '/world/' + sid.substr(13, 16);
 	}
 	vwfPortalModel.handleEditButton = function(o, e){
 
@@ -155,12 +167,18 @@
 			dataType: "text"
 		});	
 	};
+
 </script>
+	<div class="row">
+		
+		
+
+	</div>
 <div class="row">
 	<div class="col-md-5 col-md-offset-3">
 		<form data-bind="submit:handleEditButton" >
 			<fieldset>
-				<legend>Settings for the published world.</legend>
+				<legend>Publish Settings</legend>
 				<input type='text' id='txtInstanceName' placeholder='World Name' class="col-md-5 form-control" /><br/><br/>
 				<textarea id='txtInstanceDescription' placeholder='Description' class="col-md-5 form-control"></textarea>
 				<br/>
@@ -172,11 +190,11 @@
 				<br/>
 				<input type='checkbox' id='chkAllowAnonymous'  name='AllowAnonymous'></input><label for='AllowAnonymous'>Allow Anonymous Users</label>
 				<br/>
-				<input type='checkbox' id='chkCreateAvatar' name='CreateAvatar'></input><label for='CreateAvatar'>Create and Avatar for each user</label>
+				<input type='checkbox' id='chkCreateAvatar' name='CreateAvatar'></input><label for='CreateAvatar'>Create Avatar for Each User</label>
 				<br/>
 				<input type='checkbox' id='chkDefaultCamera' name='DefaultCamera'  checked='checked'></input><label for='DefaultCamera'>Use Default Camera</label>
 				<br/>
-				<input type='text' id='txtCamera' placeholder='CameraName: Default' class="col-md-5 form-control" name='Camera'></input>
+				<select id='txtCamera' class="col-md-5 form-control" name="Camera" data-bind="options: $root.cameraList, optionsText: 'name', optionsValue: 'id'"></select>
 				<br/>
 				<br/>
 				<input type="submit" class='btn btn-default' style="float:right;margin-top:7px;"  value="Publish"/>

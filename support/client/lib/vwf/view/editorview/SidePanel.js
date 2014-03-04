@@ -16,7 +16,7 @@ define(
 		function createPanelShowHide()
 		{
 			var iconname = "togglesidepanelicon";
-			$('#toolbar').append('<img src="../vwf/view/editorview/images/icons/left.png" id="' + iconname + '" class="icon" />');
+			$('#toolbar').append('<div id="togglesidepanelicon" class="icon left" />');
 			$('#togglesidepanelicon').css('float', 'right');
 			$('#' + iconname).click(function ()
 			{
@@ -29,16 +29,17 @@ define(
 		{
 			window.clearInterval(window.sizeTimeoutHandle);
 			window.sizeTimeoutHandle = window.setInterval(sizeWindowTimer, 33);
-			$('#togglesidepanelicon').attr('src', '../vwf/view/editorview/images/icons/left.png');
-			$('#sidepanel').animate(
+			$('#togglesidepanelicon').removeClass('right');
+			$('#togglesidepanelicon').addClass('left');
+			$('#sidepanel').transit(
 			{
 				'left': $(window).width()
 			});
-			$('#ScriptEditor').animate(
+			$('#ScriptEditor').transit(
 			{
 				'width': $(window).width()
 			});
-			$('#index-vwf').animate(
+			$('#index-vwf').transit(
 			{
 				'width': $(window).width()
 			}, function ()
@@ -55,16 +56,18 @@ define(
 		{
 			window.clearInterval(window.sizeTimeoutHandle);
 			window.sizeTimeoutHandle = window.setInterval(sizeWindowTimer, 33);
-			$('#togglesidepanelicon').attr('src', '../vwf/view/editorview/images/icons/right.png');
-			$('#sidepanel').animate(
+			$('#togglesidepanelicon').addClass('right');
+			$('#togglesidepanelicon').removeClass('left');
+			$('#sidepanel .jspContainer .jspPane').css('left',0);
+			$('#sidepanel').transit(
 			{
 				'left': $(window).width() - $('#sidepanel').width()
 			});
-			$('#ScriptEditor').animate(
+			$('#ScriptEditor').transit(
 			{
 				'width': $(window).width() - $('#sidepanel').width()
 			});
-			$('#index-vwf').animate(
+			$('#index-vwf').transit(
 			{
 				'width': $(window).width() - $('#sidepanel').width()
 			}, function ()

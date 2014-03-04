@@ -10,6 +10,7 @@ define(function ()
 		{
 			initialize.call(BackgroundLoader);
 			isInitialized = true;
+			window.backgroundLoader = BackgroundLoader;
 		}
 		return BackgroundLoader;
 	}

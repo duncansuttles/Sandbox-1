@@ -1,9 +1,9 @@
 function clearCameraModeIcons()
 		{
-			$('#MenuCameraOrbiticon').css('background', '');
-			$('#MenuCamera3RDPersonicon').css('background', '');
-			$('#MenuCameraNavigateicon').css('background', '');
-			$('#MenuCameraFreeicon').css('background', '');
+			$('#MenuCameraOrbiticon').css('background-color', '');
+			$('#MenuCamera3RDPersonicon').css('background-color', '');
+			$('#MenuCameraNavigateicon').css('background-color', '');
+			$('#MenuCameraFreeicon').css('background-color', '');
 		}
 		
 define(
@@ -34,7 +34,13 @@ define(
 				return;
 			}
 
-				jQuery.ajax(
+			window.setTimeout(function(){
+							$('#SetThumbnail').click();
+
+						},10000)
+
+			//im tired of looking at all these blank thumbs. Lets snapshot every time, instead of just once
+			/*	jQuery.ajax(
 				{
 					type: 'GET',
 					url: './vwfDataManager.svc/thumbnail?SID='+_DataManager.getCurrentSession().replace(/\//g,'_'),
@@ -45,15 +51,12 @@ define(
 					},
 					error:function(xhr,status,err)
 					{
-						window.setTimeout(function(){
-							$('#SetThumbnail').click();
-
-						},10000)
+						
 						
 						
 					},
 					dataType: "text"
-				});	
+				});	*/
 
 
 
@@ -70,10 +73,10 @@ define(
 
 			var h = $('#index-vwf').attr('height');
 			var w = $('#index-vwf').attr('width');
-			_dRenderer.setSize(240,120);
+			_dRenderer.setSize(600,300);
 			var camera = _dView.getCamera();
 			var a = camera.aspect;
-			camera.aspect = 2;
+			camera.aspect = 6/3;
 			camera.updateProjectionMatrix();
 			
 			window.takeimage = function()
@@ -113,12 +116,19 @@ define(
 
 		$('#MenuEn').click(function (e)
 		{
-			localStorage.setItem("language","en");
+			i18n.setLng('en', function(t) { /* loading done */ });
 			location.reload();
 		});
+
 		$('#MenuRu').click(function (e)
 		{
-			localStorage.setItem("language","ru");
+			i18n.setLng('ru', function(t) { /* loading done */ });
+			location.reload();
+			
+		});
+		$('#MenuEs_ES').click(function (e)
+		{
+			i18n.setLng('es_ES', function(t) { /* loading done */ });
 			location.reload();
 		});
 
@@ -174,23 +184,23 @@ define(
 		$('#MenuMove').click(function (e)
 		{
 			_Editor.SetGizmoMode(_Editor.Move);
-			$('#MenuRotateicon').css('background', "");
-			$('#MenuScaleicon').css('background', "");
-			$('#MenuMoveicon').css('background', "#9999FF");
+			$('#MenuRotateicon').removeClass('iconselected');
+			$('#MenuScaleicon').removeClass('iconselected');
+			$('#MenuMoveicon').addClass('iconselected');
 		});
 		$('#MenuRotate').click(function (e)
 		{
 			_Editor.SetGizmoMode(_Editor.Rotate);
-			$('#MenuRotateicon').css('background', "#9999FF");
-			$('#MenuScaleicon').css('background', "");
-			$('#MenuMoveicon').css('background', "");
+			$('#MenuRotateicon').addClass('iconselected');
+			$('#MenuScaleicon').removeClass('iconselected');
+			$('#MenuMoveicon').removeClass('iconselected');
 		});
 		$('#MenuScale').click(function (e)
 		{
 			_Editor.SetGizmoMode(_Editor.Scale);
-			$('#MenuRotateicon').css('background', "");
-			$('#MenuScaleicon').css('background', "#9999FF");
-			$('#MenuMoveicon').css('background', "");
+			$('#MenuRotateicon').removeClass('iconselected');
+			$('#MenuScaleicon').addClass('iconselected');
+			$('#MenuMoveicon').removeClass('iconselected');
 		});
 		$('#MenuMulti').click(function (e)
 		{
@@ -311,6 +321,11 @@ define(
 		});
 
 		
+		$('#MenuSelectName').click(function (e)
+		{
+			_SelectionEditor.Show();
+		});
+		
 		$('#MenuPaste').click(function (e)
 		{
 			_Editor.Paste();
@@ -373,6 +388,7 @@ define(
 		{
 			_Editor.CreateBehavior('rotator', _UserManager.GetCurrentUserName());
 		});
+
 		$('#MenuCreateBehaviorDialog').click(function (e)
 		{
 			_Editor.CreateBehavior('DialogSystem', _UserManager.GetCurrentUserName());
@@ -409,6 +425,24 @@ define(
 		});
 		
 		
+
+		//trigger section
+		$('#MenuCreateTriggerDistance').click(function (e)
+		{
+			_Editor.CreateBehavior('distancetrigger', _UserManager.GetCurrentUserName());
+		});
+
+		//trigger section
+		$('#MenuCreateTriggerProperty').click(function (e)
+		{
+			_Editor.CreateBehavior('propertytrigger', _UserManager.GetCurrentUserName());
+		});
+
+		//trigger section
+		$('#MenuCreateTriggerMethod').click(function (e)
+		{
+			_Editor.CreateBehavior('methodtrigger', _UserManager.GetCurrentUserName());
+		});
 		
 		
 		
@@ -576,11 +610,11 @@ define(
 					
 					var t = _Editor.GetMoveGizmo().parent.matrixWorld.getPosition();
 					var gizpos = [t.x, t.y, t.z];
-					var box = _Editor.findviewnode(focusID).getBoundingBox();
+					var box = _Editor.findviewnode(focusID).GetBoundingBox(true).transformBy(_Editor.findviewnode(focusID).matrixWorld.elements)
 					
 					var dist = 1;
 					if(box)
-						dist = MATH.distanceVec3([box.max.x, box.max.y, box.max.z], [box.min.x, box.min.y, box.min.z]);
+						dist = MATH.distanceVec3([box.max[0], box.max[1], box.max[2]], [box.min[0], box.min[1], box.min[2]]);
 					if(dist == Infinity)
 						dist = 1;
 					vwf.models[0].model.nodes['index-vwf'].orbitPoint(gizpos);
@@ -603,7 +637,7 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraOrbiticon').css('background', '#9999FF');
+			$('#MenuCameraOrbiticon').css('background-color', '#9999FF');
 			var campos = [_Editor.findcamera().position.x, _Editor.findcamera().position.y, _Editor.findcamera().position.z];
 			var ray = _Editor.GetCameraCenterRay();
 			var dxy = _Editor.intersectLinePlane(ray, campos, [0, 0, 0], _Editor.WorldZ);
@@ -621,7 +655,7 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraNavigateicon').css('background', '#9999FF');
+			$('#MenuCameraNavigateicon').css('background-color', '#9999FF');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Orbit');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Navigate');
 		});
@@ -659,7 +693,7 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraNavigateicon').css('background', '#9999FF');
+			$('#MenuCameraNavigateicon').css('background-color', '#9999FF');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Fly');
 			
 		});
@@ -674,7 +708,7 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraFreeicon').css('background', '#9999FF');
+			$('#MenuCameraFreeicon').css('background-color', '#9999FF');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Orbit');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Free');
 		});
@@ -719,7 +753,7 @@ define(
 			{
 				_dView.setCameraDefault();
 				clearCameraModeIcons();
-				$('#MenuCamera3RDPersonicon').css('background', '#9999FF');
+				$('#MenuCamera3RDPersonicon').css('background-color', '#9999FF');
 				vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
 				vwf.models[0].model.nodes['index-vwf'].setCameraMode('3RDPerson');
 			}
@@ -783,12 +817,29 @@ define(
 			_Editor.CreatePrim('terrain', [0,0,0], [1, 1, 1], 'checker.jpg', document.PlayerNumber, '');
 		});
 		
+
 		$('#MenuCreateLoadMeshURL').click(function (e)
 		{
-			alertify.prompt('Input a URL to a COLLADA mesh. Please note: this must serve from a CORS capable host!',function(ok,val){
-			if(ok)
-				_Editor.loadMesh(val);
-			},'http://');
+			alertify.choice("Choose the mesh format",function(ok,type)
+			{
+				
+				if(ok)
+				{
+					alertify.prompt('Input a URL to the mesh. Please note: this must serve from a CORS capable host!',function(ok,val)
+					{
+						if(ok)
+						{
+							if(type == 'Collada')
+								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.collada+xml');
+							if(type == '3DR JSON')
+								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.osgjs+json+compressed');
+						}
+					},'http://');
+				}
+
+			},
+			["Collada","3DR JSON"])	
+			
 		});
 		
 		
@@ -837,6 +888,13 @@ define(
 			_LocationTools.AddPlacemark();
 		});
 		
+		$('#ToolsShowID').click(function (e)
+		{
+			alertify.prompt(vwf.getProperty(_Editor.GetSelectedVWFID(),"DisplayName"),function(){},_Editor.GetSelectedVWFID());
+		});
+
+		
+
 		$('#LocationMoveToGround').click(function (e)
 		{
 			_LocationTools.MoveToGround();

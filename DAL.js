@@ -1,13 +1,13 @@
-var nStore = require('nstore');
+
 var libpath = require('path');
-nStore = nStore.extend(require('nstore/query')());
 var async = require('async');
 var fs = require('fs-extra');
 require('./hash.js');
 var mkdirp = require('mkdirp');
 var datapath = '';
 
-var DBTablePath = libpath.sep+'users.db';
+//NOTE: upgrade your database! if your db is users.db and not users.nedb, you need to run the upgrade_db script!
+var DBTablePath = libpath.sep+'users.nedb';
 
 var DB = '';
 var safePathRE = RegExp('/\//'+(libpath.sep=='/' ? '\/' : '\\')+'/g');
@@ -50,16 +50,37 @@ function GUID()
 function findInDB(obj, cb){
 	DB.find(obj, cb);
 }
-	
+function getStats(cb)
+{
+
+	DB.get('StateIndex',function(err,StateIndex)
+	{
+
+	DB.get('UserIndex',function(err,UserIndex)
+	{
+		cb(StateIndex,UserIndex);
+	})
+
+	});
+
+}
 function getUser (id,cb)
 {
 	getUsers(function(UserIndex){
 	
-		if(UserIndex.indexOf(id) != -1)
+		if(UserIndex && UserIndex.indexOf(id) != -1)
 		{
 			DB.get(id,function(err,doc,key){
 			
+				//make super sure that the object that is returned is a copy of the data in memory, not a reference
+				try{
+				var doc = JSON.parse(JSON.stringify(doc));
 				cb(doc);
+				}
+				catch(e)
+				{
+					cb(null);
+				}
 			});
 		}
 		else
@@ -102,7 +123,7 @@ function updateUser (id,data,cb)
 			}
 			for(var key in data)
 			{
-				console.log('changing ' + key + ' to ' + data[key] + ' in user ' + user.Username )
+				global.log('changing ' + key + ' to ' + data[key] + ' in user ' + user.Username )
 				user[key] = data[key];
 			}
 			
@@ -137,11 +158,8 @@ function deleteInventoryItem(userID,inventoryID,cb)
 		//item must be in list of user
 		if(inventory.indexOf(inventoryID) != -1)
 		{
-			//remove from user inventory list
-			while(inventory.indexOf(inventoryID) != -1)
-				inventory.splice(inventory.indexOf(inventoryID),1);
 			//save user inventory list	
-			DB.save(Ikey,inventory,function()
+			DB.listDepend(Ikey,inventoryID,function()
 			{
 				//remove database entry
 				DB.remove(inventoryID,function(){
@@ -177,7 +195,13 @@ function getInventoryItemAssetData(userID,inventoryID,cb)
 		{
 			fs.readFile((datapath+'/Profiles/'+userID+'_Data'+'/'+inventoryID).replace(safePathRE),"utf8",function(err,data)
 			{
+				try{
 				cb(JSON.parse(data));
+				}
+				catch(e)
+				{
+					cb(null);
+				}	
 			});			
 		}
 		else
@@ -257,13 +281,10 @@ function addToInventory(userID,data,assetdata,cb)
 	getInventoryForUser(userID,function(inventory,Ikey)
 	{
 		//save the data
-		DB.save(null,data,function(err,key)
+		DB.save(null,data,function(err,val,key)
 		{	
-			//put the key for the data in the inventory
-			inventory.push(key);
-			
 			//save the inventory
-			DB.save(Ikey,inventory,function(err)
+			DB.listAppend(Ikey,key,function(err)
 			{
 				var file = datapath+'/Profiles/' + userID + '_Data/' + key;
 				fs.writeFile( file.replace(safePathRE),JSON.stringify(assetdata),function(err)
@@ -360,6 +381,12 @@ function getInventoryDisplayData(userID,cb)
 }
 function createUser (id,data,cb)
 {
+	if(!id || id.length == 0 || !data)
+	{
+		cb(false,'bad data');
+		return;
+	}
+	
 	getUser(id,function(user){
 	
 		if(user)
@@ -375,7 +402,7 @@ function createUser (id,data,cb)
 			function(cb2){
 				
 				var inventory = [];
-				DB.save(null,inventory,function(err,key)
+				DB.save(null,inventory,function(err,val,key)
 				{
 					cb2(null,key);
 				});
@@ -391,25 +418,11 @@ function createUser (id,data,cb)
 				});
 			
 			},
-			function(cb2){
-				
-				
-				DB.get('UserIndex',function(err,UserIndex,key)
-				{
-					cb2(null,UserIndex);
-				});
-			
-			},
-			function(UserIndex, cb2)
+			function(cb2)
 			{
-				
-					if(!UserIndex)
-						UserIndex = [];
-					UserIndex.push(id);
-					DB.save('UserIndex',UserIndex,function()
-					{
-						cb2();
-					});
+				DB.listAppend('UserIndex',id,function(){
+					cb2();
+				})
 			},
 			function(cb2)
 			{
@@ -425,7 +438,7 @@ function createUser (id,data,cb)
 			function(err,results)
 			{
 				
-				console.log(err,0);
+				global.log(err,0);
 				cb(true);
 			}
 			);
@@ -448,22 +461,14 @@ function deleteUser (id,cb)
 			DB.remove(idk,function(err,doc,key)
 			{
 				//remove user from user index
-				DB.get('UserIndex',function(err,UserIndex,key)
+				DB.listDepend('UserIndex',id,function(err,UserIndex,key)
 				{
-					
-					while(UserIndex.indexOf(id) != -1)
-						UserIndex.splice(UserIndex.indexOf(id),1);
-					
-					//save user index
-					DB.save('UserIndex',UserIndex,function(err,doc,key)
+					//remove user from database
+					DB.remove(id,function(err,doc,key)
 					{
-						//remove user from database
-						DB.remove(id,function(err,doc,key)
-						{
-							//delete user folder
-							deleteFolderRecursive((datapath + '/Profiles/' + id).replace(safePathRE) + '_Data');
-							cb();
-						});
+						//delete user folder
+						deleteFolderRecursive((datapath + '/Profiles/' + id).replace(safePathRE) + '_Data');
+						cb();
 					});
 				});
 			});
@@ -475,18 +480,26 @@ function deleteUser (id,cb)
 function getInstance (id,cb)
 {
 	DB.get(id,function(err,doc,key){
-	
 		cb(doc);
 	});
 }
 function updateInstance (id,data,cb)
 {
+
+	if(!id || id.length == 0 || !data)
+	{
+		cb(false,'bad data');
+		global.log('bad data')
+		return;
+	}
+
 	async.waterfall([
 		function(cb2)
 		{
 			//first, get the existing record
 			getInstance(id,function(instance)
 			{
+
 				cb2(null,instance);
 			});
 		},
@@ -495,6 +508,7 @@ function updateInstance (id,data,cb)
 			//if the record does not exist, callback false
 			if(instance == null)
 			{
+				
 				cb2('instance does not exist');
 			}else
 			{
@@ -503,6 +517,7 @@ function updateInstance (id,data,cb)
 		},
 		function(instance,cb2)
 		{
+			
 			for(var key in data)
 			{
 				instance[key] = data[key];
@@ -517,6 +532,7 @@ function updateInstance (id,data,cb)
 		{
 			if(err)
 			{
+				global.log(err)
 				global.log(err,0);
 				cb(false);
 				return;
@@ -699,6 +715,13 @@ function saveInstanceState(id,data,cb)
 
 function createInstance (id,data,cb)
 {
+	if(!id || id.length == 0 || !data)
+	{
+		cb(false,'bad data');
+		return;
+	}
+	
+
 	getInstance(id,function(instance){
 	
 		if(instance)
@@ -711,19 +734,15 @@ function createInstance (id,data,cb)
 			data.created = new Date();
 			DB.save(id,data,function(err,doc,key)
 			{
-				DB.get('StateIndex',function(err,stateIndex,key)
-				{
-					if(!stateIndex)
-						stateIndex = [];
-					stateIndex.push(id);
-					DB.save('StateIndex',stateIndex,function()
+				
+					DB.listAppend('StateIndex',id,function()
 					{
 						MakeDirIfNotExist((datapath + '/States/' + id).replace(safePathRE),function() 
 						{
 							cb(true);
 						});
 					});
-				});
+				
 			});
 		}
 	});
@@ -732,33 +751,123 @@ function createInstance (id,data,cb)
 function deleteInstance (id,cb)
 {
 	async.series([
-	function(cb2)
+	function(cb2)  //try to remove this from the parents list of children
 	{
-		DB.remove(id,function(err,doc,key)
+			//get the state
+			getInstance(id,function(inst)
+			{
+
+				// if it does not exist, goto next in series
+				if(!inst)
+				cb2();
+				if(inst)
+				{
+					
+					//get the instances parent instance
+					var parent = inst.clonedFrom;
+					
+					getInstance(parent,function(parentInst)
+					{
+						//if it does not exist, goto nexxt in series
+						if(!parentInst)
+						{
+							cb2();
+						}
+						else
+						{
+							
+							//if parent has children array
+							
+							if(parentInst.children != null)
+							{
+								//remove this ID from the parents list of children
+								//then goto next in series
+								
+								parentInst.children.splice(parentInst.children.indexOf(id),1);
+								
+								updateInstance(parent, parentInst,function()
+								{
+									cb2();
+								});
+							}else  //just goto the next in the series
+							{
+								cb2();
+							}
+
+						}
+					});
+
+				}
+			});
+
+		
+	},
+	function(cb2)   // for each of my children, remove it's clonedFrom property
+	{
+		//get the state
+		getInstance(id,function(inst)
 		{
-			
-			deleteFolderRecursive((datapath + '/States/' + id).replace(safePathRE));
-			cb2();
+			// if it does not exist, goto next in series
+				if(!inst)
+					cb2();
+				var children = inst.children || [];
+				// for each child
+				async.eachSeries(children,function(item,cb3)
+				{
+					//get the  child
+					
+					getInstance(item,function(child)
+					{
+						//if child
+						
+						if(child)
+						{
+							//child no longer has parent
+							child.clonedFrom = null;
+							
+							updateInstance(item + "" ,child,function()
+							{
+								cb3();
+							});
+						}else   //somehow, child does not exist. Next child
+						{
+							cb3();
+						}
+
+					});
+
+				},function(err)
+				{
+
+					//next in series
+					cb2();
+				});
+
 		});
 	},
 	function(cb2)
 	{
-		
-		DB.get('StateIndex',function(err,stateIndex,key)
-		{
-			if(!stateIndex)
+			DB.remove(id,function(err,doc,key)
 			{
-				cb();
-				return;
-			}
+				
+				deleteFolderRecursive((datapath + '/States/' + id).replace(safePathRE));
+				cb2();
+			});
+
+		
+	},
+	function(cb2)
+	{
+		
+		
 			
-			stateIndex.splice(stateIndex.indexOf(id),1);
-			DB.save('StateIndex',stateIndex,function()
+			
+			DB.listDepend('StateIndex',id,function()
 			{
 				
 				cb();
 			});
-		});
+		
 	}]);
 };
 
@@ -900,19 +1009,22 @@ function importUsers()
 function importStates()
 {
 	fs.readdir((datapath+"/states/").replace(safePathRE),function(err,files){
-		async.each(files,
+		async.eachSeries(files,
 			function(i,cb)
 			{
-				console.log(i);
+				global.log(i);
 				getInstance(i,function(inst)
 				{
 					if(inst)
 					{
-						console.log(i + " already in database");
+						global.log(i + " already in database");
 						cb();
 					}
 					else
 					{
+						var stateexists = fs.existsSync((datapath+"/states/"+i+"/state").replace(safePathRE),'utf8');
+						if(stateexists)
+						{
 						var instdata = fs.readFileSync((datapath+"/states/"+i+"/state").replace(safePathRE),'utf8');
 						instdata = JSON.parse(instdata);
 						var statedata = {};
@@ -922,16 +1034,21 @@ function importStates()
 						statedata.description = "Imported automatically from database update";
 						createInstance(i,statedata,function()
 						{
-							console.log('imported' + i);
+							global.log('imported' + i);
 							cb();
 						});
+						}else
+						{
+							global.log('state file not found: ' + i);
+							cb();
+						}
 					}
 				});
 				
 			},
 			function(err)
 			{
-				console.log('done');
+				global.log('done');
 			});
 	});
 }
@@ -961,8 +1078,10 @@ function getAllUsersInfo(cb){
 	getUsers(function(users){	
 		async.eachSeries(users, function(val,cb2)
 		{
+			global.log(val);
 			getUser(val, function(doc){
 				userInfoList.push(doc);
+				global.log('done');
 				cb2();
 			});
 		}, function(){cb(userInfoList)});
@@ -986,7 +1105,7 @@ function purgeInstances()
 		{
 			if(!fs.existsSync((datapath +"/States/" + i).replace(safePathRE)))
 			{
-				console.log('delete instance ' + i);
+				global.log('delete instance ' + i);
 				deleteInstance(i,function()
 				{
 					cb();
@@ -1058,8 +1177,8 @@ function getHistory(id,cb)
 	returndata.parents = [];
 	getInstance(id, function(instance){
 
-		console.log(id);
-		console.log(instance);
+		global.log(id);
+		global.log(instance);
 		if(!instance)
 		{
 			cb({error:"inner state not found"});
@@ -1075,7 +1194,12 @@ function getHistory(id,cb)
 			//get each child
 			getInstance(item,function(cinst)
 			{
-					var thischild = {world:item,type:1,created:cinst.created,title:cinst.title};
+				if(!cinst)
+				{
+					cb2();
+					return;
+				}
+				var thischild = {world:item,type:1,created:cinst.created,title:cinst.title};
 				if(cinst.publishedFrom)
 					thischild.type = 1;
 				if(cinst.clonedFrom)
@@ -1149,10 +1273,21 @@ function getHistory(id,cb)
 	});
 }
 
+
+
+
+
 //create a new state from the old one, setting the publish settings for the new state
 //cb with the ID of the new state
 function Publish(id, publishSettings, cb)
 {
+	//note: publishSettings may be null - means unpublish
+	if(!id || id.length == 0)
+	{
+		cb(false,'bad data');
+		return;
+	}
+	
 	//get the orignial instance
 	getInstance(id, function(instance){
 		
@@ -1184,54 +1319,74 @@ function copyInstance (id, arg2, arg3){
 	getInstance(id, function(instance){
 		
 		if(instance){
+			
 			var newId = '_adl_sandbox_' + makeid() + '_';
-			instance.owner = newowner ? newowner : instance.owner;
-			instance.featured = false;
-			instance.clonedFrom = id;
-			instance.created = new Date();
-			//when cloning a world, it becomes unpublished so you can edit it.
-			delete instance.publishSettings;
-			delete instance.publishedFrom;
-			delete instance.children;
-			createInstance (newId, instance, function(success){
-				if(success){
-					var oldStateFile = datapath + '/States/' + id + '/state', newStateFile = datapath + '/States/' + newId + '/state';
-					
-					fs.readFile(oldStateFile,function(err, olddata)
-					{
-						//olddata may not exist..
-						if(!olddata || err){
-							cb(newId);
-							return;
-						}
+
+			if(!instance.children)
+				instance.children = [];
+
+			instance.children.push(newId);
+			updateInstance(id,instance,function(){
+
+				instance = JSON.parse(JSON.stringify(instance));
+				instance.owner = newowner ? newowner : instance.owner;
+				instance.featured = false;
+				instance.clonedFrom = id;
+				instance.created = new Date();
+				//when cloning a world, it becomes unpublished so you can edit it.
+				delete instance.publishSettings;
+				delete instance.publishedFrom;
+				delete instance.children;
+				createInstance (newId, instance, function(success){
+					if(success){
+						var oldStateFile = libpath.join(datapath, '/States/', id, '/state');
+						var newStateFile = libpath.join(datapath, '/States/', newId, '/state');
 						
-						var oldstate = JSON.parse(olddata);
-						oldstate[oldstate.length-1].owner = instance.owner;
-						var newstate = JSON.stringify(oldstate);
-						fs.writeFile(newStateFile, newstate, function(err)
+						fs.readFile(oldStateFile,function(err, olddata)
 						{
+							//olddata may not exist..
+							if(!olddata || err){
+								cb(newId);
+								return;
+							}
 							
-							//get the orignial instance and record the new one as a child
-							getInstance(id, function(instance){
-							
-								if(!instance.children)
-									instance.children = [];
-								instance.children.push(newId);
+							var oldstate = JSON.parse(olddata);
+							oldstate[oldstate.length-1].owner = instance.owner;
+							var newstate = JSON.stringify(oldstate);
+							fs.writeFile(newStateFile, newstate, function(err)
+							{
 								
-								updateInstance(id,instance,function()
-								{
-									cb(newId);
+								//get the orignial instance and record the new one as a child
+								getInstance(id, function(instance){
+								
+									if(!instance.children)
+										instance.children = [];
+									instance.children.push(newId);
+									
+									updateInstance(id,instance,function()
+									{
+										cb(newId);
+									});
 								});
+								
 							});
-							
 						});
-					});
-				}
-				
-				else cb(false);
-			});
+
+						// copy thumbnail
+						var oldThumbnail = libpath.join(datapath, '/States', id, '/thumbnail.png');
+						var newThumbnail = libpath.join(datapath, '/States', newId, '/thumbnail.png');
+						fs.readFile(oldThumbnail, function(err,data){
+							if(!data || err){
+								return;
+							}
+							fs.writeFile(newThumbnail, data);
+						});
+					}
+					
+					else cb(false);
+				});
+			})
 		}
-		
 		else cb(false);	
 	});
 }
@@ -1287,9 +1442,14 @@ function restoreBackup(id, stateFileName, cb){
 		
 		//Make old backup file current state file
 		fs.rename(oldPath, statePath, function(err){
-		
+			
+			//Unable to set current state, restore previous current state
 			if(err){
-				cb(false);
+				fs.rename(tempPath, statePath, function(err){
+					cb(false);
+					return;
+				});
+				
 				return;
 			}
 			
@@ -1309,13 +1469,17 @@ function restoreBackup(id, stateFileName, cb){
 	});
 }
 
+var DAL_Singleton = {};
+exports.DAL = DAL_Singleton;
 function startup(callback)
 {
 	async.series([
 		
 		function(cb)
 		{
-			DB = nStore.new(DBTablePath, function () {
+
+			require('./DB_nedb.js').new(DBTablePath, function (_DB) {
+				DB = _DB;
 				cb();		
 			});
 		},
@@ -1347,55 +1511,70 @@ function startup(callback)
 		},
 		function(cb)
 		{
+			getUser('___Global___',function(user)
+			{
+				if(user)
+					cb();
+				else
+				{
+					global.log('creating global user')
+					createUser('___Global___',{},function(ok){
+						global.log('created global user')
+						cb();
+					});
+				}
+			});
+		},
+		function(cb)
+		{
 			global.log('DAL startup complete',0);
-			exports.getUser = getUser;
-			exports.updateUser = updateUser;
-			exports.createUser = createUser;
-			exports.deleteUser = deleteUser;
-			exports.deleteUsers = deleteUsers;
-			exports.getAllUsersInfo = getAllUsersInfo;
+			DAL_Singleton.getUser = getUser;
+			DAL_Singleton.updateUser = updateUser;
+			DAL_Singleton.createUser = createUser;
+			DAL_Singleton.deleteUser = deleteUser;
+			DAL_Singleton.deleteUsers = deleteUsers;
+			DAL_Singleton.getAllUsersInfo = getAllUsersInfo;
 			
-			exports.find = findInDB;
+			DAL_Singleton.find = findInDB;
 			
-			exports.getInstance = getInstance;
-			exports.updateInstance = updateInstance;
-			exports.createInstance = createInstance;
-			exports.deleteInstance = deleteInstance;
-			exports.deleteInstances = deleteInstances;
-			exports.copyInstance = copyInstance;
-			exports.getStatesFilelist = getStatesFilelist;
-			exports.restoreBackup = restoreBackup;
+			DAL_Singleton.getInstance = getInstance;
+			DAL_Singleton.updateInstance = updateInstance;
+			DAL_Singleton.createInstance = createInstance;
+			DAL_Singleton.deleteInstance = deleteInstance;
+			DAL_Singleton.deleteInstances = deleteInstances;
+			DAL_Singleton.copyInstance = copyInstance;
+			DAL_Singleton.getStatesFilelist = getStatesFilelist;
+			DAL_Singleton.restoreBackup = restoreBackup;
 			
-			exports.getUsers = getUsers;
-			exports.getInstances = getInstances;
+			DAL_Singleton.getUsers = getUsers;
+			DAL_Singleton.getInstances = getInstances;
 			
-			exports.searchUsers = searchUsers;
-			exports.searchInstances = searchInstances;
-			exports.saveInstanceState = saveInstanceState;
-			exports.Publish = Publish;
-			exports.importStates = importStates;
-			exports.purgeInstances = purgeInstances;
-			exports.findState = findState;
-			exports.deleteInventoryItem=deleteInventoryItem
-			exports.getInventoryForUser = getInventoryForUser;
-			exports.addToInventory = addToInventory;
-			exports.getInventoryItemMetaData = getInventoryItemMetaData;
-			exports.getInventoryItemAssetData = getInventoryItemAssetData;
-			exports.getInventoryDisplayData = getInventoryDisplayData;
-			exports.updateInventoryItemMetadata = updateInventoryItemMetadata;
-			exports.importUsers = importUsers;
-			exports.clearUsers = clearUsers;
-			exports.searchInventory = searchInventory;
-			exports.getHistory = getHistory;
+			DAL_Singleton.searchUsers = searchUsers;
+			DAL_Singleton.searchInstances = searchInstances;
+			DAL_Singleton.saveInstanceState = saveInstanceState;
+			DAL_Singleton.Publish = Publish;
+			DAL_Singleton.importStates = importStates;
+			DAL_Singleton.purgeInstances = purgeInstances;
+			DAL_Singleton.findState = findState;
+			DAL_Singleton.deleteInventoryItem=deleteInventoryItem
+			DAL_Singleton.getInventoryForUser = getInventoryForUser;
+			DAL_Singleton.addToInventory = addToInventory;
+			DAL_Singleton.getInventoryItemMetaData = getInventoryItemMetaData;
+			DAL_Singleton.getInventoryItemAssetData = getInventoryItemAssetData;
+			DAL_Singleton.getInventoryDisplayData = getInventoryDisplayData;
+			DAL_Singleton.updateInventoryItemMetadata = updateInventoryItemMetadata;
+			DAL_Singleton.importUsers = importUsers;
+			DAL_Singleton.clearUsers = clearUsers;
+			DAL_Singleton.searchInventory = searchInventory;
+			DAL_Singleton.getHistory = getHistory;
+			DAL_Singleton.getStats = getStats;
 			callback();
 		}
-	
-
-	]);
-	
+	]);	
 }
+DAL_Singleton.startup = startup;
 
-exports.setDataPath = function(p)
+DAL_Singleton.setDataPath = function(p)
 {
 	p = libpath.resolve(p);
 	global.log("datapath is " + p,0);
@@ -1462,4 +1641,4 @@ exports.setDataPath = function(p)
 		}
 	}); // end mkdirp
 }
-exports.startup = startup;
+

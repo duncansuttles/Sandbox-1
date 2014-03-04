@@ -6,10 +6,21 @@ var libpath = require('path'),
 	sio = require('socket.io'),
 	YAML = require('js-yaml');
 	require('./hash.js');
-	
+	var _3DR_proxy = require('./3dr_proxy.js');
 var safePathRE = RegExp('/\//'+(libpath.sep=='/' ? '\/' : '\\')+'/g');
 var datapath = '.'+libpath.sep+'data';
-var DAL = null;	
+var DAL = require('./DAL').DAL;
+var analyticsObj;
+var assetPreload = require('./AssetPreload.js');
+var passwordUtils = require('./passwordUtils');
+var CheckPassword = passwordUtils.CheckPassword;
+var SiteLogin = passwordUtils.SiteLogin;
+var SiteLogout = passwordUtils.SiteLogout;
+var UpdatePassword = passwordUtils.UpdatePassword;
+var sessions = require('./sessions');
+var mailTools = require('./mailTools');
+var xapi = require('./xapi');
+
 // default path to data. over written by setup flags
 
 //generate a random id.
@@ -87,7 +98,8 @@ function ServeProfile(UID,response,URL)
 				respond(response,401,"user not logged in, or profile not found");
 			}else
 			{
-				user.Password = '';
+				user = JSON.parse(JSON.stringify(user));
+				delete user.Password;
 				respond(response,200,JSON.stringify(user));
 			}
 		
@@ -121,107 +133,8 @@ function GetLoginData(response,URL)
 		respond(response,401,JSON.stringify({username:null}));
 	return;
 }
-function SessionData()
-{
-	this.sessionId = GUID();
-	this.UID = '';
-	this.Password = '';
-	this.loginTime = new Date();
-	this.clients = {};
-	this.setTimeout = function(sec)
-	{
-		if(this.timeout) clearTimeout(this.timeout);
-		this.timeout = setTimeout(function()
-		{
-			//if I have no active clients, log me out
-			
-			if(Object.keys(this.clients).length == 0)
-			{
-				global.sessions.splice(global.sessions.indexOf(this),1);
-				global.log('Removing Session data for ' + this.UID,1);
-			}
-			//wait another three minutes and try again
-			else
-				this.resetTimeout();
-		
-		}.bind(this),sec*1000);
-	}
-	this.resetTimeout = function()
-	{
-		//15 mins
-		this.setTimeout(900);
-	}	
-}
 
-//login to the site
-function SiteLogin(response,URL)
-{
-			var UID = URL.query.UID;
-			var password = URL.query.P;
-			
-			
-			if(!UID || !password)
-			{
-				respond(response,401,'Login Format incorrect');
-				return;
-			}
-			if(URL.loginData)
-			{
-				respond(response,401,'Already Logged in');
-				return;
-			}
-			
-			CheckPassword(UID,password,function(ok)
-			{
-				global.log("Login "+ ok,2);
-				if(ok)
-				{
-					var session = new SessionData();
-					session.UID = UID;
-					session.Password = password;
-					session.resetTimeout();
-					global.sessions.push(session);
-					
-					response.writeHead(200, {
-							"Content-Type":  "text/plain",
-							"Set-Cookie": "session="+session.sessionId+"; Path=/; HttpOnly;"
-					});
-					response.write("Login Successful", "utf8");
-					global.log('Client Logged in',1);
-					response.end();
-				}else
-				{
-					respond(response,401,'Password incorrect');
-					return;
-				}
-			});		
-}
 
-//login to the site
-function SiteLogout(response,URL)
-{
-			
-			if(!URL.loginData)
-			{
-				respond(response,401,"Client Not Logged In");
-				return;
-			}
-			if(global.sessions.indexOf(URL.loginData) != -1)
-			{
-				global.sessions.splice(global.sessions.indexOf(URL.loginData),1);
-				response.writeHead(200, {
-							"Content-Type":  "text/plain",
-							"Set-Cookie": "session=; HttpOnly;"
-					});
-				response.end();	
-			}else
-			{
-				respond(response,401,"Client Not Logged In");
-				return;
-			}
-			return;
-			
-}
 
 //Take ownership if a client websocket connection
 //must provide a password and name for the user, and the instance and client ids.
@@ -257,9 +170,9 @@ function InstanceLogin(response,URL)
 					global.instances[instance].state.findNode('index-vwf').properties['owner'] = URL.loginData.UID;
 					
 				respond(response,200,"Client Logged Into " + instance);
-				
-				
-				
+
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.logged_in, instance);
+
 				return;
 			}else
 			{
@@ -297,6 +210,8 @@ function InstanceLogout(response,URL)
 				
 				delete URL.loginData.clients[cid];
 				respond(response,200,"Client Logged out " + instance);
+
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.logged_out, instance);
 			}else
 			{				
 			
@@ -447,6 +362,7 @@ function addGlobalInventoryItem(URL,data,response)
 	DAL.addToInventory('___Global___',{uploader:URL.loginData.UID,title:URL.query.title,uploaded:new Date(),description:'',type:URL.query.type},data,function(id)
 	{
 		respond(response,200,id);
+		xapi.sendStatement(URL.loginData.UID, xapi.verbs.published_item, id, URL.query.title);
 	});
 }
 function deleteGlobalInventoryItem(URL,response)
@@ -482,10 +398,13 @@ function ServeJSON(jsonobject,response,URL)
 			response.writeHead(200, {
 				"Content-Type": "text/json"
 			});
-			if (jsonobject.constructor != String)
-				response.write(JSON.stringify(jsonobject), "utf8");
-			else
-				response.write(jsonobject, "utf8");
+			if(jsonobject)
+			{
+				if (jsonobject.constructor != String)
+					response.write(JSON.stringify(jsonobject), "utf8");
+				else
+					response.write(jsonobject, "utf8");
+			}
 			response.end();
 			
 }
@@ -511,34 +430,59 @@ function SaveProfile(URL,data,response)
 		return;
 	});
 }
+function validateEmail(email) { 
+    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+} 
+function validateUsername(password)
+{
+	if (password.length < 3)
+	  return 'Username should be more than three characters'
+	if (password.length > 20)
+	  return 'Username should be less than 20 characters'
+	
+	var hasNonalphas = /\W/.test(password);
+	if (hasNonalphas)
+	  return 'Username should contain only letters and numbers'
+	return true;
+}
+
+
 function CreateProfile(URL,data,response)
 {
 	data = JSON.parse(data);
+	//dont check the password - it's a big hash, so complexity rules are meaningless
 	data.Password = Hash(URL.query.P);
+	if(validateUsername(data.Username) !== true)
+	{
+		respond(response,500,'Bad Username');
+		return;
+	}
+	if(validateEmail(data.Email) !== true)
+	{
+		respond(response,500,'Bad Email');
+		return;
+	}
+	//someone could try to hit the api and create a user with a blank password. Don't allow
+	if(!data.Password || data.Password.length < 8)
+	{
+		respond(response,401,'bad password');
+		return;
+	}
 	DAL.createUser(URL.query.UID,data,function(ok,err)
 	{
 		if(ok)
+		{
 			respond(response,200,'');
+			mailTools.newUser(URL.query.UID,data.Email);
+			xapi.sendStatement(URL.query.UID, xapi.verbs.registered);
+		}
 		else
 			respond(response,500,err);
 		return;
 	});
 }
-//Read the password from the profile for the UID user, and callback with the match
-function CheckPassword(UID,Password, callback)
-{
-	DAL.getUser(UID,function(user)
-	{
-		if(!user)
-		{
-			callback(false);
-			return;
-		}	
-		callback(user.Password == Hash(Password));
-		return;
-	
-	});
-}
+
 
 //Check that the UID is the author of the asset
 function CheckAuthor(UID,assetFilename, callback)
@@ -695,7 +639,11 @@ function CopyInstance(URL, SID, response){
 	
 	DAL.copyInstance(SID, URL.loginData.UID, function(newId){
 	
-		if(newId) respond(response, 200, newId);
+		if(newId) 
+		{
+			respond(response, 200, newId);
+			mailTools.newWorld(URL.loginData.UID,"copy",SID);
+		}
 		else respond(response, 500, 'Error in trying to copy world');
 	});
 }
@@ -731,11 +679,11 @@ function RestoreBackupState(URL, SID, response){
 	if(SID.length == 16){
 		SID = '_adl_sandbox_' + SID + '_';
 	}
-	
+
 	DAL.restoreBackup(SID, statename, function(success){
 	
 		if(success) respond(response, 200, JSON.stringify("Success"));
-		else respond(response, 500, 'Error in trying to retrieve backup list');
+		else respond(response, 500, 'Unable to restore backup');
 	});
 }
 
@@ -762,7 +710,7 @@ function Publish(URL, SID, publishdata, response){
 		SID = '_adl_sandbox_' + SID + '_';
 	}
 	
-	console.log(SID);
+	global.log(SID);
 	DAL.getInstance(SID,function(state)
 	{
 	
@@ -782,7 +730,7 @@ function Publish(URL, SID, publishdata, response){
 		var publishSettings = null;
 		//The settings  for the published state. 
 		//have to handle these in the client side code, with some enforcement at the server
-		console.log(publishdata);
+		global.log(publishdata);
 		if(publishdata)
 		{
 			var singlePlayer = publishdata.SinglePlayer;
@@ -795,7 +743,14 @@ function Publish(URL, SID, publishdata, response){
 		}
 		//publish the state, and get the new id for the pubished state
 		DAL.Publish(SID, publishSettings, function(newId){
-		
+
+			if( publishSettings ){
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.published, newId);
+			}
+			else {
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.unpublished, newId);
+			}
+			
 			//get the db entry for the published state
 			DAL.getInstance(newId,function(statedata)
 			{
@@ -872,6 +827,42 @@ function GetThumbnail(request,SID,response)
 	global.FileCache.ServeFile(request,datapath + libpath.sep+"States"+libpath.sep+ SID + libpath.sep + "thumbnail.png" ,response,request.url);		
 }
 
+function GetCameras(SID, response, URL)
+{
+	function helper(node)
+	{
+		if( !node )
+			return [];
+
+		var ret = [];
+		for( var i in node )
+		{
+			if( node[i].extends == 'SandboxCamera.vwf' )
+			{
+				// based on vwf.js:1622
+				var childID = 'SandboxCamera-vwf-' + node[i].name;
+				ret.push( {'name': node[i].properties.DisplayName, 'id': childID} );
+			}
+			ret.push.apply(ret, helper(node[i].children));
+		}
+		return ret;
+	}
+
+	var statePath = libpath.join(datapath, 'States', SID, 'state');
+	fs.readFile(statePath,{encoding: 'utf8'}, function(err,state)
+	{
+		if( err || !state ){
+			respond(response,404,'No state with given SID found');
+			return;
+		}
+		else {
+			// loop over all objects, check if camera
+			state = JSON.parse(state);
+			ServeJSON( helper(state), response, URL );
+		}
+	});
+}
+
 //Save an asset. the POST URL must contain valid name/password and that UID must match the Asset Author
 function DeleteState(URL,SID,response)
 {
@@ -890,6 +881,7 @@ function DeleteState(URL,SID,response)
 		{
 			DAL.deleteInstance(SID,function()
 			{
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.destroyed, SID, state.title, state.description);
 				respond(response,200,'deleted instance');
 				return;
 			});
@@ -1141,6 +1133,8 @@ function createState(URL,data,response)
 	DAL.createInstance(id,statedata,function()
 	{
 		respond(response,200,'Created state ' + id);
+		mailTools.newWorld(URL.loginData.UID,data.title,id);
+		xapi.sendStatement(URL.loginData.UID, xapi.verbs.created, id, data.title, data.description);
 	});
 }
 //Just return the state data, dont serve a response
@@ -1159,36 +1153,7 @@ function getState(SID)
 	return null;
 }  
 
-//find the session data for a request
-function GetSessionData(request)
-{
-  if(!request.headers['cookie'])
-	return null;
-	
-  cookies = {};
-  var cookielist = request.headers.cookie.split(';');
-  
-  for(var i = 0; i < cookielist.length; i++)
-  {
-	var parts = cookielist[i].split('=');
-    cookies[parts[0].trim()] = (parts[1] || '').trim();
-  }
 
-  var SessionID = cookies.session;
-  
-  if(!SessionID) return null;
-  global.log(SessionID,3);
-  for(var i in global.sessions)
-  {	
-	//console.log("checking "+global.sessions[i].sessionId+" == " + SessionID);
-	if(global.sessions[i].sessionId == SessionID)
-	{
-		global.sessions[i].resetTimeout();
-		return global.sessions[i];
-	}
-  }
-  return null;
-}
 
 function Salt(URL,response)
 {	
@@ -1200,6 +1165,7 @@ function Salt(URL,response)
 			
 		}else if (user)
 		{
+			//security measure. SALT endpoint should never return nothing, to prevent guessing that username is valid
 			respond(response,200,'OBS#$%SGSDF##$%#DA');
 		}else
 		{
@@ -1211,6 +1177,53 @@ function Salt(URL,response)
 		
 	});
 
+}
+
+function getAnalytics(req, res){
+	var tempStr = analyticsObj ? "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){" +
+				  "(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o)," +
+				  "m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)" +
+				  "})(window,document,'script','//www.google-analytics.com/analytics.js','ga');" +
+				  "ga('create', '"+analyticsObj.id+"', '"+analyticsObj.url+"');" +
+				  "ga('send', 'pageview');" : '//Analytics not found';
+				  
+	res.writeHead(200, {'Content-Type': 'application/javascript'});
+	res.end(tempStr);
+}
+
+//get the document directories
+function dirTree(filename) {
+    var stats = fs.lstatSync(filename),
+        info = {
+            path: filename,
+            name: libpath.basename(filename)
+        };
+
+    if (stats.isDirectory()) {
+        info.type = "folder";
+        info.children = [];
+        var dirinfo = fs.readdirSync(filename);
+        for(var i =0; i < dirinfo.length; i++)
+        {
+        	var ret = dirTree(filename + '/' + dirinfo[i])
+        	if(ret)
+        		info.children.push(ret);
+        }
+        if(info.children.length > 0)
+        return info;
+    } 
+    if(filename.indexOf('index.html') > -1)
+    {
+    	info.type='file';
+    	return info;
+    }
+}
+
+function LogError(URL,error,response)
+{
+	global.error(JSON.stringify(JSON.parse(error),null,4));
+	response.writeHead(200,{});
+	response.end();
 }
 
 //router
@@ -1232,253 +1245,291 @@ function serve (request, response)
 	command = command.toLowerCase();
 	
 	//Load the session data
-	URL.loginData = GetSessionData(request);
-	
-	
-	//Allow requests to submit the username in the URL querystring if not session data
-	var UID;
-	if(URL.loginData)
-		UID = URL.loginData.UID;
-	if(URL.query.UID)
-	UID = URL.query.UID;	
-	var SID = URL.query.SID;
-	if(SID)
-	 SID = SID.replace(/[\\,\/]/g,'_');
-	 
-	//Normalize the path for max/unix
-	pathAfterCommand = pathAfterCommand.replace(/\//g,libpath.sep);
-	var basedir = datapath + libpath.sep;
-	//console.log(basedir+"DataFiles"+ pathAfterCommand);
-	
-	global.log(command,UID,3);
-	if(request.method == "GET")
-	{
-		switch(command)
-		{	
-			case "texture":{
-				global.FileCache.ServeFile(request,basedir+"Textures"+libpath.sep+ URL.query.UID,response,URL);		
-			} break;
-			case "thumbnail":{
-				GetThumbnail(request,SID,response);	
-			} break;
-			case "datafile":{
-				global.FileCache.ServeFile(request,basedir+"DataFiles"+ pathAfterCommand,response,URL);		
-			} break;
-			case "texturethumbnail":{
-				global.FileCache.ServeFile(request,basedir+"Thumbnails"+libpath.sep + URL.query.UID,response,URL);		
-			} break;
-			case "state":{
-				ServeFile((basedir+"States/"+SID+'/state').replace(safePathRE),response,URL,'GetStateResult');		
-			} break;
-			case "statedata":{
-				DAL.getInstance(SID,function(state)
+   sessions.GetSessionData(request,function(__session)
+   {
+
+   			URL.loginData = __session;
+			//Allow requests to submit the username in the URL querystring if not session data
+			var UID;
+			if(URL.loginData)
+				UID = URL.loginData.UID;
+			if(URL.query.UID)
+			UID = URL.query.UID;	
+			var SID = URL.query.SID;
+			if(SID)
+			 SID = SID.replace(/[\\,\/]/g,'_');
+			 
+			//Normalize the path for max/unix
+			pathAfterCommand = pathAfterCommand.replace(/\//g,libpath.sep);
+			var basedir = datapath + libpath.sep;
+			//global.log(basedir+"DataFiles"+ pathAfterCommand);
+			
+			global.log(command,UID,3);
+			if(request.method == "GET")
+			{
+				switch(command)
+				{	
+					case "updatepassword":{
+						UpdatePassword(URL,response);
+					} break;
+					case "forgotpassword":{
+						passwordUtils.ResetPassword(UID,response);
+					} break;
+					case "docdir":{
+						ServeJSON(dirTree("./public/docs"),response,URL);
+					} break;
+					case "3drsearch":{
+						_3DR_proxy.proxySearch(URL,response);
+					} break;
+					case "3drmetadata":{
+						_3DR_proxy.proxyMetadata(URL,response);
+					} break;
+					case "3drdownload":{
+						_3DR_proxy.proxyDownload(URL,response);
+					} break;
+					case "3drtexture":{
+						_3DR_proxy.proxyTexture(URL,response);
+					} break;
+					case "3drthumbnail":{
+						_3DR_proxy.proxyThumbnail(URL,response);
+					} break;
+					case "getanalytics.js": {
+						getAnalytics(request, response);
+					} break;
+					case "texture":{
+						global.FileCache.ServeFile(request,basedir+"Textures"+libpath.sep+ URL.query.UID,response,URL);		
+					} break;
+					case "thumbnail":{
+						GetThumbnail(request,SID,response);	
+					} break;
+					case "cameras":{
+						GetCameras(SID,response,URL);
+					} break;
+					case "datafile":{
+						global.FileCache.ServeFile(request,basedir+"DataFiles"+ pathAfterCommand,response,URL);		
+					} break;
+					case "texturethumbnail":{
+						global.FileCache.ServeFile(request,basedir+"Thumbnails"+libpath.sep + URL.query.UID,response,URL);		
+					} break;
+					case "state":{
+						ServeFile((basedir+"States/"+SID+'/state').replace(safePathRE),response,URL,'GetStateResult');		
+					} break;
+					case "statedata":{
+						DAL.getInstance(SID,function(state)
+						{
+							if(state)
+								ServeJSON(state,response,URL);
+							else
+								respond(response,500,'state not found' );
+						});
+					} break;
+					case "statehistory":{
+						global.log("statehistory");
+						DAL.getHistory(SID,function(statehistory)
+						{
+							if(statehistory)
+								ServeJSON(statehistory,response,URL);
+							else
+								respond(response,500,'state not found' );
+						});
+					} break;
+					case "copyinstance":{
+						CopyInstance(URL, SID, response);		
+					} break;
+					case "stateslist":{
+						GetStateList(URL, SID, response);		
+					} break;
+					case "restorebackup":{
+						RestoreBackupState(URL, SID, response);		
+					} break;
+					case "salt":{
+						Salt(URL,response);		
+					} break;
+					case "profile":{
+						ServeProfile(UID,response,URL);		
+					} break;
+					case "login":{
+						InstanceLogin(response,URL);		
+					} break;
+					case "sitelogin":{
+						SiteLogin(response,URL);		
+					} break;
+					case "sitelogout":{
+						SiteLogout(response,URL);		
+					} break;
+					case "logindata":{
+						GetLoginData(response,URL);		
+					} break;
+					case "logout":{
+						InstanceLogout(response,URL);		
+					} break;
+					case "profiles":{
+						DAL.getUsers(function(users)
+						{
+							if(users)
+								ServeJSON(users,response,URL);
+							else
+								respond(response,500,'users not found' );
+						});
+					} break;
+				    case "inventory":{
+						getInventory(URL,response);
+					}break;
+					case "inventoryitemassetdata":{
+						getInventoryItemAssetData(URL,response);
+					}break;
+					case "inventoryitemmetadata":{
+						getInventoryItemMetaData(URL,response);
+					}break;
+					case "states":{
+						DAL.getInstances(function(state)
+						{
+							if(state)
+								ServeJSON(state,response,URL);
+							else
+								respond(response,500,'state not found' );
+						});
+					} break;
+					case "textures":{
+						if(global.textures)
+						{
+							ServeJSON(global.textures,response,URL);
+							return;
+						}
+						fs.readdir(basedir+"Textures"+libpath.sep,function(err,files){
+							RecurseDirs(basedir+"Textures"+libpath.sep, "",files);
+							files.sort(function(a,b){
+							   if(typeof a == "string" && typeof b == "string") return (a<b ? -1 : 1);
+							   if(typeof a == "object" && typeof b == "string") return  1;
+							   if(typeof a == "string" && typeof b == "object") return  -1;
+							   return -1;
+							});
+							var o = {};
+							o.GetTexturesResult = JSON.stringify({root:files}).replace(/\\\\/g,"\\").replace(/\/\//g, '/');
+							global.textures = o;
+							ServeJSON(o,response,URL);
+						});
+							
+					} break;
+					case "globalassets":{
+						getGlobalInventory(URL,response);
+					} break;
+					case "globalassetassetdata":{
+						getGlobalInventoryItemAssetData(URL,response);
+					} break;
+					case "globalassetmetadata":{
+						getGlobalInventoryItemMetaData(URL,response);
+					} break;
+					case "getassets":{
+						assetPreload.getAssets(request,response,URL);
+					} break;
+					default:
+					{
+						_404(response);
+						return;
+					}
+				
+				}
+			}
+			if(request.method == "POST")
+			{
+				var body = request.body;
+
+				if(body == '')
 				{
-					if(state)
-						ServeJSON(state,response,URL);
-					else
-						respond(response,500,'state not found' );
-				});
-			} break;
-			case "statehistory":{
-				console.log("statehistory");
-				DAL.getHistory(SID,function(statehistory)
-				{
-					if(statehistory)
-						ServeJSON(statehistory,response,URL);
-					else
-						respond(response,500,'state not found' );
-				});
-			} break;
-			case "copyinstance":{
-				CopyInstance(URL, SID, response);		
-			} break;
-			case "stateslist":{
-				GetStateList(URL, SID, response);		
-			} break;
-			case "restorebackup":{
-				RestoreBackupState(URL, SID, response);		
-			} break;
-			case "salt":{
-				Salt(URL,response);		
-			} break;
-			case "profile":{
-				ServeProfile(UID,response,URL);		
-			} break;
-			case "login":{
-				InstanceLogin(response,URL);		
-			} break;
-			case "sitelogin":{
-				SiteLogin(response,URL);		
-			} break;
-			case "sitelogout":{
-				SiteLogout(response,URL);		
-			} break;
-			case "logindata":{
-				GetLoginData(response,URL);		
-			} break;
-			case "logout":{
-				InstanceLogout(response,URL);		
-			} break;
-			case "profiles":{
-				DAL.getUsers(function(users)
-				{
-					if(users)
-						ServeJSON(users,response,URL);
-					else
-						respond(response,500,'users not found' );
-				});
-			} break;
-		    case "inventory":{
-				getInventory(URL,response);
-			}break;
-			case "inventoryitemassetdata":{
-				getInventoryItemAssetData(URL,response);
-			}break;
-			case "inventoryitemmetadata":{
-				getInventoryItemMetaData(URL,response);
-			}break;
-			case "states":{
-				DAL.getInstances(function(state)
-				{
-					if(state)
-						ServeJSON(state,response,URL);
-					else
-						respond(response,500,'state not found' );
-				});
-			} break;
-			case "textures":{
-				if(global.textures)
-				{
-					ServeJSON(global.textures,response,URL);
+					
+					respond(response,500,"Error in post: data is null");
 					return;
 				}
-				fs.readdir(basedir+"Textures"+libpath.sep,function(err,files){
-					RecurseDirs(basedir+"Textures"+libpath.sep, "",files);
-					files.sort(function(a,b){
-					   if(typeof a == "string" && typeof b == "string") return (a<b ? -1 : 1);
-					   if(typeof a == "object" && typeof b == "string") return  1;
-					   if(typeof a == "string" && typeof b == "object") return  -1;
-					   return -1;
-					});
-					var o = {};
-					o.GetTexturesResult = JSON.stringify({root:files}).replace(/\\\\/g,"\\").replace(/\/\//g, '/');
-					global.textures = o;
-					ServeJSON(o,response,URL);
-				});
-					
-			} break;
-			case "globalassets":{
-				getGlobalInventory(URL,response);
-			} break;
-			case "globalassetassetdata":{
-				getGlobalInventoryItemAssetData(URL,response);
-			} break;
-			case "globalassetmetadata":{
-				getGlobalInventoryItemMetaData(URL,response);
-			} break;
-			default:
-			{
-				_404(response);
-				return;
-			}
-		
-		}
-	}
-	if(request.method == "POST")
-	{
-		var body = request.body;
+				
+				//Have to do this here! throw does not work quite as you would think 
+				//with all the async stuff. Do error checking first.
+				if(command != 'thumbnail')   //excpetion for the base64 encoded thumbnails
+				{
+					try{
+						JSON.parse(body);
+					}catch(e)
+					{
+						respond(response,500,"Error in post: data is not json");
+						return;
+					}
+				}
+				switch(command)
+				{	
 
-		if(body == '')
-		{
-			
-			respond(response,500,"Error in post: data is null");
-			return;
-		}
-		
-		//Have to do this here! throw does not work quite as you would think 
-		//with all the async stuff. Do error checking first.
-		if(command != 'thumbnail')   //excpetion for the base64 encoded thumbnails
-		{
-			try{
-				JSON.parse(body);
-			}catch(e)
+					case "error":{
+						LogError(URL,body,response);	
+					} break;
+					case "thumbnail":{
+						SaveThumbnail(URL,SID,body,response);	
+					} break;
+					case "state":{
+						SaveState(URL,SID,body,response);
+					}break;
+					case "createstate":{
+						createState(URL,body,response);
+					}break;
+					case "statedata":{
+						setStateData(URL,body,response);
+					}break;
+					case "globalasset":{
+						addGlobalInventoryItem(URL,body,response);
+					}break;
+					case "profile":{
+						SaveProfile(URL,body,response);
+					}break;
+					case "createprofile":{
+						CreateProfile(URL,body,response);
+					}break;
+					case "inventoryitem":{
+						addInventoryItem(URL,body,response);
+					}break;
+					case "inventoryitemmetadata":{
+						updateInventoryItemMetadata(URL,body,response);
+					} break;
+					case "publish":{
+						Publish(URL, SID,body, response);		
+					} break;
+					default:
+					{
+						global.log("POST",2);
+						_404(response);
+						return;
+					}
+				}
+			}	
+			if(request.method == "DELETE")
 			{
-				respond(response,500,"Error in post: data is not json");
-				return;
-			}
-		}
-		switch(command)
-		{	
+				var body = request.body;
 
-			case "thumbnail":{
-				SaveThumbnail(URL,SID,body,response);	
-			} break;
-			case "state":{
-				SaveState(URL,SID,body,response);
-			}break;
-			case "createstate":{
-				createState(URL,body,response);
-			}break;
-			case "statedata":{
-				setStateData(URL,body,response);
-			}break;
-			case "globalasset":{
-				addGlobalInventoryItem(URL,body,response);
-			}break;
-			case "profile":{
-				SaveProfile(URL,body,response);
-			}break;
-			case "createprofile":{
-				CreateProfile(URL,body,response);
-			}break;
-			case "inventoryitem":{
-				addInventoryItem(URL,body,response);
-			}break;
-			case "inventoryitemmetadata":{
-				updateInventoryItemMetadata(URL,body,response);
-			} break;
-			case "publish":{
-				Publish(URL, SID,body, response);		
-			} break;
-			default:
-			{
-				global.log("POST",2);
-				_404(response);
-				return;
-			}
-		}
-	}	
-	if(request.method == "DELETE")
-	{
-		var body = request.body;
-
-		switch(command)
-		{	
-			case "state":{
-				DeleteState(URL,SID,response);
-			}break;
-			case "inventoryitem":{
-				deleteInventoryItem(URL,response);
-			} break;
-			case "globalasset":{
-				 deleteGlobalInventoryItem(URL,response);
-			}break;
-			case "profile":{
-				DeleteProfile(URL, basedir+"Profiles"+libpath.sep+UID,response);
-			}break;
-			default:
-			{
-				global.log("DELETE",2);
-				_404(response);
-				return;
-			}
-		}
-	}	
+				switch(command)
+				{	
+					case "state":{
+						DeleteState(URL,SID,response);
+					}break;
+					case "inventoryitem":{
+						deleteInventoryItem(URL,response);
+					} break;
+					case "globalasset":{
+						 deleteGlobalInventoryItem(URL,response);
+					}break;
+					case "profile":{
+						DeleteProfile(URL, basedir+"Profiles"+libpath.sep+UID,response);
+					}break;
+					default:
+					{
+						global.log("DELETE",2);
+						_404(response);
+						return;
+					}
+				}
+			}	
+	});
 }
 
 exports.serve = serve;
 exports.getState = getState;
-exports.getSessionData = GetSessionData;
+
 exports.setDataPath = function(p)
 {
 	p = libpath.resolve(p);
@@ -1490,8 +1541,13 @@ exports.setDataPath = function(p)
 exports.setDAL = function(p)
 {
 	DAL = p;
+	assetPreload.setSandboxAPI(this);
 }
 exports.getDataPath = function()
 {
 	return datapath;
 }
+
+exports.setAnalytics = function(obj){
+	analyticsObj = obj;
+};

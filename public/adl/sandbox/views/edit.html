@@ -2,7 +2,7 @@
 	var sid = '{{sid}}'; 
 	$(document).ready(function()
 	{
-		getLoginInfo(function(){}, redirect);
+		
 		vwfPortalModel.restoreList = ko.observableArray();
 		vwfPortalModel.restoreState = function(obj, e){
 		
@@ -27,15 +27,15 @@
 			$.get(root + '/vwfDataManager.svc/stateslist?SID=' + sid, function(data){
 				
 				var tempData = JSON.parse(data);
-				for(var i = 0; i < tempData.length; i++){
-					if(tempData[i].file == "state"){
-						tempData.splice(i, 1);
-					}
-					
-					if(tempData[i])
+				for(var i = tempData.length - 1; i >= 0; i--){
+					if(tempData[i].file.indexOf('statebackup') > -1)
 					{
 						tempData[i].unix = moment(tempData[i].time).unix();
 						tempData[i].time = moment(tempData[i].time).format('MMM Do YYYY, h:mm a');
+					}
+					
+					else{
+						tempData.splice(i, 1);
 					}
 				}
 				
@@ -72,7 +72,7 @@
 	});	
 	function redirect()
 	{
-		window.location = root + '/worlds';
+		window.location = root + '/world/' + sid.substr(13, 16);
 	}
 	vwfPortalModel.handleEditButton = function(o, e){
 
@@ -101,6 +101,9 @@
 		});	
 	};
 </script>
+<div class="row" style="margin-bottom: 15px">
+	
+</div>
 <div class="row">
 	<div class="col-md-6 col-md-offset-1">
 		<form data-bind="submit:handleEditButton" >

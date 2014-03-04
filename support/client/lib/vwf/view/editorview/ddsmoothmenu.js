@@ -118,7 +118,7 @@ getajaxmenu: function($, setting, nobuild){ //function to fetch external page co
 closeall: function(e){
 	var smoothmenu = ddsmoothmenu, prevscount;
 	if(!smoothmenu.globaltrackopen){return;}
-	if(e.type === 'mouseleave' || ((e.type === 'click' || e.type === 'touchstart') && smoothmenu.menus.index(e.target) < 0)){
+	if(e.type === 'mouseleave' || ((e.type === 'click' || e.type === 'touchstart') && smoothmenu.menus && smoothmenu.menus.index(e.target) < 0)){
 		prevscount = smoothmenu.prevobjs.length;
 		while(--prevscount > -1){
 			$(smoothmenu.prevobjs[prevscount]).trigger('click');

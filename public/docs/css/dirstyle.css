@@ -1,0 +1,20 @@
+body {
+    background: white;
+}
+h1
+{
+    font-size:2em;
+}
+
+.breadcrumb
+{
+color: black;
+text-decoration: none;
+margin-right: 1em;
+text-transform: capitalize;
+font-family: sans-serif;
+background: lightgray;
+border-radius: 4px;
+padding: 3px;
+border: 1px solid gray;
+}

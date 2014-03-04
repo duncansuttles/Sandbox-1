@@ -12,19 +12,32 @@
 			this.xaxis = new THREE.Vector3(1,0,0);
 			this.yaxis = new THREE.Vector3(0,1,0);
 			this.zaxis = new THREE.Vector3(0,0,1);
+			this.uoffset = 0;
+			this.voffset = 0;
 			this.projectToSphere = function(vert)
 			{	
 				var x = vert.x * this._length;
 				var y = vert.z * this.width;
 				var z = vert.y * this.height;
-				var r = Math.sqrt((x*x + y*y + z*z)); 
-				var t = Math.atan(y/x);
-				var p = Math.acos(z/r);
 				
-				return new THREE.Vector2(t/(1*Math.PI),p/(1*Math.PI));
+				var u, v;
+				if(this.plane == 'z')
+				{
+					u = 0.5 + ((Math.atan2(y,x))/(2*Math.PI));
+					v = .5 - ((Math.asin(z))/(Math.PI));
+				}else
+				{
+					u = 0.5 + ((Math.atan2(z,x))/(2*Math.PI));
+					v = .5 - ((Math.asin(y))/(Math.PI));
+
+				}
+
+				return new THREE.Vector2(u,v);
 			}
-			this.tileAndRotate = function(uv)
+			this.tileOffsetAndRotate = function(uv)
 			{
+				uv.x += this.uoffset;
+				uv.y += this.voffset;
 				uv.x *= this.tilex;
 				uv.y *= this.tiley;
 				
@@ -109,7 +122,7 @@
 						}
 						if(this.mode == 'sphere')
 							uv = this.projectToSphere(verts[j]);
-						uv = this.tileAndRotate(uv);	
+						uv = this.tileOffsetAndRotate(uv);	
 						uvs[j].x = uv.x;
 						uvs[j].y = uv.y;
 					}
@@ -120,7 +133,7 @@
 			}
 			this.settingProperty = function(prop,val)
 			{
-				if(prop == '_length' || prop == 'width' || prop == 'height' || prop == 'rotate' || prop == 'tilex' || prop == 'tiley' || prop == 'mode' || prop == 'plane')
+				if(prop == 'uoffset' ||prop == 'voffset' || prop == '_length' || prop == 'width' || prop == 'height' || prop == 'rotate' || prop == 'tilex' || prop == 'tiley' || prop == 'mode' || prop == 'plane')
 				{
 					this[prop] = val;
 					this.dirtyStack();
@@ -128,7 +141,7 @@
 			}
 			this.gettingProperty = function(prop)
 			{
-				if(prop == '_length' || prop == 'width' || prop == 'height' || prop == 'rotate' || prop == 'tilex' || prop == 'tiley' || prop == 'mode' || prop == 'plane')
+				if(prop == 'uoffset' ||prop == 'voffset' || prop == '_length' || prop == 'width' || prop == 'height' || prop == 'rotate' || prop == 'tilex' || prop == 'tiley' || prop == 'mode' || prop == 'plane')
 				{
 					return this[prop];
 				}
@@ -143,7 +156,9 @@
 						tiley:{displayname : 'Tile Y',property:'tiley',type:'slider',min:-10,max:10,step:.01},
 						rotate:{displayname : 'Rotate',property:'rotate',type:'slider',min:-3.14159,max:3.14159,step:.01},
 						plane:{displayname : 'Plane Axis',property:'plane',type:'choice',values:['x','y','z'],labels:['X','Y','Z']},
-						mode:{displayname : 'Mode',property:'mode',type:'choice',values:['plane','box','sphere'],labels:['Plane','Box','Sphere']}
+						mode:{displayname : 'Mode',property:'mode',type:'choice',values:['plane','box','sphere'],labels:['Plane','Box','Sphere']},
+						offsetU:{displayname : 'U Offset',property:'uoffset',type:'slider',min:-1,max:1,step:.01},
+						offsetV:{displayname : 'V Offset',property:'voffset',type:'slider',min:-1,max:1,step:.01},
 					}
 				}
 			}

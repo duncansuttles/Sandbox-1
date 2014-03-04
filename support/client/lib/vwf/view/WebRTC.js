@@ -12,23 +12,18 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 			var html = 
 '<div id="vidFrame">'+
 '   <style>@font-face {font-family: "Glyphicons"; src: url(/adl/sandbox/fonts/glyphicons-halflings-regular.ttf) format("truetype");}</style>'+
-'	<div id="vidPanel" style="position: absolute; top: 10px; left: 10px; width: 320px; height: 240px;">'+
+'	<div id="vidPanel" style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;">'+
 '		<video id="remote" width="320" height="240" '+
-'			style="position: absolute;" '+
+'			style="position: absolute;width:100%;height:100%" '+
 '			poster="/adl/sandbox/vwf/view/webrtc/avatar.png"/>'+
 '		<video id="self" width="80" height="60" '+
 '			style="position: absolute;" '+
 '			poster="/adl/sandbox/vwf/view/webrtc/avatar.png" muted/>'+
 '		<input id="chatButton" type="button" value="Send Message" '+
 '			style="position: absolute; right: 0px;"/>'+
+'		<span id="videoClose" class="ui-button-icon-primary ui-icon ui-icon-closethick" type="button" value="X" '+
+'			style="position: absolute; left: 0px; bottom:0px"/>'+
 '		<span id="connectionStatus" style="font-family: \'Glyphicons\', arial; font-size: 18pt; position: absolute; right: 5px; bottom: 5px;">\uE182\uE091</span>'+
-'	</div>'+
-'	<div id="messagePanel" style="position: absolute; top: 10px; left: 10px; width: 320px; height: 240px; background-color: #fff">'+
-'		<p id="message">'+
-'			Incoming message from Herp Derp'+
-'		</p>'+
-'		<input id="accept" type="button" value="Accept"/>'+
-'		<input id="reject" type="button" value="Reject"/>'+
 '	</div>'+
 //'	<div id="buttonPanel">'+
 //'	</div>'+
@@ -39,7 +34,7 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 			$(document.body).prepend(html);
 
 			// create the dialog box
-			$('#vidFrame').dialog({width: 360, height: 280, autoOpen: false, resizable: true, dialogClass: 'visible-overflow'});
+		//	$('#vidFrame').dialog({width: 360, height: 280, autoOpen: false, resizable: true, dialogClass: 'visible-overflow'});
 			$('.visible-overflow').css('overflow', 'visible');
 
 			// create a new rtc object on view initialization
@@ -50,7 +45,8 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 			);
 
 			// hook the close to rtc.disconnect
-			$('#vidFrame').on('dialogclose', function(event,ui){
+			$('#videoClose').on('click', function(event,ui){
+				$('#vidFrame').hide();
 				this.rtc.disconnect();
 				$('#vidFrame video').attr('src', '/adl/sandbox/vwf/view/webrtc/avatar.png');
 				var payload = {target: this.rtcTarget, sender: _UserManager.GetCurrentUserName()};
@@ -61,9 +57,7 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 
 			// hook up the accept and reject buttons
 			$('#vidFrame #messagePanel input#accept').button().click(function(evt){
-				console.log('Call accepted');
-				$('#vidFrame #messagePanel').css('z-index', -1);
-				this.rtc.initialize(this.mode);
+				
 			}.bind(this));
 
 			$('#vidFrame #messagePanel input#reject' ).button().click(function(evt){
@@ -77,10 +71,10 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 			}.bind(this));
 
 			// hook up the resize handler
-			$('#vidFrame').on( 'dialogresize', function(evt,ui)
+			$('#vidFrame').on( 'resize', function(evt,ui)
 			{
 				// calc new dimensions
-				var ratio = 4/3;
+		/*		var ratio = 4/3;
 				var ratioSize = {};
 				if( (ui.size.width-40)*(1+1/ratio) < (ui.size.height-40)*(1+ratio) ){
 					ratioSize.width = ui.size.width-40;
@@ -92,11 +86,25 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 				}
 
 				// set the dimensions of window frames
-				$('#vidFrame > div').css(ratioSize)
+				//$('#vidFrame > div').css(ratioSize)
 				$('#vidFrame > #vidPanel > video#remote').css(ratioSize);
 				$('#vidFrame > #vidPanel > video#self').css({width: ratioSize.width/4, height: ratioSize.height/4});
 				//$('#vidFrame > #vidPanel > input#chatButton').css({left: ratioSize.width - $('#vidFrame #chatButton').width() - 30});
+				*/
 			});
+
+			$('#vidFrame').css('width', 341);
+				$('#vidFrame').css('height', 260);
+				$('#vidFrame').css('z-index', 1000000000);
+				$('#vidFrame').css('position', "absolute");
+				$('#vidFrame').css('background-color', "white");
+				$('#vidFrame').css('border', "1px solid grey");
+				$('#vidFrame').resizable({aspectRatio:4/3,maxHeight: 800,
+      maxWidth: 600,
+      minHeight: 120,
+      minWidth: 90});
+				$('#vidFrame').draggable();
+				$('#vidFrame').hide();
 		},
 
 
@@ -113,9 +121,11 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 				this.rtcTarget = params.target;
 				this.mode = {'audio':true, 'video':name=='rtcVideoCall'};
 				var typeWord = this.mode.video ? 'Video' : 'Voice';
-				$('#vidFrame').dialog('option', 'title', typeWord+' chat with '+this.rtcTarget);
+			//	$('#vidFrame').dialog('option', 'title', typeWord+' chat with '+this.rtcTarget);
 				$('#vidFrame #messagePanel').css('z-index', -1);
-				$('#vidFrame').dialog('open');
+			//	$('#vidFrame').dialog('open');
+				$('#vidFrame').show();
+				
 				this.rtc.initialize(this.mode);
 			}
 
@@ -131,10 +141,29 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 						console.log('Unexpected RTC call, prompting to accept');
 						this.mode = params.rtcData.mediaDescription;
 						var typeWord = params.rtcData.mediaDescription.video ? 'Video' : 'Voice';
-						$('#vidFrame').dialog('option', 'title', typeWord+' chat with '+this.rtcTarget);
+					//	$('#vidFrame').dialog('option', 'title', typeWord+' chat with '+this.rtcTarget);
 						$('#vidFrame #messagePanel').css('z-index', 1);
-						$('#vidFrame #message').html('Incoming '+typeWord.toLowerCase()+' call from '+this.rtcTarget);
-						$('#vidFrame').dialog('open');
+					//	$('#vidFrame #message').html('Incoming '+typeWord.toLowerCase()+' call from '+this.rtcTarget);
+					//	$('#vidFrame').dialog('open');
+						
+
+						alertify.confirm(this.rtcTarget + ' would like to call you. Accept?',function(ok){
+
+							if(ok)
+							{
+								console.log('Call accepted');
+								$('#vidFrame #messagePanel').css('z-index', -1);
+								this.rtc.initialize(this.mode);
+								$('#vidFrame').show();
+							}
+							else
+							{
+								console.log('Call rejected');
+								$('#videoClose').click();
+							}
+
+						}.bind(this));
+
 						//this.rtc.initialize( params.rtcData.mediaDescription );
 					}
 					else {
@@ -147,7 +176,8 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 				if( _UserManager.GetCurrentUserName() == params.target )
 				{
 					console.log('Remote disconnect, clean up');
-					$('#vidFrame').dialog("close");
+				//	$('#vidFrame').dialog("close");
+					$('#vidFrame').hide();
 					$('#vidFrame video').attr('src', '/adl/sandbox/vwf/view/webrtc/avatar.png');
 				}
 			}

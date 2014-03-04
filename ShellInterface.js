@@ -5,9 +5,11 @@ var libpath = require('path'),
     mime = require('mime'),
 	sio = require('socket.io'),
 	YAML = require('js-yaml');
-	SandboxAPI = require('./sandboxAPI');
+	SandboxAPI = require('./sandboxAPI'),
+	readline = require('readline');
+var passwordUtils = require('./passwordUtils');
+var DAL = require('./DAL').DAL;
 
-	var DAL;
 	function GUID()
     {
         var S4 = function ()
@@ -25,140 +27,179 @@ var libpath = require('path'),
                 S4() + S4() + S4()
             );
     }
-function IsSpace(c)
-{
-	return c == " " || c == "\t";
-}	
+
 function ParseLine(str)
 {
-	var ret = [""];
-	var inquote = false;
-	for(var i = 0; i < str.length; i++)
-	{
-		var c = str[i];
-		if(IsSpace(c) && !inquote)
-		{
-			ret.push("");
-		}else
-		{
-			if(c == "\"")
-				inquote = !inquote;
-			else
-			{
-				ret[ret.length -1] += (c);
-			}			
-		}
+	// new parse function splits on white space except between quotes
+	var ret = [];
+
+	// make sure quotes are in pairs
+	var quotelist = str.split('"');
+	if( quotelist.length%2 !== 1 ){
+		throw 'Error: cannot parse unmatched quotes';
 	}
-	while(ret.indexOf("")!= -1)
-		ret.splice(ret.indexOf(""),1);
-		
-	
+
+	for(var i=0; i<quotelist.length; i++)
+	{
+		// not quoted
+		if( i%2 === 0 ){
+			var tokens = quotelist[i].split(/\s+/);
+			for(var j=0; j<tokens.length; j++){
+				if(tokens[j] !== '')
+					ret.push(tokens[j]);
+			}
+		}
+		// quoted
+		else
+			ret.push(quotelist[i]);
+	}
+
 	return ret;
 }
+
+function CheckMatch(test, input)
+{
+	var pattern = test.split(' ');
+	for(var i=0; i<pattern.length; i++)
+	{
+		if( /^<.*>$/.test(pattern[i]) ) continue;
+
+		var re = new RegExp('^'+pattern[i]+'$','i');
+		if( !input[i] || !re.test(input[i]) )
+			return false;
+	}
+	return true;
+}
+
 function StartShellInterface()
 {
-//shell interface defaults
+	//shell interface defaults
 	global.log('Starting shell interface',0);
-	var stdin = process.openStdin();
-	stdin.on('data', function(chunk) {
-		if(!chunk) return;
-		
-		if(!global.instances)
-			global.instances = {};
-					
-		chunk = chunk + '  ';
-		chunk = chunk.replace(/\r\n/g,'');
-		
-		var commands = ParseLine(chunk);
-		
-		if(commands[0] && commands[0] == 'show' && commands[1])
+	rl = readline.createInterface(process.stdin, process.stdout);
+	rl.setPrompt('> ');
+
+	// the list of available commands
+	var commands = [
 		{
-			if(commands[1] == 'instances')
-			{
-				
+			'command': 'show instances',
+			'description': 'Lists active instances. Fails if run before any world loaded.',
+			'callback': function(commands){
 				var keys = Object.keys(global.instances);
 				for(var i in keys)
-					global.log(keys[i],0);	
+					console.log(keys[i]);
 			}
-			if(commands[1] == 'users')
-			{
+		},
+		{
+			'command': 'show users',
+			'description': 'Lists all registered users',
+			'callback': function(commands){
 				DAL.getUsers(function(users)
 				{
-					global.log(users);
+					console.log(users);
 				});
 			}
-			if(commands[1] == 'user')
-			{
+		},
+		{
+			'command': 'show user <username>',
+			'description': 'Prints the user profile for <username>',
+			'callback': function(commands){
+				
 				DAL.getUser( commands[2], function(users)
 				{
-					global.log(users);
+					console.log(users);
 				});
 			}
-			if(commands[1] == 'inventory')
-			{
+		},
+		/*{
+			'command': 'show inventory <username>',
+			'description': 'List the contents of a user\'s inventory',
+			'callback': function(commands){
+				
 				DAL.getInventoryForUser(commands[2],function(inventory,key)
 				{
-					global.log('Inventory Database key is ' + key);
-					global.log(JSON.stringify(inventory));
+					console.log('Inventory Database key is ' + key);
+					console.log(JSON.stringify(inventory));
 				});
-			
 			}
-			if(commands[1] == 'inventorydisplay')
-			{
+		},*/
+		{
+			'command': 'show inventory <username>',
+			'description': 'Lists the inventory metadata for a given user',
+			'callback': function(commands){
 				DAL.getInventoryDisplayData(commands[2],function(data)
 				{
-					global.log(data,0);
+					console.log(data);
 				});
-			}
-			
-			if(commands[1] == 'inventoryitem')
-			{
-				if(commands[2] == 'metadata')
-				{
-					DAL.getInventoryItemMetaData(commands[3],commands[4],function(data)
-					{
-						console.log(data);
-					});
-				}
-				if(commands[2] == 'assetdata')
-				{
-					DAL.getInventoryItemAssetData(commands[3],commands[4],function(data)
-					{
-						console.log(data);
-					});
-				}					
 				
 			}
-			if(commands[1] == 'sessions')
-			{
+		},
+		{
+			'command': 'show inventoryitem metadata <username> <key>',
+			'description': 'Shows the metadata for a user\'s inventory item',
+			'callback': function(commands){
+				DAL.getInventoryItemMetaData(commands[3],commands[4],function(data)
+				{
+					console.log(data);
+				});
+			}
+		},
+		{
+			'command': 'show inventoryitem assetdata <username> <key>',
+			'description': 'Shows the actual asset data for a user\'s inventory item',
+			'callback': function(commands){
+				DAL.getInventoryItemAssetData(commands[3],commands[4],function(data)
+				{
+					console.log(data);
+				});
+			}
+		},
+		/*{
+			'command': 'show sessions',
+			'description': '',
+			'callback': function(commands){
 				for(var i =0; i < global.sessions.length; i++)
-					global.log(global.sessions[i],0);	
+					console.log(global.sessions[i]);	
+				
 			}
-			if(commands[1] == 'states')
-			{
-					DAL.getInstances(function(data)
-					{
-						global.log(data,0);
-					});	
+		},*/
+		{
+			'command': 'show states',
+			'description': 'Lists the metadata of all worlds',
+			'callback': function(commands){
+				DAL.getInstances(function(data)
+				{
+					console.log(data);
+				});	
+				
 			}
-			if(commands[1] == 'state')
-			{
-					DAL.getInstance(commands[2],function(data)
-					{
-						global.log(data,0);
-					});	
+		},
+		{
+			'command': 'show state <state_id>',
+			'description': 'Prints the metadata for the given world',
+			'callback': function(commands){
+				DAL.getInstance(commands[2],function(data)
+				{
+					console.log(data);
+				});	
 			}
-			if(commands[1] == 'clients')
-			{
+		},
+		{
+			'command': 'show clients',
+			'description': 'Lists the socket ids of connected clients',
+			'callback': function(commands){
 				for(var i in global.instances)
 				{
 					var keys = Object.keys(global.instances[i].clients);
 					for(var j in keys)
-					   global.log(keys[j],0);
+					   console.log(keys[j]);
 				}
+				
 			}
-			if(commands[1] == 'users')
-			{
+		},
+		{
+			'command': 'show active users',
+			'description': 'Lists the users logged into a world',
+			'callback': function(commands){
 				for(var i in global.instances)
 				{
 					var keys = Object.keys(global.instances[i].clients);
@@ -167,112 +208,146 @@ function StartShellInterface()
 					   var client = global.instances[i].clients[keys[j]];
 					   if(client && client.loginData)
 					   {
-						  global.log(client.loginData.UID,0);
+						  console.log(client.loginData.UID);
 					   }
 					}
 				}
+
 			}
-		}
-		if(commands[0] == 'compact')
-		{
-			DAL.compactDatabase();
-		}
-		if(commands[0] && commands[0] == 'import' && commands[1])
-		{
-			if(commands[1] == 'users')
-			{
-				DAL.importUsers();
-			}
-			if(commands[1] == 'states')
-			{
-				DAL.importStates();
-			}
-		}
-		if(commands[0] && commands[0] == 'purge' && commands[1])
-		{
-			if(commands[1] == 'states')
-			{
-				DAL.purgeInstances();
-			}
-		}
-		if(commands[0] && commands[0] == 'find' && commands[1])
-		{
-			if(commands[1] == 'state')
-			{
-				    var search = {}
-					search[commands[2]] = commands[3];
-					DAL.findState(search,function(results)
-					{
-						console.log(results);
-					});
+		},
+		/*{
+			'command': 'compact',
+			'description': 'Compacts the database to remove obsolete data',
+			'callback': function(commands){
+				DAL.compactDatabase();
 				
 			}
-		}
-		if(commands[0] == 'update')
+		},*/
 		{
-			if(commands[1] == 'inventoryitem')
-				if(commands[2] == 'metadata')
+			'command': 'exec <command>',
+			'description': 'Runs the given javascript on the server',
+			'callback': function(commands){
+				eval(commands[1]);
+			}
+		},
+		{
+			'command': 'import users',
+			'description': 'Scans the datadir for users not in the DB, and adds them',
+			'callback': function(commands){
+				DAL.importUsers();
+			}
+		},
+		{
+			'command': 'import states',
+			'description': 'Scans the datadir for states not in the DB, and adds them',
+			'callback': function(commands){
+				DAL.importStates();
+			}
+		},
+		{
+			'command': 'purge states',
+			'description': 'Scans the DB for states with no data in the datadir, and deletes them',
+			'callback': function(commands){
+				DAL.purgeInstances();
+			}
+		},
+		/*{
+			'command': 'find state <arg1> <arg2>',
+			'description': '',
+			'callback': function(commands){
+				var search = {}
+				search[commands[2]] = commands[3];
+				DAL.findState(search,function(results)
 				{
-					DAL.updateInventoryItemMetadata(commands[3],commands[4],JSON.parse(commands[5].replace(/'/g,'"')),function()
-					{
-					
-					});
-				}
-			if(commands[1] == 'user')
-			{
+					console.log(results);
+				});
+			}
+		},*/
+		{
+			'command': 'update inventoryitem metadata <username> <key> <newdata>',
+			'description': 'Overwrites the inventory item\'s metadata with the given data',
+			'callback': function(commands){
+				DAL.updateInventoryItemMetadata(commands[3],commands[4],JSON.parse(commands[5].replace(/'/g,'"')),function()
+				{
+				
+				});
+			}
+		},
+		{
+			'command': 'update user <username> <newdata>',
+			'description': 'Overwrites the user\'s data with the given data',
+			'callback': function(commands){
 				DAL.updateUser(commands[2],JSON.parse(commands[3].replace(/'/g,'"')),function()
 				{
 				
 				});
 			}
-			if(commands[1] == 'state')
-			{
+		},
+		{
+			'command': 'update state <state_id> <newdata>',
+			'description': 'Overwrites the existing state data with the given data',
+			'callback': function(commands){
 				DAL.updateInstance(commands[2],JSON.parse(commands[3].replace(/'/g,'"')),function()
 				{
 				
 				});
 			}
-		}
-		if(commands[0] == 'feature')
+		},
 		{
-			if(commands[1] == 'state')
-			{
+			'command': 'feature state <state_id>',
+			'description': 'Adds a world to the Featured Worlds list',
+			'callback': function(commands){
 				DAL.updateInstance(commands[2],{featured:true},function()
 				{
 				
 				});
+				
 			}
-		}
-		if(commands[0] == 'unfeature')
+		},
 		{
-			if(commands[1] == 'state')
-			{
+			'command': 'resetPassword <username>',
+			'description': 'Generates a temp password for a user, and emails it to them if configured',
+			'callback': function(commands){
+				console.log(commands[1]);
+				passwordUtils.ResetPassword(commands[1]);			
+			}
+		},
+		{
+			'command': 'unfeature state <state_id>',
+			'description': 'Removes a world from the Featured Worlds list',
+			'callback': function(commands){
 				DAL.updateInstance(commands[2],{featured:false},function()
 				{
 				
 				});
 			}
-		}
-		if(commands[0] == 'search')
-		{
-			if(commands[1] == 'inventory')
-			{
+		},
+		/*{
+			'command': 'search inventory <arg1> <arg2>',
+			'description': '',
+			'callback': function(commands){
 				DAL.searchInventory(commands[2],commands[3].split(','),function(results)
 				{
 					console.log(results);
 				});
 			}
-			if(commands[1] == 'states')
-			{
+		},
+		{
+			'command': 'search states <arg1>',
+			'description': '',
+			'callback': function(commands){
 				DAL.findState(JSON.parse(commands[2].replace(/'/g,'"')),function(results)
 				{
 					console.log(results);
 				});
-			}			
-		}
-		if(commands[0] && commands[0] == 'boot' && commands[1])
+				
+			}
+		},*/
 		{
-			var name = commands[1];
+			'command': 'kick <username_or_state>',
+			'description': 'Forcibly disconnects a given user or all users in a world',
+			'callback': function(commands){
+				var name = commands[1];
 			
 				for(var i in global.instances)
 				{
@@ -305,18 +380,18 @@ function StartShellInterface()
 						}
 					}
 				}
-			
-		}
-		if(commands[0] && commands[0] == 'message' && commands[1])
+
+			}
+		},
 		{
-			var name = commands[1];
+			'command': 'message <username> <message>',
+			'description': 'Sends a private message to a user (doesn\'t work)',
+			'callback': function(commands){
+				var name = commands[1];
 			
 				for(var i in global.instances)
 				{
-					
 					{
-						//find either the client or the user and boot them from all instances
-						
 						for(var j in global.instances[i].clients)
 						{
 						   var client = global.instances[i].clients[j];
@@ -329,17 +404,16 @@ function StartShellInterface()
 						}
 					}
 				}
-			
-		}
-		if(commands[0] && commands[0] == 'broadcast' && commands[1])
+			}
+		},
 		{
-			var name = commands[1];
+			'command': 'broadcast <message>',
+			'description': 'Broadcasts a message to all active worlds',
+			'callback': function(commands){
+				var name = commands[1];
 			
 				for(var i in global.instances)
 				{
-					
-					//find either the client or the user and boot them from all instances
-					
 					for(var j in global.instances[i].clients)
 					{
 					   var client = global.instances[i].clients[j];   
@@ -349,74 +423,90 @@ function StartShellInterface()
 					}
 					
 				}
-			
-		}
-		if(commands[0] == 'delete')
+
+			}
+		},
 		{
-			if(commands[1] == 'user')
-			{
+			'command': 'delete user <username>',
+			'description': 'Deletes the user with the given username',
+			'callback': function(commands){
 				DAL.deleteUser(commands[2],function(res){
 					
-					global.log(res,0);
+					console.log(res);
 				
 				});
 			}
-			if(commands[1] == 'inventoryitem')
-			{
+		},
+		{
+			'command': 'delete inventoryitem <username> <key>',
+			'description': 'Removes the inventory item with the given owner and key',
+			'callback': function(commands){
 				DAL.deleteInventoryItem(commands[2],commands[3],function()
 				{
 				
 				});
 			}
-		}
-		if(commands[0] == 'clear')
+		},
 		{
-			if(commands[1] == 'users')
-			{
+			'command': 'clear users',
+			'description': 'Deletes all users from the system',
+			'callback': function(commands){
 				DAL.clearUsers();
 			}
-			if(commands[1] == 'inventoryitem')
-			{
+		},
+		/*{
+			'command': 'clear inventoryitem',
+			'description': '',
+			'callback': function(commands){
 				DAL.clearStates();
 			}
-			if(commands[1] == 'cache')
-			{
+		},*/
+		{
+			'command': 'clear cache',
+			'description': 'Empties the server-side file cache',
+			'callback': function(commands){
 				global.FileCache.clear();
 			}
-		}
-		if(commands[0] == 'create')
+		},
 		{
-			if(commands[1] == 'user')
-			{
+			'command': 'create user <username>',
+			'description': 'Creates a new user with no attributes',
+			'callback': function(commands){
 				DAL.createUser(commands[2],{username:commands[2],loginCount:0},function(res){
-					
-					global.log(res,0);
-				
+					console.log(res);
 				});
+				
 			}
-			if(commands[1] == 'inventoryitem')
-			{
+		},
+		{
+			'command': 'create inventoryitem <username> <key>',
+			'description': 'Creates a new empty inventory item',
+			'callback': function(commands){
 				DAL.addToInventory(commands[2],{title:commands[3],created:new Date()},{data:'test asset binary data'},function()
 				{
 				
 				});
 			}
-		}
-		if(commands[0] && commands[0] == 'loglevel' && commands[1])
+		},
 		{
-			global.logLevel = parseInt(commands[1]);	
-		}
-		if(commands[0] && commands[0] == 'loglevel' && !commands[1])
+			'command': 'loglevel',
+			'description': 'Retrieves the current logging level',
+			'callback': function(commands){
+				console.log(global.logLevel);
+			}
+		},
 		{
-			console.log(global.logLevel,0);
-		}
-		
-		
-		
-		
-		if(commands[0] && commands[0] == 'test' && commands[1] && commands[1] == 'login' && commands[2] && commands[3] && parseInt(commands[3]))
+			'command': 'setloglevel <level>',
+			'description': 'Sets the current logging level',
+			'callback': function(commands){
+				global.logLevel = parseInt(commands[1]);
+			}
+		},
 		{
-			var name = commands[2];
+			'command': 'test login <state_id> <num_bots>',
+			'description': 'Connects <num_bots> phantom clients to a given world',
+			'callback': function(commands){
+				var name = commands[2];
 			
 				for(var i in global.instances)
 				{
@@ -444,9 +534,86 @@ function StartShellInterface()
 						}
 					}
 				}
-		}	
+
+			}
+		},
+	];
+
+	rl.prompt();
+
+	global.inbuffer = '';
+	process.stdin.on('data', function(chunk){
+		if(chunk == '\u000d')
+			global.inbuffer = '';
+		else
+			global.inbuffer += chunk;
 	});
-	
+
+	rl.on('line', function(line)
+	{
+		// ignore whitespace
+		if(/^\s*$/.test(line)){
+			rl.prompt();
+			return;
+		}
+
+		// parse input
+		var cmd;
+		try {
+			cmd = ParseLine(line);
+		}
+		catch(e){
+			console.log(e);
+			rl.prompt();
+			return;
+		}
+		//console.log(cmd);
+
+		// start going through the options
+		
+		// help
+		if( CheckMatch('help', cmd) ){
+			console.log('Available commands:');
+			console.log('NOTE: State IDs are of the form _adl_sandbox_uAId89a1xnE3DJXU_');
+			console.log();
+			console.log('help - Show this message');
+			console.log('exit - Shut down the server');
+			for(var i=0; i<commands.length; i++)
+				console.log(commands[i].command,'-',commands[i].description);
+			rl.prompt();
+		}
+
+		// exit
+		else if( CheckMatch('exit', cmd) ){
+			rl.close();
+		}
+
+		// all other commands
+		else {
+			for(var i=0; i<commands.length; i++)
+			{
+				if(CheckMatch(commands[i].command,cmd)){
+					if( commands[i].command.split(' ').length === cmd.length )
+						commands[i].callback(cmd);
+					else {
+						console.log('Improper invocation, see usage.');
+						console.log(commands[i].command,'-',commands[i].description);
+					}
+					rl.prompt();
+					return;
+				}
+			}
+			console.log('No such command. See `help` for usage.');
+			rl.prompt();
+		}
+		
+
+	}).on('close', function()
+	{
+		global.log('Terminating server');
+		process.exit(0);
+	});
+
 }
 exports.setDAL = function(p)
 {

@@ -136,6 +136,8 @@ define(function ()
 			$('#saveMethod').css('top', $('#ScriptEditor').height() - 75);
 			$('#saveEvent').css('top', $('#ScriptEditor').height() - 75);
 			$('#saveProperty').css('top', $('#ScriptEditor').height() - 75);
+			$('.ace_scroller').css('left',40);
+			$('.ace_gutter-layer').css('width',40);
 		}
 		$(document.body).append('<script src="../vwf/view/editorview/ace/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>');
 		$(document.body).append("<div id='ScriptEditorAbandonChanges'>You have are about to load a different script,but you have unsaved changes to this script. Do you want to continue and abandon the changes? This action cannot be undone.</div>");
@@ -184,9 +186,9 @@ define(function ()
 		this.MethodChanged = false;
 		this.EventChanged = false;
 		//$('#ScriptEditor').resize(function(){_ScriptEditor.resize()});
-		$('#scripteditortitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/script.png" />');
-		$('#scripteditortitle').append('<img id="maximizescripteditor" style="float:right" class="icon" src="../vwf/view/editorview/images/icons/up2.png" />');
-		$('#scripteditortitle').append('<img id="hidescripteditor" class="icon" style="float:right" src="../vwf/view/editorview/images/icons/down.png" />');
+		$('#scripteditortitle').prepend('<div class="headericon script"  />');
+		$('#scripteditortitle').append('<div id="maximizescripteditor" style="float:right" class="icon up2" />');
+		$('#scripteditortitle').append('<div id="hidescripteditor" class="icon down" style="float:right"  />');
 		$('#hidescripteditor').click(function ()
 		{
 			_ScriptEditor.hide();
@@ -818,7 +820,7 @@ define(function ()
 
 		this.show = function ()
 		{
-			//window.clearInterval(window.scripthideinterval);
+			
 			if (!this.isOpen())
 			{
 				if(!this.currentNode)
@@ -831,17 +833,9 @@ define(function ()
 					alertify.alert('The Scene object cannot accept scripts. Try creating a behavior on the scene instead.');
 					return;
 				}
-				
-				//window.scripthideinterval = window.setInterval(function(){
-				//		$('#ScriptEditorTabs').css('height',$('#ScriptEditor').height() + 'px');
-				//		$('#index-vwf').css('height',window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - //$('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top-25) + 'px');
-				//		_Editor.findscene().camera.setAspect($('#index-vwf').width()/$('#index-vwf').height());
-				//		
-				//	},33);
-				//$('#ScriptEditor').show('slide',{direction:'down'},function(){window.clearInterval(window.scripthideinterval);window.scripthideinterval=null;});
 				$('#ScriptEditor').show();
 				var newtop = $(window).height() - $('#ScriptEditor').height() - $('#statusbar').height() + 'px';
-				//console.log(newtop);
+				
 				$('#ScriptEditor').animate(
 				{
 					'top': newtop
@@ -867,15 +861,6 @@ define(function ()
 		}
 		this.hide = function ()
 		{
-			//$('#ScriptEditor').dialog('close');
-			//window.clearInterval(window.scripthideinterval);
-			//window.scripthideinterval = window.setInterval(function(){
-			//		$('#ScriptEditorTabs').css('height',$('#ScriptEditor').height() + 'px');
-			//		$('#index-vwf').css('height',window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - //$('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top-25) + 'px');
-			//		_Editor.findscene().camera.setAspect($('#index-vwf').width()/$('#index-vwf').height());
-			//		
-			//	},33);
-			//$('#ScriptEditor').hide('slide',{direction:'down'},function(){ window.clearInterval(window.scripthideinterval);window.scripthideinterval=null;});
 			if (this.isOpen())
 			{
 				$('#ScriptEditor').animate(
@@ -885,6 +870,7 @@ define(function ()
 				{
 					step: function ()
 					{
+						if(!$('#ScriptEditor').is(':visible')) return;
 						$('#ScriptEditorTabs').css('height', $('#ScriptEditor').height() + 'px');
 						$('#index-vwf').css('height', window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top - 25) + 'px');
 						_Editor.findcamera().aspect = ($('#index-vwf').width() / $('#index-vwf').height());
@@ -892,6 +878,7 @@ define(function ()
 					},
 					complete: function ()
 					{
+						
 						$('#ScriptEditor').hide();
 					}
 				});
@@ -1041,7 +1028,7 @@ define(function ()
 		{
 			
 			_ScriptEditor.selectedMethod = name;
-			_ScriptEditor.methodEditor.setValue(js_beautify(text,{braces_on_own_line:true,opt_keep_array_indentation:true}));
+			_ScriptEditor.methodEditor.setValue($.trim(js_beautify(text,{max_preserve_newlines:2,braces_on_own_line:true,opt_keep_array_indentation:true})));
 			_ScriptEditor.methodEditor.selection.clearSelection();
 			if (this.methodlist && this.methodlist[name] !== undefined)
 			{
@@ -1069,6 +1056,7 @@ define(function ()
 		
 		this.setSelectedProperty_internal = function (name, text)
 		{
+			text = text || null;
 			_ScriptEditor.selectedProperty = name;
 			_ScriptEditor.propertyEditor.setValue(js_beautify(text.toString(),{braces_on_own_line:true,opt_keep_array_indentation:true}));
 			_ScriptEditor.propertyEditor.selection.clearSelection();
@@ -1098,7 +1086,7 @@ define(function ()
 		this.setSelectedEvent_internal = function (name, text)
 		{
 			_ScriptEditor.selectedEvent = name;
-			_ScriptEditor.eventEditor.setValue(js_beautify(text,{braces_on_own_line:true,opt_keep_array_indentation:true}));
+			_ScriptEditor.eventEditor.setValue($.trim(js_beautify(text,{max_preserve_newlines:2,braces_on_own_line:true,opt_keep_array_indentation:true})));
 			_ScriptEditor.eventEditor.selection.clearSelection();
 			if (this.eventlist && this.eventlist[name] !== undefined)
 			{
@@ -1158,6 +1146,7 @@ define(function ()
 				$('#propertytext').find(".ace_content").css('background', 'url(vwf/view/editorview/images/ui-bg_diagonals-thick_8_cccccc_40x40.png) 50% 50% repeat');
 				_ScriptEditor.eventEditor.setValue('');
 				_ScriptEditor.methodEditor.setValue('');
+				_ScriptEditor.propertyEditor.setValue('');
 			}
 			if (!this.currentNode) return;
 			$('#methodlist').empty();
@@ -1174,13 +1163,7 @@ define(function ()
 			{
 				$('#methodlist').append('<div class="scriptchoice" style="' + style + '" id="method' + i + '"></div>');
 				$('#method' + i).text(i);
-				$('#method' + i).qtip(
-				{
-					content: "Edit the " + i + " method",
-					show: {
-						delay: 1000
-					}
-				});
+				
 				$('#method' + i).attr('method', i);
 				$('#method' + i).click(function ()
 				{
@@ -1206,13 +1189,7 @@ define(function ()
 			{
 				$('#propertylist').append('<div class="scriptchoice" style="' + style + '" id="property' + i + '"></div>');
 				$('#property' + i).text(i);
-				$('#property' + i).qtip(
-				{
-					content: "Edit the " + i + " property",
-					show: {
-						delay: 1000
-					}
-				});
+				
 				$('#property' + i).attr('property', i);
 				$('#property' + i).click(function ()
 				{
@@ -1237,13 +1214,7 @@ define(function ()
 				$('#eventlist').append('<div  style="' + style + '"  id="event' + i + '"></div>');
 				$('#event' + i).text(i);
 				$('#event' + i).attr('event', i);
-				$('#event' + i).qtip(
-				{
-					content: "Edit the " + i + " event",
-					show: {
-						delay: 1000
-					}
-				});
+				
 				$('#event' + i).click(function ()
 				{
 					$("#eventlist").children().css('border-color', 'gray');
@@ -1340,6 +1311,7 @@ define(function ()
 			$('#methodlist').children().sortElements(function(a,b){return ($(a).text().toLowerCase() > $(b).text().toLowerCase()  ? 1 : -1)});
 			$('#eventlist').children().sortElements(function(a,b){return ($(a).text().toLowerCase() > $(b).text().toLowerCase()  ? 1 : -1)});
 			$('#propertylist').children().sortElements(function(a,b){return ($(a).text().toLowerCase() > $(b).text().toLowerCase()  ? 1 : -1)});
+
 		}
 		this.getMethods = function()
 		{
@@ -1399,9 +1371,11 @@ define(function ()
 		{
 			if(!node)
 			{
+
 				if (this.isOpen()) this.hide();
+
 			}
-			if(node.id == 'index-vwf')
+			if(node && node.id == 'index-vwf')
 			{
 				if (this.isOpen()) this.hide();
 			}
@@ -1469,6 +1443,46 @@ define(function ()
 			$('#FunctionTip').css('left',(offset.left) + 'px');
 			$('#FunctionTip').show();
 		}
+		this.insetKeySuggestion = function(suggestedText)
+		{
+			$('#AutoComplete').hide();
+			if(suggestedText != "")
+			{
+				//backspace letters up to the dot or bracket
+				for(var i = 0; i < self.filter.length; i++)
+					_ScriptEditor.activeEditor.remove('left');
+				//insert
+				var isfunction = false;
+				for(var i =0; i < self.keys.length; i++)
+					if(self.keys[i][0] == suggestedText && self.keys[i][1] == Function) isfunction = true;
+
+
+				if(self.autoCompleteTriggerKey == '[')
+				{
+
+					suggestedText = suggestedText + "]";
+				}
+
+				if(isfunction)
+				{
+					suggestedText = suggestedText + "(";
+					//focus on the editor
+					window.setTimeout(function(){
+						_ScriptEditor.activeEditor.focus();
+						self.triggerFunctionTip(_ScriptEditor.activeEditor,true);
+					},0);
+				}else
+				{
+					window.setTimeout(function(){
+						_ScriptEditor.activeEditor.focus();
+					},0);
+				}
+
+				_ScriptEditor.activeEditor.insert(suggestedText);
+			}
+
+
+		}
 		//Setup the div for the autocomplete interface
 		this.setupAutocomplete = function(keys,editor)
 		{
@@ -1495,23 +1509,12 @@ define(function ()
 					{
 						//find the selected text
 						var index = $(this).attr('autocompleteindex');
-						$('#AutoComplete').hide();
 						
-						//backspace letters up to the dot or bracket
+						
+						
 						var text = $($(this).children()[index]).text();
-						if(text != "")
-						{
-							for(var i = 0; i < self.filter.length; i++)
-								_ScriptEditor.activeEditor.remove('left');
-							//insert	
-							_ScriptEditor.activeEditor.insert(text);
-						}
-						//focus on the editor
-						window.setTimeout(function(){
-						
-							_ScriptEditor.activeEditor.focus();
-						
-						},15);
+
+						_ScriptEditor.insetKeySuggestion(text);
 						return true;
 					
 					
@@ -1526,8 +1529,8 @@ define(function ()
 						$(this).attr('autocompleteindex',index);
 						
 						//deal with the scrolling
-						if((index+1) * $(children[0]).height() > 150 + $('#AutoComplete').scrollTop() )
-							$('#AutoComplete').scrollTop((index+1) * $(children[0]).height() - 150);
+						
+						$('#AutoComplete').scrollTop((index) * $(children[0]).height() + index - 75);
 						
 						//show the selection
 						for(var i = 0; i < children.length; i++)
@@ -1538,6 +1541,8 @@ define(function ()
 							}else
 								$(children[i]).css('background','white');
 						}
+						e.preventDefault();
+						return false;
 					}
 					else if(e.which == 38) //up
 					{
@@ -1550,9 +1555,9 @@ define(function ()
 						$(this).attr('autocompleteindex',index);
 						
 						//deal with scrolling drama
-						if((index) * $(children[0]).height() < $('#AutoComplete').scrollTop() )
-							$('#AutoComplete').scrollTop(index * $(children[0]).height());
+						$('#AutoComplete').scrollTop((index) * $(children[0]).height() + index - 75);
 						
+
 						//show the selected text
 						for(var i = 0; i < children.length; i++)
 						{
@@ -1562,6 +1567,8 @@ define(function ()
 							}else
 								$(children[i]).css('background','white');
 						}
+						e.preventDefault();
+						return false;
 					}
 					else if(e.which == 27) //esc
 					{
@@ -1598,7 +1605,7 @@ define(function ()
 										$('#AutoComplete').hide();
 										_ScriptEditor.activeEditor.focus();
 										
-									},15);
+									},0);
 									e.preventDefault();
 									return;
 								}
@@ -1615,7 +1622,7 @@ define(function ()
 								
 								self.setupAutocomplete(self.keys,_ScriptEditor.activeEditor,self.filter);
 								
-							},15);
+							},0);
 						}else
 						{	
 							//any key that is not a character or backspace cancels the autocomplete
@@ -1624,7 +1631,7 @@ define(function ()
 								$('#AutoComplete').hide();
 									_ScriptEditor.activeEditor.focus();
 								
-							},15);
+							},0);
 						
 						}
 						//this is important for keypresses, so that they will filter down into ACE
@@ -1661,21 +1668,8 @@ define(function ()
 				//Clicking on the div just inserts the text, and hides the GUI
 				$('#AutoComplete_'+i).click(function()
 				{
-					
-					
-						$('#AutoComplete').hide();
-						
 						var text = $(this).text();
-						//Remove up the the last dot or bracket
-						for(var i = 0; i < self.filter.length; i++)
-							_ScriptEditor.activeEditor.remove('left');
-						_ScriptEditor.activeEditor.insert(text);
-						
-						window.setTimeout(function(){
-						
-							_ScriptEditor.activeEditor.focus();
-						
-						},15);
+						_ScriptEditor.insetKeySuggestion(text);
 						return true;
 					
 				});
@@ -1694,8 +1688,10 @@ define(function ()
 			{
 				$('#AutoComplete').focus();
 				
-			},15);
+			},0);
 		}
+		// a list of idenifiers to always ignore in the autocomplete
+		this.ignoreKeys = ["defineProperty"];
 		this.beginAutoComplete =function(editor,chr,line,filter)
 		{
 		
@@ -1709,6 +1705,35 @@ define(function ()
 					if(self.keys)
 					{
 					
+						//first, remove from the list all keys beginning with "___" and the set list of ignoreable keys
+						var i = 0;
+
+						while(i < self.keys.length)
+						{
+							if(self.keys[i][0].search(/^___/) != -1)
+							{
+								self.keys.splice(i,1);
+							}else
+							{
+							i++;
+							}
+						}
+
+						i = 0;
+
+						while(i < self.keys.length)
+						{
+							for(var j =0; j < self.ignoreKeys.length; j++)
+							{
+								if(self.keys[i][0] == self.ignoreKeys[j])
+								{
+									self.keys.splice(i,1);
+									break;
+								}
+							}
+							i++;
+						}
+						this.autoCompleteTriggerKey = chr;
 						//if the character that started the autocomplete is a dot, then remove the keys that have
 						//spaces or special characters, as they are not valid identifiers
 						if(chr == '.')
@@ -1750,7 +1775,7 @@ define(function ()
 							self.filter = filter;
 							self.setupAutocomplete(self.keys,editor,filter);
 							
-						},15);
+						},0);
 						
 					}
 				
@@ -1762,7 +1787,8 @@ define(function ()
 			var cur = editor.getCursorPosition();
 			var session = editor.getSession();
 			var line = session.getLine(cur.row);
-			var chr = line[cur.column] ;
+			var chr = line[cur.column];
+
 			//Open on . or [
 			if(chr== '.' || chr == '[')
 			{
@@ -1780,14 +1806,16 @@ define(function ()
 		
 		}
 		//Test for an open paren, then show the parameter help
-		this.triggerFunctionTip = function(editor)
+		this.triggerFunctionTip = function(editor, inserted)
 		{
 			var cur = editor.getCursorPosition();
 			var session = editor.getSession();
 			var line = session.getLine(cur.row);
 			//Only show for open paren
-			if(line[cur.column] == '(')
+
+			if(line[cur.column] == '(' || (inserted && line[cur.column-1] == '('))
 			{
+
 				//Get the line
 				line = line.substr(0,cur.column);
 				var splits = line.split(' ');
@@ -1796,6 +1824,12 @@ define(function ()
 				line = splits[splits.length-1];
 				//Don't show for lines that have ( or ) (other than the one that triggered the autocomplete) because function calls
 				//might have side effects
+
+				if(inserted && line.indexOf('(') == line.length -1)
+				{
+					line = line.substring(0, line.length - 1);
+				}
+
 				if(line.indexOf('(') == -1 && line.indexOf('=') == -1)
 				{
 					//Get the text for the tooltip
@@ -1808,7 +1842,7 @@ define(function ()
 						{
 							self.setupFunctionTip(text,editor,$(editor.renderer.$cursorLayer.cursor).offset(),$(editor.renderer.$cursorLayer.cursor).width());
 							
-						},15);
+						},0);
 						
 					}
 				

@@ -70,7 +70,7 @@ define(function ()
 			label: 'Rename'
 		});
 		$('#inventorymanagertitle').append('<a id="inventoryclose" href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
-		$('#inventorymanagertitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/inventory.png" />');
+		$('#inventorymanagertitle').prepend('<div class="headericon inventory"  />');
 		$('#inventoryclose').click(function ()
 		{
 			_InventoryManager.hide()

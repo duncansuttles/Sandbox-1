@@ -53,6 +53,8 @@ properties:
   fogFar: 1000
   fogType: 0
   fogDensity: .005
+  fogVFalloff: 1.3
+  fogVFalloffStart: 0  
   materialDef:
     set: |  
            this.materialDef = value;
@@ -91,8 +93,22 @@ properties:
       property: fogDensity
       type: slider
       min: 0
-      max: 1
+      max: .1
       step: .001
+    fogvFAlloff:
+      displayname: Fog Falloff
+      property: fogVFalloff
+      type: slider
+      min: .1
+      max: 10
+      step: .001 
+    fogvFAlloffStart:
+      displayname: Fog Falloff Start
+      property: fogVFalloffStart
+      type: slider
+      min: -100
+      max: 100
+      step: .1  
     sunIntensity:
       displayname: Sun Intensity
       property: sunIntensity
@@ -231,7 +247,7 @@ scripts:
        findcamera().fov = 70;
        findcamera().updateProjectionMatrix();
        var ground = new THREE.Mesh(new THREE.PlaneGeometry(256,256,10,10), new THREE.MeshPhongMaterial());
-       ground.receiveShadow = true;
+       ground.receiveShadow = _SettingsManager.getKey('shadows');
        ground.PickPriority = -1;
        
        
@@ -254,7 +270,7 @@ scripts:
        var l = new THREE.DirectionalLight();
        this.sun = l;
        this.sun.name = 'Sun';
-       this.sun.castShadow = true;
+       this.sun.castShadow = _SettingsManager.getKey('shadows');
        this.sun.shadowCameraNear = 1;
        this.sun.shadowCameraFar = 100;
        //this.sun.shadowCameraVisible = true;
@@ -298,9 +314,9 @@ scripts:
          if(this.id == 'Scene-vwf') return;
           this.prerendercallback = this.prerender.bind(this);
           this.glyphrendercallback = this.glyphRender.bind(this);
-          this.postrendercallback = this.postrender.bind(this);
+          this.postprerendercallback = this.postprerender.bind(this);
           _dView.bind('prerender',this.prerendercallback);
-          _dView.bind('postprerender',this.postrendercallback);
+          _dView.bind('postprerender',this.postprerendercallback);
           _dView.bind('glyphRender',this.glyphrendercallback);
           this.createNameTag();
           this.updateCamera();
@@ -455,7 +471,7 @@ scripts:
             this.skymaterial.uniforms.texture.value.needsUpdate = true;
        }.bind(this);
             var skyCubeTexture = THREE.ImageUtils.loadTextureCube(urls,undefined,loaded);
-            skyCubeTexture.format = THREE.RGBFormat;
+           // skyCubeTexture.format = THREE.RGBFormat;
             skyCubeTexture.generateMipmaps = true;
             skyCubeTexture.minFilter = THREE.LinearFilter;
             skyCubeTexture.magFilter = THREE.LinearFilter;
@@ -506,6 +522,8 @@ scripts:
                 });
             this.skymaterial.uniforms.texture.value = skyCubeTexture;    
             this.skymaterial.depthWrite = false;
+            this.skymaterial.depthTest= false;
+            this.skymaterial.transparent = false;
        }
        
        
@@ -514,13 +532,15 @@ scripts:
        this.skymaterial.fog = false;
        if(!this.skycube)
        {
-           this.skycube = new THREE.Mesh(new THREE.CubeGeometry(1000,1000,1000), this.skymaterial);
+           this.skycube = new THREE.Mesh(new THREE.CubeGeometry(10,10,10), this.skymaterial);
            this.skycube.name = "SkyCube";
-           this.skycube.renderDepth = -1;
-           this.skycube.InvisibleToCPUPick = false;
+           this.skycube.renderDepth = -Infinity;
+           this.skycube.InvisibleToCPUPick = true;
            this.skycube.depthWrite = false;
            this.skycube.depthCheck = false;
-           _dbackgroundScene.add(this.skycube);
+           this.skycube.castShadow = false;
+           this.skycube.receiveShadow = false;
+           findscene().add(this.skycube);
            window._dSky = this.skycube;
        }
         
@@ -667,27 +687,7 @@ scripts:
     }
     this.GetWorldPickRay = function(e)
     {
-
-       var OldX = e.clientX - $('#index-vwf').offset().left;
-        var OldY = e.clientY - $('#index-vwf').offset().top;
-
-        var screenmousepos = [OldX/document.getElementById('index-vwf').clientWidth,OldY/document.getElementById('index-vwf').clientHeight,0,1];
-        screenmousepos[0] *= 2;
-        screenmousepos[1] *= 2;
-        screenmousepos[0] -= 1;
-        screenmousepos[1] -= 1;
-        screenmousepos[1] *= -1;
-        var worldmousepos = MATH.mulMat4Vec4(MATH.inverseMat4(getViewProjection()),screenmousepos);
-        worldmousepos[0] /= worldmousepos[3];
-        worldmousepos[1] /= worldmousepos[3];
-        worldmousepos[2] /= worldmousepos[3];
-
-
-        var campos = [_Editor.findcamera().position.x,_Editor.findcamera().position.y,_Editor.findcamera().position.z];
-        var ray = MATH.subVec3(worldmousepos,campos);
-        var dist = MATH.lengthVec3(ray);
-        ray = MATH.scaleVec3(ray,1.0/MATH.lengthVec3(ray));
-        return ray;
+       return _Editor.GetWorldPickRay(e);
     }
     this.intersectLinePlane = function(ray,raypoint,planepoint,planenormal)
     {
@@ -720,7 +720,7 @@ scripts:
       this.last_x = parms.clientX/window.screen.width;
       this.last_y = parms.clientY/window.screen.height;
       
-      if(this.cameramode == 'Navigate')
+      if(this.cameramode == 'Navigate' && parms.which == 2)
       {
             
            var campos = [_Editor.findcamera().position.x,_Editor.findcamera().position.y,_Editor.findcamera().position.z];
@@ -730,7 +730,8 @@ scripts:
          
            
             this.groundplane.PickPriority = 0;
-           var oldintersectxy = _Editor.ThreeJSPick(campos,ray,this.PickOptions).point;
+           var oldintersectxy = _Editor.ThreeJSPick(campos,ray,this.PickOptions);
+           oldintersectxy = oldintersectxy ? oldintersectxy.point : [0,0,0];
             this.groundplane.PickPriority = -1;
             var dxy2 = this.intersectLinePlane(ray,campos,[0,0,0],[0,0,1]);
            var oldintersectxy2 = MATH.addVec3(campos,MATH.scaleVec3(ray,dxy2));
@@ -826,20 +827,7 @@ scripts:
       
       if(this.cameramode == 'Navigate' && this.middledown == true)
       {   
-           
-           var campos = [_Editor.findcamera().position.x,_Editor.findcamera().position.y,_Editor.findcamera().position.z];
-           var ray = this.GetWorldPickRay(parms);
-        
-           var dxy = this.intersectLinePlane(ray,campos,[0,0,this.navpoint[2]],[0,0,1]);
-           var newintersectxy = MATH.addVec3(campos,MATH.scaleVec3(ray,dxy));
-           var dxy2 = this.intersectLinePlane(ray,campos,[0,0,0],[0,0,1]);
-           var newintersectxy2 = MATH.addVec3(campos,MATH.scaleVec3(ray,dxy2));
-            if(newintersectxy2[2] > newintersectxy[2]) newintersectxy = newintersectxy2;
-           var len  = MATH.subVec3(this.navpoint,newintersectxy)
-           
-           this.center = MATH.addVec3(this.center,MATH.subVec3(this.navpoint,newintersectxy));
-          
-         
+         this.zoom += this.rel_y*10.0;
       }
       
       this.last_x = parms.clientX/window.screen.width;
@@ -876,7 +864,18 @@ scripts:
         {
             return;
         }
-        
+        if(this.cameramode == 'Navigate' && this.navpoint)
+        {
+           var offset = MATH.subVec3(this.navpoint,this.center)
+           var len = MATH.lengthVec3(offset);
+           if(len > .01)
+           {
+              offset = MATH.scaleVec3(offset,.02);
+              this.center = MATH.addVec3(this.center,offset);
+
+           }
+
+        }
         if(this.cameramode != '3RDPerson' && this.cameramode != 'FirstPerson')
         {
             
@@ -966,7 +965,7 @@ scripts:
             findcamera().position.z = finalpos[2];
             findcamera().lookAt(TempVec3(this.center));
             
-        }
+        } 
         this.callUpdateCallbacks();
         findcamera().updateMatrixWorld();
         findcamera().updateMatrix();
@@ -1010,6 +1009,8 @@ scripts:
         this.cameramode = mode;
         if(this.cameramode == 'Orbit')
             this.followObject(null);
+        if(this.cameramode == 'Navigate')
+            this.navpoint = this.center;
         if(this.cameramode == 'Free' || this.cameramode == 'Fly')
         {
            this.ReprojectCameraCenter();
@@ -1058,7 +1059,7 @@ scripts:
     this.localpointerWheel = function( pickInfo ) {
        
         
-        if(this.cameramode != 'Navigate' && this.cameramode != 'Free'  && this.cameramode != 'Fly')
+        if(this.cameramode != 'Free'  && this.cameramode != 'Fly')
         { 
           
             
@@ -1077,11 +1078,7 @@ scripts:
                 this.zoom *= 1.1;
             }
         }
-        if(this.cameramode == 'Navigate')
-        {  
-            this.center = MATH.addVec3(this.center,MATH.scaleVec3(MATH.subVec3(this.navpoint,this.center),.05));
-            this.zoom = this.zoom + (3- this.zoom )*.01;
-        }
+       
         
         if(this.cameramode == 'Free' )
         { 
@@ -1113,10 +1110,12 @@ scripts:
     }
     this.receiveChat = function(e)
     {
-        ChatMessageReceived(e);
+        if(window.ChatMessageReceived)
+          ChatMessageReceived(e);
     }
     this.PM = function(e)
     {
+        if(window.PMReceived)
         PMReceived(e);
     }
     function nodeExists(tempid)
@@ -1155,7 +1154,7 @@ scripts:
                     emit:{r:0,g:0,b:0},
                     reflect:0.8,
                     shadeless:false,
-                    shadow:true,
+                    shadow:_SettingsManager.getKey('shadows'),
                     specularColor:{r:0.5773502691896258,g:0.5773502691896258,b:0.5773502691896258},
                     specularLevel:1,
                     layers:[
@@ -1205,7 +1204,7 @@ scripts:
     this.deinitialize = function()
     {
        _dView.unbind('prerender',this.prerendercallback);
-       _dView.unbind('postprerender',this.postrendercallback);
+       _dView.unbind('postprerender',this.postprerendercallback);
        _dView.unbind('glyphRender',this.glyphrendercallback);
        $(this.nametag).remove();
     }
@@ -1235,7 +1234,7 @@ scripts:
         
         
         this.updateCamera();
-        this.updateCamera();
+        
     }
     this.tempmatrix = (new THREE.Matrix4());
     this.lightvec = new THREE.Vector3(0,0,-3);
@@ -1281,7 +1280,7 @@ scripts:
       }
 
     }
-    this.postrender = function(e,viewprojection, wh, ww)
+    this.postprerender = function(e,viewprojection, wh, ww)
     {
         //set the skybox position
       
@@ -1289,7 +1288,7 @@ scripts:
         this.skycube.position.y = findcamera().matrixWorld.elements[13];
         this.skycube.position.z = findcamera().matrixWorld.elements[14];
         this.skycube.updateMatrixWorld();
-    
+      
       
       
       
@@ -1328,9 +1327,9 @@ scripts:
         currentmat.emissive.g = value.emit.g;
         currentmat.emissive.b = value.emit.b;
         
-        currentmat.specular.r = value.specularColor.r * value.specularLevel;
-        currentmat.specular.g = value.specularColor.g * value.specularLevel;
-        currentmat.specular.b = value.specularColor.b * value.specularLevel;
+        currentmat.specular.r = value.specularColor.r * value.specularLevel/10;
+        currentmat.specular.g = value.specularColor.g * value.specularLevel/10;
+        currentmat.specular.b = value.specularColor.b * value.specularLevel/10;
         
         currentmat.opacity = value.alpha;
         if(value.alpha < 1)

@@ -12,7 +12,7 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
-
+var jsDriverSelf = this;
 define( [ "module", "vwf/model", "vwf/utility" ], function( module, model, utility ) {
 
     // vwf/model/javascript.js is a placeholder for the JavaScript object interface to the
@@ -43,6 +43,7 @@ define( [ "module", "vwf/model", "vwf/utility" ], function( module, model, utili
         // -- initialize ---------------------------------------------------------------------------
 
         initialize: function() {
+            jsDriverSelf = this;
             this.nodes = {}; // maps id => new type()
             this.creatingNode( undefined, 0 ); // global root  // TODO: to allow vwf.children( 0 ), vwf.getNode( 0 ); is this the best way, or should the kernel createNode( global-root-id /* 0 */ )?
         },
@@ -54,7 +55,7 @@ define( [ "module", "vwf/model", "vwf/utility" ], function( module, model, utili
         creatingNode: function( nodeID, childID, childExtendsID, childImplementsIDs,
             childSource, childType, childURI, childName, callback /* ( ready ) */ ) {
 
-            var jsDriverSelf = this;
+            
 
             // Get the prototype node.
 
@@ -300,6 +301,7 @@ node.id = childID; // TODO: move to vwf/model/object
 		//Allow the behavior to call the parent's methods
 		hookupBehaviorMethod: function(behaviorNode,parentid,propname)
 		{
+            if(propname == "initialize") return;
 			if(behaviorNode[propname] !== undefined) return;
 			if(Object.keys(behaviorNode).indexOf(propname) != -1)
 				return;
@@ -365,6 +367,7 @@ node.id = childID; // TODO: move to vwf/model/object
 
 			
             var child = this.nodes[nodeID];
+            this.callMethodTraverse(this.nodes['index-vwf'],'deletingNode',[nodeID]);
             var node = child.parent;
 
 			
@@ -461,7 +464,7 @@ node.id = childID; // TODO: move to vwf/model/object
         childrening: function( nodeID ) {  // TODO: move to vwf/model/object
 
             var node = this.nodes[nodeID];
-
+            if(!node) return null;
             return jQuery.map( node.children, function( child ) {
                 return child.id;
             } );
@@ -545,7 +548,7 @@ node.id = childID; // TODO: move to vwf/model/object
 		{
 				if(masterval === undefined)
 					masterval = val;
-				var jsDriverSelf = this;
+				
 				watchable.internal_val = val;
 				watchable.propertyname = propertyname;
 				watchable.id = id;
@@ -604,7 +607,7 @@ node.id = childID; // TODO: move to vwf/model/object
 				if(masterval === undefined)
 					masterval = val;
 					
-				var jsDriverSelf = this;
+				
 				watchable.internal_val = val;
 				watchable.propertyname = propertyname;
 				watchable.id = id;
@@ -685,7 +688,7 @@ node.id = childID; // TODO: move to vwf/model/object
 		},
 		setWatchableValue: function(id, propertyName, value, dotNotation)
 		{
-			var jsDriverSelf = this;
+			
 			var masterid = dotNotation.substring(0,(dotNotation.indexOf('.') +1 || dotNotation.indexOf('[') +1) -1)
 			masterid = masterid || dotNotation;
 			if(this.__WatchableCache[masterid])
@@ -727,7 +730,7 @@ node.id = childID; // TODO: move to vwf/model/object
 			
 			
 			if(!val) return val;
-			var jsDriverSelf = this;
+			
 			if(val instanceof jsDriverSelf._Watchable)
 			{
 				return jsDriverSelf.createWatchable(val.internal_val,propertyname,id,undefined,dotNotation)
@@ -781,7 +784,7 @@ node.id = childID; // TODO: move to vwf/model/object
 		{	
 			
 			if(!watchable) return watchable;
-			var jsDriverSelf = this;
+			
 			if(watchable instanceof jsDriverSelf._Watchable)
 			{
 				
@@ -797,7 +800,7 @@ node.id = childID; // TODO: move to vwf/model/object
         initializingProperty: function( nodeID, propertyName, propertyValue ) {
 
             var node = this.nodes[nodeID];
-            var jsDriverSelf = this;
+            
 
             Object.defineProperty( node.properties, propertyName, { // "this" is node.properties in get/set
                 get: function() { 
@@ -832,6 +835,9 @@ node.id = childID; // TODO: move to vwf/model/object
         // -- settingProperty ----------------------------------------------------------------------
 
         settingProperty: function( nodeID, propertyName, propertyValue ) {
+
+            //notify all nodes of property changes
+            this.callMethodTraverse(this.nodes['index-vwf'],'satProperty',[nodeID, propertyName, propertyValue]);
 
             var node = this.nodes[nodeID];
 
@@ -975,7 +981,7 @@ if ( ! node ) return;  // TODO: patch until full-graph sync is working; drivers 
         creatingMethod: function( nodeID, methodName, methodParameters, methodBody ) {
 
             var node = this.nodes[nodeID];
-            var jsDriverSelf = this;
+            this.callMethodTraverse(this.nodes['index-vwf'],'creatingMethod',[methodName, methodParameters, methodBody]);
 
             Object.defineProperty( node.methods, methodName, { // "this" is node.methods in get/set
                 get: function() {
@@ -1032,7 +1038,10 @@ node.hasOwnProperty( methodName ) ||  // TODO: recalculate as properties, method
 
 			
             var node = this.nodes[nodeID];
-			if(!node) return undefined;
+			this.callMethodTraverse(this.nodes['index-vwf'],'deletingMethod',[nodeID,methodName]);
+            if(!node) return undefined;
+
+
             var body = node.private.bodies && node.private.bodies[methodName];
 
             if ( body ) {
@@ -1064,10 +1073,19 @@ node.hasOwnProperty( methodName ) ||  // TODO: recalculate as properties, method
             return undefined;
         },
         // -- callingMethod ------------------------------------------------------------------------
+        dehookupBehaviorMethod :function(obj, id, methodName)
+        {
+            if(obj[methodName])
+            {
+                delete obj[methodName];
+            }
 
+        },
         callingMethod: function( nodeID, methodName, methodParameters ) {
 
-		
+	
+            this.callMethodTraverse(this.nodes['index-vwf'],'calledMethod',[nodeID, methodName, methodParameters]);
+
             var node = this.nodes[nodeID];
 			if(!node) return undefined;
 			
@@ -1139,7 +1157,7 @@ node.hasOwnProperty( methodName ) ||  // TODO: recalculate as properties, method
 						}
 					
 					}).apply(node);
-					ret = this.nodes[refid].private.bodies[funcid].toString()
+					ret = (this.nodes[refid].private.bodies[funcid] || "").toString();
 				}				
 				
 				if(ret)
@@ -1172,7 +1190,7 @@ node.hasOwnProperty( methodName ) ||  // TODO: recalculate as properties, method
 
            
             var node = this.nodes[nodeID];
-            var jsDriverSelf = this;
+            
 
             Object.defineProperty( node.events, eventName, { // "this" is node.events in get/set
                 get: function() {
@@ -1277,7 +1295,27 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
 			}	
 		
 		},
+    callMethodTraverse:function(node,method,args)
+    {
+            if(!node) return;
+            
+            
+            var body = node.private.bodies && node.private.bodies[method];
 
+            if ( body ) {
+                     body.apply( node, args );
+             }
+            
+            if(node.children)
+                for(var i =0; i < node.children.length; i++)
+                {
+                    jsDriverSelf.callMethodTraverse(node.children[i],method,args);
+                }
+    },    
+    ticking: function()
+    {
+        this.callMethodTraverse(this.nodes['index-vwf'],'tick',[]);
+    },    
 	isBehavior : function(node)
 	{
 		if(!node)
@@ -1297,7 +1335,7 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
 			if(!node) return;
             var listeners = findListeners( node, eventName );
 
-            var jsDriverSelf = this;
+            
 
             // Call the handlers registered for the event, and calculate the logical OR of each
             // result. Normally, callers to fireEvent() ignore the handler result, but dispatched
@@ -1305,7 +1343,6 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
             // up from its target.
 
             var handled = listeners && listeners.reduce( function( handled, listener ) {
-
                 // Call the handler. If a phase is provided, only call handlers tagged for that
                 // phase.
 
@@ -1366,7 +1403,7 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
 
     function proxiedBehavior( prototype, behavior ) { // invoke with the model as "this"  // TODO: this is a lot like createProperty()/createMethod()/createEvent(), and refreshedFuture(). Find a way to merge.
 
-        var jsDriverSelf = this;
+        
 
         var proxy = Object.create( prototype );
 
@@ -1543,7 +1580,7 @@ proxy.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, method
 
     function refreshedFuture( node, when, callback ) { // invoke with the model as "this"
 
-        var jsDriverSelf = this;
+        
 
         if ( Object.getPrototypeOf( node ).private ) {
             refreshedFuture.call( this, Object.getPrototypeOf( node ) );
