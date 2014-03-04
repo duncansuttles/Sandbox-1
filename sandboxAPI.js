@@ -19,6 +19,8 @@ var SiteLogout = passwordUtils.SiteLogout;
 var UpdatePassword = passwordUtils.UpdatePassword;
 var sessions = require('./sessions');
 var mailTools = require('./mailTools');
+var xapi = require('./xapi');
+
 // default path to data. over written by setup flags
 
 //generate a random id.
@@ -168,9 +170,9 @@ function InstanceLogin(response,URL)
 					global.instances[instance].state.findNode('index-vwf').properties['owner'] = URL.loginData.UID;
 					
 				respond(response,200,"Client Logged Into " + instance);
-				
-				
-				
+
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.logged_in, instance);
+
 				return;
 			}else
 			{
@@ -208,6 +210,8 @@ function InstanceLogout(response,URL)
 				
 				delete URL.loginData.clients[cid];
 				respond(response,200,"Client Logged out " + instance);
+
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.logged_out, instance);
 			}else
 			{				
 			
@@ -358,6 +362,7 @@ function addGlobalInventoryItem(URL,data,response)
 	DAL.addToInventory('___Global___',{uploader:URL.loginData.UID,title:URL.query.title,uploaded:new Date(),description:'',type:URL.query.type},data,function(id)
 	{
 		respond(response,200,id);
+		xapi.sendStatement(URL.loginData.UID, xapi.verbs.published_item, id, URL.query.title);
 	});
 }
 function deleteGlobalInventoryItem(URL,response)
@@ -470,6 +475,7 @@ function CreateProfile(URL,data,response)
 		{
 			respond(response,200,'');
 			mailTools.newUser(URL.query.UID,data.Email);
+			xapi.sendStatement(URL.query.UID, xapi.verbs.registered);
 		}
 		else
 			respond(response,500,err);
@@ -737,7 +743,14 @@ function Publish(URL, SID, publishdata, response){
 		}
 		//publish the state, and get the new id for the pubished state
 		DAL.Publish(SID, publishSettings, function(newId){
-		
+
+			if( publishSettings ){
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.published, newId);
+			}
+			else {
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.unpublished, newId);
+			}
+			
 			//get the db entry for the published state
 			DAL.getInstance(newId,function(statedata)
 			{
@@ -868,6 +881,7 @@ function DeleteState(URL,SID,response)
 		{
 			DAL.deleteInstance(SID,function()
 			{
+				xapi.sendStatement(URL.loginData.UID, xapi.verbs.destroyed, SID, state.title, state.description);
 				respond(response,200,'deleted instance');
 				return;
 			});
@@ -1120,6 +1134,7 @@ function createState(URL,data,response)
 	{
 		respond(response,200,'Created state ' + id);
 		mailTools.newWorld(URL.loginData.UID,data.title,id);
+		xapi.sendStatement(URL.loginData.UID, xapi.verbs.created, id, data.title, data.description);
 	});
 }
 //Just return the state data, dont serve a response
