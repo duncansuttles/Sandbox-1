@@ -475,7 +475,7 @@ function CreateProfile(URL,data,response)
 		{
 			respond(response,200,'');
 			mailTools.newUser(URL.query.UID,data.Email);
-			// TODO: xapi
+			xapi.sendStatement(URL.query.UID, xapi.verbs.registered);
 		}
 		else
 			respond(response,500,err);

@@ -124,5 +124,8 @@ exports.verbs = {
 		'display': {'en-US': 'unpublished'}},
 	'published_item': {
 		'id': 'http://vwf.adlnet.gov/xapi/verbs/published_(item)',
-		'display': {'en-US': 'published to global inventory'}}
+		'display': {'en-US': 'published to global inventory'}},
+	'registered': {
+		'id': 'http://adlnet.gov/expapi/verbs/registered',
+		'display': {'en-US': 'registered with'}}
 };
