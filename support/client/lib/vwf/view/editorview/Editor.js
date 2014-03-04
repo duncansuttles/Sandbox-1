@@ -145,6 +145,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			MouseMoved = false;
 			if (MoveGizmo && e.button == 0)
 			{
+
 				////console.log(vwf.views[0].lastPick.object.uid);
 				var axis = -1;
 				for (var i = 0; i < MoveGizmo.children.length; i++)
@@ -393,7 +394,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					var picksize = Math.sqrt(w * w + h * h);
 						if (picksize < 10)
 						{
-							if (vwf.views[0].lastPickId)
+							if (vwf.views[0].lastPickId && vwf.views[0].lastPickId != 'index-vwf')
 							{
 								this.SelectObject(vwf.getNode(vwf.views[0].lastPickId), this.PickMod);
 							}else

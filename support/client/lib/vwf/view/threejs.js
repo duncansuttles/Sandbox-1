@@ -813,7 +813,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
                 var newPickId = newPick ? getPickObjectID.call( view, newPick.object ) : view.state.sceneRootID;
                 
-                
+               
 				if(self.lastPickId != newPickId && self.lastEventData)
                 {
 					
