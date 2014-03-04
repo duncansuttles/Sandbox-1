@@ -2,47 +2,59 @@
 	var sid = '{{sid}}'; 
 	$(document).ready(function()
 	{
-		
-			
-		$('#txtCamera').hide();	
+
+		vwfPortalModel.publishSettings = {
+			'title': ko.observable(),
+			'description': ko.observable(),
+			'publish': ko.observable(false),
+			'allowTools': ko.observable(false),
+			'singlePlayer': ko.observable(false),
+			'allowAnonymous': ko.observable(false),
+			'createAvatar': ko.observable(false),
+			'defaultCamera': ko.observable(true),
+			'camera': ko.observable('')
+		};
+
+		vwfPortalModel.publishSettings.anonUsersChecked = ko.computed({
+			'read': function(){
+				return this.singlePlayer() || this.allowAnonymous();
+			}
+			.bind(vwfPortalModel.publishSettings),
+
+			'write': function(val){
+				this.allowAnonymous(val);
+			}
+			.bind(vwfPortalModel.publishSettings)
+		});
+
+		vwfPortalModel.publishSettings.anonUsersEnabled = ko.computed(function(){
+			return this.publish() && !this.singlePlayer();
+		}
+		.bind(vwfPortalModel.publishSettings));
+
+
 		$.ajax(root + '/vwfDataManager.svc/statedata?SID=' + sid,
 		{
 			cache:false,
 			success:function(data,status,xhr)
 			{
 				var data = JSON.parse(xhr.responseText);
-				
-				$('#txtInstanceName').val(data.title);
-				$('#txtInstanceDescription').val(data.description);
-				if(data.publishSettings)
+				var p = vwfPortalModel.publishSettings;
+
+				p.title(data.title);
+				p.description(data.description);
+				p.publish( !! data.publishSettings );
+
+				if( data.publishSettings )
 				{
-
-					$('#txtInstanceDescription').prop('disabled', false);
-					$('#chkDefaultCamera').prop('disabled', false);
-					$('#chkSinglePlayer').prop('disabled', false);
-					$('#chkAllowTools').prop('disabled', false);
-					$('#chkAllowAnonymous').prop('disabled', false);
-					$('#chkCreateAvatar').prop('disabled', false);
-
-					$('#chkPublish')[0].checked = true;
-
-					if(data.publishSettings.allowAnonymous)
-						$('#chkAllowAnonymous')[0].checked = true;
-					if(data.publishSettings.allowTools)
-						$('#chkAllowTools')[0].checked = true;
-					if(data.publishSettings.singlePlayer)
-						$('#chkSinglePlayer')[0].checked = true;
-					if(data.publishSettings.createAvatar)
-						$('#chkCreateAvatar')[0].checked = true;
-					if(data.publishSettings.camera)
-					{
-						$('#chkDefaultCamera')[0].checked = true;
-						$('#txtCamera').show('fade');
-						$('#txtCamera').val(data.publishSettings.camera);
-					}
-
-	
+					p.allowAnonymous( data.publishSettings.allowAnonymous );
+					p.allowTools( data.publishSettings.allowTools );
+					p.singlePlayer( data.publishSettings.singlePlayer );
+					p.createAvatar( data.publishSettings.createAvatar );
+					p.defaultCamera( data.publishSettings.camera === '' );
+					p.camera( data.publishSettings.camera );
 				}
+
 			},
 			error:function(xhr,status,err)
 			{
@@ -62,94 +74,31 @@
 			}
 		});
 
-
-		$('#txtInstanceName').prop('disabled', true);
-		$('#txtInstanceDescription').prop('disabled', true);
-		$('#chkDefaultCamera').prop('disabled', true);
-		$('#chkSinglePlayer').prop('disabled', true);
-		$('#chkAllowTools').prop('disabled', true);
-		$('#chkAllowAnonymous').prop('disabled', true);
-		$('#chkCreateAvatar').prop('disabled', true);
-
-
-
-		$('#chkPublish').click(
-		 function(e){
-		   var checked = ($(this).is(':checked'));
-		   if(!checked)
-		   {
-		   		$('#txtInstanceDescription').prop('disabled', true);
-				$('#chkDefaultCamera').prop('disabled', true);
-				$('#chkSinglePlayer').prop('disabled', true);
-				$('#chkAllowTools').prop('disabled', true);
-				$('#chkAllowAnonymous').prop('disabled', true);
-				$('#chkCreateAvatar').prop('disabled', true);
-		   }
-		   	else
-		   	{
-		   		$('#txtInstanceDescription').prop('disabled', false);
-				$('#chkDefaultCamera').prop('disabled', false);
-				$('#chkSinglePlayer').prop('disabled', false);
-				$('#chkAllowTools').prop('disabled', false);
-				$('#chkAllowAnonymous').prop('disabled', false);
-				$('#chkCreateAvatar').prop('disabled', false);
-			}
-		 }
-		);
-
-		$('#chkDefaultCamera').click(
-		 function(e){
-		   var checked = ($(this).is(':checked'));
-		   if(checked)
-		   {
-		   		$('#txtCamera').hide('fade');	
-		   		$('#txtCamera').val('');	
-		   }
-		   	else
-		   		$('#txtCamera').show('fade');	
-		 }
-		);
-
-		$('#chkSinglePlayer').click(
-		 function(e){
-		   var checked = ($(this).is(':checked'));
-		   if(checked)
-		   {
-		   	 $('#chkAllowAnonymous')[0].checked = true;
-		   	  $('#chkAllowAnonymous').prop('disabled', true);
-		   }else
-		   {
-  			$('#chkAllowAnonymous').prop('disabled', false);
-
-		   }
-		 }
-		);
-
 		ko.applyBindings(vwfPortalModel);
 	});	
+
 	function redirect()
 	{
 		window.location = root + '/world/' + sid.substr(13, 16);
 	}
+
 	vwfPortalModel.handleEditButton = function(o, e){
 
-		var name = $('#txtInstanceName').val();
-		var des = $('#txtInstanceDescription').val();
-		
 		var statedata = {};
 
-		if($('#chkPublish')[0].checked == true)
-		{
-			statedata.title = name;
-			statedata.description = des;
-			statedata.SinglePlayer = $('#chkSinglePlayer')[0].checked;
-			statedata.camera = $('#txtCamera').val();
-			statedata.allowAnonymous = $('#chkAllowAnonymous')[0].checked;
-			statedata.createAvatar = $('#chkCreateAvatar')[0].checked;
-			statedata.allowTools = $('#chkAllowTools')[0].checked;
-		}else
+		var p = vwfPortalModel.publishSettings;
+		if( p.publish() ){
+			statedata.title = p.title();
+			statedata.description = p.description();
+			statedata.SinglePlayer = p.singlePlayer();
+			statedata.camera = p.defaultCamera() ? '' : p.camera();
+			statedata.allowAnonymous = p.allowAnonymous();
+			statedata.createAvatar = p.createAvatar();
+			statedata.allowTools = p.allowTools();
+		}
+		else
 			statedata = null;
-		
+
 		jQuery.ajax(
 		{
 			type: 'POST',
@@ -165,7 +114,7 @@
 				$('#error').text("Error: " + xhr.responseText);
 			},
 			dataType: "text"
-		});	
+		});
 	};
 
 </script>
@@ -176,28 +125,40 @@
 	</div>
 <div class="row">
 	<div class="col-md-5 col-md-offset-3">
-		<form data-bind="submit:handleEditButton" >
+		<form id='publishSettings' data-bind="submit:handleEditButton, with: $root.publishSettings" >
 			<fieldset>
 				<legend>Publish Settings</legend>
-				<input type='text' id='txtInstanceName' placeholder='World Name' class="col-md-5 form-control" /><br/><br/>
-				<textarea id='txtInstanceDescription' placeholder='Description' class="col-md-5 form-control"></textarea>
-				<br/>
-				<input type='checkbox' id='chkPublish' name='PublishWorld'></input><label for='PublishWorld'>Publish World</label>
-				<br/>
-				<input type='checkbox' id='chkAllowTools' name='AllowTools'></input><label for='AllowTools'>Allow Editor Tools</label>
-				<br/>
-				<input type='checkbox' id='chkSinglePlayer'   name='SinglePlayer'></input><label for='SinglePlayer'>Single Player</label>
-				<br/>
-				<input type='checkbox' id='chkAllowAnonymous'  name='AllowAnonymous'></input><label for='AllowAnonymous'>Allow Anonymous Users</label>
-				<br/>
-				<input type='checkbox' id='chkCreateAvatar' name='CreateAvatar'></input><label for='CreateAvatar'>Create Avatar for Each User</label>
-				<br/>
-				<input type='checkbox' id='chkDefaultCamera' name='DefaultCamera'  checked='checked'></input><label for='DefaultCamera'>Use Default Camera</label>
-				<br/>
-				<select id='txtCamera' class="col-md-5 form-control" name="Camera" data-bind="options: $root.cameraList, optionsText: 'name', optionsValue: 'id'"></select>
-				<br/>
-				<br/>
+
+				<input type='text' id='txtInstanceName' placeholder='World Name' class="col-md-5 form-control" 
+					data-bind='enable: publish, value: title'/>
+				<textarea id='txtInstanceDescription' placeholder='Description' class="col-md-5 form-control" 
+					data-bind='enable: publish, value: description'></textarea>
+				<label>
+					<input type='checkbox' id='chkPublish' name='PublishWorld' data-bind='checked: publish'></input>
+					Publish World</label>
+				<label>
+					<input type='checkbox' id='chkAllowTools' name='AllowTools' data-bind='checked: allowTools, enable: publish'></input> 
+					Allow Editor Tools</label>
+				<label>
+					<input type='checkbox' id='chkSinglePlayer' name='SinglePlayer' data-bind='checked: singlePlayer, enable: publish'></input> 
+					Single Player</label>
+				<label>
+					<input type='checkbox' id='chkAllowAnonymous'  name='AllowAnonymous' data-bind='checked: anonUsersChecked, enable: anonUsersEnabled'></input> 
+					Allow Anonymous Users</label>
+				<label>
+					<input type='checkbox' id='chkCreateAvatar' name='CreateAvatar' data-bind='checked: createAvatar, enable: publish'></input> 
+					Create Avatar for Each User</label>
+				<label>
+					<input type='checkbox' id='chkDefaultCamera' name='DefaultCamera' data-bind='checked: defaultCamera, enable: publish'></input> 
+					Use Default Camera</label>
+				<select id='txtCamera' class="col-md-5 form-control" name="Camera" 
+					data-bind='options: $root.cameraList, optionsText: "name", optionsValue: "id", value: camera, visible: !defaultCamera()'></select>
+				<label>
+					<input type='checkbox' id='chkPublishToLR' name='PublishToLR' data-bind='enabled: publish'></input> 
+					Publish to Learning Registry</label>
+
 				<input type="submit" class='btn btn-default' style="float:right;margin-top:7px;"  value="Publish"/>
+
 			</fieldset>
 		</form>
 	</div>

@@ -823,3 +823,11 @@ width: 240px;
 {
 opacity: .75;
 }
+
+form#publishSettings label {
+	display: block;
+}
+
+form#publishSettings #txtInstanceName {
+	margin-bottom: 4px;
+}
