@@ -916,6 +916,9 @@ SceneManagerRegion.prototype.distributeObject = function(object)
 			
 			object.sceneManagerUpdate = function()
 			{
+				//dynamic objects currently should not belong to the octree
+				//we really should  try to not get here in the first place. Because when we set 
+				if(this.isDynamic()) return;
 				for(var i =0; i < this.children.length; i++)
 				{
 					this.children[i].sceneManagerUpdate();

@@ -488,14 +488,15 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 						}
 						if(newfog)
 						{
-							newfog.color.r = this.nodes[nodeID]["fogColor"][0];
-							newfog.color.g = this.nodes[nodeID]["fogColor"][1];
-							newfog.color.b = this.nodes[nodeID]["fogColor"][2];
-						//	newfog.near = oldfog.near;
-						//	newfog.far = oldfog.far;
-						//	newfog.density = oldfog.density;
-						//	newfog.vFalloff = oldfog.vFalloff;
-						//	newfog.vFalloffStart = oldfog.vFalloffStart;
+							//get all the fog values from the stored property values
+							newfog.color.r = this.nodes[nodeID]["fogColor"] ? this.nodes[nodeID]["fogColor"][0] : 1;
+							newfog.color.g = this.nodes[nodeID]["fogColor"] ? this.nodes[nodeID]["fogColor"][1] : 1;
+							newfog.color.b = this.nodes[nodeID]["fogColor"] ? this.nodes[nodeID]["fogColor"][2] : 1;
+							newfog.near = this.nodes[nodeID]["fogNear"] || 0;
+							newfog.far = this.nodes[nodeID]["fogFar"] || 1000;
+							newfog.density = this.nodes[nodeID]["fogDensity"] || 0;
+							newfog.vFalloff = this.nodes[nodeID]["fogVFalloff"] || 1;
+							newfog.vFalloffStart = this.nodes[nodeID]["fogVFalloffStart"] || 0;
 						}
 						threeObject.fog = newfog;
 						rebuildAllMaterials.call(this,threeObject);
@@ -767,7 +768,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			pss = GetParticleSystems(sceneNode.threeScene);
 			for(var i in pss)
 			{
-				if(pss[i].update)
+				if(pss[i].update && pss[i].visible === true)
 					pss[i].update(timepassed || 0);
 			}
 
