@@ -20,7 +20,13 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		
         initialize: function( rootSelector ) {
            
-	 
+	    
+
+	    //here, we will keep a record of the incoming properties, mostly so that the fog can switch around and we still know the old values
+	    //for density and such, since we can't store them in the scene.fog when scene.fog is null
+
+
+
 	    $(document).on('selectionChanged',this.selectionChanged.bind(this));
 		this.renderTargetPasses = [];
             this.rootSelector = rootSelector;
@@ -266,7 +272,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             childSource, childType, childURI, childName, callback /* ( ready ) */) {
             
 			if(childID != 'http-vwf-example-com-camera-vwf-camera')
-				this.nodes[childID] = {id:childID,extends:childExtendsID};
+				this.nodes[childID] = {id:childID,extends:childExtendsID,properties:{}};
 			
             //the created node is a scene, and has already been added to the state by the model.
             //how/when does the model set the state object? 
@@ -411,9 +417,13 @@ define( [ "module", "vwf/view" ], function( module, view ) {
         satProperty: function (nodeID, propertyName, propertyValue) {
         
             //console.log([nodeID,propertyName,propertyValue]);
-            var node = this.state.nodes[ nodeID ]; // { name: childName, threeObject: undefined }
+            //note! this is different than this.nodes, which stores data for this particualr driver
+            //this.state.nodes is shared with the threejs model!
+            var node = this.state.nodes[ nodeID ]; 
             if(!node) node = this.state.scenes[nodeID];
             var value = undefined;
+            if(this.nodes[nodeID])
+            	this.nodes[nodeID].properties[propertyName] = propertyValue;
           
 			if(vwf.client())
 			{
@@ -462,7 +472,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 					if(propertyName == 'fogType')
 					{
 						
-						var oldfog = threeObject.fog;
+						
 						var newfog;
 						if(propertyValue == 'exp')
 						{
@@ -476,16 +486,16 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 						{
 							newfog = null;
 						}
-						if(oldfog && newfog)
+						if(newfog)
 						{
-							newfog.color.r = oldfog.color.r;
-							newfog.color.g = oldfog.color.g;
-							newfog.color.b = oldfog.color.b;
-							newfog.near = oldfog.near;
-							newfog.far = oldfog.far;
-							newfog.density = oldfog.density;
-							newfog.vFalloff = oldfog.vFalloff;
-							newfog.vFalloffStart = oldfog.vFalloffStart;
+							newfog.color.r = this.nodes[nodeID]["fogColor"][0];
+							newfog.color.g = this.nodes[nodeID]["fogColor"][1];
+							newfog.color.b = this.nodes[nodeID]["fogColor"][2];
+						//	newfog.near = oldfog.near;
+						//	newfog.far = oldfog.far;
+						//	newfog.density = oldfog.density;
+						//	newfog.vFalloff = oldfog.vFalloff;
+						//	newfog.vFalloffStart = oldfog.vFalloffStart;
 						}
 						threeObject.fog = newfog;
 						rebuildAllMaterials.call(this,threeObject);
