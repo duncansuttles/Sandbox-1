@@ -827,7 +827,7 @@ scripts:
       
       if(this.cameramode == 'Navigate' && this.middledown == true)
       {   
-         this.zoom += this.rel_y*10.0;
+         this.zoom += -this.rel_y*this.zoom*3.0;
       }
       
       this.last_x = parms.clientX/window.screen.width;
@@ -1059,7 +1059,7 @@ scripts:
     this.localpointerWheel = function( pickInfo ) {
        
         
-        if(this.cameramode != 'Free'  && this.cameramode != 'Fly')
+        if(this.cameramode != 'Free'  && this.cameramode != 'Fly' && this.cameramode != 'Navigate')
         { 
           
             

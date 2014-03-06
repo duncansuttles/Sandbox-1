@@ -171,7 +171,7 @@ scripts:
     {
     
       var newdiv = document.createElement('div');
-      $(newdiv).attr('style',"text-transform: uppercase; font-weight: bold; position: fixed; left: 612.7792636991876px; top: 350.056008871367px; color: white; text-shadow: black 0.1em 0.1em 0.4em; ");
+      $(newdiv).attr('style',"pointer-events:none;text-transform: uppercase; font-weight: bold; position: fixed; left: 612.7792636991876px; top: 350.056008871367px; color: white; text-shadow: black 0.1em 0.1em 0.4em; ");
       newdiv.style.position = 'fixed';
       newdiv.id = "Player " + PlayerNumber + 'label';
       newdiv.innerHTML = "" + PlayerNumber;
@@ -385,12 +385,25 @@ scripts:
        if(!intersect) return;
        //should eventuall get to scene at worst;
        var object = intersect.object;
-       while(!object.vwfID)
-        object = object.parent;
-        //already standing on it, dont update offset vec, it's been done already
-        if(this.standingOnID == object.vwfID) return;
-       this.standingOnID = object.vwfID;
-       this.updateStandingOn(this.transformAPI.getPosition());
+       if( intersect.object)
+       {
+         while(object && !object.vwfID)
+          object = object.parent;
+          //already standing on it, dont update offset vec, it's been done already
+          if(object)
+          {
+            if(this.standingOnID == object.vwfID) return;
+            this.standingOnID = object.vwfID;
+            this.updateStandingOn(this.transformAPI.getPosition());
+            }
+            else
+            {
+              this.standingOnID = null;
+            }
+       }else
+       {
+        this.standingOnID = null;
+       }
     }
     this.standingUpdate = function(newpos)
     {

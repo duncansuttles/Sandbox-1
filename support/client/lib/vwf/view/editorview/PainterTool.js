@@ -217,9 +217,15 @@ function PainterTool()
 		
 		console.log(vwfnode);
 		
-			
-		_Editor.SelectObject(vwfnode);
-		_Editor.DeleteSelection();
+		if(_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),vwfnode) == 0)
+		{
+			return;
+		}
+
+		vwf_view.kernel.deleteNode(vwfnode);
+
+		//_Editor.SelectObject(vwfnode);
+		//_Editor.DeleteSelection();
 	}
 	this.createObject = function(e)
 	{

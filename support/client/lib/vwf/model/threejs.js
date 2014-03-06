@@ -2194,11 +2194,15 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 startSize:{type:"f", value:1},
                 endSize:{type:"f", value:1},
 				alphaTest:{type:"f", value:.5},
-                fogColor:{type: "c", value:new THREE.Color(0,0,0,1)},
-                fogNear:{type:"f", value:.5},
-                fogFar:{type:"f", value:.5},
-                fogDensity:{type:"f", value:.5},
             };
+            for(var i in THREE.UniformsLib.fog)
+            {
+                uniforms_default[i] = THREE.UniformsLib.fog[i];
+            }
+            for(var i in THREE.UniformsLib.lights)
+            {
+                uniforms_default[i] = THREE.UniformsLib.lights[i];
+            }
             uniforms_default.texture.value.wrapS = uniforms_default.texture.value.wrapT = THREE.RepeatWrapping;
             var shaderMaterial_default = new THREE.ShaderMaterial( {
                 uniforms:       uniforms_default,
@@ -2227,8 +2231,10 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "uniform float endSize;\n"+
             "uniform vec4 startColor;\n"+
             "uniform vec4 endColor;\n"+
+            "varying vec3 vFogPosition;\n" +
             "void main() {\n"+
             "   vColor = mix(startColor,endColor,(age+fractime*3.33)/lifespan) + (random -0.5) * colorRange;\n"+
+            "   vFogPosition = (modelMatrix * vec4(mix(previousPosition,position,fractime),1.0)).xyz; \n" + 
             "   vec4 mvPosition = modelViewMatrix * vec4(mix(previousPosition,position,fractime), 1.0 );\n"+
 			"   float psize = mix(startSize,endSize,(age+fractime*3.33)/lifespan) + (random.y -0.5) * sizeRange;\n"+
             "   gl_PointSize = psize * ( 1000.0/ length( mvPosition.xyz ) );\n"+
@@ -2275,11 +2281,13 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "varying vec4 vRandom;\n"+
 			"uniform float sizeRange;\n"+
 			"uniform vec4 colorRange;\n"+
+            "varying vec3 vFogPosition;\n" +
             "void main() {\n"+
 			//randomly offset in time
             "   float lifetime = fract(random.x+(time))*lifespan*1.33;"+
 			//solve for position
             "   vec3 pos2 = position.xyz + velocity*lifetime + (acceleration*lifetime*lifetime)/2.0;"+ // ;
+            "   vFogPosition = (modelMatrix * vec4(pos2,1.0)).xyz; \n" + 
             "   vec4 mvPosition = modelViewMatrix * vec4( pos2.xyz, 1.0 );\n"+
 			//find random size based on randomness, start and end size, and size range
 			"   float psize = mix(startSize,endSize,lifetime/lifespan) + (random.y -0.5) * sizeRange;\n"+
@@ -2290,6 +2298,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "   vColor = mix(startColor,endColor,lifetime/lifespan)  +  nR * colorRange;\n"+
             "   vRandom = random;"+
             "}    \n";
+
             var fragShader_analytic = 
             "uniform float useTexture;\n"+
             "uniform sampler2D texture;\n"+
@@ -2302,6 +2311,8 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "uniform float minOrientation;\n"+
 			"uniform float textureTiles;\n"+
 			"uniform float alphaTest;\n"+
+            "varying vec3 vFogPosition;\n" +
+            THREE.ShaderChunk.lights_phong_pars_fragment + "\n"+
             THREE.ShaderChunk.fog_pars_fragment + "\n"+
             "void main() {\n"+
            
@@ -2342,7 +2353,15 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 fragmentShader: fragShader_analytic
             });
 
+            shaderMaterial_analytic.lights = true;
             shaderMaterial_analytic.fog = true;
+
+            shaderMaterial_interpolate.lights = true;
+            shaderMaterial_interpolate.fog = true;
+
+            shaderMaterial_default.lights = true;
+            shaderMaterial_default.fog = true;
+
             // create the particle system
             var particleSystem = new THREE.ParticleSystem(particles,shaderMaterial_default);
             
