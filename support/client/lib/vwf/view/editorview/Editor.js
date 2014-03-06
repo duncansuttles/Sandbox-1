@@ -1206,7 +1206,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				var wasMoved = false;
 				var wasRotated = false;
 				var wasScaled = false;
-				var PickDist = 10000 / vwf.views[0].lastPick.distance;
+				var PickDist = 10000 / (vwf.views[0].lastPick?vwf.views[0].lastPick.distance:1);
 				//var tempscale = vwf.getProperty(SelectedVWFNode.id,'scale');
 				//var s = this.findviewnode(SelectedVWFNode.id).getScale();
 				var gizposoffset = null;
