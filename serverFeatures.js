@@ -71,12 +71,12 @@ function prettyWorldURL(req, res, next)
           worldName = decodeURIComponent(worldName);
           
           //search the DB for worlds that have that title
-          DAL.find({title:worldName},function(err,worlds)
+          DAL.find({"val.title":worldName},function(err,worlds)
           {
             //if there is one , just forward to it
             if(worlds && Object.keys(worlds).length == 1)
             {
-               var worldURL = Object.keys(worlds)[0];
+               var worldURL = worlds[0]._key;
                worldURL = worldURL.replace(/_/g,'/');
                _302(worldURL,res);
                return;

@@ -281,7 +281,7 @@ define(
 		});
 		$('#MenuSnapOff').click(function (e)
 		{
-			_Editor.SetSnaps(.001, .01 * 0.0174532925, .001);
+			_Editor.SetSnaps(.001, .01 * 0.0174532925, .00005);
 		});
 		$('#MenuMaterialEditor').click(function (e)
 		{
@@ -448,7 +448,7 @@ define(
 		
 		$('#MenuHelpBrowse').click(function (e)
 		{
-			window.open('../vwf/view/editorview/help/help.html', '_blank');
+			window.open('http://vwf.adlnet.gov/r/c/documentation/', '_blank');
 		});
 		$('#MenuHelpAbout').click(function (e)
 		{
@@ -890,7 +890,10 @@ define(
 		
 		$('#ToolsShowID').click(function (e)
 		{
+			if(_Editor.GetSelectedVWFID())
 			alertify.prompt(vwf.getProperty(_Editor.GetSelectedVWFID(),"DisplayName"),function(){},_Editor.GetSelectedVWFID());
+			else
+			alertify.alert('No Selection');
 		});
 
 		
