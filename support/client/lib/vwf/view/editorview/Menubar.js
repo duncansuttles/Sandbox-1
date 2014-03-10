@@ -814,7 +814,12 @@ define(
 		});
 		$('#MenuCreateTerrain').click(function (e)
 		{
+			if(!window._dTerrain)
 			_Editor.CreatePrim('terrain', [0,0,0], [1, 1, 1], 'checker.jpg', document.PlayerNumber, '');
+			else
+			{
+				alertify.alert('Only one terrain can be created at a time');
+			}
 		});
 		
 

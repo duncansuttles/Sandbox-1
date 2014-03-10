@@ -1,6 +1,15 @@
 function heightmapTerrainAlgorithm() 
 {	
 	
+	this.dataHeight =  0;
+	this.dataWidth =  0;
+	this.worldLength =  13500;
+	this.worldWidth =  9500;
+	this.addNoise =  false;
+	this.cubic =  false;
+	this.gamma =  false;
+	this.min =  0;
+
 	//this init is called from each thread, and gets data from the poolInit function.
 	this.init = function(data)
 	{
@@ -8,14 +17,14 @@ function heightmapTerrainAlgorithm()
 		
 		console.log('data received');
 		
-		this.dataHeight = data.dataHeight;
-		this.dataWidth = data.dataWidth;
+		this.dataHeight = data.dataHeight || 0;
+		this.dataWidth = data.dataWidth || 0;
 		this.worldLength = data.worldLength || 13500;
 		this.worldWidth = data.worldWidth || 9500;
 		this.addNoise = data.addNoise || false;
 		this.cubic = data.cubic || false;
 		this.gamma = data.gamma || false;
-		this.min = data.min;
+		this.min = data.min || 0;
 		console.log('from thread: min is ' + this.min);
 		this.type = 'bt';
 		
@@ -28,6 +37,7 @@ function heightmapTerrainAlgorithm()
 	{	
 		
 		this.type = 'bt';
+		if(!params) params = {};
 		this.addNoise = params.addNoise || false;
 		this.cubic = params.cubic || false;
 		this.gamma = params.gamma || false;
@@ -160,7 +170,7 @@ function heightmapTerrainAlgorithm()
 	{
 		return {
 		heightmapSrc:{
-								displayname : 'HeightMap URL',
+								displayname : 'HeightMap (Data Source) URL',
 								property:'url',
 								type:'prompt'
 						},
@@ -170,12 +180,12 @@ function heightmapTerrainAlgorithm()
 								type:'prompt'
 						},	
 		worldLength:{
-								displayname : 'Length (m)',
+								displayname : 'Data Source Length (m)',
 								property:'worldLength',
 								type:'prompt'
 						},
 		worldWidth:{
-								displayname : 'Width (m)',
+								displayname : 'Data Source Width (m)',
 								property:'worldWidth',
 								type:'prompt'
 						},
@@ -318,6 +328,7 @@ function heightmapTerrainAlgorithm()
 	}
 	this.at = function(x,y)
 	{
+		if(!this.data) return 0;
 		if( x >= this.dataHeight || x < 0) return 0;
 		if( y >= this.dataWidth || y < 0) return 0;
 		var i = y * this.dataWidth  + x;

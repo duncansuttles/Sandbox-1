@@ -76,7 +76,7 @@ new (function(){
 		mesh.material.attributes.everyOtherZ.needsUpdate = true;
 		mesh.material.attributes.everyZ.needsUpdate = true;
 		mesh.material.attributes.ONormal.needsUpdate = true;
-	//	geo.verticesNeedUpdate = true;
+		geo.verticesNeedUpdate = true;
 		geo.computeBoundingSphere();
 		geo.computeBoundingBox();
 				
@@ -184,6 +184,14 @@ new (function(){
 			
 			this.currentState[i] = CANCELED;
 			
+		}
+	}
+	this.deinit = function()
+	{
+		for(var i = 0; i < MAXWORKERS; i++)
+		{
+			if(this.worker && this.worker[i])
+				this.worker[i].terminate();
 		}
 	}
 	this.init = function(type,params)

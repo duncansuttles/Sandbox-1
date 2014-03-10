@@ -1,7 +1,7 @@
 (function(){
 	function terrain(childID, childSource, childName)
 	{
-		
+		window._dTerrain = this;
 		var self = this;
 		var totalmintilesize = 16;
 		var tileres = 16;
@@ -183,6 +183,18 @@
 				console.log('terrain algorithm not found');
 			}
 		}
+		this.deletingNode = function()
+		{
+			
+			this.cancelUpdates();
+			this.terrainGenerator.deinit();
+			var children = this.getRoot().children;
+			for(var i =0 ; i < children.length; i++)
+			{
+				children[i].parent.remove(children[i]);
+			}
+			delete window._dTerrain;
+		}
 		this.cancelUpdates =function()
 		{
 			self.needRebuild = [];
@@ -335,7 +347,7 @@
 					
 					
 					var cont = this.quadtree.containing([x,y]);
-					if(!cont) return;
+					if(!cont || !cont.parent) return;
 					this.containing = cont.parent;
 					
 					
@@ -814,7 +826,7 @@
 								property:'tileRes',
 								type:'choice',
 								values:[2,4,8,16,26],
-								labels:['2','4','8','16',26],
+								labels:['2','4','8','16','26'],
 						},
 						maxTileSize:{
 								displayname : 'Max Tile Size (m^2)',
@@ -827,14 +839,17 @@
 								displayname : 'Min Tile Size (m^2)',
 								property:'minTileSize',
 								type:'choice',
-								values:[16,23,64,128,256,512],
+								values:[16,32,64,128,256,512],
 								labels:['16','32','64','128','256','512'],
 						},
 						_generator:{
 								displayname : 'Terrain Generator',
 								property:'terrainType',
-								type:'prompt'
-						}
+								type:'choice',
+								labels:['Height Map','Random Noise','Paging Database'],
+								values:['heightmapTerrainAlgorithm','NoiseTerrainAlgorithm','CesiumTerrainAlhorithm']
+						},
+
 					}
 					
 					var algodata = this.terrainGenerator.getEditorData();
@@ -859,6 +874,14 @@
 		//default factory code
 	return function(childID, childSource, childName) {
 		//name of the node constructor
+
+		//GUI should prevent us from getting here.
+		if(window._dTerrain)
+		{
+			console.log('Only one terrain can be created at a time');
+			return;
+		}
+
 		return new terrain(childID, childSource, childName);
 	}
 })();
