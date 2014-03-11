@@ -488,7 +488,12 @@ scripts:
                 var vertShader_default = 
                 "varying vec3 pos;"+
                 "void main() {\n"+
-                "   vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\n"+
+
+               
+                "float near   = projectionMatrix[3][2]/(projectionMatrix[2][2]-1.0);"+
+                "float far    = projectionMatrix[3][2]/(projectionMatrix[2][2]+1.0);"+
+                 " vec3 nposition = (position * ((near+far)/2.0 + near)) + cameraPosition;\n"+
+                " vec4 mvPosition = viewMatrix * vec4( nposition, 1.0 );\n"+
                 " pos = position;"+
                 "   gl_Position = projectionMatrix * mvPosition;\n"+
                 "}    \n";
@@ -532,7 +537,7 @@ scripts:
        this.skymaterial.fog = false;
        if(!this.skycube)
        {
-           this.skycube = new THREE.Mesh(new THREE.CubeGeometry(10,10,10), this.skymaterial);
+           this.skycube = new THREE.Mesh(new THREE.CubeGeometry(1,1,1), this.skymaterial);
            this.skycube.name = "SkyCube";
            this.skycube.renderDepth = -Infinity;
            this.skycube.InvisibleToCPUPick = true;
@@ -541,7 +546,9 @@ scripts:
            this.skycube.castShadow = false;
            this.skycube.receiveShadow = false;
            findscene().add(this.skycube);
+           
            window._dSky = this.skycube;
+          
        }
         
     }
@@ -815,9 +822,9 @@ scripts:
         worldmousepos2[1] /= worldmousepos2[3];
         worldmousepos2[2] /= worldmousepos2[3];
        
-       var panfactor = 10;
+       var panfactor = 100;
        if(this.cameramode == 'Free')
-       panfactor = 50;
+       panfactor = 500;
        
        ////console.log(this.zoom);
         this.center = MATH.addVec3(this.center,MATH.scaleVec3(MATH.subVec3(worldmousepos2,worldmousepos),panfactor * this.zoom));
@@ -905,8 +912,7 @@ scripts:
             findcamera().position.z = tfinalpos[2];
             findcamera().lookAt(TempVec3(this.center));
             
-            findcamera().far = 5000;
-            findcamera().near = .1;
+           
         }else if(this.cameramode == 'FirstPerson')
         {
             //this.oldRotZ var xmatrix = MATH.angleAxis(this.x_rot*10,[0,0,1]);
@@ -934,8 +940,7 @@ scripts:
             findcamera().position.y = finalpos[1];
             findcamera().position.z = finalpos[2];
             findcamera().lookAt(TempVec3(this.center));
-            findcamera().far = 5000;
-            findcamera().near = .3;
+           
             findcamera().updateProjectionMatrix(true);
             this.zoom = .0001;
             
@@ -1241,6 +1246,7 @@ scripts:
     this.glyphRender = function(e,viewprojection, wh, ww)
     {
 
+      this.skycube.geometry.boundingSphere.radius = Infinity;
       var div = this.nametag;
       var pos = [0,0,0,1];
       
@@ -1284,10 +1290,10 @@ scripts:
     {
         //set the skybox position
       
-        this.skycube.position.x = findcamera().matrixWorld.elements[12];
-        this.skycube.position.y = findcamera().matrixWorld.elements[13];
-        this.skycube.position.z = findcamera().matrixWorld.elements[14];
-        this.skycube.updateMatrixWorld();
+     //   this.skycube.position.x = findcamera().matrixWorld.elements[12];
+     //   this.skycube.position.y = findcamera().matrixWorld.elements[13];
+     //   this.skycube.position.z = findcamera().matrixWorld.elements[14];
+     //   this.skycube.updateMatrixWorld();
       
       
       
