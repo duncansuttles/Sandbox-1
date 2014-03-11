@@ -812,8 +812,9 @@
 			{
 					
 					var editordata = {
-						_active:{displayname : 'Enabled',property:'enabled',type:'check',min:-10,max:10,step:.01},
-						extents:{
+						a_:{displayname:'Meshing Parameters',type:'sectionTitle'},
+						a__active:{displayname : 'Enabled',property:'enabled',type:'check',min:-10,max:10,step:.01},
+						a_extents:{
 								displayname : 'Extents (meters^2)',
 								property:'Extents',
 								type:'prompt',
@@ -821,28 +822,28 @@
 								max:1048576,
 								step:1024
 						},
-						tileRes:{
+						a_tileRes:{
 								displayname : 'Tile Res',
 								property:'tileRes',
 								type:'choice',
 								values:[2,4,8,16,26],
 								labels:['2','4','8','16','26'],
 						},
-						maxTileSize:{
+						a_maxTileSize:{
 								displayname : 'Max Tile Size (m^2)',
 								property:'maxTileSize',
 								type:'choice',
 								values:[128,256,512,1024,2048,4096,8192],
 								labels:['128','256','512','1024','2048','4096','8192'],
 						},
-						minTileSize:{
+						a_minTileSize:{
 								displayname : 'Min Tile Size (m^2)',
 								property:'minTileSize',
 								type:'choice',
 								values:[16,32,64,128,256,512],
 								labels:['16','32','64','128','256','512'],
 						},
-						_generator:{
+						a__generator:{
 								displayname : 'Terrain Generator',
 								property:'terrainType',
 								type:'choice',

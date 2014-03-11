@@ -176,42 +176,48 @@ function heightmapTerrainAlgorithm()
 	this.getEditorData = function(data)
 	{
 		return {
-		heightmapSrc:{
+
+		h_aaalable:{
+								
+				      			displayname: 'Heightmap Algorithm',
+				      			type: 'sectionTitle'
+      					},	
+		h_heightmapSrc:{
 								displayname : 'HeightMap (Data Source) URL',
 								property:'url',
 								type:'map'
 						},
-		diffuseSrc:{
+		h_diffuseSrc:{
 								displayname : 'Texture URL',
 								property:'diffuseUrl',
 								type:'map'
 						},	
-		worldLength:{
+		h_worldLength:{
 								displayname : 'Data Source Length (m)',
 								property:'worldLength',
 								type:'prompt'
 						},
-		worldWidth:{
+		h_worldWidth:{
 								displayname : 'Data Source Width (m)',
 								property:'worldWidth',
 								type:'prompt'
 						},
-						addNoise:{
+						h_addNoise:{
 								displayname : 'Add additional noise',
 								property:'addNoise',
 								type:'check'
 						},
-						cubic:{
+						h_cubic:{
 								displayname : 'Use Bicubic interpolation',
 								property:'cubic',
 								type:'check'
 						},
-						gamma:{
+						h_gamma:{
 								displayname : 'Use gamma correction',
 								property:'gamma',
 								type:'check'
 						},
-						heightScale:{
+						h_heightScale:{
 								displayname : 'Height Scale',
 								property:'heightScale',
 								type:'prompt'

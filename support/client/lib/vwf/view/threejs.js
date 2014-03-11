@@ -463,12 +463,33 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             {
                 if(threeObject instanceof THREE.Scene)
                 {
-                    if(propertyName == 'enableShadows')
+                    if(propertyName == 'skyColorBlend')
                     {
-                        //debugger;
-                       // var sceneNode = this.state.scenes[nodeID];
-                       // sceneNode.renderer.shadowMapEnabled = propertyValue;
+                    	if(window._dSky && _dSky.material)
+                        _dSky.material.uniforms.colorBlend.value = propertyValue;
                     }
+                    if(propertyName == 'skyFogBlend')
+                    {
+                    	if(window._dSky && _dSky.material)
+                      	_dSky.material.uniforms.fogBlend.value = propertyValue;
+                    }
+                    if(propertyName == 'skyApexColor')
+                    {
+                        if(window._dSky && _dSky.material){
+                        	_dSky.material.uniforms.ApexColor.value.r = propertyValue[0];
+                        	_dSky.material.uniforms.ApexColor.value.g = propertyValue[1];
+                        	_dSky.material.uniforms.ApexColor.value.b = propertyValue[2];
+                        }
+                    }
+                    if(propertyName == 'skyHorizonColor')
+                    {
+                        if(window._dSky && _dSky.material){
+                        	_dSky.material.uniforms.HorizonColor.value.r = propertyValue[0];
+                        	_dSky.material.uniforms.HorizonColor.value.g = propertyValue[1];
+                        	_dSky.material.uniforms.HorizonColor.value.b = propertyValue[2];
+                        }
+                    }
+
 					if(propertyName == 'fogType')
 					{
 						

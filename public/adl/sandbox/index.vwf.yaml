@@ -48,13 +48,17 @@ properties:
             this.sun.shadowDarkness = value;           
   ambientColor: 
     value: [.35, .35 , .35]
-  fogColor: [155, 155, 155]
+  fogColor: [1, 1, 1]
   fogNear: 100
   fogFar: 1000
   fogType: 0
   fogDensity: .005
   fogVFalloff: 1.3
-  fogVFalloffStart: 0  
+  fogVFalloffStart: 0
+  skyColorBlend: 0  
+  skyFogBlend: 0  
+  skyApexColor: [ 0 , .5 , 1.0 ]
+  skyHorizonColor: [ 0 , .5 , 1.0 ]
   materialDef:
     set: |  
            this.materialDef = value;
@@ -74,6 +78,9 @@ properties:
   owner:
   type: scene
   EditorData:
+    fog:
+      displayname: 'Fog'
+      type: 'sectionTitle'
     fogNear:
       displayname: Fog Near
       property: fogNear
@@ -132,11 +139,14 @@ properties:
       displayname: Fog Color
       property: fogColor
       type: color
-    ambientColor:
+    sun:
+      displayname: 'Sun'
+      type: 'sectionTitle'  
+    sunambientColor:
       displayname: ambient
       property: ambientColor
       type: color     
-    AsunColor:
+    sunColor:
       displayname: Sun Color
       property: sunColor
       type: color
@@ -145,6 +155,9 @@ properties:
       property: sunDirection
       type: vector
       step: .05
+    sky:
+      displayname: 'Sky'
+      type: 'sectionTitle'  
     skyTexture:
       displayname: skyTexture
       property: skyTexture
@@ -173,6 +186,28 @@ properties:
         - bright
         - white
         - black
+    skyColorBlend:  
+      displayname: Sky Color Blend
+      property: skyColorBlend
+      type: slider
+      min: 0
+      max: 1
+      step: .01  
+    skyFogBlend:
+      displayname: Sky Fog Amount
+      property: skyFogBlend
+      type: slider
+      min: 0
+      max: 1
+      step: .01    
+    skyApexColor:
+      displayname: Sky Apex Color
+      property: skyApexColor
+      type: color
+    skyHorizonColor: 
+      displayname: Sky Horizon Color
+      property: skyHorizonColor
+      type: color
 events:
   disconnected:
   newClient:
@@ -469,6 +504,7 @@ scripts:
        var loaded = function(){
             this.skymaterial.uniforms.texture.value.image = skyCubeTexture.image;
             this.skymaterial.uniforms.texture.value.needsUpdate = true;
+            this.skymaterial.uniforms.texture.value.wrapS = this.skymaterial.uniforms.texture.value.wrapT = THREE.RepeatWrapping;
        }.bind(this);
             var skyCubeTexture = THREE.ImageUtils.loadTextureCube(urls,undefined,loaded);
            // skyCubeTexture.format = THREE.RGBFormat;
@@ -482,62 +518,31 @@ scripts:
        if(!this.skymaterial)
        {
        
-                //default material expects all computation done cpu side, just renders
-                // note that since the color, size, spin and orientation are just linear
-                // interpolations, they can be done in the shader
-                var vertShader_default = 
-                "varying vec3 pos;"+
-                "void main() {\n"+
-
-               
-                "float near   = projectionMatrix[3][2]/(projectionMatrix[2][2]-1.0);"+
-                "float far    = projectionMatrix[3][2]/(projectionMatrix[2][2]+1.0);"+
-                 " vec3 nposition = (position * ((near+far)/2.0 + near)) + cameraPosition;\n"+
-                " vec4 mvPosition = viewMatrix * vec4( nposition, 1.0 );\n"+
-                " pos = position;"+
-                "   gl_Position = projectionMatrix * mvPosition;\n"+
-                "}    \n";
-                var fragShader_default = 
-               
-                "uniform samplerCube texture;\n"+
-                "varying vec3 pos;"+
-                "void main() {\n"+
-                "   gl_FragColor = textureCube(texture,pos);\n"+
-                "}\n";
-                
-                //the default shader - the one used by the analytic solver, just has some simple stuff
-                //note that this could be changed to do just life and lifespan, and calculate the 
-                //size and color from to uniforms. Im not going to bother
-                var attributes_default = {
-                   
-                    
-                };
-                var uniforms_default = {
-                   
-                    texture:   { type: "t", value: skyCubeTexture },
-                  
-                };
-                uniforms_default.texture.value.wrapS = uniforms_default.texture.value.wrapT = THREE.RepeatWrapping;
+            
                 this.skymaterial = new THREE.ShaderMaterial( {
-                    uniforms:       uniforms_default,
-                    attributes:     attributes_default,
-                    vertexShader:   vertShader_default,
-                    fragmentShader: fragShader_default
-
+                    uniforms:       THREE.ShaderLib.sky.uniforms,
+                    attributes:     THREE.ShaderLib.sky.attributes,
+                    vertexShader:   THREE.ShaderLib.sky.vertexShader,
+                    fragmentShader: THREE.ShaderLib.sky.fragmentShader
                 });
             this.skymaterial.uniforms.texture.value = skyCubeTexture;    
+
             this.skymaterial.depthWrite = false;
             this.skymaterial.depthTest= false;
+            this.skymaterial.fog= true;
+            this.skymaterial.lights= true;
             this.skymaterial.transparent = false;
+            this.skymaterial.uniforms.texture.value = skyCubeTexture;    
+            
        }
        
        
        this.skymaterial.side = 1;
        
-       this.skymaterial.fog = false;
+      
        if(!this.skycube)
        {
-           this.skycube = new THREE.Mesh(new THREE.CubeGeometry(1,1,1), this.skymaterial);
+           this.skycube = new THREE.Mesh(new THREE.SphereGeometry(1,10,20), this.skymaterial);
            this.skycube.name = "SkyCube";
            this.skycube.renderDepth = -Infinity;
            this.skycube.InvisibleToCPUPick = true;
@@ -822,9 +827,9 @@ scripts:
         worldmousepos2[1] /= worldmousepos2[3];
         worldmousepos2[2] /= worldmousepos2[3];
        
-       var panfactor = 100;
+       var panfactor = 10;
        if(this.cameramode == 'Free')
-       panfactor = 500;
+       panfactor = 50;
        
        ////console.log(this.zoom);
         this.center = MATH.addVec3(this.center,MATH.scaleVec3(MATH.subVec3(worldmousepos2,worldmousepos),panfactor * this.zoom));
@@ -1246,7 +1251,7 @@ scripts:
     this.glyphRender = function(e,viewprojection, wh, ww)
     {
 
-      this.skycube.geometry.boundingSphere.radius = Infinity;
+      
       var div = this.nametag;
       var pos = [0,0,0,1];
       
@@ -1288,16 +1293,9 @@ scripts:
     }
     this.postprerender = function(e,viewprojection, wh, ww)
     {
-        //set the skybox position
-      
-     //   this.skycube.position.x = findcamera().matrixWorld.elements[12];
-     //   this.skycube.position.y = findcamera().matrixWorld.elements[13];
-     //   this.skycube.position.z = findcamera().matrixWorld.elements[14];
-     //   this.skycube.updateMatrixWorld();
-      
-      
-      
-      
+     
+     if( this.skycube && this.skycube.geometry.boundingSphere) 
+      this.skycube.geometry.boundingSphere.radius = Infinity;
       //focus the shadow camera projection matrix around the camera tha views the scene.
       if(this.sun && this.sun.shadowCamera)
       {

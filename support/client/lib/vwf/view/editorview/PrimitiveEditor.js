@@ -569,6 +569,11 @@ define(function ()
 			for (var j = 0; j < editordatanames.length; j++)
 			{
 				var i = editordatanames[j];
+				if (editordata[i].type == 'sectionTitle')
+				{
+					var inputstyle = "";
+					$('#basicSettings' + nodeid).append('<div style="" class = "EditorDataSectionTitle">' + editordata[i].displayname + ': </div>');
+				}
 				if (editordata[i].type == 'slider')
 				{
 					var inputstyle = "";
