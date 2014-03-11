@@ -19,6 +19,7 @@ function heightmapTerrainAlgorithm()
 		
 		this.dataHeight = data.dataHeight || 0;
 		this.dataWidth = data.dataWidth || 0;
+
 		this.worldLength = data.worldLength || 13500;
 		this.worldWidth = data.worldWidth || 9500;
 		this.addNoise = data.addNoise || false;
@@ -27,7 +28,7 @@ function heightmapTerrainAlgorithm()
 		this.min = data.min || 0;
 		console.log('from thread: min is ' + this.min);
 		this.type = 'bt';
-		
+		this.heightScale = data.heightScale || 1;
 		this.importScript('simplexNoise.js');
 		this.importScript('Rc4Random.js');
 		this.SimplexNoise = new SimplexNoise((new Rc4Random(1 +"")).random);
@@ -41,7 +42,7 @@ function heightmapTerrainAlgorithm()
 		this.addNoise = params.addNoise || false;
 		this.cubic = params.cubic || false;
 		this.gamma = params.gamma || false;
-
+		this.heightScale = params.heightScale || 1;
 		this.url = (params && params.url) || 'terrain/River.bt';
 
 		if(this.url && this.url.lastIndexOf('.') > -1)
@@ -56,15 +57,20 @@ function heightmapTerrainAlgorithm()
 		if(this.type == 'img')
 		{
 			canvas = document.createElement('canvas');
-			
+
+			this.worldLength = params && parseFloat(params.worldLength) || 13500;
+			this.worldWidth =  params && parseFloat(params.worldWidth) || 9500;
 			var img = new Image();
 			img.src = this.url;
 			
 			img.onload = function()
 			{
 				
+				this.worldLength = params && parseFloat(params.worldLength) || 13500;
+				this.worldWidth =  params && parseFloat(params.worldWidth) || 9500;
 				this.dataHeight = img.naturalHeight;
 				this.dataWidth = img.naturalWidth;
+				this.heightScale = params.heightScale || 1;
 				canvas.height = this.dataHeight;
 				canvas.width = this.dataWidth;
 				var context = canvas.getContext('2d');
@@ -84,7 +90,8 @@ function heightmapTerrainAlgorithm()
 						data[c] = array[c2];
 					}
 				}
-				cb({dataHeight:this.dataHeight,dataWidth:this.dataWidth,min:0,data:data,addNoise:params.addNoise,cubic:params.cubic,gamma:params.gamma});
+
+				cb({heightScale:this.heightScale,worldLength:this.worldLength,worldWidth:this.worldWidth,dataHeight:this.dataHeight,dataWidth:this.dataWidth,min:0,data:data,addNoise:params.addNoise,cubic:params.cubic,gamma:params.gamma});
 			}
 		}
 		if(this.type == 'bt')
@@ -163,7 +170,7 @@ function heightmapTerrainAlgorithm()
 		}
 		this.min = min;
 		this.data = data;
-		return {worldLength:this.worldLength,worldWidth:this.worldWidth,dataHeight:this.dataHeight,dataWidth:this.dataWidth,min:min,data:data,addNoise:this.addNoise,cubic:this.cubic,gamma:this.gamma}
+		return {heightScale:this.heightScale,worldLength:this.worldLength,worldWidth:this.worldWidth,dataHeight:this.dataHeight,dataWidth:this.dataWidth,min:min,data:data,addNoise:this.addNoise,cubic:this.cubic,gamma:this.gamma}
 	}
 	//This is the settings data, set both main and pool side
 	this.getEditorData = function(data)
@@ -172,12 +179,12 @@ function heightmapTerrainAlgorithm()
 		heightmapSrc:{
 								displayname : 'HeightMap (Data Source) URL',
 								property:'url',
-								type:'prompt'
+								type:'map'
 						},
 		diffuseSrc:{
 								displayname : 'Texture URL',
 								property:'diffuseUrl',
-								type:'prompt'
+								type:'map'
 						},	
 		worldLength:{
 								displayname : 'Data Source Length (m)',
@@ -203,7 +210,12 @@ function heightmapTerrainAlgorithm()
 								displayname : 'Use gamma correction',
 								property:'gamma',
 								type:'check'
-						},										
+						},
+						heightScale:{
+								displayname : 'Height Scale',
+								property:'heightScale',
+								type:'prompt'
+						},											
 		}
 	}
 	//This is the settings data, set both main and pool side
@@ -230,6 +242,7 @@ function heightmapTerrainAlgorithm()
 		}
 		if(data.worldWidth && data.worldWidth != this.worldWidth)
 		{
+
 			this.worldWidth =  parseFloat(data.worldWidth);
 			needRebuild = true;
 		}
@@ -246,6 +259,12 @@ function heightmapTerrainAlgorithm()
 		if(data.addNoise != this.addNoise)
 		{
 			this.addNoise =  data.addNoise;
+			needRebuild = true;
+		}
+		if(data.heightScale != this.heightScale)
+		{
+			
+			this.heightScale =  data.heightScale;
 			needRebuild = true;
 		}
 		if(data.diffuseUrl != this.diffuseUrl)	
@@ -267,7 +286,8 @@ function heightmapTerrainAlgorithm()
 			worldLength:this.worldLength,
 			cubic:this.cubic || false,
 			gamma:this.gamma || false,
-			addNoise:this.addNoise || false
+			addNoise:this.addNoise || false,
+			heightScale:this.heightScale || 1
 		};
 	}
 	//This will allow you to setup shader variables that will be merged into the the terrain shader
@@ -309,7 +329,7 @@ function heightmapTerrainAlgorithm()
 	}
 	
 	//This is the displacement function, which is called in paralell by the thread pool
-	this.displace= function(vert)
+	this.displace= function(vert,matrix,res)
 	{
 		var z = 0;
 
@@ -322,12 +342,14 @@ function heightmapTerrainAlgorithm()
 		//this is gamma correction
 		var h = this.type == 'img' && this.gamma?2.2:1.0;
 		if(this.cubic)
-			return this.sampleBiCubic((vert.x+ (this.worldLength/2)) / this.worldLength ,(vert.y + (this.worldWidth/2)) / this.worldWidth  ) * h  + z|| 0;
+			return this.sampleBiCubic((vert.x+ (this.worldLength/2)) / this.worldLength ,(vert.y + (this.worldWidth/2)) / this.worldWidth,matrix,res  ) * h * this.heightScale  + z|| 0;
 		else
-			return this.sampleBiLinear((vert.x+ (this.worldLength/2)) / this.worldLength ,(vert.y + (this.worldWidth/2)) / this.worldWidth  ) * h  + z|| 0;
+			return this.sampleBiLinear((vert.x+ (this.worldLength/2)) / this.worldLength ,(vert.y + (this.worldWidth/2)) / this.worldWidth,matrix,res  ) * h * this.heightScale + z|| 0;
 	}
 	this.at = function(x,y)
 	{
+		x = Math.floor(x);
+		y = Math.floor(y);
 		if(!this.data) return 0;
 		if( x >= this.dataHeight || x < 0) return 0;
 		if( y >= this.dataWidth || y < 0) return 0;
@@ -363,13 +385,26 @@ function heightmapTerrainAlgorithm()
 		arr[3] = this.cubicInterpolate(p[3], y);
 		return this.cubicInterpolate(arr, x);
 	}
-	this.sampleBiCubic = function(u,v)
+	this.mipAt = function(x,xo,y,yo,mip)
 	{
-		var y = Math.floor(u * this.dataHeight);
-		var x = Math.floor(v * this.dataWidth);
+		return this.at(x*mip + xo * mip,y*mip+yo*mip);
+	}
+	this.sampleBiCubic = function(u,v,matrix,tileres)
+	{
+
+		var res = 1;
+		if((this.worldWidth/this.dataWidth) < 2)
+		    res = Math.min(1,(this.worldWidth/this.dataWidth)/50);
+		var mip = 1/res;
+		var dh = this.dataHeight * res;
+		var dw = this.dataWidth * res;
+
+
+		var y = Math.floor(u * dh);
+		var x = Math.floor(v * dw);
 		
-		u = (u * this.dataHeight) - Math.floor(u * this.dataHeight);
-		v = (v * this.dataWidth) - Math.floor(v * this.dataHeight);
+		u = (u * dh) - Math.floor(u * dh);
+		v = (v * dw) - Math.floor(v * dw);
 		var p = [];
 		var t = x;
 		x = y;
@@ -377,10 +412,18 @@ function heightmapTerrainAlgorithm()
 		t = u;
 		u = v;
 		v = t;
-		p[0] = [this.at(x-1,y-1),this.at(x-0,y-1),this.at(x+1,y-1),this.at(x+2,y-1)];
-		p[1] = [this.at(x-1,y-0),this.at(x-0,y-0),this.at(x+1,y-0),this.at(x+2,y-0)];
-		p[2] = [this.at(x-1,y+1),this.at(x-0,y+1),this.at(x+1,y+1),this.at(x+2,y+1)];
-		p[3] = [this.at(x-1,y+2),this.at(x-0,y+2),this.at(x+1,y+2),this.at(x+2,y+2)];
+
+
+	//	p[0] = [this.at(x-1 ,y-1 ),this.at(x-0,y-1 ),this.at(x+1 ,y-1 ),this.at(x+2 ,y-1 )];
+	//	p[1] = [this.at(x-1 ,y-0 ),this.at(x-0,y-0 ),this.at(x+1 ,y-0 ),this.at(x+2 ,y-0 )];
+	//	p[2] = [this.at(x-1 ,y+1 ),this.at(x-0,y+1 ),this.at(x+1 ,y+1 ),this.at(x+2 ,y+1 )];
+	//	p[3] = [this.at(x-1 ,y+2 ),this.at(x-0,y+2 ),this.at(x+1 ,y+2 ),this.at(x+2 ,y+2 )];
+
+
+		p[0] = [this.mipAt(x,-1 ,y,-1,mip ),this.mipAt(x,0,y,-1,mip ),this.mipAt(x,1 ,y,-1,mip ),this.mipAt(x,2 ,y,-1,mip )];
+		p[1] = [this.mipAt(x,-1 ,y,-0,mip ),this.mipAt(x,0,y,0,mip ),this.mipAt(x,1 ,y,0,mip ),this.mipAt(x,2 ,y,0,mip )];
+		p[2] = [this.mipAt(x,-1 ,y,1,mip ),this.mipAt(x,0,y,1,mip ),this.mipAt(x,1 ,y,1,mip ),this.mipAt(x,2 ,y,1,mip )];
+		p[3] = [this.mipAt(x,-1 ,y,2,mip ),this.mipAt(x,0,y,2,mip ),this.mipAt(x,1 ,y,2,mip ),this.mipAt(x,2 ,y,2,mip )];
 		return this.bicubicInterpolate(p,u,v);
 	}
 }

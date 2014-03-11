@@ -127,7 +127,7 @@ new (function(){
 		this.worker[i].postMessage(request,request.buffers);
 		
 	}
-	this.sample = function(vert)
+	this.sample = function(vert,matrix,res)
 	{
 		if(this.waitingForInit == true) return 0;
 		return this.terrainAlgorithm.displace(vert);
