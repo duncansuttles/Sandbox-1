@@ -91,15 +91,20 @@ function TileCache()
 						"uniform float fogNear;"+
 						"uniform float fogFar;"+	
 						"uniform float vFalloff;"+	
-						"uniform float vFogBottom;"+	
 						"uniform float vFalloffStart;"+	
-
+						"uniform vec3 vAtmosphereColor;\n" + //vec3(0.0, 0.02, 0.04);
+						"uniform vec3 vHorizonColor;\n" + //vec3(0.88, 0.94, 0.999);
+						"uniform vec3 vApexColor;\n" + //vec3(0.78, 0.82, 0.999)
+						"uniform float vAtmosphereDensity;\n" + //.0005
+						
+						
+						
 						
 						//"horizonColor = fogColor;\n"+
 						//"zenithColor = vec3(0.78, 0.82, 0.999);\n"+
 						//"gl_FragColor.xyz = aerialPerspective(gl_FragColor.xyz, distance(pos,cameraPosition),cameraPosition.xzy, normalize(pos-cameraPosition).xzy);\n"+
-						"vec3 horizonColor = vec3(0.88, 0.94, 0.999);\n"+
-						"vec3 zenithColor = vec3(0.78, 0.82, 0.999);\n"+
+						"vec3 horizonColor = vHorizonColor;\n"+
+						"vec3 zenithColor = vApexColor;\n"+
 						
 						"vec3 atmosphereColor(vec3 rayDirection){\n"+
 						"    float a = max(0.0, dot(rayDirection, vec3(0.0, 1.0, 0.0)));\n"+
@@ -116,10 +121,9 @@ function TileCache()
 
 						"vec3 aerialPerspective(vec3 albedo, float dist, vec3 rayOrigin, vec3 rayDirection){\n"+
 						" rayOrigin.y += vFalloffStart;\n" +
-						"    float atmosphereDensity = .0005;\n"+
-						"    vec3 atmosphere = atmosphereColor(rayDirection)+vec3(0.0, 0.02, 0.04); \n"+
-						"    atmosphere = mix( atmosphere, atmosphere*.75, clamp(1.0-exp(-dist*atmosphereDensity), 0.0, 1.0));\n"+
-						"    vec3 color = mix( applyFog(albedo, dist, rayOrigin, rayDirection), atmosphere, clamp(1.0-exp(-dist*atmosphereDensity), 0.0, 1.0));\n"+
+						"    vec3 atmosphere = atmosphereColor(rayDirection)+vAtmosphereColor; \n"+
+						"    atmosphere = mix( atmosphere, atmosphere*.75, clamp(1.0-exp(-dist*vAtmosphereDensity), 0.0, 1.0));\n"+
+						"    vec3 color = mix( applyFog(albedo, dist, rayOrigin, rayDirection), atmosphere, clamp(1.0-exp(-dist*vAtmosphereDensity), 0.0, 1.0));\n"+
 						"    return color;\n"+
 						"}						\n"+
 						
@@ -156,6 +160,7 @@ function TileCache()
 						"	vec4 diffuse = getTexture(npos,nn,opos.xy/100.0 + 0.5);\n"+
 						"	diffuse.a = 1.0;\n"+
 						"   gl_FragColor = ambient * diffuse + diffuse * vec4(light.xyz,1.0) + 0.0 * vec4(0.4,0.4,0.4,1.0);\n"+
+						"gl_FragColor.a = 1.0;\n"+
 						"#ifdef USE_FOG\n"+
 
 							
@@ -188,7 +193,8 @@ function TileCache()
 						var algorithmShaderString = this.terrainGenerator.getDiffuseFragmentShader();
 						var algorithmUniforms = this.terrainGenerator.getMaterialUniforms();
 						
-							var uniforms_default = {
+							var uniforms_default =  THREE.UniformsUtils.merge( [
+				THREE.UniformsLib[ "fog" ],{
 						   
 						
 							ambientLightColor:   { type: "fv", value: [] },
@@ -213,17 +219,12 @@ function TileCache()
 							
 							noiseSampler:   { type: "t", value: _SceneManager.getTexture( "terrain/bestnoise.png" ) },
 							"side" : { type: "f", value: 0 },
-							"fogDensity" : { type: "f", value: 0.00025 },
-							"fogNear" : { type: "f", value: 1 },
-							"fogFar" : { type: "f", value: 2000 },
-							"fogColor" : { type: "c", value: new THREE.Color( 0xffffff ) },
+							
 							"blendPercent" : { type: "f", value: 0.00000 },
-							"vFalloff": { type: "f", value: 20.00000 },
-							"vFalloffStart": { type: "f", value: 0.00000 },
-							"vFogTop": { type: "f", value: 1000.00000 },
+							
 							debugColor : { type: "c", value: new THREE.Color( 0xffff0f ) },
 						
-						};	 
+						}]);	 
 						for(var i in algorithmUniforms)
 							uniforms_default[i] = algorithmUniforms[i];
 						var attributes_default = {

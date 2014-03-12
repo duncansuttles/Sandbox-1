@@ -490,6 +490,38 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                         }
                     }
 
+  					if(propertyName == 'skyApexColor')
+					{
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+						
+						if(!threeObject.fog.vApexColor)
+							threeObject.fog.vApexColor = new THREE.Color();
+
+						threeObject.fog.vApexColor.r = propertyValue[0];
+						threeObject.fog.vApexColor.g = propertyValue[1];
+						threeObject.fog.vApexColor.b = propertyValue[2];
+					}
+					if(propertyName == 'skyHorizonColor')
+					{
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+						
+						if(!threeObject.fog.vHorizonColor)
+							threeObject.fog.vHorizonColor = new THREE.Color();
+
+						threeObject.fog.vHorizonColor.r = propertyValue[0];
+						threeObject.fog.vHorizonColor.g = propertyValue[1];
+						threeObject.fog.vHorizonColor.b = propertyValue[2];
+
+					}
+					if(propertyName == 'skyAtmosphereDensity')
+					{
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+						
+						threeObject.fog.vAtmosphereDensity = propertyValue/500;
+					}
 					if(propertyName == 'fogType')
 					{
 						
@@ -518,6 +550,20 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 							newfog.density = this.nodes[nodeID]["fogDensity"] || 0;
 							newfog.vFalloff = this.nodes[nodeID]["fogVFalloff"] || 1;
 							newfog.vFalloffStart = this.nodes[nodeID]["fogVFalloffStart"] || 0;
+							newfog.vAtmosphereDensity = (this.nodes[nodeID]["skyAtmosphereDensity"] || 0)/500;
+
+							threeObject.fog.vHorizonColor = new THREE.Color();
+
+							threeObject.fog.vHorizonColor.r = this.nodes[nodeID]["skyApexColor"] ? this.nodes[nodeID]["skyHorizonColor"][0] : 1;
+							threeObject.fog.vHorizonColor.g = this.nodes[nodeID]["skyApexColor"] ? this.nodes[nodeID]["skyHorizonColor"][1] : 1;
+							threeObject.fog.vHorizonColor.b = this.nodes[nodeID]["skyApexColor"] ? this.nodes[nodeID]["skyHorizonColor"][2] : 1;
+
+							threeObject.fog.vApexColor = new THREE.Color();
+
+							threeObject.fog.vApexColor.r = this.nodes[nodeID]["skyHorizonColor"] ? this.nodes[nodeID]["skyHorizonColor"][0] : 1;
+							threeObject.fog.vApexColor.g = this.nodes[nodeID]["skyHorizonColor"] ? this.nodes[nodeID]["skyHorizonColor"][1] : 1;
+							threeObject.fog.vApexColor.b = this.nodes[nodeID]["skyHorizonColor"] ? this.nodes[nodeID]["skyHorizonColor"][2] : 1;
+
 						}
 						threeObject.fog = newfog;
 						rebuildAllMaterials.call(this,threeObject);

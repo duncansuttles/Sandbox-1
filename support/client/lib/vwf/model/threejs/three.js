@@ -15447,6 +15447,27 @@ THREE.FogExp2 = function ( hex, density ) {
 	this.density = ( density !== undefined ) ? density : 0.00025;
 	this.vFalloff = 20;
 	this.vFalloffStart = 0;
+	this.vAtmosphereColor = new THREE.Color( 0x000000 );
+	
+	this.vAtmosphereColor.r = 0.0;
+	this.vAtmosphereColor.r = 0.02;
+	this.vAtmosphereColor.r = 0.04;
+
+	this.vAtmosphereDensity = .0005;
+
+	this.vHorizonColor = new THREE.Color( 0x000000 );
+	this.vHorizonColor.r = 0.88;
+	this.vHorizonColor.r = 0.94;
+	this.vHorizonColor.r = 0.999;
+
+
+	this.vApexColor = new THREE.Color( 0x000000 );
+	this.vApexColor.r = 0.78;
+	this.vApexColor.r = 0.82;
+	this.vApexColor.r = 0.999;
+
+	
+
 };
 
 THREE.FogExp2.prototype.clone = function () {
@@ -16605,16 +16626,21 @@ THREE.ShaderChunk = {
 
 		"#ifdef USE_FOG",
 
-			"uniform vec3 fogColor;\n" + 
-			"uniform float vFalloff;\n"+
-			"uniform float vFalloffStart;\n"+
+			"uniform vec3 fogColor;\n" +
+
 			"#ifdef FOG_EXP2",
 
+				"uniform vec3 vAtmosphereColor;\n" + //vec3(0.0, 0.02, 0.04);
+				"uniform vec3 vHorizonColor;\n" + //vec3(0.88, 0.94, 0.999);
+				"uniform vec3 vApexColor;\n" + //vec3(0.78, 0.82, 0.999)
+				"uniform float vAtmosphereDensity;\n" + //.0005
+				"uniform float vFalloff;\n"+
+				"uniform float vFalloffStart;\n"+
 				"uniform float fogDensity;",
 
 				"#if MAX_DIR_LIGHTS > 0\n"+		
-					"vec3 horizonColor = vec3(0.88, 0.94, 0.999);\n"+
-					"vec3 zenithColor = vec3(0.78, 0.82, 0.999);\n"+
+					"vec3 horizonColor = vHorizonColor; \n"+
+					"vec3 zenithColor = vApexColor;\n"+
 					
 					"vec3 atmosphereColor(vec3 rayDirection){\n"+
 					"    float a = max(0.0, dot(rayDirection, vec3(0.0, 1.0, 0.0)));\n"+
@@ -16631,10 +16657,9 @@ THREE.ShaderChunk = {
 
 					"vec3 aerialPerspective(vec3 albedo, float dist, vec3 rayOrigin, vec3 rayDirection){\n"+
 					" rayOrigin.y += vFalloffStart;\n" + 
-					"    float atmosphereDensity = .0005;\n"+
-					"    vec3 atmosphere = atmosphereColor(rayDirection)+vec3(0.0, 0.02, 0.04); \n"+
-					"    atmosphere = mix( atmosphere, atmosphere*.85, clamp(1.0-exp(-dist*atmosphereDensity), 0.0, 1.0));\n"+
-					"    vec3 color = mix( applyFog(albedo, dist, rayOrigin, rayDirection), atmosphere, clamp(1.0-exp(-dist*atmosphereDensity), 0.0, 1.0));\n"+
+					"    vec3 atmosphere = atmosphereColor(rayDirection)+vAtmosphereColor; \n"+
+					"    atmosphere = mix( atmosphere, atmosphere*.85, clamp(1.0-exp(-dist*vAtmosphereDensity), 0.0, 1.0));\n"+
+					"    vec3 color = mix( applyFog(albedo, dist, rayOrigin, rayDirection), atmosphere, clamp(1.0-exp(-dist*vAtmosphereDensity), 0.0, 1.0));\n"+
 					"    return color;\n"+
 					"}						\n"+
 				"#endif",
@@ -18862,8 +18887,16 @@ THREE.UniformsLib = {
 		"fogNear" : { type: "f", value: 1 },
 		"fogFar" : { type: "f", value: 2000 },
 		"fogColor" : { type: "c", value: new THREE.Color( 0xffffff ) },
+		"vAtmosphereColor" : { type: "c", value: new THREE.Color( 0xffffff ) },
+		"vHorizonColor" : { type: "c", value: new THREE.Color( 0xffffff ) },
+		"vApexColor" : { type: "c", value: new THREE.Color( 0xffffff ) },
 		"vFalloff" : { type: "f", value: 20 },
-		"vFalloffStart" : { type: "f", value: 0 },
+		"vFalloffStart" : { type: "f", value: 1 },
+		"vAtmosphereDensity" : { type: "f", value: .0005 },
+
+
+
+		
 	},
 
 	lights: {
@@ -24819,9 +24852,24 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		} else if ( fog instanceof THREE.FogExp2 ) {
 
-			uniforms.fogDensity.value = fog.density;
-			uniforms.vFalloff.value = fog.vFalloff;
-			uniforms.vFalloffStart.value = fog.vFalloffStart;
+			if(uniforms.fogDensity)
+				uniforms.fogDensity.value = fog.density;
+			if(uniforms.vFalloff)
+				uniforms.vFalloff.value = fog.vFalloff;
+			if(uniforms.vFalloffStart)				
+				uniforms.vFalloffStart.value = fog.vFalloffStart;
+			if(uniforms.vAtmosphereColor)				
+				uniforms.vAtmosphereColor.value = fog.vAtmosphereColor;
+			if(uniforms.vAtmosphereDensity)				
+				uniforms.vAtmosphereDensity.value = fog.vAtmosphereDensity;
+			if(uniforms.vHorizonColor)				
+				uniforms.vHorizonColor.value = fog.vHorizonColor;
+			if(uniforms.vApexColor)				
+				uniforms.vApexColor.value = fog.vApexColor;
+
+
+
+			
 
 		}
 

@@ -59,6 +59,7 @@ properties:
   skyFogBlend: 0  
   skyApexColor: [ 0 , .5 , 1.0 ]
   skyHorizonColor: [ 0 , .5 , 1.0 ]
+  vAtmosphereDensity: .0005
   materialDef:
     set: |  
            this.materialDef = value;
@@ -199,7 +200,14 @@ properties:
       type: slider
       min: 0
       max: 1
-      step: .01    
+      step: .01  
+    skyAtmosphereDensity: 
+      displayname: Atmosphere Density
+      property: skyAtmosphereDensity
+      type: slider
+      min: 0
+      max: 1
+      step: .01     
     skyApexColor:
       displayname: Sky Apex Color
       property: skyApexColor
