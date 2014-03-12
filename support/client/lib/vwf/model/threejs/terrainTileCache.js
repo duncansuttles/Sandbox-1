@@ -43,7 +43,7 @@ function TileCache()
 						" vFogPosition = (modelMatrix * vec4(position.xy,z,1.0)).xyz; \n"+
 						"opos = vec3(position.xy,z);\n"+
 						"npos = vFogPosition;\n"+
-						"npos.z += getNoise(vFogPosition.xy*200.0)/50.0; \n"+
+						//"npos.z += getNoise(vFogPosition.xy*200.0)/50.0; \n"+
 						
 						"float  edgeblend = 0.0;"+
 						
@@ -63,6 +63,7 @@ function TileCache()
 						"if(edgeblend == 1.0) {z=everyOtherZ;wN = everyOtherNormal; }\n"+
 						
 						"n = normalMatrix *  wN\n;"+
+
 						"n = normalize(n);\n"+
 						"   vec4 mvPosition = modelViewMatrix * vec4( position.x,position.y,z, 1.0 );\n"+
 					
@@ -157,7 +158,7 @@ function TileCache()
 						"	light += directionalLightColor[0] * clamp(0.0,1.0,dot(nn, vLightDir));\n"+
 						"	#endif\n"+
 						
-						"	vec4 diffuse = getTexture(npos,nn,opos.xy/100.0 + 0.5);\n"+
+						"	vec4 diffuse = getTexture(npos,normalize(wN),opos.xy/100.0 + 0.5);\n"+
 						"	diffuse.a = 1.0;\n"+
 						"   gl_FragColor = ambient * diffuse + diffuse * vec4(light.xyz,1.0) + 0.0 * vec4(0.4,0.4,0.4,1.0);\n"+
 						"gl_FragColor.a = 1.0;\n"+

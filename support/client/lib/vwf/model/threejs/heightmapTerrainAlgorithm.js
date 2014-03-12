@@ -108,7 +108,7 @@ function heightmapTerrainAlgorithm()
 				terraindata.addNoise=this.addNoise
 				terraindata.cubic=this.cubic;
 				terraindata.gamma=this.gamma;
-
+				terraindata.heightScale = this.heightScale;
 				window.setTimeout(function(){
 					cb(terraindata);	
 				},0);
@@ -302,8 +302,8 @@ function heightmapTerrainAlgorithm()
 		
 		var uniforms_default = {
 		diffuseSampler:   { type: "t", value: _SceneManager.getTexture( this.diffuseUrl,true) },
-		dirtSampler:   { type: "t", value: _SceneManager.getTexture( "terrain/dirt.jpg",true ) },
-		brushSampler:   { type: "t", value: _SceneManager.getTexture( "terrain/scrub.jpg",true ) },
+		dirtSampler:   { type: "t", value: _SceneManager.getTexture( "terrain/cliff.jpg",true ) },
+		brushSampler:   { type: "t", value: _SceneManager.getTexture( "terrain/ground.jpg",true ) },
 		};
 		uniforms_default.diffuseSampler.value.wrapS = uniforms_default.diffuseSampler.value.wrapT = THREE.RepeatWrapping;
 		uniforms_default.dirtSampler.value.wrapS = uniforms_default.dirtSampler.value.wrapT = THREE.RepeatWrapping;
@@ -323,9 +323,20 @@ function heightmapTerrainAlgorithm()
 		"{"+
 			"vec4 diffuse = texture2D(diffuseSampler,((coords.yx * vec2(1.0,1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"+
 			//"vec4 diffuse = texture2D(diffuseSampler,((coords.yx * vec2(1.0,1.0) + vec2(6750.0,4750.0))/vec2(13500.0,9500.0)));\n"+
-			"vec4 dirt = texture2D(dirtSampler,((coords.yx / 10.0)));\n"+
-			"vec4 brush = texture2D(brushSampler,((coords.yx / 5.0)));\n"+
-			"float minamt = smoothstep(0.0,100.0,distance(cameraPosition , coords));\n"+
+			"vec4 dirt0 = texture2D(dirtSampler,((coords.yz / 100.0)));\n"+
+			"vec4 dirt1 = texture2D(dirtSampler,((coords.zx / 100.0)));\n"+
+			"vec4 dirt2 = texture2D(dirtSampler,((coords.xy / 100.0)));\n"+
+			"vec3 blend_weights = abs( wN.xyz );   // Tighten up the blending zone:  \n"+
+			"blend_weights = (blend_weights -  0.2679);  \n"+
+			"blend_weights = max(blend_weights, 0.0);      // Force weights to sum to 1.0 (very important!)  \n"+
+			"blend_weights /= (blend_weights.x + blend_weights.y + blend_weights.z ); \n"+
+			"vec4 dirt =  blend_weights.x * dirt0 + blend_weights.y * dirt1 + blend_weights.z * dirt2;\n"+
+			
+			"vec4 brush0 = texture2D(brushSampler,((coords.yx / 50.0)));\n"+
+			"vec4 brush1 = texture2D(brushSampler,((coords.zx / 50.0)));\n"+
+			"vec4 brush2 = texture2D(brushSampler,((coords.xy / 50.0)));\n"+
+			"vec4 brush =  blend_weights.x * brush0 + blend_weights.y * brush1 + blend_weights.z * brush2;\n"+
+			"float minamt = smoothstep(0.0,500.0,distance(cameraPosition , coords));\n"+
 			"float dirtdot = dot(diffuse,vec4(182.0/255.0,179.0/255.0,164.0/255.0,1.0));\n"+
 			"dirtdot = clamp(0.0,1.0,pow(max(.5,dirtdot)-.5,9.5)/100.0);\n"+
 			
@@ -341,8 +352,8 @@ function heightmapTerrainAlgorithm()
 
 		if(this.addNoise)
 		{
-			z = this.SimplexNoise.noise2D((vert.x)/100,(vert.y)/100) * 4.5;
-			z += this.SimplexNoise.noise2D((vert.x)/300,(vert.y)/300) * 4.5;
+			z = this.SimplexNoise.noise2D((vert.x)/100,(vert.y)/100) * 14.5;
+			z += this.SimplexNoise.noise2D((vert.x)/300,(vert.y)/300) * 14.5;
 			z += this.SimplexNoise.noise2D((vert.x)/10,(vert.y)/10) * 0.5;
 		}
 		//this is gamma correction
