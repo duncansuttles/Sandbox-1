@@ -303,12 +303,109 @@ function heightmapTerrainAlgorithm()
 		var uniforms_default = {
 		diffuseSampler:   { type: "t", value: _SceneManager.getTexture( this.diffuseUrl,true) },
 		dirtSampler:   { type: "t", value: _SceneManager.getTexture( "terrain/cliff.jpg",true ) },
-		brushSampler:   { type: "t", value: _SceneManager.getTexture( "terrain/ground.jpg",true ) },
+		grassSampler:   { type: "t", value: _SceneManager.getTexture( "terrain/cliff.jpg",true ) },
+		rockSampler:   { type: "t", value: _SceneManager.getTexture( "terrain/ground.jpg",true ) },
+		snowSampler:   { type: "t", value: _SceneManager.getTexture( "terrain/ground.jpg",true ) },
+
+		dirtNormalMap:   { type: "t", value: _SceneManager.getTexture( "terrain/4979-normal.jpg",true ) },
+		grassNormalMap:   { type: "t", value: _SceneManager.getTexture( "terrain/4979-normal.jpg",true ) },
+		rockNormalMap:   { type: "t", value: _SceneManager.getTexture( "terrain/grassnorm.jpg",true ) },
+		snowNormalMap:   { type: "t", value: _SceneManager.getTexture( "terrain/grassnorm.jpg",true ) },
+		mixMap:   { type: "t", value: _SceneManager.getTexture( "terrain/rivermix.png",true ) },
 		};
 		uniforms_default.diffuseSampler.value.wrapS = uniforms_default.diffuseSampler.value.wrapT = THREE.RepeatWrapping;
 		uniforms_default.dirtSampler.value.wrapS = uniforms_default.dirtSampler.value.wrapT = THREE.RepeatWrapping;
-		uniforms_default.brushSampler.value.wrapS = uniforms_default.brushSampler.value.wrapT = THREE.RepeatWrapping;
+		uniforms_default.grassSampler.value.wrapS = uniforms_default.grassSampler.value.wrapT = THREE.RepeatWrapping;
+		uniforms_default.dirtNormalMap.value.wrapS = uniforms_default.dirtNormalMap.value.wrapT = THREE.RepeatWrapping;
+		uniforms_default.grassNormalMap.value.wrapS = uniforms_default.grassNormalMap.value.wrapT = THREE.RepeatWrapping;
 		return uniforms_default;
+	}
+
+	this.getNormalFragmentShader = function()
+	{
+		
+		
+		
+		// http://www.thetenthplanet.de/archives/1180
+		 
+		return ""+
+		
+		"uniform sampler2D snowNormalMap;\n"+
+		"uniform sampler2D rockNormalMap;\n"+
+		"uniform sampler2D dirtNormalMap;\n"+
+		"uniform sampler2D grassNormalMap;\n"+
+
+		"mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)\n"+
+		"{\n"+
+		"    // get edge vectors of the pixel triangle\n"+
+		"    vec3 dp1 = dFdx( p );\n"+
+		"    vec3 dp2 = dFdy( p );\n"+
+		"    vec2 duv1 = dFdx( uv );\n"+
+		"    vec2 duv2 = dFdy( uv );\n"+
+		 
+		"    // solve the linear system\n"+
+		"    vec3 dp2perp = cross( dp2, N );\n"+
+		"    vec3 dp1perp = cross( N, dp1 );\n"+
+		"    vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;\n"+
+		"    vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;\n"+
+		 
+		"    // construct a scale-invariant frame \n"+
+		"    float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );\n"+
+		"    return mat3( T * invmax, B * invmax, N );\n"+
+		"}\n"+
+
+		"vec3 perturb_normal( mat3 TBN, vec2 texcoord, sampler2D sampler )\n"+
+		"{\n"+
+		"    // assume N, the interpolated vertex normal and \n"+
+		"    // V, the view vector (vertex to eye)\n"+
+		"    vec3 map = texture2D(sampler, texcoord ).xyz;\n"+
+		"    map = map * 2.0 - 1.0;\n"+
+		"    return normalize(TBN * map);\n"+
+		"}\n"+
+		"vec3 triPlanerNorm(mat3 TBN0, mat3 TBN1, mat3 TBN2, vec3 coords, vec3 norm, sampler2D sampler)" +
+		"{"+
+			"vec3 dirt0 = perturb_normal(TBN0, coords.yz, sampler);\n"+
+			"vec3 dirt1 = perturb_normal(TBN1, coords.zx, sampler);\n"+
+			"vec3 dirt2 = perturb_normal(TBN2, -coords.xy, sampler);\n"+
+			"return blend_weights.x * dirt0 + blend_weights.y * dirt1 + blend_weights.z * dirt2;\n"+
+		"}"+
+		"vec3 blendNorm(vec3 texture1,vec3 texture2, float a1)\n"+
+		"{\n"+
+		"    return mix(texture1,texture2,1.0-a1);\n"+
+		"}\n"+
+		"vec3 getNormal(vec3 coords, vec3 viewNorm, vec2 uv,vec3 wN) {\n"+
+
+
+"mixVal = texture2D(mixMap,((coords.yx * vec2(1.0,1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"+
+		"blend_weights = abs( wN.xyz );   // Tighten up the blending zone:  \n"+
+		"blend_weights = (blend_weights -  0.2679);  \n"+
+		"blend_weights = max(blend_weights, 0.0);      // Force weights to sum to 1.0 (very important!)  \n"+
+		"blend_weights /= (blend_weights.x + blend_weights.y + blend_weights.z ); \n"+
+		"    vec4 diffuse = texture2D(diffuseSampler,((coords.yx * vec2(1.0,1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"+
+		"	 vec3 V = -((viewMatrix * vec4(coords,1.0)).xyz);\n"+
+		"    mat3 TBN0 = cotangent_frame(viewNorm, V, coords.yz/100.0);\n"+
+		"    mat3 TBN1 = cotangent_frame(viewNorm, V, coords.zx/100.0);\n"+
+		"    mat3 TBN2 = cotangent_frame(viewNorm, V, coords.xy/100.0);\n"+
+
+		"	 vec3 dirt = triPlanerNorm(TBN0,TBN1,TBN2,coords/100.0,wN,dirtNormalMap);\n"+
+		"	 vec3 grass = triPlanerNorm(TBN0,TBN1,TBN2,coords/100.0,wN,grassNormalMap);\n"+
+		"	 vec3 snow = triPlanerNorm(TBN0,TBN1,TBN2,coords/100.0,wN,snowNormalMap);\n"+
+		"	 vec3 rock = triPlanerNorm(TBN0,TBN1,TBN2,coords/100.0,wN,rockNormalMap);\n"+
+
+		"	 vec3 dirtnear = triPlanerNorm(TBN0,TBN1,TBN2,coords/10.0,wN,dirtNormalMap);\n"+
+		"	 vec3 grassnear = triPlanerNorm(TBN0,TBN1,TBN2,coords/10.0,wN,grassNormalMap);\n"+
+		"	 vec3 snownear = triPlanerNorm(TBN0,TBN1,TBN2,coords/10.0,wN,snowNormalMap);\n"+
+		"	 vec3 rocknear = triPlanerNorm(TBN0,TBN1,TBN2,coords/10.0,wN,rockNormalMap);\n"+
+		"    float minamt = smoothstep(0.0,1500.0,distance(cameraPosition , coords));\n"+
+		"    float minamt2 = smoothstep(0.0,50.0,distance(cameraPosition , coords));\n"+
+			
+		
+			
+			"vec3 near = blendNorm(snow,blendNorm(grass,blendNorm(rock,blendNorm(dirt,viewNorm,mixVal.r),mixVal.g),mixVal.b),0.0);\n"+
+			"vec3 vnear = blendNorm(snownear,blendNorm(grassnear,blendNorm(rocknear,blendNorm(dirtnear,viewNorm,mixVal.r),mixVal.g),mixVal.b),0.0);\n"+
+			"vec3 dist =  mix(near,viewNorm,minamt);\n"+
+			"return dist.rgb;// normalize(vnear*(1.0-minamt2) +dist);\n"+
+		"}\n";
 	}
 	//This funciton allows you to compute the diffuse surface color however you like. 
 	//must implement vec4 getTexture(vec3 coords, vec3 norm) or return null which will give you the default white
@@ -316,32 +413,76 @@ function heightmapTerrainAlgorithm()
 	{
 		
 		return (
+		
 		"uniform sampler2D diffuseSampler;\n"+
 		"uniform sampler2D dirtSampler;\n"+
-		"uniform sampler2D brushSampler;\n"+
+		"uniform sampler2D grassSampler;\n"+
+		"uniform sampler2D rockSampler;\n"+
+		"uniform sampler2D snowSampler;\n"+
+		"uniform sampler2D mixMap;\n"+
+		"vec4 mixVal=vec4(0.0,0.0,0.0,0.0);\n"+
+		"vec3 blend_weights = vec3(0.0,0.0,0.0);\n"+
+
+		"vec4 triPlanerMap(vec3 coords, vec3 norm, sampler2D sampler)" +
+		"{"+
+			"vec4 dirt0 = texture2D(sampler,((coords.yz )));\n"+
+			"vec4 dirt1 = texture2D(sampler,((coords.zx )));\n"+
+			"vec4 dirt2 = texture2D(sampler,((coords.xy )));\n"+
+			"vec3 blend_weights = abs( norm.xyz );   // Tighten up the blending zone:  \n"+
+			
+			"return blend_weights.x * dirt0 + blend_weights.y * dirt1 + blend_weights.z * dirt2;\n"+
+		"}"+
+		"vec4 blend(vec4 texture1, vec4 texture2, float a1)\n"+
+		"{\n"+
+		" float a2 = 1.0-a1;\n"+
+		"    float depth = 0.2;\n"+
+		"    float ma = max(length(texture1) + a1,length( texture2) + a2) - depth;\n"+
+
+		"    float b1 = max(length(texture1) + a1 - ma, 0.0);\n"+
+		"    float b2 = max(length(texture2) + a2 - ma, 0.0);\n"+
+		//"return mix(texture1,texture2,a1);\n"+
+		"    return vec4((texture1.rgb * b1 + texture2.rgb * b2) / (b1 + b2),max(texture1.a,texture2.a));\n"+
+		"}\n"+
 		"vec4 getTexture(vec3 coords, vec3 norm, vec2 uv)" +
 		"{"+
+
+			"mixVal = texture2D(mixMap,((coords.yx * vec2(1.0,1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"+
+		"blend_weights = abs( wN.xyz );   // Tighten up the blending zone:  \n"+
+		"blend_weights = (blend_weights -  0.2679);  \n"+
+		"blend_weights = max(blend_weights, 0.0);      // Force weights to sum to 1.0 (very important!)  \n"+
+		"blend_weights /= (blend_weights.x + blend_weights.y + blend_weights.z ); \n"+
+
+
 			"vec4 diffuse = texture2D(diffuseSampler,((coords.yx * vec2(1.0,1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"+
 			//"vec4 diffuse = texture2D(diffuseSampler,((coords.yx * vec2(1.0,1.0) + vec2(6750.0,4750.0))/vec2(13500.0,9500.0)));\n"+
-			"vec4 dirt0 = texture2D(dirtSampler,((coords.yz / 100.0)));\n"+
-			"vec4 dirt1 = texture2D(dirtSampler,((coords.zx / 100.0)));\n"+
-			"vec4 dirt2 = texture2D(dirtSampler,((coords.xy / 100.0)));\n"+
-			"vec3 blend_weights = abs( wN.xyz );   // Tighten up the blending zone:  \n"+
-			"blend_weights = (blend_weights -  0.2679);  \n"+
-			"blend_weights = max(blend_weights, 0.0);      // Force weights to sum to 1.0 (very important!)  \n"+
-			"blend_weights /= (blend_weights.x + blend_weights.y + blend_weights.z ); \n"+
-			"vec4 dirt =  blend_weights.x * dirt0 + blend_weights.y * dirt1 + blend_weights.z * dirt2;\n"+
 			
-			"vec4 brush0 = texture2D(brushSampler,((coords.yx / 50.0)));\n"+
-			"vec4 brush1 = texture2D(brushSampler,((coords.zx / 50.0)));\n"+
-			"vec4 brush2 = texture2D(brushSampler,((coords.xy / 50.0)));\n"+
-			"vec4 brush =  blend_weights.x * brush0 + blend_weights.y * brush1 + blend_weights.z * brush2;\n"+
-			"float minamt = smoothstep(0.0,500.0,distance(cameraPosition , coords));\n"+
+			"vec4 dirt = triPlanerMap(coords/100.0,wN,dirtSampler);\n"+
+			"vec4 grass = triPlanerMap(coords/50.0,wN,grassSampler);\n"+
+			"vec4 rock = triPlanerMap(coords/50.0,wN,rockSampler);\n"+
+			"vec4 snow = triPlanerMap(coords/50.0,wN,snowSampler);\n"+
+			
+			"vec4 dirtnear = triPlanerMap(coords/10.0,wN,dirtSampler);\n"+
+			"vec4 grassnear = triPlanerMap(coords/10.0,wN,grassSampler);\n"+
+			"vec4 rocknear = triPlanerMap(coords/10.0,wN,rockSampler);\n"+
+			"vec4 snownear = triPlanerMap(coords/10.0,wN,snowSampler);\n"+
+			
+
+			//"dirt = vec4(1.0,0.0,0.0,0.0);\n"+
+			//"grass = vec4(0.0,1.0,0.0,0.0);\n"+
+			//"rock = vec4(0.0,0.0,1.0,0.0);\n"+
+			//"snow = vec4(0.0,0.0,0.0,0.0);\n"+
+			
+			"float minamt = smoothstep(0.0,1500.0,distance(cameraPosition , coords));\n"+
+			"float minamt2 = smoothstep(0.0,50.0,distance(cameraPosition , coords));\n"+
 			"float dirtdot = dot(diffuse,vec4(182.0/255.0,179.0/255.0,164.0/255.0,1.0));\n"+
 			"dirtdot = clamp(0.0,1.0,pow(max(.5,dirtdot)-.5,9.5)/100.0);\n"+
 			
-			"vec4 near = mix(brush,dirt,dirtdot);\n"+
-			"return mix(near,diffuse,minamt);\n"+
+			"vec4 near = blend(snow,blend(grass,blend(rock,blend(dirt,dirt,mixVal.r),mixVal.g),mixVal.b),0.0);\n"+
+			//"vec4 near = blend(dirt,vec4(0.0,0.0,0.0,0.0),mixVal.r);\n"+
+			"vec4 vnear = blend(snownear,blend(grassnear,blend(rocknear,blend(dirtnear,vec4(0.0,0.0,0.0,0.0),mixVal.r),mixVal.g),mixVal.b),0.0);\n"+
+
+			"vec4 dist = mix(near,diffuse,minamt);\n"+
+			"return mix(vnear,dist,minamt2);\n"+
 		"}")
 	}
 	
@@ -352,8 +493,8 @@ function heightmapTerrainAlgorithm()
 
 		if(this.addNoise)
 		{
-			z = this.SimplexNoise.noise2D((vert.x)/100,(vert.y)/100) * 14.5;
-			z += this.SimplexNoise.noise2D((vert.x)/300,(vert.y)/300) * 14.5;
+			z = this.SimplexNoise.noise2D((vert.x)/100,(vert.y)/100) * 4.5;
+			z += this.SimplexNoise.noise2D((vert.x)/300,(vert.y)/300) * 4.5;
 			z += this.SimplexNoise.noise2D((vert.x)/10,(vert.y)/10) * 0.5;
 		}
 		//this is gamma correction

@@ -74,7 +74,7 @@ function TileCache()
 					   
 						
 						
-						
+						"#extension GL_OES_standard_derivatives : enable\n" + 
 						"#if MAX_DIR_LIGHTS > 0\n"+
 
 						
@@ -145,7 +145,11 @@ function TileCache()
 						
 						
 						"void main() {\n"+
+						
+						"	vec4 diffuse = getTexture(npos,normalize(wN),opos.xy/100.0 + 0.5);\n"+
+						"	diffuse.a = 1.0;\n"+
 						"	vec3 nn = (viewMatrix * normalize(vec4(wN,0.0))).xyz;\n"+
+						"   nn = getNormal(npos,nn,opos.xy/100.0 + 0.5,wN);\n"+
 						"	vec3 light = vec3(0.0,0.0,0.0);\n"+
 						"	vec4 ambient = vec4(0.5,0.5,0.5,1.0);\n"+
 						
@@ -158,8 +162,7 @@ function TileCache()
 						"	light += directionalLightColor[0] * clamp(0.0,1.0,dot(nn, vLightDir));\n"+
 						"	#endif\n"+
 						
-						"	vec4 diffuse = getTexture(npos,normalize(wN),opos.xy/100.0 + 0.5);\n"+
-						"	diffuse.a = 1.0;\n"+
+						
 						"   gl_FragColor = ambient * diffuse + diffuse * vec4(light.xyz,1.0) + 0.0 * vec4(0.4,0.4,0.4,1.0);\n"+
 						"gl_FragColor.a = 1.0;\n"+
 						"#ifdef USE_FOG\n"+
@@ -171,7 +174,7 @@ function TileCache()
 							//"gl_FragColor.xyz = nn;\n"+
 							"gl_FragColor.xyz = aerialPerspective(gl_FragColor.xyz, distance(vFogPosition,cameraPosition),cameraPosition.xzy, normalize(vFogPosition-cameraPosition).xzy);\n"+
 						"#endif\n"+
-						//"gl_FragColor = vec4(debug,1.0);\n"+
+						//"gl_FragColor = vec4(nn.rgb,1.0);\n"+
 						"}\n";
 						
 						//the default shader - the one used by the analytic solver, just has some simple stuff
@@ -186,12 +189,17 @@ function TileCache()
 					return "vec4 getTexture(vec3 coords, vec3 norm, vec2 uv) {return vec4(1.0,1.0,1.0,1.0);}\n";
 		
 				}
+				this.getDefaultNormalString = function()
+				{
+					return "vec3 getNormal(vec3 coords, vec3 norm, vec2 uv) {return norm;}\n";
+				}
 				this.getMat = function()
 				{	
 						
 						
 						
-						var algorithmShaderString = this.terrainGenerator.getDiffuseFragmentShader();
+						var algorithmShaderStringDiffuse = this.terrainGenerator.getDiffuseFragmentShader?this.terrainGenerator.getDiffuseFragmentShader():'';
+						var algorithmShaderStringNormal = this.terrainGenerator.getNormalFragmentShader? this.terrainGenerator.getNormalFragmentShader() : '';
 						var algorithmUniforms = this.terrainGenerator.getMaterialUniforms();
 						
 							var uniforms_default =  THREE.UniformsUtils.merge( [
@@ -238,7 +246,7 @@ function TileCache()
 							uniforms:       uniforms_default,
 							attributes:     attributes_default,
 							vertexShader:   vertShader_default,
-							fragmentShader: (fragShader_default_start + (algorithmShaderString || this.getDefaultDiffuseString()) + fragShader_default_end)
+							fragmentShader: (fragShader_default_start + (algorithmShaderStringDiffuse || this.getDefaultDiffuseString()) + (algorithmShaderStringNormal || this.getDefaultNormalString()) + fragShader_default_end)
 
 						});
 						mat.lights = true;

@@ -4,7 +4,7 @@
 
 var request = require('request');
 var URL = require('url');
-var url = 'http://localhost:3000/adl/sandbox/allWorlds/0';
+var url = 'http://wordpress-549209816.us-east-1.elb.amazonaws.com/wordpress/';
 var fork=require('child_process').fork;
 var async = require('async');
 function hitURL()
@@ -23,7 +23,7 @@ function hitURL()
 			{
 				var link = links[i].substr(5);
 				link = link.substring(0,link.length -1);
-				link = URL.resolve('http://localhost:3000/adl/sandbox/allWorlds/0',link);
+				link = URL.resolve(url,link);
 				if(link.indexOf("amazonaws") == -1)
 				rlinks.push(link);
 				
@@ -62,7 +62,7 @@ if(child)
 	hitURL();
 else
 {
-	for(var i =0; i < 1; i++)
+	for(var i =0; i < 10; i++)
 		fork('page_performance_test.js',[ '-c']);
 
 }

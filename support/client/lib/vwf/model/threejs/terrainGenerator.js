@@ -289,6 +289,13 @@ new (function(){
 			return this.terrainAlgorithm.getDiffuseFragmentShader(mesh,matrix);
 		return null;	
 	}
+	this.getNormalFragmentShader = function(mesh,matrix)
+	{
+		if(this.terrainAlgorithm.getNormalFragmentShader)
+			return this.terrainAlgorithm.getNormalFragmentShader(mesh,matrix);
+		return null;
+
+	}
 	this.updateMaterial = function(m,d)
 	{
 		
