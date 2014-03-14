@@ -373,11 +373,11 @@ function heightmapTerrainAlgorithm()
 		rSampler:   { type: "t", value: _SceneManager.getTexture( this.rUrl ||"terrain/cliff.jpg",true ) },
 		bSampler:   { type: "t", value: _SceneManager.getTexture( this.bUrl ||"terrain/ground.jpg",true ) },
 
-/*		baseNormalMap:   { type: "t", value: _SceneManager.getTexture( "terrain/grassnorm.jpg",true ) },
-		gNormalMap:   { type: "t", value: _SceneManager.getTexture( "terrain/4979-normal.jpg",true ) },
+		baseNormalMap:   { type: "t", value: _SceneManager.getTexture( "terrain/grassnorm.jpg",true ) },
+		gNormalMap:   { type: "t", value: _SceneManager.getTexture( "terrain/grassnorm.jpg",true ) },
 		rNormalMap:   { type: "t", value: _SceneManager.getTexture( "terrain/4979-normal.jpg",true ) },
-		bNormalMap:   { type: "t", value: _SceneManager.getTexture( "terrain/grassnorm.jpg",true ) },
-		*/
+		bNormalMap:   { type: "t", value: _SceneManager.getTexture( "textures/waternormal.jpg",true ) },
+		
 		mixMap:   { type: "t", value: _SceneManager.getTexture( this.mixUrl || "terrain/rivermix.png",true ) },
 		
 		};
@@ -439,9 +439,9 @@ function heightmapTerrainAlgorithm()
 		"}\n"+
 		"vec3 getNormal(vec3 coords, vec3 viewNorm, vec2 uv,vec3 wN) {\n"+
 
-		"return  viewNorm;\n"+
+		//"return  viewNorm;\n"+
 
-/*		
+		
 		" vec3 med = viewNorm;\n"+
 		" vec3 near = viewNorm;\n"+
 		"	 vec3 V = -((viewMatrix * vec4(coords,1.0)).xyz);\n"+
@@ -449,17 +449,17 @@ function heightmapTerrainAlgorithm()
 		"    mat3 TBN1 = cotangent_frame(viewNorm, V, coordsScaleA.zx);\n"+
 		"    mat3 TBN2 = cotangent_frame(viewNorm, V, coordsScaleA.xy);\n"+
 
-		"    float faramt = smoothstep(0.0,750.0,distance(cameraPosition , coords));\n"+
+		"    float faramt = smoothstep(0.0,3750.0,distance(cameraPosition , coords));\n"+
 		"    float nearamt = smoothstep(0.0,25.0,distance(cameraPosition , coords));\n"+
 		
-		"if(modelMatrix[0][0] < 3.0 ){\n" +//it's faster to branch on a uniform value than a computed model. This limits to tiles less than a certain size, which must be a given distance
+	//	"if(modelMatrix[0][0] < 3.0 ){\n" +//it's faster to branch on a uniform value than a computed model. This limits to tiles less than a certain size, which must be a given distance
 		"if(faramt < 1.0){\n"+
 		"	 vec3 basemap = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleA,wN,baseNormalMap);\n"+
 		"	 vec3 rmap = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleA,wN,rNormalMap);\n"+
 		"	 vec3 gmap = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleA,wN,gNormalMap);\n"+
 		"	 vec3 bmap = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleA,wN,bNormalMap);\n"+
 		"	 med = blendNorm(bmap,blendNorm(gmap,blendNorm(rmap,basemap,mixVal.r),mixVal.g),mixVal.b);\n"+
-		"}\n"+
+	//	"}\n"+
 		"}\n"+
 
 		"if(modelMatrix[0][0] < 0.2 ){\n"+//it's faster to branch on a uniform value than a computed model. This limits to tiles less than a certain size, which must be a given distance
@@ -479,7 +479,7 @@ function heightmapTerrainAlgorithm()
 			
 			"vec3 dist =  mix(med,viewNorm,faramt);\n"+
 			"return  normalize(near*(1.0-nearamt) +dist);\n"+
-*/			
+			
 		"}\n";
 	}
 	//This funciton allows you to compute the diffuse surface color however you like. 
@@ -536,7 +536,7 @@ function heightmapTerrainAlgorithm()
 			"vec4 med = diffuse;\n"+
 			
 
-			"float faramt = smoothstep(0.0,750.0,distance(cameraPosition , coords));\n"+
+			"float faramt = smoothstep(0.0,13750.0,distance(cameraPosition , coords));\n"+
 			"float nearamt = smoothstep(0.0,25.0,distance(cameraPosition , coords));\n"+
 
 			//"if(modelMatrix[0][0] < 3.0 ){\n"+//it's faster to branch on a uniform value than a computed model. This limits to tiles less than a certain size, which must be a given distance
@@ -549,7 +549,7 @@ function heightmapTerrainAlgorithm()
 			"}\n"+
 			//"}\n"+
 			"vec4 near = med;\n"+
-			/*
+			
 			"if(modelMatrix[0][0] < 0.2 ){\n"+//it's faster to branch on a uniform value than a computed model. This limits to tiles less than a certain size, which must be a given distance
 			"if(nearamt < 1.0){\n"+
 			//"if(false){\n"+
@@ -561,14 +561,14 @@ function heightmapTerrainAlgorithm()
 			"}\n"+
 			"}\n"+
 			
-			*/
+			
 			
 			
 			//"vec4 near = blend(dirt,vec4(0.0,0.0,0.0,0.0),mixVal.r);\n"+
 			
 
 			"vec4 medAndFar = mix(med,diffuse,faramt);\n"+
-			"return medAndFar;//mix(near,medAndFar,nearamt);\n"+
+			"return mix(near,medAndFar,nearamt);\n"+
 		"}")
 	}
 	
