@@ -727,7 +727,7 @@
 			{
 				
 				var algoprops = this.terrainGenerator.getAlgorithmData();
-				if(algoprops && algoprops[propertyName] != undefined)
+				if(algoprops && algoprops.hasOwnProperty(propertyName))
 				{
 					algoprops[propertyName] = propertyValue;
 					self.setAlgorithmData(algoprops);

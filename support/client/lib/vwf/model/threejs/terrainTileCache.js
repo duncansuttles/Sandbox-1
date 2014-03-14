@@ -27,6 +27,8 @@ function TileCache()
 						"varying vec3 npos;"+
 						"varying vec3 n;"+
 						"varying vec3 wN;"+
+						"varying vec3 coordsScaleB;"+
+						"varying vec3 coordsScaleA;"+
 						"uniform float blendPercent;\n" + 
 
 
@@ -44,7 +46,8 @@ function TileCache()
 						"opos = vec3(position.xy,z);\n"+
 						"npos = vFogPosition;\n"+
 						//"npos.z += getNoise(vFogPosition.xy*200.0)/50.0; \n"+
-						
+						"coordsScaleB = npos/10.0;\n"+
+						"coordsScaleA = npos/100.0;\n"+
 						"float  edgeblend = 0.0;"+
 						
 						"debug = vec3(0.0,0.0,0.0);\n"+
@@ -137,9 +140,10 @@ function TileCache()
 						"varying vec3 n;"+
 						"varying vec3 wN;"+
 						"varying vec3 npos;"+
-						"varying vec3 opos;";
+						"varying vec3 opos;"+
 						
-						
+						"varying vec3 coordsScaleB;"+
+						"varying vec3 coordsScaleA;";
 						
 						var fragShader_default_end = 
 						
@@ -163,7 +167,7 @@ function TileCache()
 						"	#endif\n"+
 						
 						
-						"   gl_FragColor = ambient * diffuse + diffuse * vec4(light.xyz,1.0) + 0.0 * vec4(0.4,0.4,0.4,1.0);\n"+
+						"   gl_FragColor = ambient * diffuse + diffuse * vec4(light.xyz,1.0);\n"+
 						"gl_FragColor.a = 1.0;\n"+
 						"#ifdef USE_FOG\n"+
 
