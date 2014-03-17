@@ -3152,7 +3152,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			$('#ContextMenuSelectNone').click(function ()
 			{
 				self.SelectObject(null);
-				this.SetSelectMode('None');
+				self.SetSelectMode('None');
 				$('#ContextMenu').hide();
 				$('#ContextMenu').css('z-index', '-1');
 				$(".ddsmoothmenu").find('li').trigger('mouseleave');

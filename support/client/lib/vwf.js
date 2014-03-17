@@ -190,10 +190,12 @@
         //     [6] vwf.initialize( ..., [ { "vwf/model/glge": "#scene" } ], [ ... ] )
         this.close = function()
         {
-            
-            socket.removeListener( "disconnect", vwf.disconnected);
-            socket.disconnect();
-            socket = null;
+            if(socket)
+            {
+                socket.removeListener( "disconnect", vwf.disconnected);
+                socket.disconnect();
+                socket = null;
+            }
         }
         this.initialize = function( /* [ componentURI|componentObject ] [ modelInitializers ]
             [ viewInitializers ] */ ) {

@@ -944,7 +944,14 @@ function SaveState(URL,id,data,response)
 	
 	DAL.getInstance(id,function(state)
 	{
-	
+		
+		//state not found
+		if(!state)
+		{
+			respond(response,500,'World does not exist. ' + id);
+			return;
+		}
+
 		//not allowed to update a published world
 		if(state.publishSettings)
 		{
