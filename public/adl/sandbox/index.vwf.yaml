@@ -751,6 +751,7 @@ scripts:
            
             this.groundplane.PickPriority = 0;
            var oldintersectxy = _Editor.ThreeJSPick(campos,ray,this.PickOptions);
+           if(!oldintersectxy) return; //this is just better. 
            oldintersectxy = oldintersectxy ? oldintersectxy.point : [0,0,0];
             this.groundplane.PickPriority = -1;
             var dxy2 = this.intersectLinePlane(ray,campos,[0,0,0],[0,0,1]);

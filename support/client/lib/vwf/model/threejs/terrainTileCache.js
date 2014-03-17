@@ -30,6 +30,8 @@ function TileCache()
 						"varying vec3 coordsScaleB;"+
 						"varying vec3 coordsScaleA;"+
 						"uniform float blendPercent;\n" + 
+						"uniform float coordA;\n" + 
+						"uniform float coordB;\n" + 
 
 
 
@@ -46,8 +48,8 @@ function TileCache()
 						"opos = vec3(position.xy,z);\n"+
 						"npos = vFogPosition;\n"+
 						//"npos.z += getNoise(vFogPosition.xy*200.0)/50.0; \n"+
-						"coordsScaleB = npos/10.0;\n"+
-						"coordsScaleA = npos/100.0;\n"+
+						"coordsScaleB = npos/coordB;\n"+
+						"coordsScaleA = npos/coordA;\n"+
 						"float  edgeblend = 0.0;"+
 						
 						"debug = vec3(0.0,0.0,0.0);\n"+
@@ -102,7 +104,8 @@ function TileCache()
 						"uniform float vAtmosphereDensity;\n" + //.0005
 						
 						
-						
+						"uniform float coordA;\n" + 
+						"uniform float coordB;\n" + 
 						
 						//"horizonColor = fogColor;\n"+
 						//"zenithColor = vec3(0.78, 0.82, 0.999);\n"+
@@ -160,7 +163,7 @@ function TileCache()
 						"varying vec3 wN;"+
 						"varying vec3 npos;"+
 						"varying vec3 opos;"+
-						
+						"uniform vec3 ambientLightColor;"+
 						"varying vec3 coordsScaleB;"+
 						"varying vec3 coordsScaleA;";
 						
@@ -186,7 +189,7 @@ function TileCache()
           "          2.0 * C2 * L1m1 * tnorm.y + "+  
           "          2.0 * C2 * L10  * tnorm.z;"+
 
-						"	vec4 ambient = vec4(shAmbient * .1 ,1.0);\n"+
+						"	vec4 ambient = vec4(shAmbient * length(ambientLightColor) * .5 ,1.0);\n"+
 						
 						
 						"	#if MAX_DIR_LIGHTS > 0\n"+
@@ -265,6 +268,8 @@ function TileCache()
 							"side" : { type: "f", value: 0 },
 							
 							"blendPercent" : { type: "f", value: 0.00000 },
+							"coordA" : { type: "f", value: 100 },
+							"coordB" : { type: "f", value: 10 },
 							
 							debugColor : { type: "c", value: new THREE.Color( 0xffff0f ) },
 						
