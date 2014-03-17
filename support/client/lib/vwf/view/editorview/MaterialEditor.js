@@ -283,7 +283,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#MaterialBasicSettings').append('<div style="margin-bottom:10px" id="colordiv" />');
 			$('#colordiv').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;">Diffuse Color: </div>');
 			$('#colordiv').append('<div id="ColorColorPicker" style="' + colorswatchstyle + '"></div>')
-			var col = this.currentMaterial.color;
+			var col = this.currentMaterial.color || new THREE.Color();
 			$('#ColorColorPicker').css('background-color', 'rgb(' + Math.floor(col.r * 255) + ',' + Math.floor(col.g * 255) + ',' + Math.floor(col.b * 255) + ')');
 			$('#ColorColorPicker').ColorPicker(
 			{
@@ -323,7 +323,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#MaterialBasicSettings').append('<div style="margin-bottom:10px" id="ambientdiv" />');
 			$('#ambientdiv').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;">Ambient Color: </div>');
 			$('#ambientdiv').append('<div id="AmbientColorPicker" style="' + colorswatchstyle + '"></div>')
-			var amb = this.currentMaterial.ambient;
+			var amb = this.currentMaterial.ambient  || new THREE.Color();;
 			$('#AmbientColorPicker').css('background-color', 'rgb(' + Math.floor(amb.r * 255) + ',' + Math.floor(amb.g * 255) + ',' + Math.floor(amb.b * 255) + ')');
 			$('#AmbientColorPicker').ColorPicker(
 			{
@@ -360,7 +360,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#MaterialBasicSettings').append('<div style="margin-bottom:10px" id="emitdiv" />');
 			$('#emitdiv').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;">Emission Color: </div>');
 			$('#emitdiv').append('<div id="EmitColorPicker" style="' + colorswatchstyle + '"></div>')
-			var emt = this.currentMaterial.emit;
+			var emt = this.currentMaterial.emit  || new THREE.Color();;
 			$('#EmitColorPicker').css('background-color', 'rgb(' + Math.floor(emt.r * 255) + ',' + Math.floor(emt.g * 255) + ',' + Math.floor(emt.b * 255) + ')');
 			$('#EmitColorPicker').ColorPicker(
 			{
@@ -394,7 +394,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#MaterialBasicSettings').append('<div style="margin-bottom:10px" id="specdiv" />');
 			$('#specdiv').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;">Specular Color: </div>');
 			$('#specdiv').append('<div id="SpecColorPicker" style="' + colorswatchstyle + '"></div>')
-			var spec = this.currentMaterial.specularColor;
+			var spec = this.currentMaterial.specularColor  || new THREE.Color();
 			$('#SpecColorPicker').css('background-color', 'rgb(' + Math.floor(spec.r * 255) + ',' + Math.floor(spec.g * 255) + ',' + Math.floor(spec.b * 255) + ')');
 			$('#SpecColorPicker').ColorPicker(
 			{
