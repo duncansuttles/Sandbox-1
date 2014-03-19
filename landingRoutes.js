@@ -20,6 +20,21 @@ fs.readdir(__dirname + '/public' + root + '/views/help', function(err, files){
 	}
 });
 
+//localization
+function translate(req){
+  		var currentLng = req.locale;
+ 		var i18n = req.i18n;	
+
+ 		if(req.query.lang!==undefined)
+ 			i18n.setLng(req.query.lang, function(t) { /* loading done */ });
+
+ 		return function(){
+			return function(text,render){
+				return i18n.t(text);}
+				};
+}
+
+
 exports.setDAL = function(d){
 	DAL = d;
 };
@@ -183,8 +198,7 @@ exports.generalHandler = function(req, res, next){
 					return;
 				}
 
-				
-				res.locals = {sessionData:sessionData, sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc};
+				res.locals = {sessionData:sessionData, sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc, user:user, translate:translate(req)};
 				res.render(template,{layout:layout});
 				
 			}
@@ -226,8 +240,9 @@ exports.help = function(req, res){
 	res.render('help/template');
 };
 exports.world = function(req, res, next){
+
 	DAL.getInstance("_adl_sandbox_"+req.params.page+"_",function(doc){
-		res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getFrontEndRoot(req), world: doc, id: req.params.page?req.params.page:''};
+		res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getFrontEndRoot(req), world: doc, id: req.params.page?req.params.page:'',translate:translate(req)};
 		res.render('worldTemplate');
 	});
 };
@@ -345,7 +360,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 		}
 		var start = 10 * page;
 		var end = start+results.length;
-		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:getRoot(),searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0)};
+		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:root,searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0),translate:translate(req)};
 		res.locals[mode] = true;
 		res.render('searchResults',{layout:'plain'});
 
@@ -456,13 +471,9 @@ exports.createNew = function(req, res, next){
 exports.handlePostRequest = function(req, res, next){
 
 	var data = req.body ? JSON.parse(req.body) : '';
+
 	sessions.GetSessionData(req,function(sessionData)
 		{
-
-
-
-
-		
 	
 	//Temporarily commenting out authorization
 	if(!sessionData || sessionData.UID != global.adminUID){
@@ -471,6 +482,7 @@ exports.handlePostRequest = function(req, res, next){
 	}
 	
 	switch(req.params.action){
+	
 	
 		case "dal_test":			
 			break;

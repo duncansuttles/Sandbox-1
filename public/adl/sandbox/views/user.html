@@ -1,16 +1,16 @@
 <div class="row">
 	<div class="col-md-2" style="text-align:left;">
 		<a href="{{root}}/create" id="newinstancebutton" data-bind="visible:user().isLoggedIn">
-			<span class="btn btn-default btn-sm" style="width:100%;">Create World</span>
+			<span class="btn btn-default btn-sm" style="width:100%;">{{#translate}}Create World{{/translate}}</span>
 		</a><br/><br/>
 		<a href="{{root}}/avatar" id="editavatarbtn" data-bind="visible:user().isLoggedIn">
-			<span class="btn btn-default btn-sm" style="width:100%;">Choose Avatar</span>
+			<span class="btn btn-default btn-sm" style="width:100%;">{{#translate}}Choose Avatar{{/translate}}</span>
 		</a><br/><br/>
 		<a href="{{root}}/updatePassword" id="editpasswordbtn" data-bind="visible:user().isLoggedIn">
-			<span class="btn btn-default btn-sm" style="width:100%;">Change Password</span>
+			<span class="btn btn-default btn-sm" style="width:100%;">{{#translate}}Change Password{{/translate}}</span>
 		</a><br/><br/>
 		<a href="{{root}}/editProfile" id="editaccountbtn" data-bind="visible:user().isLoggedIn">
-			<span class="btn btn-default btn-sm" style="width:100%;">Edit Profile</span>
+			<span class="btn btn-default btn-sm" style="width:100%;">{{#translate}}Edit Profile{{/translate}}</span>
 		</a><br/><br/>
 	</div> 
 	<div class="col-md-10">			
@@ -47,7 +47,7 @@
 		</div>
 		<div class="row" style="margin-top:45px;margin-bottom:70px;" data-bind="visible:displayWorldObjects().length==0">	
 			<div class="col-md-4 col-md-offset-4" style="text-align:center;">
-				<span style="font-weight:bold;">No worlds found</span>
+				<span style="font-weight:bold;">{{#translate}}No worlds found{{/translate}}</span>
 			</div>
 		</div>
 		<div class="row" style="margin-bottom:45px;">

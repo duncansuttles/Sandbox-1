@@ -24,10 +24,15 @@ var reflector = require("./reflector.js");
 var appserver = require("./appserver.js");
 var ServerFeatures = require("./serverFeatures.js");
 
-//localization init
-var i18n = require("i18next");
-i18n.init();
 
+//localization
+var i18n = require("i18next");
+var option = {
+        //lng: 'en',
+        resGetPath: (__dirname+'/locales/__lng__/__ns__.json'),
+        //debug: true
+      };
+i18n.init(option);
 
 
 var errorlog = null;
@@ -225,6 +230,11 @@ function startVWF(){
 			app.use (ServerFeatures.waitForAllBody);
 			//CORS support
 			app.use(ServerFeatures.CORSSupport);
+
+			//i18n support
+			app.use(express.cookieParser());
+    		app.use(i18n.handle);
+
 			app.use(app.router);
 
 			

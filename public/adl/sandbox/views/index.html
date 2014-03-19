@@ -2,10 +2,10 @@
 	
 	<div class="row" style="margin-top:15px;">
 	<div class="col-md-12" style = "height: 82px;">
-		{{^sessionData}}<a class="col-md-3 ActionButton" href="./signup?return=./"><div class="ActionButtonlabel">Sign Up</div> <div class="ActionButtonsmalllabel">Create a new user account</div></a>{{/sessionData}}
-		<a class="col-md-3 ActionButton" {{#sessionData}} style="width:31%" href="./createNew/0" {{/sessionData}} {{^sessionData}} href="./signup?return=createNew/0" {{/sessionData}} ><div class="ActionButtonlabel">Create</div><div class="ActionButtonsmalllabel">Build a world, or copy an existing one</div></a>
-		<a class="col-md-3 ActionButton" {{#sessionData}} style="width:31%" {{/sessionData}} href="./featuredWorlds/0"><div class="ActionButtonlabel">Explore</div><div class="ActionButtonsmalllabel">Browse all public worlds</div></a>
-		<a class="col-md-3 ActionButton" {{#sessionData}} style="width:31%" {{/sessionData}} href="https://github.com/adlnet/Sandbox"><div class="ActionButtonlabel">Contribute</div><div class="ActionButtonsmalllabel">Edit the code or report a bug</div></a>
+		{{^sessionData}}<a class="col-md-3 ActionButton" href="./signup?return=./"><div class="ActionButtonlabel">{{#translate}}Sign Up{{/translate}}</div> <div class="ActionButtonsmalllabel">{{#translate}}Create a new user account{{/translate}}</div></a>{{/sessionData}}
+		<a class="col-md-3 ActionButton" {{#sessionData}} style="width:31%" href="./createNew/0" {{/sessionData}} {{^sessionData}} href="./signup?return=createNew/0" {{/sessionData}} ><div class="ActionButtonlabel">{{#translate}}Create{{/translate}}</div><div class="ActionButtonsmalllabel">{{#translate}}Build a world, or copy an existing one{{/translate}}</div></a>
+		<a class="col-md-3 ActionButton" {{#sessionData}} style="width:31%" {{/sessionData}} href="./featuredWorlds/0"><div class="ActionButtonlabel">{{#translate}}Explore{{/translate}}</div><div class="ActionButtonsmalllabel">{{#translate}}Browse all public worlds{{/translate}}</div></a>
+		<a class="col-md-3 ActionButton" {{#sessionData}} style="width:31%" {{/sessionData}} href="https://github.com/adlnet/Sandbox"><div class="ActionButtonlabel">{{#translate}}Contribute{{/translate}}</div><div class="ActionButtonsmalllabel">{{#translate}}Edit the code or report a bug{{/translate}}</div></a>
 	</div>
 		<div class="col-md-12">
 			<div class="row"> 
@@ -103,7 +103,7 @@
 		</div>
 	</div>
 	<div class="row" style="margin-top:45px;">
-		<div class="col-md-12"><h1 class="featurette-heading" style="border-top:1px solid #eee;padding-top:20px;width:95%;margin:0 auto;">Learn</h1></div>
+		<div class="col-md-12"><h1 class="featurette-heading" style="border-top:1px solid #eee;padding-top:20px;width:95%;margin:0 auto;">{{#translate}}Learn{{/translate}}</h1></div>
 	</div>
 	<div class="row" style="margin:30px 0;" >
 		<div class="col-md-11" style="float:none; margin:0 auto;">
@@ -132,7 +132,7 @@
 		</div>
 	</div>
 	<div class="row" style="margin-top:60px;">
-		<div class="col-md-12"><h1 class="featurette-heading" style="border-top:1px solid #eee;padding-top:20px;width:95%;margin:0 auto;">Explore</h1></div>
+		<div class="col-md-12"><h1 class="featurette-heading" style="border-top:1px solid #eee;padding-top:20px;width:95%;margin:0 auto;">{{#translate}}Explore{{/translate}}</h1></div>
 
 	</div>
 	<div class="row" style="margin-bottom:50px;" data-bind="foreach:displayWorldObjects">

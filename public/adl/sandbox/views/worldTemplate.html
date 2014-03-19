@@ -5,38 +5,38 @@
 				<div class="singleOption launchWorld">
 					<a href="{{root}}/{{id}}"></a>
 					<p class="glyphicon glyphicon-globe"></p>
-					<p class="optionText">Launch world</p>
+					<p class="optionText">{{#translate}}Launch world{{/translate}}</p>
 				</div>
 				<div class="singleOption" data-bind="visible:user().isLoggedIn && '{{owner}}' == user().username || user().isAdmin">
 					<a href="{{root}}/edit?id={{id}}"></a>
 					<p class="glyphicon glyphicon-pencil"></p>
-					<p class="optionText">Modify</p>
+					<p class="optionText">{{#translate}}Modify{{/translate}}</p>
 				</div>
 				<div class="singleOption" data-bind="visible:user().isLoggedIn, click:cloneWorld">
 					<p class="glyphicon glyphicon-export"></p>
-					<p class="optionText">Clone</p>
+					<p class="optionText">{{#translate}}Clone{{/translate}}</p>
 				</div>
 				<div class="singleOption" data-bind="visible:user().isLoggedIn && '{{owner}}' == user().username || user().isAdmin">
 					<a href="{{root}}/publish?id={{id}}"></a>
 					<p class="glyphicon glyphicon-print"></p>
-					<p class="optionText">Publish</p>
+					<p class="optionText">{{#translate}}Publish{{/translate}}</p>
 				</div>
 				<div class="singleOption" style="border-bottom:1px #E6E6E6 solid;border-radius:0 0 5px 5px;">
 					<a href="{{root}}/history?id={{id}}"></a>
 					<p class="glyphicon glyphicon-time"></p>
-					<p class="optionText">History</p>
+					<p class="optionText">{{#translate}}History{{/translate}}</p>
 				</div>
 			</div>
 			<div class="worldOptions" style="margin-top:20px;border:none;">
 				<div class="singleOption activeUsers">
 					<p class="glyphicon glyphicon-user"></p>
-					<p class="optionText">Active users</p>
+					<p class="optionText">{{#translate}}Active users{{/translate}}</p>
 				</div>
 				<div class="singleOption roundedBorderBottom" data-bind="visible: $root.numGuests() == 0 && activeUsersList().length == 0">
 					<div class="glyphicon">
 						<p class="gIconGray"></p>
 					</div>
-					<p class="optionText">0 active users</p>
+					<p class="optionText">{{#translate}}0 active users{{/translate}}</p>
 				</div>
 				<!-- ko foreach: activeUsersList().slice(0, 3) -->
 					<div class="singleOption" data-bind="css:$root.activeUsersList().length == ($index()+1) && $root.numGuests() == 0 ? 'singleOption roundedBorderBottom' : 'singleOption'">
@@ -57,7 +57,7 @@
 			<div class="worldOptions" style="margin-top:20px;border:none;" data-bind="visible:user().isLoggedIn && '{{owner}}' == user().username || user().isAdmin">
 				<div class="singleOption deleteWorld">
 					<p class="glyphicon glyphicon-remove"></p>
-					<p class="optionText"><a href="{{root}}/remove?id={{id}}">Delete world</a></p>
+					<p class="optionText"><a href="{{root}}/remove?id={{id}}">{{#translate}}Delete world{{/translate}}</a></p>
 				</div>
 			</div>
 		</div>		

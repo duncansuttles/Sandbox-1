@@ -126,23 +126,23 @@ $(document).ready(function()
 	<div class="col-md-5" style="margin:10px auto;float:none;text-align:center;">
 		
 		{{#search}}
-		<legend style="padding-bottom:5px;">{{total}} Results for "{{searchterm}}"</legend>
+		<legend style="padding-bottom:5px;">{{total}} {{#translate}}Results for{{/translate}} "{{searchterm}}"</legend>
 		{{/search}}
 
 		{{#my}}
-		<legend style="padding-bottom:5px;">All These {{total}} Worlds are Yours</legend>
+		<legend style="padding-bottom:5px;">{{#translate}}All These {{/translate}} {{total}} {{#translate}}Worlds are Yours{{/translate}}</legend>
 		{{/my}}
 
 		{{#all}}
-		<legend style="padding-bottom:5px;">All Worlds</legend>
+		<legend style="padding-bottom:5px;">{{#translate}}All Worlds{{/translate}}</legend>
 		{{/all}}
 
 		{{#featured}}
-		<legend style="padding-bottom:5px;">Featured Worlds</legend>
+		<legend style="padding-bottom:5px;">{{#translate}}Featured Worlds{{/translate}}</legend>
 		{{/featured}}
 
 		{{#new}}
-		<legend style="padding-bottom:5px;">Newest Worlds</legend>
+		<legend style="padding-bottom:5px;">{{#translate}}Newest Worlds{{/translate}}</legend>
 		{{/new}}
 		<div id='results' >
 		{{#results}}
@@ -190,20 +190,20 @@ $(document).ready(function()
 		<form id='form'>
 			<fieldset>
 				<div class="col-md-10" style="margin:0 auto;float:none;">
-					<input type='text' id='txtTerms' placeholder='Search terms' class="form-control" style="display:inline-block;width:80%"/>
-					<input type="submit" class='btn btn-default' style="float:right;" id='submitBtn' style="padding: 6px;display:inline-block;width:20%" value="Search"/><br/><br/>
+					<input type='text' id='txtTerms' placeholder='{{#translate}}Search terms{{/translate}}' class="form-control" style="display:inline-block;width:80%"/>
+					<input type="submit" class='btn btn-default' style="float:right;" id='submitBtn' style="padding: 6px;display:inline-block;width:20%" value="{{#translate}}Search{{/translate}}"/><br/><br/>
 					<p class="help-block" style="width:100%;margin-top:20px;" data-bind="visible:errorText,text:errorText"></p>
 				</div>
 				<legend style="padding-bottom:5px;"></legend>
 			</fieldset>
 			
 		</form>
-		<a href='{{root}}/featuredWorlds/0' class='' style=""  value="" >Featured</a><span style="margin-left:2em" />
-		<a href='{{root}}/allWorlds/0' class='' style=""  value="" >All Worlds</a><span style="margin-left:2em" />
-		{{#sessionData}}<a href='{{root}}/myWorlds/0' class='' style=""  value="" >My Worlds</a><span style="margin-left:2em" />{{/sessionData}}   
-		<a href='{{root}}/newWorlds/' class='' style=""  value="" >New Worlds</a><span style="margin-left:2em" />
-		{{#sessionData}}<a href='{{root}}/createNew/0' class='' style=""  value="" >Create</a><span style="margin-left:2em" />{{/sessionData}}   
-		<a href='{{root}}/search' class='' style=""  value="" >Search</a><span style="margin-left:0em" />
+		<a href='{{root}}/featuredWorlds/0' class='' style=""  value="" >{{#translate}}Featured{{/translate}}</a><span style="margin-left:2em" />
+		<a href='{{root}}/allWorlds/0' class='' style=""  value="" >{{#translate}}All Worlds{{/translate}}</a><span style="margin-left:2em" />
+		{{#sessionData}}<a href='{{root}}/myWorlds/0' class='' style=""  value="" >{{#translate}}My Worlds{{/translate}}</a><span style="margin-left:2em" />{{/sessionData}}   
+		<a href='{{root}}/newWorlds/' class='' style=""  value="" >{{#translate}}New Worlds{{/translate}}</a><span style="margin-left:2em" />
+		{{#sessionData}}<a href='{{root}}/createNew/0' class='' style=""  value="" >{{#translate}}Create{{/translate}}</a><span style="margin-left:2em" />{{/sessionData}}   
+		<a href='{{root}}/search' class='' style=""  value="" >{{#translate}}Search{{/translate}}</a><span style="margin-left:0em" />
 		   
 	</div>
 </div>

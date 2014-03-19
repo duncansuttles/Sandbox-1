@@ -53,6 +53,7 @@
 		{
 			opacity:0;
 		}
+
 	</style>
 	<!--[if !IE 7]>
 	<style type="text/css">
@@ -89,45 +90,45 @@
 
 				});
 				$(window).resize();
-		});
-		
-
+		});		
 	</script>
+
+
 </head>
 <body style="overflow:hidden">
 	<div class='thinheader'>
 		
 		
 		<a class='thinheaderlink' href='http://vwf.adlnet.gov/r/documentation/'>
-			Docs
+			{{#translate}}Docs{{/translate}}
 		</a>
 		<a class='thinheaderlink' href='http://vwf.adlnet.gov/r/blog/'>
-			Blog
+			{{#translate}}Blog{{/translate}}
 		</a>
 
 		<a class='thinheaderlink' href='{{root}}/search'>
-			Search
+			{{#translate}}Search{{/translate}}
 		</a>
 		
 		{{^sessionData}}
 		<a class='thinheaderlink' href='{{root}}/signup'>
-			Sign up
+			{{#translate}}Sign up{{/translate}}
 		</a>
 		{{/sessionData}}
 		<a class='thinheaderlink' href='{{root}}/'>
-			Home
+			{{#translate}}Home{{/translate}}
 		</a>
 		<a class='thinheaderlink' href='{{root}}/featuredWorlds/0'>
-			Worlds
+			{{#translate}}Worlds{{/translate}}
 		</a>
 		{{^sessionData}}
 		<a class='thinheaderlink' href='{{root}}/login'>
-			Log in
+			{{#translate}}Log in{{/translate}}
 		</a>
 		{{/sessionData}}
 		{{#sessionData}}
 		<a class='thinheaderlink' href='{{root}}/logout'>
-			Log out
+			{{#translate}}Log out{{/translate}}
 		</a>
 		{{/sessionData}}
 		{{#sessionData}}
