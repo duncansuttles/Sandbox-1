@@ -8,7 +8,7 @@
 		var minTileSize = totalmintilesize;
 		var maxTileSize = 2048;
 		var worldExtents = 2048;
-		var updateEvery = 30;
+		var updateEvery = 3;
 		
 		
 		function loadScript	(url)
@@ -21,6 +21,7 @@
 		
 		loadScript(   "vwf/model/threejs/terrainTileCache.js");
 		loadScript(   "vwf/model/threejs/terrainQuadtree.js");
+
 		
 		
 		
@@ -39,7 +40,13 @@
 			
 			
 			this.terrainGenerator = loadScript("vwf/model/threejs/terrainGenerator.js");
+			this.decorationManager = loadScript(   "vwf/model/threejs/terrainDecorationManager.js");
 			
+			this.decorationManager.setGenerator(this.terrainGenerator);
+			this.decorationManager.setRoot(this.getRoot());
+			this.decorationManager.init(new THREE.Vector3(0,0,0));
+			this.decorationManager.update(new THREE.Vector3(0,0,0));
+
 			self.TileCache.terrainGenerator = this.terrainGenerator;
 			
 			if(!this.terrainType)
@@ -309,9 +316,11 @@
 			this.counter ++;
 			if(this.counter >= updateEvery && this.enabled)
 			{
+
 				this.counter = 0;
 				var now = performance.now();
 				var campos = _Editor.findcamera().position;
+				this.decorationManager.update(campos);
 				var x = campos.x;
 				var y = campos.y;
 				
