@@ -832,7 +832,7 @@ form#publishSettings #txtInstanceName {
 	margin-bottom: 4px;
 }
 
-form#publishSettings #lrPublishSettings .row {
+#lrPublishSettings .row {
 	margin-top: 5px;
 	margin-bottom: 5px;
 }
