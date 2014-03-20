@@ -26474,6 +26474,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			} else {
 
+				
 				renderTarget.__webglFramebuffer = _gl.createFramebuffer();
 
 				if ( renderTarget.shareDepthFrom ) {

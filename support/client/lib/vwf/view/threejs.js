@@ -668,7 +668,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		createRenderTarget: function(cameraID)
 		{
 			
-			var rtt = new THREE.WebGLRenderTarget( 512,512, { format: THREE.RGBFormat } );
+			var rtt = new THREE.WebGLRenderTarget( 256,256, { format: THREE.RGBAFormat, minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter } );
 			this.renderTargetPasses.push({camera:cameraID,target:rtt});
 			return rtt;
 		},
@@ -929,6 +929,28 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			vpargs[0] = vp.slice(0);
 
 			self.trigger('postprerender',vpargs);
+
+
+
+
+
+			for(var i = 0; i < self.renderTargetPasses.length; i++)
+			{
+				
+				var rttcamID = self.renderTargetPasses[i].camera;
+				var rttcam = self.state.nodes[rttcamID].getRoot();
+				var rtt = self.renderTargetPasses[i].target;
+			//	renderer.render(backgroundScene,rttcam,rtt,true);
+
+				
+			   // renderer.setRenderTarget( rtt );
+				renderer.render(scene,rttcam,rtt);
+				//renderer.setRenderTarget(  );
+				
+				
+			}
+
+			
 		//	renderer.render(backgroundScene,cam);
 			
 		//	renderer.clear(true,true,false);
@@ -946,6 +968,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
 			
 			
+			
+				
+
 			if(self.selection && vwf.getProperty(self.selection.id,'type') =='Camera' && self.cameraID != self.selection.id)
 			{
 				var selnode = _Editor.findviewnode(self.selection.id);
@@ -983,7 +1008,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 					self.trigger('postprerender',[insetvp,w,w]);
 					
 					renderer.clear(true,true,true);
-					renderer.render(backgroundScene,selcam);
+					//renderer.render(backgroundScene,selcam);
 					
 					renderer.clear(false,true,false);
 					renderer.render(scene,selcam);
@@ -1010,18 +1035,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				self.trigger('glyphRender',vpargs);
 			}
 			
-			
-			for(var i = 0; i < self.renderTargetPasses.length; i++)
-			{
-				
-				var rttcamID = self.renderTargetPasses[i].camera;
-				var rttcam = self.state.nodes[rttcamID].getRoot();
-				var rtt = self.renderTargetPasses[i].target;
-				renderer.render(backgroundScene,rttcam,rtt,true);
-				renderer.render(scene,rttcam,rtt);
-				
-				
-			}
+		
+
 			
 			
 			

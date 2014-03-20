@@ -59,6 +59,12 @@ function heightmapTerrainAlgorithm()
 		this.gUrl = (params && params.gUrl) || 'terrain/River.jpg';
 		this.bUrl = (params && params.bUrl) || 'terrain/River.jpg';
 		this.baseUrl = (params && params.baseUrl) || 'terrain/River.jpg';
+
+		this.rUrlNorm = (params && params.rUrlNorm) || 'terrain/River.jpg';
+		this.gUrlNorm = (params && params.gUrlNorm) || 'terrain/River.jpg';
+		this.bUrlNorm = (params && params.bUrlNorm) || 'terrain/River.jpg';
+		this.baseUrlNorm = (params && params.baseUrlNorm) || 'terrain/River.jpg';
+
 		if(this.type == 'img')
 		{
 			canvas = document.createElement('canvas');
@@ -226,12 +232,12 @@ function heightmapTerrainAlgorithm()
 								displayname : 'Material',
 								type:'sectionTitle'
 						},				
-		zh_diffuseSrc:{
+		zzh_diffuseSrc:{
 								displayname : 'Texture URL',
 								property:'diffuseUrl',
 								type:'map'
 						},
-		zh_mixSrc:{
+		zzh_mixSrc:{
 								displayname : 'Mix Map URL',
 								property:'mixUrl',
 								type:'map'
@@ -255,6 +261,28 @@ function heightmapTerrainAlgorithm()
 		zh_baseSrc:{
 								displayname : 'Black Channel Texture',
 								property:'baseUrl',
+								type:'map'
+						},																																
+		
+		zh_rSrcNorm:{
+								displayname : 'Red Channel NormalMap',
+								property:'rUrlNorm',
+								type:'map'
+						},
+		zh_gSrcNorm:{
+								displayname : 'Green Channel NormalMap',
+								property:'gUrlNorm',
+								type:'map'
+						},
+		zh_bSrcNorm:{
+								displayname : 'Blue Channel NormalMap',
+								property:'bUrlNorm',
+								type:'map'
+						},																																
+		
+		zh_baseSrcNorm:{
+								displayname : 'Black Channel NormalMap',
+								property:'baseUrlNorm',
 								type:'map'
 						}																																
 		};
@@ -333,6 +361,26 @@ function heightmapTerrainAlgorithm()
 			this.baseUrl = data.baseUrl;
 			this.materialRebuildCB();
 		}
+		if(data.rUrlNorm != this.rUrlNorm)	
+		{
+			this.rUrlNorm = data.rUrlNorm;
+			this.materialRebuildCB();
+		}
+		if(data.gUrlNorm != this.gUrlNorm)	
+		{
+			this.gUrlNorm = data.gUrlNorm;
+			this.materialRebuildCB();
+		}
+		if(data.bUrlNorm != this.bUrlNorm)	
+		{
+			this.bUrlNorm = data.bUrlNorm;
+			this.materialRebuildCB();
+		}
+		if(data.baseUrlNorm != this.baseUrlNorm)	
+		{
+			this.baseUrlNorm = data.baseUrlNorm;
+			this.materialRebuildCB();
+		}
 		if(data.mixUrl != this.mixUrl)	
 		{
 			
@@ -354,6 +402,10 @@ function heightmapTerrainAlgorithm()
 			rUrl:this.rUrl,
 			gUrl:this.gUrl,
 			bUrl:this.bUrl,
+			baseUrlNorm:this.baseUrlNorm,
+			rUrlNorm:this.rUrlNorm,
+			gUrlNorm:this.gUrlNorm,
+			bUrlNorm:this.bUrlNorm,
 			worldWidth:this.worldWidth,
 			worldLength:this.worldLength,
 			cubic:this.cubic || false,
@@ -373,10 +425,10 @@ function heightmapTerrainAlgorithm()
 		rSampler:   { type: "t", value: _SceneManager.getTexture( this.rUrl ||"terrain/cliff.jpg",true ) },
 		bSampler:   { type: "t", value: _SceneManager.getTexture( this.bUrl ||"terrain/ground.jpg",true ) },
 
-		baseNormalMap:   { type: "t", value: _SceneManager.getTexture( "terrain/3091-normal.jpg",true ) },
-		gNormalMap:   { type: "t", value: _SceneManager.getTexture( "terrain/grassnorm.jpg",true ) },
-		rNormalMap:   { type: "t", value: _SceneManager.getTexture( "terrain/4979-normal.jpg",true ) },
-		bNormalMap:   { type: "t", value: _SceneManager.getTexture( "textures/waternormal.jpg",true ) },
+		baseNormalMap:   { type: "t", value: _SceneManager.getTexture( this.baseUrlNorm ||"terrain/3091-normal.jpg",true ) },
+		gNormalMap:   { type: "t", value: _SceneManager.getTexture( this.gUrlNorm ||"terrain/grassnorm.jpg",true ) },
+		rNormalMap:   { type: "t", value: _SceneManager.getTexture( this.rUrlNorm ||"terrain/4979-normal.jpg",true ) },
+		bNormalMap:   { type: "t", value: _SceneManager.getTexture( this.bUrlNorm ||"textures/waternormal.jpg",true ) },
 		
 		mixMap:   { type: "t", value: _SceneManager.getTexture( this.mixUrl || "terrain/rivermix.png",true ) },
 		

@@ -136,6 +136,7 @@
 						"void main() { "+
 						"vec4 color1 = texture2D(texture1,tc);"+
 						"gl_FragColor = color1;"+
+						"gl_FragColor.a = 1.0;"+
 						
 						"}"
 						

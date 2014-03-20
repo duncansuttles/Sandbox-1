@@ -34,7 +34,7 @@ function TileCache()
 						"uniform float coordB;\n" + 
 
 
-
+						"varying vec4 mvPosition;\n"+
 						"varying vec3 debug;\n"+
 						"uniform vec3 debugColor;\n"+
 						"uniform float side;\n"+
@@ -70,7 +70,7 @@ function TileCache()
 						"n = normalMatrix *  wN\n;"+
 
 						"n = normalize(n);\n"+
-						"   vec4 mvPosition = modelViewMatrix * vec4( position.x,position.y,z, 1.0 );\n"+
+						"  mvPosition = modelViewMatrix * vec4( position.x,position.y,z, 1.0 );\n"+
 					
 						"debug = wN;\n"+
 						"   gl_Position = projectionMatrix * mvPosition;\n"+
@@ -92,6 +92,7 @@ function TileCache()
 						
 						"uniform vec3 fogColor;"+	
 						"uniform int fogType;"+
+						"uniform int renderMode;"+
 												
 						"uniform float fogDensity;"+
 						"uniform float fogNear;"+
@@ -157,6 +158,7 @@ function TileCache()
 		"const vec3 L21  = vec3(-0.077539, -0.086325, -0.091591);",
 		"const vec3 L22  = vec3(-0.161784, -0.191783, -0.219152);"].join('\n'))+
 
+						"varying vec4 mvPosition;\n"+
 						"varying vec3 debug;\n"+
 						"varying vec3 vFogPosition;"+
 						"varying vec3 n;"+
@@ -169,9 +171,17 @@ function TileCache()
 						
 						var fragShader_default_end = 
 						
+						"vec4 packFloatVec4(const in float depth)\n"+
+						"{\n"+
+						 "   const vec4 bit_shift = vec4(256.0*256.0*256.0, 256.0*256.0, 256.0, 1.0);\n"+
+						 "   const vec4 bit_mask  = vec4(0.0, 1.0/256.0, 1.0/256.0, 1.0/256.0);\n"+
+						 "   vec4 res = fract(depth * bit_shift);\n"+
+						 "   res -= res.xxyz * bit_mask;\n"+
+						 "   return res;\n"+
+						"}\n"+
 						
 						"void main() {\n"+
-						
+						" if(renderMode == 1){ gl_FragColor = packFloatVec4(vFogPosition.z/1000.0); return; }\n"+
 						"	vec4 diffuse = getTexture(npos,normalize(wN),opos.xy/100.0 + 0.5);\n"+
 						"	diffuse.a = 1.0;\n"+
 						"	vec3 nn = (viewMatrix * normalize(vec4(wN,0.0))).xyz;\n"+
@@ -270,7 +280,7 @@ function TileCache()
 							"blendPercent" : { type: "f", value: 0.00000 },
 							"coordA" : { type: "f", value: 100 },
 							"coordB" : { type: "f", value: 10 },
-							
+							"renderMode" : { type: "i", value: 0 },
 							debugColor : { type: "c", value: new THREE.Color( 0xffff0f ) },
 						
 						}]);	 
