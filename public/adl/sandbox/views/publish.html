@@ -20,7 +20,11 @@
 			'publishToLR': ko.observable(false),
 			'authorName': ko.observable(''),
 			'authorEmail': ko.observable(''),
-
+			'subject': ko.observable(''),
+			'grade': ko.observableArray(),
+			'resourceType': ko.observableArray(),
+			'interactivity': ko.observable(''),
+			'alignment': ko.observable('')
 		};
 
 		vwfPortalModel.publishSettings.anonUsersChecked = ko.computed({
@@ -61,7 +65,28 @@
 					p.defaultCamera( data.publishSettings.camera === '' );
 					p.camera( data.publishSettings.camera );
 				}
+			/*		author name/email
+					publisher name/email (sandbox maintainer info, static)
 
+					resource title/description/url (given above)
+					subject
+					grade
+					date created/modified
+					media type (other)
+					learning resource type (assessment/demonstration/game/simulation)
+					interactivity (interactive/passive)
+					alignment*/
+
+				var lrp = vwfPortalModel.lrPublishSettings;
+				if( data.publishSettings && data.publishSettings.lrData )
+				{
+					lrp.publishToLR(false);
+					lrp.authorName( data.publishSettings.lrData.authorName );
+					lrp.subject( data.publishSettings.lrData.subject );
+					lrp.grade( data.publishSettings.lrData.grade );
+					lrp.resourceType( data.publishSettings.lrData.resourceType );
+					lrp.interactivity( data.publishSettings.lrData.interactivity );
+				}
 			},
 			error:function(xhr,status,err)
 			{
@@ -105,10 +130,18 @@
 
 	vwfPortalModel.handleEditButton = function(o, e){
 
-		var statedata = {};
-
 		var p = vwfPortalModel.publishSettings;
-		if( p.publish() ){
+		var lrp = vwfPortalModel.lrPublishSettings;
+		var statedata;
+
+		if( p.publish() || lrp.publishToLR() )
+			statedata = {};
+		else
+			statedata = null;
+
+
+		if( p.publish() )
+		{
 			statedata.title = p.title();
 			statedata.description = p.description();
 			statedata.SinglePlayer = p.singlePlayer();
@@ -117,8 +150,48 @@
 			statedata.createAvatar = p.createAvatar();
 			statedata.allowTools = p.allowTools();
 		}
-		else
-			statedata = null;
+		if( lrp.publishToLR() )
+		{
+			/*
+			data needed:
+
+			author name/email
+			publisher name/email (sandbox maintainer info, static)
+
+			resource title/description/url (given above)
+			subject
+			grade
+			date created/modified
+			media type (other)
+			learning resource type (assessment/demonstration/game/simulation)
+			interactivity (interactive/passive)
+			alignment
+			*/
+
+			statedata.lrData = {
+				'resourceUrl': null,
+				'dateCreated': null,
+				'mediaType': 'other',
+				
+			};
+
+			if(lrp.authorName())
+				statedata.lrData.authorName = lrp.authorName();
+			if(lrp.authorEmail())
+				statedata.lrData.authorEmail = lrp.authorEmail();
+			if(p.title())
+				statedata.lrData.title = p.title();
+			if(p.description())
+				statedata.lrData.description = p.description();
+			if(lrp.subject())
+				statedata.lrData.subject = lrp.subject();
+			if(lrp.grade().length > 0)
+				statedata.lrData.grade = lrp.grade();
+			if(lrp.resourceType().length > 0)
+				statedata.lrData.resourceType = lrp.resourceType();
+			if(lrp.interactivity())
+				statedata.lrData.interactivity = lrp.interactivity();
+		}
 
 		jQuery.ajax(
 		{
@@ -127,7 +200,8 @@
 			data: JSON.stringify(statedata),
 			success:function(data,status,xhr)
 			{
-				redirect();
+				console.log('Sent');
+				//redirect();
 			},
 			error:function(xhr,status,err)
 			{
@@ -138,12 +212,6 @@
 		});
 	};
 
-	vwfPortalModel.handleLRPublish = function(o, e)
-	{
-		var statedata = {};
-		var p = vwfPortalModel.lrPublishSettings;
-		
-	};
 	
 </script>
 	<div class="row">
@@ -183,11 +251,7 @@
 					data-bind='options: $root.cameraList, optionsText: "name", optionsValue: "id", value: camera, visible: !defaultCamera()'></select>
 
 			</fieldset>
-			<input type="submit" class='btn btn-default' value="Publish"/>
-		</form>
-		
-		<form data-bind='submit: handleLRPublish, with: $root.lrPublishSettings'>
-			<fieldset>
+			<fieldset data-bind='with: $root.lrPublishSettings'>
 				<legend>Learning Registry Settings</legend>
 				<p>The <a href='http://learningregistry.org' target='_blank'>Learning Registry</a> is a list of online resources associated with
 					particular learning activities. If you consider your world an educational experience, this may be a good option to check.
@@ -213,6 +277,25 @@
 					</div>
 					<div class="row">
 						<div class="col-md-4"><label for='subject'>Subject</label></div>
+						<div class="col-md-8"><input type='text' placeholder='Subject' id='subject' style='width:100%;' data-bind='enable: publishToLR, value: subject'/></div>
+					</div>
+					<div class="row">
+						<div class="col-md-4"><label for='subject'>Grade<br/>(0 or more)</label></div>
+						<div class="col-md-8"><select id='subject', style='width: 100%; height: 100px;', multiple="true",
+							data-bind='enable: publishToLR, selectedOptions: grade, options: ["","Pre-K","Kindergarten",1,2,3,4,5,6,7,8,9,10,11,12]'>
+						</select></div>
+					</div>
+					<div class="row">
+						<div class="col-md-4"><label for='resourceType'>Resource Type<br/>(0 or more)</label></div>
+						<div class="col-md-8"><select id='resourceType', style='width: 100%; height: 100px;', multiple="true",
+							data-bind='enable: publishToLR, selectedOptions: resourceType, options: ["","Assessment","Demonstration","Game","Simulation"]'>
+						</select></div>
+					</div>
+					<div class="row">
+						<div class="col-md-4"><label for='interactivity'>Interactivity</label></div>
+						<div class="col-md-8"><select id='interactivity', style='width: 100%;',
+							data-bind='enable: publishToLR, value: interactivity, options: ["","Interactive","Passive"]'>
+						</select></div>
 					</div>
 
 					<!--
