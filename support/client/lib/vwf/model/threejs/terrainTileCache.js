@@ -182,9 +182,17 @@ function TileCache()
 						
 						"void main() {\n"+
 						" if(renderMode == 1){ gl_FragColor = packFloatVec4(vFogPosition.z/1000.0); return; }\n"+
+						"   vec3 vLightDir = normalize(viewMatrix * vec4(directionalLightDirection[0],0.0)).xyz;\n"+
+						"	vec3 nn = (viewMatrix * normalize(vec4(wN,0.0))).xyz;\n"+
+						" if(renderMode == 2){"+
+						
+						" gl_FragColor = getGrassDensity(npos,normalize(wN),opos.xy/100.0 + 0.5);\n"+
+						" gl_FragColor.a = (clamp(dot(nn, vLightDir),0.0,1.0));\n"+
+						"return;"+
+						" }\n"+
 						"	vec4 diffuse = getTexture(npos,normalize(wN),opos.xy/100.0 + 0.5);\n"+
 						"	diffuse.a = 1.0;\n"+
-						"	vec3 nn = (viewMatrix * normalize(vec4(wN,0.0))).xyz;\n"+
+						
 						"   nn = getNormal(npos,nn,opos.xy/100.0 + 0.5,wN);\n"+
 						"	vec3 light = vec3(0.0,0.0,0.0);\n"+
 						"vec3 tnorm = ( vec4(nn,0.0) * viewMatrix).xyz;\n"+
@@ -203,10 +211,10 @@ function TileCache()
 						
 						
 						"	#if MAX_DIR_LIGHTS > 0\n"+
-						"   vec3 vLightDir = normalize(viewMatrix * vec4(directionalLightDirection[0],0.0)).xyz;\n"+
+						
 						"   vec3 vEyeDir = normalize((viewMatrix * vec4(normalize(vFogPosition-cameraPosition ),0.0)).xyz);\n"+
 						"   vec3 vReflectDir = normalize(reflect(vLightDir,nn));\n"+
-						"   float phong =pow( min(1.0,max(0.0,dot(vReflectDir,vEyeDir) + .3)),1.0 );\n"+
+						//"   float phong =pow( min(1.0,max(0.0,dot(vReflectDir,vEyeDir) + .3)),1.0 );\n"+
 						"	light += directionalLightColor[0] * clamp(dot(nn, vLightDir),0.0,1.0);\n"+
 						"	#endif\n"+
 						

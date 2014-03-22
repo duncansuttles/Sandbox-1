@@ -574,6 +574,18 @@ function heightmapTerrainAlgorithm()
 		"{"+
 			"return clamp((val - min)/(max-min),0.0,1.0);"+
 		"}"+
+		"vec4 getGrassDensity(vec3 coords, vec3 norm, vec2 uv)" +
+		"{"+
+			(this.type == 'bt'?
+			"mixVal = texture2D(mixMap,((coords.yx * vec2(1.0,1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"
+			:
+			"mixVal = texture2D(mixMap,((coords.yx * vec2(1.0,-1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"
+			)+
+
+			
+			
+			"return vec4(mixVal);"+
+		"}"+
 		"vec4 getTexture(vec3 coords, vec3 norm, vec2 uv)" +
 		"{"+
 
