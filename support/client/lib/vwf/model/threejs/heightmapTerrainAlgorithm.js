@@ -54,16 +54,16 @@ function heightmapTerrainAlgorithm()
 				this.type = 'img';
 		}
 		this.diffuseUrl = (params && params.diffuseUrl) || 'terrain/River.jpg';
-		this.mixUrl = (params && params.mixUrl) || 'terrain/River.jpg';
+		this.mixUrl = (params && params.mixUrl) || 'terrain/flatnormals.jpg';
 		this.rUrl = (params && params.rUrl) || 'terrain/River.jpg';
 		this.gUrl = (params && params.gUrl) || 'terrain/River.jpg';
 		this.bUrl = (params && params.bUrl) || 'terrain/River.jpg';
 		this.baseUrl = (params && params.baseUrl) || 'terrain/River.jpg';
 
-		this.rUrlNorm = (params && params.rUrlNorm) || 'terrain/River.jpg';
-		this.gUrlNorm = (params && params.gUrlNorm) || 'terrain/River.jpg';
-		this.bUrlNorm = (params && params.bUrlNorm) || 'terrain/River.jpg';
-		this.baseUrlNorm = (params && params.baseUrlNorm) || 'terrain/River.jpg';
+		this.rUrlNorm = (params && params.rUrlNorm) || 'terrain/flatnormals.jpg';
+		this.gUrlNorm = (params && params.gUrlNorm) || 'terrain/flatnormals.jpg';
+		this.bUrlNorm = (params && params.bUrlNorm) || 'terrain/flatnormals.jpg';
+		this.baseUrlNorm = (params && params.baseUrlNorm) || 'terrain/flatnormals.jpg';
 
 		if(this.type == 'img')
 		{

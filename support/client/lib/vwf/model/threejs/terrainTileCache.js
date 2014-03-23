@@ -247,7 +247,7 @@ function TileCache()
 				}
 				this.getDefaultNormalString = function()
 				{
-					return "vec3 getNormal(vec3 coords, vec3 norm, vec2 uv) {return norm;}\n";
+					return "vec3 getNormal(vec3 coords, vec3 viewNorm, vec2 uv,vec3 wN) {return viewNorm;}\n";
 				}
 				this.getMat = function()
 				{	
