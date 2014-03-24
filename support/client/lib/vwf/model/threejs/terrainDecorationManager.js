@@ -1,6 +1,9 @@
-new (function(){
+(function(){
+	function terrainDecorator(childID, childSource, childName)
+	{
 
-	this.root = null;
+	this.TerrainRoot = null;
+	this.root = new THREE.Object3D();
 	this.generator = null;
 	this.lastCameraPosition = null;
 	this.grassMeshes = [];
@@ -12,6 +15,10 @@ new (function(){
 			this.root = r;
 		else
 			console.log("root should be an Object3D");
+	}
+	this.getRoot = function()
+	{
+		return this.root;
 	}
 	this.setGenerator= function(r)
 	{	
@@ -26,15 +33,20 @@ new (function(){
 			this.lastCameraPosition = cameraPosition.clone();
 		var updated = false;
 		
+		var updatedMeshLayer = [];
+
 		while( (cameraPosition.x - this.lastCameraPosition.x) <= -this.tileW)
 		{	
 			var x = this.positions.pop();
 			for(var i =0; i < this.dim; i++)
 			{
 				x[i].position[0] -= this.dim * this.tileW;
-				x[i].mesh.position.x -= this.dim * this.tileW;
-			//	x[i].mesh.position.z = this.generator.sample(x[i].mesh.position)+1 ;
-				x[i].mesh.updateMatrixWorld();
+				for(var j = 0; j< x[i].meshes.length; j++)
+				{
+					x[i].meshes[j].position.x -= this.dim * this.tileW;
+					x[i].meshes[j].position.z = this.generator.sample(x[i].meshes[j].position)+1 ;
+					x[i].meshes[j].updateMatrixWorld();
+				}
 			}
 			this.positions.unshift(x);
 			this.lastCameraPosition.x -= this.tileW;
@@ -46,9 +58,13 @@ new (function(){
 			for(var i =0; i < this.dim; i++)
 			{
 				x[i].position[0] += this.dim * this.tileW;
-				x[i].mesh.position.x += this.dim * this.tileW;
-			//	x[i].mesh.position.z = this.generator.sample(x[i].mesh.position) +1 ;
-				x[i].mesh.updateMatrixWorld();
+				for(var j = 0; j< x[i].meshes.length; j++)
+				{
+					
+					x[i].meshes[j].position.x += this.dim * this.tileW;
+					x[i].meshes[j].position.z = this.generator.sample(x[i].meshes[j].position) +1 ;
+					x[i].meshes[j].updateMatrixWorld();
+				}
 			}
 			this.positions.push(x);
 			this.lastCameraPosition.x += this.tileW;
@@ -61,11 +77,15 @@ new (function(){
 			
 			for(var i =0; i < this.dim; i++)
 			{	
+
 				var x = this.positions[i].pop();
 				x.position[1] -= this.dim * this.tileW;
-				x.mesh.position.y -= this.dim * this.tileW;
-				//x.mesh.position.z = this.generator.sample(x.mesh.position)+1 ;
-				x.mesh.updateMatrixWorld();
+				for(var j = 0; j< x.meshes.length; j++)
+				{
+					x.meshes[j].position.y -= this.dim * this.tileW;
+					x.meshes[j].position.z = this.generator.sample(x.meshes[j].position)+1 ;
+					x.meshes[j].updateMatrixWorld();
+				}
 				this.positions[i].unshift(x);
 			}
 			
@@ -78,9 +98,12 @@ new (function(){
 			{	
 				var x = this.positions[i].shift();
 				x.position[1] += this.dim * this.tileW;
-				x.mesh.position.y += this.dim * this.tileW;
-				//x.mesh.position.z = this.generator.sample(x.mesh.position) +1;
-				x.mesh.updateMatrixWorld();
+				for(var j = 0; j< x.meshes.length; j++)
+				{
+					x.meshes[j].position.y += this.dim * this.tileW;
+					x.meshes[j].position.z = this.generator.sample(x.meshes[j].position) +1;
+					x.meshes[j].updateMatrixWorld();
+				}
 				this.positions[i].push(x);
 			}
 			this.lastCameraPosition.y += this.tileW;
@@ -95,14 +118,32 @@ new (function(){
 		}
 		
 	}
+	this.entroySample = function(val)
+	{
+		val = val % window.location.href.length;
+		var a = window.location.href.charCodeAt(parseInt(val));
+		val *= a;
+
+		val = val % 128;
+		return val/128.0;
+	}
+	this.random = function()
+	{
+		if(!this.RandomCount)
+		{
+			this.RandomCount = 0;
+		}
+		this.RandomCount++;
+		return this.entroySample(this.RandomCount);
+	}
 	this.renderHeightMap = function()
 	{
 		if(!this.counter) this.counter = 0;
-this.counter++;
+		this.counter++;
 		this.mat.uniforms.time.value += deltaTime * (1.5+Math.sin(this.counter/100))* (1.5+Math.sin(this.counter/500))* (1.5+Math.sin(this.counter/1000)) || 1;
 		if(!this.needReRender) return;
 		this.needReRender = false;
-		var oldparent = this.root.parent;
+		var oldparent = this.TerrainRoot.parent;
 		
 		this.camera.position = this.lastCameraPosition.clone();
 		this.camera.position.z += 500;
@@ -121,10 +162,10 @@ this.counter++;
 		for(var i=0; i < this.dim; i++)
 		for(var j=0; j < this.dim; j++)
 		{
-			meshes_to_toggle.push(this.positions[i][j].mesh);
+			meshes_to_toggle = meshes_to_toggle.concat(this.positions[i][j].meshes);
 		}
 		var self = this;
-		this.root.parent.parent.traverse(function(child){
+		this.TerrainRoot.parent.parent.traverse(function(child){
 			if(child.parent !== self.root && child.visible === true)
 			{
 				meshes_to_toggle.push(child);
@@ -137,7 +178,7 @@ this.counter++;
 				meshes_to_toggle[i].visible = false;
 		}
 
-		this.root.traverse(function(child){
+		this.TerrainRoot.traverse(function(child){
 			if(child.visible === true && child.material && child.material.uniforms.renderMode)  //should only be terrain tiles 
 			{
 				child.material.uniforms.renderMode.value = 1;
@@ -150,7 +191,7 @@ this.counter++;
 		_dRenderer.render(_dScene,this.camera,this.rtt);
 
 
-		this.root.traverse(function(child){
+		this.TerrainRoot.traverse(function(child){
 			if(child.visible === true && child.material && child.material.uniforms.renderMode)  //should only be terrain tiles 
 			{
 				child.material.uniforms.renderMode.value = 2;
@@ -163,7 +204,7 @@ this.counter++;
 		_dRenderer.render(_dScene,this.camera,this.rtt2);
 
 		
-		this.root.traverse(function(child){
+		this.TerrainRoot.traverse(function(child){
 			if(child.visible === true && child.material && child.material.uniforms.renderMode)  //should only be terrain tiles 
 			{
 				child.material.uniforms.renderMode.value = 0;
@@ -178,7 +219,7 @@ this.counter++;
 		}
 
 	}
-	this.getMat = function(vertcount)
+	this.getGrassMat = function(vertcount)
 	{
 		if(!this.mat)
 		{
@@ -187,7 +228,7 @@ this.counter++;
 							
 							heightMap:   { type: "t", value: this.rtt},
 							gBuffer:   { type: "t", value: this.rtt2},
-							diffuseTex:   { type: "t", value: _SceneManager.getTexture('./terrain/grass.png')},
+							diffuseTex:   { type: "t", value: _SceneManager.getTexture(this.texture || './terrain/grass.png')},
 							projection:   { type: "m4", value: new THREE.Matrix4()},
 							campos:   { type: "v3", value: new THREE.Vector3()},
 							time:   { type: "f", value: 0}
@@ -255,6 +296,7 @@ this.counter++;
 		currentmat.attributes.random = {type:'f',value:[]};
 		for(var i = 0; i<vertcount; i+=6)
 		{
+			//careful with random!!!! this one is only useful because you cannot ever make a model decision based on it
 			var rand = Math.random();
 			for(var j=0; j < 6; j++)
 				currentmat.attributes.random.value.push(rand);
@@ -282,7 +324,7 @@ this.counter++;
 			{
 				for(var i =0; i < grassDensity; i++)
 				{
-					grassHeight = .5 + Math.random();
+					grassHeight = .5 + Math.random();//careful with random!!!! this one is only useful because you cannot ever make a model decision based on it
 					var centerRnd = new THREE.Vector3((Math.random() - .5)*2,(Math.random() - .5)*2,0);
 					var center = new THREE.Vector3(x + grassWidth/4 + centerRnd.x,y + grassWidth/4 + centerRnd.y,0);
 					var rot = new THREE.Vector3(Math.random()-.5,Math.random()-.5,0);
@@ -318,8 +360,90 @@ this.counter++;
 
 			this.geo =geo;
 		}
-		return  new THREE.Mesh(this.geo,this.getMat(this.geo.vertices.length));
+		return  new THREE.Mesh(this.geo,this.getGrassMat(this.geo.vertices.length));
 		
+	}
+	this.queues = {};
+	this.meshCache = {};
+	this.settingProperty = function(name,val)
+	{
+		if(name == 'texture')
+		{
+			this.texture = val;
+			if(this.mat)
+				this.mat.uniforms.diffuseTex.value = _SceneManager.getTexture(this.texture);
+		}
+	}
+	this.gettingProperty = function(name)
+	{
+		if(name == 'texture')
+		{
+			return this.texture
+		}
+		if(name == 'EditorData')
+		{
+			return {
+				diffuseTex:{
+					displayname:"Grass Texture",
+					type:"map",
+					property:"texture"
+				}
+			}
+		}
+	}
+	this.loadMesh = function(parent,url)
+	{
+
+		if(url == 'grass')
+		{
+			var grassMesh = this.createGrassMesh();
+		
+			grassMesh.vwfID == this.ID;
+			parent.add(grassMesh);
+			grassMesh.geometry.InvisibleToCPUPick = true;
+
+				
+				grassMesh.updateMatrixWorld();
+				grassMesh.geometry.computeBoundingSphere()
+
+				grassMesh.geometry.boundingSphere.radius = Infinity
+			return;
+		}
+
+		var self = this;
+		if(!self.queues[url])
+		{
+			self.queues[url] = async.queue(function(task,callback)
+			{
+				if(self.meshCache[url])
+				{
+					task.parent.add(self.meshCache[url].clone());
+
+					callback();
+				}else
+				{
+
+					var loader = new UTF8JsonLoader_Optimized({source:url},
+					function(asset)
+					{
+						//load the mesh
+
+						self.meshCache[url] = asset.scene;
+						task.parent.add(self.meshCache[url].clone());
+						
+						task.parent.updateMatrixWorld();
+						callback();
+					},
+					function()
+					{
+						callback();
+
+					});
+				}
+
+			},1);
+		}
+		self.queues[url].push({parent:parent,url:url})
 	}
 	this.init = function()
 	{
@@ -344,25 +468,58 @@ this.counter++;
 			this.positions[i] = [];
 			for(var j =0; j < this.dim; j++)
 			{
-				var grassMesh = this.createGrassMesh();
-				this.root.add(grassMesh);
-
-				var entry = {};
-				entry.position = [(i - this.dim/2) * this.tileW + this.tileW/2, (j - this.dim/2) * this.tileW+ this.tileW/2 ];
-				entry.mesh = grassMesh;
-				grassMesh.geometry.InvisibleToCPUPick = true;
-				grassMesh.position.x = entry.position[0];
-				grassMesh.position.y = entry.position[1];
 				
-				grassMesh.updateMatrixWorld();
-				grassMesh.geometry.computeBoundingSphere()
+				
 
-				grassMesh.geometry.boundingSphere.radius = Infinity
+				var entry = {meshes:[]};
+				entry.position = [(i - this.dim/2) * this.tileW + this.tileW/2, (j - this.dim/2) * this.tileW+ this.tileW/2 ];
+				
+
+				var grassMesh = new THREE.Object3D();
+				entry.meshes.push(grassMesh);
+				this.loadMesh(grassMesh,'grass');
+
+			//	var o = new THREE.Object3D();
+			//	o.rotation.x = 1.6 + (this.random()-.5)*.7;
+			//	o.rotation.z = (Math.random()-.5)*.7;
+			//	this.loadMesh(o,'./vwfdatamanager.svc/3drdownload?pid=adl:1723');
+			//	entry.meshes.push(o);
+
+			//	o = new THREE.Object3D();
+			//	o.rotation.x = 1.6 + (this.random()-.5)*.7;
+			//	o.rotation.z = (Math.random()-.5)*.7;
+			//	this.loadMesh(o,'./vwfdatamanager.svc/3drdownload?pid=adl:1723');
+			//	entry.meshes.push(o);
+
+			//	o = new THREE.Object3D();
+			//	o.rotation.x = 1.6 + (this.random()-.5)*.7;
+			//	o.rotation.z = (Math.random()-.5)*.7;
+			//	this.loadMesh(o,'./vwfdatamanager.svc/3drdownload?pid=adl:1791');
+			//	entry.meshes.push(o);
+					
+
+				for(var k=0; k < entry.meshes.length;  k++)
+				{
+					this.root.add(entry.meshes[k]);
+					entry.meshes[k].position.x = entry.position[0];
+					entry.meshes[k].position.y = entry.position[1];
+					if(k > 0)
+					{
+						entry.meshes[k].position.x += (this.tileW) * (this.random()-.5)
+						entry.meshes[k].position.y += (this.tileW) * (this.random()-.5)
+					}
+				}
+				
 
 				this.positions[i][j] = entry;
 			}
 		}
 
 	}
-
-})()
+}
+	//default factory code
+	return function(childID, childSource, childName) {
+		//name of the node constructor
+		return new terrainDecorator(childID, childSource, childName);
+	}
+})();

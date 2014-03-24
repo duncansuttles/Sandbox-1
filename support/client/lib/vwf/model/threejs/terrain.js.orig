@@ -26,18 +26,6 @@
 		
 		
 		this.init = false;
-		this.childAdded = function(child)
-		{
-
-		
-		child.TerrainRoot = this.getRoot();	
-		child.setGenerator(this.terrainGenerator);
-		child.setRoot(this.getRoot());
-		child.init(8,8);
-		child.update(new THREE.Vector3(0,0,0));
-
-
-		}
 		this.initializingNode = function()
 		{
 			window.requestAnimationFrame(this.update);
@@ -52,8 +40,25 @@
 			
 			
 			this.terrainGenerator = loadScript("vwf/model/threejs/terrainGenerator.js");
-			for(var i = 0; i < this.children.length; i++)
-				this.children[i].setGenerator(this.terrainGenerator);
+<<<<<<< HEAD
+			
+			/*
+
+			this.decorationManager = loadScript(   "vwf/model/threejs/terrainDecorationManager.js");
+			
+			this.decorationManager.setGenerator(this.terrainGenerator);
+			this.decorationManager.setRoot(this.getRoot());
+			this.decorationManager.init(new THREE.Vector3(0,0,0));
+			this.decorationManager.update(new THREE.Vector3(0,0,0));
+			*/
+=======
+		//	this.decorationManager = loadScript(   "vwf/model/threejs/terrainDecorationManager.js");
+			
+		//	this.decorationManager.setGenerator(this.terrainGenerator);
+		//	this.decorationManager.setRoot(this.getRoot());
+		//	this.decorationManager.init(new THREE.Vector3(0,0,0));
+		//	this.decorationManager.update(new THREE.Vector3(0,0,0));
+>>>>>>> 4806552c6c2ee32a7b3448171fc637d0fbe99f39
 
 			self.TileCache.terrainGenerator = this.terrainGenerator;
 			
@@ -328,13 +333,11 @@
 				this.counter = 0;
 				var now = performance.now();
 				var campos = _Editor.findcamera().position;
-
-				for(var i =0; i<this.children.length;i++)
-				{
-					this.children[i].update(campos);
-				}
-
-				
+<<<<<<< HEAD
+				//this.decorationManager.update(campos);
+=======
+			//	this.decorationManager.update(campos);
+>>>>>>> 4806552c6c2ee32a7b3448171fc637d0fbe99f39
 				var x = campos.x;
 				var y = campos.y;
 				

@@ -907,6 +907,41 @@ define(
 		{
 			_LocationTools.MoveToGround();
 		});
+
+		$('#MenuCreateTerrainGrass').click(function (e)
+		{
+			   if(!_dTerrain)
+			   {
+			   		alertify.alert('The scene must first contain a terrain object');
+			   		return
+			   }
+			   var parent = _dTerrain.ID;
+
+			  var GrassProto = {
+				extends: 'http://vwf.example.com/node3.vwf',
+				properties: {}
+				};
+				GrassProto.type = 'subDriver/threejs';
+				GrassProto.source = 'vwf/model/threejs/' + 'terrainDecorationManager' + '.js';
+			
+				GrassProto.properties.owner = _UserManager.GetCurrentUserName();
+				GrassProto.properties.DisplayName = _Editor.GetUniqueName('Grass');
+				_Editor.createChild(parent, GUID(), GrassProto, null, null);
+
+		});
+
+		$('#MenuCreateTerrainDecorator').click(function (e)
+		{
+			if(!_dTerrain)
+			{
+			   		alertify.alert('The scene must first contain a terrain object');
+			   		return
+			}
+		});
+
+
+
+
 		list = $('#smoothmenu1').find('[id]');
 		
 		//make every clicked menu item close all menus

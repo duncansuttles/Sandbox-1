@@ -430,7 +430,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 					node.sourceType= childType;
 					node.type= childExtendsID;
 					node.sceneID= this.state.sceneRootID;
-
+                    node.children = [];
 					node.threeObject = new THREE.Object3D();
 					node.threeObject.add(node.getRoot());
 					threeParent.add(node.threeObject);
@@ -488,7 +488,10 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 					if(!parentNode.children)
 						parentNode.children = [];
 					parentNode.children.push(node)
+
 					node.parentNode = parentNode;
+                    if(parentNode.childAdded)
+                        parentNode.childAdded(node);
 				}
             
             }
