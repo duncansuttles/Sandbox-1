@@ -414,26 +414,41 @@ function heightmapTerrainAlgorithm()
 			heightScale:this.heightScale || 1
 		};
 	}
+	this.getTexture = function(url)
+	{
+		if(!this.texCache)
+			this.texCache = {}
+		if(!this.texCache[url])
+		{
+			this.texCache[url] = _SceneManager.getTexture(url);
+			this.texCache[url].anisotropy = 1;
+		}
+		return this.texCache[url];
+
+	}
 	//This will allow you to setup shader variables that will be merged into the the terrain shader
 	this.getMaterialUniforms = function(mesh,matrix)
 	{
 		
 		var uniforms_default = {
-		diffuseSampler:   { type: "t", value: _SceneManager.getTexture( this.diffuseUrl,true) },
-		baseSampler:   { type: "t", value: _SceneManager.getTexture( this.baseUrl || "terrain/ground.jpg",true ) },
-		gSampler:   { type: "t", value: _SceneManager.getTexture( this.gUrl ||"terrain/cliff.jpg",true ) },
-		rSampler:   { type: "t", value: _SceneManager.getTexture( this.rUrl ||"terrain/cliff.jpg",true ) },
-		bSampler:   { type: "t", value: _SceneManager.getTexture( this.bUrl ||"terrain/ground.jpg",true ) },
+		diffuseSampler:   { type: "t", value: this.getTexture( this.diffuseUrl,true) },
+		baseSampler:   { type: "t", value: this.getTexture( this.baseUrl || "terrain/ground.jpg",true ) },
+		noiseSampler:   { type: "t", value: this.getTexture("terrain/bestnoise.png",true ) },
+		gSampler:   { type: "t", value: this.getTexture( this.gUrl ||"terrain/cliff.jpg",true ) },
+		rSampler:   { type: "t", value: this.getTexture( this.rUrl ||"terrain/cliff.jpg",true ) },
+		bSampler:   { type: "t", value: this.getTexture( this.bUrl ||"terrain/ground.jpg",true ) },
 
-		baseNormalMap:   { type: "t", value: _SceneManager.getTexture( this.baseUrlNorm ||"terrain/3091-normal.jpg",true ) },
-		gNormalMap:   { type: "t", value: _SceneManager.getTexture( this.gUrlNorm ||"terrain/grassnorm.jpg",true ) },
-		rNormalMap:   { type: "t", value: _SceneManager.getTexture( this.rUrlNorm ||"terrain/4979-normal.jpg",true ) },
-		bNormalMap:   { type: "t", value: _SceneManager.getTexture( this.bUrlNorm ||"textures/waternormal.jpg",true ) },
+		baseNormalMap:   { type: "t", value: this.getTexture( this.baseUrlNorm ||"terrain/3091-normal.jpg",true ) },
+		gNormalMap:   { type: "t", value: this.getTexture( this.gUrlNorm ||"terrain/grassnorm.jpg",true ) },
+		rNormalMap:   { type: "t", value: this.getTexture( this.rUrlNorm ||"terrain/4979-normal.jpg",true ) },
+		bNormalMap:   { type: "t", value: this.getTexture( this.bUrlNorm ||"textures/waternormal.jpg",true ) },
 		
-		mixMap:   { type: "t", value: _SceneManager.getTexture( this.mixUrl || "terrain/rivermix.png",true ) },
+		mixMap:   { type: "t", value: this.getTexture( this.mixUrl || "terrain/rivermix.png",true ) },
 		
 		};
 
+uniforms_default.noiseSampler.value.minFilter = THREE.NearestFilter;
+uniforms_default.noiseSampler.value.magFilter = THREE.NearestFilter;
 		return uniforms_default;
 	}
 
@@ -450,7 +465,7 @@ function heightmapTerrainAlgorithm()
 		"uniform sampler2D rNormalMap;\n"+
 		"uniform sampler2D gNormalMap;\n"+
 		"uniform sampler2D bNormalMap;\n"+
-
+		
 		"mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)\n"+
 		"{\n"+
 		"    // get edge vectors of the pixel triangle\n"+
@@ -491,45 +506,40 @@ function heightmapTerrainAlgorithm()
 		"}\n"+
 		"vec3 getNormal(vec3 coords, vec3 viewNorm, vec2 uv,vec3 wN) {\n"+
 
-		//"return  viewNorm;\n"+
+		"vec4 noise = texture2D(noiseSampler,gl_FragCoord.xy/50.00);\n"+
 
 		
 		" vec3 med = viewNorm;\n"+
 		" vec3 near = viewNorm;\n"+
+		"float faramt = interp(800.0,1000.0,distance(cameraPosition , coords));\n"+
+		"float nearamt = smoothstep(82.0,95.0,distance(cameraPosition , coords));\n"+
+
+		"float mixstep =step(noise.r*.99+.001,nearamt*nearamt);\n"+
+			
+
+		"vec3 coordscalemix = mix(coordsScaleB,coordsScaleA,mixstep);\n"+
+		"vec3 mulval = mix(vec3(1.0),coordsScaleB/coordsScaleA,1.0-mixstep);\n"+
+
 		"	 vec3 V = -((viewMatrix * vec4(coords,1.0)).xyz);\n"+
 		"    mat3 TBN0 = cotangent_frame(viewNorm, V, coordsScaleA.yz);\n"+
 		"    mat3 TBN1 = cotangent_frame(viewNorm, V, coordsScaleA.zx);\n"+
 		"    mat3 TBN2 = cotangent_frame(viewNorm, V, coordsScaleA.xy);\n"+
 
-		"float faramt = interp(800.0,1000.0,distance(cameraPosition , coords));\n"+
-		"float nearamt = interp(25.0,35.0,distance(cameraPosition , coords));\n"+
 		
-	//	"if(modelMatrix[0][0] < 3.0 ){\n" +//it's faster to branch on a uniform value than a computed model. This limits to tiles less than a certain size, which must be a given distance
-		"if(faramt < 1.0){\n"+
-			"	 vec3 basemap = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleA,wN,baseNormalMap);\n"+
-			"	 vec3 rmap = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleA,wN,rNormalMap);\n"+
-			"	 vec3 gmap = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleA,wN,gNormalMap);\n"+
-			"	 vec3 bmap = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleA,wN,bNormalMap);\n"+
-			"	 med = blendNorm(bmap,blendNorm(gmap,blendNorm(rmap,basemap,mixVal.r),mixVal.g),mixVal.b);\n"+
-			"}\n"+
-	//	"}\n"+
-
-	//	"if(modelMatrix[0][0] < 0.2 ){\n"+//it's faster to branch on a uniform value than a computed model. This limits to tiles less than a certain size, which must be a given distance
-			"if(nearamt < 1.0 ){\n"+
-			"	 vec3 basenear = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleB,wN,baseNormalMap) * coordA/coordB;\n"+
-			"	 vec3 rnear = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleB,wN,rNormalMap) * coordA/coordB;\n"+
-			"	 vec3 gnear = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleB,wN,gNormalMap) * coordA/coordB;\n"+
-			"	 vec3 bnear = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleB,wN,bNormalMap) * coordA/coordB;\n"+
+			"	 vec3 basenear = triPlanerNorm(TBN0,TBN1,TBN2,coordscalemix,wN,baseNormalMap)*mulval;\n"+
+			"	 vec3 rnear = triPlanerNorm(TBN0,TBN1,TBN2,coordscalemix,wN,rNormalMap)*mulval ;\n"+
+			"	 vec3 gnear = triPlanerNorm(TBN0,TBN1,TBN2,coordscalemix,wN,gNormalMap)*mulval ;\n"+
+			"	 vec3 bnear = triPlanerNorm(TBN0,TBN1,TBN2,coordscalemix,wN,bNormalMap)*mulval ;\n"+
 			"    near = blendNorm(bnear,blendNorm(gnear,blendNorm(rnear,basenear,mixVal.r),mixVal.g),mixVal.b);\n"+
-			"}\n"+
-	//	"}\n"+
+			
+	
 			
 		
 			
 			
 			
-			"vec3 dist =  mix(med,viewNorm,faramt);\n"+
-			"return  normalize(near*(1.0-nearamt) +dist);\n"+
+			"vec3 dist =  mix(near,med,faramt);\n"+
+			"return  normalize(dist);\n"+
 			
 		"}\n";
 	}
@@ -541,11 +551,13 @@ function heightmapTerrainAlgorithm()
 		return (
 		
 		"uniform sampler2D diffuseSampler;\n"+
+
 		"uniform sampler2D baseSampler;\n"+
 		"uniform sampler2D rSampler;\n"+
 		"uniform sampler2D gSampler;\n"+
 		"uniform sampler2D bSampler;\n"+
 		"uniform sampler2D mixMap;\n"+
+		"uniform sampler2D noiseSampler;\n"+
 		"uniform mat4 modelMatrix;\n"+
 		"vec4 mixVal=vec4(0.0,0.0,0.0,0.0);\n"+
 		"vec3 blend_weights = vec3(0.0,0.0,0.0);\n"+
@@ -589,6 +601,8 @@ function heightmapTerrainAlgorithm()
 		"vec4 getTexture(vec3 coords, vec3 norm, vec2 uv)" +
 		"{"+
 
+			"vec4 noise = texture2D(noiseSampler,gl_FragCoord.xy/50.00);\n"+
+			
 			(this.type == 'bt'?
 			"mixVal = texture2D(mixMap,((coords.yx * vec2(1.0,1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"
 			:
@@ -612,39 +626,32 @@ function heightmapTerrainAlgorithm()
 			
 
 			"float faramt = interp(800.0,1000.0,distance(cameraPosition , coords));\n"+
-			"float nearamt = interp(25.0,35.0,distance(cameraPosition , coords));\n"+
+			"float nearamt = smoothstep(25.0,35.0,distance(cameraPosition , coords));\n"+
 
-			
-		//	"if(modelMatrix[0][0] < 3.0 ){\n"+//it's faster to branch on a uniform value than a computed model. This limits to tiles less than a certain size, which must be a given distance
-			"if(faramt < 1.0 ){\n"+
-				"vec4 basemap = triPlanerMap(coordsScaleA,wN,baseSampler);\n"+
-				"vec4 rmap = triPlanerMap(coordsScaleA,wN,rSampler);\n"+
-				"vec4 gmap = triPlanerMap(coordsScaleA,wN,gSampler);\n"+
-				"vec4 bmap = triPlanerMap(coordsScaleA,wN,bSampler);\n"+
-				"med = blend(bmap,blend(gmap,blend(rmap,basemap,mixVal.r),mixVal.g),mixVal.b);\n"+
-			"}\n"+
+			"float mixstep =step(noise.r*.99+.001,nearamt*nearamt);\n"+
+		//	"return vec4(mixstep);\n"+
+		//	"if(faramt < 1.0 ){\n"+
+		//		"vec4 basemap = triPlanerMap(coordsScaleA,wN,baseSampler);\n"+
+		//		"vec4 rmap = triPlanerMap(coordsScaleA,wN,rSampler);\n"+
+		//		"vec4 gmap = triPlanerMap(coordsScaleA,wN,gSampler);\n"+
+		//		"vec4 bmap = triPlanerMap(coordsScaleA,wN,bSampler);\n"+
+		//		"med = blend(bmap,blend(gmap,blend(rmap,basemap,mixVal.r),mixVal.g),mixVal.b);\n"+
 		//	"}\n"+
+		
 			"vec4 near = med;\n"+
 			
-		//	"if(modelMatrix[0][0] < 0.2 ){\n"+//it's faster to branch on a uniform value than a computed model. This limits to tiles less than a certain size, which must be a given distance
-			"if(nearamt < 1.0){\n"+
-			
-				"vec4 basenear = triPlanerMap(coordsScaleB,wN,baseSampler);\n"+
-				"vec4 rnear = triPlanerMap(coordsScaleB,wN,rSampler);\n"+
-				"vec4 gnear = triPlanerMap(coordsScaleB,wN,gSampler);\n"+
-				"vec4 bnear = triPlanerMap(coordsScaleB,wN,bSampler);\n"+
+		//	"if(nearamt < 1.0){\n"+
+				"vec3 coordscalemix = mix(coordsScaleB,coordsScaleA,mixstep);\n"+
+				"vec4 basenear = triPlanerMap(coordscalemix,wN,baseSampler);\n"+
+				"vec4 rnear = triPlanerMap(coordscalemix,wN,rSampler);\n"+
+				"vec4 gnear = triPlanerMap(coordscalemix,wN,gSampler);\n"+
+				"vec4 bnear = triPlanerMap(coordscalemix,wN,bSampler);\n"+
 				"near = blend(bnear,blend(gnear,blend(rnear,basenear,mixVal.r),mixVal.g),mixVal.b);\n"+
 		//	"}\n"+
-			"}\n"+
-			
-			
-			
-			
-			//"vec4 near = blend(dirt,vec4(0.0,0.0,0.0,0.0),mixVal.r);\n"+
 			
 
-			"vec4 medAndFar = mix(med,diffuse,faramt);\n"+
-			"return mix(near,medAndFar,nearamt);\n"+
+			
+			"return mix(near,diffuse,faramt);\n"+
 		"}")
 	}
 	

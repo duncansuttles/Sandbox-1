@@ -203,6 +203,7 @@ this.counter++;
 						"attribute float random;"+
 						"varying float ar;"+
 						"varying float rand;"+
+						"varying vec2 wind;"+
 						"float unpack_depth(const in vec4 rgba_depth)\n"+
 						"{\n"+
 						    "const vec4 bit_shift = vec4(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0, 1.0);\n"+
@@ -213,11 +214,13 @@ this.counter++;
 						
 						"    tc = (( projection * modelMatrix  ) * vec4( position, 1.0 )).xy;\n"+
 						"    progtc = (tc + 1.0) / 2.0;\n"+
-						"    vec4 color1 = texture2D(heightMap,progtc);"+
-						"    float z =unpack_depth(color1) * 1000.0;"+
+						"    vec4 color1 = texture2DLod(heightMap,progtc,0.0);"+
+						"    float z = unpack_depth(color1) * 1000.0;"+
 						"    mat4 modMat = modelMatrix;"+
 						"    modMat[3][2] =0.0;"+
-						"    gl_Position = modMat * vec4( position.xy + vec2(sin(position.x/2.0 + time/1900.0)+cos(position.y/2.0 + time/1900.0),0.0)/3.0 * uv.y,position.z+z-0.45, 1.0 );\n"+
+						"  wind = vec2(sin(position.x/2.0 + time/1900.0)+cos(position.y/2.0 + time/1900.0),0.0);\n"+
+						"wind = (wind + 1.0) / 4.0;\n"+
+						"    gl_Position = modMat * vec4( position.xy + wind * uv.y,position.z+z-0.45, 1.0 );\n"+
 						"    ar = length(gl_Position.xyz - cameraPosition)/20.0;\n"+
 						//"    gl_Position.z = z;"+
 						"    gl_Position = viewMatrix * gl_Position;\n"+
@@ -232,6 +235,7 @@ this.counter++;
 						"varying vec2 progtc;"+
 						"varying vec2 tc;"+
 						"varying float rand;"+
+						"varying vec2 wind;"+
 						"varying float ar;"+
 						"void main() { "+
 						"vec4 color1 = texture2D(diffuseTex,tc);"+
@@ -242,7 +246,7 @@ this.counter++;
 						"if ( color1.a < ar * ar ) discard;\n"+
 						"if ( color1.a * density < .5) discard;\n"+
 						"gl_FragColor = color1;"+
-						"gl_FragColor.xyz *= light +.15*rand;\n"+
+						"gl_FragColor.xyz *= (light +.15*rand) + wind.x * wind.x * tc.y* tc.y;\n"+
 						
 						"}"
 						
@@ -259,6 +263,7 @@ this.counter++;
 		this.mat.side  =2;
 		this.mat.uniforms.diffuseTex.value.wrapS = THREE.ClampToEdgeWrapping;
 		this.mat.uniforms.diffuseTex.value.wrapT = THREE.ClampToEdgeWrapping;
+		this.mat.uniforms.diffuseTex.anisotropy = 1;
 		}
 		return this.mat;
 
@@ -328,8 +333,8 @@ this.counter++;
 	//	this.cameraHelper = new THREE.CameraHelper(this.camera);
 	//	this.cameraHelper.InvisibleToCPUPick = true;
 	//	this.root.add(this.cameraHelper,true);
-		this.rtt = new  THREE.WebGLRenderTarget( 512,512 ,{ } );
-		this.rtt2 = new  THREE.WebGLRenderTarget( 512,512 ,{ } );
+		this.rtt = new  THREE.WebGLRenderTarget( 128,128 ,{ } );
+		this.rtt2 = new  THREE.WebGLRenderTarget( 128,128 ,{ } );
 	//	this.rtt.generateMipmaps = false;
 		
 		//this.scene.add(this.root);

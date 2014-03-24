@@ -301,7 +301,7 @@ SceneManager.prototype.getDefaultTexture = function()
 		this.defaultTexture.minFilter = THREE.LinearMipMapLinearFilter;
 		this.defaultTexture.magFilter = THREE.LinearFilter;
 		if(window._dRenderer)
-			this.defaultTexture = _dRenderer.getMaxAnisotropy();
+			this.defaultTexture = 1;//_dRenderer.getMaxAnisotropy();
 		this.defaultTexture.wrapS = THREE.RepeatWrapping;
 		this.defaultTexture.wrapT = THREE.RepeatWrapping;
 	}
@@ -319,7 +319,7 @@ SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) 
 		texture.magFilter = THREE.LinearFilter;
 		
 		if(window._dRenderer)
-			texture.anisotropy = _dRenderer.getMaxAnisotropy();
+			texture.anisotropy = 1;//_dRenderer.getMaxAnisotropy();
 		texture.wrapS = THREE.RepeatWrapping;
 		texture.wrapT = THREE.RepeatWrapping;
 		var loader = new THREE.ImageLoader();
