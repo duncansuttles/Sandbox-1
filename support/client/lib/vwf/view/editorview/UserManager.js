@@ -112,6 +112,7 @@ define(function ()
 				
 				//published worlds may choose to allow anonymous users
 				//singleplayers worlds do not need login
+				// TODO
 				if(statedata && statedata.publishSettings && (statedata.publishSettings.allowAnonymous ||  statedata.publishSettings.singlePlayer))
 					needlogin = false;
 				
@@ -204,7 +205,7 @@ define(function ()
 			{
 				var statedata = _DataManager.getInstanceData();
 				
-				
+				// TODO
 				if((statedata && statedata.publishSettings && !statedata.publishSettings.camera) || !statedata || !statedata.publishSettings)
 				{
 					
@@ -228,6 +229,7 @@ define(function ()
 				
 				//published worlds may choose to allow anonymous users
 				//singleplayers worlds do not need login
+				// TODO
 				if(statedata && statedata.publishSettings && (statedata.publishSettings.allowAnonymous ||  statedata.publishSettings.singlePlayer))
 					needlogin = false;
 				
@@ -394,6 +396,7 @@ define(function ()
 			if (vwf.getProperty('index-vwf', 'owner') == null) vwf.setProperty('index-vwf', 'owner', this.currentUsername);
 			
 			//if single player, world is yours
+			// TODO
 			if(statedata && statedata.publishSettings && statedata.publishSettings.singlePlayer)
 				vwf.setProperty('index-vwf', 'owner', this.currentUsername);
 			

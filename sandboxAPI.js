@@ -726,28 +726,41 @@ function Publish(URL, SID, publishdata, response){
 			respond(response,500,'You must be the owner of a world you publish');
 			return;
 		}
+
+		// TODO
 		
-		var publishSettings = null;
 		//The settings  for the published state. 
 		//have to handle these in the client side code, with some enforcement at the server
 		global.log(publishdata);
-		if(publishdata)
-		{
-			var singlePlayer = publishdata.SinglePlayer;
-			var camera = publishdata.camera;
-			var allowAnonymous = publishdata.allowAnonymous;
-			var createAvatar = publishdata.createAvatar;
-			var allowTools = publishdata.allowTools;
-		
-			 publishSettings = {singlePlayer:singlePlayer,camera:camera,allowAnonymous:allowAnonymous,createAvatar:createAvatar,allowTools:allowTools};
-		}
+
+		var publishSettings = {};
+		publishSettings.isPublished = publishdata.published;
+		publishSettings.singlePlayer = publishdata.singlePlayer;
+		publishSettings.camera = publishdata.camera;
+		publishSettings.allowAnonymous = publishdata.allowAnonymous;
+		publishSettings.createAvatar = publishdata.createAvatar;
+		publishSettings.allowTools = publishdata.allowTools;
+
+
+		publishSettings.lrData = {};
+		publishSettings.lrData.publishedToLR = publishdata.lrData.publishedToLR;
+		publishSettings.lrData.authorName = publishdata.lrData.authorName;
+		publishSettings.lrData.authorEmail = publishdata.lrData.authorEmail;
+		publishSettings.lrData.subject = publishdata.lrData.subject;
+		publishSettings.lrData.grade = publishdata.lrData.grade;
+		publishSettings.lrData.resourceType = publishdata.lrData.resourceType;
+		publishSettings.lrData.interactivity = publishdata.lrData.interactivity;
+
+
 		//publish the state, and get the new id for the pubished state
 		DAL.Publish(SID, publishSettings, function(newId){
 
-			if( publishSettings ){
+			if( !state.publishSettings.isPublished && publishSettings.isPublished ){
+				console.log(SID, 'published');
 				xapi.sendStatement(URL.loginData.UID, xapi.verbs.published, newId);
 			}
-			else {
+			else if( state.publishSettings.isPublished && !publishSettings.isPublished ){
+				console.log(SID, 'unpublished');
 				xapi.sendStatement(URL.loginData.UID, xapi.verbs.unpublished, newId);
 			}
 			
@@ -946,6 +959,7 @@ function SaveState(URL,id,data,response)
 	{
 	
 		//not allowed to update a published world
+		// TODO
 		if(state.publishSettings)
 		{
 			respond(response,500,'World is published, Should never have tried to save. How did we get here? ' + id);

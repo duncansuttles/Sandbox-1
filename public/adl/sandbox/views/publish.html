@@ -54,39 +54,27 @@
 
 				p.title(data.title);
 				p.description(data.description);
-				p.publish( !! data.publishSettings );
 
-				if( data.publishSettings )
-				{
-					p.allowAnonymous( data.publishSettings.allowAnonymous );
-					p.allowTools( data.publishSettings.allowTools );
-					p.singlePlayer( data.publishSettings.singlePlayer );
-					p.createAvatar( data.publishSettings.createAvatar );
-					p.defaultCamera( data.publishSettings.camera === '' );
-					p.camera( data.publishSettings.camera );
-				}
-			/*		author name/email
-					publisher name/email (sandbox maintainer info, static)
+				if( !data.publishSettings )
+					data.publishSettings = {'lrData': {}};
+				else if( !data.publishSettings.lrData )
+					data.publishSettings.lrData = {};
 
-					resource title/description/url (given above)
-					subject
-					grade
-					date created/modified
-					media type (other)
-					learning resource type (assessment/demonstration/game/simulation)
-					interactivity (interactive/passive)
-					alignment*/
+				p.publish( data.publishSettings.isPublished );
+				p.allowAnonymous( data.publishSettings.allowAnonymous );
+				p.allowTools( data.publishSettings.allowTools );
+				p.singlePlayer( data.publishSettings.singlePlayer );
+				p.createAvatar( data.publishSettings.createAvatar );
+				p.defaultCamera( data.publishSettings.camera === '' );
+				p.camera( data.publishSettings.camera );
 
 				var lrp = vwfPortalModel.lrPublishSettings;
-				if( data.publishSettings && data.publishSettings.lrData )
-				{
-					lrp.publishToLR(false);
-					lrp.authorName( data.publishSettings.lrData.authorName );
-					lrp.subject( data.publishSettings.lrData.subject );
-					lrp.grade( data.publishSettings.lrData.grade );
-					lrp.resourceType( data.publishSettings.lrData.resourceType );
-					lrp.interactivity( data.publishSettings.lrData.interactivity );
-				}
+				lrp.publishToLR( data.publishSettings.lrData.publishedToLR );
+				lrp.authorName( data.publishSettings.lrData.authorName );
+				lrp.subject( data.publishSettings.lrData.subject );
+				lrp.grade( data.publishSettings.lrData.grade );
+				lrp.resourceType( data.publishSettings.lrData.resourceType );
+				lrp.interactivity( data.publishSettings.lrData.interactivity );
 			},
 			error:function(xhr,status,err)
 			{
@@ -132,66 +120,25 @@
 
 		var p = vwfPortalModel.publishSettings;
 		var lrp = vwfPortalModel.lrPublishSettings;
-		var statedata;
 
-		if( p.publish() || lrp.publishToLR() )
-			statedata = {};
-		else
-			statedata = null;
+		var statedata = {};
+		statedata.published = p.publish();
+		statedata.title = p.title();
+		statedata.description = p.description();
+		statedata.singlePlayer = p.singlePlayer();
+		statedata.camera = p.defaultCamera() ? '' : p.camera();
+		statedata.allowAnonymous = p.allowAnonymous();
+		statedata.createAvatar = p.createAvatar();
+		statedata.allowTools = p.allowTools();
 
-
-		if( p.publish() )
-		{
-			statedata.title = p.title();
-			statedata.description = p.description();
-			statedata.SinglePlayer = p.singlePlayer();
-			statedata.camera = p.defaultCamera() ? '' : p.camera();
-			statedata.allowAnonymous = p.allowAnonymous();
-			statedata.createAvatar = p.createAvatar();
-			statedata.allowTools = p.allowTools();
-		}
-		if( lrp.publishToLR() )
-		{
-			/*
-			data needed:
-
-			author name/email
-			publisher name/email (sandbox maintainer info, static)
-
-			resource title/description/url (given above)
-			subject
-			grade
-			date created/modified
-			media type (other)
-			learning resource type (assessment/demonstration/game/simulation)
-			interactivity (interactive/passive)
-			alignment
-			*/
-
-			statedata.lrData = {
-				'resourceUrl': null,
-				'dateCreated': null,
-				'mediaType': 'other',
-				
-			};
-
-			if(lrp.authorName())
-				statedata.lrData.authorName = lrp.authorName();
-			if(lrp.authorEmail())
-				statedata.lrData.authorEmail = lrp.authorEmail();
-			if(p.title())
-				statedata.lrData.title = p.title();
-			if(p.description())
-				statedata.lrData.description = p.description();
-			if(lrp.subject())
-				statedata.lrData.subject = lrp.subject();
-			if(lrp.grade().length > 0)
-				statedata.lrData.grade = lrp.grade();
-			if(lrp.resourceType().length > 0)
-				statedata.lrData.resourceType = lrp.resourceType();
-			if(lrp.interactivity())
-				statedata.lrData.interactivity = lrp.interactivity();
-		}
+		statedata.lrData = {};
+		statedata.lrData.publishedToLR = lrp.publishToLR();
+		statedata.lrData.authorName = lrp.authorName();
+		statedata.lrData.authorEmail = lrp.authorEmail();
+		statedata.lrData.subject = lrp.subject();
+		statedata.lrData.grade = lrp.grade();
+		statedata.lrData.resourceType = lrp.resourceType();
+		statedata.lrData.interactivity = lrp.interactivity();
 
 		jQuery.ajax(
 		{
@@ -269,7 +216,7 @@
 
 					<div class="row">
 						<div class="col-md-4"><label for='authorName'>Author Name</label></div>
-						<div class="col-md-8"><input type='text' placeholder='Author C. Clarke' id='authorName' style="width:100%;" data-bind="enable: publishToLR"/></div>
+						<div class="col-md-8"><input type='text' placeholder='Author C. Clarke' id='authorName' style="width:100%;" data-bind="enable: publishToLR, value: authorName"/></div>
 					</div>
 					<div class="row">
 						<div class="col-md-4"><label for='authorEmail'>Author Email</label></div>
