@@ -40,15 +40,12 @@
 			
 			
 			this.terrainGenerator = loadScript("vwf/model/threejs/terrainGenerator.js");
+		//	this.decorationManager = loadScript(   "vwf/model/threejs/terrainDecorationManager.js");
 			
-			/*
-
-			this.decorationManager = loadScript(   "vwf/model/threejs/terrainDecorationManager.js");
-			
-			this.decorationManager.setGenerator(this.terrainGenerator);
-			this.decorationManager.setRoot(this.getRoot());
-			this.decorationManager.init(new THREE.Vector3(0,0,0));
-			this.decorationManager.update(new THREE.Vector3(0,0,0));
+		//	this.decorationManager.setGenerator(this.terrainGenerator);
+		//	this.decorationManager.setRoot(this.getRoot());
+		//	this.decorationManager.init(new THREE.Vector3(0,0,0));
+		//	this.decorationManager.update(new THREE.Vector3(0,0,0));
 			*/
 
 			self.TileCache.terrainGenerator = this.terrainGenerator;
@@ -324,7 +321,7 @@
 				this.counter = 0;
 				var now = performance.now();
 				var campos = _Editor.findcamera().position;
-				//this.decorationManager.update(campos);
+			//	this.decorationManager.update(campos);
 				var x = campos.x;
 				var y = campos.y;
 				
