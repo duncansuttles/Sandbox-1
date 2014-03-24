@@ -433,7 +433,6 @@ function heightmapTerrainAlgorithm()
 		var uniforms_default = {
 		diffuseSampler:   { type: "t", value: this.getTexture( this.diffuseUrl,true) },
 		baseSampler:   { type: "t", value: this.getTexture( this.baseUrl || "terrain/ground.jpg",true ) },
-		noiseSampler:   { type: "t", value: this.getTexture("terrain/bestnoise.png",true ) },
 		gSampler:   { type: "t", value: this.getTexture( this.gUrl ||"terrain/cliff.jpg",true ) },
 		rSampler:   { type: "t", value: this.getTexture( this.rUrl ||"terrain/cliff.jpg",true ) },
 		bSampler:   { type: "t", value: this.getTexture( this.bUrl ||"terrain/ground.jpg",true ) },
@@ -447,8 +446,6 @@ function heightmapTerrainAlgorithm()
 		
 		};
 
-uniforms_default.noiseSampler.value.minFilter = THREE.NearestFilter;
-uniforms_default.noiseSampler.value.magFilter = THREE.NearestFilter;
 		return uniforms_default;
 	}
 
@@ -465,81 +462,85 @@ uniforms_default.noiseSampler.value.magFilter = THREE.NearestFilter;
 		"uniform sampler2D rNormalMap;\n"+
 		"uniform sampler2D gNormalMap;\n"+
 		"uniform sampler2D bNormalMap;\n"+
-		
-		"mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)\n"+
+
+		"mat3 cotangent_frame(in vec3 N,in  vec3 p, in vec2 uv)\n"+
 		"{\n"+
 		"    // get edge vectors of the pixel triangle\n"+
-		"    vec3 dp1 = dFdx( p );\n"+
-		"    vec3 dp2 = dFdy( p );\n"+
-		"    vec2 duv1 = dFdx( uv );\n"+
-		"    vec2 duv2 = dFdy( uv );\n"+
+		"    lowp vec3 dp1 = dFdx( p );\n"+
+		"    lowp vec3 dp2 = dFdy( p );\n"+
+		"    lowp vec2 duv1 = dFdx( uv );\n"+
+		"    lowp vec2 duv2 = dFdy( uv );\n"+
 		 
 		"    // solve the linear system\n"+
-		"    vec3 dp2perp = cross( dp2, N );\n"+
-		"    vec3 dp1perp = cross( N, dp1 );\n"+
-		"    vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;\n"+
-		"    vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;\n"+
+		"    lowp vec3 dp2perp = cross( dp2, N );\n"+
+		"    lowp vec3 dp1perp = cross( N, dp1 );\n"+
+		"   lowp  vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;\n"+
+		"    lowp vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;\n"+
 		 
 		"    // construct a scale-invariant frame \n"+
-		"    float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );\n"+
-		"    return mat3( T * invmax, B * invmax, N );\n"+
+		"    lowp float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );\n"+
+		"    return  mat3( T * invmax, B * invmax, N );\n"+
 		"}\n"+
 
-		"vec3 perturb_normal( mat3 TBN, vec2 texcoord, sampler2D sampler )\n"+
+		"vec3 perturb_normal( in mat3 TBN, in vec2 texcoord, in sampler2D sampler )\n"+
 		"{\n"+
 		"    // assume N, the interpolated vertex normal and \n"+
 		"    // V, the view vector (vertex to eye)\n"+
-		"    vec3 map = texture2D(sampler, texcoord ).xyz;\n"+
+		"    lowp vec3 map = texture2D(sampler, texcoord ).xyz;\n"+
 		"    map = map * 2.0 - 1.0;\n"+
 		"    return normalize(TBN * map);\n"+
 		"}\n"+
-		"vec3 triPlanerNorm(mat3 TBN0, mat3 TBN1, mat3 TBN2, vec3 coords, vec3 norm, sampler2D sampler)" +
+		"vec3 triPlanerNorm(in mat3 TBN0, in mat3 TBN1, in mat3 TBN2, in vec3 coords, in vec3 norm, in sampler2D sampler)" +
 		"{"+
-			"vec3 dirt0 = perturb_normal(TBN0, coords.yz, sampler);\n"+
-			"vec3 dirt1 = perturb_normal(TBN1, coords.zx, sampler);\n"+
-			"vec3 dirt2 = perturb_normal(TBN2, -coords.xy, sampler);\n"+
+			"lowp vec3 dirt0 = perturb_normal(TBN0, coords.yz, sampler);\n"+
+			"lowp vec3 dirt1 = perturb_normal(TBN1, coords.zx, sampler);\n"+
+			"lowp vec3 dirt2 = perturb_normal(TBN2, -coords.xy, sampler);\n"+
 			"return blend_weights.x * dirt0 + blend_weights.y * dirt1 + blend_weights.z * dirt2;\n"+
 		"}"+
-		"vec3 blendNorm(vec3 texture1,vec3 texture2, float a1)\n"+
+		"vec3 blendNorm(in vec3 texture1,in vec3 texture2, in float a1)\n"+
 		"{\n"+
 		"    return mix(texture1,texture2,1.0-a1);\n"+
 		"}\n"+
-		"vec3 getNormal(vec3 coords, vec3 viewNorm, vec2 uv,vec3 wN) {\n"+
+		"vec3 getNormal(in vec3 coords,in  vec3 viewNorm,in  vec2 uv,in vec3 wN) {\n"+
 
-		"vec4 noise = texture2D(noiseSampler,gl_FragCoord.xy/50.00);\n"+
-
-		
-		" vec3 med = viewNorm;\n"+
-		" vec3 near = viewNorm;\n"+
-		"float faramt = interp(800.0,1000.0,distance(cameraPosition , coords));\n"+
-		"float nearamt = smoothstep(82.0,95.0,distance(cameraPosition , coords));\n"+
-
-		"float mixstep =step(noise.r*.99+.001,nearamt*nearamt);\n"+
-			
-
-		"vec3 coordscalemix = mix(coordsScaleB,coordsScaleA,mixstep);\n"+
-		"vec3 mulval = mix(vec3(1.0),coordsScaleB/coordsScaleA,1.0-mixstep);\n"+
-
-		"	 vec3 V = -((viewMatrix * vec4(coords,1.0)).xyz);\n"+
-		"    mat3 TBN0 = cotangent_frame(viewNorm, V, coordsScaleA.yz);\n"+
-		"    mat3 TBN1 = cotangent_frame(viewNorm, V, coordsScaleA.zx);\n"+
-		"    mat3 TBN2 = cotangent_frame(viewNorm, V, coordsScaleA.xy);\n"+
+		//"return  viewNorm;\n"+
 
 		
-			"	 vec3 basenear = triPlanerNorm(TBN0,TBN1,TBN2,coordscalemix,wN,baseNormalMap)*mulval;\n"+
-			"	 vec3 rnear = triPlanerNorm(TBN0,TBN1,TBN2,coordscalemix,wN,rNormalMap)*mulval ;\n"+
-			"	 vec3 gnear = triPlanerNorm(TBN0,TBN1,TBN2,coordscalemix,wN,gNormalMap)*mulval ;\n"+
-			"	 vec3 bnear = triPlanerNorm(TBN0,TBN1,TBN2,coordscalemix,wN,bNormalMap)*mulval ;\n"+
-			"    near = blendNorm(bnear,blendNorm(gnear,blendNorm(rnear,basenear,mixVal.r),mixVal.g),mixVal.b);\n"+
-			
+		" lowp vec3 med = viewNorm;\n"+
+		" lowp vec3 near = viewNorm;\n"+
+		"	 lowp vec3 V = -((viewMatrix * vec4(coords,1.0)).xyz);\n"+
+		"    lowp mat3 TBN0 = cotangent_frame(viewNorm, V, coordsScaleA.yz);\n"+
+		"   lowp  mat3 TBN1 = cotangent_frame(viewNorm, V, coordsScaleA.zx);\n"+
+		"   lowp  mat3 TBN2 = cotangent_frame(viewNorm, V, coordsScaleA.xy);\n"+
+
+		"lowp float faramt = interp(300.0,400.0,distance(cameraPosition , coords));\n"+
+		"lowp float nearamt = interp(25.0,35.0,distance(cameraPosition , coords));\n"+
+		
+			"if(faramt < 1.0){\n"+
+			"	 lowp vec3 basemap = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleA,wN,baseNormalMap);\n"+
+			"	 lowp vec3 rmap = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleA,wN,rNormalMap);\n"+
+			"	 lowp vec3 gmap = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleA,wN,gNormalMap);\n"+
+			"	 lowp vec3 bmap = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleA,wN,bNormalMap);\n"+
+			"	 med = blendNorm(bmap,blendNorm(gmap,blendNorm(rmap,basemap,mixVal.r),mixVal.g),mixVal.b);\n"+
+			"}\n"+
 	
+
+	//	"if(modelMatrix[0][0] < 0.2 ){\n"+//it's faster to branch on a uniform value than a computed model. This limits to tiles less than a certain size, which must be a given distance
+			"if(nearamt < 1.0 ){\n"+
+			"	 lowp vec3 basenear = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleB,wN,baseNormalMap) * coordA/coordB;\n"+
+			"	 lowp vec3 rnear = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleB,wN,rNormalMap) * coordA/coordB;\n"+
+			"	 lowp vec3 gnear = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleB,wN,gNormalMap) * coordA/coordB;\n"+
+			"	 lowp vec3 bnear = triPlanerNorm(TBN0,TBN1,TBN2,coordsScaleB,wN,bNormalMap) * coordA/coordB;\n"+
+			"    near = blendNorm(bnear,blendNorm(gnear,blendNorm(rnear,basenear,mixVal.r),mixVal.g),mixVal.b);\n"+
+			"}\n"+
+	//	"}\n"+
 			
 		
 			
 			
 			
-			"vec3 dist =  mix(near,med,faramt);\n"+
-			"return  normalize(dist);\n"+
+			"lowp vec3 dist =  mix(med,viewNorm,faramt);\n"+
+			"return  normalize(near*(1.0-nearamt) +dist);\n"+
 			
 		"}\n";
 	}
@@ -551,42 +552,40 @@ uniforms_default.noiseSampler.value.magFilter = THREE.NearestFilter;
 		return (
 		
 		"uniform sampler2D diffuseSampler;\n"+
-
 		"uniform sampler2D baseSampler;\n"+
 		"uniform sampler2D rSampler;\n"+
 		"uniform sampler2D gSampler;\n"+
 		"uniform sampler2D bSampler;\n"+
 		"uniform sampler2D mixMap;\n"+
-		"uniform sampler2D noiseSampler;\n"+
 		"uniform mat4 modelMatrix;\n"+
 		"vec4 mixVal=vec4(0.0,0.0,0.0,0.0);\n"+
 		"vec3 blend_weights = vec3(0.0,0.0,0.0);\n"+
 
-		"vec4 triPlanerMap(vec3 coords, vec3 norm, sampler2D sampler)" +
+		"vec4 triPlanerMap(in vec3 coords, in vec3 norm, in sampler2D sampler)" +
 		"{"+
-			"vec4 dirt0 = texture2D(sampler,((coords.yz )));\n"+
-			"vec4 dirt1 = texture2D(sampler,((coords.zx )));\n"+
-			"vec4 dirt2 = texture2D(sampler,((coords.xy )));\n"+
-			"vec3 blend_weights = abs( norm.xyz );   // Tighten up the blending zone:  \n"+
+			"lowp vec4 dirt0 = texture2D(sampler,((coords.yz )));\n"+
+			"lowp vec4 dirt1 = texture2D(sampler,((coords.zx )));\n"+
+			"lowp vec4 dirt2 = texture2D(sampler,((coords.xy )));\n"+
+			"lowp vec3 blend_weights = abs( norm.xyz );   // Tighten up the blending zone:  \n"+
 			
 			"return blend_weights.x * dirt0 + blend_weights.y * dirt1 + blend_weights.z * dirt2;\n"+
 		"}"+
-		"vec4 blend(vec4 texture1, vec4 texture2, float a1)\n"+
+		"vec4 blend(in vec4 texture1, in vec4 texture2, in float a1)\n"+
 		"{\n"+
-		" float a2 = 1.0-a1;\n"+
-		"    float depth = 0.2;\n"+
-		"    float ma = max(length(texture1) + a1,length( texture2) + a2) - depth;\n"+
+		" lowp float a2 = 1.0-a1;\n"+
+		"    lowp float depth = 0.2;\n"+
+		"    lowp float ma = max(length(texture1) + a1,length( texture2) + a2) - depth;\n"+
 
-		"    float b1 = max(length(texture1) + a1 - ma, 0.0);\n"+
-		"    float b2 = max(length(texture2) + a2 - ma, 0.0);\n"+
+		"    lowp float b1 = max(length(texture1) + a1 - ma, 0.0);\n"+
+		"    lowp float b2 = max(length(texture2) + a2 - ma, 0.0);\n"+
 		//"return mix(texture1,texture2,a1);\n"+
-		"    return vec4((texture1.rgb * b1 + texture2.rgb * b2) / (b1 + b2),max(texture1.a,texture2.a));\n"+
+		"    return  vec4((texture1.rgb * b1 + texture2.rgb * b2) / (b1 + b2),max(texture1.a,texture2.a));\n"+
 		"}\n"+
-		"float interp(float min, float max, float val)"+
+		"float interp(in float min, in float max, in float val)"+
 		"{"+
 			"return clamp((val - min)/(max-min),0.0,1.0);"+
 		"}"+
-		"vec4 getGrassDensity(vec3 coords, vec3 norm, vec2 uv)" +
+		"vec4 getGrassDensity(in vec3 coords, in vec3 norm, in vec2 uv)" +
 		"{"+
 			(this.type == 'bt'?
 			"mixVal = texture2D(mixMap,((coords.yx * vec2(1.0,1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"
@@ -598,11 +597,9 @@ uniforms_default.noiseSampler.value.magFilter = THREE.NearestFilter;
 			
 			"return vec4(mixVal);"+
 		"}"+
-		"vec4 getTexture(vec3 coords, vec3 norm, vec2 uv)" +
+		"vec4 getTexture(in vec3 coords, in vec3 norm, in vec2 uv)" +
 		"{"+
 
-			"vec4 noise = texture2D(noiseSampler,gl_FragCoord.xy/50.00);\n"+
-			
 			(this.type == 'bt'?
 			"mixVal = texture2D(mixMap,((coords.yx * vec2(1.0,1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"
 			:
@@ -617,41 +614,48 @@ uniforms_default.noiseSampler.value.magFilter = THREE.NearestFilter;
 			"blend_weights /= (blend_weights.x + blend_weights.y + blend_weights.z ); \n"+
 
 			(this.type == 'bt'?
-			"vec4 diffuse = texture2D(diffuseSampler,((coords.yx * vec2(1.0,1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"
+			"lowp vec4 diffuse = texture2D(diffuseSampler,((coords.yx * vec2(1.0,1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"
 			:
-			"vec4 diffuse = texture2D(diffuseSampler,((coords.yx * vec2(1.0,-1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"
+			"lowp vec4 diffuse = texture2D(diffuseSampler,((coords.yx * vec2(1.0,-1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"
 			)+
 			
-			"vec4 med = diffuse;\n"+
+			"lowp vec4 med = diffuse;\n"+
 			
 
-			"float faramt = interp(800.0,1000.0,distance(cameraPosition , coords));\n"+
-			"float nearamt = smoothstep(25.0,35.0,distance(cameraPosition , coords));\n"+
+			"lowp float faramt = interp(300.0,400.0,distance(cameraPosition , coords));\n"+
+			"lowp float nearamt = interp(25.0,35.0,distance(cameraPosition , coords));\n"+
 
-			"float mixstep =step(noise.r*.99+.001,nearamt*nearamt);\n"+
-		//	"return vec4(mixstep);\n"+
-		//	"if(faramt < 1.0 ){\n"+
-		//		"vec4 basemap = triPlanerMap(coordsScaleA,wN,baseSampler);\n"+
-		//		"vec4 rmap = triPlanerMap(coordsScaleA,wN,rSampler);\n"+
-		//		"vec4 gmap = triPlanerMap(coordsScaleA,wN,gSampler);\n"+
-		//		"vec4 bmap = triPlanerMap(coordsScaleA,wN,bSampler);\n"+
-		//		"med = blend(bmap,blend(gmap,blend(rmap,basemap,mixVal.r),mixVal.g),mixVal.b);\n"+
+			
+		//	"if(modelMatrix[0][0] < 3.0 ){\n"+//it's faster to branch on a uniform value than a computed model. This limits to tiles less than a certain size, which must be a given distance
+			"if(faramt < 1.0 ){\n"+
+				"lowp vec4 basemap = triPlanerMap(coordsScaleA,wN,baseSampler);\n"+
+				"lowp vec4 rmap = triPlanerMap(coordsScaleA,wN,rSampler);\n"+
+				"lowp vec4 gmap = triPlanerMap(coordsScaleA,wN,gSampler);\n"+
+				"lowp vec4 bmap = triPlanerMap(coordsScaleA,wN,bSampler);\n"+
+				"med = blend(bmap,blend(gmap,blend(rmap,basemap,mixVal.r),mixVal.g),mixVal.b);\n"+
+			"}\n"+
 		//	"}\n"+
-		
-			"vec4 near = med;\n"+
+			"lowp vec4 near = med;\n"+
 			
-		//	"if(nearamt < 1.0){\n"+
-				"vec3 coordscalemix = mix(coordsScaleB,coordsScaleA,mixstep);\n"+
-				"vec4 basenear = triPlanerMap(coordscalemix,wN,baseSampler);\n"+
-				"vec4 rnear = triPlanerMap(coordscalemix,wN,rSampler);\n"+
-				"vec4 gnear = triPlanerMap(coordscalemix,wN,gSampler);\n"+
-				"vec4 bnear = triPlanerMap(coordscalemix,wN,bSampler);\n"+
+		//	"if(modelMatrix[0][0] < 0.2 ){\n"+//it's faster to branch on a uniform value than a computed model. This limits to tiles less than a certain size, which must be a given distance
+			"if(nearamt < 1.0){\n"+
+			
+				"lowp vec4 basenear = triPlanerMap(coordsScaleB,wN,baseSampler);\n"+
+				"lowp vec4 rnear = triPlanerMap(coordsScaleB,wN,rSampler);\n"+
+				"lowp vec4 gnear = triPlanerMap(coordsScaleB,wN,gSampler);\n"+
+				"lowp vec4 bnear = triPlanerMap(coordsScaleB,wN,bSampler);\n"+
 				"near = blend(bnear,blend(gnear,blend(rnear,basenear,mixVal.r),mixVal.g),mixVal.b);\n"+
 		//	"}\n"+
+			"}\n"+
+			
+			
+			
+			
+			//"vec4 near = blend(dirt,vec4(0.0,0.0,0.0,0.0),mixVal.r);\n"+
 			
 
-			
-			"return mix(near,diffuse,faramt);\n"+
+			"lowp vec4 medAndFar = mix(med,diffuse,faramt);\n"+
+			"return mix(near,medAndFar,nearamt);\n"+
 		"}")
 	}
 	

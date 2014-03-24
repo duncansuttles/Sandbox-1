@@ -194,16 +194,16 @@ this.counter++;
 						},
 						attributes: {},
 						vertexShader: 
-						"varying vec2 tc;"+
-						"varying vec2 progtc;"+
-						"uniform mat4 projection;"+
-						"uniform vec3 campos;"+
-						"uniform sampler2D heightMap;"+
-						"uniform float time;"+
-						"attribute float random;"+
-						"varying float ar;"+
-						"varying float rand;"+
-						"varying vec2 wind;"+
+						"varying lowp vec2 tc;"+
+						"varying lowp vec2 progtc;"+
+						"uniform lowp mat4 projection;"+
+						"uniform lowp vec3 campos;"+
+						"uniform lowp sampler2D heightMap;"+
+						"uniform lowp float time;"+
+						"attribute lowp float random;"+
+						"varying lowp float ar;"+
+						"varying lowp float rand;"+
+						"varying lowp vec2 wind;"+
 						"float unpack_depth(const in vec4 rgba_depth)\n"+
 						"{\n"+
 						    "const vec4 bit_shift = vec4(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0, 1.0);\n"+
@@ -214,9 +214,9 @@ this.counter++;
 						
 						"    tc = (( projection * modelMatrix  ) * vec4( position, 1.0 )).xy;\n"+
 						"    progtc = (tc + 1.0) / 2.0;\n"+
-						"    vec4 color1 = texture2DLod(heightMap,progtc,0.0);"+
-						"    float z = unpack_depth(color1) * 1000.0;"+
-						"    mat4 modMat = modelMatrix;"+
+						"    lowp vec4 color1 = texture2DLod(heightMap,progtc,0.0);"+
+						"    lowp float z = unpack_depth(color1) * 1000.0;"+
+						"    lowp mat4 modMat = modelMatrix;"+
 						"    modMat[3][2] =0.0;"+
 						"  wind = vec2(sin(position.x/2.0 + time/1900.0)+cos(position.y/2.0 + time/1900.0),0.0);\n"+
 						"wind = (wind + 1.0) / 4.0;\n"+
@@ -230,18 +230,18 @@ this.counter++;
 							"rand = random;"+
 						"} ",
 						fragmentShader: 
-						"uniform sampler2D diffuseTex;"+
-						"uniform sampler2D gBuffer;"+
-						"varying vec2 progtc;"+
-						"varying vec2 tc;"+
-						"varying float rand;"+
-						"varying vec2 wind;"+
-						"varying float ar;"+
+						"uniform lowp sampler2D diffuseTex;"+
+						"uniform lowp sampler2D gBuffer;"+
+						"varying lowp vec2 progtc;"+
+						"varying lowp vec2 tc;"+
+						"varying lowp float rand;"+
+						"varying lowp vec2 wind;"+
+						"varying lowp float ar;"+
 						"void main() { "+
-						"vec4 color1 = texture2D(diffuseTex,tc);"+
-						"vec4 gb = texture2D(gBuffer,progtc);\n"+
-						"float light =  gb.a;"+
-						"float density =  gb.g;"+
+						"lowp vec4 color1 = texture2D(diffuseTex,tc);"+
+						"lowp vec4 gb = texture2D(gBuffer,progtc);\n"+
+						"lowp float light =  gb.a;"+
+						"lowp float density =  gb.g;"+
 
 						"if ( color1.a < ar * ar ) discard;\n"+
 						"if ( color1.a * density < .5) discard;\n"+
