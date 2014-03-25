@@ -136,11 +136,15 @@
 		this.RandomCount++;
 		return this.entroySample(this.RandomCount);
 	}
+	this.wind = true;
 	this.renderHeightMap = function()
 	{
 		if(!this.counter) this.counter = 0;
 		this.counter++;
-		this.mat.uniforms.time.value += deltaTime * (1.5+Math.sin(this.counter/100))* (1.5+Math.sin(this.counter/500))* (1.5+Math.sin(this.counter/1000)) || 1;
+		if(this.wind)
+			this.mat.uniforms.time.value += deltaTime * (1.5+Math.sin(this.counter/100))* (1.5+Math.sin(this.counter/500))* (1.5+Math.sin(this.counter/1000)) || 1;
+		else
+			this.mat.uniforms.time.value = 1;
 		if(!this.needReRender) return;
 		this.needReRender = false;
 		var oldparent = this.TerrainRoot.parent;
@@ -310,26 +314,33 @@
 		return this.mat;
 
 	}
-	this.createGrassMesh = function()
+	this.grassDensity = 3;
+	this.grassWidth = 1.5;
+	this.grassHeight = 1;
+	this.buildGeometry = function()
 	{
-		if(!this.geo)
-		{
-		var grassWidth = this.tileW/1;
-		var grassHeight = 1;
-		var grassDensity = 3;
 		var geo = new THREE.Geometry();
+		geo.faces = [];
+		geo.vertices = [];
+		var grassWidth = 1;
+		var grassHeight = 1;
+
+		grassWidth *= this.grassWidth;
+		grassHeight *= this.grassHeight;
+		var grassDensity = this.grassDensity;
+		
 		geo.faceVertexUvs[0] = [];
 		for(var x=-this.tileW/2; x < this.tileW/2; x+=.5)
 			for(var y=-this.tileW/2; y < this.tileW/2; y+=.5)
 			{
 				for(var i =0; i < grassDensity; i++)
 				{
-					grassHeight = .5 + Math.random();//careful with random!!!! this one is only useful because you cannot ever make a model decision based on it
+					grassHeight = this.grassHeight + Math.random();//careful with random!!!! this one is only useful because you cannot ever make a model decision based on it
 					var centerRnd = new THREE.Vector3((Math.random() - .5)*2,(Math.random() - .5)*2,0);
-					var center = new THREE.Vector3(x + grassWidth/4 + centerRnd.x,y + grassWidth/4 + centerRnd.y,0);
+					var center = new THREE.Vector3(x + grassWidth + centerRnd.x,y + grassWidth + centerRnd.y,0);
 					var rot = new THREE.Vector3(Math.random()-.5,Math.random()-.5,0);
 					
-					rot = rot.setLength(grassWidth/8);
+					rot = rot.setLength(grassWidth/2);
 					var point1 = new THREE.Vector3(center.x - rot.x,center.y - rot.y,center.z);
 					var point2 = new THREE.Vector3(center.x + rot.x,center.y + rot.y,center.z);
 					var point3 = new THREE.Vector3(point1.x+ rot.y*.5,point1.y+ rot.x*.5,point1.z + grassHeight);
@@ -357,10 +368,44 @@
 						new THREE.Vector2(0,0)]);
 				}
 			}
+		
+			this.geo = geo;
+	}
+	this.updateMesh = function()
+	{
+		
+		var oldGeo = this.geo;
+		this.buildGeometry();
+		for(var i =0; i < this.dim; i++)
+		{
+			for(var j =0; j < this.dim; j++)
+			{
+				for(var k=0; k < this.positions[i][j].meshes.length;  k++)
+				{
+					if(this.positions[i][j].meshes[k].children[0].geometry == oldGeo)
+					{
 
-			this.geo =geo;
+						var oldmesh = this.positions[i][j].meshes[k].children[0];
+						var oldmat = oldmesh.material;
+						var newmesh = new THREE.Mesh(this.geo,oldmat);
+						oldmesh.parent.add(newmesh);
+						oldmesh.parent.remove(oldmesh);
+						newmesh.position = oldmesh.position;
+						newmesh.rotation = oldmesh.rotation;
+						newmesh.vwfID = oldmesh.vwfID;
+						newmesh.InvisibleToCPUPick = true;
+						//oldmesh.dispose();
+					}
+				}
+			}
 		}
-		return  new THREE.Mesh(this.geo,this.getGrassMat(this.geo.vertices.length));
+		oldGeo.dispose();
+	}
+	this.createGrassMesh = function()
+	{
+		if(!this.geo)
+			this.buildGeometry();
+		return  (new THREE.Mesh(this.geo,this.getGrassMat(this.geo.vertices.length)));
 		
 	}
 	this.queues = {};
