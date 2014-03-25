@@ -1334,7 +1334,8 @@ function copyInstance (id, arg2, arg3){
 				instance.clonedFrom = id;
 				instance.created = new Date();
 				//when cloning a world, it becomes unpublished so you can edit it.
-				delete instance.publishSettings;
+				instance.publishSettings.isPublished = false;
+
 				delete instance.publishedFrom;
 				delete instance.children;
 				createInstance (newId, instance, function(success){

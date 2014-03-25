@@ -371,8 +371,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			var instanceData = _DataManager.getInstanceData();
 			var publishSettings = instanceData.publishSettings;
 
-			// TODO
-			if(publishSettings) defaultCameraID = publishSettings.camera;
+			if(publishSettings && publishSettings.isPublished) defaultCameraID = publishSettings.camera;
 
 			this.cameraID = camID || defaultCameraID;
 			

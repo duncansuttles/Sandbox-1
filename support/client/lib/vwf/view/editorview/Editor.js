@@ -100,7 +100,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 
 		var instanceData = _DataManager.getInstanceData() || {};
 					
-		var needTools = instanceData && instanceData.publishSettings? instanceData.publishSettings.allowTools : true;
+		var needTools = !(instanceData.publishSettings && instanceData.publishSettings.isPublished) || instanceData.publishSettings.allowTools;
 
 		if(needTools)
 		{

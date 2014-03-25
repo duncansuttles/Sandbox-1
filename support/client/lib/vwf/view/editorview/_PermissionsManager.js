@@ -117,8 +117,8 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 				level = Math.max(level?level:0,this.getPermission(user,parent));
 
 			var allowAnonymous = false;
-			var instanceData = _DataManager.getInstanceData();
-			allowAnonymous = instanceData && instanceData.publishSettings? instanceData.publishSettings.allowAnonymous : false;
+			var instanceData = _DataManager.getInstanceData() || {};
+			allowAnonymous = instanceData.publishSettings && instanceData.publishSettings.isPublished && instanceData.publishSettings.allowAnonymous;
 			level = allowAnonymous?1:level;
 			return level?level:0;	
 		}

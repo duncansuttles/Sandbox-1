@@ -112,8 +112,9 @@ define(function ()
 				
 				//published worlds may choose to allow anonymous users
 				//singleplayers worlds do not need login
-				// TODO
-				if(statedata && statedata.publishSettings && (statedata.publishSettings.allowAnonymous ||  statedata.publishSettings.singlePlayer))
+				if(statedata && statedata.publishSettings && statedata.publishSettings.isPublished 
+					&& (statedata.publishSettings.allowAnonymous ||  statedata.publishSettings.singlePlayer)
+				)
 					needlogin = false;
 				
 				if(needlogin)
@@ -205,8 +206,7 @@ define(function ()
 			{
 				var statedata = _DataManager.getInstanceData();
 				
-				// TODO
-				if((statedata && statedata.publishSettings && !statedata.publishSettings.camera) || !statedata || !statedata.publishSettings)
+				if( !statedata || !statedata.publishSettings || !statedata.publishSettings.isPublished || !statedata.publishSettings.camera )
 				{
 					
 					_dView.setCameraDefault();
@@ -229,11 +229,12 @@ define(function ()
 				
 				//published worlds may choose to allow anonymous users
 				//singleplayers worlds do not need login
-				// TODO
-				if(statedata && statedata.publishSettings && (statedata.publishSettings.allowAnonymous ||  statedata.publishSettings.singlePlayer))
+				if(statedata && statedata.publishSettings && statedata.publishSettings.isPublished
+					&& (statedata.publishSettings.allowAnonymous ||  statedata.publishSettings.singlePlayer)
+				)
 					needlogin = false;
 				
-				if(statedata && statedata.publishSettings && statedata.publishSettings.createAvatar === false)
+				if(statedata && statedata.publishSettings && statedata.publishSettings.isPublished && statedata.publishSettings.createAvatar === false)
 					createAvatar = false;				
 					
 					
@@ -396,8 +397,9 @@ define(function ()
 			if (vwf.getProperty('index-vwf', 'owner') == null) vwf.setProperty('index-vwf', 'owner', this.currentUsername);
 			
 			//if single player, world is yours
-			// TODO
-			if(statedata && statedata.publishSettings && statedata.publishSettings.singlePlayer)
+			if(statedata && statedata.publishSettings
+				&& statedata.publishSettings.isPublished && statedata.publishSettings.singlePlayer
+			)
 				vwf.setProperty('index-vwf', 'owner', this.currentUsername);
 			
 			var parms = new Array();
@@ -483,7 +485,9 @@ define(function ()
 			
 			//published worlds may choose to allow anonymous users
 			//singleplayers worlds do not need login
-			if(statedata && statedata.publishSettings && (statedata.publishSettings.allowAnonymous ||  statedata.publishSettings.singlePlayer))
+			if(statedata && statedata.publishSettings && statedata.publishSettings.isPublished
+				&& (statedata.publishSettings.allowAnonymous ||  statedata.publishSettings.singlePlayer)
+			)
 				needlogin = false;
 			
 

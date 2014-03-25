@@ -4,8 +4,13 @@ define({
 	{
 		var toolsHidden = false;
 		var toolsLoaded = true;
-		if(_DataManager.getInstanceData().publishSettings)
-				 toolsLoaded = _DataManager.getInstanceData().publishSettings.allowTools;
+
+		var data = _DataManager.getInstanceData() || {};
+		toolsLoaded = !(data.publishSettings && data.publishSettings.isPublished) || data.publishSettings.allowTools;
+
+		//if(_DataManager.getInstanceData().publishSettings)
+		//		 toolsLoaded = _DataManager.getInstanceData().publishSettings.allowTools;
+
 		$(window).resize(function(){
 		
 			

@@ -37,7 +37,8 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 					
 					var instanceData = _DataManager.getInstanceData() || {};
 					
-					var needTools = instanceData && instanceData.publishSettings? instanceData.publishSettings.allowTools : true;
+					var needTools = !(instanceData.publishSettings && instanceData.publishSettings.isPublished) || instanceData.publishSettings.allowTools;
+
 					//set the title of the window to the title of the world.
 					document.title = instanceData.title;
 					
@@ -259,7 +260,7 @@ function InitializeEditor()
 {
 
 	var instanceData = _DataManager.getInstanceData() || {};				
-	var needTools = instanceData && instanceData.publishSettings? instanceData.publishSettings.allowTools : true;
+	var needTools = !(instanceData.publishSettings && instanceData.publishSettings.isPublished) || instanceData.publishSettings.allowTools;
 
 	document._UserManager = _UserManager;
 	$('#vwf-root').css('overflow', 'hidden');

@@ -191,8 +191,8 @@ define(function ()
 			}
 			
 			//published states are never saved. 
-			// TODO
-			if(_DataManager.instanceData.publishSettings)
+			var pubSettings = _DataManager.instanceData.publishSettings;
+			if(pubSettings && pubSettings.isPublished)
 			{
 				console.log('State is published, cannot save');
 				return;

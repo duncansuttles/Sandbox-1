@@ -259,7 +259,7 @@ function checkSecondaryFilter(state, filterMatch){
 	return ((!secondaryFilter && (!!state.featured || filterMatch)) || 
 			 secondaryFilter == state.owner || 
 			(secondaryFilter == "active" && !!state.hotState) || 
-			(secondaryFilter == "published" && !!state.publishSettings)) && 
+			(secondaryFilter == "published" && !!state.publishSettings && state.publishSettings.isPublished)) && 
 			(!filter || filterMatch);
 }
 

@@ -727,8 +727,6 @@ function Publish(URL, SID, publishdata, response){
 			return;
 		}
 
-		// TODO
-		
 		//The settings  for the published state. 
 		//have to handle these in the client side code, with some enforcement at the server
 		global.log(publishdata);
@@ -959,8 +957,7 @@ function SaveState(URL,id,data,response)
 	{
 	
 		//not allowed to update a published world
-		// TODO
-		if(state.publishSettings)
+		if(state.publishSettings && state.publishSettings.isPublished)
 		{
 			respond(response,500,'World is published, Should never have tried to save. How did we get here? ' + id);
 			return;

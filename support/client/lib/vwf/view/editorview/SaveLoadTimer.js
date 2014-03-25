@@ -4,7 +4,7 @@ define({
 		
 		
 		//don't even start the timer for published worlds
-		if(!_DataManager.instanceData.publishSettings)
+		if(!_DataManager.instanceData.publishSettings || !_DataManager.instanceData.publishSettings.isPublished)
 			window.setTimeout(function(){_DataManager.saveTimer();},60000);		
 		window.onbeforeunload = function(){
 			//user must exist
