@@ -46,7 +46,7 @@
 		//	this.decorationManager.setRoot(this.getRoot());
 		//	this.decorationManager.init(new THREE.Vector3(0,0,0));
 		//	this.decorationManager.update(new THREE.Vector3(0,0,0));
-			*/
+			
 
 			self.TileCache.terrainGenerator = this.terrainGenerator;
 			

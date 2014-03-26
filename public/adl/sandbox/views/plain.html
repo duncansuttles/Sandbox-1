@@ -72,10 +72,9 @@
 	<script type="text/javascript" src="{{root}}/vwfDataManager.svc/getanalytics.js"></script>
 	<script type="text/javascript"> 
 
-
-		$(document).ready(function(){
-
-				var height = $('#content').height();
+	function center()
+	{
+		var height = $('#content').height();
 				var wheight  = $(document).height();
 				$('#content').css('margin-top',Math.max((wheight/2) - (height/2) - $('.thinfooter').height() + $('.thinheader').height() ,0));
 				
@@ -90,6 +89,13 @@
 
 				});
 				$(window).resize();
+	}
+
+		$(document).ready(function(){
+
+				center();
+				$('#login').attr('href',$('#login').attr('href') + '?return=' + window.location.pathname.substr(13) + window.location.search );
+				$('#logout').attr('href',$('#logout').attr('href') + '?return=' + window.location.pathname.substr(13) + window.location.search );
 		});		
 	</script>
 
@@ -122,12 +128,12 @@
 			{{#translate}}Worlds{{/translate}}
 		</a>
 		{{^sessionData}}
-		<a class='thinheaderlink' href='{{root}}/login'>
+		<a id='login' class='thinheaderlink' href='{{root}}/login'>
 			{{#translate}}Log in{{/translate}}
 		</a>
 		{{/sessionData}}
 		{{#sessionData}}
-		<a class='thinheaderlink' href='{{root}}/logout'>
+		<a id='logout' class='thinheaderlink' href='{{root}}/logout'>
 			{{#translate}}Log out{{/translate}}
 		</a>
 		{{/sessionData}}
