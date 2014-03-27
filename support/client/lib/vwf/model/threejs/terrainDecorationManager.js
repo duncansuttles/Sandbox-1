@@ -400,6 +400,14 @@
 			}
 		}
 		oldGeo.dispose();
+		this.mat.attributes.random.value = [];
+		for(var i = 0; i<this.geo.vertices.length; i+=6)
+		{
+			//careful with random!!!! this one is only useful because you cannot ever make a model decision based on it
+			var rand = Math.random();
+			for(var j=0; j < 6; j++)
+				this.mat.attributes.random.value.push(rand);
+		}
 	}
 	this.createGrassMesh = function()
 	{
@@ -412,18 +420,54 @@
 	this.meshCache = {};
 	this.settingProperty = function(name,val)
 	{
-		if(name == 'texture')
+		if(name == 'texture' && this.texture!=val)
 		{
 			this.texture = val;
 			if(this.mat)
 				this.mat.uniforms.diffuseTex.value = _SceneManager.getTexture(this.texture);
 		}
+		if(name == 'grassWidth' && this.grassWidth!=val)
+		{
+			this.grassWidth = val;
+			this.updateMesh();
+		}
+		if(name == 'grassHeight' && this.grassHeight!=val)
+		{
+			this.grassHeight= val;
+			this.updateMesh();
+		}
+		if(name == 'grassDensity' && this.grassDensity!=val)
+		{
+			this.grassDensity= val;
+			this.updateMesh();
+		}
+		if(name == 'wind')
+		{
+			this.wind= val;
+		}
+
 	}
 	this.gettingProperty = function(name)
 	{
 		if(name == 'texture')
 		{
 			return this.texture
+		}
+		if(name == 'grassWidth')
+		{
+			return this.grassWidth;
+		}
+		if(name == 'grassHeight')
+		{
+			return this.grassHeight;
+		}
+		if(name == 'grassDensity')
+		{
+			return this.grassDensity;
+		}
+		if(name == 'wind')
+		{
+			return this.wind;
 		}
 		if(name == 'EditorData')
 		{
@@ -432,6 +476,36 @@
 					displayname:"Grass Texture",
 					type:"map",
 					property:"texture"
+				},
+				height:{
+					displayname:"Grass Height",
+					type:"slider",
+					property:"grassHeight",
+					min:0,
+					max:3,
+					step:.25
+				},
+				width:{
+					displayname:"Grass Width",
+					type:"slider",
+					property:"grassWidth",
+					min:0,
+					max:3,
+					step:.25
+				},
+				density:{
+					displayname:"Grass Density",
+					type:"slider",
+					property:"grassDensity",
+					min:1,
+					max:6,
+					step:1
+				},
+				wind:
+				{
+					displayname:"Enable Wind",
+					type:"check",
+					property:"wind",
 				}
 			}
 		}
