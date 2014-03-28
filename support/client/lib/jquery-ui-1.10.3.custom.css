@@ -183,7 +183,7 @@
 	margin-top: -8px;
 }
 .ui-accordion .ui-accordion-content {
-	padding: 1em 2.2em;
+	padding: .5em 1em;
 	border-top: 0;
 	overflow: auto;
 }
@@ -618,9 +618,11 @@ button.ui-button::-moz-focus-inner {
 .ui-slider .ui-slider-handle {
 	position: absolute;
 	z-index: 2;
-	width: 1.2em;
+	width: 2em;
 	height: 1.2em;
 	cursor: default;
+	background: #BBB !important;
+	border: none !important;
 }
 .ui-slider .ui-slider-range {
 	position: absolute;
@@ -638,10 +640,13 @@ button.ui-button::-moz-focus-inner {
 }
 
 .ui-slider-horizontal {
-	height: .8em;
+	height: 1.2em;
+background: #EEF !important;
+border: none !important;
+box-shadow: 1px 1px 6px lightgray inset;
 }
 .ui-slider-horizontal .ui-slider-handle {
-	top: -.3em;
+	
 	margin-left: -.6em;
 }
 .ui-slider-horizontal .ui-slider-range {
