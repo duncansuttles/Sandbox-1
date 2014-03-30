@@ -631,6 +631,7 @@ button.ui-button::-moz-focus-inner {
 	display: block;
 	border: 0;
 	background-position: 0 0;
+
 }
 
 /* For IE8 - See #6727 */
@@ -644,6 +645,7 @@ button.ui-button::-moz-focus-inner {
 background: #EEF !important;
 border: none !important;
 box-shadow: 1px 1px 6px lightgray inset;
+width: 95%;
 }
 .ui-slider-horizontal .ui-slider-handle {
 	
@@ -685,6 +687,7 @@ box-shadow: 1px 1px 6px lightgray inset;
 	overflow: hidden;
 	padding: 0;
 	vertical-align: middle;
+	box-shadow: 1px 1px 4px lightgrey inset;
 }
 .ui-spinner-input {
 	border: none;

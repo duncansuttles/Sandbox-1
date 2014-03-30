@@ -48,7 +48,8 @@ function GUID()
 function respond(response,status,message)
 {
 	response.writeHead(status, {
-					"Content-Type": "text/plain"
+					"Content-Type": "text/plain",
+					"Cache-Control":"private, max-age=0, no-cache"
 				});
 	response.write(message + "\n");
 	global.log(message,2);
@@ -71,7 +72,8 @@ function ServeFile(filename,response,URL, JSONHeader)
  
 			var type = mime.lookup(filename) || "text/json";
 			response.writeHead(200, {
-				"Content-Type": !JSONHeader ? type : "text/json"
+				"Content-Type": !JSONHeader ? type : "text/json",
+				"Cache-Control":"private, max-age=0, no-cache"
 			});
 			
 			if(datatype == "binary")
@@ -396,7 +398,8 @@ function ServeJSON(jsonobject,response,URL)
 {
 		    
 			response.writeHead(200, {
-				"Content-Type": "text/json"
+				"Content-Type": "text/json",
+				"Cache-Control":"private, max-age=0, no-cache"
 			});
 			if(jsonobject)
 			{
@@ -1041,7 +1044,7 @@ function _404(response)
 {
 			response.writeHead(404, {
 				"Content-Type": "text/plain",
-				"Access-Control-Allow-Origin": "*"
+					"Cache-Control":"private, max-age=0, no-cache"
 				});
 				response.write("404 Not Found\n");
 				response.end();

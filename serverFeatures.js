@@ -5,7 +5,8 @@ var DAL = require('./DAL').DAL;;
 function _302(url,response)
 {
   response.writeHead(302, {
-    "Location": url 
+    "Location": url,
+    "Cache-Control":"private, max-age=0, no-cache"
   });
   response.end();
 }
@@ -87,7 +88,8 @@ function prettyWorldURL(req, res, next)
               worlds = Object.keys(worlds);
               
               res.writeHead(200, {
-                "Content-Type": "text/html" 
+                "Content-Type": "text/html",
+                "Cache-Control":"private, max-age=0, no-cache" 
               });
               res.write( "<html>" +
                       "<head>" +

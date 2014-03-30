@@ -2124,7 +2124,9 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 			"varying vec4 vRandom;\n"+
 			"uniform float sizeRange;\n"+
 			"uniform vec4 colorRange;\n"+
+              "varying vec3 vFogPosition;\n" +
             "void main() {\n"+
+            "   vFogPosition = (modelMatrix * vec4(position,1.0)).xyz; \n" + 
             "   vColor = vertexColor + (random -0.5) * colorRange;\n"+
             "   vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\n"+
 			"   float psize = size + (random.y -0.5) * sizeRange;\n"+
@@ -2144,7 +2146,10 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "uniform float minOrientation;\n"+
 			"uniform float textureTiles;\n"+
 			"uniform float alphaTest;\n"+
+              "varying vec3 vFogPosition;\n" +
+            THREE.ShaderChunk.lights_phong_pars_fragment + "\n"+
             THREE.ShaderChunk.fog_pars_fragment +"\n"+
+              
             "void main() {\n"+
 			            " vec2 coord = vec2(0.0,0.0);"+
 			" vec2 orig_coord = vec2(gl_PointCoord.s,1.0-gl_PointCoord.t);"+

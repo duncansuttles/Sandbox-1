@@ -255,8 +255,14 @@ function startVWF(){
 			app.get('/adl/sandbox/createNew/:page([0-9/]+)', Landing.createNew);		
 			app.get('/adl/sandbox/createNew2/:template([a-zA-Z0-9/]+)', Landing.createNew2);		
 			
+			app.get('/adl/sandbox/vwf.js', Landing.serveVWFcore);		
+
+		
+
 			app.post('/adl/sandbox/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
 			app.post('/adl/sandbox/data/:action([a-zA-Z_]+)', Landing.handlePostRequest);
+
+
 			
 			//The file handleing logic for vwf engine files
 			app.use(appserver.handleRequest); 
