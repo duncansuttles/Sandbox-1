@@ -345,7 +345,23 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 			socket.disconnect();
 			socket = null;
 			window.setInterval(this.generateTick.bind(this),50);
-		};		
+		}
+        this.getInstanceHost = function()
+        {
+
+
+            var loadBalancerAddress = {{loadBalancerAddress}};
+            var instance = window.location.pathname;
+
+            var instanceHost = $.ajax({
+              dataType: "json",
+              url: loadBalancerAddress,
+              data: {instance:instance},
+              async:false
+            }).responseText;
+            return instanceHost;
+
+        }		
         this.ready = function( component_uri_or_json_or_object ) {
 
             // Connect to the reflector. This implementation uses the socket.io library, which

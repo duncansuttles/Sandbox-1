@@ -11,17 +11,7 @@ function TileCache()
 						
 						
 
-						"vec3 mod289(vec3 x) {	  return x - floor(x * (1.0 / 289.0)) * 289.0;	}		vec2 mod289(vec2 x) {	  return x - floor(x * (1.0 / 289.0)) * 289.0;	}		vec3 permute(vec3 x) {	  return mod289(((x*34.0)+1.0)*x);	}		float snoise(vec2 v)	  {	  const vec4 C = vec4(0.211324865405187, 	                      0.366025403784439,  	                     -0.577350269189626,  	                      0.024390243902439); 		  vec2 i  = floor(v + dot(v, C.yy) );	  vec2 x0 = v -   i + dot(i, C.xx);			  vec2 i1;		  i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);		  vec4 x12 = x0.xyxy + C.xxzz;	  x12.xy -= i1;			  i = mod289(i); 	  vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))			+ i.x + vec3(0.0, i1.x, 1.0 ));		  vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);	  m = m*m ;	  m = m*m ;				  vec3 x = 2.0 * fract(p * C.www) - 1.0;	  vec3 h = abs(x) - 0.5;	  vec3 ox = floor(x + 0.5);	  vec3 a0 = x - ox;			  m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );			  vec3 g;	  g.x  = a0.x  * x0.x  + h.x  * x0.y;	  g.yz = a0.yz * x12.xz + h.yz * x12.yw;	  return 130.0 * dot(m, g);	}"+
 						
-						"float getNoise(vec2 tpos)"+
-						"{"+
-						"float res = 0.0;"+
-						"res += snoise(vec2(tpos.y / 10000.0,tpos.x/10000.0)) * 1000.0;\n" +
-						"res += snoise(vec2(tpos.y / 1000.0,tpos.x/1000.0)) * 100.0;\n" +
-						"res += snoise(vec2(tpos.y / 100.0,tpos.x/100.0)) * 10.0;\n" +
-						"res += snoise(vec2(tpos.y / 10.0,tpos.x/10.0)) * 1.0;\n" +
-						"return res;"+
-						"}"+
 						"varying vec3 vFogPosition;"+
 						"varying vec3 opos;"+
 						"varying vec3 npos;"+
@@ -181,10 +171,19 @@ function TileCache()
 						"}\n"+
 						
 						"void main() {\n"+
+						
 						" if(renderMode == 1){ gl_FragColor = packFloatVec4(vFogPosition.z/1000.0); return; }\n"+
+						"   vec3 vLightDir = normalize(viewMatrix * vec4(directionalLightDirection[0],0.0)).xyz;\n"+
+						"	vec3 nn = (viewMatrix * normalize(vec4(wN,0.0))).xyz;\n"+
+						" if(renderMode == 2){"+
+						
+						" gl_FragColor = getGrassDensity(npos,normalize(wN),opos.xy/100.0 + 0.5);\n"+
+						" gl_FragColor.a = (clamp(dot(nn, vLightDir),0.0,1.0));\n"+
+						"return;"+
+						" }\n"+
 						"	vec4 diffuse = getTexture(npos,normalize(wN),opos.xy/100.0 + 0.5);\n"+
 						"	diffuse.a = 1.0;\n"+
-						"	vec3 nn = (viewMatrix * normalize(vec4(wN,0.0))).xyz;\n"+
+						
 						"   nn = getNormal(npos,nn,opos.xy/100.0 + 0.5,wN);\n"+
 						"	vec3 light = vec3(0.0,0.0,0.0);\n"+
 						"vec3 tnorm = ( vec4(nn,0.0) * viewMatrix).xyz;\n"+
@@ -203,10 +202,10 @@ function TileCache()
 						
 						
 						"	#if MAX_DIR_LIGHTS > 0\n"+
-						"   vec3 vLightDir = normalize(viewMatrix * vec4(directionalLightDirection[0],0.0)).xyz;\n"+
+						
 						"   vec3 vEyeDir = normalize((viewMatrix * vec4(normalize(vFogPosition-cameraPosition ),0.0)).xyz);\n"+
 						"   vec3 vReflectDir = normalize(reflect(vLightDir,nn));\n"+
-						"   float phong =pow( min(1.0,max(0.0,dot(vReflectDir,vEyeDir) + .3)),1.0 );\n"+
+						//"   float phong =pow( min(1.0,max(0.0,dot(vReflectDir,vEyeDir) + .3)),1.0 );\n"+
 						"	light += directionalLightColor[0] * clamp(dot(nn, vLightDir),0.0,1.0);\n"+
 						"	#endif\n"+
 						
@@ -243,6 +242,7 @@ function TileCache()
 				}
 				this.getMat = function()
 				{	
+						
 						
 						
 						

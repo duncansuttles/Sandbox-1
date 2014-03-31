@@ -180,11 +180,30 @@ function startVWF(){
 	    return str.match(suffix+"$")==suffix;
 	}
 
+	//send to the load balancer to let it know that this server is available
+	function SyncRegisterWithLoadBalancer()
+	{
+		require('request').get({url:global.configuration.loadBalancer+'/register',json:{host:global.configuration.host,key:global.configuration.loadBalancerKey}},
+			 function (error, response, body) {
+			  if (!error && response.statusCode == 200) {
+			     global.log(brown+"LoadBalancer registration complete"+reset,0);
+			     global.log(brown+body+reset,0);
+			  }else
+			  {
+			  	 global.log(red+"LoadBalancer registration failed!"+reset,0);
+			  	 global.log(brown+body+reset,0);
+			  	 delete global.configuration.loadBalancer;
+			  }
+		});
+	}
 
 	//Boot up sequence. May call immediately, or after build step	
 	function StartUp()
 	{
 		
+		if(global.configuration.loadBalancer && global.configuration.host && global.configuration.loadBalancerKey)
+			SyncRegisterWithLoadBalancer();
+
 		SandboxAPI.setDataPath(datapath);
 		errorlog = fs.createWriteStream(SandboxAPI.getDataPath()+'//Logs/errors_'+(((new Date()).toString())).replace(/[^0-9A-Za-z]/g,'_'), {'flags': 'a'});
 		
@@ -195,6 +214,10 @@ function startVWF(){
 
 		DAL.startup(function(){
 			
+			//start the session database
+			require('./sessions.js').sessionStartup(function(){
+
+
 			
 			global.adminUID = adminUID;
 			
@@ -282,6 +305,7 @@ function startVWF(){
 			reflector.startup(listen);
 			
 		});
+	  }); // end session startup
 	} //end StartUp
 	//Use Require JS to optimize and the main application file.
 	if(compile)

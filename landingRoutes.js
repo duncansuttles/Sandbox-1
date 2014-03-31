@@ -480,16 +480,26 @@ exports.createNew2 = function(req, res, next){
 var cachedVWFCore = null;
 exports.serveVWFcore = function(req,res,next)
 {
-	
+
 	if(!cachedVWFCore)
 	{
 		cachedVWFCore = fs.readFileSync('./support/client/lib/vwf.js','utf8');
-		if(global.configuration.host)
+		if(global.configuration.host && global.configuration.loadBalancer)    //if the config contains an address for a load balancer, have the client
+		//look up what host to use
+		{
+			cachedVWFCore = cachedVWFCore.replace('{{host}}',"this.getInstanceHost()");
+			cachedVWFCore = cachedVWFCore.replace('{{loadBalancerAddress}}',"'" + global.configuration.loadBalancer +"'");
+		}
+		else if(global.configuration.host) //if there is no load balancer, the host is this host from the config. Note this is necessary since the CDN might
+			//not have our "real" hostname as the dns name, and might not proxy sockets
 		{
 			cachedVWFCore = cachedVWFCore.replace('{{host}}',"'" + global.configuration.host + "'");
+			cachedVWFCore = cachedVWFCore.replace('{{loadBalancerAddress}}',"'" + global.configuration.loadBalancer +"'");    //otherwise, script syntax is invalid
 		}else
 		{
+			//otherwise, this is a single, simple server. Look up the host from the url.
 			cachedVWFCore = cachedVWFCore.replace('{{host}}','window.location.host');
+			cachedVWFCore = cachedVWFCore.replace('{{loadBalancerAddress}}',"'" + global.configuration.loadBalancer +"'");//otherwise, script syntax is invalid
 		}
 	}
 
