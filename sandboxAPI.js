@@ -646,6 +646,10 @@ function CopyInstance(URL, SID, response){
 		{
 			respond(response, 200, newId);
 			mailTools.newWorld(URL.loginData.UID,"copy",SID);
+			DAL.getInstance(newId, function(data){
+				if(data)
+					xapi.sendStatement(URL.loginData.UID, xapi.verbs.created, newId, data.title, data.description, SID);
+			});
 		}
 		else respond(response, 500, 'Error in trying to copy world');
 	});
