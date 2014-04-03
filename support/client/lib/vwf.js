@@ -483,8 +483,8 @@
                 action: "tick"
                 // callback: callback,  // TODO: provisionally add fields to queue (or a holding queue) then execute callback when received back from reflector
             };
-            this.queue( fields );
-            this.dispatch( fields.time );
+            queue.insert( fields, true);
+           
         }
         this.goOffline = function()
         {
@@ -746,9 +746,9 @@
                 if ( isSocketIO07()) {
                     if ( window.location.protocol === "https:" )
                     {
-                        socket = io.connect("wss://"+window.location.host);
+                        socket = io.connect("wss://"+window.location.host,{reconnect: false});
                     } else {
-                        socket = io.connect("ws://"+window.location.host); 
+                        socket = io.connect("ws://"+window.location.host,{reconnect: false}); 
                     }
  
                 } else {  // Ruby Server
@@ -763,7 +763,7 @@
                         // Use a secure connection when the application comes from https.
 
                         secure: window.location.protocol === "https:",
-
+                        reconnect:false,
                         port: window.location.port ||
                             ( window.location.protocol === "https:" ? 443 : 80 ),
     
@@ -881,6 +881,8 @@
                 socket.on( "disconnect", function() {
 
                     vwf.logger.infox( "-socket", "disconnected" );
+                    alert('The client has been disconnected from the server, and must be reloaded.');
+                    window.location.reload();
 
                 } );
 
@@ -1109,6 +1111,7 @@
                                                         var now = performance.now();
                                                         var realTickDif = now - this.lastRealTick;
                                                         this.lastRealTick = now;
+                                                       
                                                        
                                                         this.tick();
                                                 

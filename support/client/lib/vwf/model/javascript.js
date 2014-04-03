@@ -278,7 +278,9 @@ node.id = childID; // TODO: move to vwf/model/object
             } );
 
             node.private.change = 1; // incremented whenever "future"-related changes occur
-	
+			
+			if(nodeID)
+				this.addingChild(nodeID, childID, childName);
 			
 			
         },
@@ -413,6 +415,7 @@ node.id = childID; // TODO: move to vwf/model/object
 
         addingChild: function( nodeID, childID, childName ) {
 
+        	
             var node = this.nodes[nodeID];
             var child = this.nodes[childID];
 			
@@ -437,7 +440,7 @@ node.id = childID; // TODO: move to vwf/model/object
                     "exception in addingChild:", utility.exceptionMessage( e ) );
             }
 			
-			scriptText = "this.childAdded && this.childAdded('"+child+"')";
+			scriptText = "this.childAdded && this.childAdded('"+childID+"')";
 
             try {
                 ( function( scriptText ) { return eval( scriptText ) } ).call( node, scriptText );
