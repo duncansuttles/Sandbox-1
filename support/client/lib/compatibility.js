@@ -15,6 +15,7 @@
 
 function testWGL()
 {
+    return true;
     var contextNames = ["webgl","experimental-webgl","moz-webgl","webkit-3d"];
     for(var i = 0; i < contextNames.length; i++){
         try{

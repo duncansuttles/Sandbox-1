@@ -7,7 +7,7 @@ var request = require('request'),
 /*
  * build a log statement and submit it
  */
-function sendStatement(userId, verb, worldId, worldName, worldDescription)
+function sendStatement(userId, verb, worldId, worldName, worldDescription, otherContext)
 {
 	if( !global.configuration.lrsEndpoint )
 		return;
@@ -37,8 +37,9 @@ function sendStatement(userId, verb, worldId, worldName, worldDescription)
 		stmt.object = new XAPIStatement.Activity('http://vwf.adlnet.gov/xapi/virtual_world_sandbox', 'Virtual World Sandbox');
 
 	stmt.addParentActivity('http://vwf.adlnet.gov/xapi/virtual_world_sandbox');
+	if(otherContext)
+		stmt.addOtherContextActivity(new World(otherContext));
 	stmt.context.platform = 'virtual world';
-
 	request.post({'url': liburl.resolve(global.configuration.lrsEndpoint, 'statements'),
 		'headers': {'X-Experience-API-Version': '1.0.1', 'Authorization': auth},
 		'json': stmt

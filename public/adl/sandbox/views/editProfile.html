@@ -25,6 +25,12 @@
 		
 			
 			var email = $('#txtemail').val();
+			var location = $('#location').val();
+			var name = $('#name').val();
+			var homepage = $('#homepage').val();
+			var organization = $('#organization').val();
+			var twitter = $('#twitter').val();
+			var skype = $('#skype').val();
 
 			if(!validateEmail(email))
 			{
@@ -34,6 +40,13 @@
 
 			var profile = {};
 			profile.Email = email;
+			profile.Location = location;
+			profile.Homepage = homepage;
+			profile.Organization = organization;
+			profile.Twitter = twitter;
+			profile.Skype = skype;
+			profile.Name = name;
+
 			
 			$.ajax(root + "/VWFDataManager.svc/profile",
 			{
@@ -46,7 +59,7 @@
 					$('#txtusername').val('');
 					$('#txtpassword').val('');
 					
-					window.location = '{{root}}';
+					window.location = '{{root}}/user';
 			
 				},
 				error:function(xhr,status,err)
@@ -78,13 +91,12 @@
 				<legend>Optional information</legend>
 				<div class='row' style="margin:10px auto;float:none;text-align:center;">
 					<div class='col-md-10' style="margin:0 auto;float:none;">
-						<input type='text' id='dob' class='input form-control' value='{{DOB}}' placeholder='Date Of Birth'/>
-						<input type='text' id='sex' class='input form-control' value='{{Sex}}'placeholder='Sex'/>
-						<input type='text' id='relationship' class='input form-control' value='{{Relationship}}' placeholder='Relationship Status'/>
 						<input type='text' id='name' class='input form-control' value='{{Name}}' placeholder='Full Name'/>
 						<input type='text' id='location' class='input form-control' value='{{Location}}' placeholder='Location'/>
 						<input type='text' id='homepage' class='input form-control' value='{{Homepage}}' placeholder='Homepage'/>
-						<input type='text' id='employer' class='input form-control' value='{{Employer}}' placeholder='Employer'/>
+						<input type='text' id='organization' class='input form-control' value='{{Organization}}' placeholder='Organization'/>
+						<input type='text' id='twitter' class='input form-control' value='{{Twitter}}' placeholder='Twitter Handle'/>
+						<input type='text' id='skype' class='input form-control' value='{{Skype}}' placeholder='Skype Name'/>
 					</div>
 				</div>
 			</fieldset>

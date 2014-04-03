@@ -76,7 +76,8 @@ new (function(){
 		mesh.material.attributes.everyOtherZ.needsUpdate = true;
 		mesh.material.attributes.everyZ.needsUpdate = true;
 		mesh.material.attributes.ONormal.needsUpdate = true;
-	//	geo.verticesNeedUpdate = true;
+
+		//geo.verticesNeedUpdate = true;
 		geo.computeBoundingSphere();
 		geo.computeBoundingBox();
 				
@@ -127,7 +128,7 @@ new (function(){
 		this.worker[i].postMessage(request,request.buffers);
 		
 	}
-	this.sample = function(vert)
+	this.sample = function(vert,matrix,res)
 	{
 		if(this.waitingForInit == true) return 0;
 		return this.terrainAlgorithm.displace(vert);
@@ -184,6 +185,14 @@ new (function(){
 			
 			this.currentState[i] = CANCELED;
 			
+		}
+	}
+	this.deinit = function()
+	{
+		for(var i = 0; i < MAXWORKERS; i++)
+		{
+			if(this.worker && this.worker[i])
+				this.worker[i].terminate();
 		}
 	}
 	this.init = function(type,params)
@@ -280,6 +289,13 @@ new (function(){
 		if(this.terrainAlgorithm.getDiffuseFragmentShader)
 			return this.terrainAlgorithm.getDiffuseFragmentShader(mesh,matrix);
 		return null;	
+	}
+	this.getNormalFragmentShader = function(mesh,matrix)
+	{
+		if(this.terrainAlgorithm.getNormalFragmentShader)
+			return this.terrainAlgorithm.getNormalFragmentShader(mesh,matrix);
+		return null;
+
 	}
 	this.updateMaterial = function(m,d)
 	{

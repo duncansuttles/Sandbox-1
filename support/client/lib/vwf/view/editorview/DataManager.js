@@ -205,7 +205,13 @@ define(function ()
 				if (node.extends != "character.vwf" && node.extends != 'http://vwf.example.com/camera.vwf') nodes.push(node);
 				if (node.extends == "character.vwf" && node.properties.ownerClientID == null) nodes.push(node);
 			}
-			nodes.push(vwf.getProperties('index-vwf'));
+			
+			//note: we only save the scene properteis, so that users cannot overwrite parts of the 
+			//application that  control the enviornment or camera
+			var sceneprops = vwf.getProperties('index-vwf');
+			//also just a design choice here, so that wehn we update the scene properties, old states will show the updates
+			delete sceneprops.EditorData;
+			nodes.push(sceneprops);
 			var SID = this.getCurrentSession();
 			var UID = _UserManager.GetCurrentUserName();
 			if (!UID) return;

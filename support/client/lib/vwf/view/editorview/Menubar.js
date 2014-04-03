@@ -281,7 +281,7 @@ define(
 		});
 		$('#MenuSnapOff').click(function (e)
 		{
-			_Editor.SetSnaps(.001, .01 * 0.0174532925, .001);
+			_Editor.SetSnaps(.001, .01 * 0.0174532925, .00005);
 		});
 		$('#MenuMaterialEditor').click(function (e)
 		{
@@ -448,7 +448,7 @@ define(
 		
 		$('#MenuHelpBrowse').click(function (e)
 		{
-			window.open('../vwf/view/editorview/help/help.html', '_blank');
+			window.open('http://vwf.adlnet.gov/r/c/documentation/', '_blank');
 		});
 		$('#MenuHelpAbout').click(function (e)
 		{
@@ -814,7 +814,12 @@ define(
 		});
 		$('#MenuCreateTerrain').click(function (e)
 		{
+			if(!window._dTerrain)
 			_Editor.CreatePrim('terrain', [0,0,0], [1, 1, 1], 'checker.jpg', document.PlayerNumber, '');
+			else
+			{
+				alertify.alert('Only one terrain can be created at a time');
+			}
 		});
 		
 
@@ -890,7 +895,10 @@ define(
 		
 		$('#ToolsShowID').click(function (e)
 		{
+			if(_Editor.GetSelectedVWFID())
 			alertify.prompt(vwf.getProperty(_Editor.GetSelectedVWFID(),"DisplayName"),function(){},_Editor.GetSelectedVWFID());
+			else
+			alertify.alert('No Selection');
 		});
 
 		
@@ -899,6 +907,41 @@ define(
 		{
 			_LocationTools.MoveToGround();
 		});
+
+		$('#MenuCreateTerrainGrass').click(function (e)
+		{
+			   if(!_dTerrain)
+			   {
+			   		alertify.alert('The scene must first contain a terrain object');
+			   		return
+			   }
+			   var parent = _dTerrain.ID;
+
+			  var GrassProto = {
+				extends: 'http://vwf.example.com/node3.vwf',
+				properties: {}
+				};
+				GrassProto.type = 'subDriver/threejs';
+				GrassProto.source = 'vwf/model/threejs/' + 'terrainDecorationManager' + '.js';
+			
+				GrassProto.properties.owner = _UserManager.GetCurrentUserName();
+				GrassProto.properties.DisplayName = _Editor.GetUniqueName('Grass');
+				_Editor.createChild(parent, GUID(), GrassProto, null, null);
+
+		});
+
+		$('#MenuCreateTerrainDecorator').click(function (e)
+		{
+			if(!_dTerrain)
+			{
+			   		alertify.alert('The scene must first contain a terrain object');
+			   		return
+			}
+		});
+
+
+
+
 		list = $('#smoothmenu1').find('[id]');
 		
 		//make every clicked menu item close all menus

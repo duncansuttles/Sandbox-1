@@ -26,9 +26,10 @@ function GUID()
 exports.new = function(DBTablePath,cb)
 {
     
-    
+    return (function(){
         var DB = null;
         var proxy = {
+            DBTablePath: DBTablePath,
             get : function(key,cb)
             {
                DB.find({ _key: key }, function (err, docs) {
@@ -61,6 +62,20 @@ exports.new = function(DBTablePath,cb)
                         cb(err,data,newDoc._key);
                     })
                 });
+            },
+            update: function(key,data,cb)
+            {
+                data = JSON.parse(JSON.stringify(data));
+                data = {val:data};
+                key = key || GUID();
+               
+                data._key =  key;
+                delete data._id;
+
+                DB.update({ _key: key },data,{},function(err,numReplaced,newdoc){
+                    console.log(numReplaced);
+                    cb();
+                })
             },
             find : function(key,data,cb)
             {
@@ -100,4 +115,5 @@ exports.new = function(DBTablePath,cb)
         });
         
         return proxy;
+    })()
 }

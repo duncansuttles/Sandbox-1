@@ -167,7 +167,7 @@ function() { return(
 		errorHandler:function()
 		{
 			window.errorCount = 0;
-			
+			var lastError = performance.now();
 			window.onerror = function(message,source,line,column, errorObj){
 			   
 			   window.errorCount ++;
@@ -188,16 +188,24 @@ function() { return(
 					data: JSON.stringify(error),
 					success: function(err,data,xhr)
 					{
-						if (xhr.status != 200)
-						{
-							alertify.error('Sorry, an error has occured, but could not be logged');
-						}else
-							alertify.error('Sorry, an error has occured and was logged to the server.');
 
+						if(performance.now() - lastError > 5000)
+						{
+							if (xhr.status != 200)
+							{
+								alertify.error('Sorry, an error has occured, but could not be logged');
+							}else
+								alertify.error('Sorry, an error has occured and was logged to the server.');
+							lastError = performance.now();
+						}
 					},
 					error: function(e)
 					{
-						alertify.error('Sorry, an error has occured, but could not be logged');
+						if(performance.now() - lastError > 5000)
+						{
+							alertify.error('Sorry, an error has occured, but could not be logged');
+							lastError = performance.now();
+						}
 					},
 					async: true,
 					dataType: "text"

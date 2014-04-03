@@ -21,7 +21,12 @@
 			.linkMenu{
 				left: 546px;
 			}
-		}							
+		}			
+		.lang li
+		{
+			float:left;	
+		}
+
 	</style>
 	<!--[if !IE 7]>
 	<style type="text/css">
@@ -132,11 +137,33 @@
 					<span class="headerSpan" data-bind="text:'Logged in as: '"></span>
 					<a class="headerA" href="{{root}}/user" id="userOptions" data-bind="text: user().username"></a>
 				</div>
+
+		<!--localization start-->
+		<span class="dropdown headerA"> 
+          <a href="#" class="dropdown-toggle thinheaderlink" data-toggle="dropdown">{{#translate}}Language{{/translate}}<b class="caret"></b></a>
+          <ul class="dropdown-menu lang" role="menu">
+            <li class="langLi" lang="en"><a href="#">English</a></li>
+            <li class="langLi" lang="ru"><a href="#">Русский</a></li>
+            <li class="langLi" lang="es_ES"><a href="#">Español (España)</a></li>
+          </ul>
+      	</span>
+
+	<script type="text/javascript">
+
+	$(".langLi").click(function(){
+		var lang = $(this).attr('lang');
+    	//$.post(root + '/data/set_lang', JSON.stringify(lang), function(o){});
+    	document.cookie = 'i18next='+lang;
+		window.location.reload();
+		});
+	</script>
+		<!--localization end-->	
+
 				<div id="login">
-					{{^sessionData}}<a class="headerA" href="{{root}}/login?return=featuredWorlds/0"  id="login"  >Login</a>{{/sessionData}}
-					{{#sessionData}}<a class="headerA" href="{{root}}/user"  id="user"  >Account</a>
-					<a class="headerA" href="{{root}}/logout?return=index" id="logout" >Logout</a>{{/sessionData}}
-					{{^sessionData}}<a class="headerA" href="{{root}}/signup?return=featuredWorlds/0" id="signup" >Create Account</a>{{/sessionData}}
+					{{^sessionData}}<a class="headerA" href="{{root}}/login?return=featuredWorlds/0"  id="login"  >{{#translate}}Login{{/translate}}</a>{{/sessionData}}
+					{{#sessionData}}<a class="headerA" href="{{root}}/user"  id="user"  >{{#translate}}Account{{/translate}}</a>
+					<a class="headerA" href="{{root}}/logout?return=index" id="logout" >{{#translate}}Logout{{/translate}}</a>{{/sessionData}}
+					{{^sessionData}}<a class="headerA" href="{{root}}/signup?return=featuredWorlds/0" id="signup" >{{#translate}}Create Account{{/translate}}</a>{{/sessionData}}				
 				</div>
 			</div>
 		</div>		
@@ -155,19 +182,19 @@
 						</a>
 					</div>
 					<div class="linkMenu">
-						<a href="{{root}}">Home</a> 
-						<a href="{{root}}/featuredWorlds/0">Worlds</a> 
+						<a href="{{root}}">{{#translate}}Home{{/translate}}</a> 
+						<a href="{{root}}/featuredWorlds/0">{{#translate}}Worlds{{/translate}}</a> 
 						{{#blog}}
-							<a href="{{blog}}">Blog</a> 
+							<a href="{{blog}}">{{#translate}}Blog{{/translate}}</a> 
 						{{/blog}}
 						{{#doc}}
-							<a href="{{doc}}">Docs</a>
+							<a href="{{doc}}">{{#translate}}Docs{{/translate}}</a>
 						{{/doc}}
 						{{^blog}}
-							<a href="http://www.youtube.com/watch?list=PLbhwHX3OvksljQcxLkRT3YvyjgQaIY8m2&v=aWRQJJnBi5c">Videos</a> 			
+							<a href="http://www.youtube.com/watch?list=PLbhwHX3OvksljQcxLkRT3YvyjgQaIY8m2&v=aWRQJJnBi5c">{{#translate}}Videos{{/translate}}</a> 			
 						{{/blog}}
 						{{^doc}}
-							<a href="{{root}}/help">Help</a>
+							<a href="{{root}}/help">{{#translate}}Help{{/translate}}</a>
 						{{/doc}}
 					</div>
 				</div>
@@ -211,7 +238,7 @@
 
 				<p>Sponsored by the Office of the Under Secretary of Defense for Personnel and Readiness (OUSD P&amp;R).
 				This is an official website of the U.S. Government (c)2014 Advanced Distributed Learning (ADL).</p>
-				<a href="{{root}}/test">Test Browser Support</a> 
+				<a href="{{root}}/test">{{#translate}}Test Browser Support{{/translate}}</a> 
 			</div>
 
 		</div>

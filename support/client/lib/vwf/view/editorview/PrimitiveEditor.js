@@ -64,12 +64,12 @@ define(function ()
 		"<input class='TransformEditorInput' style='width:50%;margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='text' id='dispName'>Name</input><br/>" +
 		"<input disabled='disabled' class='TransformEditorInput' style='width:50%;margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='text' id='dispOwner'>Owners</input><br/>" +
 		
-		"<input style='margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='checkbox' id='isVisible'>Visible</input><br/>" +
-		"<input style='margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='checkbox' id='isStatic'>Static</input><br/>" +
-		"<input style='margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='checkbox' id='isDynamic'>Dynamic</input><br/>" +
-		"<input style='margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='checkbox' id='castShadows'>Cast Shadows</input><br/>" +
-		"<input style='margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='checkbox' id='receiveShadows'>Receive Shadows</input><br/>" +
-		"<input style='margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='checkbox' id='passable'>Passable</input><br/>" +
+		"<input class='editorCheck' type='checkbox' id='isVisible'>Visible</input><br/>" +
+		"<input class='editorCheck' type='checkbox' id='isStatic'>Static</input><br/>" +
+		"<input class='editorCheck' type='checkbox' id='isDynamic'>Dynamic</input><br/>" +
+		"<input class='editorCheck' type='checkbox' id='castShadows'>Cast Shadows</input><br/>" +
+		"<input class='editorCheck'type='checkbox' id='receiveShadows'>Receive Shadows</input><br/>" +
+		"<input class='editorCheck' type='checkbox' id='passable'>Passable</input><br/>" +
 		"</div>" +
 		'</div>' +
 		'<h3><a href="#">Transforms</a></h3>' +
@@ -569,10 +569,15 @@ define(function ()
 			for (var j = 0; j < editordatanames.length; j++)
 			{
 				var i = editordatanames[j];
+				if (editordata[i].type == 'sectionTitle')
+				{
+					var inputstyle = "";
+					$('#basicSettings' + nodeid).append('<div style="" class = "EditorDataSectionTitle">' + editordata[i].displayname + ': </div>');
+				}
 				if (editordata[i].type == 'slider')
 				{
 					var inputstyle = "";
-					$('#basicSettings' + nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">' + editordata[i].displayname + ': </div>');
+					$('#basicSettings' + nodeid).append('<div class="editorSliderLabel">' + editordata[i].displayname + ': </div>');
 					$('#basicSettings' + nodeid).append('<input class="primeditorinputbox" style="' + inputstyle + '" type="number" id="' + nodeid + editordata[i].property + 'value"></input>');
 				//	$('#' + nodeid + editordata[i].property + 'value').val(vwf.getProperty(node.id, editordata[i].property));
 				//	$('#' + nodeid + editordata[i].property + 'value').change(this.primPropertyTypein);
@@ -634,30 +639,28 @@ define(function ()
 				{
 					
 					
-					$('#basicSettings' + nodeid).append('<div style="">' + editordata[i].displayname + '</div><input type="text" style="text-align: center;border: outset 1px;background-color: #DDDDDD;margin: 0px 0px 5px 0px;cursor: pointer;display: block;width: 100%;padding: 2px;border-radius: 5px;font-weight: bold;" id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/>');
-					$('#' + nodeid + i).val(vwf.getProperty(node.id, editordata[i].property));
+				//	$('#basicSettings' + nodeid).append('<input type="button" style="width: 100%;font-weight: bold;" id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' +  editordata[i].property + '"/>');
+					$('#basicSettings' + nodeid).append('<div><div class="editorSliderLabel">' + editordata[i].displayname + ': </div>'
+					+'<select id="' +  nodeid + i + '" style="float:right;clear:right" '+ ' nodename="' + nodeid + '" propname="' +  editordata[i].property +'"" ></select></div>');
+
+					$('#' + nodeid + i).val(editordata[i].displayname + ": " + editordata[i].labels[vwf.getProperty(node.id, editordata[i].property)]);
 					$('#' + nodeid + i).attr('index',i);
 					
-					$('#' + nodeid + i).click(function ()
+					for(var k = 0; k < editordata[i].labels.length; k++)
+					{
+						$('#' + nodeid + i).append("<option value='"+editordata[i].values[k]+"'>  "+editordata[i].labels[k]+"  </option>")
+					}
+					//$('#' + nodeid + i).button();
+					$('#' + nodeid + i).change(function ()
 					{
 						
 						var propname = $(this).attr('propname');
 						var nodename = $(this).attr('nodename');
-						var values = editordata[$(this).attr('index')].values;
-						var labels = editordata[$(this).attr('index')].labels;
-						var div = this;
 						
-						alertify.choice('Enter a value for ' + propname,function(ok,value)
-						{
+						var value = $(this).val();
+						var div = this;	
+						_PrimitiveEditor.setProperty(nodename, propname, value);
 							
-							if(ok)
-							{
-								$(div).val(value);
-								var k = labels.indexOf(value)
-								
-								_PrimitiveEditor.setProperty(nodename, propname, values[k]);
-							}
-						},labels);
 					});
 					this.addPropertyEditorDialog(node.id,editordata[i].property,$('#' + nodeid + i),'text');
 					
@@ -665,7 +668,7 @@ define(function ()
 				}
 				if (editordata[i].type == 'rangeslider')
 				{
-					$('#basicSettings' + nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">' + editordata[i].displayname + ': </div>');
+					$('#basicSettings' + nodeid).append('<div  class="editorSliderLabel">' + editordata[i].displayname + ': </div>');
 					$('#basicSettings' + nodeid).append('<div style="display: block;margin: 5px;" id="' + nodeid + i + '" nodename="' + nodeid + '" propnamemax="' + editordata[i].property[2] + '" propnamemin="' + editordata[i].property[1] + '"/>');
 					var setval = vwf.getProperty(node.id, editordata[i].property[0]);
 					var minval = vwf.getProperty(node.id, editordata[i].property[1]);
@@ -710,7 +713,7 @@ define(function ()
 						var z = $('#' + thisid + 'Z').val();
 						_PrimitiveEditor.setProperty(nodeid, propname, [parseFloat(x), parseFloat(y), parseFloat(z)]);
 					}
-					$('#basicSettings' + nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">' + editordata[i].displayname + ': </div>');
+					$('#basicSettings' + nodeid).append('<div  class="editorSliderLabel">' + editordata[i].displayname + ': </div>');
 					var baseid = 'basicSettings' + nodeid + i + 'min';
 					$('#basicSettings' + nodeid).append('<div style="text-align:right"><div style="display:inline" >min:</div> <div style="display:inline-block;">' + '<input id="' + baseid + 'X' + '" component="X" nodename="' + nodeid + '" propname="' + editordata[i].property[0] + '" type="number" step="' + editordata[i].step + '" class="vectorinputfront"/>' + '<input id="' + baseid + 'Y' + '" component="Y" nodename="' + nodeid + '" propname="' + editordata[i].property[0] + '" type="number" step="' + editordata[i].step + '" class="vectorinput"/>' + '<input id="' + baseid + 'Z' + '" component="Z" nodename="' + nodeid + '" propname="' + editordata[i].property[0] + '" type="number" step="' + editordata[i].step + '" class="vectorinput"/>' + '</div></div>');
 					var propmin = vwf.getProperty(node.id, editordata[i].property[0]);
@@ -752,7 +755,7 @@ define(function ()
 					}
 					//$('#basicSettings'+nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">'+editordata[i].displayname+': </div>');
 					var baseid = 'basicSettings' + nodeid + i + 'min';
-					$('#basicSettings' + nodeid).append('<div style="text-align: left;margin-top: 4px;"><div style="display:inline" >' + editordata[i].displayname + ':</div> <div style="display:inline-block;float:right">' + '<input id="' + baseid + 'X' + '" component="X" nodename="' + nodeid + '" propname="' + editordata[i].property + '" type="number" step="' + editordata[i].step + '" class="vectorinputfront"/>' + '<input id="' + baseid + 'Y' + '" component="Y" nodename="' + nodeid + '" propname="' + editordata[i].property + '" type="number" step="' + editordata[i].step + '" class="vectorinput"/>' + '<input id="' + baseid + 'Z' + '" component="Z" nodename="' + nodeid + '" propname="' + editordata[i].property + '" type="number" step="' + editordata[i].step + '" class="vectorinput"/>' + '</div><div style="clear:both"/></div>');
+					$('#basicSettings' + nodeid).append('<div class="editorSliderLabel"  style="width:100%;text-align: left;margin-top: 4px;" ><div style="display:inline" >' + editordata[i].displayname + ':</div> <div style="display:inline-block;float:right">' + '<input id="' + baseid + 'X' + '" component="X" nodename="' + nodeid + '" propname="' + editordata[i].property + '" type="number" step="' + editordata[i].step + '" class="vectorinputfront"/>' + '<input id="' + baseid + 'Y' + '" component="Y" nodename="' + nodeid + '" propname="' + editordata[i].property + '" type="number" step="' + editordata[i].step + '" class="vectorinput"/>' + '<input id="' + baseid + 'Z' + '" component="Z" nodename="' + nodeid + '" propname="' + editordata[i].property + '" type="number" step="' + editordata[i].step + '" class="vectorinput"/>' + '</div><div style="clear:both"/></div>');
 					var propmin = vwf.getProperty(node.id, editordata[i].property);
 					if (propmin)
 					{
@@ -846,7 +849,7 @@ define(function ()
 				{
 					var colorswatchstyle = "margin: 5px;float:right;clear:right;background-color: #FF19E9;width: 25px;height: 25px;border: 2px solid lightgray;border-radius: 3px;display: inline-block;margin-left: 20px;vertical-align: middle;box-shadow: 2px 2px 5px,1px 1px 3px gray inset;background-image: url(vwf/view/editorview/images/select3.png);background-position: center;";
 					$('#basicSettings' + nodeid).append('<div style="margin-bottom:10px" id="' + nodeid + i + '" />');
-					$('#' + nodeid + i + '').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;">' + editordata[i].displayname + ': </div>');
+					$('#' + nodeid + i + '').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;"  class="editorSliderLabel">' + editordata[i].displayname + ': </div>');
 					$('#' + nodeid + i + '').append('<div id="' + nodeid + i + 'ColorPicker" style="' + colorswatchstyle + '"></div>')
 					var colorval = vwf.getProperty(node.id, editordata[i].property);
 					if(!colorval) colorval = [1,1,1];

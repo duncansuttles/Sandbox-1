@@ -460,12 +460,65 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             {
                 if(threeObject instanceof THREE.Scene)
                 {
-                    if(propertyName == 'enableShadows')
+                    if(propertyName == 'skyColorBlend')
                     {
-                        //debugger;
-                       // var sceneNode = this.state.scenes[nodeID];
-                       // sceneNode.renderer.shadowMapEnabled = propertyValue;
+                    	if(window._dSky && _dSky.material)
+                        _dSky.material.uniforms.colorBlend.value = propertyValue;
                     }
+                    if(propertyName == 'skyFogBlend')
+                    {
+                    	if(window._dSky && _dSky.material)
+                      	_dSky.material.uniforms.fogBlend.value = propertyValue;
+                    }
+                    if(propertyName == 'skyApexColor')
+                    {
+                        if(window._dSky && _dSky.material){
+                        	_dSky.material.uniforms.ApexColor.value.r = propertyValue[0];
+                        	_dSky.material.uniforms.ApexColor.value.g = propertyValue[1];
+                        	_dSky.material.uniforms.ApexColor.value.b = propertyValue[2];
+                        }
+                    }
+                    if(propertyName == 'skyHorizonColor')
+                    {
+                        if(window._dSky && _dSky.material){
+                        	_dSky.material.uniforms.HorizonColor.value.r = propertyValue[0];
+                        	_dSky.material.uniforms.HorizonColor.value.g = propertyValue[1];
+                        	_dSky.material.uniforms.HorizonColor.value.b = propertyValue[2];
+                        }
+                    }
+
+  					if(propertyName == 'skyApexColor')
+					{
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+						
+						if(!threeObject.fog.vApexColor)
+							threeObject.fog.vApexColor = new THREE.Color();
+
+						threeObject.fog.vApexColor.r = propertyValue[0];
+						threeObject.fog.vApexColor.g = propertyValue[1];
+						threeObject.fog.vApexColor.b = propertyValue[2];
+					}
+					if(propertyName == 'skyHorizonColor')
+					{
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+						
+						if(!threeObject.fog.vHorizonColor)
+							threeObject.fog.vHorizonColor = new THREE.Color();
+
+						threeObject.fog.vHorizonColor.r = propertyValue[0];
+						threeObject.fog.vHorizonColor.g = propertyValue[1];
+						threeObject.fog.vHorizonColor.b = propertyValue[2];
+
+					}
+					if(propertyName == 'skyAtmosphereDensity')
+					{
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+						
+						threeObject.fog.vAtmosphereDensity = propertyValue/500;
+					}
 					if(propertyName == 'fogType')
 					{
 						
@@ -494,6 +547,20 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 							newfog.density = this.nodes[nodeID]["fogDensity"] || 0;
 							newfog.vFalloff = this.nodes[nodeID]["fogVFalloff"] || 1;
 							newfog.vFalloffStart = this.nodes[nodeID]["fogVFalloffStart"] || 0;
+							newfog.vAtmosphereDensity = (this.nodes[nodeID]["skyAtmosphereDensity"] || 0)/500;
+
+							threeObject.fog.vHorizonColor = new THREE.Color();
+
+							threeObject.fog.vHorizonColor.r = this.nodes[nodeID]["skyApexColor"] ? this.nodes[nodeID]["skyHorizonColor"][0] : 1;
+							threeObject.fog.vHorizonColor.g = this.nodes[nodeID]["skyApexColor"] ? this.nodes[nodeID]["skyHorizonColor"][1] : 1;
+							threeObject.fog.vHorizonColor.b = this.nodes[nodeID]["skyApexColor"] ? this.nodes[nodeID]["skyHorizonColor"][2] : 1;
+
+							threeObject.fog.vApexColor = new THREE.Color();
+
+							threeObject.fog.vApexColor.r = this.nodes[nodeID]["skyHorizonColor"] ? this.nodes[nodeID]["skyHorizonColor"][0] : 1;
+							threeObject.fog.vApexColor.g = this.nodes[nodeID]["skyHorizonColor"] ? this.nodes[nodeID]["skyHorizonColor"][1] : 1;
+							threeObject.fog.vApexColor.b = this.nodes[nodeID]["skyHorizonColor"] ? this.nodes[nodeID]["skyHorizonColor"][2] : 1;
+
 						}
 						threeObject.fog = newfog;
 						rebuildAllMaterials.call(this,threeObject);
@@ -598,7 +665,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		createRenderTarget: function(cameraID)
 		{
 			
-			var rtt = new THREE.WebGLRenderTarget( 512,512, { format: THREE.RGBFormat } );
+			var rtt = new THREE.WebGLRenderTarget( 256,256, { format: THREE.RGBAFormat, minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter } );
 			this.renderTargetPasses.push({camera:cameraID,target:rtt});
 			return rtt;
 		},
@@ -859,6 +926,28 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			vpargs[0] = vp.slice(0);
 
 			self.trigger('postprerender',vpargs);
+
+
+
+
+
+			for(var i = 0; i < self.renderTargetPasses.length; i++)
+			{
+				
+				var rttcamID = self.renderTargetPasses[i].camera;
+				var rttcam = self.state.nodes[rttcamID].getRoot();
+				var rtt = self.renderTargetPasses[i].target;
+			//	renderer.render(backgroundScene,rttcam,rtt,true);
+
+				
+			   // renderer.setRenderTarget( rtt );
+				renderer.render(scene,rttcam,rtt);
+				//renderer.setRenderTarget(  );
+				
+				
+			}
+
+			
 		//	renderer.render(backgroundScene,cam);
 			
 		//	renderer.clear(true,true,false);
@@ -876,6 +965,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
 			
 			
+			
+				
+
 			if(self.selection && vwf.getProperty(self.selection.id,'type') =='Camera' && self.cameraID != self.selection.id)
 			{
 				var selnode = _Editor.findviewnode(self.selection.id);
@@ -913,7 +1005,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 					self.trigger('postprerender',[insetvp,w,w]);
 					
 					renderer.clear(true,true,true);
-					renderer.render(backgroundScene,selcam);
+					//renderer.render(backgroundScene,selcam);
 					
 					renderer.clear(false,true,false);
 					renderer.render(scene,selcam);
@@ -940,18 +1032,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				self.trigger('glyphRender',vpargs);
 			}
 			
-			
-			for(var i = 0; i < self.renderTargetPasses.length; i++)
-			{
-				
-				var rttcamID = self.renderTargetPasses[i].camera;
-				var rttcam = self.state.nodes[rttcamID].getRoot();
-				var rtt = self.renderTargetPasses[i].target;
-				renderer.render(backgroundScene,rttcam,rtt,true);
-				renderer.render(scene,rttcam,rtt);
-				
-				
-			}
+		
+
 			
 			
 			

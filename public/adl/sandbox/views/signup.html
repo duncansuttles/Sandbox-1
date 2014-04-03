@@ -1,5 +1,6 @@
     <script type="text/javascript">
 	
+
 		var EncryptPassword = function (password, username,salt)
 		{
 			var unencrpytedpassword = password + username + salt;
@@ -158,28 +159,28 @@
 	<div class="col-md-5 accountCreation" style="margin: 0 auto; float:none;">
 		<form data-bind="submit:handleAccountButton" >
 			<fieldset>
-				<legend>Required account information</legend>
+				<legend>{{#translate}}Required account information{{/translate}}</legend>
 				<div class='row' style="margin:10px auto;float:none;text-align:center;height:260px;">
 					<div class="col-md-10" style="margin:0 auto;float:none;">
-						<input type='text' id='txtusername' class="form-control" placeholder='Username'/>
-						<input type='password' id='txtpassword' class="form-control" placeholder='Password'/>
-						<input type='password' id='txtpasswordconfirm' class="form-control" placeholder='Confirm Password'/>
-						<input type='text' id='txtemail' class="form-control" placeholder='Email'/>
-						<input type="submit" class='btn btn-default' style="float:right;"  value="Create Account"/><br/>
+						<input type='text' id='txtusername' class="form-control" placeholder='{{#translate}}Username{{/translate}}'/>
+						<input type='password' id='txtpassword' class="form-control" placeholder='{{#translate}}Password{{/translate}}'/>
+						<input type='password' id='txtpasswordconfirm' class="form-control" placeholder='{{#translate}}Confirm Password{{/translate}}'/>
+						<input type='text' id='txtemail' class="form-control" placeholder='{{#translate}}Email{{/translate}}'/>
+						<input type="submit" class='btn btn-default' style="float:right;"  value="{{#translate}}Create Account{{/translate}}"/><br/>
 						<p class="help-block" style="width:100%;margin-top:20px;" data-bind="visible:errorText,text:errorText"></p>
 					</div>
 				</div>
 				<br/><br/>
-				<legend>Optional information</legend>
+				<legend>{{#translate}}Optional information{{/translate}}</legend>
 				<div class='row' style="margin:10px auto;float:none;text-align:center;height:260px;">
 					<div class='col-md-10' style="margin:0 auto;float:none;">
-						<input type='text' id='dob' class='input form-control' placeholder='Date Of Birth'/>
-						<input type='text' id='location' class='input form-control' placeholder='Sex'/>
-						<input type='text' id='relationship' class='input form-control' placeholder='Relationship Status'/>
-						<input type='text' id='name' class='input form-control' placeholder='Full Name'/>
-						<input type='text' id='location' class='input form-control' placeholder='Location'/>
-						<input type='text' id='homepage' class='input form-control' placeholder='Homepage'/>
-						<input type='text' id='employer' class='input form-control' placeholder='Employer'/>
+						<input type='text' id='dob' class='input form-control' placeholder='{{#translate}}Date Of Birth{{/translate}}'/>
+						<input type='text' id='sex' class='input form-control' placeholder='{{#translate}}Sex{{/translate}}'/>
+						<input type='text' id='relationship' class='input form-control' placeholder='{{#translate}}Relationship Status{{/translate}}'/>
+						<input type='text' id='name' class='input form-control' placeholder='{{#translate}}Full Name{{/translate}}'/>
+						<input type='text' id='location' class='input form-control' placeholder='{{#translate}}Location{{/translate}}'/>
+						<input type='text' id='homepage' class='input form-control' placeholder='{{#translate}}Homepage{{/translate}}'/>
+						<input type='text' id='employer' class='input form-control' placeholder='{{#translate}}Employer{{/translate}}'/>
 					</div>
 				</div>
 			</fieldset>

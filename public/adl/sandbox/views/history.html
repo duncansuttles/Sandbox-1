@@ -13,7 +13,7 @@
 				//$('#data').text(xhr.responseText);
 				
 				
-				$('#data').append('<a style="display:block" href="./worlds#'+statedata.title+'" class="historythisstate">'+statedata.title+'</a>');
+				$('#data').append('<a style="display:block" href="{{root}}/world/'+location.search.substr(4)+'" class="historythisstate">'+statedata.title+'</a>');
 				
 				
 				$.ajax(root + '/vwfDataManager.svc/statehistory?SID=' + sid,
@@ -55,7 +55,7 @@
 	});	
 </script>
 
-<div class="row">
+<div id = 'content' class="row">
 	<div id = 'data' class="col-md-8 col-md-offset-2">
 	</div>
 </div>

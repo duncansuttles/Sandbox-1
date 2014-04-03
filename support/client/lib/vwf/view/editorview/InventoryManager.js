@@ -313,6 +313,11 @@ define(function ()
 		}
 		this.Take = function (id)
 		{
+			if(!_Editor.GetSelectedVWFNode())
+			{
+				alertify.alert('No object is selected');
+				return;
+			}
 			if (!id) id = _Editor.GetSelectedVWFNode().id
 			var t = _DataManager.getCleanNodePrototype(id);
 			var title = t.properties.DisplayName || GUID();

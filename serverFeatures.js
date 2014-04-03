@@ -5,7 +5,8 @@ var DAL = require('./DAL').DAL;;
 function _302(url,response)
 {
   response.writeHead(302, {
-    "Location": url 
+    "Location": url,
+    "Cache-Control":"private, max-age=0, no-cache"
   });
   response.end();
 }
@@ -71,12 +72,12 @@ function prettyWorldURL(req, res, next)
           worldName = decodeURIComponent(worldName);
           
           //search the DB for worlds that have that title
-          DAL.find({title:worldName},function(err,worlds)
+          DAL.find({"val.title":worldName},function(err,worlds)
           {
             //if there is one , just forward to it
             if(worlds && Object.keys(worlds).length == 1)
             {
-               var worldURL = Object.keys(worlds)[0];
+               var worldURL = worlds[0]._key;
                worldURL = worldURL.replace(/_/g,'/');
                _302(worldURL,res);
                return;
@@ -87,7 +88,8 @@ function prettyWorldURL(req, res, next)
               worlds = Object.keys(worlds);
               
               res.writeHead(200, {
-                "Content-Type": "text/html" 
+                "Content-Type": "text/html",
+                "Cache-Control":"private, max-age=0, no-cache" 
               });
               res.write( "<html>" +
                       "<head>" +

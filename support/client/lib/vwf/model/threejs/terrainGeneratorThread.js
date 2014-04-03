@@ -125,9 +125,10 @@ this.generateTerrainSimWorker = function(datain,buffers)
 							vert2.x += vertoffset2;
 							vert3.y += vertoffset2;
 						}
-						var z1 = this.terrainAlgorithm.displace(vert,matrix);
-						var z2 = this.terrainAlgorithm.displace(vert2,matrix);
-						var z3 = this.terrainAlgorithm.displace(vert3,matrix);
+						
+						var z1 = this.terrainAlgorithm.displace(vert,matrix,res);
+						var z2 = this.terrainAlgorithm.displace(vert2,matrix,res);
+						var z3 = this.terrainAlgorithm.displace(vert3,matrix,res);
 						
 						var n;
 						if(k < 6)

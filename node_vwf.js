@@ -24,10 +24,15 @@ var reflector = require("./reflector.js");
 var appserver = require("./appserver.js");
 var ServerFeatures = require("./serverFeatures.js");
 
-//localization init
-var i18n = require("i18next");
-i18n.init();
 
+//localization
+var i18n = require("i18next");
+var option = {
+        //lng: 'en',
+        resGetPath: (__dirname+'/locales/__lng__/__ns__.json'),
+        //debug: true
+      };
+i18n.init(option);
 
 
 var errorlog = null;
@@ -175,11 +180,30 @@ function startVWF(){
 	    return str.match(suffix+"$")==suffix;
 	}
 
+	//send to the load balancer to let it know that this server is available
+	function SyncRegisterWithLoadBalancer()
+	{
+		require('request').get({url:global.configuration.loadBalancer+'/register',json:{host:global.configuration.host,key:global.configuration.loadBalancerKey}},
+			 function (error, response, body) {
+			  if (!error && response.statusCode == 200) {
+			     global.log(brown+"LoadBalancer registration complete"+reset,0);
+			     global.log(brown+body+reset,0);
+			  }else
+			  {
+			  	 global.log(red+"LoadBalancer registration failed!"+reset,0);
+			  	 global.log(brown+body+reset,0);
+			  	 delete global.configuration.loadBalancer;
+			  }
+		});
+	}
 
 	//Boot up sequence. May call immediately, or after build step	
 	function StartUp()
 	{
 		
+		if(global.configuration.loadBalancer && global.configuration.host && global.configuration.loadBalancerKey)
+			SyncRegisterWithLoadBalancer();
+
 		SandboxAPI.setDataPath(datapath);
 		errorlog = fs.createWriteStream(SandboxAPI.getDataPath()+'//Logs/errors_'+(((new Date()).toString())).replace(/[^0-9A-Za-z]/g,'_'), {'flags': 'a'});
 		
@@ -190,6 +214,10 @@ function startVWF(){
 
 		DAL.startup(function(){
 			
+			//start the session database
+			require('./sessions.js').sessionStartup(function(){
+
+
 			
 			global.adminUID = adminUID;
 			
@@ -225,6 +253,11 @@ function startVWF(){
 			app.use (ServerFeatures.waitForAllBody);
 			//CORS support
 			app.use(ServerFeatures.CORSSupport);
+
+			//i18n support
+			app.use(express.cookieParser());
+    		app.use(i18n.handle);
+
 			app.use(app.router);
 
 			
@@ -245,8 +278,14 @@ function startVWF(){
 			app.get('/adl/sandbox/createNew/:page([0-9/]+)', Landing.createNew);		
 			app.get('/adl/sandbox/createNew2/:template([a-zA-Z0-9/]+)', Landing.createNew2);		
 			
+			app.get('/adl/sandbox/vwf.js', Landing.serveVWFcore);		
+
+		
+
 			app.post('/adl/sandbox/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
 			app.post('/adl/sandbox/data/:action([a-zA-Z_]+)', Landing.handlePostRequest);
+
+
 			
 			//The file handleing logic for vwf engine files
 			app.use(appserver.handleRequest); 
@@ -266,6 +305,7 @@ function startVWF(){
 			reflector.startup(listen);
 			
 		});
+	  }); // end session startup
 	} //end StartUp
 	//Use Require JS to optimize and the main application file.
 	if(compile)
