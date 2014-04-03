@@ -261,6 +261,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				$('#' + prop + 'value').change(this.RootPropTypein);
 				$('#MaterialBasicSettings').append('<div id="' + prop + 'slider"/>');
 				$('#' + prop + 'slider').attr('prop', prop);
+				$('#' + prop + 'slider').css('width', '95%');
 				$('#' + prop + 'value').attr('prop', prop);
 				var val = this.currentMaterial[prop];
 				$('#' + prop + 'value').val(val);
@@ -425,13 +426,13 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				}
 			});
 			
-			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsFog" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Fog Enabled </div></div>');
-			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsShading" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Shading Enabled </div></div>');
-			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsMetal" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Metal </div></div>');
-			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsWireFrame" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Wireframe </div></div>');
-			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsDepthTest" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Depth Test </div></div>');
-			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsDepthWrite" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Depth Write </div></div>');
-			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsVertexColors" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Vertex Colors </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" class="editorCheck" type="checkbox" id="MaterialBasicSettingsFog" /><div style="display:inline-block;">Fog Enabled </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" class="editorCheck" type="checkbox" id="MaterialBasicSettingsShading" /><div style="display:inline-block;">Shading Enabled </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" class="editorCheck" type="checkbox" id="MaterialBasicSettingsMetal" /><div style="display:inline-block;">Metal </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" class="editorCheck" type="checkbox" id="MaterialBasicSettingsWireFrame" /><div style="display:inline-block;">Wireframe </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" class="editorCheck" type="checkbox" id="MaterialBasicSettingsDepthTest" /><div style="display:inline-block;">Depth Test </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" class="editorCheck" type="checkbox" id="MaterialBasicSettingsDepthWrite" /><div style="display:inline-block;">Depth Write </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" class="editorCheck" type="checkbox" id="MaterialBasicSettingsVertexColors" /><div style="display:inline-block;">Vertex Colors </div></div>');
 			
 			$('#MaterialBasicSettingsFog').click(function()
 			{
@@ -554,7 +555,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			
 			});
 			
-			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsnewLayer" style=width:100%;margin-top:10px/>');
+			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsnewLayer" style=width:100%;margin-top:2px/>');
 			$('#' + 'MaterialBasicSettingsnewLayer').button(
 			{
 				label: 'Add Layer'
@@ -562,14 +563,14 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#' + 'MaterialBasicSettingsnewLayer').click(this.addLayer);
 
 
-			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsCopy" style=width:100%;margin-top:10px/>');
+			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsCopy" style=width:100%;margin-top:2px/>');
 			$('#' + 'MaterialBasicSettingsCopy').button(
 			{
 				label: 'Copy Material'
 			});
 			$('#' + 'MaterialBasicSettingsCopy').click(this.copyMaterial);
 
-			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsPaste" style=width:100%;margin-top:10px/>');
+			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsPaste" style=width:100%;margin-top:2px/>');
 			$('#' + 'MaterialBasicSettingsPaste').button(
 			{
 				label: 'Paste Material'
@@ -628,8 +629,8 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				for (var j = 0; j < layersliderprops.length; j++)
 				{
 					var prop = layersliderprops[j].prop;
-					var inputstyle = "display: inline;float: right;padding: 0;width: 50px;border-radius: 6px;background: transparent;text-align: center;border-width: 1px;color: grey;"
-					$('#' + rootid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">' + prop + ': </div>');
+					var inputstyle = "display: inline;float: right;padding: 0;width: 50px;border-radius: 6px;background: transparent;text-align: center;border-width: 1px;color: black;margin-bottom: 4px;"
+					$('#' + rootid).append('<div style="display:inline-block;margin-bottom: 4px;">' + prop + ': </div>');
 					$('#' + rootid).append('<input style="' + inputstyle + '" id="' + rootid + prop + 'value"></input>');
 					$('#' + rootid + prop + 'value').change(this.LayerPropTypein);
 					$('#' + rootid).append('<div id="' + rootid + prop + 'slider"/>');
@@ -637,6 +638,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					$('#' + rootid + prop + 'value').attr('prop', prop);
 					$('#' + rootid + prop + 'slider').attr('layer', i);
 					$('#' + rootid + prop + 'value').attr('layer', i);
+					$('#' + rootid + prop + 'slider').css('width', "95%");
 					var val = this.currentMaterial.layers[i][prop];
 					$('#' + rootid + prop + 'value').val(val);
 					$('#' + rootid + prop + 'slider').slider(
@@ -682,7 +684,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					_MaterialEditor.currentMaterial.layers[$(this).attr('layer')].blendMode = $(this).val();
 					_MaterialEditor.updateObject();
 				});
-				$('#' + rootid).append('<div id="' + rootid + 'deleteLayer" style="width: 100%;margin-top: 10px;"/>');
+				$('#' + rootid).append('<div id="' + rootid + 'deleteLayer" style="width: 100%;margin-top: 2px;"/>');
 				$('#' + rootid + 'deleteLayer').button(
 				{
 					label: 'Delete Layer'
@@ -691,7 +693,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				$('#' + rootid + 'deleteLayer').click(this.deletelayer);
 
 
-				$('#' + rootid).append('<div id="' + rootid + 'copyLayer" style="width: 100%;margin-top: 10px;"/>');
+				$('#' + rootid).append('<div id="' + rootid + 'copyLayer" style="width: 100%;margin-top: 2px;"/>');
 				$('#' + rootid + 'copyLayer').button(
 				{
 					label: 'Copy Layer'
@@ -699,7 +701,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				$('#' + rootid + 'copyLayer').attr('i', i);
 				$('#' + rootid + 'copyLayer').click(this.copyLayer);
 
-				$('#' + rootid).append('<div id="' + rootid + 'pasteLayer" style="width: 100%;margin-top: 10px;"/>');
+				$('#' + rootid).append('<div id="' + rootid + 'pasteLayer" style="width: 100%;margin-top: 2px;"/>');
 				$('#' + rootid + 'pasteLayer').button(
 				{
 					label: 'Paste Layer'

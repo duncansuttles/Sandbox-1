@@ -11,6 +11,7 @@
 					$.get(root + '/vwfDataManager.svc/restorebackup?SID=' + sid + '&statename=' + obj.file, function(data){
 						getBackupList(function(){
 							alertify.success("State successfully restored");
+							redirect();
 						});
 					}).error(function(){
 						alertify.error("Error: State not restored");
@@ -105,12 +106,12 @@
 <div class="row" style="margin-bottom: 15px">
 	
 </div>
-<div id="content" class="row" >
+<div id="content" class="row" style="margin:10px auto;float:none;text-align:center;">
 	<div class="col-md-5" style="margin:10px auto;float:none;text-align:center;">
 		
 		<div id='txtTitle' style="font-size: 2em;font-weight: bold;"></div>
 		<legend></legend>
-		<div class=''>
+		<div class='searchresult'>
 			
 			
 			<div> <img style="width:100%;width: 100%;border-radius: 5px;box-shadow: 3px 3px 3px #444;" src="./vwfdatamanager.svc/thumbnail?SID={{sid}}" onload='center()' onerror = "this.src = '/adl/sandbox/img/thumbnotfound.png'"></img> </div>
@@ -118,14 +119,7 @@
 		</div>
 
 
-		<form id='form' data-bind="submit:handleEditButton" >
-			<fieldset>
-				<legend></legend>
-				<input type='text' id='txtInstanceName' placeholder='World Name' class="col-md-5 form-control" /><br/><br/>
-				<textarea id='txtInstanceDescription' placeholder='Description' class="col-md-5 form-control"></textarea>
-				<input type="submit" class='btn btn-default' style="float:right;margin-top:7px;"  value="Edit"/>
-			</fieldset>
-		</form>
+		
 	</div>
 	
 
@@ -135,7 +129,7 @@
 
 
 
-	<div class="col-md-3 col-md-offset-1" style="display:none">
+	<div class="col-md-5 col-md-offset-1" style="margin:10px auto;float:none;text-align:center;max-height: 200px;overflow: auto;" >
 		<legend style="">Restore Backup</legend>
 		<p style="text-align:center;margin-top:60px;" data-bind="visible:restoreList().length==0">No backups found</p>
 		<table data-bind="submit:handleEditButton" class="table table-striped" style="border-top:none;">

@@ -16,10 +16,7 @@ extends: http://vwf.example.com/uielement.vwf
 properties:
   width:
   height:
-  text:
-  font_size:
-  text_align:
-  font_color:
+  isChecked:
   EditorData:
     height:
       type: slider
@@ -34,33 +31,11 @@ properties:
       max: 1000
       step: 1
       property: width
-      displayname: Width (px) 
-    font_size:
-      type: slider
-      min: 0
-      max: 100
-      step: 1
-      property: font_size
-      displayname: Font Size (px)
-    font_color:
-      type: color
-      property: font_color
-      displayname: Font Color
-    text_align:
-      type: choice
-      property: text_align
-      displayname: Text align   
-      labels: 
-        - Center
-        - Left
-        - Right
-      values: 
-        - center
-        - left
-        - right  
-    text:
-      type: text
-      property: text
-      displayname: text       
+      displayname: Width (px)
+    checked:
+      type: check
+      property: isChecked
+      displayname: Checked 
 events:
-  click: 
+  checked: 
+  unchecked: 

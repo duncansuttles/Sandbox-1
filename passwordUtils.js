@@ -196,7 +196,9 @@ exports.SiteLogin = function (response,URL)
 				global.log("Login "+ ok,2);
 				if(ok)
 				{
-					var session = sessions.createSession(UID,password,isTemp);
+					sessions.createSession(UID,password,isTemp,function(session){
+
+
 					xapi.sendStatement(UID,xapi.verbs.logged_in); 
 					
 					response.writeHead(200, {
@@ -206,6 +208,11 @@ exports.SiteLogin = function (response,URL)
 					response.write("Login Successful", "utf8");
 					global.log('Client Logged in',1);
 					response.end();
+
+
+
+					});
+					
 				}else
 				{
 					respond(response,401,'Password incorrect');

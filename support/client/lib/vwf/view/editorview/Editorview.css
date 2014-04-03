@@ -265,6 +265,21 @@
 		text-overflow: ellipsis;
 		background-image: url(../../../vwf/view/editorview/images/icons/grid.jpg);
 	}
+	.editorCheck
+	{
+		margin: 0px 2px 0px 0px;
+		text-align: center;
+		vertical-align: middle;
+		zoom: 1.5;
+	}
+	.editorSliderLabel
+	{
+		display: inline-block;
+		margin-bottom: 3px;
+		margin-top: 3px;
+		font-size: 1.2em;
+		text-shadow: 1px 1px 3px #AAA;
+	}
 	.glyph
 	{
 		position:absolute;
@@ -280,13 +295,13 @@
 	}
 	.TransformEditorInput
 	{
-		width:25%;
-		display:inline;
-		border-radius: 5px;
-		margin: 0px;
-		padding: 0px;
-		color:grey;
-		height:16px;
+		width: 25%;
+		display: inline;
+		border-radius: 3px;
+		padding: 2px;
+		height: 16px;
+		box-shadow: 1px 1px 6px lightgray inset;
+		background: #F4F4FF;
 	}
 	.EditorLabel
 	{
@@ -481,9 +496,9 @@
 		background: transparent;
 		text-align: center;
 		border-width: 1px;
-		color: grey;
+		
 		height:16px;
-		margin:1px;
+		
 	}
 	@media only screen and (max-height:1200px)
 	{

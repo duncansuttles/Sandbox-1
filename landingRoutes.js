@@ -55,13 +55,14 @@ function getRoot()
 
 }
 
-exports.acceptedRoutes = ['createNew','welcome','search','forgotPassword','editProfile','updatePassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
+exports.acceptedRoutes = ['restore','createNew','welcome','search','forgotPassword','editProfile','updatePassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
 routesMap = {
 	'sandbox': {template:'index'},
 	'home': {template:'index'},
-	'edit': {sid: true,requiresLogin:true},
-	'publish': {sid: true,requiresLogin:true},
-	'history': {sid: true},
+	'edit': {sid: true,requiresLogin:true,layout:'plain'},
+	'restore': {sid: true,requiresLogin:true,layout:'plain'},
+	'publish': {sid: true,requiresLogin:true,layout:'plain'},
+	'history': {sid: true,layout:'plain'},
 	'remove': {sid:true, title: 'Warning!',requiresLogin:true,layout:'plain'},
 	'user': {sid:true, title: 'Account',requiresLogin:true},
 	'admin': {sid:true, title:'Admin', fileList: fileList, template: 'admin/admin',requiresLogin:true},
@@ -97,6 +98,7 @@ exports.statsHandler = function(req, res, next){
 			var instanceCount = Object.keys(instances || {});
 			res.locals = {instanceCount:instanceCount,states:states,users:users,allConnections:allConnections,sessions:allSessions,instances:instances || [],sessionData:sessionData,url:req.url,root:getRoot()};
 			res.render('stats',{layout:'plain'});
+			res.setHeader('Cache-Control', 'no-cache');
 
 		})
 		
@@ -149,6 +151,7 @@ exports.redirectPasswordEmail = function(req,res,next)
 					res.locals.message = "We've updated our database, and now require email address for users. Please update your email address below.";
 				}
 				res.render(newroute,{layout:'plain'});
+				res.setHeader('Cache-Control', 'no-cache');
 			}else
 			{
 				next();
@@ -200,6 +203,7 @@ exports.generalHandler = function(req, res, next){
 
 				res.locals = {sessionData:sessionData, sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc, user:user, translate:translate(req)};
 				res.render(template,{layout:layout});
+				res.setHeader('Cache-Control', 'no-cache');
 				
 			}
 			
@@ -238,12 +242,74 @@ exports.help = function(req, res){
 	
 	res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getFrontEndRoot(req), script: displayPage + ".js"};
 	res.render('help/template');
+	res.setHeader('Cache-Control', 'no-cache');
 };
+
+	/*
+ * JavaScript Pretty Date
+ * Copyright (c) 2011 John Resig (ejohn.org)
+ * Licensed under the MIT and GPL licenses.
+ */
+
+// Takes an ISO time and returns a string representing how
+// long ago the date represents.
+function prettyDate(time){
+	var date = new Date((time || "").replace(/-/g,"/").replace(/[TZ]/g," ")),
+		diff = (((new Date()).getTime() - date.getTime()) / 1000),
+		day_diff = Math.floor(diff / 86400);
+			
+	if ( isNaN(day_diff) || day_diff < 0 || day_diff >= 31 )
+		return;
+			
+	return day_diff == 0 && (
+			diff < 60 && "just now" ||
+			diff < 120 && "1 minute ago" ||
+			diff < 3600 && Math.floor( diff / 60 ) + " minutes ago" ||
+			diff < 7200 && "1 hour ago" ||
+			diff < 86400 && Math.floor( diff / 3600 ) + " hours ago") ||
+		day_diff == 1 && "Yesterday" ||
+		day_diff < 7 && day_diff + " days ago" ||
+		day_diff < 31 && Math.ceil( day_diff / 7 ) + " weeks ago";
+}
+
+
 exports.world = function(req, res, next){
 
-	DAL.getInstance("_adl_sandbox_"+req.params.page+"_",function(doc){
-		res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getFrontEndRoot(req), world: doc, id: req.params.page?req.params.page:'',translate:translate(req)};
-		res.render('worldTemplate');
+	sessions.GetSessionData(req,function(sessionData)
+	{
+		DAL.getInstance("_adl_sandbox_"+req.params.page+"_",function(doc)
+		{
+			
+			var instance = global.instances ? global.instances["/adl/sandbox/"+req.params.page+"/"] : false;
+			var anonymous = [];
+			var users = [];
+
+			if(instance)
+			{
+				for(var i in instance.clients)
+				{
+					if(instance.clients[i].loginData.UID)
+					{
+						users.push(instance.clients[i].loginData.UID);
+					}
+					else
+					{
+						anonymous.push(i);
+					}
+				}
+			}
+			var totalusers = anonymous.length + users.length;
+
+			console.log(anonymous);
+			console.log(users);
+
+			var owner = (sessionData || {}).UID == doc.owner;
+			doc.prettyDate = prettyDate(doc.created);
+			doc.prettyUpdated = prettyDate(doc.lastUpdate);
+			res.locals = {root: getFrontEndRoot(req),id:req.params.page,sessionData:sessionData,worldData:doc,translate:translate(req),totalusers:totalusers,users:users,anonymous:anonymous,owner:owner};
+			res.render('worldTemplate',{layout:'plain'});
+			res.setHeader('Cache-Control', 'no-cache');
+		});
 	});
 };
 
@@ -363,6 +429,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:root,searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0),translate:translate(req)};
 		res.locals[mode] = true;
 		res.render('searchResults',{layout:'plain'});
+		res.setHeader('Cache-Control', 'no-cache');
 
 	})
 	})
@@ -403,9 +470,45 @@ exports.createNew2 = function(req, res, next){
 				
 				res.locals = {worlddata:worlddata,template:(template == 'noTemplate'?false:template),root:getRoot()};
 				res.render('createNew2',{layout:'plain'});
+				res.setHeader('Cache-Control', 'no-cache');
 			});
 			
 	});
+}
+
+
+var cachedVWFCore = null;
+exports.serveVWFcore = function(req,res,next)
+{
+
+	if(!cachedVWFCore)
+	{
+		cachedVWFCore = fs.readFileSync('./support/client/lib/vwf.js','utf8');
+		if(global.configuration.host && global.configuration.loadBalancer)    //if the config contains an address for a load balancer, have the client
+		//look up what host to use
+		{
+			cachedVWFCore = cachedVWFCore.replace('{{host}}',"this.getInstanceHost()");
+			cachedVWFCore = cachedVWFCore.replace('{{loadBalancerAddress}}',"'" + global.configuration.loadBalancer +"'");
+		}
+		else if(global.configuration.host) //if there is no load balancer, the host is this host from the config. Note this is necessary since the CDN might
+			//not have our "real" hostname as the dns name, and might not proxy sockets
+		{
+			cachedVWFCore = cachedVWFCore.replace('{{host}}',"'" + global.configuration.host + "'");
+			cachedVWFCore = cachedVWFCore.replace('{{loadBalancerAddress}}',"'" + global.configuration.loadBalancer +"'");    //otherwise, script syntax is invalid
+		}else
+		{
+			//otherwise, this is a single, simple server. Look up the host from the url.
+			cachedVWFCore = cachedVWFCore.replace('{{host}}','window.location.host');
+			cachedVWFCore = cachedVWFCore.replace('{{loadBalancerAddress}}',"'" + global.configuration.loadBalancer +"'");//otherwise, script syntax is invalid
+		}
+	}
+
+	res.writeHead(200, {
+				"Content-Type": "text/plain",
+				"Cache-Control":"public, max-age=36000"
+				});
+	res.write(cachedVWFCore,'utf8');
+	res.end();
 }
 
 exports.createNew = function(req, res, next){
@@ -463,6 +566,7 @@ exports.createNew = function(req, res, next){
 		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:getRoot(),searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0)};
 		
 		res.render('createNew',{layout:'plain'});
+		res.setHeader('Cache-Control', 'no-cache');
 
 	})
 	})

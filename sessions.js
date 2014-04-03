@@ -1,3 +1,6 @@
+
+
+
 function SessionData()
 {
 	this.sessionId = GUID();
@@ -56,33 +59,52 @@ exports.GetSessionData = function(request,cb)
   if(!SessionID){
   cb(); return null}
   global.log(SessionID,3);
- 	
-	var thissession = this.getSessionByID(SessionID);
-	if(thissession)
-	{
-		var now = (new Date()) ;
-		//if it's been more than 1 hour, and the user has no open socket connections, log out
-		if(now- thissession.lastUpdate > 3600 * 1000 && Object.keys(thissession.clients).length == 0)
+  var self = this;
+	this.getSessionByID(SessionID,function(thissession)
 		{
-			global.log('session expired for ' + thissession.UID,3);
-			this.deleteSession(thissession);
-			cb(null);
-			return;
+			if(thissession)
+			{
+					
+					var now = (new Date()) ;
+					//if it's been more than 1 hour, and the user has no open socket connections, log out
+					if(now- thissession.lastUpdate > 3600 * 1000 && Object.keys(thissession.clients).length == 0)
+					{
+						global.log('session expired for ' + thissession.UID,3);
+						self.deleteSession(thissession,function(){cb(null);});
+						
+						return;
 
-		}else   //reset the clock
-		{
-			global.log('Reset session for ' + thissession.UID,3);
-			this.resetSession(thissession);
-		}
-		cb(thissession);
-		return;
-  	}	
- 	 cb(null);
- 	 return;
+					}else   //reset the clock
+					{
+						global.log('Reset session for ' + thissession.UID,3);
+						self.resetSession(thissession,function(){
+							cb(thissession);
+						});
+					}
+					
+			}else
+			{	
+				
+			 	 cb(null);
+			 	 return;
+			}
+		});
 }
 
-exports.getSessionByID = function(SessionID)
+exports.getSessionByID = function(SessionID,cb)
 {
+
+DB.get(SessionID,function(err,val,key)
+{
+	if(!val) {cb(null); return;}
+	val.updated  = function(cb2)
+	{
+		DB.update(this.sessionId,this,function(){cb2();});
+	}
+	cb(val);
+})
+
+/*	
  for(var i in __Sessions)
   {	
 	//find the session record for this ID
@@ -91,27 +113,43 @@ exports.getSessionByID = function(SessionID)
 		return __Sessions[i]
 	}
    }
-   return null;
+   return null;*/
 }
-exports.createSession = function(UID,Password,isTemp)
+exports.createSession = function(UID,Password,isTemp,cb)
 {
 
 	var session = new SessionData();
 	session.UID = UID;
 	session.Password = Password;
 	session.PasswordIsTemp = isTemp;
-	__Sessions.push(session);
-	return session;
+	session.updated = function(cb2)
+	{
+		DB.update(this.sessionId,this,function(){cb2(session)});
+	}
+	//__Sessions.push(session);
+	DB.save(session.sessionId,session,function(){cb(session)});
 
 }
 
-exports.deleteSession = function(session)
+exports.deleteSession = function(session,cb)
 {
-	__Sessions.splice(__Sessions.indexOf(session),1);
+	//__Sessions.splice(__Sessions.indexOf(session),1);
+	DB.remove(session.sessionId,function(){cb()});
 }
 
-exports.resetSession = function(sessions)
+exports.resetSession = function(session,cb)
 {
 	var now = (new Date()) ;
-	sessions.lastUpdate = now;
+	session.lastUpdate = now;
+	session.updated(cb);
+}
+
+var DB = null;
+
+exports.sessionStartup= function(cb) 
+{
+	require('./DB_nedb.js').new(global.configuration.datapath + "/sessions.db", function (_DB) {
+		DB = _DB;		
+		cb();
+	});
 }

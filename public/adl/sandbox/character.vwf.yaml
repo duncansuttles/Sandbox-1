@@ -513,12 +513,12 @@ scripts:
             }
             if(this.cycleName == 'walk')
             {
-                    motionvec = MATH.mulMat4Vec3(MATH.angleAxis(backupr[3]*0.0174532925,[backupr[0],backupr[1],backupr[2]]),[0,-.06*updateFreqDivisor,0]);
+                    motionvec = MATH.mulMat4Vec3(MATH.angleAxis(backupr[3]*0.0174532925,[backupr[0],backupr[1],backupr[2]]),[0,-.09*updateFreqDivisor,0]);
                     
             }
             if(this.cycleName == 'walkback')
             {
-                    motionvec = MATH.mulMat4Vec3(MATH.angleAxis(backupr[3]*0.0174532925,[backupr[0],backupr[1],backupr[2]]),[0,+.06*updateFreqDivisor,0]);
+                    motionvec = MATH.mulMat4Vec3(MATH.angleAxis(backupr[3]*0.0174532925,[backupr[0],backupr[1],backupr[2]]),[0,+.09*updateFreqDivisor,0]);
                    
             }
             if(this.cycleName == 'run')
