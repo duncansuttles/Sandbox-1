@@ -438,6 +438,13 @@ function StartShellInterface()
 			}
 		},
 		{
+			'command': 'test throw',
+			'description': 'Throws an error, tests shutdown behavior',
+			'callback': function(){
+				global.notAfunction();
+			}
+		},
+		{
 			'command': 'delete inventoryitem <username> <key>',
 			'description': 'Removes the inventory item with the given owner and key',
 			'callback': function(commands){

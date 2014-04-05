@@ -171,8 +171,12 @@ function startVWF(){
 
 	//global error handler
 	process.on('uncaughtException', function(err) {
-    // handle the error safely
+    	// handle the error safely
+    	//note: we absolutly must restart the server here. Yeah, maybe some particular error might be ok to read over, but lets stop that
+    	//and even send an email to the admin
+
     	global.error(err);
+    	process.exit(1);
 	});
 	
     //***node, uses REGEX, escape properly!

@@ -145,7 +145,7 @@ exports.redirectPasswordEmail = function(req,res,next)
 			//if the user needs to reset the password || they use a temp passwrod
 			if(newroute)
 			{
-				res.locals = {user:user,sessionData:sessionData,  root: getFrontEndRoot(req), title: newroute, fileList:null, home: null, avatar:false, blog:true, doc:true};
+				res.locals = {user:user,sessionData:sessionData,  root: getRoot(req), title: newroute, fileList:null, home: null, avatar:false, blog:true, doc:true,translate:translate(req)};
 				if(user && !user.Email)
 				{
 					res.locals.message = "We've updated our database, and now require email address for users. Please update your email address below.";
@@ -201,7 +201,7 @@ exports.generalHandler = function(req, res, next){
 					return;
 				}
 
-				res.locals = {sessionData:sessionData, sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc, user:user, translate:translate(req)};
+				res.locals = {sessionData:sessionData, sid: sid, root: getRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc, user:user, translate:translate(req)};
 				res.render(template,{layout:layout});
 				res.setHeader('Cache-Control', 'no-cache');
 				
@@ -240,7 +240,7 @@ exports.help = function(req, res){
 	var displayPage = currentIndex >= 0 ? fileList[currentIndex] : 'index';
 
 	
-	res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getFrontEndRoot(req), script: displayPage + ".js"};
+	res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getRoot(req), script: displayPage + ".js"};
 	res.render('help/template');
 	res.setHeader('Cache-Control', 'no-cache');
 };
@@ -300,13 +300,12 @@ exports.world = function(req, res, next){
 			}
 			var totalusers = anonymous.length + users.length;
 
-			console.log(anonymous);
-			console.log(users);
+			
 
 			var owner = (sessionData || {}).UID == doc.owner;
 			doc.prettyDate = prettyDate(doc.created);
 			doc.prettyUpdated = prettyDate(doc.lastUpdate);
-			res.locals = {root: getFrontEndRoot(req),id:req.params.page,sessionData:sessionData,worldData:doc,translate:translate(req),totalusers:totalusers,users:users,anonymous:anonymous,owner:owner};
+			res.locals = {root: getRoot(req),id:req.params.page,sessionData:sessionData,worldData:doc,translate:translate(req),totalusers:totalusers,users:users,anonymous:anonymous,owner:owner};
 			res.render('worldTemplate',{layout:'plain'});
 			res.setHeader('Cache-Control', 'no-cache');
 		});
@@ -324,7 +323,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 		{
 	DAL.getInstances(function(allinstances)
 	{
-		global.log(search);
+		
 		var results = [];
 		
 		if(mode == 'search')
@@ -426,7 +425,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 		}
 		var start = 10 * page;
 		var end = start+results.length;
-		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:root,searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0),translate:translate(req)};
+		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:getRoot(),searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0),translate:translate(req)};
 		res.locals[mode] = true;
 		res.render('searchResults',{layout:'plain'});
 		res.setHeader('Cache-Control', 'no-cache');

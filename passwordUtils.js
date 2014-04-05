@@ -166,8 +166,14 @@ exports.UpdatePassword = function (URL,response)
 	{
 		//make the password as not temp, so the user can use the site normally.
 		URL.loginData.PasswordIsTemp = false;
-		respond(response,200,'');
-		return;
+		//store the updated session in the db
+		URL.loginData.updated(function(){
+
+			respond(response,200,'');
+			return;
+
+		})
+		
 	});
 }
 
@@ -224,23 +230,23 @@ exports.SiteLogin = function (response,URL)
 //login to the site
 exports.SiteLogout = function (response,URL)
 {
-			
-			if(!URL.loginData)
-			{
-				respond(response,401,"Client Not Logged In");
-				return;
-			}
-			else
-			{
-				var username = URL.loginData.UID;
-				sessions.deleteSession(URL.loginData);
-				xapi.sendStatement(username,xapi.verbs.logged_out);
-				response.writeHead(200, {
-							"Content-Type":  "text/plain",
-							"Set-Cookie": "session=; HttpOnly;"
-					});
-				response.end();	
-			}
-			return;
-			
+	if(!URL.loginData)
+	{
+		respond(response,401,"Client Not Logged In");
+		return;
+	}
+	else
+	{
+		var username = URL.loginData.UID;
+		sessions.deleteSession(URL.loginData,function(){
+
+			xapi.sendStatement(username,xapi.verbs.logged_out);
+			response.writeHead(200, {
+						"Content-Type":  "text/plain",
+						"Set-Cookie": "session=; HttpOnly;"
+				});
+			response.end();	
+		});
+	}
+	return;
 }

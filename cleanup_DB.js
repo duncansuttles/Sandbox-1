@@ -17,14 +17,14 @@ nedbDB.new('c:\\vwfdata\\users.nedb',function(db)
 					
 					if(!value || !val || val.length < 2) 
 					{
-						console.log('removing');
-						db.remove(val,function(){
+						console.log('removing '+ val + value);
+						//db.remove(val,function(){
 						
-							db.listDepend('StateIndex',val,function(){
+						//	db.listDepend('StateIndex',val,function(){
 								cb();
-							});
+						//	});
 							
-						});
+						//});
 					}else
 					{
 						cb();

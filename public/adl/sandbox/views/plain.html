@@ -106,8 +106,8 @@
 		$(document).ready(function(){
 
 				center();
-				$('#login').attr('href',$('#login').attr('href') + '?return=' + window.location.pathname.substr(13) + window.location.search );
-				$('#logout').attr('href',$('#logout').attr('href') + '?return=' + window.location.pathname.substr(13) + window.location.search );
+				$('#login').attr('href',$('#login').attr('href') + '?return=' + window.location.pathname.substr("{{root}}".length) + window.location.search );
+				$('#logout').attr('href',$('#logout').attr('href') + '?return=' + window.location.pathname.substr("{{root}}".length) + window.location.search );
 		});		
 	</script>
 
