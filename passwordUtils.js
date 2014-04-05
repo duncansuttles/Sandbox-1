@@ -243,7 +243,7 @@ exports.SiteLogout = function (response,URL)
 			xapi.sendStatement(username,xapi.verbs.logged_out);
 			response.writeHead(200, {
 						"Content-Type":  "text/plain",
-						"Set-Cookie": "session=; HttpOnly;"
+						"Set-Cookie": "session=; Path=/; HttpOnly;"
 				});
 			response.end();	
 		});
