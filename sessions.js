@@ -148,7 +148,7 @@ var DB = null;
 
 exports.sessionStartup= function(cb) 
 {
-	require('./DB_nedb.js').new(global.configuration.datapath + "/sessions.db", function (_DB) {
+	require('./DB_nedb.js').new(global.datapath + "/sessions.db", function (_DB) {
 		DB = _DB;		
 		cb();
 	});

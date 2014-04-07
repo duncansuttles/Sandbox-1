@@ -222,6 +222,7 @@ var fixIDs = function(node)
       
       
 
+
       //create or setup instance data
       if(!global.instances)
         global.instances = {};
@@ -515,7 +516,8 @@ var fixIDs = function(node)
      
       socket.on('message', function (msg) {
         
-          
+        try{    
+
             //need to add the client identifier to all outgoing messages
             try{
                 var message = JSON.parse(messageCompress.unpack(msg));
@@ -606,6 +608,7 @@ var fixIDs = function(node)
             //We'll only accept a setProperty if the user has ownership of the object
             if(message.action == "setProperty")
             {
+
                   var node = global.instances[namespace].state.findNode(message.node);
                   if(!node)
                   {
@@ -680,7 +683,8 @@ var fixIDs = function(node)
                     return;
                   }
                   //Keep a record of the new node
-                  if(allowAnonymous || checkOwner(node,sendingclient.loginData.UID) || message.node == 'index-vwf')
+                  //remove allow for user to create new node on index-vwf. Must have permission!
+                  if(allowAnonymous || checkOwner(node,sendingclient.loginData.UID))
                   { 
                         var childComponent = JSON.parse(JSON.stringify(message.parameters[0]));
                         if(!childComponent) return;
@@ -765,40 +769,54 @@ var fixIDs = function(node)
                     }
                 }
             }
+        } catch(e)
+        {
+            //safe to catch and continue here
+            global.error('Error in reflector: onMessage');
+            global.error(e);
+            global.error(e.stack);
+        }
             
       });
       
       //When a client disconnects, go ahead and remove the instance data
       socket.on('disconnect', function () {
           
-          var loginData = global.instances[namespace].clients[socket.id].loginData;
-          global.log(socket.id,loginData )
-          global.instances[namespace].clients[socket.id] = null;    
-          delete global.instances[namespace].clients[socket.id];
-          //if it's the last client, delete the data and the timer
-          
-          if(loginData && loginData.clients)
-          {
-              delete loginData.clients[socket.id];
-              global.error("Unexpected disconnect. Deleting node for user avatar " + loginData.UID);
-             var avatarID = 'character-vwf-'+loginData.UID;
-             for(var i in global.instances[namespace].clients)
+          try{
+              var loginData = global.instances[namespace].clients[socket.id].loginData;
+              global.log(socket.id,loginData )
+              global.instances[namespace].clients[socket.id] = null;    
+              delete global.instances[namespace].clients[socket.id];
+              //if it's the last client, delete the data and the timer
+              
+              if(loginData && loginData.clients)
               {
-                    var cl = global.instances[namespace].clients[i];
-                    cl.emit('message',messageCompress.pack(JSON.stringify({"action":"deleteNode","node":avatarID,"time":global.instances[namespace].time})));                   
+                  delete loginData.clients[socket.id];
+                  global.error("Unexpected disconnect. Deleting node for user avatar " + loginData.UID);
+                 var avatarID = 'character-vwf-'+loginData.UID;
+                 for(var i in global.instances[namespace].clients)
+                  {
+                        var cl = global.instances[namespace].clients[i];
+                        cl.emit('message',messageCompress.pack(JSON.stringify({"action":"deleteNode","node":avatarID,"time":global.instances[namespace].time})));                   
+                  }
+                  global.instances[namespace].state.deleteNode(avatarID);   
               }
-              global.instances[namespace].state.deleteNode(avatarID);   
-          }
-          for(var i in global.instances[namespace].clients)
-          {
-                global.instances[namespace].clients[i].emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Peer disconnected: " + (loginData?loginData.UID:"Unknown")],"time":global.instances[namespace].getStateTime})));    
-          }
-          if(Object.keys(global.instances[namespace].clients).length == 0)
-          {
-            clearInterval(global.instances[namespace].timerID);
-            delete global.instances[namespace];
-            global.log('Shutting down ' + namespace )
-          }
+              for(var i in global.instances[namespace].clients)
+              {
+                    global.instances[namespace].clients[i].emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Peer disconnected: " + (loginData?loginData.UID:"Unknown")],"time":global.instances[namespace].getStateTime})));    
+              }
+              if(Object.keys(global.instances[namespace].clients).length == 0)
+              {
+                clearInterval(global.instances[namespace].timerID);
+                delete global.instances[namespace];
+                global.log('Shutting down ' + namespace )
+              }
+            }
+            catch(e)
+            {
+                global.error('error in reflector disconnect')
+                global.error(e);
+            }
 
         });
           
