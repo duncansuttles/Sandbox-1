@@ -822,6 +822,14 @@ define(
 			}
 		});
 		
+		$('#MenuUndo').click(function (e)
+		{
+			_UndoManager.undo();
+		});
+		$('#MenuRedo').click(function (e)
+		{
+			_UndoManager.redo();
+		});
 
 		$('#MenuCreateLoadMeshURL').click(function (e)
 		{

@@ -16,45 +16,9 @@ define(function ()
 
 	function initialize()
 	{
-		$(document.body).append("<div id='ShareWithDialog'> <select id='ShareWithNames'/> </div>");
+		
 		this.propertyEditorDialogs = [];
-		$('#ShareWithDialog').dialog(
-		{
-			title: "Share With User",
-			autoOpen: false,
-			moveable: false,
-			modal: true,
-			resizable: false,
-			resizable: false,
-			open: function ()
-			{
-				$('#ShareWithNames').empty();
-				for (var i = 0; i < document.Players.length; i++)
-				{
-					$('#ShareWithNames').append("<option value='" + document.Players[i] + "'>" + document.Players[i] + "</option>");
-				}
-				if (!_Editor.GetSelectedVWFNode())
-				{
-					_Notifier.notify('No object selected');
-					$('#ShareWithDialog').dialog('close');
-				}
-			},
-			buttons: {
-				Ok: function ()
-				{
-					var owner = vwf.getProperty(_Editor.GetSelectedVWFNode().id, 'owner');
-					if (typeof owner === "string") owner = [owner];
-					owner = owner.slice(0);
-					owner.push($('#ShareWithNames').val());
-					_Editor.setProperty(_Editor.GetSelectedVWFNode().id, 'owner', owner);
-					$('#ShareWithDialog').dialog('close');
-				},
-				Cancel: function ()
-				{
-					$('#ShareWithDialog').dialog('close');
-				}
-			}
-		});
+		
 		$('#sidepanel').append("<div id='PrimitiveEditor'>" 
 		+ "<div id='primeditortitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span id='primeditortitletext' class='ui-dialog-title' id='ui-dialog-title-Players'>Object Properties</span></div>" +
 		'<div id="accordion" style="height:100%;overflow:hidden">' +
@@ -192,6 +156,9 @@ define(function ()
 		}
 		this.setProperty = function (id, prop, val)
 		{
+			//prevent the handlers from firing setproperties when the GUI is first setup;
+			if(this.inSetup) return;
+
 			if(document.PlayerNumber == null)
 			{
 			_Notifier.notify('You must log in to participate');
@@ -204,6 +171,7 @@ define(function ()
 				_Notifier.notify('You do not have permission to edit this object');
 				return;
 				}
+				_UndoManager.recordSetProperty(id, prop, val);
 				vwf_view.kernel.setProperty(id, prop, val)
 			}
 			if (id == 'selection')
@@ -216,6 +184,7 @@ define(function ()
 					_Notifier.notify('You do not have permission to edit this object');
 					continue;
 					}
+					_UndoManager.recordSetProperty(_Editor.GetSelectedVWFNode(k).id, prop, val);
 					vwf_view.kernel.setProperty(_Editor.GetSelectedVWFNode(k).id, prop, val)
 				}
 			}
@@ -249,6 +218,7 @@ define(function ()
 			{
 				if (node)
 				{
+					this.inSetup = true;
 					this.clearPropertyEditorDialogs();
 					$("#accordion").accordion('destroy');
 					$("#accordion").children('.modifiersection').remove();
@@ -337,7 +307,7 @@ define(function ()
 						}
 					});
 					$(".ui-accordion-content").css('height', 'auto');
-					
+					this.inSetup = false;
 				}
 				else
 				{
@@ -578,7 +548,7 @@ define(function ()
 				{
 					var inputstyle = "";
 					$('#basicSettings' + nodeid).append('<div class="editorSliderLabel">' + editordata[i].displayname + ': </div>');
-					$('#basicSettings' + nodeid).append('<input class="primeditorinputbox" style="' + inputstyle + '" type="number" id="' + nodeid + editordata[i].property + 'value"></input>');
+					$('#basicSettings' + nodeid).append('<input class="primeditorinputbox" style="' + inputstyle + '" type="" id="' + nodeid + editordata[i].property + 'value"></input>');
 				//	$('#' + nodeid + editordata[i].property + 'value').val(vwf.getProperty(node.id, editordata[i].property));
 				//	$('#' + nodeid + editordata[i].property + 'value').change(this.primPropertyTypein);
 					$('#' + nodeid + editordata[i].property + 'value').attr("nodename", nodeid);

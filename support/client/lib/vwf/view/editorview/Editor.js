@@ -344,7 +344,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		
 			for (var s = 0; s < SelectedVWFNodes.length; s++)
 			{
-					 vwf_view.kernel.setProperty(SelectedVWFNodes[s].id,'transform',this.backupTransfroms[s]);
+					 this.setProperty(SelectedVWFNodes[s].id,'transform',this.backupTransfroms[s]);
 			}
 					
 		}
@@ -585,6 +585,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 				if (SelectedVWFNodes[s])
 				{
+					_UndoManager.recordDelete(SelectedVWFNodes[s].id);
 					vwf_view.kernel.deleteNode(SelectedVWFNodes[s].id);
 					$('#StatusSelectedID').text('No Selection');
 					$('#StatusSelectedName').text('No Selection');
@@ -667,6 +668,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			if (e.keyCode == 86 && e.ctrlKey)
 			{
 				this.Paste();
+			}
+			if (e.keyCode == 90 && e.ctrlKey)
+			{
+				_UndoManager.undo();
+			}
+			if (e.keyCode == 89 && e.ctrlKey)
+			{
+				_UndoManager.redo();
 			}
 			if (e.keyCode == 83 && e.ctrlKey)
 			{
@@ -1520,6 +1529,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var ret = _PermissionsManager.setProperty(id, prop, val);
 			if(!ret)
 			  _Notifier.notify('You do not have permission to modify this object');	
+			else
+			{
+				_UndoManager.recordSetProperty(id, prop, val);
+			}
 			return ret; 
 		}
 		
@@ -1568,6 +1581,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				_Notifier.alert('You must have permissions on the parent object to create a child');
 				return;
 			}
+			_UndoManager.recordCreate(parent, name, proto, uri);
 			vwf_view.kernel.createChild(parent, name, proto, uri, callback);
 		}
 		this.createLight = function (type, pos, owner)
@@ -2171,7 +2185,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			{
 				if (vwf.getProperty(SelectedVWFNodes[i].id, 'type') == 'Group')
 				{
-					vwf.setProperty(SelectedVWFNodes[i].id, 'open', true);
+					this.setProperty(SelectedVWFNodes[i].id, 'open', true);
 				}
 			}
 			this.updateBounds();
@@ -2182,7 +2196,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			{
 				if (vwf.getProperty(SelectedVWFNodes[i].id, 'type') == 'Group')
 				{
-					vwf.setProperty(SelectedVWFNodes[i].id, 'open', false);
+					this.setProperty(SelectedVWFNodes[i].id, 'open', false);
 				}
 			}
 			this.updateBounds();
@@ -2329,7 +2343,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 			for(var i =0; i < SelectedVWFNodes.length; i++)
 			{
-				_PermissionsManager.setProperty(SelectedVWFNodes[i].id,'transform', [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1], "You do not have permission to reset the transforms for this object");
+				this.setProperty(SelectedVWFNodes[i].id,'transform', [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1], "You do not have permission to reset the transforms for this object");
 			}
 		}
 		this.hideMoveGizmo = function ()
@@ -2926,7 +2940,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				var t = $(div).offset().top;
 				val[12] -= l;
 				val[13] -= t;
-				vwf_view.kernel.setProperty(_Editor.GetSelectedVWFID(),'transform',matcpy(val))
+				this.setProperty(_Editor.GetSelectedVWFID(),'transform',matcpy(val))
 			}
 			e.stopImmediatePropagation();
 			return false;

@@ -143,6 +143,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				continue;
 				}
 				
+				_UndoManager.recordSetProperty(id, 'materialDef', _MaterialEditor.currentMaterial);
 				vwf_view.kernel.setProperty(id, 'materialDef', _MaterialEditor.currentMaterial);
 			}
 		}
