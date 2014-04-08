@@ -130,9 +130,9 @@ define(function ()
 	function SetPropertyEvent(id,property,val)
 	{
 		this.property = property;
-		this.val = JSON.parse(JSON.stringify(val));
+		this.val = JSON.parse(JSON.stringify(val || null));
 		this.id = id;
-		this.oldval = JSON.parse(JSON.stringify(vwf.getProperty(id,property)));
+		this.oldval = JSON.parse(JSON.stringify(vwf.getProperty(id,property) || null));
 		this.undo = function()
 		{
 			vwf_view.kernel.setProperty(this.id,this.property,this.oldval);

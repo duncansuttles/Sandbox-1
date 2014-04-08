@@ -837,6 +837,8 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			newlayer.mapInput = 0;
 			newlayer.alpha = 1;
 			newlayer.src = 'checker.jpg';
+			if(!_MaterialEditor.currentMaterial.layers)
+				 _MaterialEditor.currentMaterial.layers = [];
 			_MaterialEditor.currentMaterial.layers.push(newlayer);
 			_MaterialEditor.updateObject();
 			_MaterialEditor.BuildGUI();
