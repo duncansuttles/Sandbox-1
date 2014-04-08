@@ -3467,7 +3467,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var newintersectxy = self.GetInsertPoint();
 			Proto.properties.owner = _UserManager.GetCurrentUserName();
 			Proto.properties.translation = newintersectxy;
-			var newname = his.GetUniqueName(url);
+			var newname = this.GetUniqueName(url);
 			_UndoManager.recordCreate('index-vwf', newname, Proto);
 			vwf_view.kernel.createChild('index-vwf', newname, Proto);
 			
