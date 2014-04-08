@@ -684,9 +684,10 @@ var fixIDs = function(node)
                   }
                   //Keep a record of the new node
                   //remove allow for user to create new node on index-vwf. Must have permission!
-                  if(allowAnonymous || checkOwner(node,sendingclient.loginData.UID))
+                  var childComponent = JSON.parse(JSON.stringify(message.parameters[0]));
+                  if(allowAnonymous || checkOwner(node,sendingclient.loginData.UID) || childComponent.extends == 'character.vwf')
                   { 
-                        var childComponent = JSON.parse(JSON.stringify(message.parameters[0]));
+                        
                         if(!childComponent) return;
                         var childName = message.member;
                         if(!childName) return;

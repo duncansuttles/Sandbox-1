@@ -1360,6 +1360,7 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 
         this.getNode = function( nodeID, full ) {  // TODO: include/exclude children, prototypes
 
+        try{
 			if(!nodeID)
 				return null;
             this.logger.group( "vwf.getNode " + nodeID + " " + full );
@@ -1459,28 +1460,7 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
                     delete nodeComponent.events;
                 }
 
-            // nodeComponent.methods = {};  // TODO
-
-            // for ( var methodName in nodeComponent.methods ) {
-            //     nodeComponent.methods[methodName] === undefined &&
-            //         delete nodeComponent.methods[methodName];
-            // }
-
-            // Object.keys( nodeComponent.methods ).length ||
-            //     delete nodeComponent.methods;
-
-            // Events.
-
-            // nodeComponent.events = {};  // TODO
-
-            // for ( var eventName in nodeComponent.events ) {
-            //     nodeComponent.events[eventName] === undefined &&
-            //         delete nodeComponent.events[eventName];
-            // }
-
-            // Object.keys( nodeComponent.events ).length ||
-            //     delete nodeComponent.events;
-
+          
             // Restore kernel reentry.
 
             isolateProperties && vwf.models.kernel.enable();
@@ -1520,6 +1500,10 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
             } else {
                 return undefined;
             }
+        }catch(e)
+        {
+            return null;
+        }
 
         };
 

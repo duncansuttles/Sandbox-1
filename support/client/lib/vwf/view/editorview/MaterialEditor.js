@@ -68,6 +68,42 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#' + prop + 'slider').slider('value', $('#' + prop + 'value').val());
 			_MaterialEditor.updateObject();
 		}
+
+		this.RootPropSlideStart = function (e, ui)
+		{
+			var prop = $(this).attr('prop');
+			
+			$('#' + prop + 'value').val(ui.value);
+			this.undoEvent = new _UndoManager.CompoundEvent();
+			for(var i = 0; i < _Editor.getSelectionCount();i++)
+				this.undoEvent.push(new _UndoManager.SetPropertyEvent(_Editor.GetSelectedVWFNode(i).id,'materialDef',null))
+			
+			_MaterialEditor.currentMaterial[prop] = ui.value;
+			_MaterialEditor.updateObject(true);
+		}
+		this.RootPropSlideStop = function (e, ui)
+		{
+			var prop = $(this).attr('prop');
+
+			_MaterialEditor.currentMaterial[prop] = ui.value;
+			$('#' + prop + 'value').val(ui.value);
+			if(this.undoEvent)
+			{
+				for(var i = 0; i < this.undoEvent.list.length; i++)
+					this.undoEvent.list[i].val = JSON.parse(JSON.stringify(_MaterialEditor.currentMaterial));
+				_UndoManager.pushEvent(this.undoEvent);
+				this.undoEvent = null;
+			}
+			_MaterialEditor.updateObject(true);
+		}
+		this.RootPropSlide = function (e, ui)
+		{
+			var prop = $(this).attr('prop');
+			_MaterialEditor.currentMaterial[prop] = ui.value;
+			$('#' + prop + 'value').val(ui.value);
+			_MaterialEditor.updateObject(true);
+		}
+
 		this.RootPropUpdate = function (e, ui)
 		{
 			var prop = $(this).attr('prop');
@@ -92,6 +128,49 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			_MaterialEditor.currentMaterial.layers[layer][prop] = ui.value;
 			$('#' + rootid + prop + 'value').val(ui.value);
 			_MaterialEditor.updateObject();
+		}
+		this.LayerPropSlide = function (e, ui)
+		{
+			var prop = $(this).attr('prop');
+			var layer = $(this).attr('layer');
+			var rootid = 'Layer' + layer + 'Settings';
+			_MaterialEditor.currentMaterial.layers[layer][prop] = ui.value;
+			$('#' + rootid + prop + 'value').val(ui.value);
+			_MaterialEditor.updateObject(true);
+		}
+		this.LayerPropSlideStart = function (e, ui)
+		{
+			var prop = $(this).attr('prop');
+			var layer = $(this).attr('layer');
+			var rootid = 'Layer' + layer + 'Settings';
+
+			this.undoEvent = new _UndoManager.CompoundEvent();
+			for(var i = 0; i < _Editor.getSelectionCount();i++)
+				this.undoEvent.push(new _UndoManager.SetPropertyEvent(_Editor.GetSelectedVWFNode(i).id,'materialDef',null))
+
+
+			_MaterialEditor.currentMaterial.layers[layer][prop] = ui.value;
+			$('#' + rootid + prop + 'value').val(ui.value);
+			_MaterialEditor.updateObject(true);
+		}
+		this.LayerPropSlideStop = function (e, ui)
+		{
+			var prop = $(this).attr('prop');
+			var layer = $(this).attr('layer');
+			var rootid = 'Layer' + layer + 'Settings';
+			_MaterialEditor.currentMaterial.layers[layer][prop] = ui.value;
+
+
+			if(this.undoEvent)
+			{
+				for(var i = 0; i < this.undoEvent.list.length; i++)
+					this.undoEvent.list[i].val = JSON.parse(JSON.stringify(_MaterialEditor.currentMaterial));
+				_UndoManager.pushEvent(this.undoEvent);
+				this.undoEvent = null;
+			}
+
+			$('#' + rootid + prop + 'value').val(ui.value);
+			_MaterialEditor.updateObject(true);
 		}
 		this.copyMaterial = function ()
 		{
@@ -127,13 +206,16 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			_MaterialEditor.updateObject();
 			_MaterialEditor.BuildGUI();
 		}
-		this.updateObject = function ()
+		this.updateObject = function (skipUndo)
 		{
 			if(document.PlayerNumber == null)
 			{
 			_Notifier.notify('You must log in to participate');
 			return;
 			}
+			debugger;
+			var undoEvent = new _UndoManager.CompoundEvent();
+
 			for (var i = 0; i < _Editor.getSelectionCount(); i++)
 			{
 				var id = _Editor.GetSelectedVWFNode(i).id;
@@ -143,9 +225,13 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				continue;
 				}
 				
-				_UndoManager.recordSetProperty(id, 'materialDef', _MaterialEditor.currentMaterial);
+				undoEvent.push(new _UndoManager.SetPropertyEvent(id, 'materialDef', _MaterialEditor.currentMaterial));
+				
 				vwf_view.kernel.setProperty(id, 'materialDef', _MaterialEditor.currentMaterial);
 			}
+			//sliders must override this and handle undo themsleves
+			if(!skipUndo)
+				_UndoManager.pushEvent(undoEvent);
 		}
 		this.BuildGUI = function ()
 		{
@@ -271,8 +357,10 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					step: sliderprops[i].step,
 					min: sliderprops[i].min,
 					max: sliderprops[i].max,
-					slide: this.RootPropUpdate,
-				//	stop: this.RootPropUpdate,
+					slide: this.RootPropSlide,
+					stop: this.RootPropSlideStop,
+					start: this.RootPropSlideStart,
+					
 					value: val
 				});
 			}
@@ -647,8 +735,10 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 						step: layersliderprops[j].step,
 						min: layersliderprops[j].min,
 						max: layersliderprops[j].max,
-						slide: this.LayerPropUpdate,
-						//stop: this.LayerPropUpdate,
+						slide: this.LayerPropSlide,
+						start:this.LayerPropSlideStart,
+						stop:this.LayerPropSlideStop,
+						
 						value: val
 					});
 				}
@@ -758,7 +848,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				if (node)
 				{
 					
-					this.currentMaterial = vwf.getProperty(node.id, 'materialDef');
+					this.currentMaterial = JSON.parse(JSON.stringify(vwf.getProperty(node.id, 'materialDef')));
 					if (!this.currentMaterial){
 					if(this.isOpen()) this.hide();
 					return;

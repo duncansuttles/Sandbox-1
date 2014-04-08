@@ -139,6 +139,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		this.mousedown_Gizmo = function (e)
 		{
 			
+			this.undoPoint = null;    //when the mouse is down, we start over with the record for the undo
 			$('#index-vwf').focus();
 			$('#ContextMenu').hide();
 			$('#ContextMenu').css('z-index', '-1');
@@ -363,11 +364,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			{
 				
 				self.ShowContextMenu(e);
+				this.undoPoint = null;
 				return false;
 			}
 			if (e.button == 2 && document.AxisSelected != -1)
 			{
+				this.undoPoint = null;
 				this.restoreTransforms();
+				document.AxisSelected = -1;
 				var ids = [];
 					for (var s = 0; s < SelectedVWFNodes.length; s++)
 						ids.push(SelectedVWFNodes[s].id);
@@ -378,6 +382,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			}
 			if (e.mouseleave)
 			{
+				this.undoPoint = null;
 				return;
 			}
 			this.MouseLeftDown = false;
@@ -502,8 +507,15 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 				
 			}
-			//else if(document.AxisSelected == -1)
-			//	this.SelectObject(null);
+			
+			if (document.AxisSelected != -1 && this.undoPoint)
+			{
+				for(var i = 0; i < SelectedVWFNodes.length; i++)
+					this.undoPoint.list[i].val = vwf.getProperty(SelectedVWFNodes[i].id,'transform');
+				_UndoManager.pushEvent(this.undoPoint);
+				this.undoPoint = null;
+			}
+
 			if (document.AxisSelected == 15)
 			{
 				SetCoordSystem(CoordSystem == WorldCoords ? LocalCoords : WorldCoords);
@@ -569,6 +581,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				_Notifier.notify('You must log in to participate');
 				return;
 			}
+			_UndoManager.startCompoundEvent();
 			for (var s = 0; s < SelectedVWFNodes.length; s++)
 			{
 				
@@ -585,7 +598,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 				if (SelectedVWFNodes[s])
 				{
-					_UndoManager.recordDelete(SelectedVWFNodes[s].id);
+					
+					 _UndoManager.recordDelete(SelectedVWFNodes[s].id);
 					vwf_view.kernel.deleteNode(SelectedVWFNodes[s].id);
 					$('#StatusSelectedID').text('No Selection');
 					$('#StatusSelectedName').text('No Selection');
@@ -596,6 +610,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				if (_MaterialEditor.isOpen()) _MaterialEditor.hide();
 				if (_ScriptEditor.isOpen()) _ScriptEditor.hide();
 			}
+			_UndoManager.stopCompoundEvent();
 			this.SelectObject(null);
 		}.bind(this);
 		//	$('#vwf-root').keyup(function(e){
@@ -1092,9 +1107,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					this.selectionMarquee.css('top', this.mouseLastScreenPoint[1]);
 				}
 			}
-			if (document.AxisSelected != -1)
+			if (document.AxisSelected != -1)	//the user has clicked over one of the transform tool handles
 			{
-			
+				if(!this.undoPoint)   //only create an undo record if we don't currently have one
+				{
+					this.undoPoint = new _UndoManager.CompoundEvent();
+					for(var i = 0; i < SelectedVWFNodes.length; i++)
+						this.undoPoint.push(new _UndoManager.SetPropertyEvent(SelectedVWFNodes[i].id,'transform',null)) // we are going to track this as it changes, and only record the new value on mouseup
+				}
 				var relscreeny = this.lastScalePoint - e.clientY;
 				if(relscreeny > 30 * this.ScaleSnap )
 				{
@@ -1424,7 +1444,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 								transform[14] += gizoffset[2];
 								lastpos[s] = [transform[12], transform[13], transform[14]];
 								var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
-								
+
 							}
 							if (wasScaled && tempscale[0] > 0 && tempscale[1] > 0 && tempscale[2] > 0)
 							{
@@ -1476,20 +1496,20 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 									var newloc = MATH.addVec3(parentgizloc, gizoffset);
 									lastpos[s] = newloc;
 									var success = this.setTranslationCallback(SelectedVWFNodes[s].id, newloc);
-									//console.log(newloc);
+									
 									
 								}
 							}
 						}
-						//triggerSelectionTransformed(SelectedVWFNode);
+						
 						self.updateGizmoOrientation(false);
 					}
 				}
-				//if(wasScaled || wasRotated|| wasMoved && self.getSelectionCount() > 1) self.updateBounds();
+				
 			}
-			else
+			else    //there is no axis handle selected
 			{
-				////console.log(vwf.views[0].lastPick.object.uid);
+				
 				var axis = -1;
 				for (var i = 0; i < MoveGizmo.children.length; i++)
 				{
@@ -1529,10 +1549,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var ret = _PermissionsManager.setProperty(id, prop, val);
 			if(!ret)
 			  _Notifier.notify('You do not have permission to modify this object');	
-			else
-			{
-				_UndoManager.recordSetProperty(id, prop, val);
-			}
+			
 			return ret; 
 		}
 		
@@ -2212,7 +2229,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				this.SelectObject(VWFNodeid, this.PickMod);
 			}
 		}
-		this.SelectObject = function (VWFNode, selectmod)
+		this.SelectObject = function (VWFNode, selectmod,skipUndo)  //the skip undo flag is necessary so that the undomanager can trigger new selections without messing up the undostack
 		{
 			this.waitingForSet.length = 0;
 			//stop the GUI drag function
@@ -2224,6 +2241,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			}
 			else if (typeof (VWFNode) == 'object') VWFNode = [VWFNode];
 			else if (typeof (VWFNode) == 'string') VWFNode = [vwf.getNode(VWFNode)];
+		
+		//this causes too much drama. look into solution in future	
+		//	if(!skipUndo)
+		//		_UndoManager.recordSelection(VWFNode);
+
 			if (!selectmod)
 			{
 				SelectedVWFNodes = [];
@@ -2290,6 +2312,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						//this.findviewnode(SelectedVWFNodes[s].id).updateMatrix
 					}
 				}
+
 				this.updateBoundsAndGizmoLoc();
 				this.updateGizmoOrientation(true);
 			}
@@ -2307,6 +2330,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					SelectionBounds = [];
 				}
 			}
+
 			
 			$('#StatusSelectedID').text('No Selection');
 					$('#StatusSelectedName').text('No Selection');
@@ -2720,6 +2744,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		//callback for setPArent. CAlled once a node is picked. Selected objects will become children of this node
 		this.PickParentCallback = function (parentnode)
 		{
+			_UndoManager.startCompoundEvent();
 			if(parentnode)
 			{
 				
@@ -2771,9 +2796,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			this.TempPickCallback = null;
 			self.SelectOnNextCreate();
 			this.SetSelectMode('Pick');
+			_UndoManager.stopCompoundEvent();
 		}
 		this.RemoveParent = function ()
 		{
+			_UndoManager.startCompoundEvent();
 			for(var i = 0; i < this.getSelectionCount(); i++)
 			{
 				var id = this.GetSelectedVWFNode(i).id;
@@ -2790,6 +2817,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			this.DeleteSelection();
 			self.SelectOnNextCreate(this.getSelectionCount());
 			this.SetSelectMode('Pick');
+			_UndoManager.stopCompoundEvent();
 		}
 		//Choose the node to become the parent of the selected node
 		this.SetParent = function ()
@@ -2810,6 +2838,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.UngroupSelection = function ()
 		{
+			_UndoManager.startCompoundEvent();
+
 			for (var i = 0; i < this.getSelectionCount(); i++)
 			{
 				// if(!self.isOwner(SelectedVWFNodes[i].id,document.PlayerNumber))
@@ -2831,11 +2861,17 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					delete node.properties.quaternion;
 					delete node.properties.scale;
 					node.properties.transform = MATH.transposeMat4(childmat);
+					_UndoManager.recordDelete(children[j])
 					vwf_view.kernel.deleteNode(children[j]);
-					vwf_view.kernel.createChild(vwfparent, GUID(), node);
+					var newname = GUID();
+					_UndoManager.recordCreate( vwfparent, newname, node);
+					vwf_view.kernel.createChild(vwfparent, newname, node);
 				}
+				_UndoManager.recordDelete(this.GetSelectedVWFNode(i).id);
 				vwf_view.kernel.deleteNode(this.GetSelectedVWFNode(i).id);
+				
 			}
+			_UndoManager.stopCompoundEvent();
 			this.SelectObject();
 		}
 		this.GroupSelection = function ()
@@ -2885,10 +2921,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				node.properties.transform = MATH.transposeMat4(childmat);
 				proto.children[GUID()] = node;
 			}
+			_UndoManager.startCompoundEvent();
 			this.DeleteSelection();
-			vwf_view.kernel.createChild('index-vwf', GUID(), proto);
+			var newname = GUID();
+			_UndoManager.recordCreate('index-vwf', newname, proto)
+			vwf_view.kernel.createChild('index-vwf',newname, proto);
 			self.SelectOnNextCreate();
 			this.SetSelectMode('Pick');
+			_UndoManager.stopCompoundEvent();
 		}
 		this.findviewnode = function (id)
 		{
@@ -3427,7 +3467,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var newintersectxy = self.GetInsertPoint();
 			Proto.properties.owner = _UserManager.GetCurrentUserName();
 			Proto.properties.translation = newintersectxy;
-			vwf_view.kernel.createChild('index-vwf', this.GetUniqueName(url), Proto);
+			var newname = his.GetUniqueName(url);
+			_UndoManager.recordCreate('index-vwf', newname, Proto);
+			vwf_view.kernel.createChild('index-vwf', newname, Proto);
 			
 		}
 		this.initialize = function ()

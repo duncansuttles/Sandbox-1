@@ -154,7 +154,7 @@ define(function ()
 			//return $("#PrimitiveEditor").dialog( "isOpen" )
 			return $('#PrimitiveEditor').is(':visible')
 		}
-		this.setProperty = function (id, prop, val)
+		this.setProperty = function (id, prop, val, skipUndo)
 		{
 			//prevent the handlers from firing setproperties when the GUI is first setup;
 			if(this.inSetup) return;
@@ -171,12 +171,14 @@ define(function ()
 				_Notifier.notify('You do not have permission to edit this object');
 				return;
 				}
-				_UndoManager.recordSetProperty(id, prop, val);
+				if(!skipUndo)
+					_UndoManager.recordSetProperty(id, prop, val);
 				vwf_view.kernel.setProperty(id, prop, val)
 			}
 			if (id == 'selection')
 			{
-				console.log(_Editor.getSelectionCount());
+				var undoEvent = new _UndoManager.CompoundEvent();
+
 				for (var k = 0; k < _Editor.getSelectionCount(); k++)
 				{
 					if(_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),_Editor.GetSelectedVWFNode(k).id) == 0)
@@ -184,9 +186,12 @@ define(function ()
 					_Notifier.notify('You do not have permission to edit this object');
 					continue;
 					}
-					_UndoManager.recordSetProperty(_Editor.GetSelectedVWFNode(k).id, prop, val);
+					
+					undoEvent.push(new _UndoManager.SetPropertyEvent(_Editor.GetSelectedVWFNode(k).id, prop, val));
 					vwf_view.kernel.setProperty(_Editor.GetSelectedVWFNode(k).id, prop, val)
 				}
+				if(!skipUndo)
+					_UndoManager.pushEvent(undoEvent);
 			}
 		}
 		
@@ -360,6 +365,49 @@ define(function ()
 					this.setupEditorData(node.children[i], false);
 				}
 			}
+		}
+		this.primPropertySlide = function (e, ui)
+		{
+
+			var id = $(this).attr('nodename');
+			var prop = $(this).attr('propname');
+			$('#' + id + prop + 'value').val(ui.value);
+			var amount = ui.value;
+			//be sure to skip undo - handled better in slidestart and slidestop
+			_PrimitiveEditor.setProperty(id, prop, parseFloat(amount),true);
+
+		}
+		this.primPropertySlideStart = function (e, ui)
+		{
+			var id = $(this).attr('nodename');
+			var prop = $(this).attr('propname');
+			$('#' + id + prop + 'value').val(ui.value);
+			var amount = ui.value;
+			this.undoEvent = new _UndoManager.CompoundEvent();
+			if(id == 'selection')
+			{
+				for(var i =0; i < _Editor.getSelectionCount(); i++)
+					this.undoEvent.push(new _UndoManager.SetPropertyEvent(_Editor.GetSelectedVWFNode(i).id,prop,null))
+			}else
+			{
+					this.undoEvent.push(new _UndoManager.SetPropertyEvent(id,prop,null))
+			}
+			_PrimitiveEditor.setProperty(id, prop, parseFloat(amount),true);
+		}
+		this.primPropertySlideStop = function (e, ui)
+		{
+			var id = $(this).attr('nodename');
+			var prop = $(this).attr('propname');
+			$('#' + id + prop + 'value').val(ui.value);
+			var amount = ui.value;
+
+			if(this.undoEvent)
+				for(var i =0; i < this.undoEvent.list.length; i++)
+					this.undoEvent.list[i].val = amount;
+			_UndoManager.pushEvent(this.undoEvent);
+			this.undoEvent = null;
+
+			_PrimitiveEditor.setProperty(id, prop, parseFloat(amount),true);
 		}
 		this.primPropertyUpdate = function (e, ui)
 		{
@@ -571,8 +619,9 @@ define(function ()
 						step: parseFloat(editordata[i].step),
 						min: parseFloat(editordata[i].min),
 						max: parseFloat(editordata[i].max),
-						slide: this.primPropertyUpdate,
-						stop: this.primPropertyUpdate,
+						slide: this.primPropertySlide,
+						stop: this.primPropertySlideStop,
+						start: this.primPropertySlideStart,
 						value: val
 					});
 					

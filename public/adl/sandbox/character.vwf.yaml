@@ -936,6 +936,9 @@ scripts:
     this.keyDown = function(e)
          {
            
+           //dont allow ctrl keys - any time the ctrl is down, it's stuff for the editor
+           if(e.mods.ctrl) return;    
+
             if(this.id == 'character-vwf') return;
            if(vwf.client() != this.ownerClientID) return;
             

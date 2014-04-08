@@ -9,8 +9,8 @@ var request = require('request'),
  */
 function sendStatement(userId, verb, worldId, worldName, worldDescription, otherContext)
 {
-	if( !global.configuration.lrsEndpoint )
-		return;
+	//if( !global.configuration.lrsEndpoint )
+	//	return;
 	
 	var creds = new Buffer(global.configuration.lrsUsername + ':' + global.configuration.lrsPassword);
 	var auth = 'Basic ' + creds.toString('base64');
@@ -40,22 +40,22 @@ function sendStatement(userId, verb, worldId, worldName, worldDescription, other
 	if(otherContext)
 		stmt.addOtherContextActivity(new World(otherContext));
 	stmt.context.platform = 'virtual world';
-	request.post({'url': liburl.resolve(global.configuration.lrsEndpoint, 'statements'),
-		'headers': {'X-Experience-API-Version': '1.0.1', 'Authorization': auth},
-		'json': stmt
-	},
-	function(err,res,body)
-	{
-		if(err){
-			global.error(err);
-		}
-		else if(res.statusCode === 200){
-			global.log('Action posted:', stmt.toString());
-		}
-		else {
-			global.log('Statement problem:', body);
-		}
-	});
+//	request.post({'url': liburl.resolve(global.configuration.lrsEndpoint, 'statements'),
+//		'headers': {'X-Experience-API-Version': '1.0.1', 'Authorization': auth},
+//		'json': stmt
+//	},
+//	function(err,res,body)
+//	{
+//		if(err){
+//			global.error(err);
+//		}
+//		else if(res.statusCode === 200){
+//			global.log('Action posted:', stmt.toString());
+//		}
+//		else {
+//			global.log('Statement problem:', body);
+//		}
+//	});
 }
 
 
@@ -74,15 +74,18 @@ AccountAgent.prototype = new XAPIStatement.Agent;
  */
 function World(id, name, description)
 {
+	console.log('WORLD');
 	var match = /[_\/]adl[_\/]sandbox[_\/]([A-Za-z0-9]{16})[_\/]/.exec(id);
 	id = match[1];
 	var worldActivityId = 'http://vwf.adlnet.gov/xapi/'+id;
 
 	XAPIStatement.Activity.call(this,worldActivityId,name,description);
 
-	this.definition.type = 'http://vwf.adlnet.gov/xapi/world';
-	this.definition.moreInfo = 'http://vwf.adlnet.gov/adl/sandbox/world/'+id;
-
+	if(this.definition)
+	{
+		this.definition.type = 'http://vwf.adlnet.gov/xapi/world';
+		this.definition.moreInfo = 'http://vwf.adlnet.gov/adl/sandbox/world/'+id;
+	}
 }
 World.prototype = new XAPIStatement.Activity;
 
