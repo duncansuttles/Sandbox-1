@@ -124,6 +124,7 @@ define(function ()
 						t = _DataManager.getCleanNodePrototype(t);
 						_InventoryManager.setOwner(t, _UserManager.GetCurrentUserName());
 						_Editor.SelectOnNextCreate();
+					
 						_InventoryManager.createChild('index-vwf', GUID(), t, null, null);
 					}
 					else
@@ -135,6 +136,7 @@ define(function ()
 						}
 						t = _DataManager.getCleanNodePrototype(t);
 						_InventoryManager.setOwner(t, _UserManager.GetCurrentUserName());
+						
 						_InventoryManager.createChild(_Editor.GetSelectedVWFID(), GUID(), t, null, null);
 					}
 				}
@@ -398,6 +400,7 @@ define(function ()
 				_Notifier.notify('You must log in to participate');
 				return;
 			}
+			_UndoManager.recordCreate(parent, name, proto, uri);
 			vwf_view.kernel.createChild(parent, name, proto, uri, callback);
 		}
 		this.getInventory = function(cb)

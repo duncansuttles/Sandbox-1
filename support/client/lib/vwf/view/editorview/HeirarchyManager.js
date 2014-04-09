@@ -60,6 +60,7 @@ define(function ()
 				_Notifier.notify('You must log in to participate');
 				return;
 			}
+			_UndoManager.recordCreate(parent, name, proto, uri);
 			vwf_view.kernel.createChild(parent, name, proto, uri, callback);
 		}
 		this.show = function ()
@@ -162,7 +163,9 @@ define(function ()
 						transform: matCpy(node.matrix.elements)
 					}
 				};
-				vwf_view.kernel.createChild(parent, GUID(), proto, null);
+				var newname = GUID();
+				_UndoManager.recordCreate(parent, newname, proto);
+				vwf_view.kernel.createChild(parent, newname, proto, null);
 			}
 		}
 		this.select = function ()
@@ -201,6 +204,7 @@ define(function ()
 			$('#heirarchyParent').removeClass('hierarchyItemSelected');
 			$('#hierarchyDisplay').find('[name="' + name + '"]').addClass('hierarchyItemSelected');
 		}
+
 		this.getVWFChildren = function (nodeID)
 		{
 			if (nodeID === undefined)
@@ -371,7 +375,10 @@ define(function ()
 			
 			if(this.selectedID == id || vwf.decendants(this.selectedID ).indexOf(id) != -1)
 			{
-				this.BuildGUI;
+				window.setTimeout(function(){
+					this.BuildGUI();	
+				}.bind(this),500)
+				
 			}
 		}
 		$(document).bind('selectionChanged', this.SelectionChanged.bind(this));

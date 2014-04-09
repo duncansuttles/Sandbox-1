@@ -221,7 +221,7 @@ function PainterTool()
 		{
 			return;
 		}
-
+		_UndoManager.recordDelete(vwfnode);
 		vwf_view.kernel.deleteNode(vwfnode);
 
 		//_Editor.SelectObject(vwfnode);
@@ -247,6 +247,7 @@ function PainterTool()
 			
 			var lastName = GUID();
 			this.lastNames.push(lastName);
+			
 			_Editor.createChild('index-vwf',lastName,t,null,null); 
 			
 		//this.mousemove(e);

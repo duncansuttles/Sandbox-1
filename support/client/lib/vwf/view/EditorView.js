@@ -81,6 +81,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 						this.addManager(_InventoryManager);
 						this.addManager(_PermissionsManager);
 						this.addManager(_WireEditor);
+						this.addManager(HierarchyManager);
 					}
 					window._LocationTools = require("vwf/view/editorview/LocationTools").getSingleton();
 					window._UserManager = require("vwf/view/editorview/UserManager").getSingleton();;
@@ -171,6 +172,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 		},
 		createdNode: function (nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType, childURI, childName, callback /* ( ready ) */ )
 		{
+
 			this.viewAPINotify('createdNode',arguments);
 		},
 		

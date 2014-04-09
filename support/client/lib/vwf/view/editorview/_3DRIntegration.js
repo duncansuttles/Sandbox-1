@@ -299,6 +299,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 				proto.properties.DisplayName = Editor.GetUniqueName(proto.properties.DisplayName);
 				//vwf_view.kernel.createNode(proto , null);
 				//vwf_view.kernel.createChild('index-vwf',GUID(),proto,null,null); 
+				_UndoManager.recordCreate('index-vwf', _ModelLibrary.MetadataCache[pid].Title, proto);
 				vwf_view.kernel.createChild('index-vwf', _ModelLibrary.MetadataCache[pid].Title, proto, null, null);
 			}
 			else
