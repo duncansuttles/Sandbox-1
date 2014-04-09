@@ -41,6 +41,14 @@ function proxy(string,response)
  		}).pipe(response);
 	
 }
+function proxyPermissions(URL,response)
+{
+
+ var downloadstring = Get3DRAPI()+ "/"+decodeURIComponent(URL.query.pid)+"/permissions/users/"+Get3DRUser()+"/json?ID="+Get3DRAPIKey();
+ proxy(downloadstring,response)
+//"https://3dr.adlnet.gov/api/rest/adl:667/permissions/users/psadmin@problemSolutions.net/json?ID=00-00-00"
+
+}
 function proxySearch(URL,response)
 {
 
@@ -82,3 +90,4 @@ exports.proxyDownload = proxyDownload;
 exports.proxyMetadata = proxyMetadata;
 exports.proxyTexture = proxyTexture;
 exports.proxyThumbnail = proxyThumbnail;
+exports.proxyPermissions = proxyPermissions;

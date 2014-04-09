@@ -20,7 +20,8 @@ define(function ()
         this.defaults = {
             shadows:true,
             useSimpleMaterials:false,
-            resolutionScale: 1
+            resolutionScale: 1,
+            filtering:true
         }
         this.getKey = function(key)
         {

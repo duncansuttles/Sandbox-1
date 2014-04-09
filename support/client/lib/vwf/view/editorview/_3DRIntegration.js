@@ -251,6 +251,17 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 			return "./vwfdatamanager.svc/3drdownload?pid=" + pid;
 			
 		}
+		this.canDownload = function(pid)
+		{
+			
+			var downloadPermssion = $.ajax({
+				async:false,
+				dataType:'json',
+				method:"GET",
+				url:"./vwfdatamanager.svc/3drpermission?pid=" + pid
+			}).responseText.toLowerCase();
+			return (downloadPermssion == '"fetchable"' || downloadPermssion == '"editable"' || downloadPermssion == '"admin"' )
+		}
 		this.insertObject = function (pid)
 		{
 			var pos = [0, 0, 0];
@@ -266,7 +277,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 			pos[0] = Editor.SnapTo(pos[0], Editor.MoveSnap);
 			pos[1] = Editor.SnapTo(pos[1], Editor.MoveSnap);
 			pos[2] = Editor.SnapTo(pos[2], Editor.MoveSnap);
-			if (_ModelLibrary.MetadataCache[pid].AnonymousDownloadAvailable)
+			if (_ModelLibrary.canDownload(pid))
 			{
 			
 				
@@ -292,7 +303,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 			}
 			else
 			{
-				_Notifier.alert('Currently, only models marked with anonymous download permissions may be loaded.');
+				_Notifier.alert('The Sandbox server does not have permission to access this model. Please edit the model permissions, or contact the author to do so.');
 			}
 		}
 		this.BuildResult = function (obj, i)

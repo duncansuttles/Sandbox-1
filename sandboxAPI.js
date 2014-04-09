@@ -1295,6 +1295,9 @@ function serve (request, response)
 					case "3drsearch":{
 						_3DR_proxy.proxySearch(URL,response);
 					} break;
+					case "3drpermission":{
+						_3DR_proxy.proxyPermissions(URL,response);
+					} break;
 					case "3drmetadata":{
 						_3DR_proxy.proxyMetadata(URL,response);
 					} break;
