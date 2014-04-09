@@ -716,7 +716,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			else
 			{
 				func = queue.indexOf(func);
-				queue.splice(func,1);
+				if(func != -1)
+					queue.splice(func,1);
 			}
 		}
 		

@@ -3559,6 +3559,12 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			if(!toolsOpen()) return;
 			if (this.activeTool && this.activeTool.keydown) this.activeTool.keydown(e);
 		}
+		this.createdNode = function()
+		{
+
+			if(!toolsOpen()) return;
+			if (this.activeTool && this.activeTool.createdNode) this.activeTool.createdNode.apply(this.activeTool,arguments);
+		}
 		this.tools = {};
 		this.addTool = function (name, tool)
 		{
