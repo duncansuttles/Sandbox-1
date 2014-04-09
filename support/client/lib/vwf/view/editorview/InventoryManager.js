@@ -77,12 +77,23 @@ define(function ()
 		});
 		this.renameSelectedItem = function ()
 		{
+			if(!this.inventory || !this.inventory[this.selectedName])
+			{
+				alertify.alert('No item is selected in the inventory window.');
+				return;
+			}
+
 			$('#InventoryRename').show();
 			$('#InventoryRename').focus();
 		}
-		$('#InventoryManagerRename').click(this.renameSelectedItem);
+		$('#InventoryManagerRename').click(this.renameSelectedItem.bind(this));
 		this.createInventoryItem = function ()
 		{
+			if(!this.inventory || !this.inventory[this.selectedName])
+			{
+				alertify.alert('No item is selected in the inventory window.');
+				return;
+			}
 			this.getInventoryItemAssetData(this.inventory[this.selectedName].key,function(item)
 			{
 				if (!_Editor.GetSelectedVWFNode() && (_InventoryManager.selectedType == 'event' || _InventoryManager.selectedType == 'method'))
@@ -157,6 +168,12 @@ define(function ()
 		}
 		this.deleteSelectedItem = function ()
 		{
+			if(!this.inventory || !this.inventory[this.selectedName])
+			{
+				alertify.alert('No item is selected in the inventory window.');
+				return;
+			}
+
 			this.deleteInventoryItem(this.inventory[_InventoryManager.selectedName].key,function(){
 				_InventoryManager.NoAnimateRedraw();
 			});
@@ -174,8 +191,17 @@ define(function ()
 				type:'GET',
 				success:function(err,d,xhr)
 				{
+					try{
 					var item = JSON.parse(xhr.responseText);
+					}catch(e)
+					{
+						cb(null);
+						return;
+					}
 					cb(item);
+				},error:function()
+				{
+					cb(null);
 				}
 			});
 		
@@ -203,7 +229,12 @@ define(function ()
 		}
 		this.viewInventoryItem = function ()
 		{
-			
+			if(!this.inventory || !this.inventory[this.selectedName])
+			{
+				alertify.alert('No item is selected in the inventory window.');
+				return;
+			}
+
 			this.getInventoryItemAssetData(this.inventory[this.selectedName].key,
 			function(item)
 			{
@@ -313,6 +344,11 @@ define(function ()
 		}
 		this.Take = function (id)
 		{
+			if(!_UserManager.GetCurrentUserName())
+			{
+				alertify.alert('You must be logged in to save objects to your inventory');
+				return;
+			}
 			if(!_Editor.GetSelectedVWFNode())
 			{
 				alertify.alert('No object is selected');
@@ -335,6 +371,11 @@ define(function ()
 		}
 		this.Publish = function (id)
 		{
+			if(!_UserManager.GetCurrentUserName())
+			{
+				alertify.alert('You must be logged in to publish objects');
+				return;
+			}
 			if (!id) id = _Editor.GetSelectedVWFNode().id
 			var t = _DataManager.getCleanNodePrototype(id);
 			var title = t.properties.DisplayName || GUID();
@@ -377,6 +418,11 @@ define(function ()
 		}
 		this.show = function ()
 		{
+			if(!_UserManager.GetCurrentUserName())
+			{
+				alertify.alert('You must be logged in to view your inventory.');
+				return;
+			}
 			this.getInventory(function(inventory)
 			{
 				//$('#InventoryManager').dialog('open');
@@ -452,6 +498,9 @@ define(function ()
 				success:function(err,d,xhr)
 				{
 					cb();
+				},error:function()
+				{
+					cb();
 				},
 				data:JSON.stringify({title:val}),
 				dateType:'text'
@@ -515,6 +564,7 @@ define(function ()
 				_InventoryManager.NoAnimateRedraw();
 				});
 			}
+
 		}.bind(this)
 		this.BuildGUI = function (newInventory)
 		{
