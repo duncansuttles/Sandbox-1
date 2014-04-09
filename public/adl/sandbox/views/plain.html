@@ -42,6 +42,7 @@
 			line-height: 1em;
 			color: lightgray;
 			font-size: 12px;
+			pointer-events:none;
 		}
 		.thinheaderlink
 		{
@@ -136,9 +137,12 @@
 		<a class='thinheaderlink' href='{{root}}/'>
 			{{#translate}}Home{{/translate}}
 		</a>
-		<a class='thinheaderlink' href='{{root}}/featuredWorlds/0'>
+	<!--	<a class='thinheaderlink' href='{{root}}/featuredWorlds/0'>
 			{{#translate}}Worlds{{/translate}}
-		</a>
+		</a> -->
+		<a class='thinheaderlink' href='{{root}}/settings'>
+			{{#translate}}Settings{{/translate}}
+		</a> 
 		{{^sessionData}}
 		<a id='login' class='thinheaderlink' href='{{root}}/login'>
 			{{#translate}}Log in{{/translate}}

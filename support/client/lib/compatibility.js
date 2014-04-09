@@ -13,84 +13,27 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-function testWGL()
-{
-    return true;
-    var contextNames = ["webgl","experimental-webgl","moz-webgl","webkit-3d"];
-    for(var i = 0; i < contextNames.length; i++){
-        try{
-            var canvas = document.createElement('canvas');
-            var gl = canvas.getContext(contextNames[i]);
-            if(gl){
-                return true;
-            }
-        }
-        catch(e){}
-    }
-    return false;
-}
 
-function testES5()
-{
-    return true;
-}
-
-function testWS()
-{
-    // var ws = 'ws' + document.URL.substring(4) + 'websocket';
-    // var websocket = new WebSocket(ws);
-    // websocket.onerror = function(evt) 
-    // { 
-    //     // For single user mode
-    //     //$('#WS').html("<img src='images/warning.png' alt=' ' width='20px'/>WebSockets");
-    //     $('#WS').html("<img src='images/x.png' alt=' ' width='20px'/>WebSockets");
-    //     $('#loadText').html("<span class='loadError'>This browser is not compatible. <br/>Please review <a href='/web/docs/reqs.html'>documentation</a> for specific <br/>requirements. </span>");
-    //     return;
-    // };
- //   if(! io.Transport.websocket.check() )
- //   {
- //       $('#WS').html("<img src='images/x.png' alt=' ' width='20px'/>WebSockets");
- //       $('#loadText').html("<span class='loadError'>This browser is not compatible. <br/>Please review <a href='/web/docs/reqs.html'>documentation</a> for specific <br/>requirements. </span>");
- //   }
-}
 
 function updateOverlay(cb)
 {
-    var supported = true;
-    // Test for WebGL
-    if(testWGL())
-    {
-        $('#WGL').prepend("<img src='images/check.png' alt=' ' width='20px'/>");
-    }
-    else
-    {
-        supported = false;
-        $('#WGL').prepend("<img src='images/x.png' alt=' ' width='20px'/>");
-    }
 
-    // Test for ECMAScript5
-    if(testES5())
+  require(['vwf/view/editorview/alertify.js-0.3.9/src/alertify'], function (alertify) {   
+    var settings = JSON.parse(window.localStorage['sandboxPreferences'] || null) || {};
+    if(!settings.compatability)
     {
-        $('#ES5').prepend("<img src='images/check.png' alt=' ' width='20px'/>");
+        alertify.alert('It looks like we have not performed the compatability test on this browser. Click ok to run the test. If this browser is compatabile, you will be returned to this page when the test is complete.',function(){
+            window.location = '../test';
+        })
+        return;
     }
-    else
+    if(!settings.compatability.satisfied)
     {
-        supported = false;
-        $('#ES5').prepend("<img src='images/x.png' alt=' ' width='20px'/>");
+        alertify.alert('It looks like the compatability test has previously failed on this computer. You must pass the test before loading a world. Click ok to run the test again.',function(){
+            window.location = '../test';
+        })
+        return;
     }
-
-    testWS();
-
-    if($('#WS img').length == 0)
-    {
-        $('#WS').prepend("<img src='images/check.png' alt=' ' width='20px'/>"); 
-    }
-
-    // Test to to see if VWF can run
-    if(! (testWGL() && testES5()) )
-    {
-        supported = false;
-        $('#loadText').html("<span class='loadError'>This browser is not compatible. <br/>Please review <a href='/web/docs/reqs.html'>documentation</a> for specific <br/>requirements. </span>");
-    }
-    cb(supported);
+    cb(true);
+});
 }

@@ -213,7 +213,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			_Notifier.notify('You must log in to participate');
 			return;
 			}
-			debugger;
+			
 			var undoEvent = new _UndoManager.CompoundEvent();
 
 			for (var i = 0; i < _Editor.getSelectionCount(); i++)

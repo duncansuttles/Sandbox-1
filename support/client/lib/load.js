@@ -100,6 +100,7 @@ else
     //start when document is ready
     $(window).ready(function(){
 
+    
       //do the check for support, and callback when done
       //this checks for support for webgl, websockets and javascript
       updateOverlay(function(supported){

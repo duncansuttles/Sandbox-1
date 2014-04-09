@@ -160,10 +160,35 @@
 		<!--localization end-->	
 
 				<div id="login">
-					{{^sessionData}}<a class="headerA" href="{{root}}/login?return=featuredWorlds/0"  id="login"  >{{#translate}}Login{{/translate}}</a>{{/sessionData}}
-					{{#sessionData}}<a class="headerA" href="{{root}}/user"  id="user"  >{{#translate}}Account{{/translate}}</a>
-					<a class="headerA" href="{{root}}/logout?return=index" id="logout" >{{#translate}}Logout{{/translate}}</a>{{/sessionData}}
-					{{^sessionData}}<a class="headerA" href="{{root}}/signup?return=featuredWorlds/0" id="signup" >{{#translate}}Create Account{{/translate}}</a>{{/sessionData}}				
+					
+
+		<a class='headerA' href='{{root}}/search'>
+			{{#translate}}Search{{/translate}}
+		</a>
+		
+		{{^sessionData}}
+		<a class='headerA' href='{{root}}/signup'>
+			{{#translate}}Sign up{{/translate}}
+		</a>
+		{{/sessionData}}
+		
+	<!--	<a class='thinheaderlink' href='{{root}}/featuredWorlds/0'>
+			{{#translate}}Worlds{{/translate}}
+		</a> -->
+		<a class='headerA' href='{{root}}/settings'>
+			{{#translate}}Settings{{/translate}}
+		</a> 
+		{{^sessionData}}
+		<a id='login' class='headerA' href='{{root}}/login'>
+			{{#translate}}Log in{{/translate}}
+		</a>
+		{{/sessionData}}
+		{{#sessionData}}
+		<a id='logout' class='headerA' href='{{root}}/logout'>
+			{{#translate}}Log out{{/translate}}
+		</a>
+		{{/sessionData}}
+		
 				</div>
 			</div>
 		</div>		
