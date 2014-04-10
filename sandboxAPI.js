@@ -804,6 +804,11 @@ function SaveThumbnail(URL,SID,body,response)
 	}
 	DAL.getInstance(SID,function(state)
 	{
+		if(!state)
+		{
+			respond(response,500,'state does not exist');
+			return
+		}
 		if(state.owner != URL.loginData.UID && URL.loginData.UID != global.adminUID)
 		{
 			respond(response,401,'User does not have permission to edit instance');
@@ -955,7 +960,30 @@ function SaveState(URL,id,data,response)
 		//state not found
 		if(!state)
 		{
-			respond(response,500,'World does not exist. ' + id);
+			require('./examples.js').getExampleMetadata(id,function(metadata){
+
+				if(!metadata)
+				{
+					respond(response,500,'State not found. State ' + id);
+					return;
+				}else
+				{
+					if(URL.loginData.UID == global.adminUID)
+					{
+						require('./examples.js').saveExampleData(URL,id,data,function()
+						{
+							respond(response,200,'Example saved ' + id);
+						})
+
+					}else
+					{
+						respond(response,200,'Examples cannot be saved ' + id);
+					return;
+					}
+					
+				}
+
+			});
 			return;
 		}
 
@@ -1164,7 +1192,7 @@ function getState(SID)
 		file = fs.readFileSync(statefile,'utf8');
 		return JSON.parse(file);
 	}
-	return null;
+	return require('./examples.js').getState(SID);
 }  
 
 
@@ -1337,7 +1365,20 @@ function serve (request, response)
 							if(state)
 								ServeJSON(state,response,URL);
 							else
-								respond(response,500,'state not found' );
+							{
+								require('./examples.js').getExampleMetadata(SID,function(data)
+								{
+									if(data)
+									{
+										ServeJSON(data,response,URL);
+									}else
+									{
+										respond(response,500,'state not found' );	
+									}
+									
+								})
+								
+							}
 						});
 					} break;
 					case "statehistory":{

@@ -123,7 +123,7 @@ var fixIDs = function(node)
     {
         global.log('single player');
         var instance = namespace;
-        var state = SandboxAPI.getState(instance) || [{owner:undefined}];
+        var state = SandboxAPI.getState(instance)  || [{owner:undefined}];
         var state2 = SandboxAPI.getState(instance) || [{owner:undefined}];
         
         fs.readFile("./public/adl/sandbox/index.vwf.yaml", 'utf8',function(err,blankscene)
@@ -206,7 +206,23 @@ var fixIDs = function(node)
             
             if(!instancedata)
             {
-                socket.disconnect();
+                require('./examples.js').getExampleMetadata(namespace.replace(/\//g,"_"),function(instancedata)
+                {
+                    if(instancedata)
+                    {
+                        //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
+                        if(instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer)
+                        {
+                            ServeSinglePlayer(socket, namespace,instancedata)
+                        }else
+                            ClientConnected(socket, namespace,instancedata);
+
+                    }else
+                    {
+                        socket.disconnect();
+                        return;
+                    }
+                });
                 return;
             }
             //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
@@ -338,9 +354,9 @@ var fixIDs = function(node)
         var instance = namespace;
         //Get the state and load it.
         //Now the server has a rough idea of what the simulation is
-        var state = SandboxAPI.getState(instance) || [{owner:undefined}];
+        var state = SandboxAPI.getState(instance)   || [{owner:undefined}];
         
-        var state2 = SandboxAPI.getState(instance) || [{owner:undefined}];
+        var state2 = SandboxAPI.getState(instance)   || [{owner:undefined}];
         global.instances[namespace].state = {nodes:{}};
         global.instances[namespace].state.nodes['index-vwf'] = {id:"index-vwf",properties:state[state.length-1],children:{}};
         

@@ -9,8 +9,8 @@ var request = require('request'),
  */
 function sendStatement(userId, verb, worldId, worldName, worldDescription, otherContext)
 {
-	//if( !global.configuration.lrsEndpoint )
-	//	return;
+	if( !global.configuration.lrsEndpoint )
+		return;
 	
 	var creds = new Buffer(global.configuration.lrsUsername + ':' + global.configuration.lrsPassword);
 	var auth = 'Basic ' + creds.toString('base64');

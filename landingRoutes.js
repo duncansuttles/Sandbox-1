@@ -55,10 +55,11 @@ function getRoot()
 
 }
 
-exports.acceptedRoutes = ['settings','restore','createNew','welcome','search','forgotPassword','editProfile','updatePassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
+exports.acceptedRoutes = ['examples','settings','restore','createNew','welcome','search','forgotPassword','editProfile','updatePassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
 routesMap = {
 	'sandbox': {template:'index'},
 	'test': {layout:'plain'},
+	'examples': {layout:'plain'},
 	'settings': {layout:'plain'},
 	'home': {template:'index'},
 	'edit': {sid: true,requiresLogin:true,layout:'plain'},
