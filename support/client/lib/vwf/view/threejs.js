@@ -944,9 +944,11 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			//	renderer.render(backgroundScene,rttcam,rtt,true);
 
 				
-			   // renderer.setRenderTarget( rtt );
+			   renderer.setRenderTarget( rtt );
+			   renderer.clear(scene,rttcam,rtt);
+			   renderer.setRenderTarget(  );
 				renderer.render(scene,rttcam,rtt);
-				//renderer.setRenderTarget(  );
+				
 				
 				
 			}

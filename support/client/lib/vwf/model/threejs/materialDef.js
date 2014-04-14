@@ -158,7 +158,7 @@
 				
 				if(currentmat.videoUpdateCallback)
 				{
-					$(document).unbind('prerender',currentmat.videoUpdateCallback);
+					_dView.unbind('prerender',currentmat.videoUpdateCallback);
 					delete currentmat.videoUpdateCallback;
 				}
 				
@@ -174,7 +174,7 @@
 					
 					}.bind(currentmat);
 					
-					$(document).bind('prerender',currentmat.videoUpdateCallback.bind(currentmat));
+					_dView.bind('prerender',currentmat.videoUpdateCallback.bind(currentmat));
 					
 				}
 				if(value.layers[0])
@@ -194,8 +194,8 @@
 				
 					currentmat.video = video;
 					currentmat.uniforms.texture1.value = new THREE.Texture(video);
-					currentmat.uniforms.texture1.value.minFilter = THREE.LinearMipMapLinearFilter;
-					currentmat.uniforms.texture1.value.magFilter = THREE.LinearFilter;
+					currentmat.uniforms.texture1.value.minFilter = THREE.NearestFilter;
+					currentmat.uniforms.texture1.value.magFilter = THREE.NearestFilter;
 					currentmat.uniforms.texture1.value.format = THREE.RGBFormat;
 					currentmat.uniforms.texture1.value.generateMipmaps = false;
 				}
