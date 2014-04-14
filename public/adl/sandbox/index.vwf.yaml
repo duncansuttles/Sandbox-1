@@ -220,6 +220,12 @@ events:
   disconnected:
   newClient:
   clientDisconnect:
+  pointerOver:
+  pointerOut:
+  pointerClick:
+  pointerDown:
+  pointerUp:
+  pointerMove:
 methods:  
   AmLocal:
   newplayer:
@@ -553,7 +559,8 @@ scripts:
            this.skycube = new THREE.Mesh(new THREE.SphereGeometry(1,10,20), this.skymaterial);
            this.skycube.name = "SkyCube";
            this.skycube.renderDepth = -Infinity;
-           this.skycube.InvisibleToCPUPick = true;
+           //this.skycube.InvisibleToCPUPick = true;
+           this.skycube.PickPriority = -1;
            this.skycube.depthWrite = false;
            this.skycube.depthCheck = false;
            this.skycube.castShadow = false;
@@ -1436,6 +1443,14 @@ scripts:
         }
         currentmat.needsUpdate = true;
     }      
+
+      this.pointerOver = function(){return true;}
+    this.pointerOut= function(){return true;}
+    this.pointerClick= function(){return true;}
+    this.pointerDown= function(){return true;}
+    this.pointerUp= function(){return true;}
+     this.pointerMove= function(){return true;}
+
 
         
     
