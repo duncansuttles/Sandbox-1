@@ -48,7 +48,7 @@ exports.getExampleMetadata = function(name,cb)
 			cb(JSON.parse(data));
 		}catch(e)
 		{
-			cb(null);
+			cb({title:"",description:""});
 		}
 	});
 
