@@ -559,7 +559,7 @@ scripts:
            this.skycube = new THREE.Mesh(new THREE.SphereGeometry(1,10,20), this.skymaterial);
            this.skycube.name = "SkyCube";
            this.skycube.renderDepth = -Infinity;
-           //this.skycube.InvisibleToCPUPick = true;
+           this.skycube.InvisibleToCPUPick = true;
            this.skycube.PickPriority = -1;
            this.skycube.depthWrite = false;
            this.skycube.depthCheck = false;
