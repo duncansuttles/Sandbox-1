@@ -1346,7 +1346,12 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
                 // Call the handler. If a phase is provided, only call handlers tagged for that
                 // phase.
                 if ( ! phase || listener.phases && listener.phases.indexOf( phase ) >= 0 ) {
+                    if(eventName == 'pointerClick')
+                    {
+                        console.log(listener.handler);
+                    }
                     var result = listener.handler.apply( listener.context || jsDriverSelf.nodes[0], eventParameters ); // default context is the global root  // TODO: this presumes this.creatingNode( undefined, 0 ) is retained above
+
                     return handled || result; // interpret no return as "return true"
                 }
                 return handled;
@@ -1355,7 +1360,13 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
 			
 
             //if not handled, iterate over all children.
-            handled = phase != 'bubble' && node.children && node.children.reduce( function( handled, child ) {
+            handled = handled || phase != 'bubble' && node.children && node.children.reduce( function( handled, child ) {
+                        
+                        //don't distribute to child behaviors.
+                        //behavior listeners are picked up in findListeners
+                        if(child.childExtendsID == 'http-vwf-example-com-behavior-vwf')
+                            return false;
+
                         var result = handled || jsDriverSelf.firingEvent(child.id,eventName, eventParameters); // default context is the global root  // TODO: this presumes this.creatingNode( undefined, 0 ) is retained above
                         return handled || result; // interpret no return as "return true"
             }, handled );
@@ -1752,9 +1763,18 @@ future.hasOwnProperty( eventName ) ||  // TODO: calculate so that properties tak
                 return listener.context == node || listener.context == node.private.origin; // in the prototypes, select jsDriverSelf-targeted listeners only
             } ) );
         } else {
+
+            //run find listeners in the child behavior nodes
+            var childBehaviorListeners = [];
+            for(var i =0; i < node.children.length; i++)
+            {
+                if(node.children[i].childExtendsID == 'http-vwf-example-com-behavior-vwf')
+                    childBehaviorListeners = childBehaviorListeners.concat(findListeners(node.children[i],eventName));
+            }
+
             return prototypeListeners.map( function( listener ) { // remap the prototype listeners to target the node
                 return { handler: listener.handler, context: node, phases: listener.phases };
-            } ).concat( nodeListeners );
+            } ).concat( childBehaviorListeners ).concat(nodeListeners);
         }
 
     }

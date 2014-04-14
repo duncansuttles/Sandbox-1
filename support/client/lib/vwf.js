@@ -2749,7 +2749,9 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 
             // Bubbling phase.
 
-            phase = 'bubble'; // invoke all handlers
+            //GUI does not distinguish between bubble and capture 
+            //invoke all parent handlers regardless of phase
+            //phase = 'bubble'; // invoke all handlers
 
             handled = handled || ancestorIDs.reverse().some( function( ancestorID ) {  // TODO: reverse updates the array in place every time and we'd rather not
 
