@@ -22,6 +22,8 @@ function sendStatement(userId, verb, worldId, worldName, worldDescription, other
 			if(worldName === undefined || worldDescription === undefined){
 				var dalId = worldId.replace(/\//g,'_');
 				DAL.getInstance(dalId, function(state){
+					if(!state)
+						return;
 					sendStatement(userId, verb, worldId, state.title, state.description);
 				});
 				return;
