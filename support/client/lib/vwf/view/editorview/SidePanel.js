@@ -76,6 +76,12 @@ define(
 				window.sizeTimeoutHandle = null;
 			});
 		}
+		function updateScrollBars()
+		{
+			if($('#sidepanel').data('jsp'))
+				$('#sidepanel').data('jsp').reinitialise()
+		}
+		window.updateSidepanelScrollbars = updateScrollBars;
 		window.showSidePanel = showSidePanel;
 		window.hideSidePanel = hideSidePanel;
 		createPanelShowHide();

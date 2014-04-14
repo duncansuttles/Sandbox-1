@@ -324,10 +324,12 @@ define(function ()
 				{
 					$(this).parent().css('height','1em');
 					$(this).text('+');
+					window.updateSidepanelScrollbars()
 				}else
 				{
 					$(this).parent().css('height','');
 					$(this).text('-');
+					window.updateSidepanelScrollbars()
 				}
 
 			});
