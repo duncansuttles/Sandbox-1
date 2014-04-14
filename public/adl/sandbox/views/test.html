@@ -229,7 +229,11 @@ var getCapabilities = function(){
 		var maxTextureSize = webgl && data.webgl.params.MAX_TEXTURE_SIZE;
 		var maxNumTextures = webgl && data.webgl.params.MAX_TEXTURE_IMAGE_UNITS;
 		var maxBones = webgl && Math.floor((data.webgl.params.MAX_VERTEX_UNIFORM_VECTORS - 20)/4);
-		var anisotropic = webgl && data.webgl.extensions.capabilities.WEBKIT_EXT_texture_filter_anisotropic?data.webgl.extensions.capabilities.WEBKIT_EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT : 0;
+		if (webgl)
+			var ani_ext = data.webgl.extensions.capabilities["EXT_texture_filter_anisotropic"]
+        		|| data.webgl.extensions.capabilities["WEBKIT_EXT_texture_filter_anisotropic"]
+        		|| data.webgl.extensions.capabilities["MOZ_EXT_texture_filter_anisotropic"];
+		var anisotropic = (ani_ext != undefined)?ani_ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT : 0;
 		
 		var vertexTexures = webgl && data.webgl.params.MAX_VERTEX_TEXTURE_IMAGE_UNITS;
 		$('#webgl').text(webgl);
