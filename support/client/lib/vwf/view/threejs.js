@@ -899,13 +899,13 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     if(self.lastPickId)
                     {
                     	view.kernel.dispatchEvent( self.lastPickId, "pointerOut", self.lastEventData.eventData, self.lastEventData.eventNodeData );
-                    	console.log(self.lastPickId, "pointerOut");
+                    	
                     }
 
 					if(newPickId)
 					{
 						view.kernel.dispatchEvent( newPickId, "pointerOver", self.lastEventData.eventData, self.lastEventData.eventNodeData );	
-						console.log(newPickId, "pointerOver");
+						
 					}
                     
                 }
@@ -1571,6 +1571,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     if (sceneNode) {
                         //var params = JSON.stringify( sceneView.keyStates );
                         sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
+
                         
                     }
 				 for(var i in  sceneView.keyStates.keysUp)
@@ -1608,6 +1609,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     if (validKey && sceneNode) {
                         //var params = JSON.stringify( sceneView.keyStates );
                         sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
+                        sceneView.kernel.dispatchEvent(sceneNode.ID, "keyPress", [sceneView.keyStates]);
                         delete sceneView.keyStates.keysUp[key.key];
                     }
 

@@ -1346,10 +1346,7 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
                 // Call the handler. If a phase is provided, only call handlers tagged for that
                 // phase.
                 if ( ! phase || listener.phases && listener.phases.indexOf( phase ) >= 0 ) {
-                    if(eventName == 'pointerClick')
-                    {
-                        console.log(listener.handler);
-                    }
+                   
                     var result = listener.handler.apply( listener.context || jsDriverSelf.nodes[0], eventParameters ); // default context is the global root  // TODO: this presumes this.creatingNode( undefined, 0 ) is retained above
 
                     return handled || result; // interpret no return as "return true"
