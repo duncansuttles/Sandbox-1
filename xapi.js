@@ -42,22 +42,22 @@ function sendStatement(userId, verb, worldId, worldName, worldDescription, other
 	if(otherContext)
 		stmt.addOtherContextActivity(new World(otherContext));
 	stmt.context.platform = 'virtual world';
-//	request.post({'url': liburl.resolve(global.configuration.lrsEndpoint, 'statements'),
-//		'headers': {'X-Experience-API-Version': '1.0.1', 'Authorization': auth},
-//		'json': stmt
-//	},
-//	function(err,res,body)
-//	{
-//		if(err){
-//			global.error(err);
-//		}
-//		else if(res.statusCode === 200){
-//			global.log('Action posted:', stmt.toString());
-//		}
-//		else {
-//			global.log('Statement problem:', body);
-//		}
-//	});
+	request.post({'url': liburl.resolve(global.configuration.lrsEndpoint, 'statements'),
+		'headers': {'X-Experience-API-Version': '1.0.1', 'Authorization': auth},
+		'json': stmt
+	},
+	function(err,res,body)
+	{
+		if(err){
+			global.error(err);
+		}
+		else if(res.statusCode === 200){
+			global.log('Action posted:', stmt.toString());
+		}
+		else {
+			global.log('Statement problem:', body);
+		}
+	});
 }
 
 
