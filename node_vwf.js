@@ -279,6 +279,7 @@ function startVWF(){
 			app.get('/adl/sandbox/allWorlds/:page([0-9]+)', Landing.allWorlds);
 			app.get('/adl/sandbox/myWorlds/:page([0-9]+)', Landing.myWorlds);
 			app.get('/adl/sandbox/featuredWorlds/:page([0-9]+)', Landing.featuredWorlds);
+			app.get('/adl/sandbox/activeWorlds/:page([0-9]+)', Landing.activeWorlds);
 			app.get('/adl/sandbox', Landing.generalHandler);
 			app.get('/adl/sandbox/:page([a-zA-Z/]+)', Landing.generalHandler);
 			app.get('/adl/sandbox/stats', Landing.statsHandler);

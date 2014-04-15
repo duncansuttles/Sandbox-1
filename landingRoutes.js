@@ -55,10 +55,12 @@ function getRoot()
 
 }
 
-exports.acceptedRoutes = ['examples','settings','restore','createNew','welcome','search','forgotPassword','editProfile','updatePassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
+exports.acceptedRoutes = ['tools','performancetest','examples','settings','restore','createNew','welcome','search','forgotPassword','editProfile','updatePassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
 routesMap = {
 	'sandbox': {template:'index'},
 	'test': {layout:'plain'},
+	'tools': {layout:'plain'},
+	'performancetest': {layout:'plain'},
 	'examples': {layout:'plain'},
 	'settings': {layout:'plain'},
 	'home': {template:'index'},
@@ -329,6 +331,26 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 		
 		var results = [];
 		
+		if(mode == 'active')
+		{
+			for(var i in allinstances)
+			{
+				var inst = allinstances[i];
+				if(!inst) continue;
+				inst.id = i;
+				inst.shortid = i.substr(13,16)
+				if(global.instances)
+				{
+					if(global.instances[i.replace(/_/g,"/")])
+						results.push(inst);
+				}
+			}
+			results.sort(function(a,b)
+			{
+				return Date.parse(b.created|| b.lastUpdate) - Date.parse(a.created || a.lastUpdate);
+			});
+		}
+
 		if(mode == 'search')
 		{
 			for(var i in allinstances)
@@ -455,7 +477,9 @@ exports.myWorlds = function(req, res, next){
 exports.featuredWorlds = function(req, res, next){
 	ShowSearchPage('featured', req, res, next);
 }
-
+exports.activeWorlds = function(req, res, next){
+	ShowSearchPage('active', req, res, next);
+}
 exports.createNew2 = function(req, res, next){
 
 	sessions.GetSessionData(req,function(sessionData)
