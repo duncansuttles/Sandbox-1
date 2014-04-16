@@ -146,7 +146,27 @@ else
                 cancel : "Continue as Guest"
               } });
 
+              //get the state settings
+              var stateData = $.ajax({
+                url:"http://localhost:3000/vwfDataManager.svc/statedata?SID=" + window.location.pathname.substring(window.location.pathname.indexOf('/adl/sandbox/')) + window.location.hash,
+                method:'GET',
+                async:false
+              });
 
+              try{
+                stateData = JSON.parse(stateData.responseText);
+              }catch(e)
+              {
+                stateData = null;
+              }
+
+              //if the world is set to allow anonymous, don't pop up the login warning
+              if(stateData && stateData.publishSettings && (stateData.publishSettings.isPublished !== false) && stateData.publishSettings.allowAnonymous)
+              {
+                boot();
+              }
+              else
+              {
               alertify.confirm("You are viewing this world as a guest. You will be able to view the world, but not interact with it. Would you like to go back and log in?",
                 function(e)
                 {
@@ -167,6 +187,7 @@ else
                   }
                 }
                 );
+            }
 
 
             });
