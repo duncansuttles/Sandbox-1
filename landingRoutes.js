@@ -284,7 +284,12 @@ exports.world = function(req, res, next){
 	{
 		DAL.getInstance("_adl_sandbox_"+req.params.page+"_",function(doc)
 		{
-			
+			if(!doc)
+			{
+				res.locals = {sessionData:sessionData,url:req.url,root:getRoot()};
+				res.status(404).render('_404');
+				return;
+			}
 			var instance = global.instances ? global.instances["/adl/sandbox/"+req.params.page+"/"] : false;
 			var anonymous = [];
 			var users = [];
