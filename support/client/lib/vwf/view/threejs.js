@@ -421,6 +421,10 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             //this.state.nodes is shared with the threejs model!
             var node = this.state.nodes[ nodeID ]; 
             if(!node) node = this.state.scenes[nodeID];
+
+             //this driver has no representation of this node, so there is nothing to do.
+            if(!node) return;
+            
             var value = undefined;
             if(this.nodes[nodeID])
             	this.nodes[nodeID].properties[propertyName] = propertyValue;
@@ -449,8 +453,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
 			
 			this.nodes[nodeID][propertyName] = propertyValue;
-            //this driver has no representation of this node, so there is nothing to do.
-            if(!node) return;
+           
           
             var threeObject = node.threeObject;
             if(!threeObject)

@@ -419,7 +419,7 @@ properties:
       );
       this.scaledTransform( transform, scale, transform );
       goog.vec.Mat4.setColumn( transform, 3, translation );
-      this.transform = transform;
+      //this.transform = transform;
     # node.quaternion => [ x, y, z, w ]
     get: |
       var thisTransform = this.transform;
