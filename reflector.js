@@ -397,6 +397,20 @@ function getBlankScene(state,cb)
             socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State loaded, sending..."],"time":global.instances[namespace].time}))); 
             getBlankScene(state,function(blankscene)
             {
+
+               
+                //only really doing this to keep track of the ownership
+                for(var i =0; i < state.length-1; i++)
+                {
+                    var childID = state[i].id;
+                    
+                    global.instances[namespace].state.nodes['index-vwf'].children[childID] = state[i];
+                    global.instances[namespace].state.nodes['index-vwf'].children[childID].parent = global.instances[namespace].state.nodes['index-vwf'];
+                    
+                }
+                
+
+
                 global.instances[namespace].cachedState = blankscene;
                 socket.emit('message',messageCompress.pack(JSON.stringify({"action":"createNode","parameters":[blankscene],"time":global.instances[namespace].time})));
                 socket.pending = false;
