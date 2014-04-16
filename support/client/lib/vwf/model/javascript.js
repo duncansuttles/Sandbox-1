@@ -1349,7 +1349,7 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
                    
                     var result = listener.handler.apply( listener.context || jsDriverSelf.nodes[0], eventParameters ); // default context is the global root  // TODO: this presumes this.creatingNode( undefined, 0 ) is retained above
 
-                    return handled || result; // interpret no return as "return true"
+                    return handled || result===true || result===undefined; // interpret no return as "return true"
                 }
                 return handled;
 
@@ -1365,7 +1365,7 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
                             return false;
 
                         var result = handled || jsDriverSelf.firingEvent(child.id,eventName, eventParameters); // default context is the global root  // TODO: this presumes this.creatingNode( undefined, 0 ) is retained above
-                        return handled || result; // interpret no return as "return true"
+                        return handled || result===true || result===undefined; // interpret no return as "return true"
             }, handled );
 
 			
