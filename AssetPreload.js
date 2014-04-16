@@ -112,8 +112,11 @@ function getState(id,cb)
 		parseStateForAssets(state,cb);
 	}else
 	{
-		var state =  SandboxAPI.getState(id.replace(/\//g,"_"));
-		parseStateForAssets(state,cb);
+		SandboxAPI.getState(id.replace(/\//g,"_"),function(state)
+			{
+				parseStateForAssets(state,cb);		
+			});
+		
 	}
 }
 function getAssets(request,response,URL)

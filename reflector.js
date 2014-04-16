@@ -119,15 +119,11 @@ var fixIDs = function(node)
     }
 }
 
-    function ServeSinglePlayer(socket, namespace,instancedata)
+function getBlankScene(state,cb)
+{
+    var state2 = JSON.parse(JSON.stringify(state));
+    fs.readFile("./public/adl/sandbox/index.vwf.yaml", 'utf8',function(err,blankscene)
     {
-        global.log('single player');
-        var instance = namespace;
-        var state = SandboxAPI.getState(instance)  || [{owner:undefined}];
-        var state2 = SandboxAPI.getState(instance) || [{owner:undefined}];
-        
-        fs.readFile("./public/adl/sandbox/index.vwf.yaml", 'utf8',function(err,blankscene)
-        {
             blankscene= YAML.load(blankscene);
             
             blankscene.id = 'index-vwf';
@@ -166,18 +162,23 @@ var fixIDs = function(node)
                         delete blankscene.properties[i];
                 }
             }
-            //global.log(Object.keys(global.instances[namespace].state.nodes['index-vwf'].children));
-            
-            //this is a blank world, go ahead and load the default
-            
-            
-            
-            
-            socket.emit('message',{"action":"createNode","parameters":[blankscene],"time":0});
-            socket.emit('message',{"action":"goOffline","parameters":[blankscene],"time":0});
-            socket.pending = false;
+            cb(blankscene);
         });
-        
+}
+
+    function ServeSinglePlayer(socket, namespace,instancedata)
+    {
+        global.log('single player');
+        var instance = namespace;
+        var state = SandboxAPI.getState(instance,function(state){
+            if(!state) state = [{owner:undefined}];
+            
+            getBlankScene(state,function(blankscene){
+                socket.emit('message',{"action":"createNode","parameters":[blankscene],"time":0});
+                socket.emit('message',{"action":"goOffline","parameters":[blankscene],"time":0});
+                socket.pending = false;
+            });
+      });  
     }
     
     function WebSocketConnection(socket, _namespace) {
@@ -349,98 +350,57 @@ var fixIDs = function(node)
       if(!loadClient)
       {
         global.log('load from db');
-        
+            
         socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Loading state from database"],"time":global.instances[namespace].time})));  
         var instance = namespace;
         //Get the state and load it.
         //Now the server has a rough idea of what the simulation is
-        var state = SandboxAPI.getState(instance)   || [{owner:undefined}];
-        
-        var state2 = SandboxAPI.getState(instance)   || [{owner:undefined}];
-        global.instances[namespace].state = {nodes:{}};
-        global.instances[namespace].state.nodes['index-vwf'] = {id:"index-vwf",properties:state[state.length-1],children:{}};
-        
-        global.instances[namespace].state.findNode = function(id,parent)
-        {
-            var ret = null;
-            if(!parent) parent = this.nodes['index-vwf'];
-            if(parent.id == id)
-                ret = parent;
-            else if(parent.children)
+        SandboxAPI.getState(instance,function(state){
+
+            if(!state) state = [{owner:undefined}];
+            
+
+            global.instances[namespace].state = {nodes:{}};
+            global.instances[namespace].state.nodes['index-vwf'] = {id:"index-vwf",properties:state[state.length-1],children:{}};
+            
+            global.instances[namespace].state.findNode = function(id,parent)
             {
-                for(var i in parent.children)
+                var ret = null;
+                if(!parent) parent = this.nodes['index-vwf'];
+                if(parent.id == id)
+                    ret = parent;
+                else if(parent.children)
                 {
-                    ret = this.findNode(id, parent.children[i]);
-                    if(ret) return ret;
-                }
-            }
-            return ret;
-        }
-        global.instances[namespace].state.deleteNode = function(id,parent)
-        {
-            if(!parent) parent = this.nodes['index-vwf'];
-            if(parent.children)
-            {
-                for(var i in parent.children)
-                {
-                    if( i == id)
+                    for(var i in parent.children)
                     {
-                        delete parent.children[i];
-                        return
+                        ret = this.findNode(id, parent.children[i]);
+                        if(ret) return ret;
+                    }
+                }
+                return ret;
+            }
+            global.instances[namespace].state.deleteNode = function(id,parent)
+            {
+                if(!parent) parent = this.nodes['index-vwf'];
+                if(parent.children)
+                {
+                    for(var i in parent.children)
+                    {
+                        if( i == id)
+                        {
+                            delete parent.children[i];
+                            return
+                        }
                     }
                 }
             }
-        }
-        
-        fs.readFile("./public/adl/sandbox/index.vwf.yaml", 'utf8',function(err,blankscene)
-        {
             socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State loaded, sending..."],"time":global.instances[namespace].time}))); 
-            blankscene= YAML.load(blankscene);
-            
-            blankscene.id = 'index-vwf';
-            blankscene.patches= "index.vwf";
-            if(!blankscene.children)
-                blankscene.children = {};
-            //only really doing this to keep track of the ownership
-            for(var i =0; i < state.length-1; i++)
+            getBlankScene(state,function(blankscene)
             {
-                
-                var childComponent = state[i];
-                var childName = state[i].name || state[i].properties.DisplayName + i;
-                var childID = childComponent.id || childComponent.uri || ( childComponent["extends"] ) + "." + childName.replace(/ /g,'-'); 
-                childID = childID.replace( /[^0-9A-Za-z_]+/g, "-" ); 
-                //state[i].id = childID;
-                //state2[i].id = childID;
-                blankscene.children[childName] = state2[i];
-                state[i].id = childID;
-                global.instances[namespace].state.nodes['index-vwf'].children[childID] = state[i];
-                global.instances[namespace].state.nodes['index-vwf'].children[childID].parent = global.instances[namespace].state.nodes['index-vwf'];
-                fixIDs(state[i]);
-            }
-            var props = state[state.length-1];
-            if(props)
-            {
-                if(!blankscene.properties)
-                    blankscene.properties = {};
-                for(var i in props)
-                {
-                    blankscene.properties[i] = props[i];
-                }
-                for(var i in blankscene.properties)
-                {
-                    if( blankscene.properties[i] && blankscene.properties[i].value)
-                        blankscene.properties[i] = blankscene.properties[i].value;
-                    else if(blankscene.properties[i] && (blankscene.properties[i].get || blankscene.properties[i].set))
-                        delete blankscene.properties[i];
-                }
-            }
-            //global.log(Object.keys(global.instances[namespace].state.nodes['index-vwf'].children));
-            
-            //this is a blank world, go ahead and load the default
-
-            global.instances[namespace].cachedState = blankscene;
-            socket.emit('message',messageCompress.pack(JSON.stringify({"action":"createNode","parameters":[blankscene],"time":global.instances[namespace].time})));
-            socket.pending = false;
+                global.instances[namespace].cachedState = blankscene;
+                socket.emit('message',messageCompress.pack(JSON.stringify({"action":"createNode","parameters":[blankscene],"time":global.instances[namespace].time})));
+                socket.pending = false;
+            });
         });
       }
       //this client is not the first, we need to get the state and mark it pending
@@ -522,7 +482,7 @@ var fixIDs = function(node)
                 this.namespace.requestTimer = null;
             }
             this.namespace.requestTimer = this;
-            this.handle = global.setTimeout(this.time.bind(this),1000);
+            this.handle = global.setTimeout(this.time.bind(this),3000);
         }
         global.instances[namespace].Log('GetState from Client',2);
         if(!global.instances[namespace].requestTimer)

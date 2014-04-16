@@ -1180,19 +1180,41 @@ function createState(URL,data,response)
 	});
 }
 //Just return the state data, dont serve a response
-function getState(SID)
+function getState(SID,cb)
 {
 	SID = SID.replace(/[\\,\/]/g,'_');
 	var basedir = datapath + libpath.sep;
 	var statedir = (basedir + 'States/' + SID).replace(safePathRE);
 	var statefile = statedir + '/state'.replace(safePathRE);
 	global.log('serve state ' + statedir,2);
-	if(fs.existsSync(statefile))
+	
+	//sync case
+	if(!cb)
 	{
-		file = fs.readFileSync(statefile,'utf8');
-		return JSON.parse(file);
+		if(fs.existsSync(statefile))
+		{
+			file = fs.readFileSync(statefile,'utf8');
+			return JSON.parse(file);
+		}
+		return require('./examples.js').getState(SID);
 	}
-	return require('./examples.js').getState(SID);
+	//callback is provided. Use async functions
+	if(cb)
+	{
+		fs.exists(statefile,function(exists)
+		{
+			if(exists)
+			{
+				fs.readFile(statefile,'utf8',function(err,file){
+					cb(JSON.parse(file));	
+				});
+				
+			}else
+			{
+				require('./examples.js').getState(SID,cb);
+			}
+		});
+	}
 }  
 
 
