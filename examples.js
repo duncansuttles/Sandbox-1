@@ -19,20 +19,38 @@ exports.getExampleData = function(name,cb)
 	});
 }
 
-exports.getState = function(name)
+exports.getState = function(name,cb)
 {
 	name = name.split('_');
 	name = name[name.length -2];
 
 	var path = libpath.normalize('./public/adl/sandbox/examples/' + name +"/state");
         path = libpath.resolve(__dirname, path);
-try{
-	var data = fs.readFileSync(path ,'utf8');
-	
-		return JSON.parse(data);	
-	}catch(e)
+	//sync call
+	if(!cb)
 	{
-		return null;
+		try{
+		var data = fs.readFileSync(path ,'utf8');
+		
+			return JSON.parse(data);	
+		}catch(e)
+		{
+			return null;
+		}
+	}
+	//async call
+	if(cb)
+	{
+		fs.readFile(path ,'utf8',function(err,data1){
+			var data = null;
+			try{
+				var data = JSON.parse(data1)
+			}catch(e)
+			{
+				data = null;
+			}
+			cb(data);
+		});
 	}
 }
 
