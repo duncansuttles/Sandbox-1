@@ -694,6 +694,8 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
             // remove the message and perform the action. The simulation time is advanced to the
             // message time as each one is processed.
 
+           
+
             queue.time = Math.max( queue.time, currentTime ); // save current server time for pause/resume
 
             // Actions may use receive's ready function to suspend the queue for asynchronous
@@ -702,13 +704,22 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
             while ( queue.ready && queue.length > 0 && queue[0].time <= queue.time  ) {
 
                 var fields = queue.shift();
+                
 				this.message = fields;
-				 if(fields.action == 'getState' && this.creatingNodeCount!=0)
-				 {
-					 fields.time += .05;
-					 queue.push(fields);
-					 continue;
-				 }
+			
+
+                if(fields.action == 'setState')
+                {
+                this.receive( fields.node, fields.action, fields.member, fields.parameters, fields.respond, function( ready ) {
+                    if ( Boolean( ready ) != Boolean( queue.ready ) ) {
+                        vwf.logger.info( "vwf.dispatch:", ready ? "resuming" : "pausing", "queue at time", queue.time, "for", fields.action );
+                        queue.ready = ready;
+                        queue.ready && vwf.dispatch( queue.time );
+                    }
+                } );
+                return;
+                }
+
                 // Advance the time.
 
                 if ( this.now != fields.time ) {
@@ -826,6 +837,50 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 
                 function( series_callback /* ( err, results ) */ ) {
 
+                    // Clear the queue, but leave any private direct messages in place. Update the queue
+                    // array in place so that existing references remain valid.
+
+                    var private_queue = [], fields;
+                    
+                    while ( queue.length > 0 ) {
+
+                        fields = queue.shift();
+            
+                        vwf.logger.info( "setState:", "removing", require( "vwf/utility" ).transform( fields, function( object, index, depth ) {
+                            return depth == 2 && object ? Array.prototype.slice.call( object ) : object
+                        } ), "from queue" );
+                        
+            //so, we now backdate the setstate so that create messges are not discarded, and now we need to
+            //actually process messages  that are currently on the queue, but happen in the future after the setstate;
+                       fields.respond &&  private_queue.push( fields );
+                       if(fields.time >= vwf.message.time)
+                           private_queue.push( fields );
+                    }
+
+                    while ( private_queue.length > 0 ) {
+
+                        fields = private_queue.shift();
+
+                        vwf.logger.info( "setState:", "returning", require( "vwf/utility" ).transform( fields, function( object, index, depth ) {
+                            return depth == 2 && object ? Array.prototype.slice.call( object ) : object
+                        } ), "to queue" );
+
+                        console.log('requre for ', fields);
+                        queue.push( fields );
+
+                    }
+
+                    // Add the incoming items to the queue.
+
+                    if ( applicationState.queue ) {
+                        vwf.queue( applicationState.queue );
+                    }
+                    console.log('queue before setstate',queue);
+                    series_callback( undefined, undefined );
+                },
+
+                function( series_callback /* ( err, results ) */ ) {
+
                     async.forEach( applicationState.nodes || [], function( nodeComponent, each_callback /* ( err ) */ ) {
 
                         vwf.createNode( nodeComponent, function( nodeID ) {
@@ -838,49 +893,6 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 
                 },
 
-                function( series_callback /* ( err, results ) */ ) {
-
-                    // Clear the queue, but leave any private direct messages in place. Update the queue
-                    // array in place so that existing references remain valid.
-
-                    var private_queue = [], fields;
-					
-                    while ( queue.length > 0 ) {
-
-                        fields = queue.shift();
-			
-                        vwf.logger.info( "setState:", "removing", require( "vwf/utility" ).transform( fields, function( object, index, depth ) {
-                            return depth == 2 && object ? Array.prototype.slice.call( object ) : object
-                        } ), "from queue" );
-						
-			//so, we now backdate the setstate so that create messges are not discarded, and now we need to
-			//actually process messages  that are currently on the queue, but happen in the future after the setstate;
-                       fields.respond &&  private_queue.push( fields );
-					   if(fields.time >= vwf.message.time)
-						   private_queue.push( fields );
-                    }
-
-                    while ( private_queue.length > 0 ) {
-
-                        fields = private_queue.shift();
-
-                        vwf.logger.info( "setState:", "returning", require( "vwf/utility" ).transform( fields, function( object, index, depth ) {
-                            return depth == 2 && object ? Array.prototype.slice.call( object ) : object
-                        } ), "to queue" );
-
-                        queue.push( fields );
-
-                    }
-
-                    // Add the incoming items to the queue.
-
-                    if ( applicationState.queue ) {
-                        vwf.queue( applicationState.queue );
-                    }
-
-                    series_callback( undefined, undefined );
-                },
-
             ], function( err, results ) {
 
                 // Restore kernel reentry from property accessors.
@@ -888,7 +900,13 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
                 isolateProperties--;
 				
                 set_callback && set_callback();
-				
+				console.log('advance time',queue.time,  applicationState.time);
+                
+                var timediff = applicationState.time - queue.time;
+
+
+
+                queue.time = applicationState.time;
 				
             } );
 
@@ -922,6 +940,7 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 
                 queue: 
                     require( "vwf/utility" ).transform( queue, queueTransitTransformation ),
+                time:vwf.message.time 
 
             };
 
