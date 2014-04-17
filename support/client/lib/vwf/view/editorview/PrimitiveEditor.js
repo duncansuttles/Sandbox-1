@@ -670,6 +670,16 @@ define(function ()
 						$('#' + nodeid + i).append("<option value='"+editordata[i].values[k]+"'>  "+editordata[i].labels[k]+"  </option>")
 					}
 					//$('#' + nodeid + i).button();
+					
+
+					//find and select the current value in the dropdown
+					var selectedindex = editordata[i].values.indexOf(vwf.getProperty(node.id, editordata[i].property));
+					var selectedLabel = editordata[i].labels[selectedindex];
+					$("select option").filter(function() {
+						    //may want to use $.trim in here
+						    return $.trim($(this).text()) == $.trim(selectedLabel); 
+						}).prop('selected', true);
+
 					$('#' + nodeid + i).change(function ()
 					{
 						

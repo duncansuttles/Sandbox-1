@@ -134,12 +134,25 @@ else
         $('#loadstatus').fadeOut();
 
 
+        //get the state settings
+              var stateData = $.ajax({
+                url:"http://localhost:3000/vwfDataManager.svc/statedata?SID=" + window.location.pathname.substring(window.location.pathname.indexOf('/adl/sandbox/')) + window.location.hash,
+                method:'GET',
+                async:false
+              });
+              try{
+                stateData = JSON.parse(stateData.responseText);
+              }catch(e)
+              {
+                stateData = null;
+              }      
+
         //check if the user is logged in
         $.ajax({url:'/vwfdatamanager.svc/profile',
           success:function(data2,status2,xhr2)
           {
             //if they are, fire up the boot module
-           boot();
+           boot(stateData);
           },
           error:function()
           {
@@ -151,24 +164,14 @@ else
                 cancel : i18n.t("Continue as Guest")
               } });
 
-              //get the state settings
-              var stateData = $.ajax({
-                url:"http://localhost:3000/vwfDataManager.svc/statedata?SID=" + window.location.pathname.substring(window.location.pathname.indexOf('/adl/sandbox/')) + window.location.hash,
-                method:'GET',
-                async:false
-              });
+              
 
-              try{
-                stateData = JSON.parse(stateData.responseText);
-              }catch(e)
-              {
-                stateData = null;
-              }
+              
 
               //if the world is set to allow anonymous, don't pop up the login warning
               if(stateData && stateData.publishSettings && (stateData.publishSettings.isPublished !== false) && stateData.publishSettings.allowAnonymous)
               {
-                boot();
+                boot(stateData);
               }
               else
               {
@@ -188,7 +191,7 @@ else
                     } });
 
                     //continue as guest, fire up the boot.js
-                    boot();
+                    boot(stateData);
                   }
                 }
                 );
