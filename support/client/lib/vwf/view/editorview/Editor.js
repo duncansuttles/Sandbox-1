@@ -458,7 +458,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 							var fbr = MATH.addVec3(campos, MATH.scaleVec3(BottomRighttRay, 10000));
 							var frustrum = new Frustrum(ntl, ntr, nbl, nbr, ftl, ftr, fbl, fbr);
 							
-
+							
 							var hits = _SceneManager.FrustrumCast(frustrum,
 							{
 								OneHitPerMesh: true
@@ -472,6 +472,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 								if (vwfhits.indexOf(vwfnode) == -1 && vwfnode) vwfhits.push(vwfnode);
 							}
 							this.SelectObject(vwfhits, this.PickMod);
+							
 						}
 					
 					e.stopPropagation();
@@ -2258,9 +2259,18 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						if (vwf.getProperty(VWFNode[i].id, 'type') != 'Group')
 						{
 							var testnode = VWFNode[i];
+							//'index-vwf can never be a group, skip getting it to check'
 							while (testnode && (vwf.getProperty(testnode.id, 'type') != 'Group' || ( vwf.getProperty(testnode.id, 'type') == 'Group' && vwf.getProperty(testnode.id, 'open') == true)))
 							{
-								testnode = vwf.getNode(vwf.parent(testnode.id));
+								if(vwf.parent(testnode.id) == 'index-vwf')
+								{
+									testnode = null;
+									break;
+								}
+								else
+								{
+									testnode = vwf.getNode(vwf.parent(testnode.id));
+								}
 							}
 							if(testnode)
 								VWFNode[i] = testnode;

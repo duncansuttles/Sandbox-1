@@ -1083,6 +1083,15 @@ OctreeRegion.prototype.intersectFrustrum = function(frustrum,opts)
 {
 	
 	var hits = [];
+	
+
+//reject this node if the ray does not intersect it's bounding box
+	if(this.testBoundsFrustrum(frustrum).length == 0)
+	{
+		//console.log('region rejected');
+		return hits;
+	}
+
 	//if no faces, can be no hits. 
 	//remember, faces is all faces in this node AND its children
 	if(this.faces.length == 0)
@@ -1109,12 +1118,7 @@ OctreeRegion.prototype.intersectFrustrum = function(frustrum,opts)
 		}
 	}
 	
-	//reject this node if the ray does not intersect it's bounding box
-	if(this.testBoundsFrustrum(frustrum).length == 0)
-	{
-		//console.log('region rejected');
-		return hits;
-	}
+	
 	
 	//if the node is split, concat the hits from all children
 	if(this.isSplit)
