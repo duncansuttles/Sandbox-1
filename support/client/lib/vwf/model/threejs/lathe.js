@@ -111,7 +111,7 @@
 								type:'slider',
 								min:1,
 								max:20,
-								step:.01
+								step:1
 						}
 					}
 				}

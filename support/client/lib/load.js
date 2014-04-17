@@ -110,6 +110,8 @@ else
         //if not supported, load alertify, alert, and stop
         if(!supported)
         {
+
+          
           window.setTimeout(function(){
 
             $('#loadstatus').fadeOut();

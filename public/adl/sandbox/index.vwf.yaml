@@ -983,7 +983,7 @@ scripts:
             
             var oldpickstate = findviewnode(this.objectFollowed.id).PickPriority;
             
-            var hit = _Editor.ThreeJSPick(start,MATH.scaleVec3(offset,1),{filter:function(o){return !(o.isAvatar === true || o.passable===true)}});
+            var hit = _Editor.ThreeJSPick(start,MATH.scaleVec3(offset,1),{filter:function(o){ if(o instanceof THREE.Line) return false; return !(o.isAvatar === true || o.passable===true)}});
             if(hit)
             {
                 finaldist = Math.min(finaldist,hit.distance-.2);
