@@ -663,17 +663,24 @@ define(
 		
 		$('#MenuCameraShare').click(function (e)
 		{
+			if(!_UserManager.GetCurrentUserName())
+			{
+				alertify.confirm("Anonymous users may not share their camera view.",function(ok)
+			    {
+			    });
+			}
 		    _dView.setCameraDefault();
 		    var broadcasting = vwf.callMethod('index-vwf','getBroadcasting',[]);
 		    if(!broadcasting)
 		    {
+
 			    alertify.confirm("Are you sure you want to share your camera position? Other users will be able to see from your camera!",function(ok)
 			    {
 				if(ok)
 				{
 							vwf_view.kernel.callMethod('index-vwf','cameraBroadcastStart',[]);
-				 
-				}
+				 			$('#MenuCameraShare').text('Stop Camera Sharing');
+				}	
 			    }.bind(this));
 		    }else
 		    {
@@ -682,6 +689,7 @@ define(
 				if(ok)
 				{
 							vwf_view.kernel.callMethod('index-vwf','cameraBroadcastEnd',[]);
+							$('#MenuCameraShare').text('Share Camera View');
 				 
 				}
 			    }.bind(this));

@@ -686,7 +686,7 @@ scripts:
       
           
          var turn = (this.oldRotZ||0)-this.rotZ;
-         
+
            if(turn)
             this.transformAPI.rotate(0,0,((this.oldRotZ||0)-this.rotZ)*-57.2957795,this.transformAPI.COORDINATES.PARENT);
            this.oldRotZ = this.rotZ;
@@ -923,8 +923,8 @@ scripts:
     this.keyUp = function(e)
          {          
           
-             if(this.id == 'character-vwf') return;
-            if(vwf.client() != this.ownerClientID) return;
+             if(this.id == 'character-vwf') return  false;
+            if(vwf.client() != this.ownerClientID) return  false;
             if(!e.keysDown.W && !e.keysDown.uparrow)
              {   this.removeMotion('walk'); this.removeCycle('walk');}
             if(!e.keysDown.S && !e.keysDown.downarrow)
@@ -938,17 +938,18 @@ scripts:
             if(!e.keysDown.Z && !e.keysDown.leftarrow)
                 {this.removeMotion('turnleft'); this.removeMotion('turnright'); this.removeCycle('turnleft'); this.removeCycle('turnright');}        
             if(!e.keysDown.W  && !e.keysDown.uparrow && this.inMotion('run'))
-                this.cancelRun();       
+                this.cancelRun(); 
+            return false;          
             
          }
     this.keyDown = function(e)
          {
            
            //dont allow ctrl keys - any time the ctrl is down, it's stuff for the editor
-           if(e.mods.ctrl) return;    
+           if(e.mods.ctrl) return false;    
 
-            if(this.id == 'character-vwf') return;
-           if(vwf.client() != this.ownerClientID) return;
+            if(this.id == 'character-vwf') return  false;
+           if(vwf.client() != this.ownerClientID) return  false;
             
             if(e.keysDown.W || e.keysDown.uparrow)
             {
@@ -986,6 +987,7 @@ scripts:
             if((e.keysDown.Z || e.keysDown.leftarrow )&& this.inMotion('walkback'))
                { this.addMotion('turnright');    }
             if(e.mods.shift && e.keysDown.W)
-                this.run();    
+                this.run();  
+            return false;
          }
     

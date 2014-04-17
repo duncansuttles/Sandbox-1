@@ -783,12 +783,14 @@ function getBlankScene(state,cb)
               if(loginData && loginData.clients)
               {
                   delete loginData.clients[socket.id];
-                  global.error("Unexpected disconnect. Deleting node for user avatar " + loginData.UID);
+                  global.error("Disconnect. Deleting node for user avatar " + loginData.UID);
                  var avatarID = 'character-vwf-'+loginData.UID;
                  for(var i in global.instances[namespace].clients)
                   {
                         var cl = global.instances[namespace].clients[i];
-                        cl.emit('message',messageCompress.pack(JSON.stringify({"action":"deleteNode","node":avatarID,"time":global.instances[namespace].time})));                   
+                        cl.emit('message',messageCompress.pack(JSON.stringify({"action":"deleteNode","node":avatarID,"time":global.instances[namespace].time})));
+                        cl.emit('message',messageCompress.pack(JSON.stringify({"action":"callMethod","node":'index-vwf',member:'cameraBroadcastEnd',"time":global.instances[namespace].time,client:socket.id})));                                      
+                        cl.emit('message',messageCompress.pack(JSON.stringify({"action":"callMethod","node":'index-vwf',member:'PeerSelection',parameters:[[]],"time":global.instances[namespace].time,client:socket.id})));                                      
                   }
                   global.instances[namespace].state.deleteNode(avatarID);   
               }

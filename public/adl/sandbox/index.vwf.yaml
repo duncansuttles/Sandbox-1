@@ -409,6 +409,7 @@ scripts:
                 
                     this.broadcastingCamera = false;
                     this.receivingCameraBroadcast = true;
+                    this.preCameraShareMode = this.cameramode;
                     this.cameramode = 'None';
                 
                 }
@@ -427,9 +428,14 @@ scripts:
             this.receivingCameraBroadcast = false;
         }else
         {
-            alertify.alert(_UserManager.GetPlayernameForClientID(this.client) + " has stopped sharing the camera view.");
-            this.broadcastingCamera = false;
-            this.receivingCameraBroadcast = false;
+            if(this.receivingCameraBroadcast)
+            {
+              alertify.alert((_UserManager.GetPlayernameForClientID(this.client) || 'The user') + " has stopped sharing the camera view.");
+               this.broadcastingCamera = false;
+              this.receivingCameraBroadcast = false;
+              this.cameramode = this.preCameraShareMode;
+            }
+           
         }
     }
     this.cameraBroadcastPrompt = function()

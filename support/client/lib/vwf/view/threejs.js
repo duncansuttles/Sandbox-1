@@ -452,7 +452,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			}
 			
 			
-			this.nodes[nodeID][propertyName] = propertyValue;
+			node[propertyName] = propertyValue;
            
           
             var threeObject = node.threeObject;
