@@ -129,7 +129,7 @@ $(document).ready(function()
 <div id='content' class="row">
 	<div class="col-md-5" style="margin:10px auto;float:none;text-align:center;">
 		
-		<legend style="padding-bottom:5px;">Choose A Template</legend>
+		<legend style="padding-bottom:5px;">{{#translate}}Choose A Template{{/translate}}</legend>
 		
 		<div id='results' >
 		{{#results}}
@@ -147,8 +147,8 @@ $(document).ready(function()
 		
 		
 
-		{{#hadprev}}<a href='./{{previous}}' class='' style="margin-right: 497px"  value="" >< previous</a><span style="margin-left:0em" />{{/hadprev}}
-		{{#next}}<a href='./{{next}}' class='' style=""  value="" >next ></a><span style="margin-left:0em" />{{/next}}
+		{{#hadprev}}<a href='./{{previous}}' class='' style="margin-right: 497px"  value="" >< {{#translate}}previous{{/translate}}</a><span style="margin-left:0em" />{{/hadprev}}
+		{{#next}}<a href='./{{next}}' class='' style=""  value="" >{{#translate}}next{{/translate}} ></a><span style="margin-left:0em" />{{/next}}
 		
 		
 		{{#total}}
@@ -156,9 +156,9 @@ $(document).ready(function()
 		{{/total}}
 		
 
-		<div style='color: lightgray;' >Your new world will start off as a copy of the template.</div><br/>
-		<a href='{{root}}/createNew2/noTemplate' class='' style=""  value="" >No template, please</a><span style="margin-left:2em" />
-		<a id='dontsee' class='' style=""  value="" >I don't see the template I need</a><span style="margin-left:0em" />
+		<div style='color: lightgray;' >{{#translate}}Your new world will start off as a copy of the template{{/translate}}.</div><br/>
+		<a href='{{root}}/createNew2/noTemplate' class='' style=""  value="" >{{#translate}}No template, please{{/translate}}</a><span style="margin-left:2em" />
+		<a id='dontsee' class='' style=""  value="" >{{#translate}}I don't see the template I need{{/translate}}</a><span style="margin-left:0em" />
 		   
 	</div>
 </div>

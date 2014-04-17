@@ -136,18 +136,18 @@ color: lightgray;
 
 		<form id='form' data-bind="submit:handleLoginButton" >
 			<fieldset>
-				{{#template}}<legend style="padding-bottom:5px;">Create a world based on "{{worlddata.title}}"</legend>{{/template}}
-				{{^template}}<legend style="padding-bottom:5px;">Create a blank new world</legend>{{/template}}
+				{{#template}}<legend style="padding-bottom:5px;">{{#translate}}Create a world based on{{/translate}} "{{worlddata.title}}"</legend>{{/template}}
+				{{^template}}<legend style="padding-bottom:5px;">{{#translate}}Create a blank new world{{/translate}}</legend>{{/template}}
 				<div class="col-md-10" style="margin:0 auto;float:none;">
-					<input type='text' id='txtInstanceName' placeholder='World Title' class="form-control" /><br/>
-					<textarea type='textarea' id='txtInstanceDescription' placeholder='Description' class="form-control"></textarea> <br/>
-					<input type="submit" class='btn btn-default' style="float:right;"  value="Create"/><br/>
+					<input type='text' id='txtInstanceName' placeholder='{{#translate}}World Title{{/translate}}' class="form-control" /><br/>
+					<textarea type='textarea' id='txtInstanceDescription' placeholder='{{#translate}}Description{{/translate}}' class="form-control"></textarea> <br/>
+					<input type="submit" class='btn btn-default' style="float:right;"  value="{{#translate}}Create{{/translate}}"/><br/>
 
 					<p class="help-block" style="width:100%;margin-top:20px;" data-bind="visible:errorText,text:errorText"></p>
 				</div>
 				<legend style="padding-bottom:5px;"></legend>
 			</fieldset>
 		</form>
-		<a href='{{root}}/createNew/0' class='' style=""  value="" >Choose a different template</a><span style="margin-left:0em" />   
+		<a href='{{root}}/createNew/0' class='' style=""  value="" >{{#translate}}Choose a different template{{/translate}}</a><span style="margin-left:0em" />   
 	</div>
 </div>

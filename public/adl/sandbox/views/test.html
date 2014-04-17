@@ -127,6 +127,9 @@ var getCapabilities = function(){
                 webgl.params[name] = value;
             }
         }
+
+
+
         for(var i=0; i<webgl.extensions.supported.length; i++){
             var extname = webgl.extensions.supported[i];
             if(extname.match('texture_filter_anisotropic')){
@@ -196,7 +199,7 @@ var getCapabilities = function(){
 		}).length === 0){
 			$('#goodtogo').show();
 			settings.compatability.satisfied = true;
-			alertify.alert('Great! It looks like this browser is supported. Click OK to return to the loading page.',function()
+			alertify.alert('{{#translate}}Great! It looks like this browser is supported{{/translate}}. {{#translate}}Click OK to return to the loading page{{/translate}}.',function()
 			{
 				window.history.back();	
 			})
@@ -245,9 +248,14 @@ var getCapabilities = function(){
 		$('#maxBones').text(maxBones);
 		
 
+		alertify.set({ labels: {
+   			 ok     : "Ok",
+   			 cancel : "{{#translate}}Cancel{{/translate}}"
+			} });
+
 		if(!webgl || !floats ||!ddx ||!vertexTexures)
 		{
-			alertify.alert('Shoot! Some of the graphics requirements are unsupported on this GPU! You might try upgrading your GPU, drivers, or browser.',function(){
+			alertify.alert('{{#translate}}Shoot! Some of the graphics requirements are unsupported on this GPU! You might try upgrading your GPU, drivers, or browser{{/translate}}.',function(){
 				window.location = '/';
 			})
 			return;
@@ -282,7 +290,7 @@ var getCapabilities = function(){
 		  		mouseLeft = true;
 		  		$('#mouseLeft').text(mouseLeft);
 		  		
-		  		alertify.confirm('Click the middle mouse button',function(ok){if(!ok){alertify.alert('Shoot! You need a three button mouse to use the Sandbox.',function(){window.location = '/';})}});
+		  		alertify.confirm('{{#translate}}Click the middle mouse button{{/translate}}',function(ok){if(!ok){alertify.alert('{{#translate}}Shoot! You need a three button mouse to use the Sandbox{{/translate}}.',function(){window.location = '/';})}});
 		  		$('#alertify-ok')[0].style.display = 'none'
 				},1000)
 				
@@ -297,7 +305,7 @@ var getCapabilities = function(){
 		  		mouseMiddle = true;
 		  		$('#mouseMiddle').text(mouseMiddle);
 		  		
-		  		alertify.confirm('Click the right mouse button',function(ok){if(!ok){alertify.alert('Shoot! You need a three button mouse to use the Sandbox.',function(){window.location = '/';})}});
+		  		alertify.confirm('{{#translate}}Click the right mouse button{{/translate}}',function(ok){if(!ok){alertify.alert('{{#translate}}Shoot! You need a three button mouse to use the Sandbox{{/translate}}.',function(){window.location = '/';})}});
 		  		$('#alertify-ok')[0].style.display = 'none'
 		  		},1000)
 		  	}
@@ -312,7 +320,7 @@ var getCapabilities = function(){
 		  		$('#mouseRight').text(mouseRight);
 		  		
 		  		window.addEventListener('mousewheel', onMouseWheel, false);
-		  		alertify.confirm('Roll the mouse wheel',function(ok){if(!ok){alertify.alert('Shoot! You need a three button mouse to use the Sandbox.',function(){window.location = '/';})}});
+		  		alertify.confirm('{{#translate}}Roll the mouse wheel{{/translate}}',function(ok){if(!ok){alertify.alert('{{#translate}}Shoot! You need a three button mouse to use the Sandbox{{/translate}}.',function(){window.location = '/';})}});
 		  		$('#alertify-ok')[0].style.display = 'none'
 		  		},1000)
 		  	}
@@ -331,7 +339,7 @@ var getCapabilities = function(){
 			
 		}
 
-		alertify.confirm('Click the left mouse button',function(ok){if(!ok){alertify.alert('Shoot! You need a three button mouse to use the Sandbox.',function(){window.location = '/';})}});
+		alertify.confirm('{{#translate}}Click the left mouse button{{/translate}}',function(ok){if(!ok){alertify.alert('{{#translate}}Shoot! You need a three button mouse to use the Sandbox{{/translate}}.',function(){window.location = '/';})}});
 		$('#alertify-ok')[0].style.display = 'none'
 
 		
@@ -349,7 +357,7 @@ var getCapabilities = function(){
 			$('#socketconnection').text("Failed");
 			updateColors();
 
-			alertify.confirm('Shoot! Your browser is unable to connect via a WebSocket to our server! This might be a firewall issue. Check that WebSockets are allowed on port 80.',function(){window.location = '/';});
+			alertify.confirm('{{#translate}}Shoot! Your browser is unable to connect via a WebSocket to our server! This might be a firewall issue{{/translate}}. {{#translate}}Check that WebSockets are allowed on port 80{{/translate}}.',function(){window.location = '/';});
 
 	    } );
 
@@ -366,10 +374,10 @@ var getCapabilities = function(){
 	<div class="col-md-8" style="margin:10px auto;float:none;">
 
 	
-	<legend >Compatability Test</legend>
+	<legend >{{#translate}}Compatability Test{{/translate}}</legend>
 
 <div class="col-md-10" style="margin:0 auto;float:none;height:auto;">
-		The VW Sandbox application has several requriements. This page will test for support of both optional and required features. Some of the tests can be done automatically, but please click each button on your mouse in turn, and roll the mouse wheel.</br></br>
+		{{#translate}}The VW Sandbox application has several requriements{{/translate}}. {{#translate}}This page will test for support of both optional and required features{{/translate}}. {{#translate}}Some of the tests can be done automatically, but please click each button on your mouse in turn, and roll the mouse wheel{{/translate}}.</br></br>
 </div>
 <div class="col-md-10" style="margin:0 auto;float:none;height:auto;">
 <div class="row">
@@ -501,7 +509,7 @@ var getCapabilities = function(){
 </div>
 
 <div class="col-md-10" id='goodtogo' style="margin:0 auto;float:none;height:auto;">
-		<br/>Great, it looks like you should be able to use the Virtual World Sandbox successfully!
+		<br/>{{#translate}}Great, it looks like you should be able to use the Virtual World Sandbox successfully{{/translate}}!
 </div>
 
 <div class="row">	

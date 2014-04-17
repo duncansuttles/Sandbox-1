@@ -20,17 +20,30 @@ function updateOverlay(cb)
 
   require(['vwf/view/editorview/alertify.js-0.3.9/src/alertify'], function (alertify) {   
     var settings = JSON.parse(window.localStorage['sandboxPreferences'] || null) || {};
+    alertify.set({ labels: {
+                ok     : i18n.t("Test"),
+                cancel : i18n.t("Skip test at own risk")
+              } });
+
     if(!settings.compatability)
     {
-        alertify.alert('It looks like we have not performed the compatability test on this browser. Click ok to run the test. If this browser is compatabile, you will be returned to this page when the test is complete.',function(){
-            window.location = '../test';
+        alertify.confirm(i18n.t('It looks like we have not performed the compatability test on this browser')+'.'+ i18n.t('Click ok to run the test')+'.'+i18n.t('If this browser is compatabile, you will be returned to this page when the test is complete')+'.',function(e){
+            if (e) {
+                window.location = '../test';
+            } else {
+                cb(true);
+            }
         })
         return;
     }
     if(!settings.compatability.satisfied)
     {
-        alertify.alert('It looks like the compatability test has previously failed on this computer. You must pass the test before loading a world. Click ok to run the test again.',function(){
-            window.location = '../test';
+        alertify.confirm(i18n.t('It looks like the compatability test has previously failed on this computer')+'.'+i18n.t('You must pass the test before loading a world')+'.'+i18n.t('Click ok to run the test again')+'.',function(e){
+            if (e) {
+                window.location = '../test';
+            } else {
+                cb(true);
+            }
         })
         return;
     }

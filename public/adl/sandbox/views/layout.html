@@ -119,6 +119,7 @@
 	</script>	
 	{{/avatar}}
 	<script type="text/javascript" src="{{root}}/vwfDataManager.svc/getanalytics.js"></script>
+	<script type="text/javascript" src="{{root}}/js/cookies.js"></script>
 </head>
 <body style="min-width:990px;">
 	{{#home}}
@@ -153,7 +154,8 @@
 	$(".langLi").click(function(){
 		var lang = $(this).attr('lang');
     	//$.post(root + '/data/set_lang', JSON.stringify(lang), function(o){});
-    	document.cookie = 'i18next='+lang;
+    	//document.cookie = 'i18next='+lang;
+    	docCookies.setItem('i18next',lang, null, '/', null, null);
 		window.location.reload();
 		});
 	</script>
@@ -230,22 +232,22 @@
 				<div class="sliderWrapper">
 					<div style="background-image:url('{{root}}/img/huge_terrain.jpg');" class="slide-item slide-item0">
 						<div class="pContainer">
-							<p>No extra plugins needed - just click and go</p>	
+							<p>{{#translate}}No extra plugins needed - just click and go{{/translate}}</p>	
 						</div>
 					</div>
 					<div style="background-image:url('{{root}}/img/huge_town.jpg');" class="slide-item slide-item1">
 						<div class="pContainer">
-							<p>Advanced scripting controls every aspect of your scenario</p>
+							<p>{{#translate}}Advanced scripting controls every aspect of your scenario{{/translate}}</p>
 						</div>	
 					</div>
 					<div style="background-image:url('{{root}}/img/huge_office.jpg');" class="slide-item slide-item2">
 						<div class="pContainer">
-							<p>Web RTC enables a higher level of collaboration</p>
+							<p>{{#translate}}Web RTC enables a higher level of collaboration{{/translate}}</p>
 						</div>	
 					</div>
 					<div style="background-image:url('{{root}}/img/huge_editor.jpg');" class="slide-item slide-item3">
 						<div class="pContainer">
-							<p>A full featured set of tools makes building worlds easy</p>
+							<p>{{#translate}}A full featured set of tools makes building worlds easy{{/translate}}</p>
 						</div>	
 					</div>
 				</div>

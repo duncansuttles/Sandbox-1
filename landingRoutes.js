@@ -499,7 +499,7 @@ exports.createNew2 = function(req, res, next){
 			{
 				
 				
-				res.locals = {worlddata:worlddata,template:(template == 'noTemplate'?false:template),root:getRoot()};
+				res.locals = {worlddata:worlddata,template:(template == 'noTemplate'?false:template),root:getRoot(), translate:translate(req)};
 				res.render('createNew2',{layout:'plain'});
 				res.setHeader('Cache-Control', 'no-cache');
 			});
@@ -594,7 +594,7 @@ exports.createNew = function(req, res, next){
 		}
 		var start = 10 * page;
 		var end = start+results.length;
-		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:getRoot(),searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0)};
+		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:getRoot(),searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0), translate:translate(req)};
 		
 		res.render('createNew',{layout:'plain'});
 		res.setHeader('Cache-Control', 'no-cache');

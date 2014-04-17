@@ -123,21 +123,15 @@
 				<legend></legend>
 				<input type='text' id='txtInstanceName' placeholder='World Name' class="col-md-5 form-control" /><br/><br/>
 				<textarea id='txtInstanceDescription' placeholder='Description' class="col-md-5 form-control"></textarea>
-				<input type="submit" class='btn btn-default' style="float:right;margin-top:7px;"  value="Edit"/>
+				<input type="submit" class='btn btn-default' style="float:right;margin-top:7px;"  value="{{#translate}}Edit{{/translate}}"/>
 			</fieldset>
 		</form>
 	</div>
 	
 
-
-
-
-
-
-
 	<div class="col-md-3 col-md-offset-1" style="display:none">
-		<legend style="">Restore Backup</legend>
-		<p style="text-align:center;margin-top:60px;" data-bind="visible:restoreList().length==0">No backups found</p>
+		<legend style="">{{#translate}}Restore Backup{{/translate}}</legend>
+		<p style="text-align:center;margin-top:60px;" data-bind="visible:restoreList().length==0">{{#translate}}No backups found{{/translate}}</p>
 		<table data-bind="submit:handleEditButton" class="table table-striped" style="border-top:none;">
 			<tbody data-bind="foreach:restoreList">
 				<tr>
