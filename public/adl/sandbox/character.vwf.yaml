@@ -15,7 +15,8 @@
 extends: asset.vwf
 properties:
   translation:
-  rotZ: 0       
+  rotZ: 0
+  oldRotZ: 0         
   test:  
   motionStack: []
   activeCycle: []
@@ -412,7 +413,7 @@ scripts:
             //this.transformAPI.setPosition([world[0],world[1],world[2]]);
             var offset = Mat4.multMat(world,this.standingOnOffset.internal_val,[]);
             this.transform = offset;
-            this.originalvelocity = [0,0,0];
+            //this.originalvelocity = [0,0,0];
        }
     }
     this.updateStandingOn = function(newpos)
@@ -599,9 +600,10 @@ scripts:
                 if(!object || this.standingOnID != object.vwfID) 
                   this.recordStandingOn(null);
 
+
                     
                     var zdiff = (1.7 + standing) - falldist;
-                    
+                    console.log(zdiff);
                     if( this.originalvelocity[2] <= 0)
                     {
                       var zmove = zdiff;
@@ -681,8 +683,14 @@ scripts:
         this.tbak = finalt;
         this.translation = finalt;
       
-        this.rotation = backupr;
-        
+      
+          
+         var turn = (this.oldRotZ||0)-this.rotZ;
+         
+           if(turn)
+            this.transformAPI.rotate(0,0,((this.oldRotZ||0)-this.rotZ)*-57.2957795,this.transformAPI.COORDINATES.PARENT);
+           this.oldRotZ = this.rotZ;
+
         this.updateStandingOn(this.translation.internal_val);
 
          for(var i = 0; i < this.updateCallbacks.length; i++)
