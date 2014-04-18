@@ -618,7 +618,7 @@ scripts:
     {
         if(typeof(obj) == "string")
             obj = vwf_view.kernel.kernel.models[0].model.nodes[obj];
-        if(obj)
+        if(obj && obj.translation)
         {
         this.center = obj.translation;
         if(obj.followOffset != null)
@@ -890,10 +890,14 @@ scripts:
         
         if(!_dView.inDefaultCamera()) return;
         
-        
+        try{
         if(this.objectFollowed != null)    
             this.targetUpdated(this.objectFollowed);
-        
+        }catch(e)
+        {
+          this.objectFollowed = null;
+          console.error(e)
+        }
         if(this.cameramode == 'None')
         {
             return;
@@ -942,6 +946,7 @@ scripts:
            
         }else if(this.cameramode == 'FirstPerson')
         {
+            try{
             //this.oldRotZ var xmatrix = MATH.angleAxis(this.x_rot*10,[0,0,1]);
             var rotation = this.objectFollowed.rotation;
             var xmatrix = MATH.angleAxis(this.oldRotZ,[0,0,1]);
@@ -970,10 +975,14 @@ scripts:
            
             findcamera().updateProjectionMatrix(true);
             this.zoom = .0001;
+            }catch(e)
+            {
+              console.error(e);
+            }
             
         }else  if(this.cameramode == '3RDPerson')
         {
-            
+            try{
             var xmatrix = MATH.angleAxis(this.objectFollowed.rotZ,[0,0,1]);
             var offset = MATH.mulMat4Vec3(xmatrix,[0,1.5,.5]);
             
@@ -996,6 +1005,10 @@ scripts:
             findcamera().position.y = finalpos[1];
             findcamera().position.z = finalpos[2];
             findcamera().lookAt(TempVec3(this.center));
+            }catch(e)
+            {
+              console.error(e)
+            }
             
         } 
         this.callUpdateCallbacks();
