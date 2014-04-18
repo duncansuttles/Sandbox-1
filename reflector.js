@@ -124,45 +124,54 @@ function getBlankScene(state,cb)
     var state2 = JSON.parse(JSON.stringify(state));
     fs.readFile("./public/adl/sandbox/index.vwf.yaml", 'utf8',function(err,blankscene)
     {
-            blankscene= YAML.load(blankscene);
-            
-            blankscene.id = 'index-vwf';
-            blankscene.patches= "index.vwf";
-            if(!blankscene.children)
-                blankscene.children = {};
-            //only really doing this to keep track of the ownership
-            for(var i =0; i < state.length-1; i++)
-            {
+            var err = null;
+            try{
+                blankscene= YAML.load(blankscene);
                 
-                var childComponent = state[i];
-                var childName = state[i].name || state[i].properties.DisplayName + i;
-                var childID = childComponent.id || childComponent.uri || ( childComponent["extends"] ) + "." + childName.replace(/ /g,'-'); 
-                childID = childID.replace( /[^0-9A-Za-z_]+/g, "-" ); 
-                //state[i].id = childID;
-                //state2[i].id = childID;
-                blankscene.children[childName] = state2[i];
-                state[i].id = childID;
-                
-                fixIDs(state[i]);
-            }
-            var props = state[state.length-1];
-            if(props)
+                blankscene.id = 'index-vwf';
+                blankscene.patches= "index.vwf";
+                if(!blankscene.children)
+                    blankscene.children = {};
+                //only really doing this to keep track of the ownership
+                for(var i =0; i < state.length-1; i++)
+                {
+                    
+                    var childComponent = state[i];
+                    var childName = (state[i].name || state[i].properties.DisplayName) + i;
+                    var childID = childComponent.id || childComponent.uri || ( childComponent["extends"] ) + "." + childName.replace(/ /g,'-'); 
+                    childID = childID.replace( /[^0-9A-Za-z_]+/g, "-" ); 
+                    //state[i].id = childID;
+                    //state2[i].id = childID;
+                    blankscene.children[childName] = state2[i];
+                    state[i].id = childID;
+                    
+                    fixIDs(state[i]);
+                }
+                var props = state[state.length-1];
+                if(props)
+                {
+                    if(!blankscene.properties)
+                        blankscene.properties = {};
+                    for(var i in props)
+                    {
+                        blankscene.properties[i] = props[i];
+                    }
+                    for(var i in blankscene.properties)
+                    {
+                        if( blankscene.properties[i] && blankscene.properties[i].value)
+                            blankscene.properties[i] = blankscene.properties[i].value;
+                        else if(blankscene.properties[i] && (blankscene.properties[i].get || blankscene.properties[i].set))
+                            delete blankscene.properties[i];
+                    }
+                }
+            }catch(e)
             {
-                if(!blankscene.properties)
-                    blankscene.properties = {};
-                for(var i in props)
-                {
-                    blankscene.properties[i] = props[i];
-                }
-                for(var i in blankscene.properties)
-                {
-                    if( blankscene.properties[i] && blankscene.properties[i].value)
-                        blankscene.properties[i] = blankscene.properties[i].value;
-                    else if(blankscene.properties[i] && (blankscene.properties[i].get || blankscene.properties[i].set))
-                        delete blankscene.properties[i];
-                }
+                err = e;
             }
-            cb(blankscene);
+            if(err)
+                cb(null);
+            else
+                cb(blankscene);
         });
 }
 

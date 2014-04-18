@@ -172,14 +172,20 @@ function startVWF(){
 	}	
 	
 
+	var mailtools = require('./mailTools.js');
 	//global error handler
 	process.on('uncaughtException', function(err) {
     	// handle the error safely
     	//note: we absolutly must restart the server here. Yeah, maybe some particular error might be ok to read over, but lets stop that
     	//and even send an email to the admin
 
+    	global.setTimeout(function(){process.exit()},5000);
     	global.error(err);
-    	//process.exit(1);
+    	global.error(err.stack);
+    	mailtools.serverError(err,function(sent){
+    		process.exit(1);
+    	});
+    	
 	});
 	
     //***node, uses REGEX, escape properly!

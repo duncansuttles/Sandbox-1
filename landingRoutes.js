@@ -104,7 +104,7 @@ exports.statsHandler = function(req, res, next){
 			var instanceCount = Object.keys(instances || {});
 			res.locals = {instanceCount:instanceCount,states:states,users:users,allConnections:allConnections,sessions:allSessions,instances:instances || [],sessionData:sessionData,url:req.url,root:getRoot()};
 			res.render('stats',{layout:'plain'});
-			res.setHeader('Cache-Control', 'no-cache');
+			
 
 		})
 		
@@ -157,7 +157,7 @@ exports.redirectPasswordEmail = function(req,res,next)
 					res.locals.message = "We've updated our database, and now require email address for users. Please update your email address below.";
 				}
 				res.render(newroute,{layout:'plain'});
-				res.setHeader('Cache-Control', 'no-cache');
+				
 			}else
 			{
 				next();
@@ -209,7 +209,7 @@ exports.generalHandler = function(req, res, next){
 
 				res.locals = {sessionData:sessionData, sid: sid, root: getRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc, user:user, translate:translate(req)};
 				res.render(template,{layout:layout});
-				res.setHeader('Cache-Control', 'no-cache');
+				
 				
 			}
 			
@@ -248,7 +248,7 @@ exports.help = function(req, res){
 	
 	res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getRoot(req), script: displayPage + ".js"};
 	res.render('help/template');
-	res.setHeader('Cache-Control', 'no-cache');
+	
 };
 
 	/*
@@ -318,7 +318,7 @@ exports.world = function(req, res, next){
 			doc.prettyUpdated = prettyDate(doc.lastUpdate);
 			res.locals = {root: getRoot(req),id:req.params.page,sessionData:sessionData,worldData:doc,translate:translate(req),totalusers:totalusers,users:users,anonymous:anonymous,owner:owner};
 			res.render('worldTemplate',{layout:'plain'});
-			res.setHeader('Cache-Control', 'no-cache');
+			
 		});
 	});
 };
@@ -459,7 +459,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:getRoot(),searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0),translate:translate(req)};
 		res.locals[mode] = true;
 		res.render('searchResults',{layout:'plain'});
-		res.setHeader('Cache-Control', 'no-cache');
+		
 
 	})
 	})
@@ -502,7 +502,7 @@ exports.createNew2 = function(req, res, next){
 				
 				res.locals = {worlddata:worlddata,template:(template == 'noTemplate'?false:template),root:getRoot(), translate:translate(req)};
 				res.render('createNew2',{layout:'plain'});
-				res.setHeader('Cache-Control', 'no-cache');
+				
 			});
 			
 	});
@@ -598,8 +598,7 @@ exports.createNew = function(req, res, next){
 		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:getRoot(),searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0), translate:translate(req)};
 		
 		res.render('createNew',{layout:'plain'});
-		res.setHeader('Cache-Control', 'no-cache');
-
+		
 	})
 	})
 }
