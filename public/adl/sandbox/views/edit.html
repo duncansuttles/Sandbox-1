@@ -129,17 +129,7 @@
 	</div>
 	
 
-	<div class="col-md-3 col-md-offset-1" style="display:none">
-		<legend style="">{{#translate}}Restore Backup{{/translate}}</legend>
-		<p style="text-align:center;margin-top:60px;" data-bind="visible:restoreList().length==0">{{#translate}}No backups found{{/translate}}</p>
-		<table data-bind="submit:handleEditButton" class="table table-striped" style="border-top:none;">
-			<tbody data-bind="foreach:restoreList">
-				<tr>
-					<td><a href="#" data-bind="text:time, click:$root.restoreState"></a></td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
+	
 </div>
 <div class="row">	
 	<div id='error' style="margin-top: 20px;margin-bottom:20px;font-size: 3EM;color: red;" class="span12"></div>
