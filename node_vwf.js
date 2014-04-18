@@ -179,7 +179,7 @@ function startVWF(){
     	//and even send an email to the admin
 
     	global.error(err);
-    	process.exit(1);
+    	//process.exit(1);
 	});
 	
     //***node, uses REGEX, escape properly!

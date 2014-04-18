@@ -55,7 +55,7 @@ function getRoot()
 
 }
 
-exports.acceptedRoutes = ['tools','performancetest','examples','settings','restore','createNew','welcome','search','forgotPassword','editProfile','updatePassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
+exports.acceptedRoutes = ['home','tools','performancetest','examples','settings','restore','createNew','welcome','search','forgotPassword','editProfile','updatePassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
 routesMap = {
 	'sandbox': {template:'index'},
 	'test': {layout:'plain'},
@@ -83,6 +83,7 @@ routesMap = {
 	'forgotPassword': {layout:'plain'},
 	'search': {layout:'plain'},
 	'welcome': {layout:'plain'},
+	'home': {layout:'home'},
 
 };
 
@@ -174,7 +175,7 @@ exports.generalHandler = function(req, res, next){
 	    var postGetUser = function(user)
 	    {
 			if(!req.params.page)
-				req.params.page = 'index';
+				req.params.page = 'home';
 
 			if(req.params.page.indexOf('admin') > -1 && (!sessionData || sessionData.UID != global.adminUID)){
 				next();
