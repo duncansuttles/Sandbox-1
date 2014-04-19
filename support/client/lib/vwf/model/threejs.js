@@ -486,8 +486,8 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 				if(node && parentNode)
 				{
 					if(!parentNode.children)
-						parentNode.children = [];
-					parentNode.children.push(node)
+						parentNode.children = {};
+					parentNode.children[node.ID] = node;
 
 					node.parentNode = parentNode;
                     if(parentNode.childAdded)
