@@ -137,7 +137,7 @@ function getBlankScene(state,cb)
                 {
                     
                     var childComponent = state[i];
-                    var childName = (state[i].name || state[i].properties.DisplayName) + i;
+                    var childName = (state[i].name || state[i].properties.DisplayName) || i;
                     var childID = childComponent.id || childComponent.uri || ( childComponent["extends"] ) + "." + childName.replace(/ /g,'-'); 
                     childID = childID.replace( /[^0-9A-Za-z_]+/g, "-" ); 
                     //state[i].id = childID;
