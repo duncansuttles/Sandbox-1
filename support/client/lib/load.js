@@ -136,7 +136,7 @@ else
 
         //get the state settings
               var stateData = $.ajax({
-                url:"http://localhost:3000/vwfDataManager.svc/statedata?SID=" + window.location.pathname.substring(window.location.pathname.indexOf('/adl/sandbox/')) + window.location.hash,
+                url:"./vwfDataManager.svc/statedata?SID=" + window.location.pathname.substring(window.location.pathname.indexOf('/adl/sandbox/')) + window.location.hash,
                 method:'GET',
                 async:false
               });
