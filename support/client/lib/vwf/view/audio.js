@@ -23,6 +23,11 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 			
 			if(!this.playing)
 				this.sound.play();
+			if(this.playing &&  this.sound.getPercent() == 100)
+			{
+				this.sound.stop();
+				this.sound.play();
+			}
 
 			this.playing = true;
 
@@ -72,6 +77,7 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 		var v = this.volume;
 		
 		var vol = ((-x+v)/v) * ((-x+v)/v);
+		if(x > v) vol = 0;
 		this.sound.setVolume(Math.max(Math.min(vol,1),0) * 100 );
 	}
 	//the driver
@@ -104,6 +110,8 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 				//cache the sound - can only be played simultainously by different nodes
 				if(this.sounds[url])
 				{
+					if(this.sounds[url].getPercent() == 100)
+						this.sounds[url].stop();	
 					this.sounds[url].play();
 					if(loop)
 					this.sounds[url].loop();
@@ -191,10 +199,7 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 		ticked : function()
 		{
 			try{
-			var cameraID = vwf.getProperty('index-vwf','activeCamera');
-			if(!cameraID) return;
-			
-			var campos = vwf.getProperty('index-vwf','cameraPosition');
+			var campos = [_dView.getCamera().matrixWorld.elements[12],_dView.getCamera().matrixWorld.elements[13],_dView.getCamera().matrixWorld.elements[14]];
 			for(var i in this.soundSources)
 			{
 				this.soundSources[i].updateSourcePosition();
