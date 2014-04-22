@@ -114,6 +114,22 @@ properties:
                     vec = Mat4.multVec3(targetTransform,vec,[]);
                     return vec;
                 },
+                globalToLocal: function(x,y,z)
+                {
+                    if(x.length)
+                    {
+                        y = x[1];
+                        z = x[2];
+                        x = x[0];
+                    }
+                    var vec = [x,y,z];
+                    var targetTransform = self.worldTransform.internal_val;
+                    
+                    var invTransform = Mat4.create();
+                    Mat4.invert(targetTransform,invTransform);
+                    vec = Mat4.multVec3(invTransform,vec,[]);
+                    return vec;
+                },
                 setPosition: function(x,y,z)
                 {
                     if(x.length)

@@ -603,7 +603,7 @@ scripts:
 
                     
                     var zdiff = (1.7 + standing) - falldist;
-                    console.log(zdiff);
+                    
                     if( this.originalvelocity[2] <= 0)
                     {
                       var zmove = zdiff;
