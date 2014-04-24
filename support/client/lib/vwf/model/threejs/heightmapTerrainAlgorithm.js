@@ -494,7 +494,7 @@ function heightmapTerrainAlgorithm()
 		"{"+
 			"lowp vec3 dirt0 = perturb_normal(TBN0, coords.yz, sampler);\n"+
 			"lowp vec3 dirt1 = perturb_normal(TBN1, coords.zx, sampler);\n"+
-			"lowp vec3 dirt2 = perturb_normal(TBN2, -coords.xy, sampler);\n"+
+			"lowp vec3 dirt2 = perturb_normal(TBN2, coords.xy, sampler);\n"+
 			"return blend_weights.x * dirt0 + blend_weights.y * dirt1 + blend_weights.z * dirt2;\n"+
 		"}"+
 		"vec3 blendNorm(in vec3 texture1,in vec3 texture2, in float a1)\n"+

@@ -119,65 +119,75 @@ var fixIDs = function(node)
     }
 }
 
+function getBlankScene(state,cb)
+{
+    var state2 = JSON.parse(JSON.stringify(state));
+    fs.readFile("./public/adl/sandbox/index.vwf.yaml", 'utf8',function(err,blankscene)
+    {
+            var err = null;
+            try{
+                blankscene= YAML.load(blankscene);
+                
+                blankscene.id = 'index-vwf';
+                blankscene.patches= "index.vwf";
+                if(!blankscene.children)
+                    blankscene.children = {};
+                //only really doing this to keep track of the ownership
+                for(var i =0; i < state.length-1; i++)
+                {
+                    
+                    var childComponent = state[i];
+                    var childName = (state[i].name || state[i].properties.DisplayName) || i;
+                    var childID = childComponent.id || childComponent.uri || ( childComponent["extends"] ) + "." + childName.replace(/ /g,'-'); 
+                    childID = childID.replace( /[^0-9A-Za-z_]+/g, "-" ); 
+                    //state[i].id = childID;
+                    //state2[i].id = childID;
+                    blankscene.children[childName] = state2[i];
+                    state[i].id = childID;
+                    
+                    fixIDs(state[i]);
+                }
+                var props = state[state.length-1];
+                if(props)
+                {
+                    if(!blankscene.properties)
+                        blankscene.properties = {};
+                    for(var i in props)
+                    {
+                        blankscene.properties[i] = props[i];
+                    }
+                    for(var i in blankscene.properties)
+                    {
+                        if( blankscene.properties[i] && blankscene.properties[i].value)
+                            blankscene.properties[i] = blankscene.properties[i].value;
+                        else if(blankscene.properties[i] && (blankscene.properties[i].get || blankscene.properties[i].set))
+                            delete blankscene.properties[i];
+                    }
+                }
+            }catch(e)
+            {
+                err = e;
+            }
+            if(err)
+                cb(null);
+            else
+                cb(blankscene);
+        });
+}
+
     function ServeSinglePlayer(socket, namespace,instancedata)
     {
         global.log('single player');
         var instance = namespace;
-        var state = SandboxAPI.getState(instance) || [{owner:undefined}];
-        var state2 = SandboxAPI.getState(instance) || [{owner:undefined}];
-        
-        fs.readFile("./public/adl/sandbox/index.vwf.yaml", 'utf8',function(err,blankscene)
-        {
-            blankscene= YAML.load(blankscene);
+        var state = SandboxAPI.getState(instance,function(state){
+            if(!state) state = [{owner:undefined}];
             
-            blankscene.id = 'index-vwf';
-            blankscene.patches= "index.vwf";
-            if(!blankscene.children)
-                blankscene.children = {};
-            //only really doing this to keep track of the ownership
-            for(var i =0; i < state.length-1; i++)
-            {
-                
-                var childComponent = state[i];
-                var childName = state[i].name || state[i].properties.DisplayName + i;
-                var childID = childComponent.id || childComponent.uri || ( childComponent["extends"] ) + "." + childName.replace(/ /g,'-'); 
-                childID = childID.replace( /[^0-9A-Za-z_]+/g, "-" ); 
-                //state[i].id = childID;
-                //state2[i].id = childID;
-                blankscene.children[childName] = state2[i];
-                state[i].id = childID;
-                
-                fixIDs(state[i]);
-            }
-            var props = state[state.length-1];
-            if(props)
-            {
-                if(!blankscene.properties)
-                    blankscene.properties = {};
-                for(var i in props)
-                {
-                    blankscene.properties[i] = props[i];
-                }
-                for(var i in blankscene.properties)
-                {
-                    if( blankscene.properties[i] && blankscene.properties[i].value)
-                        blankscene.properties[i] = blankscene.properties[i].value;
-                    else if(blankscene.properties[i] && (blankscene.properties[i].get || blankscene.properties[i].set))
-                        delete blankscene.properties[i];
-                }
-            }
-            //global.log(Object.keys(global.instances[namespace].state.nodes['index-vwf'].children));
-            
-            //this is a blank world, go ahead and load the default
-            
-            
-            
-            
-            socket.emit('message',{"action":"createNode","parameters":[blankscene],"time":0});
-            socket.emit('message',{"action":"goOffline","parameters":[blankscene],"time":0});
-            socket.pending = false;
-        });
-        
+            getBlankScene(state,function(blankscene){
+                socket.emit('message',{"action":"createNode","parameters":[blankscene],"time":0});
+                socket.emit('message',{"action":"goOffline","parameters":[blankscene],"time":0});
+                socket.pending = false;
+            });
+      });  
     }
     
     function WebSocketConnection(socket, _namespace) {
@@ -206,7 +216,23 @@ var fixIDs = function(node)
             
             if(!instancedata)
             {
-                socket.disconnect();
+                require('./examples.js').getExampleMetadata(namespace.replace(/\//g,"_"),function(instancedata)
+                {
+                    if(instancedata)
+                    {
+                        //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
+                        if(instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer)
+                        {
+                            ServeSinglePlayer(socket, namespace,instancedata)
+                        }else
+                            ClientConnected(socket, namespace,instancedata);
+
+                    }else
+                    {
+                        socket.disconnect();
+                        return;
+                    }
+                });
                 return;
             }
             //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
@@ -221,6 +247,7 @@ var fixIDs = function(node)
     function ClientConnected(socket, namespace, instancedata) {
       
       
+
 
       //create or setup instance data
       if(!global.instances)
@@ -332,98 +359,71 @@ var fixIDs = function(node)
       if(!loadClient)
       {
         global.log('load from db');
-        
+            
         socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Loading state from database"],"time":global.instances[namespace].time})));  
         var instance = namespace;
         //Get the state and load it.
         //Now the server has a rough idea of what the simulation is
-        var state = SandboxAPI.getState(instance) || [{owner:undefined}];
-        
-        var state2 = SandboxAPI.getState(instance) || [{owner:undefined}];
-        global.instances[namespace].state = {nodes:{}};
-        global.instances[namespace].state.nodes['index-vwf'] = {id:"index-vwf",properties:state[state.length-1],children:{}};
-        
-        global.instances[namespace].state.findNode = function(id,parent)
-        {
-            var ret = null;
-            if(!parent) parent = this.nodes['index-vwf'];
-            if(parent.id == id)
-                ret = parent;
-            else if(parent.children)
+        SandboxAPI.getState(instance,function(state){
+
+            if(!state) state = [{owner:undefined}];
+            
+
+            global.instances[namespace].state = {nodes:{}};
+            global.instances[namespace].state.nodes['index-vwf'] = {id:"index-vwf",properties:state[state.length-1],children:{}};
+            
+            global.instances[namespace].state.findNode = function(id,parent)
             {
-                for(var i in parent.children)
+                var ret = null;
+                if(!parent) parent = this.nodes['index-vwf'];
+                if(parent.id == id)
+                    ret = parent;
+                else if(parent.children)
                 {
-                    ret = this.findNode(id, parent.children[i]);
-                    if(ret) return ret;
-                }
-            }
-            return ret;
-        }
-        global.instances[namespace].state.deleteNode = function(id,parent)
-        {
-            if(!parent) parent = this.nodes['index-vwf'];
-            if(parent.children)
-            {
-                for(var i in parent.children)
-                {
-                    if( i == id)
+                    for(var i in parent.children)
                     {
-                        delete parent.children[i];
-                        return
+                        ret = this.findNode(id, parent.children[i]);
+                        if(ret) return ret;
+                    }
+                }
+                return ret;
+            }
+            global.instances[namespace].state.deleteNode = function(id,parent)
+            {
+                if(!parent) parent = this.nodes['index-vwf'];
+                if(parent.children)
+                {
+                    for(var i in parent.children)
+                    {
+                        if( i == id)
+                        {
+                            delete parent.children[i];
+                            return
+                        }
                     }
                 }
             }
-        }
-        
-        fs.readFile("./public/adl/sandbox/index.vwf.yaml", 'utf8',function(err,blankscene)
-        {
             socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State loaded, sending..."],"time":global.instances[namespace].time}))); 
-            blankscene= YAML.load(blankscene);
-            
-            blankscene.id = 'index-vwf';
-            blankscene.patches= "index.vwf";
-            if(!blankscene.children)
-                blankscene.children = {};
-            //only really doing this to keep track of the ownership
-            for(var i =0; i < state.length-1; i++)
+            getBlankScene(state,function(blankscene)
             {
-                
-                var childComponent = state[i];
-                var childName = state[i].name || state[i].properties.DisplayName + i;
-                var childID = childComponent.id || childComponent.uri || ( childComponent["extends"] ) + "." + childName.replace(/ /g,'-'); 
-                childID = childID.replace( /[^0-9A-Za-z_]+/g, "-" ); 
-                //state[i].id = childID;
-                //state2[i].id = childID;
-                blankscene.children[childName] = state2[i];
-                state[i].id = childID;
-                global.instances[namespace].state.nodes['index-vwf'].children[childID] = state[i];
-                global.instances[namespace].state.nodes['index-vwf'].children[childID].parent = global.instances[namespace].state.nodes['index-vwf'];
-                fixIDs(state[i]);
-            }
-            var props = state[state.length-1];
-            if(props)
-            {
-                if(!blankscene.properties)
-                    blankscene.properties = {};
-                for(var i in props)
-                {
-                    blankscene.properties[i] = props[i];
-                }
-                for(var i in blankscene.properties)
-                {
-                    if( blankscene.properties[i] && blankscene.properties[i].value)
-                        blankscene.properties[i] = blankscene.properties[i].value;
-                    else if(blankscene.properties[i] && (blankscene.properties[i].get || blankscene.properties[i].set))
-                        delete blankscene.properties[i];
-                }
-            }
-            //global.log(Object.keys(global.instances[namespace].state.nodes['index-vwf'].children));
-            
-            //this is a blank world, go ahead and load the default
 
-            global.instances[namespace].cachedState = blankscene;
-            socket.emit('message',messageCompress.pack(JSON.stringify({"action":"createNode","parameters":[blankscene],"time":global.instances[namespace].time})));
-            socket.pending = false;
+               
+                //only really doing this to keep track of the ownership
+                for(var i =0; i < state.length-1; i++)
+                {
+                    var childID = state[i].id;
+                    
+                    global.instances[namespace].state.nodes['index-vwf'].children[childID] = state[i];
+                    global.instances[namespace].state.nodes['index-vwf'].children[childID].parent = global.instances[namespace].state.nodes['index-vwf'];
+                    
+                }
+                
+
+
+                global.instances[namespace].cachedState = blankscene;
+                socket.emit('message',messageCompress.pack(JSON.stringify({"action":"createNode","parameters":[blankscene],"time":global.instances[namespace].time})));
+                socket.pending = false;
+            });
         });
       }
       //this client is not the first, we need to get the state and mark it pending
@@ -505,7 +505,7 @@ var fixIDs = function(node)
                 this.namespace.requestTimer = null;
             }
             this.namespace.requestTimer = this;
-            this.handle = global.setTimeout(this.time.bind(this),1000);
+            this.handle = global.setTimeout(this.time.bind(this),3000);
         }
         global.instances[namespace].Log('GetState from Client',2);
         if(!global.instances[namespace].requestTimer)
@@ -515,7 +515,8 @@ var fixIDs = function(node)
      
       socket.on('message', function (msg) {
         
-          
+        try{    
+
             //need to add the client identifier to all outgoing messages
             try{
                 var message = JSON.parse(messageCompress.unpack(msg));
@@ -606,6 +607,7 @@ var fixIDs = function(node)
             //We'll only accept a setProperty if the user has ownership of the object
             if(message.action == "setProperty")
             {
+
                   var node = global.instances[namespace].state.findNode(message.node);
                   if(!node)
                   {
@@ -680,9 +682,11 @@ var fixIDs = function(node)
                     return;
                   }
                   //Keep a record of the new node
-                  if(allowAnonymous || checkOwner(node,sendingclient.loginData.UID) || message.node == 'index-vwf')
+                  //remove allow for user to create new node on index-vwf. Must have permission!
+                  var childComponent = JSON.parse(JSON.stringify(message.parameters[0]));
+                  if(allowAnonymous || checkOwner(node,sendingclient.loginData.UID) || childComponent.extends == 'character.vwf')
                   { 
-                        var childComponent = JSON.parse(JSON.stringify(message.parameters[0]));
+                        
                         if(!childComponent) return;
                         var childName = message.member;
                         if(!childName) return;
@@ -765,40 +769,56 @@ var fixIDs = function(node)
                     }
                 }
             }
+        } catch(e)
+        {
+            //safe to catch and continue here
+            global.error('Error in reflector: onMessage');
+            global.error(e);
+            global.error(e.stack);
+        }
             
       });
       
       //When a client disconnects, go ahead and remove the instance data
       socket.on('disconnect', function () {
           
-          var loginData = global.instances[namespace].clients[socket.id].loginData;
-          global.log(socket.id,loginData )
-          global.instances[namespace].clients[socket.id] = null;    
-          delete global.instances[namespace].clients[socket.id];
-          //if it's the last client, delete the data and the timer
-          
-          if(loginData && loginData.clients)
-          {
-              delete loginData.clients[socket.id];
-              global.error("Unexpected disconnect. Deleting node for user avatar " + loginData.UID);
-             var avatarID = 'character-vwf-'+loginData.UID;
-             for(var i in global.instances[namespace].clients)
+          try{
+              var loginData = global.instances[namespace].clients[socket.id].loginData;
+              global.log(socket.id,loginData )
+              global.instances[namespace].clients[socket.id] = null;    
+              delete global.instances[namespace].clients[socket.id];
+              //if it's the last client, delete the data and the timer
+              
+              if(loginData && loginData.clients)
               {
-                    var cl = global.instances[namespace].clients[i];
-                    cl.emit('message',messageCompress.pack(JSON.stringify({"action":"deleteNode","node":avatarID,"time":global.instances[namespace].time})));                   
+                  delete loginData.clients[socket.id];
+                  global.error("Disconnect. Deleting node for user avatar " + loginData.UID);
+                 var avatarID = 'character-vwf-'+loginData.UID;
+                 for(var i in global.instances[namespace].clients)
+                  {
+                        var cl = global.instances[namespace].clients[i];
+                        cl.emit('message',messageCompress.pack(JSON.stringify({"action":"deleteNode","node":avatarID,"time":global.instances[namespace].time})));
+                        cl.emit('message',messageCompress.pack(JSON.stringify({"action":"callMethod","node":'index-vwf',member:'cameraBroadcastEnd',"time":global.instances[namespace].time,client:socket.id})));                                      
+                        cl.emit('message',messageCompress.pack(JSON.stringify({"action":"callMethod","node":'index-vwf',member:'PeerSelection',parameters:[[]],"time":global.instances[namespace].time,client:socket.id})));                                      
+                  }
+                  global.instances[namespace].state.deleteNode(avatarID);   
               }
-              global.instances[namespace].state.deleteNode(avatarID);   
-          }
-          for(var i in global.instances[namespace].clients)
-          {
-                global.instances[namespace].clients[i].emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Peer disconnected: " + (loginData?loginData.UID:"Unknown")],"time":global.instances[namespace].getStateTime})));    
-          }
-          if(Object.keys(global.instances[namespace].clients).length == 0)
-          {
-            clearInterval(global.instances[namespace].timerID);
-            delete global.instances[namespace];
-            global.log('Shutting down ' + namespace )
-          }
+              for(var i in global.instances[namespace].clients)
+              {
+                    global.instances[namespace].clients[i].emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Peer disconnected: " + (loginData?loginData.UID:"Unknown")],"time":global.instances[namespace].getStateTime})));    
+              }
+              if(Object.keys(global.instances[namespace].clients).length == 0)
+              {
+                clearInterval(global.instances[namespace].timerID);
+                delete global.instances[namespace];
+                global.log('Shutting down ' + namespace )
+              }
+            }
+            catch(e)
+            {
+                global.error('error in reflector disconnect')
+                global.error(e);
+            }
 
         });
           

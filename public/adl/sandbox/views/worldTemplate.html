@@ -25,7 +25,7 @@
 		<div class='' style=''>
 		
 			<div style='font-size: 2em;font-weight: bold;'> {{worldData.title}} </div>
-			<div style='font-size: .75em;color: lightgray;'> Created By {{worldData.owner}} {{worldData.prettyDate}}. Updated {{worldData.updates}} times, most recently {{worldData.prettyUpdated}}. Contains {{worldData.objects}} objects. </div>
+			<div style='font-size: .75em;color: lightgray;'> {{#translate}}Created By{{/translate}} {{worldData.owner}} {{worldData.prettyDate}}. {{#translate}}Updated{{/translate}} {{worldData.updates}} {{#translate}}times, most recently{{/translate}} {{worldData.prettyUpdated}}. {{#translate}}Contains{{/translate}} {{worldData.objects}} {{#translate}}objects{{/translate}}. </div>
 			<div style='font-size: .75em;'>  </div>
 		<form id='form'>
 			<fieldset>	
@@ -33,7 +33,7 @@
 			<div> <a href='{{root}}/{{id}}'> <img style="background: white;width:100%;width: 100%;border-radius: 5px;box-shadow: 3px 3px 3px #444;" src="./vwfdatamanager.svc/thumbnail?SID={{id}}" onerror = "this.src = '/adl/sandbox/img/thumbnotfound.png';center(); " onload='center()'><img> </div>
 			</a>
 			{{#totalusers}}
-			<div style='font-size: .75em;color: lightgray;'> {{#users.length}}{{#users}}{{.}}, {{/users}} and {{/users.length}} {{anonymous.length}} anonymous users are in this world.</div>
+			<div style='font-size: .75em;color: lightgray;'> {{#users.length}}{{#users}}{{.}}, {{/users}} {{#translate}}and{{/translate}} {{/users.length}} {{anonymous.length}} {{#translate}}anonymous users are in this world{{/translate}}.</div>
 			{{/totalusers}}
 
 			</div>

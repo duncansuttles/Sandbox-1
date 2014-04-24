@@ -158,7 +158,7 @@
 				
 				if(currentmat.videoUpdateCallback)
 				{
-					$(document).unbind('prerender',currentmat.videoUpdateCallback);
+					_dView.unbind('prerender',currentmat.videoUpdateCallback);
 					delete currentmat.videoUpdateCallback;
 				}
 				
@@ -174,7 +174,7 @@
 					
 					}.bind(currentmat);
 					
-					$(document).bind('prerender',currentmat.videoUpdateCallback.bind(currentmat));
+					_dView.bind('prerender',currentmat.videoUpdateCallback.bind(currentmat));
 					
 				}
 				if(value.layers[0])
@@ -194,8 +194,8 @@
 				
 					currentmat.video = video;
 					currentmat.uniforms.texture1.value = new THREE.Texture(video);
-					currentmat.uniforms.texture1.value.minFilter = THREE.LinearMipMapLinearFilter;
-					currentmat.uniforms.texture1.value.magFilter = THREE.LinearFilter;
+					currentmat.uniforms.texture1.value.minFilter = THREE.NearestFilter;
+					currentmat.uniforms.texture1.value.magFilter = THREE.NearestFilter;
 					currentmat.uniforms.texture1.value.format = THREE.RGBFormat;
 					currentmat.uniforms.texture1.value.generateMipmaps = false;
 				}
@@ -982,12 +982,12 @@
 		{
 			
 		    this.defaultmaterialDef = {
-                    shininess:15,
+                    shininess:0,
                     alpha:1,
                     ambient:{r:1,g:1,b:1},
                     color:{r:1,g:1,b:1,a:1},
                     emit:{r:0,g:0,b:0},
-                    reflect:0.8,
+                    reflect:0.0,
                     shadeless:false,
                     shadow:true,
                     specularColor:{r:0.5773502691896258,g:0.5773502691896258,b:0.5773502691896258},
@@ -1122,7 +1122,7 @@
 		this.getDefForMaterial = function (currentmat)
 		{
 		   try{
-		   
+		  
 			var value = {};
 			value.color = {}
 			value.color.r = currentmat.color.r;
@@ -1142,9 +1142,9 @@
 			value.specularColor.b = currentmat.specular.b;
 			value.specularLevel = 1;
 			value.alpha = currentmat.opacity;
-			value.shininess = (currentmat.shininess || 0) / 5 ;
-			value.side = currentmat.side;
-			 value.reflect = currentmat.reflectivity * 10;
+			value.shininess = (currentmat.shininess || 0) / 50 ;
+			value.side = currentmat.side || 0;
+			value.reflect = currentmat.reflectivity * 10/100;
 			var mapnames = ['map', 'bumpMap', 'lightMap', 'normalMap', 'specularMap'];
 			value.layers = [];
 			for (var i = 0; i < mapnames.length; i++)

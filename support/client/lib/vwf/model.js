@@ -41,7 +41,7 @@ define( [ "module", "logger", "vwf/api/kernel", "vwf/api/model" ], function( mod
 
     var label = module.id.replace( /\//g, "." );
 
-    logger.for( label ).debug( "loading" );
+    
 
     var exports = {
 

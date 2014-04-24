@@ -418,6 +418,10 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             //this.state.nodes is shared with the threejs model!
             var node = this.state.nodes[ nodeID ]; 
             if(!node) node = this.state.scenes[nodeID];
+
+             //this driver has no representation of this node, so there is nothing to do.
+            if(!node) return;
+            
             var value = undefined;
             if(this.nodes[nodeID])
             	this.nodes[nodeID].properties[propertyName] = propertyValue;
@@ -445,9 +449,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			}
 			
 			
-			this.nodes[nodeID][propertyName] = propertyValue;
-            //this driver has no representation of this node, so there is nothing to do.
-            if(!node) return;
+			node[propertyName] = propertyValue;
+           
           
             var threeObject = node.threeObject;
             if(!threeObject)
@@ -538,28 +541,29 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 						}
 						if(newfog)
 						{
+
 							//get all the fog values from the stored property values
-							newfog.color.r = this.nodes[nodeID]["fogColor"] ? this.nodes[nodeID]["fogColor"][0] : 1;
-							newfog.color.g = this.nodes[nodeID]["fogColor"] ? this.nodes[nodeID]["fogColor"][1] : 1;
-							newfog.color.b = this.nodes[nodeID]["fogColor"] ? this.nodes[nodeID]["fogColor"][2] : 1;
-							newfog.near = this.nodes[nodeID]["fogNear"] || 0;
-							newfog.far = this.nodes[nodeID]["fogFar"] || 1000;
-							newfog.density = this.nodes[nodeID]["fogDensity"] || 0;
-							newfog.vFalloff = this.nodes[nodeID]["fogVFalloff"] || 1;
-							newfog.vFalloffStart = this.nodes[nodeID]["fogVFalloffStart"] || 0;
-							newfog.vAtmosphereDensity = (this.nodes[nodeID]["skyAtmosphereDensity"] || 0)/500;
+							newfog.color.r = this.nodes[nodeID].properties["fogColor"] ? this.nodes[nodeID].properties["fogColor"][0] : 1;
+							newfog.color.g = this.nodes[nodeID].properties["fogColor"] ? this.nodes[nodeID].properties["fogColor"][1] : 1;
+							newfog.color.b = this.nodes[nodeID].properties["fogColor"] ? this.nodes[nodeID].properties["fogColor"][2] : 1;
+							newfog.near = this.nodes[nodeID].properties["fogNear"] || 0;
+							newfog.far = this.nodes[nodeID].properties["fogFar"] || 1000;
+							newfog.density = this.nodes[nodeID].properties["fogDensity"] || 0;
+							newfog.vFalloff = this.nodes[nodeID].properties["fogVFalloff"] || 1;
+							newfog.vFalloffStart = this.nodes[nodeID].properties["fogVFalloffStart"] || 0;
+							newfog.vAtmosphereDensity = (this.nodes[nodeID].properties["skyAtmosphereDensity"] || 0)/500;
 
 							threeObject.fog.vHorizonColor = new THREE.Color();
 
-							threeObject.fog.vHorizonColor.r = this.nodes[nodeID]["skyApexColor"] ? this.nodes[nodeID]["skyHorizonColor"][0] : 1;
-							threeObject.fog.vHorizonColor.g = this.nodes[nodeID]["skyApexColor"] ? this.nodes[nodeID]["skyHorizonColor"][1] : 1;
-							threeObject.fog.vHorizonColor.b = this.nodes[nodeID]["skyApexColor"] ? this.nodes[nodeID]["skyHorizonColor"][2] : 1;
+							threeObject.fog.vHorizonColor.r = this.nodes[nodeID].properties["skyApexColor"] ? this.nodes[nodeID].properties["skyHorizonColor"][0] : 1;
+							threeObject.fog.vHorizonColor.g = this.nodes[nodeID].properties["skyApexColor"] ? this.nodes[nodeID].properties["skyHorizonColor"][1] : 1;
+							threeObject.fog.vHorizonColor.b = this.nodes[nodeID].properties["skyApexColor"] ? this.nodes[nodeID].properties["skyHorizonColor"][2] : 1;
 
 							threeObject.fog.vApexColor = new THREE.Color();
 
-							threeObject.fog.vApexColor.r = this.nodes[nodeID]["skyHorizonColor"] ? this.nodes[nodeID]["skyHorizonColor"][0] : 1;
-							threeObject.fog.vApexColor.g = this.nodes[nodeID]["skyHorizonColor"] ? this.nodes[nodeID]["skyHorizonColor"][1] : 1;
-							threeObject.fog.vApexColor.b = this.nodes[nodeID]["skyHorizonColor"] ? this.nodes[nodeID]["skyHorizonColor"][2] : 1;
+							threeObject.fog.vApexColor.r = this.nodes[nodeID].properties["skyHorizonColor"] ? this.nodes[nodeID].properties["skyHorizonColor"][0] : 1;
+							threeObject.fog.vApexColor.g = this.nodes[nodeID].properties["skyHorizonColor"] ? this.nodes[nodeID].properties["skyHorizonColor"][1] : 1;
+							threeObject.fog.vApexColor.b = this.nodes[nodeID].properties["skyHorizonColor"] ? this.nodes[nodeID].properties["skyHorizonColor"][2] : 1;
 
 						}
 						threeObject.fog = newfog;
@@ -704,7 +708,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		},
 		unbind:function (name,func)
 		{
-
+			
 			var queue = this.events[name];
 			if(!queue) return;
 
@@ -713,7 +717,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			else
 			{
 				func = queue.indexOf(func);
-				queue.splice(func,1);
+				if(func != -1)
+					queue.splice(func,1);
 			}
 		}
 		
@@ -893,9 +898,17 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 {
 					
                     if(self.lastPickId)
-                    view.kernel.dispatchEvent( self.lastPickId, "pointerOut", self.lastEventData.eventData, self.lastEventData.eventNodeData );
+                    {
+                    	view.kernel.dispatchEvent( self.lastPickId, "pointerOut", self.lastEventData.eventData, self.lastEventData.eventNodeData );
+                    	
+                    }
+
 					if(newPickId)
-                    view.kernel.dispatchEvent( newPickId, "pointerOver", self.lastEventData.eventData, self.lastEventData.eventNodeData );
+					{
+						view.kernel.dispatchEvent( newPickId, "pointerOver", self.lastEventData.eventData, self.lastEventData.eventNodeData );	
+						
+					}
+                    
                 }
                 
                 self.lastPickId = newPickId;
@@ -940,9 +953,11 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			//	renderer.render(backgroundScene,rttcam,rtt,true);
 
 				
-			   // renderer.setRenderTarget( rtt );
+			   renderer.setRenderTarget( rtt );
+			   renderer.clear(scene,rttcam,rtt);
+			   renderer.setRenderTarget(  );
 				renderer.render(scene,rttcam,rtt);
-				//renderer.setRenderTarget(  );
+				
 				
 				
 			}
@@ -1537,7 +1552,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     sceneView.keyStates.mods.shift = event.shiftKey;
                     sceneView.keyStates.mods.ctrl = event.ctrlKey;
                     sceneView.keyStates.mods.meta = event.metaKey;
-
+                    sceneView.keyStates.key = key;
                     var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
                     if (validKey && sceneNode && !keyAlreadyDown /*&& Object.keys( sceneView.keyStates.keysDown ).length > 0*/) {
                         //var params = JSON.stringify( sceneView.keyStates );
@@ -1557,6 +1572,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     if (sceneNode) {
                         //var params = JSON.stringify( sceneView.keyStates );
                         sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
+
                         
                     }
 				 for(var i in  sceneView.keyStates.keysUp)
@@ -1589,11 +1605,12 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     sceneView.keyStates.mods.shift = event.shiftKey;
                     sceneView.keyStates.mods.ctrl = event.ctrlKey;
                     sceneView.keyStates.mods.meta = event.metaKey;
-
+                    sceneView.keyStates.key = key;
                     var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
                     if (validKey && sceneNode) {
                         //var params = JSON.stringify( sceneView.keyStates );
                         sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
+                        sceneView.kernel.dispatchEvent(sceneNode.ID, "keyPress", [sceneView.keyStates]);
                         delete sceneView.keyStates.keysUp[key.key];
                     }
 

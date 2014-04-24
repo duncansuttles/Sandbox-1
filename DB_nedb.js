@@ -73,7 +73,7 @@ exports.new = function(DBTablePath,cb)
                 delete data._id;
 
                 DB.update({ _key: key },data,{},function(err,numReplaced,newdoc){
-                    console.log(numReplaced);
+                    
                     cb();
                 })
             },

@@ -1467,13 +1467,13 @@ define(function ()
 				{
 					suggestedText = suggestedText + "(";
 					//focus on the editor
-					window.setTimeout(function(){
+					window.setImmediate(function(){
 						_ScriptEditor.activeEditor.focus();
 						self.triggerFunctionTip(_ScriptEditor.activeEditor,true);
 					},0);
 				}else
 				{
-					window.setTimeout(function(){
+					window.setImmediate(function(){
 						_ScriptEditor.activeEditor.focus();
 					},0);
 				}
@@ -1499,7 +1499,17 @@ define(function ()
 				$(document.body).append("<form id='AutoComplete' tabindex=890483 />");
 				$('#AutoComplete').on('blur',function(e,key)
 				{
-					$('#AutoComplete').hide();
+					//there is some sort of error here, this prevention is a workaround. 
+					//seems to get a blur event only on first show
+					if(!this.firstshow)
+					{
+						this.firstshow =  true;
+							
+					}else
+					{
+						$('#AutoComplete').hide();
+					}
+					
 				});
 				//bind up events
 				$('#AutoComplete').on('keydown',function(e,key)
@@ -1599,7 +1609,7 @@ define(function ()
 							{	//if the backspace occurs with no filter, then close and remove
 								if(self.filter.length ==0)
 								{
-									window.setTimeout(function()
+									window.setImmediate(function()
 									{
 										_ScriptEditor.activeEditor.remove('left');
 										$('#AutoComplete').hide();
@@ -1615,7 +1625,7 @@ define(function ()
 								
 							}
 							//wait 15ms, then show this whole dialog again
-							window.setTimeout(function()
+							window.setImmediate(function()
 							{
 								//console.log(self.filter);
 								$('#AutoComplete').focus();
@@ -1626,7 +1636,7 @@ define(function ()
 						}else
 						{	
 							//any key that is not a character or backspace cancels the autocomplete
-							window.setTimeout(function()
+							window.setImmediate(function()
 							{
 								$('#AutoComplete').hide();
 									_ScriptEditor.activeEditor.focus();
@@ -1684,7 +1694,7 @@ define(function ()
 			$('#AutoComplete').attr('autocompleteindex',0);
 			$('#AutoComplete').css('overflow','hidden');
 			$('#AutoComplete').scrollTop(0);
-			window.setTimeout(function()
+			window.setImmediate(function()
 			{
 				$('#AutoComplete').focus();
 				
@@ -1770,7 +1780,7 @@ define(function ()
 						{
 							return a[0] > b[0]?1:-1;
 						})
-						window.setTimeout(function()
+						window.setImmediate(function()
 						{
 							self.filter = filter;
 							self.setupAutocomplete(self.keys,editor,filter);
@@ -1838,7 +1848,7 @@ define(function ()
 			
 					if(text)
 					{
-						window.setTimeout(function()
+						window.setImmediate(function()
 						{
 							self.setupFunctionTip(text,editor,$(editor.renderer.$cursorLayer.cursor).offset(),$(editor.renderer.$cursorLayer.cursor).width());
 							
@@ -2090,6 +2100,9 @@ define(function ()
 			line = splits[splits.length-1];
 			splits = line.split(',');
 			line = splits[splits.length-1];
+			splits = line.split('!');
+			line = splits[splits.length-1];
+			console.log(line);
 			return line;
 		
 		}

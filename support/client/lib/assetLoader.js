@@ -24,9 +24,8 @@ function ()
 
     function initialize()
     {
-        this.load = function(cb)
+        this.load = function(stateData,cb)
         {
-            cb(); return;
             $.ajax({url:'../vwfdatamanager.svc/getAssets?SID=' +((/\/adl\/sandbox\/.*\//).exec(window.location.toString()).toString()),
                 success:function(data,status,xhr)
                 {
@@ -43,8 +42,12 @@ function ()
 
                                     var assets = JSON.parse(xhr.responseText);
                                     var profile = JSON.parse(xhr2.responseText);
-                                    assets.push({type:"subDriver/threejs/asset/vnd.collada+xml",url:profile.avatarModel});
-                                    assets.push({type:"texture",url:profile.avatarTexture});
+                                    if(!stateData || !stateData.publishSettings ||
+                                        (stateData && stateData.publishSettings && stateData.publishSettings.createAvatar  && !stateData.publishSettings.allowAnonymous))
+                                    {
+                                        assets.push({type:"subDriver/threejs/asset/vnd.collada+xml",url:profile.avatarModel});
+                                        assets.push({type:"texture",url:profile.avatarTexture});
+                                    }
                                     assetLoader.loadAssets(assets,cb);
                                 }else
                                 {

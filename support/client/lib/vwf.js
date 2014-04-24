@@ -1086,8 +1086,14 @@
         this.lastTick = 0;
         this.dispatch = function() {
 
-            var fields;
+            // Handle messages until we empty the queue or reach the new current time. For each,
+            // remove the message and perform the action. The simulation time is advanced to the
+            // message time as each one is processed.
 
+           
+
+            
+            var fields;
             // Actions may use receive's ready function to suspend the queue for asynchronous
             // operations, and to resume it when the operation is complete.
 
@@ -1096,6 +1102,13 @@
                 // Advance time to the message time.
 
                 
+                
+				this.message = fields;
+			
+
+                
+
+                // Advance the time.
 
                  if ( this.now != fields.time ) {
                     this.now = fields.time;
@@ -1111,7 +1124,6 @@
                                                         var now = performance.now();
                                                         var realTickDif = now - this.lastRealTick;
                                                         this.lastRealTick = now;
-                                                       
                                                        
                                                         this.tick();
                                                 
@@ -1185,9 +1197,9 @@
 
             // Call tick() on each tickable node.
 
-            this.tickable.nodeIDs.forEach( function( nodeID ) {
-                this.callMethod( nodeID, "tick", [ this.now ] );
-            }, this );
+        //    this.tickable.nodeIDs.forEach( function( nodeID ) {
+        //        this.callMethod( nodeID, "tick", [ this.now ] );
+        //    }, this );
 
             // Call ticked() on each view.
 
@@ -1409,7 +1421,7 @@
             // `createNode( nodeComponent, undefined, callback )`. (`nodeAnnotation` was added in
             // 0.6.12.)
 
-            if(nodeComponent.id == "index-vwf")
+            if(nodeComponent && nodeComponent.id == "index-vwf")
             {
                     $(document).trigger('setstatebegin');
             }
@@ -1961,6 +1973,7 @@
             } else {
                 return undefined;
             }
+       
 
         };
 
@@ -3417,7 +3430,9 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
 
             // Bubbling phase.
 
-            phase = 'bubble'; // invoke all handlers
+            //GUI does not distinguish between bubble and capture 
+            //invoke all parent handlers regardless of phase
+            //phase = 'bubble'; // invoke all handlers
 
             handled = handled || ancestorIDs.reverse().some( function( ancestorID ) {  // TODO: reverse updates the array in place every time and we'd rather not
 

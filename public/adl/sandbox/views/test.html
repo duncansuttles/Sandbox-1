@@ -127,6 +127,9 @@ var getCapabilities = function(){
                 webgl.params[name] = value;
             }
         }
+
+
+
         for(var i=0; i<webgl.extensions.supported.length; i++){
             var extname = webgl.extensions.supported[i];
             if(extname.match('texture_filter_anisotropic')){
@@ -175,7 +178,7 @@ var getCapabilities = function(){
     return data;
 }
 
-
+	
 	function updateColors()
 	{
 
@@ -195,32 +198,69 @@ var getCapabilities = function(){
 		   return ( $(this).css('color') != 'rgb(0, 255, 0)' );
 		}).length === 0){
 			$('#goodtogo').show();
+			settings.compatability.satisfied = true;
+			alertify.alert('{{#translate}}Great! It looks like this browser is supported{{/translate}}. {{#translate}}Click OK to return to the loading page{{/translate}}.',function()
+			{
+				window.history.back();	
+			})
+			
 		}else
 			$('#goodtogo').hide();
 
 	}
+	window.onbeforeunload = function()
+	{
+
+		window.localStorage['sandboxPreferences'] = JSON.stringify(settings);
+	}
 	$(document).ready(function()
 	{
+		
+		document.body.oncontextmenu=function(){return false;}
+		window.settings = JSON.parse(window.localStorage['sandboxPreferences'] || null) || {};
+
+
 		ko.applyBindings(vwfPortalModel);
 		var data = getCapabilities();
-		
+		settings.compatability = {};
+		settings.compatability.caps = data;
+		settings.compatability.satisfied = false;
+		console.log(data);
 		var webgl = data.webgl.supported;
 		var floats = webgl && data.webgl.extensions.supported.indexOf("OES_texture_float")>-1?true:false;
 		var ddx = webgl && data.webgl.extensions.supported.indexOf("OES_standard_derivatives")>-1?true:false;
 		var maxTextureSize = webgl && data.webgl.params.MAX_TEXTURE_SIZE;
 		var maxNumTextures = webgl && data.webgl.params.MAX_TEXTURE_IMAGE_UNITS;
 		var maxBones = webgl && Math.floor((data.webgl.params.MAX_VERTEX_UNIFORM_VECTORS - 20)/4);
-		var anisotropic = webgl && data.webgl.extensions.capabilities.WEBKIT_EXT_texture_filter_anisotropic?data.webgl.extensions.capabilities.WEBKIT_EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT : 0;
+		if (webgl)
+			var ani_ext = data.webgl.extensions.capabilities["EXT_texture_filter_anisotropic"]
+        		|| data.webgl.extensions.capabilities["WEBKIT_EXT_texture_filter_anisotropic"]
+        		|| data.webgl.extensions.capabilities["MOZ_EXT_texture_filter_anisotropic"];
+		var anisotropic = (ani_ext != undefined)?ani_ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT : 0;
 		
+		var vertexTexures = webgl && data.webgl.params.MAX_VERTEX_TEXTURE_IMAGE_UNITS;
 		$('#webgl').text(webgl);
+		$('#vertexTextures').text(vertexTexures);
 		$('#floats').text(floats);
 		$('#ddx').text(ddx);
 		$('#maxTextureSize').text(maxTextureSize);
 		$('#maxNumTextures').text(maxNumTextures);
 		$('#maxBones').text(maxBones);
-		$('#anisotropic').text(anisotropic);
+		
 
+		alertify.set({ labels: {
+   			 ok     : "Ok",
+   			 cancel : "{{#translate}}Cancel{{/translate}}"
+			} });
 
+		if(!webgl || !floats ||!ddx ||!vertexTexures)
+		{
+			alertify.alert('{{#translate}}Shoot! Some of the graphics requirements are unsupported on this GPU! You might try upgrading your GPU, drivers, or browser{{/translate}}.',function(){
+				window.location = '/';
+			})
+			return;
+
+		}
 
 		var websocket = window.WebSocket?true:false;
 		$('#websocket').text(websocket);
@@ -236,23 +276,53 @@ var getCapabilities = function(){
 		var mouseLeft = false;
 		var mouseRight = false;
 		var mouseMiddle = false;
+		var stage = 0;
 		function onMouseClick(e) {
-			
-			if(e.button == 0)
+			e.preventDefault();
+
+			if(e.button == 0 && stage == 0)
 			{
+				$('#alertify-ok')[0].click();
+				window.setTimeout(function(){
+
+					stage++;
+				
 		  		mouseLeft = true;
 		  		$('#mouseLeft').text(mouseLeft);
+		  		
+		  		alertify.confirm('{{#translate}}Click the middle mouse button{{/translate}}',function(ok){if(!ok){alertify.alert('{{#translate}}Shoot! You need a three button mouse to use the Sandbox{{/translate}}.',function(){window.location = '/';})}});
+		  		$('#alertify-ok')[0].style.display = 'none'
+				},1000)
+				
 		  	}
-		  	if(e.button == 1)
+		  	if(e.button == 1 && stage == 1)
 			{
+				$('#alertify-ok')[0].click();
+				window.setTimeout(function(){
+
+				stage++;
+				
 		  		mouseMiddle = true;
 		  		$('#mouseMiddle').text(mouseMiddle);
+		  		
+		  		alertify.confirm('{{#translate}}Click the right mouse button{{/translate}}',function(ok){if(!ok){alertify.alert('{{#translate}}Shoot! You need a three button mouse to use the Sandbox{{/translate}}.',function(){window.location = '/';})}});
+		  		$('#alertify-ok')[0].style.display = 'none'
+		  		},1000)
 		  	}
-		  	if(e.button == 2)
+		  	if(e.button == 2 && stage == 2)
 			{
+				$('#alertify-ok')[0].click();
+				window.setTimeout(function(){
+
+				stage++;
+				
 		  		mouseRight = true;
 		  		$('#mouseRight').text(mouseRight);
-		  		e.preventDefault();
+		  		
+		  		window.addEventListener('mousewheel', onMouseWheel, false);
+		  		alertify.confirm('{{#translate}}Roll the mouse wheel{{/translate}}',function(ok){if(!ok){alertify.alert('{{#translate}}Shoot! You need a three button mouse to use the Sandbox{{/translate}}.',function(){window.location = '/';})}});
+		  		$('#alertify-ok')[0].style.display = 'none'
+		  		},1000)
 		  	}
 		 updateColors();
 		}
@@ -260,13 +330,23 @@ var getCapabilities = function(){
 		function onMouseWheel(e) {
 			mouseWheel = true;
 			$('#mouseWheel').text(mouseWheel);
-			updateColors();
+			$('#alertify-ok')[0].click();
+			window.setTimeout(function(){
+
+				
+				updateColors();
+			},1000)
+			
 		}
 
-		window.addEventListener('mousewheel', onMouseWheel, false);
+		alertify.confirm('{{#translate}}Click the left mouse button{{/translate}}',function(ok){if(!ok){alertify.alert('{{#translate}}Shoot! You need a three button mouse to use the Sandbox{{/translate}}.',function(){window.location = '/';})}});
+		$('#alertify-ok')[0].style.display = 'none'
+
+		
 		window.addEventListener('mousemove', onMouseMove, false);
 		window.addEventListener('mousedown', onMouseClick, false);
 
+		
 		var socket = io.connect("ws://"+window.location.host);
 		socket.on( "connect", function() {
                   $('#socketconnection').text("Successful");
@@ -276,24 +356,28 @@ var getCapabilities = function(){
 		socket.on( "error", function(e) { 			
 			$('#socketconnection').text("Failed");
 			updateColors();
+
+			alertify.confirm('{{#translate}}Shoot! Your browser is unable to connect via a WebSocket to our server! This might be a firewall issue{{/translate}}. {{#translate}}Check that WebSockets are allowed on port 80{{/translate}}.',function(){window.location = '/';});
+
 	    } );
 
-	    var ssocket = io.connect("wss://"+window.location.host,{secure: true});
-		ssocket.on( "connect", function() {
-                  $('#ssocketconnection').text("Successful");
-                  updateColors();
-        } );
-
-		ssocket.on( "error", function(e) { 			
-			$('#ssocketconnection').text("Failed");
-			updateColors();
-	    } );
+	    
 
 		updateColors();
 		});	
+	
 </script>
+
+
+
+<div id='content' class="row">
+	<div class="col-md-8" style="margin:10px auto;float:none;">
+
+	
+	<legend >{{#translate}}Compatability Test{{/translate}}</legend>
+
 <div class="col-md-10" style="margin:0 auto;float:none;height:auto;">
-		The VW Sandbox application has several requriements. This page will test for support of both optional and required features. Some of the tests can be done automatically, but please click each button on your mouse in turn, and roll the mouse wheel.</br></br>
+		{{#translate}}The VW Sandbox application has several requriements{{/translate}}. {{#translate}}This page will test for support of both optional and required features{{/translate}}. {{#translate}}Some of the tests can be done automatically, but please click each button on your mouse in turn, and roll the mouse wheel{{/translate}}.</br></br>
 </div>
 <div class="col-md-10" style="margin:0 auto;float:none;height:auto;">
 <div class="row">
@@ -322,6 +406,14 @@ var getCapabilities = function(){
 </div>
 <div class="row">
 	<div class="col-md-3 ">
+		Vertex Textures:
+	</div>
+	<div id = 'vertexTextures' class="col-md-4 ">
+		Untested
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-3 ">
 		Max Texture Size:
 	</div>
 	<div id = 'maxTextureSize' class="col-md-4 ">
@@ -341,14 +433,6 @@ var getCapabilities = function(){
 		Max Hardware Bones:
 	</div>
 	<div id = 'maxBones' class="col-md-4 ">
-		Untested
-	</div>
-</div>
-<div class="row">
-	<div class="col-md-3 ">
-		Max Anisotropic Filter:
-	</div>
-	<div id = 'anisotropic' class="col-md-4 ">
 		Untested
 	</div>
 </div>
@@ -425,10 +509,14 @@ var getCapabilities = function(){
 </div>
 
 <div class="col-md-10" id='goodtogo' style="margin:0 auto;float:none;height:auto;">
-		<br/>Great, it looks like you should be able to use the Virtual World Sandbox successfully!
+		<br/>{{#translate}}Great, it looks like you should be able to use the Virtual World Sandbox successfully{{/translate}}!
 </div>
 
 <div class="row">	
 	<div id='error' style="margin-top: 20px;margin-bottom:20px;font-size: 3EM;color: red;" class="span12"></div>
 </div>
+<legend></legend>
 <script type="text/javascript" src="./socket.io/socket.io.js"></script>
+
+</div>
+</div>

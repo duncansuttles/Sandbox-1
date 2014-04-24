@@ -25,8 +25,24 @@ font-weight: bold;
 color: lightgray;
 }
 
+@media (max-width: 607px){
+			.searchresult{
+			height: 120px;
+			
+			}
+		}	
+		@media (max-width: 407px){
+			.searchresult{
+			height: 100px;
+			width: 150px;
+			
+			}
+			.searchresult img{
+			width: 140px;
+			height: 73px;
+
 }	
-}	
+		}		
 
 </style>
 
@@ -220,7 +236,7 @@ color: lightgray;
 
 		<form id='form' data-bind="submit:handleEditButton" >
 
-			<fieldset style="width: 50%;text-align: left;margin-left: auto;margin-right: auto;">
+			<fieldset style="width: 75%;text-align: left;margin-left: auto;margin-right: auto;">
 				<legend> <span id="worldtitle"></span> settings</legend>
 
 				<input style="display:none" type='text' id='txtInstanceName' placeholder='World Name' class="col-md-5 form-control" />
@@ -247,6 +263,4 @@ color: lightgray;
 		</form>
 	</div>
 </div>
-<div class="row">	
-	<div id='error' style="margin-top: 20px;margin-bottom:20px;font-size: 3EM;color: red;" class="span12"></div>
-</div>
+

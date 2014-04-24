@@ -47,7 +47,7 @@ define( [
 
         ], function( ready ) {
 
-            return function(){
+            return function(stateData){
             require("polyfills").setup();
             require("vwf/view/editorview/ObjectPools").getSingleton();
             window.alertify = require("vwf/view/editorview/alertify.js-0.3.9/src/alertify");
@@ -72,7 +72,7 @@ define( [
             
             $(document.head).append('<script src="vwf/model/threejs/helvetiker_regular.typeface.js"></script>');
             
-                assetLoader.load(function(){
+                assetLoader.load(stateData,function(){
                  /*   vwf.initialize(
 
                     // This is the world specification. The world may be specified using a component

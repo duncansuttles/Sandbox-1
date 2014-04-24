@@ -1,3 +1,6 @@
+//start the profiler service
+require('look').start();
+
 global.version = 1;
 var libpath = require('path'),
 http = require("http"),
@@ -169,10 +172,20 @@ function startVWF(){
 	}	
 	
 
+	var mailtools = require('./mailTools.js');
 	//global error handler
 	process.on('uncaughtException', function(err) {
-    // handle the error safely
+    	// handle the error safely
+    	//note: we absolutly must restart the server here. Yeah, maybe some particular error might be ok to read over, but lets stop that
+    	//and even send an email to the admin
+
+    	global.setTimeout(function(){process.exit()},5000);
     	global.error(err);
+    	global.error(err.stack);
+    	mailtools.serverError(err,function(sent){
+    		process.exit(1);
+    	});
+    	
 	});
 	
     //***node, uses REGEX, escape properly!
@@ -272,6 +285,7 @@ function startVWF(){
 			app.get('/adl/sandbox/allWorlds/:page([0-9]+)', Landing.allWorlds);
 			app.get('/adl/sandbox/myWorlds/:page([0-9]+)', Landing.myWorlds);
 			app.get('/adl/sandbox/featuredWorlds/:page([0-9]+)', Landing.featuredWorlds);
+			app.get('/adl/sandbox/activeWorlds/:page([0-9]+)', Landing.activeWorlds);
 			app.get('/adl/sandbox', Landing.generalHandler);
 			app.get('/adl/sandbox/:page([a-zA-Z/]+)', Landing.generalHandler);
 			app.get('/adl/sandbox/stats', Landing.statsHandler);

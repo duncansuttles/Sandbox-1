@@ -51,6 +51,10 @@ exports.newWorld = function(owner,name,id)
 {
     this.sendMail(global.configuration.emailFrom,'A new world was created',owner + ' created ' + name + ' at ' + id);
 }
+exports.serverError = function(err,cb)
+{
+    this.sendMail(global.configuration.emailFrom,'The server had a panic restart:' + err.message,err.stack,null,cb);
+}
 exports.resetPasswordMail = function(to,pass)
 {
     this.sendMail(to,"Password Reset Notice","Your password for the Sandbox has been reset. Your new password is '" +pass+ "'. You must reset your password next time you log in. This temporary password is valid for 1 day, after which you may log in with your normal password, or request a new temporary password. If you did not request that your password be reset, you can still log in with your old password. In this case, we recommend you change your password as a precaution. ","",function(){});

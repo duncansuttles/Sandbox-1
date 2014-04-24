@@ -78,25 +78,25 @@
 	<div class="col-md-5 accountCreation" style="margin: 0 auto; float:none;">
 		<form data-bind="submit:handleAccountButton" >
 			<fieldset>
-				<legend>Required account information</legend>
+				<legend>{{#translate}}Required account information{{/translate}}</legend>
 				<div class='row' style="margin:10px auto;float:none;text-align:center;">
 					<div class="col-md-10" style="margin:0 auto;float:none;">
-						<input type='text' id='txtusername' class="form-control" disabled='disabled' value='{{Username}}' placeholder='Username'/>
-						<input type='text' id='txtemail' class="form-control" value='{{Email}}' placeholder='Email'/>
-						<input type="submit" class='btn btn-default' style="float:right;"  value="Update Account"/><br/>
+						<input type='text' id='txtusername' class="form-control" disabled='disabled' value='{{Username}}' placeholder='{{#translate}}Username{{/translate}}'/>
+						<input type='text' id='txtemail' class="form-control" value='{{Email}}' placeholder='{{#translate}}Email{{/translate}}'/>
+						<input type="submit" class='btn btn-default' style="float:right;"  value="{{#translate}}Update Account{{/translate}}"/><br/>
 						<p class="help-block" style="width:100%;margin-top:20px;" data-bind="visible:errorText,text:errorText"></p>
 					</div>
 				</div>
 				<br/><br/>
-				<legend>Optional information</legend>
+				<legend>{{#translate}}Optional information{{/translate}}</legend>
 				<div class='row' style="margin:10px auto;float:none;text-align:center;">
 					<div class='col-md-10' style="margin:0 auto;float:none;">
-						<input type='text' id='name' class='input form-control' value='{{Name}}' placeholder='Full Name'/>
-						<input type='text' id='location' class='input form-control' value='{{Location}}' placeholder='Location'/>
-						<input type='text' id='homepage' class='input form-control' value='{{Homepage}}' placeholder='Homepage'/>
-						<input type='text' id='organization' class='input form-control' value='{{Organization}}' placeholder='Organization'/>
-						<input type='text' id='twitter' class='input form-control' value='{{Twitter}}' placeholder='Twitter Handle'/>
-						<input type='text' id='skype' class='input form-control' value='{{Skype}}' placeholder='Skype Name'/>
+						<input type='text' id='name' class='input form-control' value='{{Name}}' placeholder='{{#translate}}Full Name{{/translate}}'/>
+						<input type='text' id='location' class='input form-control' value='{{Location}}' placeholder='{{#translate}}Location{{/translate}}'/>
+						<input type='text' id='homepage' class='input form-control' value='{{Homepage}}' placeholder='{{#translate}}Homepage{{/translate}}'/>
+						<input type='text' id='organization' class='input form-control' value='{{Organization}}' placeholder='{{#translate}}Organization{{/translate}}'/>
+						<input type='text' id='twitter' class='input form-control' value='{{Twitter}}' placeholder='{{#translate}}Twitter Handle{{/translate}}'/>
+						<input type='text' id='skype' class='input form-control' value='{{Skype}}' placeholder='{{#translate}}Skype Name{{/translate}}'/>
 					</div>
 				</div>
 			</fieldset>

@@ -123,29 +123,13 @@
 				<legend></legend>
 				<input type='text' id='txtInstanceName' placeholder='World Name' class="col-md-5 form-control" /><br/><br/>
 				<textarea id='txtInstanceDescription' placeholder='Description' class="col-md-5 form-control"></textarea>
-				<input type="submit" class='btn btn-default' style="float:right;margin-top:7px;"  value="Edit"/>
+				<input type="submit" class='btn btn-default' style="float:right;margin-top:7px;"  value="{{#translate}}Edit{{/translate}}"/>
 			</fieldset>
 		</form>
 	</div>
 	
 
-
-
-
-
-
-
-	<div class="col-md-3 col-md-offset-1" style="display:none">
-		<legend style="">Restore Backup</legend>
-		<p style="text-align:center;margin-top:60px;" data-bind="visible:restoreList().length==0">No backups found</p>
-		<table data-bind="submit:handleEditButton" class="table table-striped" style="border-top:none;">
-			<tbody data-bind="foreach:restoreList">
-				<tr>
-					<td><a href="#" data-bind="text:time, click:$root.restoreState"></a></td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
+	
 </div>
 <div class="row">	
 	<div id='error' style="margin-top: 20px;margin-bottom:20px;font-size: 3EM;color: red;" class="span12"></div>

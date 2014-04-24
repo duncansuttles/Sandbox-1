@@ -27,19 +27,23 @@ properties:
             this._audioAPI.___self = this;
             this._audioAPI.playSound=function(soundURL /* the url of the sound */, loop /* loop or not */, volume)
             {
-                this.___self.playSound(soundURL,loop,volume);
+                vwf.callMethod(this.id,'playSound',[soundURL,loop,volume])
+                
             }
             this._audioAPI.stopSound=function(soundURL /* the url of the sound */)
             {
-                this.___self.stopSound(soundURL);
+                vwf.callMethod(this.id,'stopSound',[soundURL])
+               
             }
            this._audioAPI.pauseSound=function(soundURL /* the url of the sound */)
             {
-                this.___self.pauseSound(soundURL);
+                vwf.callMethod(this.id,'pauseSound',[soundURL])
+               
             }
             this._audioAPI.deleteSound=function(soundURL /* the url of the sound */)
             {
-                this.___self.deleteSound(soundURL);
+                vwf.callMethod(this.id,'deleteSound',[soundURL])
+                
             }
            }
            return this._audioAPI;
@@ -108,6 +112,22 @@ properties:
                     var targetTransform = self.worldTransform.internal_val;
                    
                     vec = Mat4.multVec3(targetTransform,vec,[]);
+                    return vec;
+                },
+                globalToLocal: function(x,y,z)
+                {
+                    if(x.length)
+                    {
+                        y = x[1];
+                        z = x[2];
+                        x = x[0];
+                    }
+                    var vec = [x,y,z];
+                    var targetTransform = self.worldTransform.internal_val;
+                    
+                    var invTransform = Mat4.create();
+                    Mat4.invert(targetTransform,invTransform);
+                    vec = Mat4.multVec3(invTransform,vec,[]);
                     return vec;
                 },
                 setPosition: function(x,y,z)
@@ -353,17 +373,6 @@ properties:
       var transform = goog.vec.Mat4.multMat( parentInverse, this.transformFromValue( value ), goog.vec.Vec3.create() );
       this.transform = transform;
   transform:
-    set: |
-      
-      var transform = this.transformFromValue( value ); // parse incoming value
-      //var thisTransform = this.transform;
-      //if ( ! goog.vec.Mat4.equals( ( thisTransform && thisTransform.internal_val) || thisTransform || goog.vec.Mat4.createIdentity(), transform ) ) {
-        this.transform = transform;
-       // this.transformChanged( transform );
-       // this.translation = this.translation;
-       // this.quaternion = this.quaternion;
-       // this.rotation = this.rotation;
-      //}
   translation:
     # node.translation <= [ x, y, z ]
     set: |
@@ -419,7 +428,7 @@ properties:
       );
       this.scaledTransform( transform, scale, transform );
       goog.vec.Mat4.setColumn( transform, 3, translation );
-      this.transform = transform;
+      //this.transform = transform;
     # node.quaternion => [ x, y, z, w ]
     get: |
       var thisTransform = this.transform;

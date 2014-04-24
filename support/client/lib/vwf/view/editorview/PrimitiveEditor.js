@@ -16,45 +16,9 @@ define(function ()
 
 	function initialize()
 	{
-		$(document.body).append("<div id='ShareWithDialog'> <select id='ShareWithNames'/> </div>");
+		
 		this.propertyEditorDialogs = [];
-		$('#ShareWithDialog').dialog(
-		{
-			title: "Share With User",
-			autoOpen: false,
-			moveable: false,
-			modal: true,
-			resizable: false,
-			resizable: false,
-			open: function ()
-			{
-				$('#ShareWithNames').empty();
-				for (var i = 0; i < document.Players.length; i++)
-				{
-					$('#ShareWithNames').append("<option value='" + document.Players[i] + "'>" + document.Players[i] + "</option>");
-				}
-				if (!_Editor.GetSelectedVWFNode())
-				{
-					_Notifier.notify('No object selected');
-					$('#ShareWithDialog').dialog('close');
-				}
-			},
-			buttons: {
-				Ok: function ()
-				{
-					var owner = vwf.getProperty(_Editor.GetSelectedVWFNode().id, 'owner');
-					if (typeof owner === "string") owner = [owner];
-					owner = owner.slice(0);
-					owner.push($('#ShareWithNames').val());
-					_Editor.setProperty(_Editor.GetSelectedVWFNode().id, 'owner', owner);
-					$('#ShareWithDialog').dialog('close');
-				},
-				Cancel: function ()
-				{
-					$('#ShareWithDialog').dialog('close');
-				}
-			}
-		});
+		
 		$('#sidepanel').append("<div id='PrimitiveEditor'>" 
 		+ "<div id='primeditortitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span id='primeditortitletext' class='ui-dialog-title' id='ui-dialog-title-Players'>Object Properties</span></div>" +
 		'<div id="accordion" style="height:100%;overflow:hidden">' +
@@ -190,8 +154,11 @@ define(function ()
 			//return $("#PrimitiveEditor").dialog( "isOpen" )
 			return $('#PrimitiveEditor').is(':visible')
 		}
-		this.setProperty = function (id, prop, val)
+		this.setProperty = function (id, prop, val, skipUndo)
 		{
+			//prevent the handlers from firing setproperties when the GUI is first setup;
+			if(this.inSetup) return;
+
 			if(document.PlayerNumber == null)
 			{
 			_Notifier.notify('You must log in to participate');
@@ -204,11 +171,14 @@ define(function ()
 				_Notifier.notify('You do not have permission to edit this object');
 				return;
 				}
+				if(!skipUndo)
+					_UndoManager.recordSetProperty(id, prop, val);
 				vwf_view.kernel.setProperty(id, prop, val)
 			}
 			if (id == 'selection')
 			{
-				console.log(_Editor.getSelectionCount());
+				var undoEvent = new _UndoManager.CompoundEvent();
+
 				for (var k = 0; k < _Editor.getSelectionCount(); k++)
 				{
 					if(_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),_Editor.GetSelectedVWFNode(k).id) == 0)
@@ -216,8 +186,12 @@ define(function ()
 					_Notifier.notify('You do not have permission to edit this object');
 					continue;
 					}
+					
+					undoEvent.push(new _UndoManager.SetPropertyEvent(_Editor.GetSelectedVWFNode(k).id, prop, val));
 					vwf_view.kernel.setProperty(_Editor.GetSelectedVWFNode(k).id, prop, val)
 				}
+				if(!skipUndo)
+					_UndoManager.pushEvent(undoEvent);
 			}
 		}
 		
@@ -249,6 +223,7 @@ define(function ()
 			{
 				if (node)
 				{
+					this.inSetup = true;
 					this.clearPropertyEditorDialogs();
 					$("#accordion").accordion('destroy');
 					$("#accordion").children('.modifiersection').remove();
@@ -337,7 +312,7 @@ define(function ()
 						}
 					});
 					$(".ui-accordion-content").css('height', 'auto');
-					
+					this.inSetup = false;
 				}
 				else
 				{
@@ -390,6 +365,49 @@ define(function ()
 					this.setupEditorData(node.children[i], false);
 				}
 			}
+		}
+		this.primPropertySlide = function (e, ui)
+		{
+
+			var id = $(this).attr('nodename');
+			var prop = $(this).attr('propname');
+			$('#' + id + prop + 'value').val(ui.value);
+			var amount = ui.value;
+			//be sure to skip undo - handled better in slidestart and slidestop
+			_PrimitiveEditor.setProperty(id, prop, parseFloat(amount),true);
+
+		}
+		this.primPropertySlideStart = function (e, ui)
+		{
+			var id = $(this).attr('nodename');
+			var prop = $(this).attr('propname');
+			$('#' + id + prop + 'value').val(ui.value);
+			var amount = ui.value;
+			this.undoEvent = new _UndoManager.CompoundEvent();
+			if(id == 'selection')
+			{
+				for(var i =0; i < _Editor.getSelectionCount(); i++)
+					this.undoEvent.push(new _UndoManager.SetPropertyEvent(_Editor.GetSelectedVWFNode(i).id,prop,null))
+			}else
+			{
+					this.undoEvent.push(new _UndoManager.SetPropertyEvent(id,prop,null))
+			}
+			_PrimitiveEditor.setProperty(id, prop, parseFloat(amount),true);
+		}
+		this.primPropertySlideStop = function (e, ui)
+		{
+			var id = $(this).attr('nodename');
+			var prop = $(this).attr('propname');
+			$('#' + id + prop + 'value').val(ui.value);
+			var amount = ui.value;
+
+			if(this.undoEvent)
+				for(var i =0; i < this.undoEvent.list.length; i++)
+					this.undoEvent.list[i].val = amount;
+			_UndoManager.pushEvent(this.undoEvent);
+			this.undoEvent = null;
+
+			_PrimitiveEditor.setProperty(id, prop, parseFloat(amount),true);
 		}
 		this.primPropertyUpdate = function (e, ui)
 		{
@@ -578,7 +596,7 @@ define(function ()
 				{
 					var inputstyle = "";
 					$('#basicSettings' + nodeid).append('<div class="editorSliderLabel">' + editordata[i].displayname + ': </div>');
-					$('#basicSettings' + nodeid).append('<input class="primeditorinputbox" style="' + inputstyle + '" type="number" id="' + nodeid + editordata[i].property + 'value"></input>');
+					$('#basicSettings' + nodeid).append('<input class="primeditorinputbox" style="' + inputstyle + '" type="" id="' + nodeid + editordata[i].property + 'value"></input>');
 				//	$('#' + nodeid + editordata[i].property + 'value').val(vwf.getProperty(node.id, editordata[i].property));
 				//	$('#' + nodeid + editordata[i].property + 'value').change(this.primPropertyTypein);
 					$('#' + nodeid + editordata[i].property + 'value').attr("nodename", nodeid);
@@ -601,8 +619,9 @@ define(function ()
 						step: parseFloat(editordata[i].step),
 						min: parseFloat(editordata[i].min),
 						max: parseFloat(editordata[i].max),
-						slide: this.primPropertyUpdate,
-						stop: this.primPropertyUpdate,
+						slide: this.primPropertySlide,
+						stop: this.primPropertySlideStop,
+						start: this.primPropertySlideStart,
 						value: val
 					});
 					
@@ -651,6 +670,16 @@ define(function ()
 						$('#' + nodeid + i).append("<option value='"+editordata[i].values[k]+"'>  "+editordata[i].labels[k]+"  </option>")
 					}
 					//$('#' + nodeid + i).button();
+					
+
+					//find and select the current value in the dropdown
+					var selectedindex = editordata[i].values.indexOf(vwf.getProperty(node.id, editordata[i].property));
+					var selectedLabel = editordata[i].labels[selectedindex];
+					$("select option").filter(function() {
+						    //may want to use $.trim in here
+						    return $.trim($(this).text()) == $.trim(selectedLabel); 
+						}).prop('selected', true);
+
 					$('#' + nodeid + i).change(function ()
 					{
 						

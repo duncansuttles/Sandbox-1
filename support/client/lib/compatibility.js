@@ -13,84 +13,59 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-function testWGL()
-{
-    return true;
-    var contextNames = ["webgl","experimental-webgl","moz-webgl","webkit-3d"];
-    for(var i = 0; i < contextNames.length; i++){
-        try{
-            var canvas = document.createElement('canvas');
-            var gl = canvas.getContext(contextNames[i]);
-            if(gl){
-                return true;
-            }
-        }
-        catch(e){}
-    }
-    return false;
-}
 
-function testES5()
-{
-    return true;
-}
-
-function testWS()
-{
-    // var ws = 'ws' + document.URL.substring(4) + 'websocket';
-    // var websocket = new WebSocket(ws);
-    // websocket.onerror = function(evt) 
-    // { 
-    //     // For single user mode
-    //     //$('#WS').html("<img src='images/warning.png' alt=' ' width='20px'/>WebSockets");
-    //     $('#WS').html("<img src='images/x.png' alt=' ' width='20px'/>WebSockets");
-    //     $('#loadText').html("<span class='loadError'>This browser is not compatible. <br/>Please review <a href='/web/docs/reqs.html'>documentation</a> for specific <br/>requirements. </span>");
-    //     return;
-    // };
- //   if(! io.Transport.websocket.check() )
- //   {
- //       $('#WS').html("<img src='images/x.png' alt=' ' width='20px'/>WebSockets");
- //       $('#loadText').html("<span class='loadError'>This browser is not compatible. <br/>Please review <a href='/web/docs/reqs.html'>documentation</a> for specific <br/>requirements. </span>");
- //   }
-}
 
 function updateOverlay(cb)
 {
-    var supported = true;
-    // Test for WebGL
-    if(testWGL())
-    {
-        $('#WGL').prepend("<img src='images/check.png' alt=' ' width='20px'/>");
-    }
-    else
-    {
-        supported = false;
-        $('#WGL').prepend("<img src='images/x.png' alt=' ' width='20px'/>");
-    }
 
-    // Test for ECMAScript5
-    if(testES5())
-    {
-        $('#ES5').prepend("<img src='images/check.png' alt=' ' width='20px'/>");
-    }
-    else
-    {
-        supported = false;
-        $('#ES5').prepend("<img src='images/x.png' alt=' ' width='20px'/>");
-    }
+  require(['vwf/view/editorview/alertify.js-0.3.9/src/alertify'], function (alertify) {   
+    var settings = JSON.parse(window.localStorage['sandboxPreferences'] || null) || {};
+   
 
-    testWS();
-
-    if($('#WS img').length == 0)
+    if(!settings.compatability)
     {
-        $('#WS').prepend("<img src='images/check.png' alt=' ' width='20px'/>"); 
-    }
+         alertify.set({ labels: {
+                ok     : i18n.t("Test"),
+                cancel : i18n.t("Skip test at own risk")
+              } });
 
-    // Test to to see if VWF can run
-    if(! (testWGL() && testES5()) )
-    {
-        supported = false;
-        $('#loadText').html("<span class='loadError'>This browser is not compatible. <br/>Please review <a href='/web/docs/reqs.html'>documentation</a> for specific <br/>requirements. </span>");
+        alertify.confirm(i18n.t('It looks like we have not performed the compatability test on this browser')+'.'+ i18n.t('Click ok to run the test')+'.'+i18n.t('If this browser is compatabile, you will be returned to this page when the test is complete')+'.',function(e){
+            
+            alertify.set({ labels: {
+                ok     : i18n.t("Ok"),
+                cancel : i18n.t("Cancel")
+              } });
+
+            if (e) {
+                window.location = '../test';
+            } else {
+                cb(true);
+            }
+        })
+        return;
     }
-    cb(supported);
+    if(!settings.compatability.satisfied)
+    {
+         alertify.set({ labels: {
+                ok     : i18n.t("Test"),
+                cancel : i18n.t("Skip test at own risk")
+              } });
+
+        alertify.confirm(i18n.t('It looks like the compatability test has previously failed on this computer')+'.'+i18n.t('You must pass the test before loading a world')+'.'+i18n.t('Click ok to run the test again')+'.',function(e){
+            
+             alertify.set({ labels: {
+                ok     : i18n.t("Ok"),
+                cancel : i18n.t("Cancel")
+              } });
+
+            if (e) {
+                window.location = '../test';
+            } else {
+                cb(true);
+            }
+        })
+        return;
+    }
+    cb(true);
+});
 }

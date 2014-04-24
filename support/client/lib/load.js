@@ -4,7 +4,7 @@
 //note: the files in the below array are in a specific order, to deal with depenancies. Since the files are concatenated in this order, it's very imporant
 if(false)
 {
-	require(["jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js","md5.js","jquery-migrate-1.2.1.min.js","jquery-ui-1.10.3.custom.min.js","jquery.transit.min.js","jquery-mousewheel.js","jquery-scrollpane.min.js","./vwf/model/threejs/three.js","./vwf/model/threejs/ColladaLoader.js","./vwf/model/threejs/UTF8JSONLoader.js","./vwf/view/localization/i18next-1.7.1.min.js","compatibility.js","closure/deps.js",
+	require(["jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js","md5.js","jquery-migrate-1.2.1.min.js","jquery-ui-1.10.3.custom.min.js","jquery.transit.min.js","jquery-mousewheel.js","jquery-scrollpane.min.js","./vwf/model/threejs/three.js","./vwf/model/threejs/ColladaLoader.js","./vwf/model/threejs/UTF8JSONLoader.js","./vwf/view/localization/i18next-1.7.2.min.js","./vwf/view/localization/cookies.js","compatibility.js","closure/deps.js",
     "closure/vec/float32array.js",
     "closure/vec/float64array.js",
     "closure/vec/vec.js",
@@ -29,7 +29,7 @@ if(!window.jQuery)
 	    require(["jquery-migrate-1.2.1.min.js","jquery-ui-1.10.3.custom.min.js","md5.js","closure/deps.js","jquery.transit.min.js","jquery-mousewheel.js","jquery-scrollpane.min.js","../vwf/model/threejs/three.js","closure/vec/float32array.js","closure/vec/float64array.js"],
 	    	function()
 	    	{
-		       require(["../vwf/model/threejs/ColladaLoader.js","../vwf/model/threejs/UTF8JSONLoader.js","./vwf/view/localization/i18next-1.7.1.min.js",,"compatibility.js","closure/vec/vec.js","../vwf.js"],
+		       require(["../vwf/model/threejs/ColladaLoader.js","../vwf/model/threejs/UTF8JSONLoader.js","./vwf/view/localization/i18next-1.7.2.min.js","./vwf/view/localization/cookies.js","compatibility.js","closure/vec/vec.js","../vwf.js"],
 		       	function()
 		       	{
 					require(["closure/vec/vec3.js","closure/vec/vec4.js"],
@@ -92,11 +92,13 @@ else
       window.Quaternion = goog.vec.Quaternion;
 
       //localization
+      var lang = docCookies.getItem('i18next');
       var option = {
-        //lng: 'en',
+        lng: lang,
         resGetPath: 'vwf/view/localization/locales/__lng__/__ns__.json',
         useLocalStorage: true,
-        debug: true
+        debug: true,
+        getAsync: false
       };
       i18n.init(option);
 
@@ -104,6 +106,7 @@ else
     //start when document is ready
     $(window).ready(function(){
 
+    
       //do the check for support, and callback when done
       //this checks for support for webgl, websockets and javascript
       updateOverlay(function(supported){
@@ -111,11 +114,13 @@ else
         //if not supported, load alertify, alert, and stop
         if(!supported)
         {
+
+          
           window.setTimeout(function(){
 
             $('#loadstatus').fadeOut();
             require(['vwf/view/editorview/alertify.js-0.3.9/src/alertify'], function (alertify) {
-              alertify.alert('Sorry, this browser is not supported. Click ok to view the browser test page.',
+              alertify.alert(i18n.t('Sorry, this browser is not supported')+"."+i18n.t('Click ok to view the browser test page')+'.',
                function(){
 
                 window.location = window.location +"../test";
@@ -132,12 +137,26 @@ else
         //hide the compatibility check
         $('#loadstatus').fadeOut();
 
+
+        //get the state settings
+              var stateData = $.ajax({
+                url:"./vwfDataManager.svc/statedata?SID=" + window.location.pathname.substring(window.location.pathname.indexOf('/adl/sandbox/')) + window.location.hash,
+                method:'GET',
+                async:false
+              });
+              try{
+                stateData = JSON.parse(stateData.responseText);
+              }catch(e)
+              {
+                stateData = null;
+              }      
+
         //check if the user is logged in
         $.ajax({url:'/vwfdatamanager.svc/profile',
           success:function(data2,status2,xhr2)
           {
             //if they are, fire up the boot module
-           boot();
+           boot(stateData);
           },
           error:function()
           {
@@ -145,12 +164,22 @@ else
             require(['vwf/view/editorview/alertify.js-0.3.9/src/alertify'], function (alertify) {
 
               alertify.set({ labels: {
-                ok     : "Login",
-                cancel : "Continue as Guest"
+                ok     : i18n.t("Login"),
+                cancel : i18n.t("Continue as Guest")
               } });
 
+              
 
-              alertify.confirm("You are viewing this world as a guest. You will be able to view the world, but not interact with it. Would you like to go back and log in?",
+              
+
+              //if the world is set to allow anonymous, don't pop up the login warning
+              if(stateData && stateData.publishSettings && (stateData.publishSettings.isPublished !== false) && stateData.publishSettings.allowAnonymous)
+              {
+                boot(stateData);
+              }
+              else
+              {
+              alertify.confirm(i18n.t("You are viewing this world as a guest")+"."+i18n.t("You will be able to view the world, but not interact with it")+"."+i18n.t("Would you like to go back and log in")+"?",
                 function(e)
                 {
 
@@ -162,14 +191,15 @@ else
 
                     alertify.set({ labels: {
                       ok     : "Ok",
-                      cancel : "Cancel"
+                      cancel : i18n.t("Cancel")
                     } });
 
                     //continue as guest, fire up the boot.js
-                    boot();
+                    boot(stateData);
                   }
                 }
                 );
+            }
 
 
             });

@@ -55,9 +55,14 @@ function getRoot()
 
 }
 
-exports.acceptedRoutes = ['restore','createNew','welcome','search','forgotPassword','editProfile','updatePassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
+exports.acceptedRoutes = ['home','tools','performancetest','examples','settings','restore','createNew','welcome','search','forgotPassword','editProfile','updatePassword','test','avatar','sandbox','index','create', 'signup', 'login','logout','edit','remove','history','user', 'worlds', 'admin', 'admin/users', 'admin/worlds', 'admin/edit','publish'];
 routesMap = {
 	'sandbox': {template:'index'},
+	'test': {layout:'plain'},
+	'tools': {layout:'plain'},
+	'performancetest': {layout:'plain'},
+	'examples': {layout:'plain'},
+	'settings': {layout:'plain'},
 	'home': {template:'index'},
 	'edit': {sid: true,requiresLogin:true,layout:'plain'},
 	'restore': {sid: true,requiresLogin:true,layout:'plain'},
@@ -78,6 +83,7 @@ routesMap = {
 	'forgotPassword': {layout:'plain'},
 	'search': {layout:'plain'},
 	'welcome': {layout:'plain'},
+	'home': {layout:'home'},
 
 };
 
@@ -98,7 +104,7 @@ exports.statsHandler = function(req, res, next){
 			var instanceCount = Object.keys(instances || {});
 			res.locals = {instanceCount:instanceCount,states:states,users:users,allConnections:allConnections,sessions:allSessions,instances:instances || [],sessionData:sessionData,url:req.url,root:getRoot()};
 			res.render('stats',{layout:'plain'});
-			res.setHeader('Cache-Control', 'no-cache');
+			
 
 		})
 		
@@ -145,13 +151,13 @@ exports.redirectPasswordEmail = function(req,res,next)
 			//if the user needs to reset the password || they use a temp passwrod
 			if(newroute)
 			{
-				res.locals = {user:user,sessionData:sessionData,  root: getFrontEndRoot(req), title: newroute, fileList:null, home: null, avatar:false, blog:true, doc:true};
+				res.locals = {user:user,sessionData:sessionData,  root: getRoot(req), title: newroute, fileList:null, home: null, avatar:false, blog:true, doc:true,translate:translate(req)};
 				if(user && !user.Email)
 				{
 					res.locals.message = "We've updated our database, and now require email address for users. Please update your email address below.";
 				}
 				res.render(newroute,{layout:'plain'});
-				res.setHeader('Cache-Control', 'no-cache');
+				
 			}else
 			{
 				next();
@@ -169,7 +175,7 @@ exports.generalHandler = function(req, res, next){
 	    var postGetUser = function(user)
 	    {
 			if(!req.params.page)
-				req.params.page = 'index';
+				req.params.page = 'home';
 
 			if(req.params.page.indexOf('admin') > -1 && (!sessionData || sessionData.UID != global.adminUID)){
 				next();
@@ -201,9 +207,9 @@ exports.generalHandler = function(req, res, next){
 					return;
 				}
 
-				res.locals = {sessionData:sessionData, sid: sid, root: getFrontEndRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc, user:user, translate:translate(req)};
+				res.locals = {sessionData:sessionData, sid: sid, root: getRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc, user:user, translate:translate(req)};
 				res.render(template,{layout:layout});
-				res.setHeader('Cache-Control', 'no-cache');
+				
 				
 			}
 			
@@ -240,9 +246,9 @@ exports.help = function(req, res){
 	var displayPage = currentIndex >= 0 ? fileList[currentIndex] : 'index';
 
 	
-	res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getFrontEndRoot(req), script: displayPage + ".js"};
+	res.locals = { sid: root + '/' + (req.query.id?req.query.id:'') + '/', root: getRoot(req), script: displayPage + ".js"};
 	res.render('help/template');
-	res.setHeader('Cache-Control', 'no-cache');
+	
 };
 
 	/*
@@ -279,7 +285,12 @@ exports.world = function(req, res, next){
 	{
 		DAL.getInstance("_adl_sandbox_"+req.params.page+"_",function(doc)
 		{
-			
+			if(!doc)
+			{
+				res.locals = {sessionData:sessionData,url:req.url,root:getRoot()};
+				res.status(404).render('_404');
+				return;
+			}
 			var instance = global.instances ? global.instances["/adl/sandbox/"+req.params.page+"/"] : false;
 			var anonymous = [];
 			var users = [];
@@ -300,15 +311,14 @@ exports.world = function(req, res, next){
 			}
 			var totalusers = anonymous.length + users.length;
 
-			console.log(anonymous);
-			console.log(users);
+			
 
 			var owner = (sessionData || {}).UID == doc.owner;
 			doc.prettyDate = prettyDate(doc.created);
 			doc.prettyUpdated = prettyDate(doc.lastUpdate);
-			res.locals = {root: getFrontEndRoot(req),id:req.params.page,sessionData:sessionData,worldData:doc,translate:translate(req),totalusers:totalusers,users:users,anonymous:anonymous,owner:owner};
+			res.locals = {root: getRoot(req),id:req.params.page,sessionData:sessionData,worldData:doc,translate:translate(req),totalusers:totalusers,users:users,anonymous:anonymous,owner:owner};
 			res.render('worldTemplate',{layout:'plain'});
-			res.setHeader('Cache-Control', 'no-cache');
+			
 		});
 	});
 };
@@ -324,9 +334,29 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 		{
 	DAL.getInstances(function(allinstances)
 	{
-		global.log(search);
+		
 		var results = [];
 		
+		if(mode == 'active')
+		{
+			for(var i in allinstances)
+			{
+				var inst = allinstances[i];
+				if(!inst) continue;
+				inst.id = i;
+				inst.shortid = i.substr(13,16)
+				if(global.instances)
+				{
+					if(global.instances[i.replace(/_/g,"/")])
+						results.push(inst);
+				}
+			}
+			results.sort(function(a,b)
+			{
+				return Date.parse(b.created|| b.lastUpdate) - Date.parse(a.created || a.lastUpdate);
+			});
+		}
+
 		if(mode == 'search')
 		{
 			for(var i in allinstances)
@@ -426,10 +456,10 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 		}
 		var start = 10 * page;
 		var end = start+results.length;
-		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:root,searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0),translate:translate(req)};
+		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:getRoot(),searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0),translate:translate(req)};
 		res.locals[mode] = true;
 		res.render('searchResults',{layout:'plain'});
-		res.setHeader('Cache-Control', 'no-cache');
+		
 
 	})
 	})
@@ -453,7 +483,9 @@ exports.myWorlds = function(req, res, next){
 exports.featuredWorlds = function(req, res, next){
 	ShowSearchPage('featured', req, res, next);
 }
-
+exports.activeWorlds = function(req, res, next){
+	ShowSearchPage('active', req, res, next);
+}
 exports.createNew2 = function(req, res, next){
 
 	sessions.GetSessionData(req,function(sessionData)
@@ -468,9 +500,9 @@ exports.createNew2 = function(req, res, next){
 			{
 				
 				
-				res.locals = {worlddata:worlddata,template:(template == 'noTemplate'?false:template),root:getRoot()};
+				res.locals = {worlddata:worlddata,template:(template == 'noTemplate'?false:template),root:getRoot(), translate:translate(req)};
 				res.render('createNew2',{layout:'plain'});
-				res.setHeader('Cache-Control', 'no-cache');
+				
 			});
 			
 	});
@@ -563,11 +595,10 @@ exports.createNew = function(req, res, next){
 		}
 		var start = 10 * page;
 		var end = start+results.length;
-		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:getRoot(),searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0)};
+		res.locals = {start:start,end:end,total:total,sessionData:sessionData,perpage:perpage,page:page,root:getRoot(),searchterm:search,results:results,next:next,previous:previous,hadprev:(previous >= 0), translate:translate(req)};
 		
 		res.render('createNew',{layout:'plain'});
-		res.setHeader('Cache-Control', 'no-cache');
-
+		
 	})
 	})
 }

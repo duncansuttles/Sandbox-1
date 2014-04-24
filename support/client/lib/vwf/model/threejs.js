@@ -490,8 +490,8 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 				if(node && parentNode)
 				{
 					if(!parentNode.children)
-						parentNode.children = [];
-					parentNode.children.push(node)
+						parentNode.children = {};
+					parentNode.children[node.ID] = node;
 
 					node.parentNode = parentNode;
                     if(parentNode.childAdded)
@@ -539,7 +539,9 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 					
 					
 					var parentNode = childNode.parentNode;
-					parentNode.children.splice(parentNode.children.indexOf(childNode),1);
+					
+                    if(parentNode && parentNode.children)
+                        delete parentNode.children[nodeID];
 					
                     delete this.state.nodes[nodeID];
                 }               
@@ -810,10 +812,9 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 						
                     )
                     {
-                        if(ps.material == ps.shaderMaterial_analytic)
-                        {
-                            ps.rebuildParticles();
-                        }
+                        
+                        ps.rebuildParticles();
+                        
                     }
                     
                     if(propertyName == 'size')
@@ -2587,12 +2588,13 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 
 				//The velocity should be in world space, but is generated in local space for 
 				//ease of use
-                mat = mat.clone();
+             //removeing - global space velocity maks little sense
+             /*   mat = mat.clone();
                 mat.elements[12] = 0;
                 mat.elements[13] = 0;
                 mat.elements[14] = 0;
                 particle.velocity.applyMatrix4(mat);
-                
+             */   
                 //accelerations are always world space, just min and max on each axis
                 particle.acceleration.x = this.minAcceleration[0] + (this.maxAcceleration[0] - this.minAcceleration[0]) * Math.random();
                 particle.acceleration.y = this.minAcceleration[1] + (this.maxAcceleration[1] - this.minAcceleration[1]) * Math.random();
@@ -2899,7 +2901,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 				//don't adjust for the high performance shader
 				if(particleSystem.solver == 'AnalyticShader')
 				{
-					return;
+                   return;
 				}
 				
 				//Move all particles out of old space to world, then back into new space.

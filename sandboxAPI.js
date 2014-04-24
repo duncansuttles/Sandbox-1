@@ -804,6 +804,11 @@ function SaveThumbnail(URL,SID,body,response)
 	}
 	DAL.getInstance(SID,function(state)
 	{
+		if(!state)
+		{
+			respond(response,500,'state does not exist');
+			return
+		}
 		if(state.owner != URL.loginData.UID && URL.loginData.UID != global.adminUID)
 		{
 			respond(response,401,'User does not have permission to edit instance');
@@ -955,7 +960,30 @@ function SaveState(URL,id,data,response)
 		//state not found
 		if(!state)
 		{
-			respond(response,500,'World does not exist. ' + id);
+			require('./examples.js').getExampleMetadata(id,function(metadata){
+
+				if(!metadata)
+				{
+					respond(response,500,'State not found. State ' + id);
+					return;
+				}else
+				{
+					if(URL.loginData.UID == global.adminUID)
+					{
+						require('./examples.js').saveExampleData(URL,id,data,function()
+						{
+							respond(response,200,'Example saved ' + id);
+						})
+
+					}else
+					{
+						respond(response,200,'Examples cannot be saved ' + id);
+					return;
+					}
+					
+				}
+
+			});
 			return;
 		}
 
@@ -1152,19 +1180,41 @@ function createState(URL,data,response)
 	});
 }
 //Just return the state data, dont serve a response
-function getState(SID)
+function getState(SID,cb)
 {
 	SID = SID.replace(/[\\,\/]/g,'_');
 	var basedir = datapath + libpath.sep;
 	var statedir = (basedir + 'States/' + SID).replace(safePathRE);
 	var statefile = statedir + '/state'.replace(safePathRE);
 	global.log('serve state ' + statedir,2);
-	if(fs.existsSync(statefile))
+	
+	//sync case
+	if(!cb)
 	{
-		file = fs.readFileSync(statefile,'utf8');
-		return JSON.parse(file);
+		if(fs.existsSync(statefile))
+		{
+			file = fs.readFileSync(statefile,'utf8');
+			return JSON.parse(file);
+		}
+		return require('./examples.js').getState(SID);
 	}
-	return null;
+	//callback is provided. Use async functions
+	if(cb)
+	{
+		fs.exists(statefile,function(exists)
+		{
+			if(exists)
+			{
+				fs.readFile(statefile,'utf8',function(err,file){
+					cb(JSON.parse(file));	
+				});
+				
+			}else
+			{
+				require('./examples.js').getState(SID,cb);
+			}
+		});
+	}
 }  
 
 
@@ -1295,6 +1345,9 @@ function serve (request, response)
 					case "3drsearch":{
 						_3DR_proxy.proxySearch(URL,response);
 					} break;
+					case "3drpermission":{
+						_3DR_proxy.proxyPermissions(URL,response);
+					} break;
 					case "3drmetadata":{
 						_3DR_proxy.proxyMetadata(URL,response);
 					} break;
@@ -1334,7 +1387,20 @@ function serve (request, response)
 							if(state)
 								ServeJSON(state,response,URL);
 							else
-								respond(response,500,'state not found' );
+							{
+								require('./examples.js').getExampleMetadata(SID,function(data)
+								{
+									if(data)
+									{
+										ServeJSON(data,response,URL);
+									}else
+									{
+										respond(response,500,'state not found' );	
+									}
+									
+								})
+								
+							}
 						});
 					} break;
 					case "statehistory":{

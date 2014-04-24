@@ -182,7 +182,7 @@ SceneManager.prototype.CPUPick = function(o,d,opts)
 }
 SceneManager.prototype.FrustrumCast = function(f,opts)
 {
-	//console.profile("PickProfile");
+	
 
 	var hitlist = this.root.FrustrumCast(f,opts || this.defaultPickOptions);
 	for(var i = 0; i < this.specialCaseObjects.length; i++)
@@ -195,6 +195,7 @@ SceneManager.prototype.FrustrumCast = function(f,opts)
 	//return an array that is not tracked by the pool, so users will not have to manually deallocate
 	var unTrackedReturn = [];
 	unTrackedReturn = hitlist.slice(0);
+	
 	return unTrackedReturn;
 }
 SceneManager.prototype.SphereCast = function(center,r,opts)
@@ -1376,8 +1377,8 @@ THREE.RenderBatch.prototype.build = function()
     var geo = new THREE.Geometry();
     geo.normals = [];
 	this.mesh = new THREE.Mesh(geo,this.objects[0].material.clone());
-	this.mesh.castShadow=true;
-	this.mesh.receiveShadow=true;
+	this.mesh.castShadow= _SettingsManager.getKey('shadows');
+	this.mesh.receiveShadow=_SettingsManager.getKey('shadows');
 	this.scene.add_internal(this.mesh);
 	
 	var totalUVSets = 1;

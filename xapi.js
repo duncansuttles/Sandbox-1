@@ -22,6 +22,8 @@ function sendStatement(userId, verb, worldId, worldName, worldDescription, other
 			if(worldName === undefined || worldDescription === undefined){
 				var dalId = worldId.replace(/\//g,'_');
 				DAL.getInstance(dalId, function(state){
+					if(!state)
+						return;
 					sendStatement(userId, verb, worldId, state.title, state.description);
 				});
 				return;
@@ -74,15 +76,18 @@ AccountAgent.prototype = new XAPIStatement.Agent;
  */
 function World(id, name, description)
 {
+	console.log('WORLD');
 	var match = /[_\/]adl[_\/]sandbox[_\/]([A-Za-z0-9]{16})[_\/]/.exec(id);
 	id = match[1];
 	var worldActivityId = 'http://vwf.adlnet.gov/xapi/'+id;
 
 	XAPIStatement.Activity.call(this,worldActivityId,name,description);
 
-	this.definition.type = 'http://vwf.adlnet.gov/xapi/world';
-	this.definition.moreInfo = 'http://vwf.adlnet.gov/adl/sandbox/world/'+id;
-
+	if(this.definition)
+	{
+		this.definition.type = 'http://vwf.adlnet.gov/xapi/world';
+		this.definition.moreInfo = 'http://vwf.adlnet.gov/adl/sandbox/world/'+id;
+	}
 }
 World.prototype = new XAPIStatement.Activity;
 

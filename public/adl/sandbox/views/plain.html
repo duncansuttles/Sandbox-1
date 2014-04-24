@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
 	<link rel="stylesheet" type="text/css" href="{{root}}/css/colorpicker.css" /> 
     <link rel="stylesheet" media="screen" type="text/css" href="{{root}}/css/bootstrap.min.css" />
 	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/css/style.css" />
 	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/css/alertify.core.css" />
 	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/css/alertify.default.css" />
+	
 	<style>
 		@media (max-width: 1420px){
 			#gitBanner{
@@ -42,6 +45,7 @@
 			line-height: 1em;
 			color: lightgray;
 			font-size: 12px;
+			pointer-events:none;
 		}
 		.thinheaderlink
 		{
@@ -52,6 +56,17 @@
 		#content
 		{
 			opacity:0;
+			margin:0px;
+		}
+		.col-md-5
+		{
+			padding:0px;
+
+		}
+		.row
+		{
+			margin-right: 0px; 
+ 			margin-left: 0px; 
 		}
 
 	</style>
@@ -106,8 +121,8 @@
 		$(document).ready(function(){
 
 				center();
-				$('#login').attr('href',$('#login').attr('href') + '?return=' + window.location.pathname.substr(13) + window.location.search );
-				$('#logout').attr('href',$('#logout').attr('href') + '?return=' + window.location.pathname.substr(13) + window.location.search );
+				$('#login').attr('href',$('#login').attr('href') + '?return=' + window.location.pathname.substr("{{root}}".length) + window.location.search );
+				$('#logout').attr('href',$('#logout').attr('href') + '?return=' + window.location.pathname.substr("{{root}}".length) + window.location.search );
 		});		
 	</script>
 
@@ -125,7 +140,7 @@
 		</a>
 
 		<a class='thinheaderlink' href='{{root}}/search'>
-			{{#translate}}Search{{/translate}}
+			{{#translate}}Worlds{{/translate}}
 		</a>
 		
 		{{^sessionData}}
@@ -136,9 +151,12 @@
 		<a class='thinheaderlink' href='{{root}}/'>
 			{{#translate}}Home{{/translate}}
 		</a>
-		<a class='thinheaderlink' href='{{root}}/featuredWorlds/0'>
+	<!--	<a class='thinheaderlink' href='{{root}}/featuredWorlds/0'>
 			{{#translate}}Worlds{{/translate}}
-		</a>
+		</a> -->
+		<a class='thinheaderlink' href='{{root}}/tools'>
+			{{#translate}}Tools{{/translate}}
+		</a> 
 		{{^sessionData}}
 		<a id='login' class='thinheaderlink' href='{{root}}/login'>
 			{{#translate}}Log in{{/translate}}

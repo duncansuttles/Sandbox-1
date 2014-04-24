@@ -178,6 +178,10 @@ function Findinstance(uri)
     
     //Really, any slash delimited string after the app name should work
     //sticking with 16 characters for now 
+    if(testapp.indexOf('example') == 0 && testapp.indexOf('.') == -1)
+    {
+        return testapp;
+    }
     if(testapp.length == 16)
     {
         for(var i = 0; i < 16; i++)
@@ -185,7 +189,7 @@ function Findinstance(uri)
             if(ValidIDChars.indexOf(testapp[i]) == -1)
                 return null;
         }
-    
+
         return testapp;
     }
     return null;
@@ -420,7 +424,18 @@ function ServeYAML(filename,response, URL)
                                                 ServeFile(request,filename,response,URL);
                                             else {
                                                 
-                                                redirect(filterinstance(URL.pathname,instance)+"/index.html",response);
+                                                require('./examples.js').getExampleData(instanceName,function(data){
+                                                    if(data)
+                                                    {
+                                                        ServeFile(request,filename,response,URL);
+                                                    }else
+                                                    {
+                                                         redirect("/",response);         
+                                                    }
+
+
+                                                })
+                                               
                                             }
                                         });
                                         return;

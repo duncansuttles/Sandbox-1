@@ -15,7 +15,8 @@
 extends: asset.vwf
 properties:
   translation:
-  rotZ: 0       
+  rotZ: 0
+  oldRotZ: 0         
   test:  
   motionStack: []
   activeCycle: []
@@ -414,7 +415,7 @@ scripts:
             //this.transformAPI.setPosition([world[0],world[1],world[2]]);
             var offset = Mat4.multMat(world,this.standingOnOffset.internal_val,[]);
             this.transform = offset;
-            this.originalvelocity = [0,0,0];
+            //this.originalvelocity = [0,0,0];
        }
     }
     this.updateStandingOn = function(newpos)
@@ -602,6 +603,7 @@ scripts:
                 if(!object || this.standingOnID != object.vwfID) 
                   this.recordStandingOn(null);
 
+
                     
                     var zdiff = (1.7 + standing) - falldist;
                     
@@ -684,8 +686,14 @@ scripts:
         this.tbak = finalt;
         this.translation = finalt;
       
-        this.rotation = backupr;
-        
+      
+          
+         var turn = (this.oldRotZ||0)-this.rotZ;
+
+           if(turn)
+            this.transformAPI.rotate(0,0,((this.oldRotZ||0)-this.rotZ)*-57.2957795,this.transformAPI.COORDINATES.PARENT);
+           this.oldRotZ = this.rotZ;
+
         this.updateStandingOn(this.translation.internal_val);
 
          for(var i = 0; i < this.updateCallbacks.length; i++)
@@ -918,8 +926,8 @@ scripts:
     this.keyUp = function(e)
          {          
           
-             if(this.id == 'character-vwf') return;
-            if(vwf.client() != this.ownerClientID) return;
+             if(this.id == 'character-vwf') return  false;
+            if(vwf.client() != this.ownerClientID) return  false;
             if(!e.keysDown.W && !e.keysDown.uparrow)
              {   this.removeMotion('walk'); this.removeCycle('walk');}
             if(!e.keysDown.S && !e.keysDown.downarrow)
@@ -933,14 +941,18 @@ scripts:
             if(!e.keysDown.Z && !e.keysDown.leftarrow)
                 {this.removeMotion('turnleft'); this.removeMotion('turnright'); this.removeCycle('turnleft'); this.removeCycle('turnright');}        
             if(!e.keysDown.W  && !e.keysDown.uparrow && this.inMotion('run'))
-                this.cancelRun();       
+                this.cancelRun(); 
+            return false;          
             
          }
     this.keyDown = function(e)
          {
            
-            if(this.id == 'character-vwf') return;
-           if(vwf.client() != this.ownerClientID) return;
+           //dont allow ctrl keys - any time the ctrl is down, it's stuff for the editor
+           if(e.mods.ctrl) return false;    
+
+            if(this.id == 'character-vwf') return  false;
+           if(vwf.client() != this.ownerClientID) return  false;
             
             if(e.keysDown.W || e.keysDown.uparrow)
             {
@@ -978,6 +990,7 @@ scripts:
             if((e.keysDown.Z || e.keysDown.leftarrow )&& this.inMotion('walkback'))
                { this.addMotion('turnright');    }
             if(e.mods.shift && e.keysDown.W)
-                this.run();    
+                this.run();  
+            return false;
          }
     

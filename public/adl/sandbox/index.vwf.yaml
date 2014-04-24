@@ -220,6 +220,12 @@ events:
   disconnected:
   newClient:
   clientDisconnect:
+  pointerOver:
+  pointerOut:
+  pointerClick:
+  pointerDown:
+  pointerUp:
+  pointerMove:
 methods:  
   AmLocal:
   newplayer:
@@ -403,6 +409,7 @@ scripts:
                 
                     this.broadcastingCamera = false;
                     this.receivingCameraBroadcast = true;
+                    this.preCameraShareMode = this.cameramode;
                     this.cameramode = 'None';
                 
                 }
@@ -421,9 +428,14 @@ scripts:
             this.receivingCameraBroadcast = false;
         }else
         {
-            alertify.alert(_UserManager.GetPlayernameForClientID(this.client) + " has stopped sharing the camera view.");
-            this.broadcastingCamera = false;
-            this.receivingCameraBroadcast = false;
+            if(this.receivingCameraBroadcast)
+            {
+              alertify.alert((_UserManager.GetPlayernameForClientID(this.client) || 'The user') + " has stopped sharing the camera view.");
+               this.broadcastingCamera = false;
+              this.receivingCameraBroadcast = false;
+              this.cameramode = this.preCameraShareMode;
+            }
+           
         }
     }
     this.cameraBroadcastPrompt = function()
@@ -554,6 +566,7 @@ scripts:
            this.skycube.name = "SkyCube";
            this.skycube.renderDepth = -Infinity;
            this.skycube.InvisibleToCPUPick = true;
+           this.skycube.PickPriority = -1;
            this.skycube.depthWrite = false;
            this.skycube.depthCheck = false;
            this.skycube.castShadow = false;
@@ -605,7 +618,7 @@ scripts:
     {
         if(typeof(obj) == "string")
             obj = vwf_view.kernel.kernel.models[0].model.nodes[obj];
-        if(obj)
+        if(obj && obj.translation)
         {
         this.center = obj.translation;
         if(obj.followOffset != null)
@@ -877,10 +890,14 @@ scripts:
         
         if(!_dView.inDefaultCamera()) return;
         
-        
+        try{
         if(this.objectFollowed != null)    
             this.targetUpdated(this.objectFollowed);
-        
+        }catch(e)
+        {
+          this.objectFollowed = null;
+          console.error(e)
+        }
         if(this.cameramode == 'None')
         {
             return;
@@ -929,6 +946,7 @@ scripts:
            
         }else if(this.cameramode == 'FirstPerson')
         {
+            try{
             //this.oldRotZ var xmatrix = MATH.angleAxis(this.x_rot*10,[0,0,1]);
             var rotation = this.objectFollowed.rotation;
             var xmatrix = MATH.angleAxis(this.oldRotZ,[0,0,1]);
@@ -957,10 +975,14 @@ scripts:
            
             findcamera().updateProjectionMatrix(true);
             this.zoom = .0001;
+            }catch(e)
+            {
+              console.error(e);
+            }
             
         }else  if(this.cameramode == '3RDPerson')
         {
-            
+            try{
             var xmatrix = MATH.angleAxis(this.objectFollowed.rotZ,[0,0,1]);
             var offset = MATH.mulMat4Vec3(xmatrix,[0,1.5,.5]);
             
@@ -970,7 +992,7 @@ scripts:
             
             var oldpickstate = findviewnode(this.objectFollowed.id).PickPriority;
             
-            var hit = _Editor.ThreeJSPick(start,MATH.scaleVec3(offset,1),{filter:function(o){return !(o.isAvatar === true || o.passable===true)}});
+            var hit = _Editor.ThreeJSPick(start,MATH.scaleVec3(offset,1),{filter:function(o){ if(o instanceof THREE.Line) return false; return !(o.isAvatar === true || o.passable===true)}});
             if(hit)
             {
                 finaldist = Math.min(finaldist,hit.distance-.2);
@@ -983,6 +1005,10 @@ scripts:
             findcamera().position.y = finalpos[1];
             findcamera().position.z = finalpos[2];
             findcamera().lookAt(TempVec3(this.center));
+            }catch(e)
+            {
+              console.error(e)
+            }
             
         } 
         this.callUpdateCallbacks();
@@ -1436,6 +1462,14 @@ scripts:
         }
         currentmat.needsUpdate = true;
     }      
+
+      this.pointerOver = function(){return true;}
+    this.pointerOut= function(){return true;}
+    this.pointerClick= function(){return true;}
+    this.pointerDown= function(){return true;}
+    this.pointerUp= function(){return true;}
+     this.pointerMove= function(){return true;}
+
 
         
     
