@@ -11,3 +11,5 @@ startup.bat
 config.json
 .directory
 *.sublime-workspace
+*.crt
+*.key
