@@ -303,7 +303,20 @@ function startVWF(){
 			
 			//The file handleing logic for vwf engine files
 			app.use(appserver.handleRequest); 
-			var listen = app.listen(port);
+			//var listen = app.listen(port);
+			var listen = null;
+
+			if(global.configuration.pfx)
+			{
+				listen= require('https').createServer({
+					pfx: fs.readFileSync(global.configuration.pfx),
+					passphrase:global.configuration.pfxPassphrase
+				},app).listen(port);
+			}
+			else
+			{
+				listen= http.createServer(app).listen(port);
+			}
 			
 			global.log(brown+'Admin is "' + global.adminUID+"\""+reset,0);
 			global.log(brown+'Serving on port ' + port+reset,0);

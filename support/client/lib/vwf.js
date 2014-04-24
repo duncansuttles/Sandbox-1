@@ -371,7 +371,12 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 
 				var space = window.location.pathname.slice( 1,
                         window.location.pathname.lastIndexOf("/") );
-				socket = io.connect("ws://"+{{host}});
+                var protocol = window.location.protocol;
+                var host = {{host}};
+                if(protocol === 'http:')
+				    socket = io.connect("http://"+host);
+                if(protocol === 'https:')
+                    socket = io.connect("https://"+host);
 				
             } catch ( e ) {
 

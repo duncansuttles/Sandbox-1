@@ -13,3 +13,4 @@ config.json
 *.sublime-workspace
 *.crt
 *.key
+*.pfx
