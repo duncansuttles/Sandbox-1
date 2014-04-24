@@ -1,5 +1,4 @@
-//start the profiler service
-require('look').start();
+
 
 global.version = 1;
 var libpath = require('path'),
