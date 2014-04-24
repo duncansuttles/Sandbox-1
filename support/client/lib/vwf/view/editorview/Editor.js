@@ -240,7 +240,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			
 			if (!newname) newname = 'Object';
 			newname = newname.replace(/[0-9]*$/g, "");
-			var nodes = vwf.models[3].model.objects;
+			var nodes = vwf.models.object.objects;
 			var count = 1;
 			for (var i in nodes)
 			{
