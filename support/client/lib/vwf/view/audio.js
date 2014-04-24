@@ -44,7 +44,18 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 
 
 		}
-		this.stop = this.pause;
+		this.stop = function()
+		{
+
+			
+			if(this.playing)
+				this.sound.stop();
+			
+			this.playing = false;
+
+
+		}
+		;
 	}
 	SoundSource.prototype.loop = function()
 	{

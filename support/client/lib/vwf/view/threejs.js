@@ -711,7 +711,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		},
 		unbind:function (name,func)
 		{
-
+			
 			var queue = this.events[name];
 			if(!queue) return;
 
