@@ -45,6 +45,7 @@ define( [
 			"assetLoader",
             "vwf/model/jqueryui",
             "vwf/view/jqueryui",
+            "vwf/view/prediction",
             "SettingsManager"
 
         ], function( ready ) {
@@ -120,6 +121,7 @@ define( [
 						"vwf/view/audio",
 						"vwf/view/xapi",
                         "vwf/view/jqueryui",
+                        "vwf/view/prediction",
                     ]
 
                     );

@@ -1435,6 +1435,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 
 						if(!parentSelected)
 						{
+
 							if (wasMoved)
 							{
 								var gizoffset = MATH.subVec3([MoveGizmo.position.x, MoveGizmo.position.y, MoveGizmo.position.z], originalGizmoPos);
@@ -1998,20 +1999,27 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.getTransform = function(id)
 		{
+			return vwf.views['vwf/view/prediction'].getProperty(id,'transform');
 			return vwf.getProperty(id,this.transformPropertyName);
 		}
 		this.getTranslation = function(id)
 		{
-			var mat = vwf.getProperty(id,"worldTransform");
+			var mat = vwf.views['vwf/view/prediction'].getProperty(id,'worldTransform');
+			 mat = mat || vwf.getProperty(id,"worldTransform");
 			return [mat[12],mat[13],mat[14]];
 		}
 		this.getScale = function(id)
 		{
+			return vwf.views['vwf/view/prediction'].getProperty(id,this.scalePropertyName);
 			return vwf.getProperty(id,this.scalePropertyName);
 		}
 		this.setTransform = function(id,val)
 		{
-			this.waitingForSet.push(id);
+			//this.waitingForSet.push(id);
+
+			//don't bother bouncing off the socket if it's the same
+			if(matComp(val,vwf.getProperty(id,this.transformPropertyName))) return true;
+
 			var success = this.setProperty(id,this.transformPropertyName,val);
 			if (!success) this.waitingForSet.pop();
 			if (!success) this.SetLocation(MoveGizmo, originalGizmoPos);
@@ -2019,8 +2027,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.setTranslation = function(id,val)
 		{
+			//don't bother bouncing off the socket if it's the same
+			if(matComp(val,vwf.getProperty(id,this.translationPropertyName))) return true;
+
 			var success =  this.setProperty(id,this.translationPropertyName,val);	
-			if (success) this.waitingForSet.push(id);
+			//if (success) this.waitingForSet.push(id);
 			if (!success) this.SetLocation(MoveGizmo, originalGizmoPos);
 			return success;
 		}

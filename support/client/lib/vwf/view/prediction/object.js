@@ -150,7 +150,6 @@ if ( ! this.objects[nodeID] ) return;  // TODO: patch until full-graph sync is w
         // -- settingProperty ----------------------------------------------------------------------
 
         settingProperty: function( nodeID, propertyName, propertyValue ) {
-          
             this.objects[nodeID].changed = true;
             return this.objects[nodeID].properties[propertyName] = propertyValue;
         },

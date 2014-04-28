@@ -200,6 +200,7 @@
         this.initialize = function( /* [ componentURI|componentObject ] [ modelInitializers ]
             [ viewInitializers ] */ ) {
 
+
             var args = Array.prototype.slice.call( arguments );
 
             // Get the application specification if one is provided in the query string. Parse it
@@ -278,7 +279,7 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
             // Create and attach each configured view.
 
             viewInitializers.forEach( function( viewInitializer ) {
-			
+			 
                 // Accept either { "vwf/view/name": [ arguments] } or "vwf/view/name".
 
                 if ( typeof viewInitializer == "object" && viewInitializer != null ) {

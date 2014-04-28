@@ -192,6 +192,12 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 						this.nodes[i].needTransformRestore = true;
 					}
 					
+
+					interp = this.kernel.kernel.views['vwf/view/prediction'].getProperty(i,'transform')
+					if(this.state.nodes[i] && interp)
+					this.state.nodes[i].settingProperty('transform',interp);
+					this.nodes[i].needTransformRestore = true;
+
 					last = this.nodes[i].lastAnimationFrame;
 					now = this.nodes[i].thisAnimationFrame;
 					
@@ -686,6 +692,12 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		},
 		trigger: function(name,args)
 		{
+
+			if(!this.events)
+				this.events = {};
+			if(!this.events[name])
+				this.events[name] = [];
+
 			if(!this.args)
 			this.args = [null];
 			for(var i = 0; i < args.length; i++)
@@ -712,6 +724,11 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		unbind:function (name,func)
 		{
 			
+			if(!this.events)
+				this.events = {};
+			if(!this.events[name])
+				this.events[name] = [];
+
 			var queue = this.events[name];
 			if(!queue) return;
 

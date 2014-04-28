@@ -27,6 +27,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
             case "createNode":
 
+
                 return function( nodeComponent, when, callback /* ( nodeID ) */ ) {
                     this.kernel.send( undefined, kernelFunctionName, undefined,
                         [ childComponent ], when || 0, callback /* ( result ) */ );
@@ -84,8 +85,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             // TODO: deleteProperty
 
             case "setProperty":
-
+                
                 return function( nodeID, propertyName, propertyValue, when, callback ) {
+                    if(this.kernel.views['vwf/view/prediction'] && !when) this.kernel.views['vwf/view/prediction'].setProperty(nodeID, propertyName, propertyValue);
                     this.kernel.send( nodeID, kernelFunctionName, propertyName,
                         [ propertyValue ], when || 0, callback /* ( result ) */ );
                 };
@@ -114,6 +116,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             case "callMethod":
 
                 return function( nodeID, methodName, methodParameters, when, callback ) {
+                    if(this.kernel.views['vwf/view/prediction'] && !when) this.kernel.views['vwf/view/prediction'].callMethod( nodeID, methodName, methodParameters);
                     this.kernel.send( nodeID, kernelFunctionName, methodName,
                         [ methodParameters ], when || 0, callback /* ( result ) */ );
                 };
