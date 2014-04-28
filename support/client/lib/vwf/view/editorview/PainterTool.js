@@ -242,6 +242,10 @@ function PainterTool()
 			t.properties.transform[12] = this.display.position.x;
 			t.properties.transform[13] = this.display.position.y;
 			t.properties.transform[14] = this.display.position.z;
+
+			t.properties.translation[0] = this.display.position.x;
+			t.properties.translation[1] = this.display.position.y;
+			t.properties.translation[2] = this.display.position.z;
 		
 			t.properties.DisplayName = _Editor.GetUniqueName(t.properties.DisplayName);
 			
@@ -283,7 +287,7 @@ function PainterTool()
 			
 
 			var pos = new THREE.Vector3();
-			console.log(pick.object.name);
+			
 			
 			pos.setFromMatrixPosition(pick.object.matrixWorld);
 			
