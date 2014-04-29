@@ -22,7 +22,7 @@ function updateOverlay(cb)
     var settings = JSON.parse(window.localStorage['sandboxPreferences'] || null) || {};
    
 
-    if(!settings.compatability)
+    if(false && !settings.compatability)
     {
          alertify.set({ labels: {
                 ok     : i18n.t("Test"),
@@ -44,7 +44,7 @@ function updateOverlay(cb)
         })
         return;
     }
-    if(!settings.compatability.satisfied)
+    if(false && !settings.compatability.satisfied)
     {
          alertify.set({ labels: {
                 ok     : i18n.t("Test"),
