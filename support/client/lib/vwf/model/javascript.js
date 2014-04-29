@@ -78,8 +78,9 @@ define( [ "module", "vwf/model", "vwf/utility" ], function( module, model, utili
             // specific prototype if no behaviors are attached.
 
             var node = this.nodes[childID] = Object.create( prototype );
-
+            node.__children_by_name = {};
 			node.childExtendsID = childExtendsID;
+            node.parentId = nodeID;
             Object.defineProperty( node, "private", {
                 value: {} // for bookkeeping, not visible to scripts on the node  // TODO: well, ideally not visible; hide this better ("_private", "vwf_private", ?)
             } );
@@ -195,12 +196,7 @@ node.id = childID; // TODO: move to vwf/model/object
 			
 			Object.defineProperty( node, "children_by_name", { // same as "in"  // TODO: only define on shared "node" prototype?
                 get: function() {
-                    var children = {};
-					for(var i=0; i < this.children.length; i++)
-					{
-						children[this.children[i].DisplayName] = this.children[i];
-					}
-					return children;
+                    return this.__children_by_name;
                 },
                 enumerable: true,
 				
@@ -370,7 +366,12 @@ node.id = childID; // TODO: move to vwf/model/object
             this.callMethodTraverse(this.nodes['index-vwf'],'deletingNode',[nodeID]);
             var node = child.parent;
 
-			
+			if(child.parent && child.parent.__children_by_name)
+            {
+                var oldname = vwf.getProperty(nodeID,'DisplayName');
+                delete child.parent.__children_by_name[oldname];
+                
+            }
 			
             if ( node ) {
 				
@@ -843,6 +844,13 @@ node.id = childID; // TODO: move to vwf/model/object
 
 if ( ! node ) return;  // TODO: patch until full-graph sync is working; drivers should be able to assume that nodeIDs refer to valid objects
 
+            if(propertyName == 'DisplayName' && this.nodes[node.parentId])
+            {
+                
+                var oldname = vwf.getProperty(nodeID,'DisplayName');
+                delete this.nodes[node.parentId].__children_by_name[oldname];
+                this.nodes[node.parentId].__children_by_name[propertyValue] = node;
+            }
             var setter = node.private.setters && node.private.setters[propertyName];
 
             if ( setter && setter !== true ) { // is there is a setter (and not just a guard value)

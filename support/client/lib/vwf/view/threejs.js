@@ -711,7 +711,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		},
 		unbind:function (name,func)
 		{
-
+			
 			var queue = this.events[name];
 			if(!queue) return;
 
@@ -1555,7 +1555,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     sceneView.keyStates.mods.shift = event.shiftKey;
                     sceneView.keyStates.mods.ctrl = event.ctrlKey;
                     sceneView.keyStates.mods.meta = event.metaKey;
-
+                    sceneView.keyStates.key = key;
                     var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
                     if (validKey && sceneNode && !keyAlreadyDown /*&& Object.keys( sceneView.keyStates.keysDown ).length > 0*/) {
                         //var params = JSON.stringify( sceneView.keyStates );
@@ -1608,7 +1608,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     sceneView.keyStates.mods.shift = event.shiftKey;
                     sceneView.keyStates.mods.ctrl = event.ctrlKey;
                     sceneView.keyStates.mods.meta = event.metaKey;
-
+                    sceneView.keyStates.key = key;
                     var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
                     if (validKey && sceneNode) {
                         //var params = JSON.stringify( sceneView.keyStates );

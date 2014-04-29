@@ -31,7 +31,6 @@
     "i18next": "~1.7.1",
     "nedb": "~0.10.2",
     "node-uuid": "1.4.x",
-    "look": "~0.1.3"
   },
   "devDependencies": {},
   "scripts": {

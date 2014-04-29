@@ -371,7 +371,12 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 
 				var space = window.location.pathname.slice( 1,
                         window.location.pathname.lastIndexOf("/") );
-				socket = io.connect("ws://"+{{host}});
+                var protocol = window.location.protocol;
+                var host = {{host}};
+                if(protocol === 'http:')
+				    socket = io.connect("http://"+host);
+                if(protocol === 'https:')
+                    socket = io.connect("https://"+host);
 				
             } catch ( e ) {
 
@@ -826,7 +831,7 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
         this.setState = function( applicationState, set_callback /* () */ ) {
 
 			
-            this.logger.group( "vwf.setState" );  // TODO: loggableState
+       //     this.logger.group( "vwf.setState" );  // TODO: loggableState
 
             // Direct property accessors to suppress kernel reentry so that we can write the state
             // without coloring from scripts.
@@ -910,7 +915,7 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 				
             } );
 
-            this.logger.groupEnd();
+         //   this.logger.groupEnd();
 			
         };
 
@@ -2577,7 +2582,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 		this.deleteMethod = function( nodeID, methodName) {
 
 			
-            this.logger.group( "deleteMethod", nodeID, methodName );
+         //   this.logger.group( "deleteMethod", nodeID, methodName );
 
             // Call creatingMethod() on each model. The method is considered created after each
             // model has run.
@@ -2596,13 +2601,13 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 			//remove from the tickable queue.
 			if(methodName == 'tick' && vwf.tickable.nodeIDs.indexOf(nodeID) != -1)
 				vwf.tickable.nodeIDs.splice(vwf.tickable.nodeIDs.indexOf(nodeID),1);
-            this.logger.groupEnd();
+        //    this.logger.groupEnd();
         };
         // -- callMethod ---------------------------------------------------------------------------
 
         this.callMethod = function( nodeID, methodName, methodParameters ) {
 
-            this.logger.group( "vwf.callMethod " + nodeID + " " + methodName + " " + methodParameters );
+          //  this.logger.group( "vwf.callMethod " + nodeID + " " + methodName + " " + methodParameters );
 
             // Call callingMethod() on each model. The first model to return a non-undefined value
             // dictates the return value.
@@ -2625,7 +2630,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 	    }
             
 
-            this.logger.groupEnd();
+           // this.logger.groupEnd();
 
             return methodValue;
         };
@@ -2634,7 +2639,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 
         this.createEvent = function( nodeID, eventName, eventParameters,eventBody ) {  // TODO: parameters (used? or just for annotation?)  // TODO: allow a handler body here and treat as this.*event* = function() {} (a self-targeted handler); will help with ui event handlers
 
-            this.logger.group( "vwf.createEvent " + nodeID + " " + eventName + " " + eventParameters );
+        //    this.logger.group( "vwf.createEvent " + nodeID + " " + eventName + " " + eventParameters );
 
             // Call creatingEvent() on each model. The event is considered created after each model
             // has run.
@@ -2650,12 +2655,12 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
                 view.createdEvent && view.createdEvent( nodeID, eventName, eventParameters,eventBody );
             } );
 
-            this.logger.groupEnd();
+         //   this.logger.groupEnd();
         };
 		this.deleteEvent = function( nodeID, eventName) {  // TODO: parameters (used? or just for annotation?)  // TODO: allow a handler body here and treat as this.*event* = function() {} (a self-targeted handler); will help with ui event handlers
 
 			
-            this.logger.group( "deleteEvent", nodeID,eventName);
+        //    this.logger.group( "deleteEvent", nodeID,eventName);
 
             // Call creatingEvent() on each model. The event is considered created after each model
             // has run.
@@ -2671,14 +2676,14 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
                 view.deletedEvent && view.deletedEvent( nodeID, eventName );
             } );
 
-            this.logger.groupEnd();
+         //   this.logger.groupEnd();
         };
         // -- fireEvent ----------------------------------------------------------------------------
 
         this.fireEvent = function( nodeID, eventName, eventParameters ) {
 
 			
-            this.logger.group( "vwf.fireEvent " + nodeID + " " + eventName + " " + eventParameters );
+       //     this.logger.group( "vwf.fireEvent " + nodeID + " " + eventName + " " + eventParameters );
 
             // Call firingEvent() on each model.
 
@@ -2692,7 +2697,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
                 view.firedEvent && view.firedEvent( nodeID, eventName, eventParameters );
             } );
 
-            this.logger.groupEnd();
+         //   this.logger.groupEnd();
 
             return handled;
         };
@@ -2706,7 +2711,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
         this.dispatchEvent = function( nodeID, eventName, eventParameters, eventNodeParameters ) {
 
 			
-            this.logger.group( "vwf.dispatchEvent " + nodeID + " " + eventName + " " + eventParameters + " " + eventNodeParameters );
+           // this.logger.group( "vwf.dispatchEvent " + nodeID + " " + eventName + " " + eventParameters + " " + eventNodeParameters );
 
             // Defaults for the parameter parameters.
 
@@ -2781,14 +2786,14 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 
             }, this );
 
-            this.logger.groupEnd();
+           // this.logger.groupEnd();
         };
 
         // -- execute ------------------------------------------------------------------------------
 
         this.execute = function( nodeID, scriptText, scriptType ) {
 
-            this.logger.group( "vwf.execute " + nodeID + " " + ( scriptText || "" ).replace( /\s+/g, " " ).substring( 0, 100 ) + " " + scriptType );
+        //    this.logger.group( "vwf.execute " + nodeID + " " + ( scriptText || "" ).replace( /\s+/g, " " ).substring( 0, 100 ) + " " + scriptType );
 
             // Assume JavaScript if the type is not specified and the text is a string.
 
@@ -2813,7 +2818,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
                 view.executed && view.executed( nodeID, scriptText, scriptType );
             } );
 
-            this.logger.groupEnd();
+         //   this.logger.groupEnd();
 
             return scriptValue;
         };

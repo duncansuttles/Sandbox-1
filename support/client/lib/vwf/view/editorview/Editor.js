@@ -240,7 +240,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			
 			if (!newname) newname = 'Object';
 			newname = newname.replace(/[0-9]*$/g, "");
-			var nodes = vwf.models[3].model.objects;
+			var nodes = vwf.models.object.objects;
 			var count = 1;
 			for (var i in nodes)
 			{
@@ -2994,14 +2994,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			}
 			e.stopImmediatePropagation();
 			return false;
-		}
+		}.bind(this)
 		this.guiNodeDragEnd = function(e)
 		{
 			_Editor.GUIdragging = false;
 			$('#guioverlay_index-vwf').off('mousemove',_Editor.guiNodeDraged);
 			$('#guioverlay_index-vwf').css('pointer-events','none');
 			$('#guioverlay_index-vwf').off('mousedown',_Editor.guiNodeDragEnd);
-		}
+		}.bind(this)
 		this.guiNodePick = function(e)
 		{	
 			if (SelectMode == 'TempPick')
