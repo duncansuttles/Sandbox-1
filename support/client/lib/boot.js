@@ -52,7 +52,7 @@ define( [
             return function(stateData){
             require("polyfills").setup();
             require("vwf/view/editorview/ObjectPools").getSingleton();
-            window.alertify = require("vwf/view/editorview/alertify.js-0.3.9/src/alertify");
+            window.alertify = require("vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify");
             window._SettingsManager = require("SettingsManager").getSingleton();
             var assetLoader = require("assetLoader").getSingleton();
             ready( function() {
@@ -61,9 +61,9 @@ define( [
                 // accepts three parameters: a world specification, model configuration parameters,
                 // and view configuration parameters.
 			$(document.body).append('<div id="glyphOverlay" style="display:none"/>');
-            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/ddsmoothmenu.css" />');
-            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/ddsmoothmenu-v.css" />')
-            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/Editorview.css" />')
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu.css" />');
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu-v.css" />')
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/Editorview.css" />')
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/images/icons/sprites.css" />')
             $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/MATH.js"></script>');
             $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/_THREERayTracer.js"></script>');

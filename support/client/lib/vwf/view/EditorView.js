@@ -1,5 +1,5 @@
 "use strict";
-define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/src/alertify","vwf/view/editorview/Menubar","vwf/view/editorview/ObjectPools","vwf/view/editorview/LocationTools", "vwf/view/editorview/WindowResize","vwf/view/editorview/_PermissionsManager", "vwf/view/editorview/InputSetup", "vwf/view/editorview/SaveLoadTimer", "vwf/view/editorview/TouchHandler", "vwf/view/editorview/SidePanel", "vwf/view/editorview/Toolbar", "vwf/view/editorview/ChatSystemGUI", "vwf/view/editorview/PrimitiveEditor", "vwf/view/editorview/MaterialEditor", "vwf/view/editorview/Notifier", "vwf/view/editorview/ScriptEditor", "vwf/view/editorview/Editor", "vwf/view/editorview/_3DRIntegration", "vwf/view/editorview/InventoryManager", "vwf/view/editorview/HeirarchyManager",  "vwf/view/editorview/DataManager", "vwf/view/editorview/UserManager", "vwf/view/editorview/help","vwf/view/editorview/SideTabs","vwf/view/editorview/wireeditor","vwf/view/editorview/selectionEditor","vwf/view/editorview/UndoManager"], function (module, version, view)
+define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify","vwf/view/editorview/Menubar","vwf/view/editorview/ObjectPools","vwf/view/editorview/LocationTools", "vwf/view/editorview/WindowResize","vwf/view/editorview/_PermissionsManager", "vwf/view/editorview/InputSetup", "vwf/view/editorview/SaveLoadTimer", "vwf/view/editorview/TouchHandler", "vwf/view/editorview/SidePanel", "vwf/view/editorview/Toolbar", "vwf/view/editorview/ChatSystemGUI", "vwf/view/editorview/PrimitiveEditor", "vwf/view/editorview/MaterialEditor", "vwf/view/editorview/Notifier", "vwf/view/editorview/ScriptEditor", "vwf/view/editorview/Editor", "vwf/view/editorview/_3DRIntegration", "vwf/view/editorview/InventoryManager", "vwf/view/editorview/HeirarchyManager",  "vwf/view/editorview/DataManager", "vwf/view/editorview/UserManager", "vwf/view/editorview/help","vwf/view/editorview/SideTabs","vwf/view/editorview/wireeditor","vwf/view/editorview/selectionEditor","vwf/view/editorview/UndoManager"], function (module, version, view)
 {
 	return view.load(module,
 	{
@@ -51,7 +51,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 							dataType: 'html'
 						}).responseText;
 						$(document.body).append(data);
-						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/ddsmoothmenu.js"></script>');
+						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/lib/ddsmoothmenu.js"></script>');
 					
 					
 						require("vwf/view/editorview/SidePanel").initialize();
@@ -94,12 +94,12 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/alertify.js-0.3.9/
 						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/AlignTool.js"></script>');
 						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/SplineTool.js"></script>');
 						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/TerrainTool.js"></script>');
-						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/jquery.qtip-1.0.0-rc3.min.js"></script>');
-						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/beautify.module.js"></script>');
+						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/lib/jquery.qtip-1.0.0-rc3.min.js"></script>');
+						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/lib/beautify.module.js"></script>');
 					}
 
 					$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/sha256.js"></script>');
-					$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/jquery.ui.touch-punch.min.js"></script>');
+					$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/lib/jquery.ui.touch-punch.min.js"></script>');
 
 					require("vwf/view/editorview/WindowResize").initialize();
 					$('input[type="text"]').keypress(function(e){e.stopImmediatePropagation();});

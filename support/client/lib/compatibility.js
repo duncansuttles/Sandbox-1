@@ -18,7 +18,7 @@
 function updateOverlay(cb)
 {
 
-  require(['vwf/view/editorview/alertify.js-0.3.9/src/alertify'], function (alertify) {   
+  require(['vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify'], function (alertify) {   
     var settings = JSON.parse(window.localStorage['sandboxPreferences'] || null) || {};
    
 

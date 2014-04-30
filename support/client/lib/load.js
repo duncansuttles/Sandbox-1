@@ -4,7 +4,7 @@
 //note: the files in the below array are in a specific order, to deal with depenancies. Since the files are concatenated in this order, it's very imporant
 if(false)
 {
-	require(["jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js","md5.js","jquery-migrate-1.2.1.min.js","jquery-ui-1.10.3.custom.min.js","jquery.transit.min.js","jquery-mousewheel.js","jquery-scrollpane.min.js","./vwf/model/threejs/three.js","./vwf/model/threejs/ColladaLoader.js","./vwf/model/threejs/UTF8JSONLoader.js","./vwf/view/localization/i18next-1.7.2.min.js","./vwf/view/localization/cookies.js","compatibility.js","closure/deps.js",
+	require(["../vwf/view/editorview/lib/jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js","md5.js","../vwf/view/editorview/lib/jquery-migrate-1.2.1.min.js","../vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js","../vwf/view/editorview/lib/jquery.transit.min.js","../vwf/view/editorview/lib/jquery-mousewheel.js","../vwf/view/editorview/lib/jquery-scrollpane.min.js","../vwf/model/threejs/three.js","../vwf/model/threejs/ColladaLoader.js","../vwf/model/threejs/UTF8JSONLoader.js","../vwf/view/localization/i18next-1.7.2.min.js","../vwf/view/localization/cookies.js","compatibility.js","closure/deps.js",
     "closure/vec/float32array.js",
     "closure/vec/float64array.js",
     "closure/vec/vec.js",
@@ -19,13 +19,13 @@ if(!window.jQuery)
 {
   //so,we are doing a regular load, and the optimizer has not run. 
   //this is somewhat carefully scripted to specify which files can download in parallel.
-  require(["jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js"],
+  require(["../vwf/view/editorview/lib/jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js"],
   	function()
   	{
-	    require(["jquery-migrate-1.2.1.min.js","jquery-ui-1.10.3.custom.min.js","md5.js","closure/deps.js","jquery.transit.min.js","jquery-mousewheel.js","jquery-scrollpane.min.js","../vwf/model/threejs/three.js","closure/vec/float32array.js","closure/vec/float64array.js"],
+	    require(["../vwf/view/editorview/lib/jquery-migrate-1.2.1.min.js","../vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js","md5.js","closure/deps.js","../vwf/view/editorview/lib/jquery.transit.min.js","../vwf/view/editorview/lib/jquery-mousewheel.js","../vwf/view/editorview/lib/jquery-scrollpane.min.js","../vwf/model/threejs/three.js","closure/vec/float32array.js","closure/vec/float64array.js"],
 	    	function()
 	    	{
-		       require(["../vwf/model/threejs/ColladaLoader.js","../vwf/model/threejs/UTF8JSONLoader.js","./vwf/view/localization/i18next-1.7.2.min.js","./vwf/view/localization/cookies.js","compatibility.js","closure/vec/vec.js","../vwf.js"],
+		       require(["../vwf/model/threejs/ColladaLoader.js","../vwf/model/threejs/UTF8JSONLoader.js","../vwf/view/localization/i18next-1.7.2.min.js","../vwf/view/localization/cookies.js","compatibility.js","closure/vec/vec.js","../vwf.js"],
 		       	function()
 		       	{
 					require(["closure/vec/vec3.js","closure/vec/vec4.js"],
@@ -102,7 +102,7 @@ else
     //start when document is ready
     $(window).ready(function(){
 
-    
+   
       //do the check for support, and callback when done
       //this checks for support for webgl, websockets and javascript
       updateOverlay(function(supported){
@@ -115,7 +115,7 @@ else
           window.setTimeout(function(){
 
             $('#loadstatus').fadeOut();
-            require(['vwf/view/editorview/alertify.js-0.3.9/src/alertify'], function (alertify) {
+            require(['vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify'], function (alertify) {
               alertify.alert(i18n.t('Sorry, this browser is not supported')+"."+i18n.t('Click ok to view the browser test page')+'.',
                function(){
 
@@ -157,7 +157,7 @@ else
           error:function()
           {
             //if they are not, warn them by loading alertify and alerting
-            require(['vwf/view/editorview/alertify.js-0.3.9/src/alertify'], function (alertify) {
+            require(['vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify'], function (alertify) {
 
               alertify.set({ labels: {
                 ok     : i18n.t("Login"),
