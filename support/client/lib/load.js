@@ -4,7 +4,7 @@
 //note: the files in the below array are in a specific order, to deal with depenancies. Since the files are concatenated in this order, it's very imporant
 if(false)
 {
-	require(["../vwf/view/editorview/lib/jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js","md5.js","../vwf/view/editorview/lib/jquery-migrate-1.2.1.min.js","../vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js","../vwf/view/editorview/lib/jquery.transit.min.js","../vwf/view/editorview/lib/jquery-mousewheel.js","../vwf/view/editorview/lib/jquery-scrollpane.min.js","../vwf/model/threejs/three.js","../vwf/model/threejs/ColladaLoader.js","../vwf/model/threejs/UTF8JSONLoader.js","../vwf/view/localization/i18next-1.7.2.min.js","../vwf/view/localization/cookies.js","compatibility.js","closure/deps.js",
+	require(["./vwf/view/editorview/lib/jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js","md5.js","./vwf/view/editorview/lib/jquery-migrate-1.2.1.min.js","./vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js","./vwf/view/editorview/lib/jquery.transit.min.js","./vwf/view/editorview/lib/jquery-mousewheel.js","./vwf/view/editorview/lib/jquery-scrollpane.min.js","./vwf/model/threejs/three.js","./vwf/model/threejs/ColladaLoader.js","./vwf/model/threejs/UTF8JSONLoader.js","./vwf/view/localization/i18next-1.7.2.min.js","./vwf/view/localization/cookies.js","compatibility.js","closure/deps.js",
     "closure/vec/float32array.js",
     "closure/vec/float64array.js",
     "closure/vec/vec.js",
@@ -12,14 +12,14 @@ if(false)
     "closure/vec/vec4.js",
     "closure/vec/mat4.js",
     "closure/vec/quaternion.js",
-    "./vwf.js","boot"]);
+    "./vwfbuild.js","boot"]);
 }
 //if window.jQuery is defined, than the Require Optimizer has run, and appended it to the top of this file. Thus, we don't need to worry about loading all the dependancy libraries
 if(!window.jQuery)	
 {
   //so,we are doing a regular load, and the optimizer has not run. 
   //this is somewhat carefully scripted to specify which files can download in parallel.
-  require(["../vwf/view/editorview/lib/jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js"],
+  require(["./vwf/view/editorview/lib/jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js"],
   	function()
   	{
 	    require(["../vwf/view/editorview/lib/jquery-migrate-1.2.1.min.js","../vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js","md5.js","closure/deps.js","../vwf/view/editorview/lib/jquery.transit.min.js","../vwf/view/editorview/lib/jquery-mousewheel.js","../vwf/view/editorview/lib/jquery-scrollpane.min.js","../vwf/model/threejs/three.js","closure/vec/float32array.js","closure/vec/float64array.js"],

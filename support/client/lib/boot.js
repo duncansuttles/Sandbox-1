@@ -64,7 +64,7 @@ define( [
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu.css" />');
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu-v.css" />')
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/Editorview.css" />')
-            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/images/icons/sprites.css" />')
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/sprites.css" />')
             $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/MATH.js"></script>');
             $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/_THREERayTracer.js"></script>');
             $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/scenemanager.js"></script>');

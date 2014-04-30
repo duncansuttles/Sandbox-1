@@ -1,5 +1,5 @@
 .axis, .camera, .cameraIcon, .chat, .cone, .copy, .cube, .cylinder, .delete, .down, .duplicate, .firstperson, .folder, .free, .grid, .grid_icon, .hierarchy, .icon_belts_axis, .inventory, .left, .light_icon, .link, .localspace, .login, .logout, .material, .models, .move, .navigate, .ParticleIcon, .paste, .pick, .plane, .properties, .pyramid, .right, .rotate, .save, .scale, .scene, .script, .selectnone, .sphere, .target, .unlink, .up, .up_folder, .up2, .user, .users, .window, .worldspace{
-background-image: url(sprites.png) !important;
+background-image: url(../images/icons/sprites.png) !important;
 background-origin: content-box !important;
 }
 

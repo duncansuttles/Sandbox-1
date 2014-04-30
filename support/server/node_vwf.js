@@ -193,7 +193,7 @@ function startVWF(){
 	}
 
 	//send to the load balancer to let it know that this server is available
-	function SyncRegisterWithLoadBalancer()
+	function RegisterWithLoadBalancer()
 	{
 		require('request').get({url:global.configuration.loadBalancer+'/register',json:{host:global.configuration.host,key:global.configuration.loadBalancerKey}},
 			 function (error, response, body) {
@@ -213,8 +213,7 @@ function startVWF(){
 	function StartUp()
 	{
 		
-		if(global.configuration.loadBalancer && global.configuration.host && global.configuration.loadBalancerKey)
-			SyncRegisterWithLoadBalancer();
+		
 		DAL.setDataPath(datapath);
 		SandboxAPI.setDataPath(datapath);
 		
@@ -334,15 +333,25 @@ function startVWF(){
 		});
 	  }); // end session startup
 	} //end StartUp
+
+	//do this before trying to compile, otherwise the vwfbuild.js file will be created with the call to the load balancer, which may not be online
+	//NOTE: If this fails, then the build will have the loadbalancer address hardcoded in. Make sure that the balancer info is right if using loadbalancer and
+	// - compile together
+	if(global.configuration.loadBalancer && global.configuration.host && global.configuration.loadBalancerKey)
+			RegisterWithLoadBalancer();
+
 	//Use Require JS to optimize and the main application file.
 	if(compile)
 	{
+		console.log(libpath.resolve(__dirname, './../client/lib/load') );
 		var config = {
-		    baseUrl: './support/client/lib',
-		    name:'load',
+		    baseUrl: './support/client/lib/',
+		    name:'./load' ,
 		    out:'./build/load.js'
 		};
 		
+		fs.writeFileSync('./support/client/lib/vwfbuild.js',Landing.getVWFCore());
+		global.log('RequrieJS Build start');
 		//This will concatenate almost 50 of the project JS files, and serve one file in it's place
 		requirejs.optimize(config, function (buildResponse) {
 		
@@ -351,7 +360,7 @@ function startVWF(){
 			async.series([
 			function(cb3)
 			{
-				
+				//fs.unlinkSync('./support/client/lib/vwfbuild.js',landingRoutes.getVWFCore());
 				global.log('Closure Build start');
 				//lets do the most agressive compile possible here!
 				if(false && fs.existsSync("./build/compiler.jar"))
@@ -385,9 +394,10 @@ function startVWF(){
 			{
 				global.log('loading '+ config.out);
 				var contents = fs.readFileSync(config.out, 'utf8');
-				//here, we read the contents of the built boot.js file
-				var path = libpath.normalize('./support/client/lib/load.js');
+				//here, we read the contents of the built load.js file
+				var path = libpath.normalize('../../support/client/lib/load.js');
 				path = libpath.resolve(__dirname, path);			
+				console.log(path);
 				//we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
 				zlib.gzip(contents,function(_,zippeddata)
 				{		   

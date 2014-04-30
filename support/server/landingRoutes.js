@@ -509,11 +509,10 @@ exports.createNew2 = function(req, res, next){
 	});
 }
 
-
+var self = exports;
 var cachedVWFCore = null;
-exports.serveVWFcore = function(req,res,next)
+exports.getVWFCore = function()
 {
-
 	if(!cachedVWFCore)
 	{
 		cachedVWFCore = fs.readFileSync('./support/client/lib/vwf.js','utf8');
@@ -535,7 +534,14 @@ exports.serveVWFcore = function(req,res,next)
 			cachedVWFCore = cachedVWFCore.replace('{{loadBalancerAddress}}',"'" + global.configuration.loadBalancer +"'");//otherwise, script syntax is invalid
 		}
 	}
+	return cachedVWFCore;
 
+}
+exports.serveVWFcore = function(req,res,next)
+{
+
+	
+	self.getVWFCore();
 	res.writeHead(200, {
 				"Content-Type": "text/plain",
 				"Cache-Control":"public, max-age=36000"
