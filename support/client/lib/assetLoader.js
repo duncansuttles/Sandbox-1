@@ -4,7 +4,7 @@
 //textures and replaces them when loaded. So, we don't have to cache texture here, but we do let the scenemanager know to fire up
 //and start loading, just to give the textures a head start.
 
-define(["vwf/model/threejs/backgroundLoader","vwf/view/editorview/alertify.js-0.3.9/src/alertify"],
+define(["vwf/model/threejs/backgroundLoader","vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify"],
 function ()
 {
     var assetLoader = {};

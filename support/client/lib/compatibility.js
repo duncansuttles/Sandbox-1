@@ -18,11 +18,11 @@
 function updateOverlay(cb)
 {
 
-  require(['vwf/view/editorview/alertify.js-0.3.9/src/alertify'], function (alertify) {   
+  require(['vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify'], function (alertify) {   
     var settings = JSON.parse(window.localStorage['sandboxPreferences'] || null) || {};
    
 
-    if(false && !settings.compatability)
+    if(!settings.compatability)
     {
          alertify.set({ labels: {
                 ok     : i18n.t("Test"),
@@ -44,7 +44,7 @@ function updateOverlay(cb)
         })
         return;
     }
-    if(false && !settings.compatability.satisfied)
+    if(!settings.compatability.satisfied)
     {
          alertify.set({ labels: {
                 ok     : i18n.t("Test"),
