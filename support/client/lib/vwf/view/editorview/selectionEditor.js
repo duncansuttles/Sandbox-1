@@ -18,7 +18,7 @@ define(["../../../jstree.min"],function (jstree)
 	{
 		$(document.body).append("<div id='selectionEditor'><div id='selectionEditorMenu'></div><div id='selectionEditorTree'></div></div>");
 //		$(document.head).append('<script type="text/javascript" src="./jstree.min.js"></script>');
-		$(document.head).append('<link rel="stylesheet" href="./jstreestyle.min.css"></link>');
+		$(document.head).append('<link rel="stylesheet" href="../vwf/view/editorview/css/jstreestyle.min.css"></link>');
 		
 		var self = this;
 		//$('#selectionEditorTree').jstree();

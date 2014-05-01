@@ -27,7 +27,7 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 '	</div>'+
 //'	<div id="buttonPanel">'+
 //'	</div>'+
-'	<img id="permission-reminder" src="/adl/sandbox/images/up-arrow.png"'+
+'	<img id="permission-reminder" src="../vwf/view/editorview/images/up-arrow.png"'+
 '		style="width: 60px; height: 180px; position: fixed; top: 0px; left: 150px; display: none;"/>'+
 '</div>'
 			;

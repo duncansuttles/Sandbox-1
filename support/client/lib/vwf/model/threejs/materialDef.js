@@ -1174,7 +1174,7 @@
 			return value;
 			}catch(e)
 			{
-				return {}
+				return this.defaultmaterialDef;
 			}
 		}
 		}
