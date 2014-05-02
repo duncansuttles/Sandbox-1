@@ -11,14 +11,14 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 		{
 			var html = 
 '<div id="vidFrame">'+
-'   <style>@font-face {font-family: "Glyphicons"; src: url(/adl/sandbox/fonts/glyphicons-halflings-regular.ttf) format("truetype");}</style>'+
+'   <style>@font-face {font-family: "Glyphicons"; src: url('+window.app_path+'fonts/glyphicons-halflings-regular.ttf) format("truetype");}</style>'+
 '	<div id="vidPanel" style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;">'+
 '		<video id="remote" width="320" height="240" '+
 '			style="position: absolute;width:100%;height:100%" '+
-'			poster="/adl/sandbox/vwf/view/webrtc/avatar.png"/>'+
+'			poster="'+window.app_path+'vwf/view/webrtc/avatar.png"/>'+
 '		<video id="self" width="80" height="60" '+
 '			style="position: absolute;" '+
-'			poster="/adl/sandbox/vwf/view/webrtc/avatar.png" muted/>'+
+'			poster="'+window.app_path+'vwf/view/webrtc/avatar.png" muted/>'+
 '		<input id="chatButton" type="button" value="Send Message" '+
 '			style="position: absolute; right: 0px;"/>'+
 '		<span id="videoClose" class="ui-button-icon-primary ui-icon ui-icon-closethick" type="button" value="X" '+
@@ -48,7 +48,7 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 			$('#videoClose').on('click', function(event,ui){
 				$('#vidFrame').hide();
 				this.rtc.disconnect();
-				$('#vidFrame video').attr('src', '/adl/sandbox/vwf/view/webrtc/avatar.png');
+				$('#vidFrame video').attr('src', window.app_path+'vwf/view/webrtc/avatar.png');
 				var payload = {target: this.rtcTarget, sender: _UserManager.GetCurrentUserName()};
 				vwf_view.kernel.callMethod('index-vwf', 'rtcDisconnect', payload);
 				this.rtcTarget = null;
@@ -178,7 +178,7 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 					console.log('Remote disconnect, clean up');
 				//	$('#vidFrame').dialog("close");
 					$('#vidFrame').hide();
-					$('#vidFrame video').attr('src', '/adl/sandbox/vwf/view/webrtc/avatar.png');
+					$('#vidFrame video').attr('src', window.app_path+'/vwf/view/webrtc/avatar.png');
 				}
 			}
 		},

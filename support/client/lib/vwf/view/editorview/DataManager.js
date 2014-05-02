@@ -283,7 +283,7 @@ define(function ()
 		//at this point, this server pretty much only supports the sandbox. This will return the sandbox root url
 		this.getCurrentApplication = function ()
 		{
-			return location.protocol +'//'+  location.host + '/adl/sandbox';
+			return location.protocol +'//'+  location.host + window.app_path;
 		}
 		//Get the number of users in this space. NOTE: Counts anonymous
 		this.getClientCount = function ()
