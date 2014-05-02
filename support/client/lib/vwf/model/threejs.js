@@ -502,7 +502,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 
         deletingNode: function( nodeID ) {
 
-            
+            console.log('three driver saw delete command for ' + nodeID)
             if(nodeID)
             {
                 var childNode = this.state.nodes[nodeID];

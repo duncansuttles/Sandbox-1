@@ -105,36 +105,33 @@ else
    
       //do the check for support, and callback when done
       //this checks for support for webgl, websockets and javascript
-      //TODO: make a more lightweight check
-      if (false) {
-          updateOverlay(function(supported){
+      updateOverlay(function(supported){
 
-            //if not supported, load alertify, alert, and stop
-            if(!supported)
-            {
+        //if not supported, load alertify, alert, and stop
+        if(!supported)
+        {
 
+          
+          window.setTimeout(function(){
 
-              window.setTimeout(function(){
-
-                $('#loadstatus').fadeOut();
-                require(['vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify'], function (alertify) {
-                  alertify.alert(i18n.t('Sorry, this browser is not supported')+"."+i18n.t('Click ok to view the browser test page')+'.',
-                   function(){
-
-                    window.location = window.location +"../test";
-                  });
-                });
-
-
-              },1500);
-
-
-              return;
-            }
-
-            //hide the compatibility check
             $('#loadstatus').fadeOut();
-      };
+            require(['vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify'], function (alertify) {
+              alertify.alert(i18n.t('Sorry, this browser is not supported')+"."+i18n.t('Click ok to view the browser test page')+'.',
+               function(){
+
+                window.location = window.location +"../test";
+              });
+            });
+
+
+          },1500);
+
+
+          return;
+        }
+
+        //hide the compatibility check
+        $('#loadstatus').fadeOut();
 
 
         //get the state settings

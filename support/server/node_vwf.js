@@ -216,9 +216,9 @@ function startVWF(){
 		
 		DAL.setDataPath(datapath);
 		SandboxAPI.setDataPath(datapath);
-
+		
 		errorlog = fs.createWriteStream(SandboxAPI.getDataPath()+'//Logs/errors_'+(((new Date()).toString())).replace(/[^0-9A-Za-z]/g,'_'), {'flags': 'a'});
-
+		
 		
 		Landing.setDocumentation(configSettings);
 		
