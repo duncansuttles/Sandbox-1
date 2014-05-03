@@ -9,7 +9,9 @@ define(
 		{
 			if (!_Editor.findcamera()) return;
 			_Editor.findcamera().aspect = ($('#index-vwf').width() / $('#index-vwf').height());
+
 			_Editor.findcamera().updateProjectionMatrix();
+
 			_ScriptEditor.resize();
 		}
 
@@ -47,6 +49,9 @@ define(
 				window.clearInterval(window.sizeTimeoutHandle);
 				sizeWindowTimer();
 				window.sizeTimeoutHandle = null;
+				$('#index-vwf')[0].height = $('#index-vwf').height();
+				$('#index-vwf')[0].width = $(window).width();
+				_dRenderer.setSize($('#index-vwf').width(),$('#index-vwf').height(),false)
 			});
 			$(document).trigger('sidePanelClosed');
 			$('#index-vwf').focus();
@@ -74,6 +79,9 @@ define(
 			{
 				window.clearInterval(window.sizeTimeoutHandle);
 				window.sizeTimeoutHandle = null;
+				$('#index-vwf')[0].height = $('#index-vwf').height();
+				$('#index-vwf')[0].width = $('#index-vwf').width();
+				_dRenderer.setSize($('#index-vwf').width(),$('#index-vwf').height(),false)
 			});
 		}
 		function updateScrollBars()

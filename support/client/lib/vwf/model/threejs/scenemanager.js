@@ -535,12 +535,7 @@ SceneManager.prototype.initialize = function(scene)
 		}
 	
 	}
-	THREE.Mesh.prototype.add = function()
-	{
-		//we don't support this organization of meshes. The parsers should never reach here.
-		debugger;
 
-	}
 	THREE.Mesh.prototype.materialUpdated = function()
 	{
 		if(!this.updateCount)

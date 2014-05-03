@@ -15,9 +15,11 @@
 
 define( [ "module", "vwf/view" ], function( module, view ) {
 	var stats;
+	var NORMALRENDER = 0;
+	var STEREORENDER = 1;
     return view.load( module, {
 
-		
+		renderMode: NORMALRENDER,
         initialize: function( rootSelector ) {
            
 	    
@@ -209,6 +211,26 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		
 			
 		},
+		triggerWindowResize : function()
+		{
+
+				var origWidth = self.width;
+                var origHeight = self.height;
+                if ( window && window.innerHeight ) self.height = window.innerHeight;
+                if ( window && window.innerWidth ) self.width = window.innerWidth;
+
+                var resolutionScale = _SettingsManager.getKey('resolutionScale');
+
+                //if ((origWidth != self.width) || (origHeight != self.height)) {
+                    $('#index-vwf')[0].height = self.height/resolutionScale;
+                    $('#index-vwf')[0].width = self.width/resolutionScale;
+                    _dRenderer.setViewport(0,0,window.innerWidth/resolutionScale,window.innerHeight/resolutionScale)
+                    _dRenderer.setSize($('#index-vwf').width()/resolutionScale,$('#index-vwf').height()/resolutionScale);
+					_dView.getCamera().aspect =  $('#index-vwf')[0].width / $('#index-vwf')[0].height;
+					_dView.getCamera().updateProjectionMatrix()
+                   
+                //}
+		},
 		restoreTransforms: function()
 		{
 			for(var i in this.nodes)
@@ -232,6 +254,16 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				}
 				
 			}
+		},
+		setRenderModeStereo : function()
+		{
+			this.renderMode = STEREORENDER;
+			this.triggerWindowResize();
+		},
+		setRenderModeNormal: function()
+		{
+			this.renderMode = NORMALRENDER;
+			this.triggerWindowResize();
 		},
 		ticked: function()
 		{
@@ -787,6 +819,11 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			}			
 				return list;
 		}
+		function windowResize(){
+				
+        	}
+        
+
 	var timepassed;	
 	var now;
 	var cam;
@@ -946,29 +983,20 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
 
 
-
+			//update the render passes - these may be added by render to texture materials, or from the terrain grass engine
 			for(var i = 0; i < self.renderTargetPasses.length; i++)
 			{
-				
 				var rttcamID = self.renderTargetPasses[i].camera;
 				var rttcam = self.state.nodes[rttcamID].getRoot();
 				var rtt = self.renderTargetPasses[i].target;
-			//	renderer.render(backgroundScene,rttcam,rtt,true);
-
-				
 			   renderer.setRenderTarget( rtt );
 			   renderer.clear(scene,rttcam,rtt);
 			   renderer.setRenderTarget(  );
-				renderer.render(scene,rttcam,rtt);
-				
-				
-				
+			   renderer.render(scene,rttcam,rtt);	
 			}
 
 			
-		//	renderer.render(backgroundScene,cam);
-			
-		//	renderer.clear(true,true,false);
+		
 			
 			//use this for drawing really really far. Not usually necessary
 			//cam.near = cam.far - (cam.far - cam.near)/100.0;
@@ -979,7 +1007,57 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			//cam.near = near;
 			//cam.far = far;
 			//cam.updateProjectionMatrix();
-			renderer.render(scene,cam);
+
+			if(self.renderMode === NORMALRENDER)
+				renderer.render(scene,cam);
+			else if (self.renderMode === STEREORENDER)
+			{
+				var width = $('#index-vwf').attr('width');
+				var height = $('#index-vwf').attr('height');
+				var ww2 = width/2;
+				var h = ww2 / 1.333;
+				var hdif = (height - h)/2;
+				var centerh = hdif;
+
+				oldaspect = cam.aspect;
+				cam.aspect = 1.333;
+				renderer.enableScissorTest(true);
+
+				cam.fov = 60;
+				cam.updateProjectionMatrix();
+				var camX = new THREE.Vector3(cam.matrixWorld.elements[0],cam.matrixWorld.elements[1],cam.matrixWorld.elements[2]);
+				camX.normalize();
+				camX.setLength(.025);
+
+				//go left
+				cam.matrixWorld.elements[12] -= camX.x;
+				cam.matrixWorld.elements[13] -= camX.y;
+				cam.matrixWorld.elements[14] -= camX.z;
+
+				renderer.setViewport(0,centerh,ww2,h);
+				_dRenderer.setScissor(0,centerh,ww2,h);
+
+				renderer.render(scene,cam);
+
+				//go equally far right
+				cam.matrixWorld.elements[12] += camX.x * 2;
+				cam.matrixWorld.elements[13] += camX.y * 2;
+				cam.matrixWorld.elements[14] += camX.z * 2;
+
+				renderer.setViewport(ww2,centerh,ww2,h);
+				_dRenderer.setScissor(ww2,centerh,ww2,h);
+				renderer.render(scene,cam);
+
+				//return to center
+				cam.matrixWorld.elements[12] -= camX.x;
+				cam.matrixWorld.elements[13] -= camX.y;
+				cam.matrixWorld.elements[14] -= camX.z;
+				_dRenderer.setViewport(0,0,$('#index-vwf').attr('width'),$('#index-vwf').attr('height'));
+				_dRenderer.setScissor(0,0,$('#index-vwf').attr('width'),$('#index-vwf').attr('height'));
+				renderer.enableScissorTest(false);
+				
+
+			}
 			
 			
 			
@@ -1023,9 +1101,6 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 					self.trigger('postprerender',[insetvp,w,w]);
 					
 					renderer.clear(true,true,true);
-					//renderer.render(backgroundScene,selcam);
-					
-					renderer.clear(false,true,false);
 					renderer.render(scene,selcam);
 					
 					self.cameraID = camback;
@@ -1120,22 +1195,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             var hovering = false;
             var view = this;
             window.onresize = function () {
-                var origWidth = self.width;
-                var origHeight = self.height;
-                if ( window && window.innerHeight ) self.height = window.innerHeight;
-                if ( window && window.innerWidth ) self.width = window.innerWidth;
-
-                var resolutionScale = _SettingsManager.getKey('resolutionScale');
-
-                if ((origWidth != self.width) || (origHeight != self.height)) {
-                    mycanvas.height = self.height/resolutionScale;
-                    mycanvas.width = self.width/resolutionScale;
-                    sceneNode.renderer.setViewport(0,0,window.innerWidth/resolutionScale,window.innerHeight/resolutionScale)
-                    sceneNode.renderer.setSize($('#index-vwf').width()/resolutionScale,$('#index-vwf').height()/resolutionScale);
-					self.getCamera().aspect =  mycanvas.width / mycanvas.height;
-					self.getCamera().updateProjectionMatrix()
-                   
-                }
+                self.triggerWindowResize();
             }
 
             if(detectWebGL() && getURLParameter('disableWebGL') == 'null')
@@ -1160,16 +1220,13 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 sceneNode.renderer = new THREE.CanvasRenderer({canvas:mycanvas,antialias:true});
                 sceneNode.renderer.setSize(window.innerWidth,window.innerHeight);
             }
-            //
-//            var ambientlight = new THREE.AmbientLight('#000000');
-//            ambientlight.color.setRGB(.7,.7,.7);
-//            sceneNode.threeScene.add(ambientlight);
+
             
             rebuildAllMaterials.call(this);
             if(sceneNode.renderer.setFaceCulling)
                 sceneNode.renderer.setFaceCulling(false);
             this.state.cameraInUse = sceneNode.camera.threeJScameras[sceneNode.camera.ID];
-           // this.state.cameraInUse.setAspect( ( mycanvas.width / mycanvas.height) /*/ 1.333 */ );
+         
 
             
             // Schedule the renderer.
@@ -1265,7 +1322,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
        
     
 
-        //var mouse = new MATH.MouseInput( sceneCanvas );
+        
 
         var self = this;
 
@@ -1316,11 +1373,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 worldCamTrans = new THREE.Vector3();
 				worldCamTrans.setFromMatrixPosition(camera.matrix);
                 worldCamPos = [ worldCamTrans.x, worldCamTrans.y, worldCamTrans.y];
-                //worldCamPos = [ camera.getLocX(), camera.getLocY(), camera.getLocZ() ]; 
-//                worldCamTrans = goog.vec.Mat4.createFromArray( camera.getLocalMatrix() );
-//                goog.vec.Mat4.transpose( worldCamTrans, worldCamTrans );
-//                camInverse = goog.vec.Mat4.create();
-//                goog.vec.Mat4.invert( worldCamTrans, camInverse );
+
             }
 
             returnData.eventNodeData = { "": [ {
