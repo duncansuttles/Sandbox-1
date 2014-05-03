@@ -59,8 +59,8 @@ else
   function startup(boot)
   {
      //TODO: Read from config file
-     window.app_path = "/adl/sandbox/";
-     //window.app_path = "/sandbox/";
+     window.appPath = "/adl/sandbox/";
+     //window.appPath = "/sandbox/";
 
       //remove the instnace name from requests to make things cache
       $.ajaxSetup({ cache: true });
@@ -112,7 +112,7 @@ else
 
         //get the state settings
               var stateData = $.ajax({
-                url:"./vwfDataManager.svc/statedata?SID=" + window.location.pathname.substring(window.location.pathname.indexOf(window.app_path)) + window.location.hash,
+                url:"./vwfDataManager.svc/statedata?SID=" + window.location.pathname.substring(window.location.pathname.indexOf(window.appPath)) + window.location.hash,
                 method:'GET',
                 async:false
               });
@@ -157,7 +157,7 @@ else
 
                   //if they choose to go back and log in
                   if(e)
-                    window.location =  "../login?return=" + window.location.pathname.substring(window.location.pathname.indexOf(window.app_path)+13) + window.location.hash;
+                    window.location =  "../login?return=" + window.location.pathname.substring(window.location.pathname.indexOf(window.appPath)+13) + window.location.hash;
                   else
                   {
 
