@@ -64,12 +64,8 @@ properties:
             }
             this._traceAPI.___filterResults = function(results)
             {
-              if(!results)
-                  return results;
-            //  for(var i =0; i < results.length; i++)    
-              {
-                  results.node = this.___getJSNode(this.___findVWFID(results.object));
-              }
+              if(!results) return results
+              results.node = traceself.___getJSNode(traceself.___findVWFID(results.object));
               return results;
             }
             this._traceAPI.___buildOptions = function(options)
@@ -80,7 +76,7 @@ properties:
               }
               for(var i =0; i < options.ignore.length; i++)
               {
-                  if(options.ignore[i].constructor === String)
+                  if(options.ignore[i].constructor == String)
                       options.ignore[i] = _Editor.findviewnode(options.ignore[i]);
               }
               options.ignore.push(_Editor.GetMoveGizmo());
@@ -101,7 +97,7 @@ properties:
             
             this._traceAPI.rayCast = function(origin,direction,options)
             {
-              var ret = _SceneManager.CPUPick(origin,direction,this.___buildOptions(options))
+              var ret = _SceneManager.CPUPick(origin,direction,traceself.___buildOptions( options))
               return this.___filterResults(ret);
             }
             this._traceAPI.sphereCast = function(origin,direction,options)
