@@ -288,7 +288,7 @@ function ServeYAML(filename,response, URL)
             }
             if(URL.pathname == '/' || URL.pathname == '')
             {
-                redirect('/adl/sandbox/',response);
+                redirect(global.appPath+'/',response);
                 return;
             }
             

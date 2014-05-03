@@ -36,7 +36,7 @@ function getNamespace(socket)
         try{
         var referer = (socket.handshake.headers.referer);
         
-        var index = referer.indexOf('/adl/sandbox');
+        var index = referer.indexOf(global.appPath);
         var namespace = referer.substring(index);
         
       if(namespace[namespace.length-1] != "/")
@@ -122,7 +122,7 @@ var fixIDs = function(node)
 function getBlankScene(state,cb)
 {
     var state2 = JSON.parse(JSON.stringify(state));
-    fs.readFile("./public/adl/sandbox/index.vwf.yaml", 'utf8',function(err,blankscene)
+    fs.readFile("./public"+global.appPath+"/index.vwf.yaml", 'utf8',function(err,blankscene)
     {
             console.log(err);
             var err = null;

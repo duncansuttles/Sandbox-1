@@ -294,7 +294,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 		//we now must use an http request to tell the server that 'we' own the socket.
 		//'we' meaning the user logged into the client with the given session cookie
 		//goto worldLoginComplete when done
-		var req = http.request({hostname:server,port:port,method:'GET', path:'/adl/sandbox///vwfDataManager.svc/login?S='+session+'&CID=' + socket.socket.sessionid,headers:{cookie:cookie}}, worldLoginComplete).end();
+		var req = http.request({hostname:server,port:port,method:'GET', path:global.appPath+'///vwfDataManager.svc/login?S='+session+'&CID=' + socket.socket.sessionid,headers:{cookie:cookie}}, worldLoginComplete).end();
 	  });
 	  //This is a special case for the simulated client
 	  //we must ask the server to associate this websocket with a the given world
@@ -429,7 +429,7 @@ p = process.argv.indexOf('-w');
 var world = p >= 0 ? process.argv[p+1] : "QNsNId8RYKeO6MSz";
 
 //launch the simulated client 
-LaunchAvatar(user,password,server,port,"/adl/sandbox/" + world + "/");
+LaunchAvatar(user,password,server,port,global.appPath + world + "/");
 
 process.on('message', function(m) {
   console.log('CHILD got message:', m);

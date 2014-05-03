@@ -86,7 +86,7 @@ function World(id, name, description)
 	if(this.definition)
 	{
 		this.definition.type = 'http://vwf.adlnet.gov/xapi/world';
-		this.definition.moreInfo = 'http://vwf.adlnet.gov/adl/sandbox/world/'+id;
+		this.definition.moreInfo = 'http://vwf.adlnet.gov'+global.appPath+'world/'+id;
 	}
 }
 World.prototype = new XAPIStatement.Activity;
