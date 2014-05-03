@@ -5,7 +5,7 @@ exports.getExampleData = function(name,cb)
 	name = name.split('_');
 	name = name[name.length -2];
 
-	var path = libpath.normalize('../../public/adl/sandbox/examples/' + name +"/state");
+	var path = libpath.normalize('../../public'+global.appPath+'/examples/' + name +"/state");
         path = libpath.resolve(__dirname, path);
 
 	fs.readFile(path ,'utf8',function(err,data)
@@ -24,7 +24,7 @@ exports.getState = function(name,cb)
 	name = name.split('_');
 	name = name[name.length -2];
 
-	var path = libpath.normalize('../../public/adl/sandbox/examples/' + name +"/state");
+	var path = libpath.normalize('../../public'+global.appPath+'/examples/' + name +"/state");
         path = libpath.resolve(__dirname, path);
 	//sync call
 	if(!cb)
@@ -58,7 +58,7 @@ exports.getExampleMetadata = function(name,cb)
 {	
 	name = name.split('_');
 	name = name[name.length -2];
-	var path = libpath.normalize('../../public/adl/sandbox/examples/' + name +"/metadata");
+	var path = libpath.normalize('../../public'+global.appPath+'/examples/' + name +"/metadata");
         path = libpath.resolve(__dirname, path);
 	fs.readFile(path ,'utf8',function(err,data)
 	{
@@ -76,7 +76,7 @@ exports.saveExampleData = function(URL,name,data,cb)
 {
 	name = name.split('_');
 	name = name[name.length -2];
-	var path = libpath.normalize('../../public/adl/sandbox/examples/' + name +"/state");
+	var path = libpath.normalize('../../public'+global.appPath+'/examples/' + name +"/state");
         path = libpath.resolve(__dirname, path);
 	if(URL.loginData && URL.loginData.UID == global.adminUID)
 	{

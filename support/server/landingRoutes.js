@@ -1,4 +1,4 @@
-var root = '/adl/sandbox',
+var root = global.appPath,
 fileList = [],
 routesMap = {},
 DAL = require('./DAL').DAL;
@@ -292,7 +292,7 @@ exports.world = function(req, res, next){
 				res.status(404).render('_404');
 				return;
 			}
-			var instance = global.instances ? global.instances["/adl/sandbox/"+req.params.page+"/"] : false;
+			var instance = global.instances ? global.instances[global.appPath+"/"+req.params.page+"/"] : false;
 			var anonymous = [];
 			var users = [];
 

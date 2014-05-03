@@ -120,6 +120,6 @@ function getStatesComplete(response)
 }
 
 
-http.request('http://'+server+':'+port+'/adl/sandbox/vwfDataManager.svc/states', getStatesComplete).end();
+http.request('http://'+server+':'+port+global.appPath+'/vwfDataManager.svc/states', getStatesComplete).end();
 
 

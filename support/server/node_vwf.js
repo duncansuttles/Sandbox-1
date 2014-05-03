@@ -1,13 +1,56 @@
+global.log = function()
+{
+    var args = Array.prototype.slice.call(arguments);
+    var level = args.splice(args.length-1)[0];
 
+    if(!isNaN(parseInt(level)))
+    {
+        level = parseInt(level);
+    }
+    else
+    {
+        args.push(level)
+        level = 1;
+    };
+
+    if(level <= global.logLevel){
+        //console.log.apply(this,args);
+        var clear = '\u001b[2K', reset = '\u001b[1G'
+        var testLine = clear+reset+ args.join(' ') +'\n> ' + global.inbuffer;
+        process.stdout.write(testLine);
+    }
+}
 
 global.version = 1;
+
 var libpath = require('path'),
 http = require("http"),
 fs = require('fs'),
 url = require("url"),
 mime = require('mime'),
-YAML = require('js-yaml'),
-SandboxAPI = require('./sandboxAPI'),
+YAML = require('js-yaml');
+
+// Read configuration settings early so we can use appPath
+var configSettings;
+
+try{
+    configSettings = JSON.parse(fs.readFileSync('./config.json').toString());
+}
+
+catch(e){
+    configSettings = {};
+    global.log("Error: Unable to load config file");
+    global.log(e.message);
+}
+
+appPath = configSettings.appPath ? configSettings.appPath : '/adl/sandbox';
+global.appPath = appPath;
+global.log('Set appPath to '+global.appPath);
+
+//save configuration into global scope so other modules can use.
+global.configuration = configSettings;
+
+var SandboxAPI = require('./sandboxAPI'),
 Shell = require('./ShellInterface'),
 DAL = require('./DAL').DAL,
 express = require('express'),
@@ -35,7 +78,6 @@ var option = {
         //debug: true
       };
 i18n.init(option);
-
 
 var errorlog = null;
 global.error = function()
@@ -70,33 +112,9 @@ global.error = function()
 	}
 }
 
-global.log = function()
-{
-    var args = Array.prototype.slice.call(arguments);
-    var level = args.splice(args.length-1)[0];
-    
-    if(!isNaN(parseInt(level)))
-    {
-        level = parseInt(level);
-    }
-    else
-    {
-        args.push(level)
-        level = 1;
-    };
-    
-    if(level <= global.logLevel){
-        //console.log.apply(this,args);
-		var clear = '\u001b[2K', reset = '\u001b[1G'
-		var testLine = clear+reset+ args.join(' ') +'\n> ' + global.inbuffer;
-		process.stdout.write(testLine);
-	}
-}
 
-		
 //Start the VWF HTTP server
 function startVWF(){
-	
 	global.activeinstances = [];
 
 	
@@ -105,7 +123,7 @@ function startVWF(){
 					brown  = '\u001b[33m';
 					reset = '\u001b[0m';
 					
-	var configSettings;
+
 	
 	//start the DAL, load configuration file
 	try{
@@ -129,8 +147,7 @@ function startVWF(){
 	
 	p = process.argv.indexOf('-d');
 	datapath = p >= 0 ? process.argv[p+1] : (configSettings.datapath ? libpath.normalize(configSettings.datapath) : libpath.join(__dirname, "../../data"));
-	global.datapath = datapath;	
-
+	global.datapath = datapath;
 
 	p = process.argv.indexOf('-ls');
 	global.latencySim = p >= 0 ? parseInt(process.argv[p+1]) : (configSettings.latencySim ? configSettings.latencySim : 0);
@@ -237,15 +254,15 @@ function startVWF(){
 			//var srv = http.createServer(OnRequest).listen(port);
 			
 			app.set('layout', 'layout');
-			app.set('views', __dirname + '/../../public/adl/sandbox/views');
+			app.set('views', __dirname + '/../../public'+global.appPath+'/views');
 			app.set('view engine', 'html');
 			app.engine('.html', require('hogan-express'));
 			
 			
 			app.use(
 			    function(req,res,next){
-					if(strEndsWith(req.url,'/adl/sandbox'))
-						res.redirect('/adl/sandbox/');
+					if(strEndsWith(req.url,global.appPath))
+						res.redirect(global.appPath);
 					else next();	
 				}
 			);
@@ -275,30 +292,30 @@ function startVWF(){
 			app.use(app.router);
 
 			
-			app.get('/adl/sandbox/:page([a-zA-Z\\0-9\?/]*)', Landing.redirectPasswordEmail);
-			app.get('/adl/sandbox', Landing.redirectPasswordEmail);
+			app.get(global.appPath+'/:page([a-zA-Z\\0-9\?/]*)', Landing.redirectPasswordEmail);
+			app.get(global.appPath, Landing.redirectPasswordEmail);
 			
-			app.get('/adl/sandbox/help', Landing.help);
-			app.get('/adl/sandbox/help/:page([a-zA-Z]+)', Landing.help);
-			app.get('/adl/sandbox/world/:page([a-zA-Z0-9]+)', Landing.world);
-			app.get('/adl/sandbox/searchResults/:term([a-zA-Z0-9%]+)/:page([0-9]+)', Landing.searchResults);
-			app.get('/adl/sandbox/newWorlds', Landing.newWorlds);
-			app.get('/adl/sandbox/allWorlds/:page([0-9]+)', Landing.allWorlds);
-			app.get('/adl/sandbox/myWorlds/:page([0-9]+)', Landing.myWorlds);
-			app.get('/adl/sandbox/featuredWorlds/:page([0-9]+)', Landing.featuredWorlds);
-			app.get('/adl/sandbox/activeWorlds/:page([0-9]+)', Landing.activeWorlds);
-			app.get('/adl/sandbox', Landing.generalHandler);
-			app.get('/adl/sandbox/:page([a-zA-Z/]+)', Landing.generalHandler);
-			app.get('/adl/sandbox/stats', Landing.statsHandler);
-			app.get('/adl/sandbox/createNew/:page([0-9/]+)', Landing.createNew);		
-			app.get('/adl/sandbox/createNew2/:template([a-zA-Z0-9/]+)', Landing.createNew2);		
+			app.get(global.appPath+'/help', Landing.help);
+			app.get(global.appPath+'/help/:page([a-zA-Z]+)', Landing.help);
+			app.get(global.appPath+'/world/:page([a-zA-Z0-9]+)', Landing.world);
+			app.get(global.appPath+'/searchResults/:term([a-zA-Z0-9%]+)/:page([0-9]+)', Landing.searchResults);
+			app.get(global.appPath+'/newWorlds', Landing.newWorlds);
+			app.get(global.appPath+'/allWorlds/:page([0-9]+)', Landing.allWorlds);
+			app.get(global.appPath+'/myWorlds/:page([0-9]+)', Landing.myWorlds);
+			app.get(global.appPath+'/featuredWorlds/:page([0-9]+)', Landing.featuredWorlds);
+			app.get(global.appPath+'/activeWorlds/:page([0-9]+)', Landing.activeWorlds);
+			app.get(global.appPath, Landing.generalHandler);
+			app.get(global.appPath+'/:page([a-zA-Z/]+)', Landing.generalHandler);
+			app.get(global.appPath+'/stats', Landing.statsHandler);
+			app.get(global.appPath+'/createNew/:page([0-9/]+)', Landing.createNew);
+			app.get(global.appPath+'/createNew2/:template([a-zA-Z0-9/]+)', Landing.createNew2);
 			
-			app.get('/adl/sandbox/vwf.js', Landing.serveVWFcore);		
+			app.get(global.appPath+'/vwf.js', Landing.serveVWFcore);
 
 		
 
-			app.post('/adl/sandbox/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
-			app.post('/adl/sandbox/data/:action([a-zA-Z_]+)', Landing.handlePostRequest);
+			app.post(global.appPath+'/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
+			app.post(global.appPath+'/data/:action([a-zA-Z_]+)', Landing.handlePostRequest);
 
 
 			
