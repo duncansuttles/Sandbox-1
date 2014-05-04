@@ -72,7 +72,7 @@ color: lightgray;
 					data: JSON.stringify(statedata),
 					success:function(data,status,xhr)
 					{
-						var newLocation = data.replace("Created state _adl_sandbox_", "").replace("_", "");
+						var newLocation = data.replace("Created state _contact_", "").replace("_", "");
 						window.location = "{{root}}" + "/world/" + newLocation;
 					},
 					error:function(xhr,status,err)
@@ -88,7 +88,7 @@ color: lightgray;
 			} else
 			{
 
-				$.get(root + '/vwfDataManager.svc/copyinstance?SID=_adl_sandbox_' + "{{template}}" +'_', function(o){
+				$.get(root + '/vwfDataManager.svc/copyinstance?SID=_contact_' + "{{template}}" +'_', function(o){
 			
 							if(o){
 								var newID = o.substr(13,16);
