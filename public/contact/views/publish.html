@@ -178,7 +178,7 @@ color: lightgray;
 	});	
 	function redirect()
 	{
-		window.location = root + '/world/' + sid.substr(13, 16);
+		window.location = root + '/world/' + sid.substr(sid.length-17, 16);
 	}
 	
 	vwfPortalModel.handleEditButton = function(o, e){

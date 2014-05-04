@@ -19,9 +19,11 @@
     function only_once(fn) {
         var called = false;
         return function() {
-            if (called) throw new Error("Callback was already called.");
-            called = true;
-            fn.apply(root, arguments);
+            //if (called) throw new Error("Callback was already called.");
+            if (!called) {
+                called = true;
+                fn.apply(root, arguments);
+            }
         }
     }
 
