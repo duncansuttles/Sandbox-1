@@ -250,7 +250,7 @@ function startVWF(){
 			app.use(
 			    function(req,res,next){
 					if(strEndsWith(req.url,global.appPath))
-						res.redirect(global.appPath);
+						res.redirect(global.appPath+"/");
 					else next();	
 				}
 			);

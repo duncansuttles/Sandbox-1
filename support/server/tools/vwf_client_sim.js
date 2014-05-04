@@ -429,7 +429,7 @@ p = process.argv.indexOf('-w');
 var world = p >= 0 ? process.argv[p+1] : "QNsNId8RYKeO6MSz";
 
 //launch the simulated client 
-LaunchAvatar(user,password,server,port,global.appPath + world + "/");
+LaunchAvatar(user,password,server,port,global.appPath + "/" + world + "/");
 
 process.on('message', function(m) {
   console.log('CHILD got message:', m);
