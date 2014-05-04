@@ -26,7 +26,8 @@ function ()
     {
         this.load = function(stateData,cb)
         {
-            $.ajax({url:'../vwfdatamanager.svc/getAssets?SID=' +((/\/adl\/sandbox\/.*\//).exec(window.location.toString()).toString()),
+            var regExp = new RegExp(window.appPath+".*\/");
+            $.ajax({url:'../vwfdatamanager.svc/getAssets?SID=' +((regExp).exec(window.location.toString()).toString()),
                 success:function(data,status,xhr)
                 {
                      

@@ -58,9 +58,9 @@ else
   //ok, at this point, we have all the libraries. Let's do a bit of gui logic and setup
   function startup(boot)
   {
-     //TODO: Read from config file
-     //window.appPath = "/adl/sandbox/";
-     window.appPath = "/contact/";
+     //TODO: Try to read this and set from config.json in the build process
+     window.appPath = "/adl/sandbox/";
+     //window.appPath = "/contact/";
 
      //remove the instnace name from requests to make things cache
      $.ajaxSetup({ cache: true });
