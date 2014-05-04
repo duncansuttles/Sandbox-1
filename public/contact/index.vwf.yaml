@@ -910,7 +910,11 @@ scripts:
        quaternion.multiply( q1 )
        quaternion.multiply(q0.setFromAxisAngle( zee, - orient ));
         findcamera().matrixAutoUpdate = false;
-        findcamera().matrix.setRotationFromQuaternion(quaternion);
+
+        var oldx =  findcamera().matrix.elements[12];
+        var oldy =  findcamera().matrix.elements[13];
+        var oldz =  findcamera().matrix.elements[14];
+        findcamera().matrix.makeRotationFromQuaternion(quaternion);
 
         var r = new THREE.Matrix4();
         r.elements[0] = 1; r.elements[1] = 0;r.elements[1] = 0;
@@ -919,13 +923,15 @@ scripts:
        
        r.multiply(findcamera().matrix);
         findcamera().matrix = r;
-      
+        findcamera().matrix.elements[12] = oldx;
+        findcamera().matrix.elements[13] = oldy;
+        findcamera().matrix.elements[14] = oldz;
        // console.log(e.alpha,e.beta,e.gamma);
 
     }
     this.updateCamera = function()
       {
-        console.log('here');
+        
         if(!_dView.inDefaultCamera()) return;
         
         try{
