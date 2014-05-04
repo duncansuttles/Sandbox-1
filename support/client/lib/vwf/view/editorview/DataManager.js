@@ -280,7 +280,8 @@ define(function ()
 		//get the Id of the current world from the url
 		this.getCurrentSession = function ()
 		{
-			return (/\/adl\/sandbox\/.*\//).exec(window.location.toString()).toString();
+            var regExp = new RegExp(window.appPath+".*\/");
+			return regExp.exec(window.location.toString()).toString();
 		}
 		//at this point, this server pretty much only supports the sandbox. This will return the sandbox root url
 		this.getCurrentApplication = function ()

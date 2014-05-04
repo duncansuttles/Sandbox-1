@@ -345,7 +345,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 				var inst = allinstances[i];
 				if(!inst) continue;
 				inst.id = i;
-				inst.shortid = i.substr(13,16)
+				inst.shortid = i.substr(global.appPath.length+1,16);
 				if(global.instances)
 				{
 					if(global.instances[i.replace(/_/g,"/")])
@@ -365,7 +365,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 				var inst = allinstances[i];
 				if(!inst) continue;
 				inst.id = i;
-				inst.shortid = i.substr(13,16)
+				inst.shortid = i.substr(global.appPath.length+1,16)
 				if(inst.title.toLowerCase().indexOf(search) != -1 || inst.description.toLowerCase().indexOf(search) != -1 || inst.owner.toLowerCase().indexOf(search) != -1 || inst.shortid.toLowerCase().indexOf(search) != -1)
 					results.push(inst);
 			}
@@ -382,7 +382,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 				var inst = allinstances[i];
 				if(!inst) continue;
 				inst.id = i;
-				inst.shortid = i.substr(13,16)
+				inst.shortid = i.substr(global.appPath.length+1,16)
 				if(inst.owner == sessionData.UID)
 					results.push(inst);
 			}
@@ -398,7 +398,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 				var inst = allinstances[i];
 				if(!inst) continue;
 				inst.id = i;
-				inst.shortid = i.substr(13,16)
+				inst.shortid = i.substr(global.appPath.length+1,16)
 				if(inst.featured)
 					results.push(inst);
 			}
@@ -415,7 +415,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 				var inst = allinstances[i];
 				if(!inst) continue;
 				inst.id = i;
-				inst.shortid = i.substr(13,16)				
+				inst.shortid = i.substr(global.appPath.length+1,16)
 				results.push(inst);
 			}
 			results.sort(function(a,b)
@@ -430,7 +430,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 				var inst = allinstances[i];
 				if(!inst) continue;
 				inst.id = i;
-				inst.shortid = i.substr(13,16)				
+				inst.shortid = i.substr(global.appPath.length+1,16)
 				results.push(inst);
 			}
 			results.sort(function(a,b)
@@ -574,7 +574,7 @@ exports.createNew = function(req, res, next){
 				var inst = allinstances[i];
 				if(!inst) continue;
 				inst.id = i;
-				inst.shortid = i.substr(13,16)
+				inst.shortid = i.substr(global.appPath.length+1,16)
 				if(inst.featured)
 					results.push(inst);
 			}
@@ -735,13 +735,13 @@ exports.handlePostRequest = function(req, res, next){
 
 function getFrontEndRoot(req){
 	var pathname = URL.parse(req.url).pathname, 
-	currentIndex = pathname.indexOf("sandbox/"), 
+	currentIndex = pathname.indexOf(global.appPath),
 	frontEndRoot = '', 
 	numSlashes = 0;
 	
 	if(currentIndex >= 0){
 
-		numSlashes = (pathname.substr(pathname.indexOf("sandbox/") + 8).match(/\//g) || []).length;
+		numSlashes = (pathname.substr(pathname.indexOf(global.appPath) + global.appPath.length).match(/\//g) || []).length;
 		if(numSlashes == 0){
 			frontEndRoot = '.';
 		}
