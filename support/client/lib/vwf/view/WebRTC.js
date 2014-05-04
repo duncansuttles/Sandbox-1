@@ -178,7 +178,7 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 					console.log('Remote disconnect, clean up');
 				//	$('#vidFrame').dialog("close");
 					$('#vidFrame').hide();
-					$('#vidFrame video').attr('src', window.appPath+'/vwf/view/webrtc/avatar.png');
+					$('#vidFrame video').attr('src', window.appPath+'vwf/view/webrtc/avatar.png');
 				}
 			}
 		},
