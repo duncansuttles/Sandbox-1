@@ -149,7 +149,8 @@ define(function ()
 									$(document.body).append('<a href="#" id="GuestLogin" style="font-family: sans-serif;z-index:99;position:fixed;font-size: 2em;" class="alertify-button alertify-button-ok" id="alertify-ok">'+i18n.t('Login')+'</a>');
 									$('#GuestLogin').click(function()
 									{
-										window.location = _DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substr(13) + window.location.hash;
+
+										window.location = _DataManager.getCurrentApplication() + "login?return=" + _DataManager.getCurrentSession().substring(window.location.pathname.indexOf(window.appPath)+window.appPath.length) + window.location.hash;
 									});
 								
 						}.bind(this)
@@ -561,7 +562,7 @@ define(function ()
 						
 						window.onbeforeunload = '';
 						
-						window.location = _DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substr(13) + window.location.hash;
+						window.location = _DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substring(window.location.pathname.indexOf(window.appPath)+window.appPath.length) + window.location.hash;
 					}.bind(this)
 				});
 			

@@ -181,7 +181,7 @@ else
 
                   //if they choose to go back and log in
                   if(e)
-                    window.location =  "../login?return=" + window.location.pathname.substring(window.location.pathname.indexOf(window.appPath)+13) + window.location.hash;
+                    window.location =  "../login?return=" + window.location.pathname.substring(window.location.pathname.indexOf(window.appPath)+window.appPath.length) + window.location.hash;
                   else
                   {
 
