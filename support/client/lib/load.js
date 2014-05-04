@@ -59,8 +59,8 @@ else
   function startup(boot)
   {
      //TODO: Try to read this and set from config.json in the build process
-     window.appPath = "/adl/sandbox/";
-     //window.appPath = "/contact/";
+     //window.appPath = "/adl/sandbox/";
+     window.appPath = "/contact/";
 
      //remove the instnace name from requests to make things cache
      $.ajaxSetup({ cache: true });
