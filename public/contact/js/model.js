@@ -380,7 +380,7 @@ function showStates(cb){
 			//Iterate through keys, get index of world id which matches key, set its hotState to true
 			for(var i = 0; i < tempArr.length; i++){
 
-				if(e.hasOwnProperty("/adl/sandbox/"+tempArr[i]+"/")){
+				if(e.hasOwnProperty("/contact/"+tempArr[i]+"/")){
 					if(vwfPortalModel.worldObjects()[i]().hotState == false){
 						vwfPortalModel.worldObjects()[i]().hotState = true;
 						vwfPortalModel.worldObjects()[i].valueHasMutated();
