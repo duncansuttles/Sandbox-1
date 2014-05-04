@@ -588,7 +588,7 @@ function StartShellInterface()
 		// help
 		if( CheckMatch('help', cmd) ){
 			console.log('Available commands:');
-			console.log('NOTE: State IDs are of the form _adl_sandbox_uAId89a1xnE3DJXU_');
+			console.log('NOTE: State IDs are of the form '+global.appPath.replace(/\//g,"_")+'_uAId89a1xnE3DJXU_');
 			console.log();
 			console.log('help - Show this message');
 			console.log('exit - Shut down the server');

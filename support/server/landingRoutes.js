@@ -284,7 +284,7 @@ exports.world = function(req, res, next){
 
 	sessions.GetSessionData(req,function(sessionData)
 	{
-		DAL.getInstance("_adl_sandbox_"+req.params.page+"_",function(doc)
+		DAL.getInstance(global.appPath.replace(/\//g,"_")+"_"+req.params.page+"_",function(doc)
 		{
 			if(!doc)
 			{
@@ -497,7 +497,7 @@ exports.createNew2 = function(req, res, next){
 				res.redirect(root+'/login?return=createNew/0')
 			}
 			var template = req.params.template;
-			DAL.getInstance("_adl_sandbox_"+template+"_",function(worlddata)
+			DAL.getInstance(global.appPath.replace(/\//g,"_")+"_"+template+"_",function(worlddata)
 			{
 				
 				
@@ -715,7 +715,7 @@ exports.handlePostRequest = function(req, res, next){
 			break;			
 			
 		case "update_world":
-			var worldId = "_adl_sandbox_" + data.id + "_";
+			var worldId = global.appPath.replace(/\//g,"_")+"_" + data.id + "_";
 			delete data.id;	
 			delete data.hotState;	
 			delete data.editVisible;	
