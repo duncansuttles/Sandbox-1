@@ -60,10 +60,9 @@ else
   {
      //TODO: Read from config file
      window.appPath = "/adl/sandbox/";
-     //window.appPath = "/sandbox/";
 
-      //remove the instnace name from requests to make things cache
-      $.ajaxSetup({ cache: true });
+     //remove the instnace name from requests to make things cache
+     $.ajaxSetup({ cache: true });
 
      $.ajaxPrefilter( function(options, originalOptions, jqXHR) 
      {

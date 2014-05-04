@@ -62,7 +62,6 @@ properties:
             {
               return vwf.models.javascript.nodes[o];
             }
-            
             this._traceAPI.___filterResults = function(results)
             {
               if(!results) return results
@@ -78,11 +77,12 @@ properties:
               for(var i =0; i < options.ignore.length; i++)
               {
                   if(options.ignore[i].constructor == String)
-                    options.ignore[i] = _Editor.findviewnode(options.ignore[i]);
+                      options.ignore[i] = _Editor.findviewnode(options.ignore[i]);
               }
               options.ignore.push(_Editor.GetMoveGizmo());
               options.ignore.push(_dSky);
               options.oldfilter = options.filter || function(){return true};
+              
               options.filter = function(o)
               {
                   if(options.oldfilter)

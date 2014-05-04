@@ -659,6 +659,19 @@ define(
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Orbit');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Navigate');
 		});
+
+		$('#MenuCameraDeviceOrientation').click(function (e)
+		{
+			_dView.setCameraDefault();
+			clearCameraModeIcons();
+			vwf.models[0].model.nodes['index-vwf'].setCameraMode('DeviceOrientation');
+		});
+		$('#MenuViewHideTools').click(function (e)
+		{
+			hideTools();
+		});
+		
+		
 		
 		
 		$('#MenuCameraShare').click(function (e)
@@ -954,6 +967,16 @@ define(
 			   		return
 			}
 		});
+
+		$('#MenuViewRenderNormal').click(function (e)
+		{
+			_dView.setRenderModeNormal();
+		});
+		$('#MenuViewRenderStereo').click(function (e)
+		{
+			_dView.setRenderModeStereo()
+		});
+		
 
 
 
