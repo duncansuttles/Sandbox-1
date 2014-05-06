@@ -31,7 +31,7 @@ var ServerFeatures = require("./serverFeatures.js");
 var i18n = require("i18next");
 var option = {
         //lng: 'en',
-        resGetPath: (__dirname+'/locales/__lng__/__ns__.json'),
+        resGetPath: (libpath.resolve("./locales/__lng__/__ns__.json")),
         //debug: true
       };
 i18n.init(option);
