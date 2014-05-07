@@ -21,7 +21,8 @@ define(function ()
             shadows:true,
             useSimpleMaterials:false,
             resolutionScale: 1,
-            filtering:true
+            filtering:true,
+            stereoOffset:.25
         }
         this.getKey = function(key)
         {

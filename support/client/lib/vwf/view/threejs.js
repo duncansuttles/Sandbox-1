@@ -1009,7 +1009,11 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			//cam.updateProjectionMatrix();
 
 			if(self.renderMode === NORMALRENDER)
+			{
+				cam.setViewOffset(undefined);
+				cam.updateProjectionMatrix();
 				renderer.render(scene,cam);
+			}
 			else if (self.renderMode === STEREORENDER)
 			{
 				var width = $('#index-vwf').attr('width');
@@ -1039,6 +1043,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				cam.setViewOffset(ww2,h,-100,0,ww2,h);
 				cam.updateProjectionMatrix();
 
+				cam.setViewOffset(ww2,h,-_SettingsManager.getKey('stereoOffset') * ww2,0,ww2,h);
+				cam.updateProjectionMatrix();
 				renderer.render(scene,cam);
 
 				//go equally far right
@@ -1049,7 +1055,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				renderer.setViewport(ww2,centerh,ww2,h);
 				_dRenderer.setScissor(ww2,centerh,ww2,h);
 
-				cam.setViewOffset(ww2,h,100,0,ww2,h);
+				cam.setViewOffset(ww2,h,_SettingsManager.getKey('stereoOffset') * ww2,0,ww2,h);
 				cam.updateProjectionMatrix();
 
 				renderer.render(scene,cam);
