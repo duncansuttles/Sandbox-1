@@ -1524,7 +1524,7 @@ function serve (request, response)
 				
 				//Have to do this here! throw does not work quite as you would think 
 				//with all the async stuff. Do error checking first.
-				if(command != 'thumbnail')   //excpetion for the base64 encoded thumbnails
+				if(command != 'thumbnail' && command != '3drupload')   //excpetion for the base64 encoded thumbnails
 				{
 					try{
 						JSON.parse(body);
@@ -1569,6 +1569,9 @@ function serve (request, response)
 					} break;
 					case "publish":{
 						Publish(URL, SID,body, response);		
+					} break;
+					case "3drupload":{
+						_3DR_proxy.proxyUpload(request,response);
 					} break;
 					default:
 					{

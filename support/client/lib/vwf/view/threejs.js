@@ -1036,6 +1036,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
 				renderer.setViewport(0,centerh,ww2,h);
 				_dRenderer.setScissor(0,centerh,ww2,h);
+				cam.setViewOffset(ww2,h,-100,0,ww2,h);
+				cam.updateProjectionMatrix();
 
 				renderer.render(scene,cam);
 
@@ -1046,6 +1048,10 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
 				renderer.setViewport(ww2,centerh,ww2,h);
 				_dRenderer.setScissor(ww2,centerh,ww2,h);
+
+				cam.setViewOffset(ww2,h,100,0,ww2,h);
+				cam.updateProjectionMatrix();
+
 				renderer.render(scene,cam);
 
 				//return to center

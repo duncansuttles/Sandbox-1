@@ -173,11 +173,12 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 
 	function initialize()
 	{
+		$(document.body).append("<div id='ModelUploadDialog'></div>");
 		$(document.body).append("<div id='ModelLibrary'></div>");
 		$(document.body).append("<div id='ModelDetails'></div>");
 		$('#ModelLibrary').append("<div id='ModelSearchResults'></div>");
 		$('#ModelLibrary').append("<div id='ModelSearchPanel'></div>");
-		$('#ModelSearchPanel').append("<input type='text' id='ModelSearchTerm' style='border-radius: 5px;'></div>");
+		$('#ModelSearchPanel').append("<input type='text' id='ModelSearchTerm' style='border-radius: 5px;'></input>");
 		$('#ModelSearchPanel').css('overflow', 'auto');
 		$('#ModelSearchPanel').append("<div id='ModelSearchButton'></div>");
 		$('#ModelSearchPanel').append("<div id='ResultsPages' style='display: inline;'></div>");
@@ -185,10 +186,30 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 		{
 			label: 'Search'
 		});
+
+		$('#ModelUploadDialog').append("<div>To upload a 3D asset file, choose a Zip file containing a 3D model in .obj, .3ds, .skp, .fbx or .dae format, with the required textures included. The model will be upload to the ADL 3D Repository, and imported into this scene.</div>");
+		$('#ModelUploadDialog').append("<form action=''><input type='file' id='ModelUploadFile' style='border-radius: 5px;'></input><div id='submit3DRUpload'>Upload</div></form>");
+
 		$('#ModelSearchTerm').keydown(function (e)
 		{
 			e.stopPropagation();
 		});
+
+		$('#submit3DRUpload').button();
+		$('#submit3DRUpload').click(function()
+		{
+			debugger;
+			var files = $('#ModelUploadFile')[0].files;
+			var file = files[0];
+			var xhr = new XMLHttpRequest();
+			if (xhr.upload && file.size <= 15 * 1024 * 1024) {
+				xhr.open("POST", "./vwfdatamanager.svc/3drupload", true);
+				xhr.setRequestHeader("X_FILENAME", file.name);
+				xhr.send(file);
+			}
+
+		});
+		
 		$('#ModelLibrary').dialog(
 		{
 			title: 'Search 3DR',
@@ -202,6 +223,20 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 			position: 'center',
 			modal: true,
 			movable: true
+		});
+		$('#ModelUploadDialog').dialog(
+		{
+			title: 'Upload 3D Asset file',
+			autoOpen: false,
+			maxHeight: 400,
+			maxWidth: 750,
+			width: 750,
+			height: 'auto',
+			minHeight: 20,
+			resizable: false,
+			position: 'center',
+			modal: true,
+			moveable: false
 		});
 		$('#ModelDetails').dialog(
 		{
@@ -245,7 +280,11 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 		{
 			$('#ModelLibrary').dialog('close');
 		}
-		
+		this.showUpload = function()
+		{
+			$('#ModelUploadDialog').dialog('open');
+
+		}
 		this.BuildModelRequest = function (pid)
 		{
 			return "./vwfdatamanager.svc/3drdownload?pid=" + pid;

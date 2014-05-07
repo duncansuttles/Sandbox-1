@@ -843,6 +843,12 @@ define(
 			}
 		});
 		
+		$('#MenuCreateUploadMesh').click(function (e)
+		{
+			_ModelLibrary.showUpload();
+		});
+
+		
 		$('#MenuUndo').click(function (e)
 		{
 			_UndoManager.undo();

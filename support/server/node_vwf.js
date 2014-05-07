@@ -110,13 +110,14 @@ function startVWF(){
 	//start the DAL, load configuration file
 	try{
 		configSettings = JSON.parse(fs.readFileSync('./config.json').toString());
+		console.log(configSettings);
 		SandboxAPI.setAnalytics(configSettings.analytics);
 	}
 	
 	catch(e){
 		configSettings = {};
-		global.log("Error: Unable to load config file");
-		global.log(e.message);
+		console.log("Error: Unable to load config file");
+		console.log(e.message);
 	}
 	
 	//save configuration into global scope so other modules can use.
