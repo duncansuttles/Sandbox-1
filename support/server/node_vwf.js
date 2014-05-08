@@ -263,7 +263,8 @@ function startVWF(){
 			app.use(express.methodOverride());
 			
 			//Wait until all data is loaded before continuing
-			app.use (ServerFeatures.waitForAllBody);
+			//app.use (ServerFeatures.waitForAllBody);
+			app.use(express.bodyParser());
 			//CORS support
 			app.use(ServerFeatures.CORSSupport);
 

@@ -117,9 +117,9 @@ define(function ()
 						t.properties.transform[12] = newintersectxy[0];
 						t.properties.transform[13] = newintersectxy[1];
 						t.properties.transform[14] = newintersectxy[2];
-						//t.properties.translation[0] = newintersectxy[0];
-						//t.properties.translation[1] = newintersectxy[1];
-						//t.properties.translation[2] = newintersectxy[2];
+						t.properties.translation[0] = newintersectxy[0];
+						t.properties.translation[1] = newintersectxy[1];
+						t.properties.translation[2] = newintersectxy[2];
 						t.properties.DisplayName = _Editor.GetUniqueName(t.properties.DisplayName);
 						t = _DataManager.getCleanNodePrototype(t);
 						_InventoryManager.setOwner(t, _UserManager.GetCurrentUserName());
@@ -321,6 +321,7 @@ define(function ()
 			$.ajax('./vwfDataManager.svc/inventoryitem?title=' + title +'&type=' + type,{
 				
 				type:'POST',
+				contentType: "application/json; charset=utf-8",
 				success:function(err,d,xhr)
 				{
 					cb($.trim(xhr.responseText));
@@ -335,6 +336,7 @@ define(function ()
 			$.ajax('./vwfDataManager.svc/globalasset?title=' + title +'&type=' + type,{
 				
 				type:'POST',
+				contentType: "application/json; charset=utf-8",
 				success:function(err,d,xhr)
 				{
 					cb($.trim(xhr.responseText));
@@ -498,6 +500,7 @@ define(function ()
 			$.ajax('./vwfDataManager.svc/inventoryitemmetadata?AID=' + id,{
 				
 				type:'POST',
+				contentType: "application/json; charset=utf-8",
 				success:function(err,d,xhr)
 				{
 					cb();

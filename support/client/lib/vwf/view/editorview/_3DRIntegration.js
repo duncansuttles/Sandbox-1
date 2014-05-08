@@ -198,14 +198,73 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 		$('#submit3DRUpload').button();
 		$('#submit3DRUpload').click(function()
 		{
-			debugger;
+			
 			var files = $('#ModelUploadFile')[0].files;
 			var file = files[0];
 			var xhr = new XMLHttpRequest();
 			if (xhr.upload && file.size <= 15 * 1024 * 1024) {
 				xhr.open("POST", "./vwfdatamanager.svc/3drupload", true);
 				xhr.setRequestHeader("X_FILENAME", file.name);
-				xhr.send(file);
+				
+				
+				
+
+				
+				_Notifier.startWait('Uploading')
+				xhr.upload.addEventListener("progress", function(oEvent)
+				{
+					//upload progress
+					var percentComplete = oEvent.loaded / oEvent.total;
+					
+					_Notifier.startWait('Uploading ' + percentComplete + '%')
+				}, false);
+				xhr.upload.addEventListener("load", function()
+				{
+					_Notifier.startWait("Waiting for conversion.");
+				}, false);
+
+				xhr.upload.addEventListener("error", function()
+				{
+					console.log("upload error.");
+					_Notifier.stopWait();
+
+				}, false);
+
+				xhr.addEventListener("error",function()
+				{
+					console.log("xhr error.");
+					_Notifier.stopWait();
+
+				},false);
+				xhr.addEventListener("load",function()
+				{
+					var pid = JSON.parse(xhr.responseText);
+					_Notifier.startWait("Fetching Metadata");
+
+					_ModelLibrary.getMetadata(pid,
+					function (object)
+					{
+						var metadata = object;
+						_ModelLibrary.MetadataCache[pid] = object;
+						__3DRIntegration.insertObject(pid);
+						_Notifier.startWait("Downloading");
+					},
+					function (thrownError)
+					{
+						_Notifier.stopWait();
+						alert(thrownError);
+					});
+
+					
+
+				},false);
+
+
+
+				var formData = new FormData();
+				formData.append('model', file);
+
+				xhr.send(formData);
 			}
 
 		});
@@ -380,7 +439,24 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 			}
 			else
 			{
-				$.ajax(
+					_ModelLibrary.getMetadata(pid,
+					function (object)
+					{
+						var metadata = object;
+						jQuery('#ModelDetails').css('text-align', 'left');
+						_ModelLibrary.DisplayMetadata(object);
+						_ModelLibrary.MetadataCache[_ModelLibrary.DetailsPID] = object;
+					},
+					function (thrownError)
+					{
+						alert(thrownError);
+					});
+				
+			}
+		}
+		this.getMetadata = function(pid,success,failure)
+		{
+			$.ajax(
 				{
 					type: "GET",
 					//the below is no longer valid - the server proxies all request, and has its own endpoint and auth
@@ -390,16 +466,14 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 					success: function (object, responseStatus, request)
 					{
 						var metadata = object;
-						jQuery('#ModelDetails').css('text-align', 'left');
-						_ModelLibrary.DisplayMetadata(object);
-						_ModelLibrary.MetadataCache[_ModelLibrary.DetailsPID] = object;
+						success(object);
+						
 					}.bind(this),
 					error: function (xhr, ajaxOptions, thrownError)
 					{
-						alert(thrownError);
+						failure(thrownError);
 					}
 				});
-			}
 		}
 		this.showResults = function (page)
 		{

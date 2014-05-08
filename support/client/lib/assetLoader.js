@@ -4,7 +4,7 @@
 //textures and replaces them when loaded. So, we don't have to cache texture here, but we do let the scenemanager know to fire up
 //and start loading, just to give the textures a head start.
 
-define(["vwf/model/threejs/backgroundLoader","vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify"],
+define(["vwf/model/threejs/backgroundLoader","vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify","vwf/model/threejs/BufferGeometryUtils",'vwf/model/threejs/ColladaLoaderOptimized'],
 function ()
 {
     var assetLoader = {};
@@ -81,12 +81,14 @@ function ()
         this.unknown = {};
         this.terrain = {};
         this.utf8JsonOptimized = {};
+        this.colladaOptimized = {};
+
         this.BuildCollisionData = function(root)
         {
             if(root instanceof THREE.Geometry || root instanceof THREE.BufferGeometry)
             {
-            //    root.GenerateBounds();
-          //      root.BuildRayTraceAccelerationStructure();
+                root.GenerateBounds();
+                root.BuildRayTraceAccelerationStructure();
             }
             if(root.children)
             {
@@ -94,12 +96,18 @@ function ()
                     this.BuildCollisionData(root.children[i]);
             }
             if(root.geometry)
+            {
                 this.BuildCollisionData(root.geometry);
+            }
 
         }
         this.getCollada = function(url)
         {
             return this.collada[url];
+        },
+        this.getColladaOptimized = function(url)
+        {
+            return this.colladaOptimized[url];
         },
         this.getUtf8JsonOptimized = function(url)
         {
@@ -133,6 +141,30 @@ function ()
                     console.log(url,performance.now() - time);
                     
                     assetLoader.collada[url] = asset;
+                    assetLoader.BuildCollisionData(asset.scene);
+                    delete asset.dae;
+                    cb2();
+                    loader.cleanup();
+                },function(progress)
+                {
+                    //it's really failed
+                    if(!progress)
+                    {
+                        cb2();
+                        loader.cleanup();
+                    }
+                });
+        },
+        this.loadColladaOptimized = function(url,cb2)
+        {
+            var loader = new ColladaLoaderOptimized();
+            
+            var time = performance.now();
+            loader.load(url,function(asset)
+                {
+                    console.log(url,performance.now() - time);
+                    
+                    assetLoader.colladaOptimized[url] = asset;
                     assetLoader.BuildCollisionData(asset.scene);
                     delete asset.dae;
                     cb2();
@@ -315,6 +347,7 @@ function ()
         this.loadAssets = function(assets,cb)
         {
 
+
             var total = assets.length;
             assetLoader.startProgressGui(total);
             var count = 0;
@@ -340,6 +373,10 @@ function ()
                     else if(type == 'subDriver/threejs/asset/vnd.collada+xml')
                     {
                         assetLoader.loadCollada(url,cb2);
+                    }
+                    else if(type == 'subDriver/threejs/asset/vnd.collada+xml+optimized')
+                    {
+                        assetLoader.loadColladaOptimized(url,cb2);
                     }
                     else if(type == 'subDriver/threejs/asset/vnd.osgjs+json+compressed')
                     {

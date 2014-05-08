@@ -89,19 +89,24 @@ function proxyThumbnail(URL,response)
 function proxyUpload(req,response)
 {
 
-
-
- var searchstring = Get3DRAPI() +"/UploadModel?ID="+Get3DRAPIKey();
+var searchstring = Get3DRAPI() +"/UploadModel?ID="+Get3DRAPIKey();
 console.log(searchstring);
 console.log(Get3DRPassword(),Get3DRUser());
- request['post']({uri:searchstring,body:req.body}).auth(Get3DRUser(),Get3DRPassword(), true).on('error',function(e){
 
+if(!req.files && !req.files.model)
+{
+	response.writeHead(500);
+ 	response.end();
+ 	return;
+}
+
+fs.readFile(req.files.model.path, function (err, data) {
+		request['post']({uri:searchstring,body:data}).auth(Get3DRUser(),Get3DRPassword(), true).on('error',function(e){
  			console.log(e);
  			response.writeHead(500);
  			response.end();
-
- 		}).pipe(response);
-
+	 	}).pipe(response);
+	});
 }
 
 
