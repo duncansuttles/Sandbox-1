@@ -176,6 +176,15 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 		$(document.body).append("<div id='ModelUploadDialog'></div>");
 		$(document.body).append("<div id='ModelLibrary'></div>");
 		$(document.body).append("<div id='ModelDetails'></div>");
+
+		$('#ModelUploadDialog').hide();
+		$('#ModelUploadDialog').load('vwf/view/editorview/uploadModel.html',function()
+			{
+
+				__3DRIntegration.hookupUploadDialog();
+
+			});
+
 		$('#ModelLibrary').append("<div id='ModelSearchResults'></div>");
 		$('#ModelLibrary').append("<div id='ModelSearchPanel'></div>");
 		$('#ModelSearchPanel').append("<input type='text' id='ModelSearchTerm' style='border-radius: 5px;'></input>");
@@ -187,87 +196,147 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 			label: 'Search'
 		});
 
-		$('#ModelUploadDialog').append("<div>To upload a 3D asset file, choose a Zip file containing a 3D model in .obj, .3ds, .skp, .fbx or .dae format, with the required textures included. The model will be upload to the ADL 3D Repository, and imported into this scene.</div>");
-		$('#ModelUploadDialog').append("<form action=''><input type='file' id='ModelUploadFile' style='border-radius: 5px;'></input><div id='submit3DRUpload'>Upload</div></form>");
-
+		
 		$('#ModelSearchTerm').keydown(function (e)
 		{
 			e.stopPropagation();
 		});
 
-		$('#submit3DRUpload').button();
-		$('#submit3DRUpload').click(function()
+		this.displayUploadPercent = function(per)
+		{
+			var f = 2 * Math.PI * per;
+			var x = -1;
+			var y = 0;
+			var x1 = x * Math.cos(f) - y *  Math.sin(f);
+			var y1 = y * Math.cos( f )+ x * Math.sin (f);
+
+			x1 *= 25;
+			y1 *= 25;
+
+			x1 += 30;
+			y1 += 30;
+
+			if(per >= .5)
+				$('#progresspath').attr('d', 'M5 30            A 25 25, 0, 1, 1, ' + x1 + ' ' + y1); 
+			else
+				$('#progresspath').attr('d', 'M5 30            A 25 25, 0, 0, 1, ' + x1 + ' ' + y1); 
+
+		}
+		this.hookupUploadDialog = function()
 		{
 			
-			var files = $('#ModelUploadFile')[0].files;
-			var file = files[0];
-			var xhr = new XMLHttpRequest();
-			if (xhr.upload && file.size <= 15 * 1024 * 1024) {
-				xhr.open("POST", "./vwfdatamanager.svc/3drupload", true);
-				xhr.setRequestHeader("X_FILENAME", file.name);
-				
-				
-				
+			$('#ModelUploadFile').change(function(){
 
+				var files = $('#ModelUploadFile')[0].files;
+				var file = files[0];
+				console.log(file);
+				$('#filename').text(file.name)
+				$('#filesize').text(file.size)
+				$('#filetype').text(file.type)
+				$('#uploadTitle').val(file.name)
 				
-				_Notifier.startWait('Uploading')
-				xhr.upload.addEventListener("progress", function(oEvent)
-				{
-					//upload progress
-					var percentComplete = oEvent.loaded / oEvent.total;
+			})
+			
+			
+			$('#dragArea').on('drop',function(e){
+
+				console.log(e);
+				var dt = dt.dataTransfer;
+				var file = dt.files[0]
+				$('#ModelUploadFile')[0].files = dt.files[0];
+				e.preventDefault();
+				return false;
+
+			});
+			$('#dragArea').on('dragenter', function (e) {
+     			 if (e.preventDefault) { e.preventDefault(); }
+     			 return false;
+    		});
+    		$('#dragArea').on('dragover', function (e) {
+     			 if (e.preventDefault) { e.preventDefault(); }
+     			 return false;
+    		});
+
+
+
+			
+			$('#cancel3DRUpload').click(function()
+			{
+				$('#ModelUploadDialog').hide();
+
+			});
+			$('#submit3DRUpload').click(function()
+			{
+				
+				var files = $('#ModelUploadFile')[0].files;
+				var file = files[0];
+				var xhr = new XMLHttpRequest();
+				if (xhr.upload && file.size <= 15 * 1024 * 1024) {
+					xhr.open("POST", "./vwfdatamanager.svc/3drupload", true);
+					xhr.setRequestHeader("X_FILENAME", file.name);
 					
-					_Notifier.startWait('Uploading ' + percentComplete + '%')
-				}, false);
-				xhr.upload.addEventListener("load", function()
-				{
-					_Notifier.startWait("Waiting for conversion.");
-				}, false);
+					
+					
 
-				xhr.upload.addEventListener("error", function()
-				{
-					console.log("upload error.");
-					_Notifier.stopWait();
-
-				}, false);
-
-				xhr.addEventListener("error",function()
-				{
-					console.log("xhr error.");
-					_Notifier.stopWait();
-
-				},false);
-				xhr.addEventListener("load",function()
-				{
-					var pid = JSON.parse(xhr.responseText);
-					_Notifier.startWait("Fetching Metadata");
-
-					_ModelLibrary.getMetadata(pid,
-					function (object)
+					
+					_Notifier.startWait('Uploading')
+					xhr.upload.addEventListener("progress", function(oEvent)
 					{
-						var metadata = object;
-						_ModelLibrary.MetadataCache[pid] = object;
-						__3DRIntegration.insertObject(pid);
-						_Notifier.startWait("Downloading");
-					},
-					function (thrownError)
+						//upload progress
+						var percentComplete = oEvent.loaded / oEvent.total;
+						
+						_Notifier.startWait('Uploading ' + percentComplete + '%')
+					}, false);
+					xhr.upload.addEventListener("load", function()
 					{
+						_Notifier.startWait("Waiting for conversion.");
+					}, false);
+
+					xhr.upload.addEventListener("error", function()
+					{
+						console.log("upload error.");
 						_Notifier.stopWait();
-						alert(thrownError);
-					});
 
-					
+					}, false);
 
-				},false);
+					xhr.addEventListener("error",function()
+					{
+						console.log("xhr error.");
+						_Notifier.stopWait();
+
+					},false);
+					xhr.addEventListener("load",function()
+					{
+						var pid = JSON.parse(xhr.responseText);
+						_Notifier.startWait("Fetching Metadata");
+
+						_ModelLibrary.getMetadata(pid,
+						function (object)
+						{
+							var metadata = object;
+							_ModelLibrary.MetadataCache[pid] = object;
+							__3DRIntegration.insertObject(pid);
+							_Notifier.startWait("Downloading");
+						},
+						function (thrownError)
+						{
+							_Notifier.stopWait();
+							alert(thrownError);
+						});
+
+						
+
+					},false);
 
 
 
-				var formData = new FormData();
-				formData.append('model', file);
+					var formData = new FormData();
+					formData.append('model', file);
 
-				xhr.send(formData);
-			}
-
-		});
+					xhr.send(formData);
+				}
+			});
+		}
 		
 		$('#ModelLibrary').dialog(
 		{
@@ -283,20 +352,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 			modal: true,
 			movable: true
 		});
-		$('#ModelUploadDialog').dialog(
-		{
-			title: 'Upload 3D Asset file',
-			autoOpen: false,
-			maxHeight: 400,
-			maxWidth: 750,
-			width: 750,
-			height: 'auto',
-			minHeight: 20,
-			resizable: false,
-			position: 'center',
-			modal: true,
-			moveable: false
-		});
+		
 		$('#ModelDetails').dialog(
 		{
 			title: 'Model Details',
@@ -341,7 +397,16 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 		}
 		this.showUpload = function()
 		{
-			$('#ModelUploadDialog').dialog('open');
+			$('#ModelUploadDialog').show();
+			var x = $('.dragArea').offset().top;
+			var y = $('.dragArea').offset().left;
+			var w = $('.dragArea').width();
+			var h = $('.dragArea').height();
+			var x2 = x + w;
+			var y2 = y + h;
+			
+
+			
 
 		}
 		this.BuildModelRequest = function (pid)
