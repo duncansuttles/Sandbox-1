@@ -29,6 +29,9 @@
 	this.update = function(cameraPosition)
 	{
 
+		//cant do any updates until the generator is set.
+		if(! this.generator) return;
+
 		if(!this.lastCameraPosition)
 			this.lastCameraPosition = cameraPosition.clone();
 		var updated = false;
