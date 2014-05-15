@@ -285,6 +285,20 @@ define( function() {
         /// 
         /// @returns {}
 
+        deleteEvent: [ /* nodeID, eventName, eventParameters */ ],
+
+        // TODO: deleteEvent
+
+        /// It will call firingEvent() on each model and firedEvent() on each view.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {String} eventName
+        /// @param {Value[]} eventParameters
+        /// 
+        /// @returns {}
+
         fireEvent: [ /* nodeID, eventName, eventParameters */ ],
 
         /// Dispatch an event toward a node. Using fireEvent(), capture (down) and bubble (up) along

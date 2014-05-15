@@ -743,12 +743,20 @@
             // communicates using a channel back to the server that provided the client documents.
             
             try {
+
+                var space = window.location.pathname.slice( 1,
+                        window.location.pathname.lastIndexOf("/") );
+                var protocol = window.location.protocol;
+                var host = {{host}};
+                
+
+
                 if ( isSocketIO07()) {
                     if ( window.location.protocol === "https:" )
                     {
-                        socket = io.connect("wss://"+window.location.host,{reconnect: false});
+                        socket = io.connect("https://"+host,{reconnect: false});
                     } else {
-                        socket = io.connect("ws://"+window.location.host,{reconnect: false}); 
+                        socket = io.connect("http://"+host,{reconnect: false}); 
                     }
  
                 } else {  // Ruby Server
@@ -794,14 +802,7 @@
                     } );
                 }
 
-				var space = window.location.pathname.slice( 1,
-                        window.location.pathname.lastIndexOf("/") );
-                var protocol = window.location.protocol;
-                var host = {{host}};
-                if(protocol === 'http:')
-				    socket = io.connect("http://"+host);
-                if(protocol === 'https:')
-                    socket = io.connect("https://"+host);
+				
 				
             } catch ( e ) {
 
@@ -854,7 +855,12 @@
                     try {
 
                         if ( isSocketIO07() ) {
-                            var fields = JSON.parse(messageCompress.unpack(message));
+
+                            if(message.constructor === String)
+                                var fields = JSON.parse(messageCompress.unpack(message));
+                            else
+                                var fields = message;
+
                         } else { // Ruby Server - Unpack the arguements
                             var fields = JSON.parse( message );
                         }
@@ -887,13 +893,7 @@
 
                 } );
 
-                socket.on( "disconnect", function() {
-
-                    vwf.logger.infox( "-socket", "disconnected" );
-                    alert('The client has been disconnected from the server, and must be reloaded.');
-                    window.location.reload();
-
-                } );
+                socket.on( "disconnect",vwf.disconnected);
 
                 socket.on( "error", function() { 
 
@@ -927,6 +927,15 @@
             }
 
         };
+
+        this.disconnected = function()
+        {
+
+             vwf.logger.infox( "-socket", "disconnected" );
+                    alert('The client has been disconnected from the server, and must be reloaded.');
+                    window.location.reload();
+
+        }
 
         // -- plan ---------------------------------------------------------------------------------
 
@@ -2541,8 +2550,9 @@ if ( ! childComponent.source ) {
 
                     childComponent.events && jQuery.each( childComponent.events, function( eventName, eventValue ) {
 
+                       
                         if ( valueHasBody( eventValue ) ) {
-                            vwf.createEvent( childID, eventName, eventValue.parameters );
+                            vwf.createEvent( childID, eventName, eventValue.parameters, eventValue.body );
                         } else {
                             vwf.createEvent( childID, eventName, undefined );
                         }
@@ -3312,7 +3322,7 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
         /// 
         /// @see {@link module:vwf/api/kernel.createEvent}
 
-        this.createEvent = function( nodeID, eventName, eventParameters ) {  // TODO: parameters (used? or just for annotation?)  // TODO: allow a handler body here and treat as this.*event* = function() {} (a self-targeted handler); will help with ui event handlers
+        this.createEvent = function( nodeID, eventName, eventParameters, body ) {  // TODO: parameters (used? or just for annotation?)  // TODO: allow a handler body here and treat as this.*event* = function() {} (a self-targeted handler); will help with ui event handlers
 
             this.logger.debuggx( "createEvent", nodeID, eventName, eventParameters );
 
@@ -3320,14 +3330,14 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
             // have run.
 
             this.models.forEach( function( model ) {
-                model.creatingEvent && model.creatingEvent( nodeID, eventName, eventParameters );
+                model.creatingEvent && model.creatingEvent( nodeID, eventName, eventParameters , body );
             } );
 
             // Call createdEvent() on each view. The view is being notified that a event has been
             // created.
 
             this.views.forEach( function( view ) {
-                view.createdEvent && view.createdEvent( nodeID, eventName, eventParameters );
+                view.createdEvent && view.createdEvent( nodeID, eventName, eventParameters , body );
             } );
 
             this.logger.debugu();

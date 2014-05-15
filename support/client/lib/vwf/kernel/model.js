@@ -410,7 +410,7 @@ define( [ "module", "vwf/model" ], function( module, model ) {
                             return this.kernel[kernelFunctionName]( nodeID, methodName, methodParameters, methodBody );
                         } else {
                             this.kernel.plan( nodeID, kernelFunctionName, methodName,
-                                [ methodParameters, methodBody ], when, callback /* result */ );  // TODO: { parameters: methodParameters, body: methodBody } ? -- vwf.receive() needs to parse
+                                methodParameters, methodBody, when, callback /* result */ );  // TODO: { parameters: methodParameters, body: methodBody } ? -- vwf.receive() needs to parse
                         }
 
                     } else {
@@ -419,7 +419,24 @@ define( [ "module", "vwf/model" ], function( module, model ) {
 
                 };
 
-            // TODO: deleteMethod
+            case "deleteMethod":
+
+                return function( nodeID, methodName, when, callback ) {
+
+                    if ( this.state.enabled ) {
+
+                        if ( when === undefined ) {
+                            return this.kernel[kernelFunctionName]( nodeID, methodName );
+                        } else {
+                            this.kernel.plan( nodeID, kernelFunctionName, methodName,
+                                 when, callback /* result */ );  // TODO: { parameters: methodParameters, body: methodBody } ? -- vwf.receive() needs to parse
+                        }
+
+                    } else {
+                        this.state.blocked = true;
+                    }
+
+                };
 
             case "callMethod":
 
@@ -442,7 +459,7 @@ define( [ "module", "vwf/model" ], function( module, model ) {
     
             case "createEvent":
 
-                return function( nodeID, eventName, eventParameters, when, callback ) {
+                return function( nodeID, eventName, eventParameters, body, when, callback ) {
 
                     if ( this.state.enabled ) {
 
@@ -450,7 +467,7 @@ define( [ "module", "vwf/model" ], function( module, model ) {
                             return this.kernel[kernelFunctionName]( nodeID, eventName, eventParameters );
                         } else {
                             this.kernel.plan( nodeID, kernelFunctionName, eventName,
-                                [ eventParameters ], when, callback /* result */ );
+                                 eventParameters , body, when, callback /* result */ );
                         }
 
                     } else {
@@ -459,7 +476,23 @@ define( [ "module", "vwf/model" ], function( module, model ) {
 
                 };
 
-            // TODO: deleteEvent
+           case "deleteEvent":
+
+                return function( nodeID, eventName, when, callback ) {
+
+                    if ( this.state.enabled ) {
+
+                        if ( when === undefined ) {
+                            return this.kernel[kernelFunctionName]( nodeID, eventName );
+                        } else {
+                            this.kernel.plan( nodeID, kernelFunctionName, eventName, when, callback /* result */ );
+                        }
+
+                    } else {
+                        this.state.blocked = true;
+                    }
+
+                };
 
             case "fireEvent":
 

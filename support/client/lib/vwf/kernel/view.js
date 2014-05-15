@@ -161,12 +161,17 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 };
             case "createEvent":
 
-                return function( nodeID, eventName, eventParameters, when, callback ) {
+                return function( nodeID, eventName, eventParameters, body,when, callback ) {
                     this.kernel.send( nodeID, kernelFunctionName, eventName,
-                        [ eventParameters ], when || 0, callback /* result */ );
+                        [ eventParameters, body ], when || 0, callback /* result */ );
                 };
 
-            // TODO: deleteEvent
+           case "deleteEvent":
+
+                return function( nodeID, eventName, when, callback ) {
+                    this.kernel.send( nodeID, kernelFunctionName, eventName,
+                        undefined, when || 0, callback /* ( result ) */ );
+                };
 
             case "fireEvent":
 

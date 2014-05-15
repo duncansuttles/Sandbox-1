@@ -179,6 +179,21 @@ define( function() {
         /// 
         /// @returns {}
 
+        deletedMethod: [ /* nodeID, methodName, methodParameters, methodBody */ ],
+
+        // TODO: deletedMethod
+
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {String} methodName
+        /// @param {String[]} methodParameters
+        /// @param {Value} methodValue
+        /// 
+        /// @returns {}
+
         calledMethod: [ /* nodeID, methodName, methodParameters, methodValue */ ],
 
         /// Description.
@@ -192,6 +207,20 @@ define( function() {
         /// @returns {}
 
         createdEvent: [ /* nodeID, eventName, eventParameters */ ],
+
+        // TODO: deletedEvent
+
+        /// Description.
+        /// 
+        /// @function
+        /// 
+        /// @param {ID} nodeID
+        /// @param {String} eventName
+        /// @param {String[]} eventParameters
+        /// 
+        /// @returns {}
+
+        deletedEvent: [ /* nodeID, eventName, eventParameters */ ],
 
         // TODO: deletedEvent
 
