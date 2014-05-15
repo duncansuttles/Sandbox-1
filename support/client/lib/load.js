@@ -159,10 +159,7 @@ else
             //if they are not, warn them by loading alertify and alerting
             require(['vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify'], function (alertify) {
 
-              alertify.set({ labels: {
-                ok     : i18n.t("Login"),
-                cancel : i18n.t("Continue as Guest")
-              } });
+            
 
               
 
@@ -175,9 +172,16 @@ else
               }
               else
               {
+
+              alertify.set({ labels: {
+                ok     : i18n.t("Login"),
+                cancel : i18n.t("Continue as Guest")
+              } });
+
               alertify.confirm(i18n.t("You are viewing this world as a guest")+"."+i18n.t("You will be able to view the world, but not interact with it")+"."+i18n.t("Would you like to go back and log in")+"?",
                 function(e)
                 {
+
 
                   //if they choose to go back and log in
                   if(e)
@@ -186,7 +190,7 @@ else
                   {
 
                     alertify.set({ labels: {
-                      ok     : "Ok",
+                      ok     : i18n.t("Ok"),
                       cancel : i18n.t("Cancel")
                     } });
 
