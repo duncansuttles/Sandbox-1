@@ -150,10 +150,26 @@
 					}               
 				}     
 			}
+			this.removeLights = function(node)
+			{
+				if(node instanceof THREE.DirectionalLight ||
+					node instanceof THREE.PointLight ||
+					node instanceof THREE.SpotLight ||
+					node instanceof THREE.AmbientLight)
+				{
+					node.parent.remove(node);
+					return;
+				}
+				if(node && node.children)
+				{
+					for(var i = 0; i < node.children.length; i++)
+						this.removeLights(node.children[i]);
+				}
+			}
 			this.cleanTHREEJSnodes = function(node)
 			{
 					var list = [];
-					
+					this.removeLights(node);
 					this.GetAllLeafMeshes(node,list);
 					for(var i =0; i < list.length; i++)
 					{
@@ -161,6 +177,7 @@
 						list[i].castShadow = _SettingsManager.getKey('shadows');
 						list[i].receiveShadow = _SettingsManager.getKey('shadows');
 						if(list[i].geometry instanceof THREE.BufferGeometry) continue;
+						//humm, the below looks useful. Why is it removed?
 					/*	if(list[i].material)
 						{
 							list[i].material = list[i].material.clone();
@@ -233,6 +250,8 @@
 
 				reg.node = asset.scene.clone();
 				
+				
+
 				this.cleanTHREEJSnodes(reg.node);
 				
 				this.getRoot().add(reg.node.clone());
@@ -293,11 +312,18 @@
 				assetRegistry[assetSource].node = _assetLoader.getUtf8JsonOptimized(assetSource).scene;
 				this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
 			}
-			if(childType == 'subDriver/threejs/asset/vnd.collada+xml' && _assetLoader.getCollada(assetSource))
+			if(childType == 'subDriver/threejs/asset/vnd.collada+xml+optimized' && _assetLoader.getCollada(assetSource))
 			{
 				assetRegistry[assetSource].loaded = true;
 				assetRegistry[assetSource].pending = false;
 				assetRegistry[assetSource].node = _assetLoader.getCollada(assetSource).scene;
+				this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
+			}
+			if(childType == 'subDriver/threejs/asset/vnd.collada+xml+optimized' && _assetLoader.getCollada(assetSource))
+			{
+				assetRegistry[assetSource].loaded = true;
+				assetRegistry[assetSource].pending = false;
+				assetRegistry[assetSource].node = _assetLoader.getColladaOptimized(assetSource).scene;
 				this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
 			}
 		}
@@ -318,6 +344,14 @@
 				if(childType == 'subDriver/threejs/asset/vnd.collada+xml')
 				{
 					this.loader = new THREE.ColladaLoader();
+					
+					this.loader.load(assetSource,this.loaded.bind(this),this.loadFailed.bind(this));
+					
+					asyncCallback(false);
+				}
+				if(childType == 'subDriver/threejs/asset/vnd.collada+xml+optimized')
+				{
+					this.loader = new ColladaLoaderOptimized();
 					
 					this.loader.load(assetSource,this.loaded.bind(this),this.loadFailed.bind(this));
 					

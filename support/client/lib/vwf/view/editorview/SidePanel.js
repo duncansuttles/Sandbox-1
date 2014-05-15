@@ -9,7 +9,9 @@ define(
 		{
 			if (!_Editor.findcamera()) return;
 			_Editor.findcamera().aspect = ($('#index-vwf').width() / $('#index-vwf').height());
+
 			_Editor.findcamera().updateProjectionMatrix();
+
 			_ScriptEditor.resize();
 		}
 
@@ -47,6 +49,10 @@ define(
 				window.clearInterval(window.sizeTimeoutHandle);
 				sizeWindowTimer();
 				window.sizeTimeoutHandle = null;
+				var resolutionScale = _SettingsManager.getKey('resolutionScale');
+				$('#index-vwf')[0].height = $('#index-vwf').height() / resolutionScale;
+				$('#index-vwf')[0].width = $(window).width()/ resolutionScale;
+				_dRenderer.setSize($('#index-vwf').width()/ resolutionScale,$('#index-vwf').height()/ resolutionScale,false)
 			});
 			$(document).trigger('sidePanelClosed');
 			$('#index-vwf').focus();
@@ -74,6 +80,10 @@ define(
 			{
 				window.clearInterval(window.sizeTimeoutHandle);
 				window.sizeTimeoutHandle = null;
+				var resolutionScale = _SettingsManager.getKey('resolutionScale');
+				$('#index-vwf')[0].height = $('#index-vwf').height()/ resolutionScale;
+				$('#index-vwf')[0].width = $('#index-vwf').width()/ resolutionScale;
+				_dRenderer.setSize($('#index-vwf').width()/ resolutionScale,$('#index-vwf').height()/ resolutionScale,false)
 			});
 		}
 		function updateScrollBars()

@@ -794,6 +794,15 @@
                     } );
                 }
 
+				var space = window.location.pathname.slice( 1,
+                        window.location.pathname.lastIndexOf("/") );
+                var protocol = window.location.protocol;
+                var host = {{host}};
+                if(protocol === 'http:')
+				    socket = io.connect("http://"+host);
+                if(protocol === 'https:')
+                    socket = io.connect("https://"+host);
+				
             } catch ( e ) {
 
                 // If a connection to the reflector is not available, then run in single-user mode.

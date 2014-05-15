@@ -173,11 +173,21 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 
 	function initialize()
 	{
+		$(document.body).append("<div id='ModelUploadDialog'></div>");
 		$(document.body).append("<div id='ModelLibrary'></div>");
 		$(document.body).append("<div id='ModelDetails'></div>");
+
+		$('#ModelUploadDialog').hide();
+		$('#ModelUploadDialog').load('vwf/view/editorview/uploadModel.html',function()
+			{
+
+				__3DRIntegration.hookupUploadDialog();
+
+			});
+
 		$('#ModelLibrary').append("<div id='ModelSearchResults'></div>");
 		$('#ModelLibrary').append("<div id='ModelSearchPanel'></div>");
-		$('#ModelSearchPanel').append("<input type='text' id='ModelSearchTerm' style='border-radius: 5px;'></div>");
+		$('#ModelSearchPanel').append("<input type='text' id='ModelSearchTerm' style='border-radius: 5px;'></input>");
 		$('#ModelSearchPanel').css('overflow', 'auto');
 		$('#ModelSearchPanel').append("<div id='ModelSearchButton'></div>");
 		$('#ModelSearchPanel').append("<div id='ResultsPages' style='display: inline;'></div>");
@@ -185,10 +195,149 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 		{
 			label: 'Search'
 		});
+
+		
 		$('#ModelSearchTerm').keydown(function (e)
 		{
 			e.stopPropagation();
 		});
+
+		this.displayUploadPercent = function(per)
+		{
+			var f = 2 * Math.PI * per;
+			var x = -1;
+			var y = 0;
+			var x1 = x * Math.cos(f) - y *  Math.sin(f);
+			var y1 = y * Math.cos( f )+ x * Math.sin (f);
+
+			x1 *= 25;
+			y1 *= 25;
+
+			x1 += 30;
+			y1 += 30;
+
+			if(per >= .5)
+				$('#progresspath').attr('d', 'M5 30            A 25 25, 0, 1, 1, ' + x1 + ' ' + y1); 
+			else
+				$('#progresspath').attr('d', 'M5 30            A 25 25, 0, 0, 1, ' + x1 + ' ' + y1); 
+
+		}
+		this.hookupUploadDialog = function()
+		{
+			
+			$('#ModelUploadFile').change(function(){
+
+				var files = $('#ModelUploadFile')[0].files;
+				var file = files[0];
+				console.log(file);
+				$('#filename').text(file.name)
+				$('#filesize').text(file.size)
+				$('#filetype').text(file.type)
+				$('#uploadTitle').val(file.name)
+				
+			})
+			
+			
+			$('#dragArea').on('drop',function(e){
+
+				console.log(e);
+				var dt = dt.dataTransfer;
+				var file = dt.files[0]
+				$('#ModelUploadFile')[0].files = dt.files[0];
+				e.preventDefault();
+				return false;
+
+			});
+			$('#dragArea').on('dragenter', function (e) {
+     			 if (e.preventDefault) { e.preventDefault(); }
+     			 return false;
+    		});
+    		$('#dragArea').on('dragover', function (e) {
+     			 if (e.preventDefault) { e.preventDefault(); }
+     			 return false;
+    		});
+
+
+
+			
+			$('#cancel3DRUpload').click(function()
+			{
+				$('#ModelUploadDialog').hide();
+
+			});
+			$('#submit3DRUpload').click(function()
+			{
+				
+				var files = $('#ModelUploadFile')[0].files;
+				var file = files[0];
+				var xhr = new XMLHttpRequest();
+				if (xhr.upload && file.size <= 15 * 1024 * 1024) {
+					xhr.open("POST", "./vwfdatamanager.svc/3drupload", true);
+					xhr.setRequestHeader("X_FILENAME", file.name);
+					
+					
+					
+
+					
+					_Notifier.startWait('Uploading')
+					xhr.upload.addEventListener("progress", function(oEvent)
+					{
+						//upload progress
+						var percentComplete = oEvent.loaded / oEvent.total;
+						
+						_Notifier.startWait('Uploading ' + percentComplete + '%')
+					}, false);
+					xhr.upload.addEventListener("load", function()
+					{
+						_Notifier.startWait("Waiting for conversion.");
+					}, false);
+
+					xhr.upload.addEventListener("error", function()
+					{
+						console.log("upload error.");
+						_Notifier.stopWait();
+
+					}, false);
+
+					xhr.addEventListener("error",function()
+					{
+						console.log("xhr error.");
+						_Notifier.stopWait();
+
+					},false);
+					xhr.addEventListener("load",function()
+					{
+						var pid = JSON.parse(xhr.responseText);
+						_Notifier.startWait("Fetching Metadata");
+
+						_ModelLibrary.getMetadata(pid,
+						function (object)
+						{
+							var metadata = object;
+							_ModelLibrary.MetadataCache[pid] = object;
+							__3DRIntegration.insertObject(pid);
+							_Notifier.startWait("Downloading");
+						},
+						function (thrownError)
+						{
+							_Notifier.stopWait();
+							alert(thrownError);
+						});
+
+						
+
+					},false);
+
+
+
+					var formData = new FormData();
+					formData.append('model', file);
+
+					xhr.send(formData);
+				}
+			});
+		}
+		
 		$('#ModelLibrary').dialog(
 		{
 			title: 'Search 3DR',
@@ -203,6 +352,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 			modal: true,
 			movable: true
 		});
+		
 		$('#ModelDetails').dialog(
 		{
 			title: 'Model Details',
@@ -245,7 +395,20 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 		{
 			$('#ModelLibrary').dialog('close');
 		}
-		
+		this.showUpload = function()
+		{
+			$('#ModelUploadDialog').show();
+			var x = $('.dragArea').offset().top;
+			var y = $('.dragArea').offset().left;
+			var w = $('.dragArea').width();
+			var h = $('.dragArea').height();
+			var x2 = x + w;
+			var y2 = y + h;
+			
+
+			
+
+		}
 		this.BuildModelRequest = function (pid)
 		{
 			return "./vwfdatamanager.svc/3drdownload?pid=" + pid;
@@ -341,7 +504,24 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 			}
 			else
 			{
-				$.ajax(
+					_ModelLibrary.getMetadata(pid,
+					function (object)
+					{
+						var metadata = object;
+						jQuery('#ModelDetails').css('text-align', 'left');
+						_ModelLibrary.DisplayMetadata(object);
+						_ModelLibrary.MetadataCache[_ModelLibrary.DetailsPID] = object;
+					},
+					function (thrownError)
+					{
+						alert(thrownError);
+					});
+				
+			}
+		}
+		this.getMetadata = function(pid,success,failure)
+		{
+			$.ajax(
 				{
 					type: "GET",
 					//the below is no longer valid - the server proxies all request, and has its own endpoint and auth
@@ -351,16 +531,14 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 					success: function (object, responseStatus, request)
 					{
 						var metadata = object;
-						jQuery('#ModelDetails').css('text-align', 'left');
-						_ModelLibrary.DisplayMetadata(object);
-						_ModelLibrary.MetadataCache[_ModelLibrary.DetailsPID] = object;
+						success(object);
+						
 					}.bind(this),
 					error: function (xhr, ajaxOptions, thrownError)
 					{
-						alert(thrownError);
+						failure(thrownError);
 					}
 				});
-			}
 		}
 		this.showResults = function (page)
 		{

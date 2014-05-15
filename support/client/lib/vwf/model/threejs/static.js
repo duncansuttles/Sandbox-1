@@ -8,6 +8,12 @@
 				if(propname == 'isStatic')
 				{
 					
+					if(this.sourceType == 'subDriver/threejs/asset/vnd.collada+xml+optimized')
+					{
+						console.warn ('Optimized assets cannot currently be marked static.');
+						return propval;
+					}
+
 					this.isStatic = propval;
 					if(!this.dynamic)
 						this.getRoot().setStatic(this.isStatic);
@@ -18,6 +24,12 @@
 				if(propname == 'isDynamic')
                 {
                     
+                    if(this.sourceType == 'subDriver/threejs/asset/vnd.collada+xml+optimized')
+					{
+						console.warn ('Optimized assets cannot currently be marked dynamic.');
+						return propval;
+					}
+
 					this.settingProperty('isStatic',false);
 					this.dynamic = propval;
                     this.getRoot().setDynamic(propval);

@@ -218,6 +218,14 @@ SceneManager.prototype.SphereCast = function(center,r,opts)
 SceneManager.prototype.dirtyObjects = [];
 SceneManager.prototype.setDirty = function(object)
 {
+	if(object.children && object.children.length)
+	{
+
+		for(var i = 0; i < object.children.length; i++)
+			this.setDirty(object.children[i]);
+		return;
+	}
+
 	if(this.dirtyObjects.indexOf(object) == -1)
 	{
 		this.dirtyObjects.push(object);
@@ -225,13 +233,19 @@ SceneManager.prototype.setDirty = function(object)
 }
 SceneManager.prototype.update = function(dt)
 {
+	var len = _SceneManager.root.getChildren().length;
 	if(!this.initialized) return;
+
+	
 
 	for(var i = 0; i < this.dirtyObjects.length; i++)
 	{
 		this.dirtyObjects[i].sceneManagerUpdate();
-		
 	}
+	
+
+	var len = _SceneManager.root.getChildren().length;
+
 	this.dirtyObjects = [];
 	
 	var dirtybatchcount = 0;
@@ -280,6 +294,7 @@ SceneManager.prototype.update = function(dt)
 	{
 		this.particleSystemList[i].update(dt);
 	}
+
 
 }
 SceneManager.prototype.releaseTexture = function(texture)
@@ -486,8 +501,9 @@ SceneManager.prototype.initialize = function(scene)
 				_SceneManager.addToRoot(list[i]);
 			_SceneManager.setDirty(list[i]);
 		}
-		
-		_SceneManager.setDirty(this);
+			
+		//DO NOT PUT OBJECT3Ds ON THE DIRTY LIST!	
+		//_SceneManager.setDirty(this);
 	}
 	THREE.Object3D.prototype.remove_internal = THREE.Object3D.prototype.remove;
 	THREE.Object3D.prototype.remove = function(child,SceneManagerIgnore)
@@ -500,7 +516,8 @@ SceneManager.prototype.initialize = function(scene)
 		if(SceneManagerIgnore)
 			return;
 		
-		GetAllLeafMeshes(child,meshes);		
+		GetAllLeafMeshes(child,meshes);	
+		
 		for(var i =0; i < meshes.length; i++)
 		{
 			meshes[i].sceneManagerDelete();
@@ -516,7 +533,9 @@ SceneManager.prototype.initialize = function(scene)
 			meshes[i].materialUpdated();
 			//_SceneManager.removeChild(meshes[i]);
 		}
+	
 	}
+
 	THREE.Mesh.prototype.materialUpdated = function()
 	{
 		if(!this.updateCount)
@@ -629,6 +648,7 @@ SceneManager.prototype.removeChild = function(c)
 	}	
 
 	var removed = this.root.removeChild(c);
+	
 	
 }
 

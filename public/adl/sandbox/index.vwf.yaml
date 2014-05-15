@@ -272,6 +272,7 @@ scripts:
      //  this.PickOptions.UserRenderBatches = true;
       
         $('#index-vwf').mousedown(function(e){this.localpointerDown(e);}.bind(this));
+        window.addEventListener("deviceorientation", this.orientationEvent.bind(this), true);
         
         $('#index-vwf').mousewheel(function(e){e.deltaY *= -1; this.localpointerWheel(e);}.bind(this));
         $('#index-vwf').mouseup(function(e){this.localpointerUp(e);}.bind(this));
@@ -885,6 +886,49 @@ scripts:
         tempvec.z = arr[2];
         return  tempvec;
     }
+    this.orientationEvent = function(e)
+    {
+        if(this.cameramode !== 'DeviceOrientation')
+            return;
+
+        
+        var x =     (e.alpha) * .0174532925;
+        var y = e.beta* .0174532925;
+        var z = e.gamma* .0174532925
+
+    var zee = new THREE.Vector3( 0, 0, 1 );
+    var orient = THREE.Math.degToRad(90);
+    var euler = new THREE.Euler();
+
+    var q0 = new THREE.Quaternion();
+
+    var q1 = new THREE.Quaternion( - Math.sqrt( 0.5 ), 0, 0, Math.sqrt( 0.5 ) ); // - PI/2 around the x-axis
+
+      var quaternion = new THREE.Quaternion();
+       euler.set(y,x,-z,'YXZ')
+       quaternion.setFromEuler( euler );
+       quaternion.multiply( q1 )
+       quaternion.multiply(q0.setFromAxisAngle( zee, - orient ));
+        findcamera().matrixAutoUpdate = false;
+
+        var oldx =  findcamera().matrix.elements[12];
+        var oldy =  findcamera().matrix.elements[13];
+        var oldz =  findcamera().matrix.elements[14];
+        findcamera().matrix.makeRotationFromQuaternion(quaternion);
+
+        var r = new THREE.Matrix4();
+        r.elements[0] = 1; r.elements[1] = 0;r.elements[1] = 0;
+        r.elements[4] = 0; r.elements[5] = 0;r.elements[6] = 1;
+        r.elements[8] = 0; r.elements[9] = -1;r.elements[10] = 0;
+       
+       r.multiply(findcamera().matrix);
+        findcamera().matrix = r;
+        findcamera().matrix.elements[12] = oldx;
+        findcamera().matrix.elements[13] = oldy;
+        findcamera().matrix.elements[14] = oldz;
+       // console.log(e.alpha,e.beta,e.gamma);
+
+    }
     this.updateCamera = function()
       {
         
@@ -898,7 +942,7 @@ scripts:
           this.objectFollowed = null;
           console.error(e)
         }
-        if(this.cameramode == 'None')
+        if(this.cameramode == 'None' || this.cameramode == 'DeviceOrientation')
         {
             return;
         }

@@ -329,7 +329,7 @@
 				var now = performance.now();
 				var campos = _Editor.findcamera().position;
 
-				for(var i =0; i<this.children.length;i++)
+				for(var i in this.children)
 				{
 					this.children[i].update(campos);
 				}

@@ -221,6 +221,8 @@ define(function ()
 					type: 'POST',
 					url:  './vwfDataManager.svc/state?SID=' + _DataManager.getCurrentSession(),
 					data: JSON.stringify(nodes),
+					dataType: 'json',
+					contentType: "application/json; charset=utf-8",
 					success: function(err,data,xhr)
 					{
 					
@@ -278,12 +280,13 @@ define(function ()
 		//get the Id of the current world from the url
 		this.getCurrentSession = function ()
 		{
-			return (/\/adl\/sandbox\/.*\//).exec(window.location.toString()).toString();
+            var regExp = new RegExp(window.appPath+".*\/");
+			return regExp.exec(window.location.toString()).toString();
 		}
 		//at this point, this server pretty much only supports the sandbox. This will return the sandbox root url
 		this.getCurrentApplication = function ()
 		{
-			return location.protocol +'//'+  location.host + '/adl/sandbox';
+			return location.protocol +'//'+  location.host + window.appPath;
 		}
 		//Get the number of users in this space. NOTE: Counts anonymous
 		this.getClientCount = function ()

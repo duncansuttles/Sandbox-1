@@ -439,7 +439,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 					node.threeObject.add(node.getRoot());
 					threeParent.add(node.threeObject);
 				}
-				else if(childType ==  "subDriver/threejs/asset/vnd.collada+xml" || childType ==  "subDriver/threejs/asset/vnd.osgjs+json+compressed")
+				else if(childType ==  "subDriver/threejs/asset/vnd.collada+xml" || childType ==  "subDriver/threejs/asset/vnd.osgjs+json+compressed" || childType == "subDriver/threejs/asset/vnd.collada+xml+optimized")
 				{
 					
 					node = this.state.nodes[childID] = this.subDriverFactory.createNode(childID, 'vwf/model/threejs/asset.js', childName, childType, childSource, callback);
@@ -506,7 +506,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 
         deletingNode: function( nodeID ) {
 
-            
+            console.log('three driver saw delete command for ' + nodeID)
             if(nodeID)
             {
                 var childNode = this.state.nodes[nodeID];

@@ -207,6 +207,7 @@ color: lightgray;
 			type: 'POST',
 			url: root + '/vwfDataManager.svc/publish?SID='+sid,
 			data: JSON.stringify(statedata),
+			contentType: statedata ? "application/json; charset=utf-8" : "application/text; charset=utf-8",
 			success:function(data,status,xhr)
 			{
 				redirect();

@@ -92,7 +92,8 @@ define(
 				{
 					type: 'POST',
 					url: './vwfDataManager.svc/thumbnail?SID='+_DataManager.getCurrentSession().replace(/\//g,'_'),
-					data: img,
+					data: JSON.stringify({image:img}),
+					contentType: "application/json; charset=utf-8",
 					success:function(data,status,xhr)
 					{
 						
@@ -659,6 +660,19 @@ define(
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Orbit');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Navigate');
 		});
+
+		$('#MenuCameraDeviceOrientation').click(function (e)
+		{
+			_dView.setCameraDefault();
+			clearCameraModeIcons();
+			vwf.models[0].model.nodes['index-vwf'].setCameraMode('DeviceOrientation');
+		});
+		$('#MenuViewHideTools').click(function (e)
+		{
+			hideTools();
+		});
+		
+		
 		
 		
 		$('#MenuCameraShare').click(function (e)
@@ -830,6 +844,12 @@ define(
 			}
 		});
 		
+		$('#MenuCreateUploadMesh').click(function (e)
+		{
+			_ModelLibrary.showUpload();
+		});
+
+		
 		$('#MenuUndo').click(function (e)
 		{
 			_UndoManager.undo();
@@ -852,14 +872,18 @@ define(
 						{
 							if(type == 'Collada')
 								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.collada+xml');
+							if(type == 'Optimized Collada')
+								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.collada+xml+optimized');
 							if(type == '3DR JSON')
 								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.osgjs+json+compressed');
+
+							
 						}
 					},'http://');
 				}
 
 			},
-			["Collada","3DR JSON"])	
+			["Collada","Optimized Collada","3DR JSON"])	
 			
 		});
 		
@@ -954,6 +978,17 @@ define(
 			   		return
 			}
 		});
+
+		$('#MenuViewRenderNormal').click(function (e)
+		{
+			_dView.setRenderModeNormal();
+		});
+		$('#MenuViewRenderStereo').click(function (e)
+		{
+			_dView.setRenderModeStereo()
+		});
+
+		
 
 
 

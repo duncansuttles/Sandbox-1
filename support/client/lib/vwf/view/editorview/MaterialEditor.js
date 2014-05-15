@@ -21,7 +21,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 		//$('#materialeditor').dialog({title:'Material Editor',autoOpen:false});
 		$('#materialeditor').css('border-bottom', '5px solid #444444')
 		$('#materialeditor').css('border-left', '2px solid #444444')
-		$(document.head).append('<link rel="stylesheet" media="screen" type="text/css" href="css/colorpicker.css" />');
+		$(document.head).append('<link rel="stylesheet" media="screen" type="text/css" href="../vwf/view/editorview/css/colorpicker.css" />');
 		$(document.head).append('<script type="text/javascript" src="js/colorpicker.js"></script>');
 		this.show = function ()
 		{
