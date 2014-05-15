@@ -233,7 +233,7 @@
     }
     UTF8JsonLoader.prototype.jsonLoaded = function(e)
     {
-            var test = 1+1;
+    
             var self = this;
             //async decompress UTF8 data in webworker
             backgroundLoader.decompress(e,function(e){self.decompressed(e)});          
@@ -243,6 +243,11 @@
     { 
 //              var jsonData = JSON.parse(decompress(e));
 //              decompressArrays(jsonData)
+        if(!jsonData)
+        {
+            this.error();
+            return;
+        }
         var self = this;
         this.scene = this.ParseSceneGraph(jsonData,function(e){return self.texture_load_callback(e)});
         if(this.callback)
