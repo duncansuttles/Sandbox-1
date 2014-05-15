@@ -373,6 +373,9 @@ properties:
       var transform = goog.vec.Mat4.multMat( parentInverse, this.transformFromValue( value ), goog.vec.Vec3.create() );
       this.transform = transform;
   transform:
+    set: |
+      var translation = this.transformFromValue(value);
+      this.translation = [translation[12],translation[13],translation[14]]
   translation:
     # node.translation <= [ x, y, z ]
     set: |
@@ -455,7 +458,7 @@ properties:
         scale,
         transform
       );
-      this.transform = transform;
+      // this.transform = transform;
     # node.scale => [ x, y, z ]
     get: |
       var thisTransform = this.transform;
