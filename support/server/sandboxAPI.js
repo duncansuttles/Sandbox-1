@@ -1575,7 +1575,7 @@ function serve (request, response)
 						Publish(URL, SID,body, response);		
 					} break;
 					case "3drupload":{
-						_3DR_proxy.proxyUpload(request,response);
+						_3DR_proxy.proxyUpload(request,response,URL);
 					} break;
 					default:
 					{

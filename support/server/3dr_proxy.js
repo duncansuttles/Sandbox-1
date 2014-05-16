@@ -86,8 +86,16 @@ function proxyThumbnail(URL,response)
  proxy(searchstring,response)
 }
 
-function proxyUpload(req,response)
+function proxyUpload(req,response,URL)
 {
+
+//anonymous may not upload models
+if(!URL.loginData)
+{
+	response.writeHead(500);
+ 	response.end();
+ 	return;
+}
 
 var searchstring = Get3DRAPI() +"/UploadModel?ID="+Get3DRAPIKey();
 console.log(searchstring);

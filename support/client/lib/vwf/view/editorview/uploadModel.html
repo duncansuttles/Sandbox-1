@@ -14,7 +14,7 @@ z-index: 1000000;
 .uploadDialog
 {
 width: 300px;
-height: 450px;
+padding-bottom: 6px;
 background: #222222;
 opacity: 1;
 margin: auto;
@@ -78,6 +78,7 @@ margin-top: 12px;
 line-height: 1;
 width: 30%;
 height: 1em;
+cursor: pointer;
 }
 
 .dragArea input
@@ -149,7 +150,8 @@ padding: 7px;
 cursor: pointer;
 }
 
-#uploadDialogButton:hover
+
+.uploadDialogButton:hover
 {
 background-color: #008aa6;
 }
@@ -163,6 +165,12 @@ font-size: 13px;
 margin: 2px;
 text-align: center;
 
+}
+._3drDisabled
+{
+background: #444;
+color: #888;	
+cursor: not-allowed;
 }
 </style>
 
@@ -182,8 +190,8 @@ text-align: center;
     		<path d="M5 30            A 25 25, 0, 1, 1, 5 30.01          " stroke="#555" fill="transparent" stroke-width="10"></path>
   			<path id = "progresspath" d="M5 30            A 25 25, 0, 1, 1, 55 30         " stroke="#779" fill="transparent" stroke-width="8"></path>
   		</svg>
-			<div class="uploadsectionDetail"><span>File name</span> <span style="text-align:right" id='filename'>test.zip</span></div>
-			<div class="uploadsectionDetail"><span>File size</span> <span style="text-align:right" id='filesize'>982kb</span></div>
+			<div class="uploadsectionDetail"><span>File name</span> <span style="text-align:right;overflow: hidden;vertical-align: bottom;white-space: nowrap;" id='filename'>test.zip</span></div>
+			<div class="uploadsectionDetail"><span>File size</span> <span style="text-align:right" id='filesize'>982Kb</span></div>
 			<div class="uploadsectionDetail"><span>File type</span> <span style="text-align:right" id='filetype'>zip</span></div>
 		</div>
 
