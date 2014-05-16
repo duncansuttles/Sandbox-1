@@ -428,6 +428,11 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 		}
 		this.showUpload = function()
 		{
+			if(!_UserManager.GetCurrentUserName())
+			{
+				alertify.alert('You must be logged in to upload a model');
+				return;
+			}
 			$('#ModelUploadDialog').show();
 			$('#filename').text('')
 			$('#filesize').text('')
