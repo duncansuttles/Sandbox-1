@@ -3574,6 +3574,22 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 
 			if(!toolsOpen()) return;
 			if (this.activeTool && this.activeTool.createdNode) this.activeTool.createdNode.apply(this.activeTool,arguments);
+
+			//if a new node is created, and it's a GUI node, and we're in pick mode, it needs the pick events bound so it can be selected
+			if(SelectMode == "Pick" || SelectMode == "TempPick")
+			{
+				//unbind so that we dont bind twice
+				//the actual DOM objects are created by a different driver, higher on the stack.
+				//need to give it a sec to get there
+				window.setTimeout(function(){
+
+					_Editor.unbindGuiNodePick();
+					_Editor.bindGuiNodePick();
+
+				},500)
+				
+			}
+
 		}
 		this.tools = {};
 		this.addTool = function (name, tool)
