@@ -849,8 +849,11 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			{
 				if (node)
 				{
+					var mat = vwf.getProperty(node.id, 'materialDef');
+					if(!mat)
+						return;
 					
-					this.currentMaterial = JSON.parse(JSON.stringify(vwf.getProperty(node.id, 'materialDef')));
+					this.currentMaterial = JSON.parse(JSON.stringify(mat));
 					if (!this.currentMaterial){
 					if(this.isOpen()) this.hide();
 					return;

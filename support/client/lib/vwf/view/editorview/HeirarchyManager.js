@@ -259,6 +259,10 @@ define(function ()
 			{
 				threenode = _Editor.findviewnode(this.selectedID);
 			}	
+			if (!threenode)
+			{
+				return ret;
+			}	
 
 			ret.name = threenode.name || threenode.uid || threenode.VWFID || 'No Name';
 
