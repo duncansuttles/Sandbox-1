@@ -736,6 +736,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				if(vwf.client() != vwf.moniker())
 				{
 					var ids = args[0];
+					//why does this happen? 
+					if(!ids)
+					{
+						return;
+					}
 					if(!this.peerSelections)
 						this.peerSelections = {};
 					if(!this.peerSelections[vwf.client()])
