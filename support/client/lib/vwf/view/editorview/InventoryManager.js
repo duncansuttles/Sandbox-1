@@ -112,6 +112,14 @@ define(function ()
 				{
 					var t = item;
 					var newintersectxy = _Editor.GetInsertPoint()
+					//account for the fact that some proto might have the transform stripped out
+					if(!t.properties.transform)
+					{
+						t.properties.transform = 
+						[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
+
+
+					}
 					if (t.properties.type != 'modifier' && t.properties.type != 'behavior')
 					{
 						t.properties.transform[12] = newintersectxy[0];
@@ -346,6 +354,18 @@ define(function ()
 			});
 		
 		}
+		//given a prototype, add to the personal inventory
+		this.addProto = function(proto,title,type)
+		{
+			this.addInventoryItem(proto, title, type,function(key)
+			{
+				_InventoryManager.global = false;
+				_InventoryManager.NoAnimateRedraw(function()
+				{
+					_InventoryManager.selectKey(key);
+				});
+			});
+		}
 		this.Take = function (id)
 		{
 			if(!_UserManager.GetCurrentUserName())
@@ -364,14 +384,8 @@ define(function ()
 			var type = 'object';
 			if(t.properties && t.properties.type)
 			type = t.properties.type
-			this.addInventoryItem(t, title, type,function(key)
-			{
-				_InventoryManager.global = false;
-				_InventoryManager.NoAnimateRedraw(function()
-				{
-					_InventoryManager.selectKey(key);
-				});
-			});
+
+			this.addProto(t,title,type);
 		}
 		this.Publish = function (id)
 		{
