@@ -335,7 +335,10 @@ function startVWF(){
 			{
 				listen= require('https').createServer({
 					pfx: fs.readFileSync(global.configuration.pfx),
-					passphrase:global.configuration.pfxPassphrase
+					passphrase:global.configuration.pfxPassphrase,
+					ca:[fs.readFileSync(global.configuration.sslCA[0]),fs.readFileSync(global.configuration.sslCA[1])],
+
+					
 				},app).listen(sslPort);
 
 				//setup a simple server to redirct all requests to the SSL port
