@@ -376,6 +376,7 @@ properties:
     set: |
       var translation = this.transformFromValue(value);
       this.translation = [translation[12],translation[13],translation[14]]
+      this.transform = value;
   translation:
     # node.translation <= [ x, y, z ]
     set: |
@@ -458,7 +459,7 @@ properties:
         scale,
         transform
       );
-      // this.transform = transform;
+       this.transform = transform;
     # node.scale => [ x, y, z ]
     get: |
       var thisTransform = this.transform;
