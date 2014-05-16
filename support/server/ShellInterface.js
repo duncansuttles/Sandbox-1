@@ -215,6 +215,13 @@ function StartShellInterface()
 
 			}
 		},
+		{
+			'command': 'show configurations',
+			'description': 'print the config file to the screen',
+			'callback': function(commands){
+				console.log(global.configuration)
+			}
+		},
 		/*{
 			'command': 'compact',
 			'description': 'Compacts the database to remove obsolete data',

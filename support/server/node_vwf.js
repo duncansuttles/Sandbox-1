@@ -74,7 +74,7 @@ var ServerFeatures = require("./serverFeatures.js");
 var i18n = require("i18next");
 var option = {
         //lng: 'en',
-        resGetPath: (__dirname+'/locales/__lng__/__ns__.json'),
+        resGetPath: (libpath.resolve("./locales/__lng__/__ns__.json")),
         //debug: true
       };
 i18n.init(option);
@@ -125,14 +125,33 @@ function startVWF(){
 					
 
 	
-	//start the DAL
-
-    SandboxAPI.setAnalytics(configSettings.analytics);
-	var p = process.argv.indexOf('-p'), port = 0, datapath = "";
+	//start the DAL, load configuration file
+	try{
+		configSettings = JSON.parse(fs.readFileSync('./config.json').toString());
+		console.log(configSettings);
+		SandboxAPI.setAnalytics(configSettings.analytics);
+	}
 	
+	catch(e){
+		configSettings = {};
+		console.log("Error: Unable to load config file");
+		console.log(e.message);
+	}
+	
+	//save configuration into global scope so other modules can use.
+	global.configuration = configSettings;
+
+
+
+
+	var p = process.argv.indexOf('-p'), port = 0, datapath = "";
+
 	//This is a bit ugly, but it does beat putting a ton of if/else statements everywhere
 	port = p >= 0 ? parseInt(process.argv[p+1]) : (configSettings.port ? configSettings.port : 3000);
 	
+	p = process.argv.indexOf('-sp');
+	sslPort =  p >= 0 ? parseInt(process.argv[p+1]) : (configSettings.sslPort ? configSettings.sslPort : 443);
+
 	p = process.argv.indexOf('-d');
 	datapath = p >= 0 ? process.argv[p+1] : (configSettings.datapath ? libpath.normalize(configSettings.datapath) : libpath.join(__dirname, "../../data"));
 	global.datapath = datapath;
@@ -223,7 +242,7 @@ function startVWF(){
 		DAL.setDataPath(datapath);
 		SandboxAPI.setDataPath(datapath);
 		
-		errorlog = fs.createWriteStream(SandboxAPI.getDataPath()+'//Logs/errors_'+(((new Date()).toString())).replace(/[^0-9A-Za-z]/g,'_'), {'flags': 'a'});
+		
 		
 		
 		Landing.setDocumentation(configSettings);
@@ -235,7 +254,7 @@ function startVWF(){
 			//start the session database
 			require('./sessions.js').sessionStartup(function(){
 
-
+			errorlog = fs.createWriteStream(SandboxAPI.getDataPath()+'//Logs/errors_'+(((new Date()).toString())).replace(/[^0-9A-Za-z]/g,'_'), {'flags': 'a'});
 			
 			global.adminUID = adminUID;
 			
@@ -268,7 +287,8 @@ function startVWF(){
 			app.use(express.methodOverride());
 			
 			//Wait until all data is loaded before continuing
-			app.use (ServerFeatures.waitForAllBody);
+			//app.use (ServerFeatures.waitForAllBody);
+			app.use(express.bodyParser());
 			//CORS support
 			app.use(ServerFeatures.CORSSupport);
 
@@ -316,7 +336,22 @@ function startVWF(){
 				listen= require('https').createServer({
 					pfx: fs.readFileSync(global.configuration.pfx),
 					passphrase:global.configuration.pfxPassphrase
-				},app).listen(port);
+				},app).listen(sslPort);
+
+				//setup a simple server to redirct all requests to the SSL port
+				var redirect = http.createServer(function(req,res){
+					var requrl = 'http://' +  req.headers.host + req.url;
+					requrl = url.parse(requrl);
+					
+					delete requrl.host;
+					requrl.port = sslPort;
+					requrl.protocol = "https:";
+					requrl = url.format(requrl);
+					res.writeHead(302, {
+					    "Location": requrl 
+					});
+					res.end();
+				}).listen(port);
 			}
 			else
 			{

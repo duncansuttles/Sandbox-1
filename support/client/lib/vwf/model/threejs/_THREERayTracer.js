@@ -272,7 +272,34 @@ function pointInFrustrum(point,frustrum)
 
 }
 
+function buildFaceListFromBounds(bound)
+{
+	var p1 = [bound.min[0],bound.min[1],bound.min[2]];
+	var p2 = [bound.max[0],bound.min[1],bound.min[2]];
+	var p3 = [bound.min[0],bound.max[1],bound.min[2]];
+	var p4 = [bound.max[0],bound.max[1],bound.min[2]];
+	var p5 = [bound.min[0],bound.min[1],bound.max[2]];
+	var p6 = [bound.max[0],bound.min[1],bound.max[2]];
+	var p7 = [bound.min[0],bound.max[1],bound.max[2]];
+	var p8 = [bound.max[0],bound.max[1],bound.max[2]];
 
+	var f1 = new face(p1,p2,p4);
+	var f2 = new face(p4,p3,p1);
+	var f3 = new face(p5,p6,p8);
+	var f4 = new face(p8,p7,p5);
+	var f5 = new face(p1,p2,p6);
+	var f6 = new face(p6,p5,p1);
+	var f7 = new face(p3,p4,p8);
+	var f8 = new face(p8,p7,p3);
+	var f9 = new face(p2,p4,p8);
+	var f10 = new face(p8,p6,p2);
+	var f11 = new face(p1,p3,p7);
+	var f12 = new face(p7,p5,p1);
+
+	var list = new SimpleFaceListRTAS([]);
+	list.faces  = [f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12];
+	return list;
+}
 
 face.prototype.intersectFrustrum = function(frustrum,opts)
 {
@@ -1328,11 +1355,54 @@ OctreeRTAS.prototype.intersectSphere = function(center,r,opts)
 {
 	return this.root.intersectSphere(center,r,opts);
 }
+
+
+
+function NullRTAS()
+{
+
+}
+NullRTAS.prototype.intersect = function(o,d,opts)
+{
+	
+	return [];
+}
+NullRTAS.prototype.intersectFrustrum = function(frustrum,opts)
+{
+	return [];
+}
+NullRTAS.prototype.intersectSphere = function(center,r,opts)
+{
+	return [];
+}
+
+
 //Generate either an octree of a face list to test rays.
 //note: the max faces can make big performance difference here.
 THREE.Geometry.prototype.BuildRayTraceAccelerationStructure = function()
 {
 	
+
+  //sigh, this is just not good enough, and does not save enough memory to be worth the trouble
+	var bounds = this.GetBoundingBox();
+	var volumex= bounds.max[0] - bounds.min[0];
+	var volumey = bounds.max[1] - bounds.min[1];
+	var volumez = bounds.max[2] - bounds.min[2];
+
+	//plus one so that we still at least attempt to generate bounds for objects that are flat in one dimention like a plane.
+	var volumeM3 = (volumez * volumey * volumex) + 1;
+ 	var volCm3 = volumeM3 * (100*100*100);
+
+ 	var denPerCm3 = this.faces.length / volCm3;
+ 	console.log(denPerCm3);
+ 	if(denPerCm3 > .001 &&  this.faces.length > OCTMaxFaces)
+ 	{
+ 		console.warn('Mesh density is greater than one poly per cubic centimeter. This is insane. Bailing out of octree generation');
+ 		this.RayTraceAccelerationStructure = buildFaceListFromBounds(bounds);
+ 		return;	
+ 	}
+ 	
+
 	var positions = [];
 	for(var i =0; i < this.vertices.length; i++)
 	{
@@ -1364,6 +1434,8 @@ THREE.Geometry.prototype.BuildRayTraceAccelerationStructure = function()
 	
 	
 	}
+	
+	
 	
 	if(this.faces.length > OCTMaxFaces)
 	{
@@ -1607,10 +1679,38 @@ THREE.BufferGeometry.prototype.BuildRayTraceAccelerationStructure = function()
 	
 	var positions = this.attributes.position.array;
 	//decompose the face3 and face4 data from the THREEjs faces into a list of tri indexes
-	var facedata = this.attributes.index.array;
+	var facedata;
+	if(this.attributes.index)
+	 	facedata = this.attributes.index.array;
+	 else
+	 {
+	 	facedata = [];
+	 	for(var i = 0; i < positions.length/3; i++)
+	 		facedata.push(i);
+	 }
+
+
+	  //sigh, this is just not good enough, and does not save enough memory to be worth the trouble
+	var bounds = this.GetBoundingBox();
+	var volumex= bounds.max[0] - bounds.min[0];
+	var volumey = bounds.max[1] - bounds.min[1];
+	var volumez = bounds.max[2] - bounds.min[2];
+
+	//plus one so that we still at least attempt to generate bounds for objects that are flat in one dimention like a plane.
+	var volumeM3 = (volumez * volumey * volumex) + 1;
+ 	var volCm3 = volumeM3 * (100*100*100);
+
+ 	var denPerCm3 = (facedata.length/3) / volCm3;
+ 	console.log(denPerCm3);
+ 	if(denPerCm3 > .001 &&  (facedata.length/3) > OCTMaxFaces)
+ 	{
+ 		console.warn('Mesh density is greater than one poly per cubic centimeter. This is insane. Bailing out of octree generation');
+ 		this.RayTraceAccelerationStructure = buildFaceListFromBounds(bounds);
+ 		return;	
+ 	}
 
 	
-	if(this.attributes.index.array.length/3 > OCTMaxFaces)
+	if(facedata.length/3 > OCTMaxFaces)
 	{
 	
 		this.RayTraceAccelerationStructure = new OctreeRTAS(facedata,positions,this.BoundingBox.min,this.BoundingBox.max);

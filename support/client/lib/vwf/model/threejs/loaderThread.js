@@ -61,12 +61,17 @@ self.init = function(data)
 	  self.decompressUTF8 = function(data)
 	  {
 	    if(!data) return;
-		var compressed = data.compressed;
-		var cbid = data.cbid;
-		  
-		var ret =  JSON.parse(decompress(compressed));
-		decompressArrays(ret);
-		self.command('decompressed',{decompressed:ret,cbid:cbid});
+	    try{
+			var compressed = data.compressed;
+			var cbid = data.cbid;
+			  
+			var ret =  JSON.parse(decompress(compressed));
+			decompressArrays(ret);
+			self.command('decompressed',{decompressed:ret,cbid:cbid});
+		}catch(e)
+		{
+			self.error(e,cbid);
+		}
 	  }
 	  self.load = function(data)
 	  {
@@ -135,6 +140,10 @@ self.init = function(data)
 	  self.alert = function(message)
 	  {
 		   self.command('eval',"_Notifier.alert('"+message+"');");
+	  }
+	  self.error = function(e,cbid)
+	  {
+	  	 self.command('error',{error:e.message,cbid:cbid});
 	  }
 	  self.log('background loader init complete');
   }

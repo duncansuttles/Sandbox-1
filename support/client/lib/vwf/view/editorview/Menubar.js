@@ -92,7 +92,8 @@ define(
 				{
 					type: 'POST',
 					url: './vwfDataManager.svc/thumbnail?SID='+_DataManager.getCurrentSession().replace(/\//g,'_'),
-					data: img,
+					data: JSON.stringify({image:img}),
+					contentType: "application/json; charset=utf-8",
 					success:function(data,status,xhr)
 					{
 						
@@ -843,6 +844,12 @@ define(
 			}
 		});
 		
+		$('#MenuCreateUploadMesh').click(function (e)
+		{
+			_ModelLibrary.showUpload();
+		});
+
+		
 		$('#MenuUndo').click(function (e)
 		{
 			_UndoManager.undo();
@@ -865,14 +872,18 @@ define(
 						{
 							if(type == 'Collada')
 								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.collada+xml');
+							if(type == 'Optimized Collada')
+								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.collada+xml+optimized');
 							if(type == '3DR JSON')
 								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.osgjs+json+compressed');
+
+							
 						}
 					},'http://');
 				}
 
 			},
-			["Collada","3DR JSON"])	
+			["Collada","Optimized Collada","3DR JSON"])	
 			
 		});
 		
@@ -976,6 +987,7 @@ define(
 		{
 			_dView.setRenderModeStereo()
 		});
+
 		
 
 

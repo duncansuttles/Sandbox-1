@@ -221,6 +221,8 @@ define(function ()
 					type: 'POST',
 					url:  './vwfDataManager.svc/state?SID=' + _DataManager.getCurrentSession(),
 					data: JSON.stringify(nodes),
+					dataType: 'json',
+					contentType: "application/json; charset=utf-8",
 					success: function(err,data,xhr)
 					{
 					

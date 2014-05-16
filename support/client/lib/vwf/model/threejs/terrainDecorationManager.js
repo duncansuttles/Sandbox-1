@@ -5,7 +5,7 @@
 	this.TerrainRoot = null;
 	this.root = new THREE.Object3D();
 	this.generator = null;
-	this.lastCameraPosition = null;
+	this.lastCameraPosition = new THREE.Vector3(0,0,0);
 	this.grassMeshes = [];
 	this.positions = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
 
@@ -24,13 +24,31 @@
 	{	
 		this.generator = r;
 	}
+	this.deletingNode = function()
+	{
+		debugger;
+		for(var i in this.positions)
+			for(var j in this.positions[i])
+				for(var k in this.positions[i][j].meshes)
+					this.getRoot().remove(this.positions[i][j].meshes[k]);
+
+		window._dGrass = null;
+
+		_dView.unbind('postprerender',this.renderHeightMap);		
+
+	}
 	this.dim = 8;
 	this.tileW = 8;
-	this.update = function(cameraPosition)
+	this.update = function(cameraPosition,force)
 	{
 
-		if(!this.lastCameraPosition)
-			this.lastCameraPosition = cameraPosition.clone();
+
+
+		//cant do any updates until the generator is set.
+		if(! this.generator) return;
+
+		if(!cameraPosition)
+			cameraPosition = this.lastCameraPosition.clone();
 		var updated = false;
 		
 		var updatedMeshLayer = [];
@@ -110,7 +128,7 @@
 			updated = true;
 				
 		}
-		if(updated == true)
+		if(updated == true || force)
 		{
 			//this.renderHeightMap();
 			this.needReRender = true;
@@ -222,7 +240,7 @@
 
 		}
 
-	}
+	}.bind(this);
 	this.getGrassMat = function(vertcount)
 	{
 		if(!this.mat)
@@ -570,6 +588,7 @@
 
 		var h = (this.dim *this.tileW )/2;
 		
+		this.lastCameraPosition = new THREE.Vector3(0,0,0);
 
 		this.camera = new THREE.OrthographicCamera(-h,h,-h,h,0,1000);
 		//this.camera = new THREE.PerspectiveCamera();
@@ -581,7 +600,8 @@
 	//	this.rtt.generateMipmaps = false;
 		
 		//this.scene.add(this.root);
-		_dView.bind('postprerender',this.renderHeightMap.bind(this));
+
+		_dView.bind('postprerender',this.renderHeightMap);
 		for(var i =0; i < this.dim; i++)
 		{
 			this.positions[i] = [];

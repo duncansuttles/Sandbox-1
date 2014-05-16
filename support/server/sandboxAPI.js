@@ -734,6 +734,9 @@ function Publish(URL, SID, publishdata, response){
 			return;
 		}
 		
+		if(Object.keys(publishdata).length == 0) 
+			publishdata = null;
+
 		var publishSettings = null;
 		//The settings  for the published state. 
 		//have to handle these in the client side code, with some enforcement at the server
@@ -789,14 +792,15 @@ function Publish(URL, SID, publishdata, response){
 function SaveThumbnail(URL,SID,body,response)
 {
 
-
+	
 	if(!URL.loginData)
 	{
 		respond(response,401,'Anonymous users cannot delete instances');
 		return;
 	}
 
-	var data = body.replace(/^data:image\/\w+;base64,/, "");
+	var data = body.image.replace(/^data:image\/\w+;base64,/, "");
+	
 	var buf = new Buffer(data, 'base64');
 	SID = SID ? SID : request.url.query.SID;
 	if(SID.length == 16){
@@ -1524,10 +1528,10 @@ function serve (request, response)
 				
 				//Have to do this here! throw does not work quite as you would think 
 				//with all the async stuff. Do error checking first.
-				if(command != 'thumbnail')   //excpetion for the base64 encoded thumbnails
+				if(command != 'thumbnail' && command != '3drupload')   //excpetion for the base64 encoded thumbnails
 				{
 					try{
-						JSON.parse(body);
+						body = JSON.stringify(body);
 					}catch(e)
 					{
 						respond(response,500,"Error in post: data is not json");
@@ -1569,6 +1573,9 @@ function serve (request, response)
 					} break;
 					case "publish":{
 						Publish(URL, SID,body, response);		
+					} break;
+					case "3drupload":{
+						_3DR_proxy.proxyUpload(request,response);
 					} break;
 					default:
 					{

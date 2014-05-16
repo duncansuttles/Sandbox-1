@@ -412,6 +412,7 @@ function() { return(
 					type: 'POST',
 					url:  './vwfDataManager.svc/error',
 					data: JSON.stringify(error),
+					contentType: "application/json; charset=utf-8",
 					success: function(err,data,xhr)
 					{
 

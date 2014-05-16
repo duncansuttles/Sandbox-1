@@ -26,6 +26,10 @@
 	"lrsEndpoint": null,
 	"lrsUsername": "",
 	"lrsPassword": "",
+
+    "pfx": null,              //the path and name of the PFX credential file. If not null, server will use HTTPS and WSS
+    "pfxPassphrase": null,    //the passphrase to open the pfx file
+    "sslPort" : 443           //the port to use for the secure server. Requests to the nonSSL port will redirect here
 }
 
 
