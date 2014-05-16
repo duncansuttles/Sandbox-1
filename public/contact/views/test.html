@@ -347,7 +347,7 @@ var getCapabilities = function(){
 		window.addEventListener('mousedown', onMouseClick, false);
 
 		
-		var socket = io.connect("ws://"+window.location.host);
+		var socket = io.connect( window.location.protocol + "//"+window.location.host);
 		socket.on( "connect", function() {
                   $('#socketconnection').text("Successful");
                   updateColors();

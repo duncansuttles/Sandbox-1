@@ -20,6 +20,7 @@
 					type: 'POST',
 					url: root + '/vwfDataManager.svc/createstate',
 					data: JSON.stringify(statedata),
+					contentType: "application/json; charset=utf-8",
 					success:function(data,status,xhr)
 					{
 						var newLocation = data.replace("Created state _contact_", "").replace("_", "");
@@ -56,6 +57,7 @@
 									type: 'POST',
 									url: root + '/vwfDataManager.svc/statedata?SID='+o,
 									data: JSON.stringify(statedata),
+									contentType: "application/json; charset=utf-8",
 									success:function(data,status,xhr)
 									{
 										

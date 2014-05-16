@@ -90,6 +90,7 @@
 			type: 'POST',
 			url: root + '/vwfDataManager.svc/statedata?SID='+sid,
 			data: JSON.stringify(statedata),
+			contentType: "application/json; charset=utf-8",
 			success:function(data,status,xhr)
 			{
 				

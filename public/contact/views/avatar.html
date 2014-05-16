@@ -51,6 +51,7 @@
 			type: 'POST',
 			url:  root + '/vwfDataManager.svc/Profile?UID='+UID,
 			data: JSON.stringify(vwfPortalModel.profile),
+			contentType: "application/json; charset=utf-8",
 			success: function(){
 				$(".avatarchoice").css('border-color', "#ccc");	
 				$("#"+vwfPortalModel.currentAvatar().parent.model+'_'+vwfPortalModel.currentAvatar().data.join('-')).css('border-color', "blue");	
