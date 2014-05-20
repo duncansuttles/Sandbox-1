@@ -1275,7 +1275,7 @@ define(function ()
 					});
 				}
 			}
-			var pointersugs = ['pointerDown', 'pointerUp', 'pointerOver', 'pointerOut', 'pointerClick', 'pointerMove', 'keyDown', 'keyUp', 'keyPress'];
+			var pointersugs = ['pointerDown', 'pointerUp', 'pointerOver', 'pointerOut', 'pointerClick', 'pointerMove','pointerWheel', 'keyDown', 'keyUp', 'keyPress'];
 			for (var i in pointersugs)
 			{
 				if (!this.eventlist || (this.eventlist && this.eventlist[pointersugs[i]] === undefined))
