@@ -116,11 +116,11 @@ function GetLoginData(response,URL)
 		logindata.instances = [];
 		logindata.clients = [];
 		
-		for(var i in global.instances)
+		for(var i in global.instances.instances)
 		{
-			for(var j in global.instances[i].clients)
+			for(var j in global.instances.instances[i].clients)
 			{
-				if(global.instances[i].clients[j].loginData && global.instances[i].clients[j].loginData.UID == URL.loginData.UID)
+				if(global.instances.instances[i].clients[j].loginData && global.instances.instances[i].clients[j].loginData.UID == URL.loginData.UID)
 				{
 					logindata.instances.push(i);
 					logindata.clients.push(j);
@@ -163,13 +163,18 @@ function InstanceLogin(response,URL)
 				return;
 			}	
 			
-			if(global.instances[instance] && global.instances[instance].clients[cid])
+			if(global.instances.has(instance) && global.instances.get(instance).clients[cid])
 			{
 				URL.loginData.clients[cid] = instance;
-				global.instances[instance].clients[cid].loginData = URL.loginData;
+				global.instances.get(instance).clients[cid].loginData = URL.loginData;
 				
-				if(global.instances[instance].state.findNode('index-vwf').properties['owner'] == undefined)
-					global.instances[instance].state.findNode('index-vwf').properties['owner'] = URL.loginData.UID;
+				//the first guy to log into a blank world is set as the owner, as far as the server is concerned. 
+				//this is maybe not the best way to handle this
+				if(global.instances.get(instance).state.findNode('index-vwf').properties['owner'] == undefined)
+					global.instances.get(instance).state.findNode('index-vwf').properties['owner'] = URL.loginData.UID;
+				
+				//let the application respond to the log in of users	
+				global.instances.get(instance).messageLogin(cid,URL.loginData.UID);
 					
 				respond(response,200,"Client Logged Into " + instance);
 
@@ -199,13 +204,13 @@ function InstanceLogout(response,URL)
 			if(URL.loginData.clients[cid])
 			{
 			
-				if(global.instances[URL.loginData.clients[cid]])
+				if(global.instances.get(URL.loginData.clients[cid]))
 				{
 					
-					if(global.instances[URL.loginData.clients[cid]].clients[cid])
+					if(global.instances.get(URL.loginData.clients[cid]).clients[cid])
 					{
 						
-						delete global.instances[URL.loginData.clients[cid]].clients[cid].loginData;
+						delete global.instances.get(URL.loginData.clients[cid]).clients[cid].loginData;
 							
 					}
 				}

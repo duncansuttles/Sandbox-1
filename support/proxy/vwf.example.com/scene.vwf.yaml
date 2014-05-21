@@ -184,6 +184,7 @@ properties:
           return this._createAPI;      
 methods:
   findNode:
+  findNodeByID:
 scripts:
 - |
     this.activeCameraComp = undefined;
@@ -218,8 +219,22 @@ scripts:
           if(ret) return ret;
       }
       return ret;
-    
-    
+    }
+    this.findNodeByID = function(id,node)
+    {
+      
+      if(!node)
+      node = this;
+      
+      if(node && node.id == id)
+        return node;
+      var ret = null;  
+      for(var i =0; i <  node.children.length; i++)
+      {
+          ret = this.findNodeByID(id,node.children[i]);
+          if(ret) return ret;
+      }
+      return ret;
     }
     this.getActiveCamera = function() {
       if ( !this.activeCameraComp ) {

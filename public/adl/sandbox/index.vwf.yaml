@@ -14,6 +14,7 @@
 --- 
 extends: http://vwf.example.com/navscene.vwf
 properties:
+  clients: 
   DisplayName:
   placemarks:
     Origin: [0, 0, 0]
@@ -78,6 +79,29 @@ properties:
              return this.skyTexture    
   owner:
   type: scene
+  clientAPI:
+    get : |
+           if(this.___clientAPI) return this.___clientAPI;
+           this.___clientAPI = {};
+           this.___clientAPI.getUserNameForConnectionID = function(id)
+           {
+           	   if(!this.clients || !this.clients[id]) return null;
+           	   		return this.clients[id].name;
+           }.bind(this);
+           this.___clientAPI.getConnectionIDForUserName = function(name)
+           {
+           	   if(!this.clients) return null;
+           	   for(var i in this.clients.internal_val)
+           	   {
+           	   		if(this.clients[i].name == name)
+           	   			return i;
+           	   }
+           	   return null;
+           }.bind(this);
+           this.___clientAPI.getAvatarForUserName = function(name)
+           {
+           	  return this.findNodeByID('character-vwf-' + name);
+           }.bind(this);
   EditorData:
     fog:
       displayname: 'Fog'
@@ -219,7 +243,9 @@ properties:
 events:
   disconnected:
   newClient:
-  clientDisconnect:
+  clientConnected:
+  clientDisconnected:
+  clientLogin:
   pointerOver:
   pointerOut:
   pointerClick:
@@ -480,10 +506,38 @@ scripts:
     
     
     }
-    // a client other than this one has left
-    this.clientDisconnect = function(id)
+    //a new client has claimed a connection, so the connection is no longer anonymous
+    this.clientLogin = function(id,name)
     {
-    
+    	if(!this.clients)
+    	{
+    		this.clients = {}
+    	}
+    	if(!this.clients[id])
+    		this.clients.defineProperty(id,{cid:id,name:name});
+
+    	this.clients[id].name = name;
+    	
+    }
+    //a new client has joined the simulation
+    this.clientConnected = function(id)
+    {
+    	if(!this.clients)
+    	{
+    		this.clients = {}
+    	}
+    	if(!this.clients[id])
+    		this.clients.defineProperty(id,{cid:id,name:null});
+    	
+    }
+    // a client other than this one has left
+    this.clientDisconnected = function(id)
+    {
+    	if(this.clients)
+    	{
+    		delete this.clients.internal_val[id];
+    		this.clients = this.clients.internal_val;		
+    	}
     }
     this.CreatePlane = function(width,height)
     {

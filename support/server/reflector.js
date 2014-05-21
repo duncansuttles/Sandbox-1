@@ -164,6 +164,8 @@ function getBlankScene(state,cb)
                         else if(blankscene.properties[i] && (blankscene.properties[i].get || blankscene.properties[i].set))
                             delete blankscene.properties[i];
                     }
+                    //don't allow the clients to persist between a save/load cycle
+                    blankscene.properties['clients'] = null;
                 }
             }catch(e)
             {
@@ -244,31 +246,14 @@ function getBlankScene(state,cb)
                 ClientConnected(socket, namespace,instancedata);
         });
     };
-    
-    function ClientConnected(socket, namespace, instancedata) {
-      
-      
-
-
-      //create or setup instance data
-      if(!global.instances)
-        global.instances = {};
-       
-      socket.loginData = {};
-      var allowAnonymous = false;
-      if(instancedata.publishSettings && instancedata.publishSettings.allowAnonymous)
-               allowAnonymous = true;
-      //if it's a new instance, setup record 
-      if(!global.instances[namespace])
-      {
-        global.instances[namespace] = {};
-        global.instances[namespace].clients = {};
-        global.instances[namespace].time = 0.0;
-        global.instances[namespace].state = {};
-        
-        //create or open the log for this instance
-        var log = fs.createWriteStream(SandboxAPI.getDataPath()+'//Logs/'+namespace.replace(/[\\\/]/g,'_'), {'flags': 'a'});
-        global.instances[namespace].Log = function(message,level)
+    function runningInstance(id)
+    {
+    	this.id = id;
+        this.clients = {};
+        this.time = 0.0;
+        this.state = {};
+        var log = fs.createWriteStream(SandboxAPI.getDataPath()+'//Logs/'+id.replace(/[\\\/]/g,'_'), {'flags': 'a'});
+        this.Log = function(message,level)
         {
             if(global.logLevel >= level)
             {
@@ -276,7 +261,25 @@ function getBlankScene(state,cb)
                 global.log(message +'\n');
             }
         }
-        global.instances[namespace].Error = function(message,level)
+        this.clientCount = function()
+        {
+        	return Object.keys(this.clients).length;
+        }
+        this.getLoadClient = function()
+        {
+        	var loadClient = null;
+        	for(var i in this.clients)
+	        {
+	           var testClient = this.clients[i];
+	           if(!testClient.pending && testClient.loginData)
+	           {
+	                loadClient = testClient;
+	                break;
+	            }
+	        }
+	        return loadClient;
+        }
+        this.Error = function(message,level)
         {
             var red, brown, reset;
             red   = '\u001b[31m';
@@ -288,33 +291,58 @@ function getBlankScene(state,cb)
                 global.log(red + message + reset + '\n');
             }
         }
-        
-        
-        
-        
-        global.instances[namespace].totalerr = 0;
-        
-        
+        this.messageClients = function(message)
+        {
+        	//message to each user the join of the new client. Queue it up for the new guy, since he should not send it until after getstate
+        	 var Message = messageCompress.pack(message);
+	     	 for(var i in this.clients)
+	     	 {
+	     	 		
+	     	 		if(!this.clients[i].pending)
+	          			this.clients[i].emit('message',Message);   
+	          		else
+	          		{
+	          			this.clients[i].pendingList.push(Message)
+	          		}
+	      	 }
+        }
+        this.messageConnection = function(id)
+        {
+	     	 var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientConnected",[id]],node:"index-vwf","time":this.time}));
+	     	 this.messageClients(joinMessage);
+        }
+        this.messageLogin = function(id,userName)
+        {
+	     	 var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientLogin",[id,userName]],node:"index-vwf","time":this.time}));
+	     	 this.messageClients(joinMessage);
+        }
+        this.messageDisconnection = function(id)
+        {
+	      	var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientDisconnected",[id]],node:"index-vwf","time":this.time}));
+	     	this.messageClients(joinMessage);
+        }
+        this.totalerr = 0;
         //keep track of the timer for this instance
-        global.instances[namespace].timerID = setInterval(function(){
+        var self = this;
+        this.timerID = setInterval(function(){
         
             var now = process.hrtime();
             now = now[0] * 1e9 + now[1];
             now = now/1e9;
             
             
-            var timedelta = (now - global.instances[namespace].lasttime) || 0;
+            var timedelta = (now - self.lasttime) || 0;
             var timeerr = (timedelta - .050)*1000;
-            global.instances[namespace].lasttime = now;
-            global.instances[namespace].totalerr += timeerr;
+            self.lasttime = now;
+            self.totalerr += timeerr;
             
             
-            global.instances[namespace].time += .05;
+            self.time += .05;
             
-            var tickmessage = messageCompress.pack(JSON.stringify({"action":"tick","parameters":[],"time":global.instances[namespace].time}));
-            for(var i in global.instances[namespace].clients)
+            var tickmessage = messageCompress.pack(JSON.stringify({"action":"tick","parameters":[],"time":self.time}));
+            for(var i in self.clients)
             {
-                var client = global.instances[namespace].clients[i];
+                var client = self.clients[i];
                 if(!client.pending)
                     client.emit('message',tickmessage);
                 else
@@ -325,35 +353,68 @@ function getBlankScene(state,cb)
             }
         
         },50);
-        
+
+    }
+    function runningInstanceList()
+    {
+    	this.instances = {};
+    	this.add = function(id)
+    	{
+    		this.instances[id] = new runningInstance(id);
+    	}
+    	this.remove = function(id)
+    	{
+    		delete this.instances[id];
+    	}
+    	this.get = function(id)
+    	{
+    		return this.instances[id];
+    	}
+    	this.has = function(id)
+    	{
+    		return this.instances[id] ? true : false;
+    	}
+    }
+
+    var RunningInstances = new runningInstanceList();
+    global.instances = RunningInstances;
+
+    function ClientConnected(socket, namespace, instancedata) {
+      
+      
+
+       
+      socket.loginData = {};
+      var allowAnonymous = false;
+      if(instancedata.publishSettings && instancedata.publishSettings.allowAnonymous)
+               allowAnonymous = true;
+      //if it's a new instance, setup record 
+      if(!RunningInstances.has(namespace))
+      {  
+        RunningInstances.add(namespace);
       }
      
+      var thisInstance = RunningInstances.get(namespace);
       
       
       
       var loadClient = null;
       
-      if(Object.keys(global.instances[namespace].clients).length != 0)
+      if(thisInstance.clientCount() != 0)
       {
-        for(var i in global.instances[namespace].clients)
-        {
-           var testClient = global.instances[namespace].clients[i];
-           if(!testClient.pending && testClient.loginData)
-           {
-                loadClient = testClient;
-                break;
-            }
-        }
+         loadClient = thisInstance.getLoadClient();
       }
       
-      for(var i in global.instances[namespace].clients)
+      for(var i in thisInstance.clients)
       {
-                global.instances[namespace].clients[i].emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Peer Connected"],"time":global.instances[namespace].time})));   
+            thisInstance.clients[i].emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Peer Connected"],"time":thisInstance.time})));   
       }
 
       //add the new client to the instance data
-      global.instances[namespace].clients[socket.id] = socket;   
+      thisInstance.clients[socket.id] = socket;   
       
+
+
       socket.pending = true;
       socket.pendingList = [];
       //The client is the first, is can just load the index.vwf, and mark it not pending
@@ -361,19 +422,19 @@ function getBlankScene(state,cb)
       {
         global.log('load from db');
             
-        socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Loading state from database"],"time":global.instances[namespace].time})));  
+        socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Loading state from database"],"time":thisInstance.time})));  
         var instance = namespace;
         //Get the state and load it.
         //Now the server has a rough idea of what the simulation is
-        SandboxAPI.getState(instance,function(state){
+        SandboxAPI.getState(namespace,function(state){
 
             if(!state) state = [{owner:undefined}];
             
 
-            global.instances[namespace].state = {nodes:{}};
-            global.instances[namespace].state.nodes['index-vwf'] = {id:"index-vwf",properties:state[state.length-1],children:{}};
+            thisInstance.state = {nodes:{}};
+            thisInstance.state.nodes['index-vwf'] = {id:"index-vwf",properties:state[state.length-1],children:{}};
             
-            global.instances[namespace].state.findNode = function(id,parent)
+            thisInstance.state.findNode = function(id,parent)
             {
                 var ret = null;
                 if(!parent) parent = this.nodes['index-vwf'];
@@ -389,7 +450,7 @@ function getBlankScene(state,cb)
                 }
                 return ret;
             }
-            global.instances[namespace].state.deleteNode = function(id,parent)
+            thisInstance.state.deleteNode = function(id,parent)
             {
                 if(!parent) parent = this.nodes['index-vwf'];
                 if(parent.children)
@@ -404,7 +465,7 @@ function getBlankScene(state,cb)
                     }
                 }
             }
-            socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State loaded, sending..."],"time":global.instances[namespace].time}))); 
+            socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State loaded, sending..."],"time":thisInstance.time}))); 
             getBlankScene(state,function(blankscene)
             {
 
@@ -414,15 +475,19 @@ function getBlankScene(state,cb)
                 {
                     var childID = state[i].id;
                     
-                    global.instances[namespace].state.nodes['index-vwf'].children[childID] = state[i];
-                    global.instances[namespace].state.nodes['index-vwf'].children[childID].parent = global.instances[namespace].state.nodes['index-vwf'];
+                    thisInstance.state.nodes['index-vwf'].children[childID] = state[i];
+                    thisInstance.state.nodes['index-vwf'].children[childID].parent = thisInstance.state.nodes['index-vwf'];
                     
                 }
                 
 
 
-                global.instances[namespace].cachedState = blankscene;
-                socket.emit('message',messageCompress.pack(JSON.stringify({"action":"createNode","parameters":[blankscene],"time":global.instances[namespace].time})));
+                thisInstance.cachedState = blankscene;
+                socket.emit('message',messageCompress.pack(JSON.stringify({"action":"createNode","parameters":[blankscene],"time":thisInstance.time})));
+
+                //this must come after the client is added. Here, there is only one client
+			    thisInstance.messageConnection(socket.id);
+
                 socket.pending = false;
             });
         });
@@ -434,10 +499,13 @@ function getBlankScene(state,cb)
         var firstclient = loadClient;//Object.keys(global.instances[namespace].clients)[0];
         //firstclient = global.instances[namespace].clients[firstclient];
         socket.pending = true;
-        global.instances[namespace].getStateTime = global.instances[namespace].time;
-        firstclient.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Server requested state. Sending..."],"time":global.instances[namespace].getStateTime})));  
-        firstclient.emit('message',messageCompress.pack(JSON.stringify({"action":"getState","respond":true,"time":global.instances[namespace].time})));
-        socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Requesting state from clients"],"time":global.instances[namespace].getStateTime})));    
+        thisInstance.getStateTime = thisInstance.time;
+        firstclient.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Server requested state. Sending..."],"time":thisInstance.getStateTime})));  
+        firstclient.emit('message',messageCompress.pack(JSON.stringify({"action":"getState","respond":true,"time":thisInstance.time})));
+        socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Requesting state from clients"],"time":thisInstance.getStateTime})));    
+
+        thisInstance.messageConnection(socket.id);
+
         var timeout = function(namespace){
             
             this.namespace = namespace;
@@ -508,9 +576,9 @@ function getBlankScene(state,cb)
             this.namespace.requestTimer = this;
             this.handle = global.setTimeout(this.time.bind(this),3000);
         }
-        global.instances[namespace].Log('GetState from Client',2);
-        if(!global.instances[namespace].requestTimer)
-            (new timeout(global.instances[namespace]));
+        thisInstance.Log('GetState from Client',2);
+        if(!thisInstance.requestTimer)
+            (new timeout(thisInstance));
         
       }
      
@@ -532,25 +600,25 @@ function getBlankScene(state,cb)
             //Log all message if level is high enough
            if(isPointerEvent(message))
            {
-                global.instances[namespace].Log(JSON.stringify(message), 4);
+                thisInstance.Log(JSON.stringify(message), 4);
            }
            else
            {
-                global.instances[namespace].Log(JSON.stringify(message), 3);
+                thisInstance.Log(JSON.stringify(message), 3);
            }
             
                 
                 
-            var sendingclient = global.instances[namespace].clients[socket.id];
+            var sendingclient = thisInstance.clients[socket.id];
             
             //do not accept messages from clients that have not been claimed by a user
             //currently, allow getstate from anonymous clients
             if(!allowAnonymous && !sendingclient.loginData && message.action != "getState" && message.member != "latencyTest")
             {
                 if(isPointerEvent(message))
-                    global.instances[namespace].Error('DENIED ' + JSON.stringify(message), 4);
+                    thisInstance.Error('DENIED ' + JSON.stringify(message), 4);
                 else
-                    global.instances[namespace].Error('DENIED ' + JSON.stringify(message), 2);              
+                    thisInstance.Error('DENIED ' + JSON.stringify(message), 2);              
                 return;
             }
             if(message.action == 'callMethod' && message.node =='index-vwf' && message.member=='PM')
@@ -565,9 +633,9 @@ function getBlankScene(state,cb)
                     global.log(blue + textmessage.sender + ": " + textmessage.text + reset,0);
                     
                 }
-                for(var i in global.instances[namespace].clients)
+                for(var i in thisInstance.clients)
                 {
-                    var client = global.instances[namespace].clients[i];
+                    var client = thisInstance.clients[i];
                     if(client && client.loginData && (client.loginData.UID == textmessage.receiver || client.loginData.UID == textmessage.sender))
                     {   
                         client.emit('message',messageCompress.pack(JSON.stringify(message)));
@@ -595,8 +663,8 @@ function getBlankScene(state,cb)
                     sendingclient.loginData && 
                     params.sender == sendingclient.loginData.UID
                 ){
-                    for( var i in global.instances[namespace].clients ){
-                        var client = global.instances[namespace].clients[i];
+                    for( var i in thisInstance.clients ){
+                        var client = thisInstance.clients[i];
                         if( client && client.loginData && client.loginData.UID == params.target )
                             client.emit('message', messageCompress.pack(JSON.stringify(message)));
                     }
@@ -609,10 +677,10 @@ function getBlankScene(state,cb)
             if(message.action == "setProperty")
             {
 
-                  var node = global.instances[namespace].state.findNode(message.node);
+                  var node = thisInstance.state.findNode(message.node);
                   if(!node)
                   {
-                    global.instances[namespace].Log('server has no record of ' + message.node,1);
+                    thisInstance.Log('server has no record of ' + message.node,1);
                     return;
                   }
                   if(allowAnonymous || checkOwner(node,sendingclient.loginData.UID))
@@ -622,11 +690,11 @@ function getBlankScene(state,cb)
                         if(!node.properties)
                             node.properties = {};
                         node.properties[message.member] = message.parameters[0];
-                        global.instances[namespace].Log("Set " +message.member +" of " +node.id+" to " + message.parameters[0],2);
+                        thisInstance.Log("Set " +message.member +" of " +node.id+" to " + message.parameters[0],2);
                   }
                   else
                   {
-                    global.instances[namespace].Error('permission denied for modifying ' + node.id,1);
+                    thisInstance.Error('permission denied for modifying ' + node.id,1);
                     return;
                   }
             }
@@ -634,40 +702,40 @@ function getBlankScene(state,cb)
             if(message.action == "createMethod" || message.action == "createProperty" || message.action == "createEvent" || 
                 message.action == "deleteMethod" || message.action == "deleteProperty" || message.action == "deleteEvent")
             {
-                  var node = global.instances[namespace].state.findNode(message.node);
+                  var node = thisInstance.state.findNode(message.node);
                   if(!node)
                   {
-                    global.instances[namespace].Error('server has no record of ' + message.node,1);
+                    thisInstance.Error('server has no record of ' + message.node,1);
                     return;
                   }
                   if(allowAnonymous || checkOwner(node,sendingclient.loginData.UID))
                   { 
-                        global.instances[namespace].Log("Do " +message.action +" of " +node.id,2);
+                        thisInstance.Log("Do " +message.action +" of " +node.id,2);
                   }
                   else
                   {
-                    global.instances[namespace].Error('permission denied for '+message.action+' on ' + node.id,1);
+                    thisInstance.Error('permission denied for '+message.action+' on ' + node.id,1);
                     return;
                   }
             }
             //We'll only accept a deleteNode if the user has ownership of the object
             if(message.action == "deleteNode")
             {
-                  var node = global.instances[namespace].state.findNode(message.node);
+                  var node = thisInstance.state.findNode(message.node);
                   if(!node)
                   {
-                    global.instances[namespace].Error('server has no record of ' + message.node,1);
+                    thisInstance.Error('server has no record of ' + message.node,1);
                     return;
                   }
                   if(allowAnonymous || checkOwner(node,sendingclient.loginData.UID))
                   { 
                         //we do need to keep some state data, and note that the node is gone
-                        global.instances[namespace].state.deleteNode(message.node)
-                        global.instances[namespace].Log("deleted " +node.id,1);
+                        thisInstance.state.deleteNode(message.node)
+                        thisInstance.Log("deleted " +node.id,1);
                   }
                   else
                   {
-                    global.instances[namespace].Error('permission denied for deleting ' + node.id,1);
+                    thisInstance.Error('permission denied for deleting ' + node.id,1);
                     return;
                   }
             }
@@ -675,11 +743,11 @@ function getBlankScene(state,cb)
             //Note that you now must share a scene with a user!!!!
             if(message.action == "createChild")
             {
-                  global.instances[namespace].Log(message,1);
-                  var node = global.instances[namespace].state.findNode(message.node);
+                  thisInstance.Log(message,1);
+                  var node = thisInstance.state.findNode(message.node);
                   if(!node)
                   {
-                    global.instances[namespace].Error('server has no record of ' + message.node,1);
+                    thisInstance.Error('server has no record of ' + message.node,1);
                     return;
                   }
                   //Keep a record of the new node
@@ -700,29 +768,29 @@ function getBlankScene(state,cb)
                         if(!childComponent.properties)
                             childComponent.properties = {};
                         fixIDs(node.children[childID]);
-                        global.instances[namespace].Log("created " + childID,1);
+                        thisInstance.Log("created " + childID,1);
                   }
                   else
                   {
-                    global.instances[namespace].Error('permission denied for creating child ' + node.id,1);
+                    thisInstance.Error('permission denied for creating child ' + node.id,1);
                     return;
                   }
             }
             
             var compressedMessage = messageCompress.pack(JSON.stringify(message))
             //distribute message to all clients on given instance
-            for(var i in global.instances[namespace].clients)
+            for(var i in thisInstance.clients)
             {
-                var client = global.instances[namespace].clients[i];
+                var client = thisInstance.clients[i];
                 
                 //if the message was get state, then fire all the pending messages after firing the setState
                 if(message.action == "getState")
                 {
-                    global.instances[namespace].Log('Got State',1);
-                    if(global.instances[namespace].requestTimer)
-                        global.instances[namespace].requestTimer.deleteMe();
+                    thisInstance.Log('Got State',1);
+                    if(thisInstance.requestTimer)
+                        thisInstance.requestTimer.deleteMe();
                     var state = message.result;
-                    global.instances[namespace].cachedState  = JSON.parse(JSON.stringify(state));
+                    thisInstance.cachedState  = JSON.parse(JSON.stringify(state));
                     
                     
                     
@@ -730,8 +798,8 @@ function getBlankScene(state,cb)
                     
                     if(message.client != i && client.pending===true)
                     {
-                        client.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State Received, Transmitting"],"time":global.instances[namespace].getStateTime}))); 
-                        client.emit('message',messageCompress.pack(JSON.stringify({"action":"setState","parameters":[state],"time":global.instances[namespace].getStateTime})));
+                        client.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State Received, Transmitting"],"time":thisInstance.getStateTime}))); 
+                        client.emit('message',messageCompress.pack(JSON.stringify({"action":"setState","parameters":[state],"time":thisInstance.getStateTime})));
                     }
                     client.pending = false;
                     for(var j = 0; j < client.pendingList.length; j++)
@@ -784,34 +852,37 @@ function getBlankScene(state,cb)
       socket.on('disconnect', function () {
           
           try{
-              var loginData = global.instances[namespace].clients[socket.id].loginData;
+              var loginData = thisInstance.clients[socket.id].loginData;
               global.log(socket.id,loginData )
-              global.instances[namespace].clients[socket.id] = null;    
-              delete global.instances[namespace].clients[socket.id];
+              thisInstance.clients[socket.id] = null;    
+              delete thisInstance.clients[socket.id];
               //if it's the last client, delete the data and the timer
               
+              //message to each user the join of the new client. Queue it up for the new guy, since he should not send it until after getstate
+	     	  thisInstance.messageDisconnection(socket.id);
+
               if(loginData && loginData.clients)
               {
                   delete loginData.clients[socket.id];
                   global.error("Disconnect. Deleting node for user avatar " + loginData.UID);
                  var avatarID = 'character-vwf-'+loginData.UID;
-                 for(var i in global.instances[namespace].clients)
+                 for(var i in thisInstance.clients)
                   {
-                        var cl = global.instances[namespace].clients[i];
-                        cl.emit('message',messageCompress.pack(JSON.stringify({"action":"deleteNode","node":avatarID,"time":global.instances[namespace].time})));
-                        cl.emit('message',messageCompress.pack(JSON.stringify({"action":"callMethod","node":'index-vwf',member:'cameraBroadcastEnd',"time":global.instances[namespace].time,client:socket.id})));                                      
-                        cl.emit('message',messageCompress.pack(JSON.stringify({"action":"callMethod","node":'index-vwf',member:'PeerSelection',parameters:[[]],"time":global.instances[namespace].time,client:socket.id})));                                      
+                        var cl = thisInstance.clients[i];
+                        cl.emit('message',messageCompress.pack(JSON.stringify({"action":"deleteNode","node":avatarID,"time":thisInstance.time})));
+                        cl.emit('message',messageCompress.pack(JSON.stringify({"action":"callMethod","node":'index-vwf',member:'cameraBroadcastEnd',"time":thisInstance.time,client:socket.id})));                                      
+                        cl.emit('message',messageCompress.pack(JSON.stringify({"action":"callMethod","node":'index-vwf',member:'PeerSelection',parameters:[[]],"time":thisInstance.time,client:socket.id})));                                      
                   }
-                  global.instances[namespace].state.deleteNode(avatarID);   
+                  thisInstance.state.deleteNode(avatarID);   
               }
-              for(var i in global.instances[namespace].clients)
+              for(var i in thisInstance.clients)
               {
-                    global.instances[namespace].clients[i].emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Peer disconnected: " + (loginData?loginData.UID:"Unknown")],"time":global.instances[namespace].getStateTime})));    
+                    thisInstance.clients[i].emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["Peer disconnected: " + (loginData?loginData.UID:"Unknown")],"time":thisInstance.getStateTime})));    
               }
-              if(Object.keys(global.instances[namespace].clients).length == 0)
+              if(thisInstance.clientCount() == 0)
               {
-                clearInterval(global.instances[namespace].timerID);
-                delete global.instances[namespace];
+                clearInterval(thisInstance.timerID);
+                RunningInstances.remove(thisInstance.id);
                 global.log('Shutting down ' + namespace )
               }
             }
