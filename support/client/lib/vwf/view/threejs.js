@@ -1410,6 +1410,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 var parentID = child.parentID;
                 var parent = sceneView.state.nodes[ child.parentID ];
                 var trans, parentTrans, localTrans, localNormal, parentInverse, relativeCamPos;
+                returnData.eventNodeData[''][0].sourceID = pointerPickID;
                 while ( child ) {
 
                     trans = goog.vec.Mat4.createFromArray( child.threeObject.matrix.elements );
@@ -1455,7 +1456,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                         distance: pickInfo ? pickInfo.distance : undefined,
                         globalPosition: pickInfo ? pickInfo.coord : undefined,
                         globalNormal: pickInfo ? pickInfo.normal : undefined,
-                        globalSource: worldCamPos,            
+                        globalSource: worldCamPos,  
+                        sourceID : pointerPickID,
                     } ];
 
                     childID = parentID;
