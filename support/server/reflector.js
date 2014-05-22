@@ -4,6 +4,7 @@ var sio = require('socket.io');
 var fs = require('fs');
 var url = require("url");
 var mime = require('mime');
+var sessions = require('./sessions.js');
 var messageCompress = require('../client/lib/messageCompress').messageCompress;
 
 YAML = require('js-yaml');
@@ -39,6 +40,8 @@ function getNamespace(socket)
         var index = referer.indexOf(global.appPath);
         var namespace = referer.substring(index);
         
+      
+
       if(namespace[namespace.length-1] != "/")
         namespace += "/";
      
@@ -193,58 +196,66 @@ function getBlankScene(state,cb)
       });  
     }
     
+     
     function WebSocketConnection(socket, _namespace) {
     
-        var namespace = _namespace || getNamespace(socket);
-        
-         if(!namespace)
-          {
-              socket.on('setNamespace',function(msg)
-              {
-                global.log(msg.space);
-                WebSocketConnection(socket,msg.space);
-                socket.emit('namespaceSet',{});
-              });
-              socket.on('connectionTest',function(msg)
-              {
-                    socket.emit('connectionTest',msg);
-              })
-              return;
-          }
+     //get the session information for the socket
+     sessions.GetSessionData(socket.handshake,function(loginData){
 
+            console.log(loginData);
 
-      
-        DAL.getInstance(namespace.replace(/\//g,"_"),function(instancedata)
-        {
+            socket.loginData = loginData;
+
+            var namespace = _namespace || getNamespace(socket);
             
-            if(!instancedata)
-            {
-                require('./examples.js').getExampleMetadata(namespace.replace(/\//g,"_"),function(instancedata)
-                {
-                    if(instancedata)
-                    {
-                        //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
-                        if(instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer)
-                        {
-                            ServeSinglePlayer(socket, namespace,instancedata)
-                        }else
-                            ClientConnected(socket, namespace,instancedata);
+             if(!namespace)
+              {
+                  socket.on('setNamespace',function(msg)
+                  {
+                    global.log(msg.space);
+                    WebSocketConnection(socket,msg.space);
+                    socket.emit('namespaceSet',{});
+                  });
+                  socket.on('connectionTest',function(msg)
+                  {
+                        socket.emit('connectionTest',msg);
+                  })
+                  return;
+              }
 
-                    }else
-                    {
-                        socket.disconnect();
-                        return;
-                    }
-                });
-                return;
-            }
-            //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
-            if(instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer)
+          
+            DAL.getInstance(namespace.replace(/\//g,"_"),function(instancedata)
             {
-                ServeSinglePlayer(socket, namespace,instancedata)
-            }else
-                ClientConnected(socket, namespace,instancedata);
-        });
+                
+                if(!instancedata)
+                {
+                    require('./examples.js').getExampleMetadata(namespace.replace(/\//g,"_"),function(instancedata)
+                    {
+                        if(instancedata)
+                        {
+                            //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
+                            if(instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer)
+                            {
+                                ServeSinglePlayer(socket, namespace,instancedata)
+                            }else
+                                ClientConnected(socket, namespace,instancedata);
+
+                        }else
+                        {
+                            socket.disconnect();
+                            return;
+                        }
+                    });
+                    return;
+                }
+                //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
+                if(instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer)
+                {
+                    ServeSinglePlayer(socket, namespace,instancedata)
+                }else
+                    ClientConnected(socket, namespace,instancedata);
+            });
+      });
     };
     function runningInstance(id)
     {
@@ -297,7 +308,7 @@ function getBlankScene(state,cb)
         	 var Message = messageCompress.pack(message);
 	     	 for(var i in this.clients)
 	     	 {
-	     	 		
+	     	 		console.log(Message);
 	     	 		if(!this.clients[i].pending)
 	          			this.clients[i].emit('message',Message);   
 	          		else
@@ -306,19 +317,14 @@ function getBlankScene(state,cb)
 	          		}
 	      	 }
         }
-        this.messageConnection = function(id)
+        this.messageConnection = function(id,name)
         {
-	     	 var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientConnected",[id]],node:"index-vwf","time":this.time}));
+	     	 var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientConnected",[id,name]],node:"index-vwf","time":this.time}));
 	     	 this.messageClients(joinMessage);
         }
-        this.messageLogin = function(id,userName)
+        this.messageDisconnection = function(id,name)
         {
-	     	 var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientLogin",[id,userName]],node:"index-vwf","time":this.time}));
-	     	 this.messageClients(joinMessage);
-        }
-        this.messageDisconnection = function(id)
-        {
-	      	var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientDisconnected",[id]],node:"index-vwf","time":this.time}));
+	      	var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientDisconnected",[id,name]],node:"index-vwf","time":this.time}));
 	     	this.messageClients(joinMessage);
         }
         this.totalerr = 0;
@@ -384,7 +390,7 @@ function getBlankScene(state,cb)
       
 
        
-      socket.loginData = {};
+      
       var allowAnonymous = false;
       if(instancedata.publishSettings && instancedata.publishSettings.allowAnonymous)
                allowAnonymous = true;
@@ -412,7 +418,7 @@ function getBlankScene(state,cb)
 
       //add the new client to the instance data
       thisInstance.clients[socket.id] = socket;   
-      
+      console.log(socket.loginData);
 
 
       socket.pending = true;
@@ -428,7 +434,7 @@ function getBlankScene(state,cb)
         //Now the server has a rough idea of what the simulation is
         SandboxAPI.getState(namespace,function(state){
 
-            if(!state) state = [{owner:undefined}];
+            if(!state) state = [{owner:instancedata.owner}];
             
 
             thisInstance.state = {nodes:{}};
@@ -484,11 +490,13 @@ function getBlankScene(state,cb)
 
                 thisInstance.cachedState = blankscene;
                 socket.emit('message',messageCompress.pack(JSON.stringify({"action":"createNode","parameters":[blankscene],"time":thisInstance.time})));
-
-                //this must come after the client is added. Here, there is only one client
-			    thisInstance.messageConnection(socket.id);
-
+                socket.emit('message',messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["loaded",[]],node:"index-vwf","time":thisInstance.time})));
+                
                 socket.pending = false;
+                //this must come after the client is added. Here, there is only one client
+			    thisInstance.messageConnection(socket.id, socket.loginData? socket.loginData.UID : null);
+
+               
             });
         });
       }
@@ -695,6 +703,7 @@ function getBlankScene(state,cb)
                   else
                   {
                     thisInstance.Error('permission denied for modifying ' + node.id,1);
+                    console.log(sendingclient.loginData);
                     return;
                   }
             }
@@ -852,14 +861,14 @@ function getBlankScene(state,cb)
       socket.on('disconnect', function () {
           
           try{
-              var loginData = thisInstance.clients[socket.id].loginData;
+              var loginData = socket.loginData;
               global.log(socket.id,loginData )
               thisInstance.clients[socket.id] = null;    
               delete thisInstance.clients[socket.id];
               //if it's the last client, delete the data and the timer
               
               //message to each user the join of the new client. Queue it up for the new guy, since he should not send it until after getstate
-	     	  thisInstance.messageDisconnection(socket.id);
+	     	  thisInstance.messageDisconnection(socket.id, socket.loginData? socket.loginData.UID : null);
 
               if(loginData && loginData.clients)
               {

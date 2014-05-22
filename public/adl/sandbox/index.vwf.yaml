@@ -245,7 +245,6 @@ events:
   newClient:
   clientConnected:
   clientDisconnected:
-  clientLogin:
   pointerOver:
   pointerOut:
   pointerClick:
@@ -506,32 +505,20 @@ scripts:
     
     
     }
-    //a new client has claimed a connection, so the connection is no longer anonymous
-    this.clientLogin = function(id,name)
+    //a new client has joined the simulation
+    this.clientConnected = function(id,name)
     {
+     
     	if(!this.clients)
     	{
     		this.clients = {}
     	}
     	if(!this.clients[id])
     		this.clients.defineProperty(id,{cid:id,name:name});
-
-    	this.clients[id].name = name;
-    	
-    }
-    //a new client has joined the simulation
-    this.clientConnected = function(id)
-    {
-    	if(!this.clients)
-    	{
-    		this.clients = {}
-    	}
-    	if(!this.clients[id])
-    		this.clients.defineProperty(id,{cid:id,name:null});
     	
     }
     // a client other than this one has left
-    this.clientDisconnected = function(id)
+    this.clientDisconnected = function(id,name)
     {
     	if(this.clients)
     	{

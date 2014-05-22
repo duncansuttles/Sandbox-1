@@ -1221,6 +1221,9 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 					$(document).trigger('setstatecomplete');
 					$('#loadstatus').remove(); 
                     _ProgressBar.hide();
+                    vwf.decendants('index-vwf').forEach(function(i){
+                        vwf.callMethod(i,'ready',[]);
+                    })
 				}
 
             } );

@@ -144,49 +144,7 @@ function GetLoginData(response,URL)
 //The reflector will not accept incomming messages from an anonymous connection
 function InstanceLogin(response,URL)
 {
-			
-			global.log('instance login',2);
-			if(!URL.loginData)
-			{
-				global.log("Client Not Logged In",1);
-				respond(response,401,"Client Not Logged In");
-				return;
-			}			
-			var instance = URL.query.S;
-			var cid = URL.query.CID;
-			
-			
-			if(URL.loginData.clients[cid])
-			{
-				
-				respond(response,401,"Client already logged into session");
-				return;
-			}	
-			
-			if(global.instances.has(instance) && global.instances.get(instance).clients[cid])
-			{
-				URL.loginData.clients[cid] = instance;
-				global.instances.get(instance).clients[cid].loginData = URL.loginData;
-				
-				//the first guy to log into a blank world is set as the owner, as far as the server is concerned. 
-				//this is maybe not the best way to handle this
-				if(global.instances.get(instance).state.findNode('index-vwf').properties['owner'] == undefined)
-					global.instances.get(instance).state.findNode('index-vwf').properties['owner'] = URL.loginData.UID;
-				
-				//let the application respond to the log in of users	
-				global.instances.get(instance).messageLogin(cid,URL.loginData.UID);
-					
-				respond(response,200,"Client Logged Into " + instance);
-
-				xapi.sendStatement(URL.loginData.UID, xapi.verbs.logged_in, instance);
-
-				return;
-			}else
-			{
-				respond(response,200,"Client Or Instance does not exist " + instance);
-				return;
-			}
-			
+	respond(response,200,"No longer supported. Login now travels over the socket handshake");
 }
 
 function InstanceLogout(response,URL)
@@ -194,7 +152,7 @@ function InstanceLogout(response,URL)
 			if(!URL.loginData)
 			{
 				respond("Client Not Logged In",401,response);
-				return;
+				return;z
 			}	
 			
 			var instance = URL.query.S;
