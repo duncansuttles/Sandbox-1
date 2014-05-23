@@ -362,7 +362,6 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 			if (e.button == 2 && !MouseMoved && document.AxisSelected == -1)
 			{
-				debugger;
 				self.ShowContextMenu(e);
 				this.undoPoint = null;
 				return false;

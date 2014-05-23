@@ -990,67 +990,55 @@
 						"#endif"
 					].join('\n');
 
-					var config = {
 
-						uniforms: THREE.UniformsUtils.merge( [
-							THREE.UniformsLib[ "common" ],
-							THREE.UniformsLib[ "bump" ],
-							THREE.UniformsLib[ "normalmap" ],
-							THREE.UniformsLib[ "fog" ],
-							THREE.UniformsLib[ "lights" ],
-							THREE.UniformsLib[ "shadowmap" ],
-							{
-								"ambient"  : { type: "c", value: new THREE.Color( 0xffffff ) },
-								"emissive" : { type: "c", value: new THREE.Color( 0x000000 ) },
-								"specular" : { type: "c", value: new THREE.Color( 0x111111 ) },
-								"shininess": { type: "f", value: 30 },
-								"wrapRGB"  : { type: "v3", value: new THREE.Vector3( 1, 1, 1 ) }
-							}
-						] ),
+					config.fragmentShader = [
 
-						vertexShader: THREE.ShaderLib['phong'].vertexShader,
+						"uniform vec3 diffuse;",
+						"uniform float opacity;",
 
-						fragmentShader: [
+						"uniform vec3 ambient;",
+						"uniform vec3 emissive;",
+						"uniform vec3 specular;",
+						"uniform float shininess;",
 
-							"uniform vec3 diffuse;",
-							"uniform float opacity;",
-							"uniform vec3 ambient;",
-							"uniform vec3 emissive;",
-							"uniform vec3 specular;",
-							"uniform float shininess;",
+						THREE.ShaderChunk[ "color_pars_fragment" ],
+						//THREE.ShaderChunk[ "map_pars_fragment" ],
+						mix_pars_fragment,
+						THREE.ShaderChunk[ "lightmap_pars_fragment" ],
+						THREE.ShaderChunk[ "envmap_pars_fragment" ],
+						THREE.ShaderChunk[ "fog_pars_fragment" ],
+						THREE.ShaderChunk[ "lights_phong_pars_fragment" ],
+						THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
+						THREE.ShaderChunk[ "bumpmap_pars_fragment" ],
+						THREE.ShaderChunk[ "normalmap_pars_fragment" ],
+						THREE.ShaderChunk[ "specularmap_pars_fragment" ],
+						THREE.ShaderChunk[ "sphericalHarmonicAmbient_pars_fragment" ],
+						"void main() {",
 
-							THREE.ShaderChunk[ "color_pars_fragment" ],
-							//THREE.ShaderChunk[ "map_pars_fragment" ],
-							mix_pars_fragment,
-							THREE.ShaderChunk[ "lightmap_pars_fragment" ],
-							THREE.ShaderChunk[ "envmap_pars_fragment" ],
-							THREE.ShaderChunk[ "fog_pars_fragment" ],
-							THREE.ShaderChunk[ "lights_phong_pars_fragment" ],
-							THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
-							THREE.ShaderChunk[ "bumpmap_pars_fragment" ],
-							THREE.ShaderChunk[ "normalmap_pars_fragment" ],
-							THREE.ShaderChunk[ "specularmap_pars_fragment" ],
-							THREE.ShaderChunk[ "sphericalHarmonicAmbient_pars_fragment" ],
+							"gl_FragColor = vec4( vec3 ( 1.0 ), opacity );",
+							THREE.ShaderChunk[ "sphericalHarmonicAmbient_fragment" ],
+							//THREE.ShaderChunk[ "map_fragment" ],
+							mix_fragment,
+							THREE.ShaderChunk[ "alphatest_fragment" ],
+							THREE.ShaderChunk[ "specularmap_fragment" ],
 
-							"void main() {",
-								"gl_FragColor = vec4( vec3 ( 1.0 ), opacity );",
-								THREE.ShaderChunk[ "sphericalHarmonicAmbient_fragment" ],
-								//THREE.ShaderChunk[ "map_fragment" ],
-								mix_fragment,
-								THREE.ShaderChunk[ "alphatest_fragment" ],
-								THREE.ShaderChunk[ "specularmap_fragment" ],
-								THREE.ShaderChunk[ "lights_phong_fragment" ],
-								THREE.ShaderChunk[ "lightmap_fragment" ],
-								THREE.ShaderChunk[ "color_fragment" ],
-								THREE.ShaderChunk[ "envmap_fragment" ],
-								THREE.ShaderChunk[ "shadowmap_fragment" ],
-								THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
-								THREE.ShaderChunk[ "fog_fragment" ],
-							"}"
+							THREE.ShaderChunk[ "lights_phong_fragment" ],
 
-						].join("\n")
+							THREE.ShaderChunk[ "lightmap_fragment" ],
+							THREE.ShaderChunk[ "color_fragment" ],
+							THREE.ShaderChunk[ "envmap_fragment" ],
+				
+							THREE.ShaderChunk[ "shadowmap_fragment" ],
 
-					};
+							THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
+
+							THREE.ShaderChunk[ "fog_fragment" ],
+
+						"}"
+
+					].join("\n");
+
+
 					//config.fragmentShader = shader.slice(0,13).join('\n') + myUniforms + shader.slice(14,184).join('\n') + myShaderFrag + shader.slice(188).join('\n');
 
 					// apply renderer flags
