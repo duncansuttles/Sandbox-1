@@ -2226,7 +2226,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		//new vwf kernel does not add the ID to the get node, but all our old code expects it. Add it and return the node.
 		this.getNode = function(id)
 		{
-			var node = vwf.getNode(id);
+			if(!id) return null;
+			var node = vwf.getNode(id,true,true);
 			node.id = id;
 
 			var walk = function(parent)

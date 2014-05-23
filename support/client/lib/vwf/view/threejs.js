@@ -305,7 +305,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
             //the created node is a scene, and has already been added to the state by the model.
             //how/when does the model set the state object? 
-            console.log('view saw: ',childID);
+           
             if(this.state.scenes[childID])
             {
                 var threeview = this;

@@ -2925,6 +2925,7 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
             var list = [];
             var walk = function(nodeid)
             {
+                if(!nodeid) return;
                 var children = vwf.children(nodeid);
                 if(children)
                 {

@@ -91,10 +91,12 @@ function ()
             {
                 root.GenerateBounds();
                 root.BuildRayTraceAccelerationStructure();
+                $('#preloadguiText').text($('#preloadguiText').text() + '.');
             }
             if(root.children)
             {
                 //for(var i =0;i < root.children.length; i++)
+                //make this async so that we can get GUI updates.
                 async.eachSeries(root.children,function(child,cb4){
                     self.BuildCollisionData(child,function(){
                         window.setImmediate(cb4);
@@ -171,7 +173,7 @@ function ()
             var time = performance.now();
             loader.load(url,function(asset)
                 {
-                    console.log(url,performance.now() - time);
+                  
                     
                     assetLoader.colladaOptimized[url] = asset;
                     assetLoader.BuildCollisionData(asset.scene,function(cb3)
