@@ -892,6 +892,7 @@ if ( ! node ) return;  // TODO: patch until full-graph sync is working; drivers 
         gettingProperty: function( nodeID, propertyName, propertyValue ) {
 
             var node = this.nodes[nodeID];
+            if(!node ) return undefined;
             var getter = node.private.getters && node.private.getters[propertyName];
 
             if ( getter && getter !== true ) { // is there is a getter (and not just a guard value)

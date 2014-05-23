@@ -222,6 +222,7 @@ if ( ! object ) return;  // TODO: patch until full-graph sync is working; driver
         // -- gettingProperty ----------------------------------------------------------------------
 
         gettingProperty: function( nodeID, propertyName, propertyValue ) {
+            if(!this.objects[nodeID]) return undefined;
             return this.objects[nodeID].properties[propertyName];
         },
 
