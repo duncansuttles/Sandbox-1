@@ -99,8 +99,10 @@
 		return true;	
 	}
 	
-define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/threejs/backgroundLoader" ], function( module, model, utility, Color, backgroundLoader ) {
+define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/threejs/backgroundLoader"], function( module, model, utility, Color, backgroundLoader ) {
 
+
+   
 
     return model.load( module, {
 
@@ -109,7 +111,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
         // -- initialize ---------------------------------------------------------------------------
 
         initialize: function() {
-            
+           
             this.state.scenes = {}; // id => { MATHDocument: new MATH.Document(), MATHRenderer: new MATH.Renderer(), MATHScene: new MATH.Scene() }
             this.state.nodes = {}; // id => { name: string, MATHObject: MATH.Object, MATH.Collada, MATH.Light, or other...? }
             this.state.kernel = this.kernel.kernel.kernel;
@@ -119,8 +121,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 			
             this.delayedProperties = {};
 			this.subDriverFactory = new SubDriverFactory();
-			$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/_THREERayTracer.js"></script>');
-			$(document.head).append('<script type="text/javascript" src="vwf/model/threejs/scenemanager.js"></script>');
+			
 			
 			window.rebuildAllMaterials=function (start)
 			{
@@ -392,6 +393,9 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 					
 					var scenenode = FindChildByName(parentNode.threeObject,childSource);
 					
+                    if(!scenenode)
+                        scenenode = new THREE.Object3D();
+
 					node.setAsset(scenenode);
 					node.threeObject = scenenode;
 					//we need to mark this node - because the VWF node is layered onto a GLGE node loaded from the art asset, deleteing the VWF node should not
@@ -426,12 +430,12 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 					node.sourceType= childType;
 					node.type= childExtendsID;
 					node.sceneID= this.state.sceneRootID;
-
+                    node.children = [];
 					node.threeObject = new THREE.Object3D();
 					node.threeObject.add(node.getRoot());
 					threeParent.add(node.threeObject);
 				}
-				else if(childType ==  "subDriver/threejs/asset/vnd.collada+xml" || childType ==  "subDriver/threejs/asset/vnd.osgjs+json+compressed")
+				else if(childType ==  "subDriver/threejs/asset/vnd.collada+xml" || childType ==  "subDriver/threejs/asset/vnd.osgjs+json+compressed" || childType == "subDriver/threejs/asset/vnd.collada+xml+optimized")
 				{
 					
 					node = this.state.nodes[childID] = this.subDriverFactory.createNode(childID, 'vwf/model/threejs/asset.js', childName, childType, childSource, callback);
@@ -482,9 +486,12 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 				if(node && parentNode)
 				{
 					if(!parentNode.children)
-						parentNode.children = [];
-					parentNode.children.push(node)
+						parentNode.children = {};
+					parentNode.children[node.ID] = node;
+
 					node.parentNode = parentNode;
+                    if(parentNode.childAdded)
+                        parentNode.childAdded(node);
 				}
             
             }
@@ -495,7 +502,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 
         deletingNode: function( nodeID ) {
 
-            
+            console.log('three driver saw delete command for ' + nodeID)
             if(nodeID)
             {
                 var childNode = this.state.nodes[nodeID];
@@ -528,7 +535,9 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 					
 					
 					var parentNode = childNode.parentNode;
-					parentNode.children.splice(parentNode.children.indexOf(childNode),1);
+					
+                    if(parentNode && parentNode.children)
+                        delete parentNode.children[nodeID];
 					
                     delete this.state.nodes[nodeID];
                 }               
@@ -783,6 +792,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 {
                     var ps = threeObject;
                     var particles = ps.geometry;
+                    if(propertyName == 'quaternion') return;
                     ps[propertyName] = propertyValue;
                     
                     
@@ -798,10 +808,9 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 						
                     )
                     {
-                        if(ps.material == ps.shaderMaterial_analytic)
-                        {
-                            ps.rebuildParticles();
-                        }
+                        
+                        ps.rebuildParticles();
+                        
                     }
                     
                     if(propertyName == 'size')
@@ -1222,11 +1231,16 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                     if ( propertyName == 'intensity' ) {
                         threeObject.intensity = propertyValue;
 						//threeObject.updateMatrix();
-                    }   
-					if ( propertyName == 'distance' ) {
-                        threeObject.distance = propertyValue;
-						//threeObject.updateMatrix();
-                    } 					
+                    }  
+                    if ( propertyName == 'castShadows' ) {
+                        threeObject.castShadows = propertyValue;
+                        rebuildAllMaterials.call(this);
+                        //threeObject.updateMatrix();
+                    }    
+					if(propertyName == "spotCosCutOff")
+                    {
+                        threeObject.exponent= propertyValue;   
+                    }				
                     if ( propertyName == 'castShadows' ) {
                         threeObject.castShadow = propertyValue;
                     }
@@ -1306,7 +1320,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                         
                     
                     }
-		    if(propertyName == 'worldtransform')
+		    if(propertyName == 'worldtransform' || propertyName == 'worldTransform')
                     {
                         threeObject.updateMatrixWorld(true);
                         var value = matCpy(threeObject.matrixWorld.elements); 
@@ -1388,6 +1402,14 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                     if(propertyName == "intensity")
                     {
 						return threeObject.intensity;     
+                    }
+                    if(propertyName == "castShadows")
+                    {
+                        return threeObject.castShadows;     
+                    }
+                    if(propertyName == "spotCosCutOff")
+                    {
+                        return threeObject.exponent;     
                     }
 					if(propertyName == "distance")
                     {
@@ -1533,6 +1555,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
         node.viewInited = false;
         node.modelInited = false;
         node.threeScene = new THREE.Scene();
+        node.threeScene.autoUpdate = false;
         node.pendingLoads = 0;
         node.srcAssetObjects = [];
         node.delayedProperties = {};
@@ -2105,7 +2128,9 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 			"varying vec4 vRandom;\n"+
 			"uniform float sizeRange;\n"+
 			"uniform vec4 colorRange;\n"+
+              "varying vec3 vFogPosition;\n" +
             "void main() {\n"+
+            "   vFogPosition = (modelMatrix * vec4(position,1.0)).xyz; \n" + 
             "   vColor = vertexColor + (random -0.5) * colorRange;\n"+
             "   vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\n"+
 			"   float psize = size + (random.y -0.5) * sizeRange;\n"+
@@ -2125,6 +2150,10 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "uniform float minOrientation;\n"+
 			"uniform float textureTiles;\n"+
 			"uniform float alphaTest;\n"+
+              "varying vec3 vFogPosition;\n" +
+            THREE.ShaderChunk.lights_phong_pars_fragment + "\n"+
+            THREE.ShaderChunk.fog_pars_fragment +"\n"+
+              
             "void main() {\n"+
 			            " vec2 coord = vec2(0.0,0.0);"+
 			" vec2 orig_coord = vec2(gl_PointCoord.s,1.0-gl_PointCoord.t);"+
@@ -2140,6 +2169,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "   vec4 outColor = (vColor * texture2D( texture, coord  )) *useTexture + vColor * (1.0-useTexture);\n"+
             
             "   gl_FragColor = outColor;\n"+
+             THREE.ShaderChunk.fog_fragment + "\n"+
             "}\n";
 			
 			//the default shader - the one used by the analytic solver, just has some simple stuff
@@ -2168,8 +2198,16 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 endColor:{type: "v4", value:new THREE.Vector4(0,0,0,1)},
                 startSize:{type:"f", value:1},
                 endSize:{type:"f", value:1},
-				alphaTest:{type:"f", value:.5}
+				alphaTest:{type:"f", value:.5},
             };
+            for(var i in THREE.UniformsLib.fog)
+            {
+                uniforms_default[i] = THREE.UniformsLib.fog[i];
+            }
+            for(var i in THREE.UniformsLib.lights)
+            {
+                uniforms_default[i] = THREE.UniformsLib.lights[i];
+            }
             uniforms_default.texture.value.wrapS = uniforms_default.texture.value.wrapT = THREE.RepeatWrapping;
             var shaderMaterial_default = new THREE.ShaderMaterial( {
                 uniforms:       uniforms_default,
@@ -2178,7 +2216,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 fragmentShader: fragShader_default
 
                   });
-
+            shaderMaterial_default.fog = true;
 			//the interpolate shader blends from one simulation step to the next on the shader
 			//this	allows for a complex sim to run at a low framerate, but still have smooth motion
             //this is very efficient, as it only requires sending data up to the gpu on each sim tick		
@@ -2198,8 +2236,10 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "uniform float endSize;\n"+
             "uniform vec4 startColor;\n"+
             "uniform vec4 endColor;\n"+
+            "varying vec3 vFogPosition;\n" +
             "void main() {\n"+
             "   vColor = mix(startColor,endColor,(age+fractime*3.33)/lifespan) + (random -0.5) * colorRange;\n"+
+            "   vFogPosition = (modelMatrix * vec4(mix(previousPosition,position,fractime),1.0)).xyz; \n" + 
             "   vec4 mvPosition = modelViewMatrix * vec4(mix(previousPosition,position,fractime), 1.0 );\n"+
 			"   float psize = mix(startSize,endSize,(age+fractime*3.33)/lifespan) + (random.y -0.5) * sizeRange;\n"+
             "   gl_PointSize = psize * ( 1000.0/ length( mvPosition.xyz ) );\n"+
@@ -2246,11 +2286,13 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "varying vec4 vRandom;\n"+
 			"uniform float sizeRange;\n"+
 			"uniform vec4 colorRange;\n"+
+            "varying vec3 vFogPosition;\n" +
             "void main() {\n"+
 			//randomly offset in time
             "   float lifetime = fract(random.x+(time))*lifespan*1.33;"+
 			//solve for position
             "   vec3 pos2 = position.xyz + velocity*lifetime + (acceleration*lifetime*lifetime)/2.0;"+ // ;
+            "   vFogPosition = (modelMatrix * vec4(pos2,1.0)).xyz; \n" + 
             "   vec4 mvPosition = modelViewMatrix * vec4( pos2.xyz, 1.0 );\n"+
 			//find random size based on randomness, start and end size, and size range
 			"   float psize = mix(startSize,endSize,lifetime/lifespan) + (random.y -0.5) * sizeRange;\n"+
@@ -2261,6 +2303,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "   vColor = mix(startColor,endColor,lifetime/lifespan)  +  nR * colorRange;\n"+
             "   vRandom = random;"+
             "}    \n";
+
             var fragShader_analytic = 
             "uniform float useTexture;\n"+
             "uniform sampler2D texture;\n"+
@@ -2273,6 +2316,9 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
             "uniform float minOrientation;\n"+
 			"uniform float textureTiles;\n"+
 			"uniform float alphaTest;\n"+
+            "varying vec3 vFogPosition;\n" +
+            THREE.ShaderChunk.lights_phong_pars_fragment + "\n"+
+            THREE.ShaderChunk.fog_pars_fragment + "\n"+
             "void main() {\n"+
            
 			//bit of drama for dividing into 4 or 9 'virtual' textures
@@ -2293,6 +2339,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 			" vec4 outColor = (vColor * texture2D( texture, coord )) *useTexture + vColor * (1.0-useTexture);\n"+
             " if(outColor.a < alphaTest) discard;\n" + 
             "   gl_FragColor = outColor;\n"+
+            THREE.ShaderChunk.fog_fragment + "\n"+
             "}\n";
             var attributes_analytic = {
                 acceleration:   {   type: 'v3', value: [] },
@@ -2311,6 +2358,14 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 fragmentShader: fragShader_analytic
             });
 
+            shaderMaterial_analytic.lights = true;
+            shaderMaterial_analytic.fog = true;
+
+            shaderMaterial_interpolate.lights = true;
+            shaderMaterial_interpolate.fog = true;
+
+            shaderMaterial_default.lights = true;
+            shaderMaterial_default.fog = true;
 
             // create the particle system
             var particleSystem = new THREE.ParticleSystem(particles,shaderMaterial_default);
@@ -2529,12 +2584,13 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                 
 				//The velocity should be in world space, but is generated in local space for 
 				//ease of use
-                mat = mat.clone();
+             //removeing - global space velocity maks little sense
+             /*   mat = mat.clone();
                 mat.elements[12] = 0;
                 mat.elements[13] = 0;
                 mat.elements[14] = 0;
                 particle.velocity.applyMatrix4(mat);
-                
+             */   
                 //accelerations are always world space, just min and max on each axis
                 particle.acceleration.x = this.minAcceleration[0] + (this.maxAcceleration[0] - this.minAcceleration[0]) * Math.random();
                 particle.acceleration.y = this.minAcceleration[1] + (this.maxAcceleration[1] - this.minAcceleration[1]) * Math.random();
@@ -2841,7 +2897,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 				//don't adjust for the high performance shader
 				if(particleSystem.solver == 'AnalyticShader')
 				{
-					return;
+                   return;
 				}
 				
 				//Move all particles out of old space to world, then back into new space.

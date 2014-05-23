@@ -70,19 +70,30 @@ define(function ()
 			label: 'Rename'
 		});
 		$('#inventorymanagertitle').append('<a id="inventoryclose" href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
-		$('#inventorymanagertitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/inventory.png" />');
+		$('#inventorymanagertitle').prepend('<div class="headericon inventory"  />');
 		$('#inventoryclose').click(function ()
 		{
 			_InventoryManager.hide()
 		});
 		this.renameSelectedItem = function ()
 		{
+			if(!this.inventory || !this.inventory[this.selectedName])
+			{
+				alertify.alert('No item is selected in the inventory window.');
+				return;
+			}
+
 			$('#InventoryRename').show();
 			$('#InventoryRename').focus();
 		}
-		$('#InventoryManagerRename').click(this.renameSelectedItem);
+		$('#InventoryManagerRename').click(this.renameSelectedItem.bind(this));
 		this.createInventoryItem = function ()
 		{
+			if(!this.inventory || !this.inventory[this.selectedName])
+			{
+				alertify.alert('No item is selected in the inventory window.');
+				return;
+			}
 			this.getInventoryItemAssetData(this.inventory[this.selectedName].key,function(item)
 			{
 				if (!_Editor.GetSelectedVWFNode() && (_InventoryManager.selectedType == 'event' || _InventoryManager.selectedType == 'method'))
@@ -101,18 +112,29 @@ define(function ()
 				{
 					var t = item;
 					var newintersectxy = _Editor.GetInsertPoint()
+					//account for the fact that some proto might have the transform stripped out
+					if(!t.properties.transform)
+					{
+						t.properties.transform = 
+						[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
+
+
+					}
 					if (t.properties.type != 'modifier' && t.properties.type != 'behavior')
 					{
 						t.properties.transform[12] = newintersectxy[0];
 						t.properties.transform[13] = newintersectxy[1];
 						t.properties.transform[14] = newintersectxy[2];
-						//t.properties.translation[0] = newintersectxy[0];
-						//t.properties.translation[1] = newintersectxy[1];
-						//t.properties.translation[2] = newintersectxy[2];
+
+						t.properties.translation = [];
+						t.properties.translation[0] = newintersectxy[0];
+						t.properties.translation[1] = newintersectxy[1];
+						t.properties.translation[2] = newintersectxy[2];
 						t.properties.DisplayName = _Editor.GetUniqueName(t.properties.DisplayName);
 						t = _DataManager.getCleanNodePrototype(t);
 						_InventoryManager.setOwner(t, _UserManager.GetCurrentUserName());
 						_Editor.SelectOnNextCreate();
+					
 						_InventoryManager.createChild('index-vwf', GUID(), t, null, null);
 					}
 					else
@@ -124,6 +146,7 @@ define(function ()
 						}
 						t = _DataManager.getCleanNodePrototype(t);
 						_InventoryManager.setOwner(t, _UserManager.GetCurrentUserName());
+						
 						_InventoryManager.createChild(_Editor.GetSelectedVWFID(), GUID(), t, null, null);
 					}
 				}
@@ -157,6 +180,12 @@ define(function ()
 		}
 		this.deleteSelectedItem = function ()
 		{
+			if(!this.inventory || !this.inventory[this.selectedName])
+			{
+				alertify.alert('No item is selected in the inventory window.');
+				return;
+			}
+
 			this.deleteInventoryItem(this.inventory[_InventoryManager.selectedName].key,function(){
 				_InventoryManager.NoAnimateRedraw();
 			});
@@ -174,8 +203,17 @@ define(function ()
 				type:'GET',
 				success:function(err,d,xhr)
 				{
+					try{
 					var item = JSON.parse(xhr.responseText);
+					}catch(e)
+					{
+						cb(null);
+						return;
+					}
 					cb(item);
+				},error:function()
+				{
+					cb(null);
 				}
 			});
 		
@@ -203,7 +241,12 @@ define(function ()
 		}
 		this.viewInventoryItem = function ()
 		{
-			
+			if(!this.inventory || !this.inventory[this.selectedName])
+			{
+				alertify.alert('No item is selected in the inventory window.');
+				return;
+			}
+
 			this.getInventoryItemAssetData(this.inventory[this.selectedName].key,
 			function(item)
 			{
@@ -288,6 +331,7 @@ define(function ()
 			$.ajax('./vwfDataManager.svc/inventoryitem?title=' + title +'&type=' + type,{
 				
 				type:'POST',
+				contentType: "application/json; charset=utf-8",
 				success:function(err,d,xhr)
 				{
 					cb($.trim(xhr.responseText));
@@ -302,6 +346,7 @@ define(function ()
 			$.ajax('./vwfDataManager.svc/globalasset?title=' + title +'&type=' + type,{
 				
 				type:'POST',
+				contentType: "application/json; charset=utf-8",
 				success:function(err,d,xhr)
 				{
 					cb($.trim(xhr.responseText));
@@ -311,15 +356,10 @@ define(function ()
 			});
 		
 		}
-		this.Take = function (id)
+		//given a prototype, add to the personal inventory
+		this.addProto = function(proto,title,type)
 		{
-			if (!id) id = _Editor.GetSelectedVWFNode().id
-			var t = _DataManager.getCleanNodePrototype(id);
-			var title = t.properties.DisplayName || GUID();
-			var type = 'object';
-			if(t.properties && t.properties.type)
-			type = t.properties.type
-			this.addInventoryItem(t, title, type,function(key)
+			this.addInventoryItem(proto, title, type,function(key)
 			{
 				_InventoryManager.global = false;
 				_InventoryManager.NoAnimateRedraw(function()
@@ -328,8 +368,34 @@ define(function ()
 				});
 			});
 		}
+		this.Take = function (id)
+		{
+			if(!_UserManager.GetCurrentUserName())
+			{
+				alertify.alert('You must be logged in to save objects to your inventory');
+				return;
+			}
+			if(!_Editor.GetSelectedVWFNode())
+			{
+				alertify.alert('No object is selected');
+				return;
+			}
+			if (!id) id = _Editor.GetSelectedVWFNode().id
+			var t = _DataManager.getCleanNodePrototype(id);
+			var title = t.properties.DisplayName || GUID();
+			var type = 'object';
+			if(t.properties && t.properties.type)
+			type = t.properties.type
+
+			this.addProto(t,title,type);
+		}
 		this.Publish = function (id)
 		{
+			if(!_UserManager.GetCurrentUserName())
+			{
+				alertify.alert('You must be logged in to publish objects');
+				return;
+			}
 			if (!id) id = _Editor.GetSelectedVWFNode().id
 			var t = _DataManager.getCleanNodePrototype(id);
 			var title = t.properties.DisplayName || GUID();
@@ -352,6 +418,7 @@ define(function ()
 				_Notifier.notify('You must log in to participate');
 				return;
 			}
+			_UndoManager.recordCreate(parent, name, proto, uri);
 			vwf_view.kernel.createChild(parent, name, proto, uri, callback);
 		}
 		this.getInventory = function(cb)
@@ -372,6 +439,11 @@ define(function ()
 		}
 		this.show = function ()
 		{
+			if(!_UserManager.GetCurrentUserName())
+			{
+				alertify.alert('You must be logged in to view your inventory.');
+				return;
+			}
 			this.getInventory(function(inventory)
 			{
 				//$('#InventoryManager').dialog('open');
@@ -444,7 +516,11 @@ define(function ()
 			$.ajax('./vwfDataManager.svc/inventoryitemmetadata?AID=' + id,{
 				
 				type:'POST',
+				contentType: "application/json; charset=utf-8",
 				success:function(err,d,xhr)
+				{
+					cb();
+				},error:function()
 				{
 					cb();
 				},
@@ -510,6 +586,7 @@ define(function ()
 				_InventoryManager.NoAnimateRedraw();
 				});
 			}
+
 		}.bind(this)
 		this.BuildGUI = function (newInventory)
 		{

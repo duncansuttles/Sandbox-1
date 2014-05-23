@@ -21,7 +21,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 		//$('#materialeditor').dialog({title:'Material Editor',autoOpen:false});
 		$('#materialeditor').css('border-bottom', '5px solid #444444')
 		$('#materialeditor').css('border-left', '2px solid #444444')
-		$(document.head).append('<link rel="stylesheet" media="screen" type="text/css" href="css/colorpicker.css" />');
+		$(document.head).append('<link rel="stylesheet" media="screen" type="text/css" href="../vwf/view/editorview/css/colorpicker.css" />');
 		$(document.head).append('<script type="text/javascript" src="js/colorpicker.js"></script>');
 		this.show = function ()
 		{
@@ -68,6 +68,42 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#' + prop + 'slider').slider('value', $('#' + prop + 'value').val());
 			_MaterialEditor.updateObject();
 		}
+
+		this.RootPropSlideStart = function (e, ui)
+		{
+			var prop = $(this).attr('prop');
+			
+			$('#' + prop + 'value').val(ui.value);
+			this.undoEvent = new _UndoManager.CompoundEvent();
+			for(var i = 0; i < _Editor.getSelectionCount();i++)
+				this.undoEvent.push(new _UndoManager.SetPropertyEvent(_Editor.GetSelectedVWFNode(i).id,'materialDef',null))
+			
+			_MaterialEditor.currentMaterial[prop] = ui.value;
+			_MaterialEditor.updateObject(true);
+		}
+		this.RootPropSlideStop = function (e, ui)
+		{
+			var prop = $(this).attr('prop');
+
+			_MaterialEditor.currentMaterial[prop] = ui.value;
+			$('#' + prop + 'value').val(ui.value);
+			if(this.undoEvent)
+			{
+				for(var i = 0; i < this.undoEvent.list.length; i++)
+					this.undoEvent.list[i].val = JSON.parse(JSON.stringify(_MaterialEditor.currentMaterial));
+				_UndoManager.pushEvent(this.undoEvent);
+				this.undoEvent = null;
+			}
+			_MaterialEditor.updateObject(true);
+		}
+		this.RootPropSlide = function (e, ui)
+		{
+			var prop = $(this).attr('prop');
+			_MaterialEditor.currentMaterial[prop] = ui.value;
+			$('#' + prop + 'value').val(ui.value);
+			_MaterialEditor.updateObject(true);
+		}
+
 		this.RootPropUpdate = function (e, ui)
 		{
 			var prop = $(this).attr('prop');
@@ -93,13 +129,93 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#' + rootid + prop + 'value').val(ui.value);
 			_MaterialEditor.updateObject();
 		}
-		this.updateObject = function ()
+		this.LayerPropSlide = function (e, ui)
+		{
+			var prop = $(this).attr('prop');
+			var layer = $(this).attr('layer');
+			var rootid = 'Layer' + layer + 'Settings';
+			_MaterialEditor.currentMaterial.layers[layer][prop] = ui.value;
+			$('#' + rootid + prop + 'value').val(ui.value);
+			_MaterialEditor.updateObject(true);
+		}
+		this.LayerPropSlideStart = function (e, ui)
+		{
+			var prop = $(this).attr('prop');
+			var layer = $(this).attr('layer');
+			var rootid = 'Layer' + layer + 'Settings';
+
+			this.undoEvent = new _UndoManager.CompoundEvent();
+			for(var i = 0; i < _Editor.getSelectionCount();i++)
+				this.undoEvent.push(new _UndoManager.SetPropertyEvent(_Editor.GetSelectedVWFNode(i).id,'materialDef',null))
+
+
+			_MaterialEditor.currentMaterial.layers[layer][prop] = ui.value;
+			$('#' + rootid + prop + 'value').val(ui.value);
+			_MaterialEditor.updateObject(true);
+		}
+		this.LayerPropSlideStop = function (e, ui)
+		{
+			var prop = $(this).attr('prop');
+			var layer = $(this).attr('layer');
+			var rootid = 'Layer' + layer + 'Settings';
+			_MaterialEditor.currentMaterial.layers[layer][prop] = ui.value;
+
+
+			if(this.undoEvent)
+			{
+				for(var i = 0; i < this.undoEvent.list.length; i++)
+					this.undoEvent.list[i].val = JSON.parse(JSON.stringify(_MaterialEditor.currentMaterial));
+				_UndoManager.pushEvent(this.undoEvent);
+				this.undoEvent = null;
+			}
+
+			$('#' + rootid + prop + 'value').val(ui.value);
+			_MaterialEditor.updateObject(true);
+		}
+		this.copyMaterial = function ()
+		{
+			_MaterialEditor.currentMaterialCopy = _MaterialEditor.currentMaterial;
+		}
+		this.copyLayer = function ()
+		{
+			var i = $(this).attr('i');
+			_MaterialEditor.currentMaterialLayerCopy = _MaterialEditor.currentMaterial.layers[i];
+		}
+		this.pasteMaterial = function ()
+		{
+			if(!_MaterialEditor.currentMaterialCopy)
+			{
+				_Notifier.notify('No Material to paste');
+				return;
+			}
+			
+			_MaterialEditor.currentMaterial = _MaterialEditor.currentMaterialCopy;
+			_MaterialEditor.updateObject();
+			_MaterialEditor.BuildGUI();
+		}
+		this.pasteLayer = function ()
+		{
+			if(!_MaterialEditor.currentMaterialLayerCopy)
+			{
+				_Notifier.notify('No Material Layer to paste');
+				return;
+			}
+			
+			var i = $(this).attr('i');
+			_MaterialEditor.currentMaterial.layers[i] = _MaterialEditor.currentMaterialLayerCopy;
+			_MaterialEditor.updateObject();
+			_MaterialEditor.BuildGUI();
+		}
+		this.updateObject = function (skipUndo)
 		{
 			if(document.PlayerNumber == null)
 			{
 			_Notifier.notify('You must log in to participate');
 			return;
 			}
+			
+			var undoEvent = new _UndoManager.CompoundEvent();
+
 			for (var i = 0; i < _Editor.getSelectionCount(); i++)
 			{
 				var id = _Editor.GetSelectedVWFNode(i).id;
@@ -109,8 +225,13 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				continue;
 				}
 				
+				undoEvent.push(new _UndoManager.SetPropertyEvent(id, 'materialDef', _MaterialEditor.currentMaterial));
+				
 				vwf_view.kernel.setProperty(id, 'materialDef', _MaterialEditor.currentMaterial);
 			}
+			//sliders must override this and handle undo themsleves
+			if(!skipUndo)
+				_UndoManager.pushEvent(undoEvent);
 		}
 		this.BuildGUI = function ()
 		{
@@ -118,7 +239,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$("#materialeditor").empty();
 			$("#materialeditor").append("<div id='materialeditortitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span class='ui-dialog-title' id='ui-dialog-title-Players'>Material Editor</span></div>");
 			$('#materialeditortitle').append('<a href="#" id="materialeditorclose" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
-			$('#materialeditortitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/material.png" />');
+			$('#materialeditortitle').prepend('<div class="headericon material" />');
 			$("#materialeditor").append('<div id="materialaccordion" style="height:100%;overflow:hidden">' + '	<h3>' + '		<a href="#">Material Base</a>' + '	</h3>' + '	<div id="MaterialBasicSettings">' + '	</div>' + '</div>');
 			$("#materialeditorclose").click(function ()
 			{
@@ -227,6 +348,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				$('#' + prop + 'value').change(this.RootPropTypein);
 				$('#MaterialBasicSettings').append('<div id="' + prop + 'slider"/>');
 				$('#' + prop + 'slider').attr('prop', prop);
+				$('#' + prop + 'slider').css('width', '95%');
 				$('#' + prop + 'value').attr('prop', prop);
 				var val = this.currentMaterial[prop];
 				$('#' + prop + 'value').val(val);
@@ -235,8 +357,10 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					step: sliderprops[i].step,
 					min: sliderprops[i].min,
 					max: sliderprops[i].max,
-					slide: this.RootPropUpdate,
-				//	stop: this.RootPropUpdate,
+					slide: this.RootPropSlide,
+					stop: this.RootPropSlideStop,
+					start: this.RootPropSlideStart,
+					
 					value: val
 				});
 			}
@@ -249,7 +373,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#MaterialBasicSettings').append('<div style="margin-bottom:10px" id="colordiv" />');
 			$('#colordiv').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;">Diffuse Color: </div>');
 			$('#colordiv').append('<div id="ColorColorPicker" style="' + colorswatchstyle + '"></div>')
-			var col = this.currentMaterial.color;
+			var col = this.currentMaterial.color || new THREE.Color();
 			$('#ColorColorPicker').css('background-color', 'rgb(' + Math.floor(col.r * 255) + ',' + Math.floor(col.g * 255) + ',' + Math.floor(col.b * 255) + ')');
 			$('#ColorColorPicker').ColorPicker(
 			{
@@ -289,7 +413,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#MaterialBasicSettings').append('<div style="margin-bottom:10px" id="ambientdiv" />');
 			$('#ambientdiv').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;">Ambient Color: </div>');
 			$('#ambientdiv').append('<div id="AmbientColorPicker" style="' + colorswatchstyle + '"></div>')
-			var amb = this.currentMaterial.ambient;
+			var amb = this.currentMaterial.ambient  || new THREE.Color();;
 			$('#AmbientColorPicker').css('background-color', 'rgb(' + Math.floor(amb.r * 255) + ',' + Math.floor(amb.g * 255) + ',' + Math.floor(amb.b * 255) + ')');
 			$('#AmbientColorPicker').ColorPicker(
 			{
@@ -326,7 +450,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#MaterialBasicSettings').append('<div style="margin-bottom:10px" id="emitdiv" />');
 			$('#emitdiv').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;">Emission Color: </div>');
 			$('#emitdiv').append('<div id="EmitColorPicker" style="' + colorswatchstyle + '"></div>')
-			var emt = this.currentMaterial.emit;
+			var emt = this.currentMaterial.emit  || new THREE.Color();;
 			$('#EmitColorPicker').css('background-color', 'rgb(' + Math.floor(emt.r * 255) + ',' + Math.floor(emt.g * 255) + ',' + Math.floor(emt.b * 255) + ')');
 			$('#EmitColorPicker').ColorPicker(
 			{
@@ -360,7 +484,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			$('#MaterialBasicSettings').append('<div style="margin-bottom:10px" id="specdiv" />');
 			$('#specdiv').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;">Specular Color: </div>');
 			$('#specdiv').append('<div id="SpecColorPicker" style="' + colorswatchstyle + '"></div>')
-			var spec = this.currentMaterial.specularColor;
+			var spec = this.currentMaterial.specularColor  || new THREE.Color();
 			$('#SpecColorPicker').css('background-color', 'rgb(' + Math.floor(spec.r * 255) + ',' + Math.floor(spec.g * 255) + ',' + Math.floor(spec.b * 255) + ')');
 			$('#SpecColorPicker').ColorPicker(
 			{
@@ -391,13 +515,13 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				}
 			});
 			
-			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsFog" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Fog Enabled </div></div>');
-			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsShading" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Shading Enabled </div></div>');
-			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsMetal" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Metal </div></div>');
-			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsWireFrame" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Wireframe </div></div>');
-			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsDepthTest" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Depth Test </div></div>');
-			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsDepthWrite" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Depth Write </div></div>');
-			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" type="checkbox" id="MaterialBasicSettingsVertexColors" /><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Vertex Colors </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" class="editorCheck" type="checkbox" id="MaterialBasicSettingsFog" /><div style="display:inline-block;">Fog Enabled </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" class="editorCheck" type="checkbox" id="MaterialBasicSettingsShading" /><div style="display:inline-block;">Shading Enabled </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" class="editorCheck" type="checkbox" id="MaterialBasicSettingsMetal" /><div style="display:inline-block;">Metal </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" class="editorCheck" type="checkbox" id="MaterialBasicSettingsWireFrame" /><div style="display:inline-block;">Wireframe </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" class="editorCheck" type="checkbox" id="MaterialBasicSettingsDepthTest" /><div style="display:inline-block;">Depth Test </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" class="editorCheck" type="checkbox" id="MaterialBasicSettingsDepthWrite" /><div style="display:inline-block;">Depth Write </div></div>');
+			$('#' + 'MaterialBasicSettings').append('<div><input style="vertical-align: middle" class="editorCheck" type="checkbox" id="MaterialBasicSettingsVertexColors" /><div style="display:inline-block;">Vertex Colors </div></div>');
 			
 			$('#MaterialBasicSettingsFog').click(function()
 			{
@@ -520,20 +644,37 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			
 			});
 			
-			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsnewLayer" style=width:100%;margin-top:10px/>');
+			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsnewLayer" style=width:100%;margin-top:2px/>');
 			$('#' + 'MaterialBasicSettingsnewLayer').button(
 			{
 				label: 'Add Layer'
 			});
 			$('#' + 'MaterialBasicSettingsnewLayer').click(this.addLayer);
+
+
+			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsCopy" style=width:100%;margin-top:2px/>');
+			$('#' + 'MaterialBasicSettingsCopy').button(
+			{
+				label: 'Copy Material'
+			});
+			$('#' + 'MaterialBasicSettingsCopy').click(this.copyMaterial);
+
+			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsPaste" style=width:100%;margin-top:2px/>');
+			$('#' + 'MaterialBasicSettingsPaste').button(
+			{
+				label: 'Paste Material'
+			});
+			$('#' + 'MaterialBasicSettingsPaste').click(this.pasteMaterial);
+
+
 			for (var i = 0; i < this.currentMaterial.layers.length; i++)
 			{
 				$('#materialaccordion').append('	<h3>' + '		<a href="#">Texture Layer ' + i + '</a>' + '	</h3>' + '	<div id="Layer' + i + 'Settings">' + '	</div>');
 				var layer = this.currentMaterial.layers[i];
 				var rootid = 'Layer' + i + 'Settings';
-				$('#' + rootid).append('<img id="' + rootid + 'thumb" class="BigTextureThumb"/>');
+				$('#' + rootid).append('<img crossOrigin="Anonymous" id="' + rootid + 'thumb" class="BigTextureThumb"/>');
 				$('#' + rootid + 'thumb').attr('src', this.currentMaterial.layers[i].src);
-				$('#' + rootid).append('<div id="' + rootid + 'thumbsrc" class="BigTextureThumb" style="overflow:hidden; text-overflow:ellipsis; text-align: center;font-weight: bold;border: none;"/>');
+				$('#' + rootid).append('<div id="' + rootid + 'thumbsrc" class="BigTextureThumbSrc" style="overflow:hidden; text-overflow:ellipsis; text-align: center;font-weight: bold;border: none;"/>');
 				$('#' + rootid + 'thumbsrc').text(this.currentMaterial.layers[i].src);
 				$('#' + rootid + 'thumb').attr('layer', i);
 				$('#' + rootid + 'thumb').click(function ()
@@ -577,8 +718,8 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				for (var j = 0; j < layersliderprops.length; j++)
 				{
 					var prop = layersliderprops[j].prop;
-					var inputstyle = "display: inline;float: right;padding: 0;width: 50px;border-radius: 6px;background: transparent;text-align: center;border-width: 1px;color: grey;"
-					$('#' + rootid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">' + prop + ': </div>');
+					var inputstyle = "display: inline;float: right;padding: 0;width: 50px;border-radius: 6px;background: transparent;text-align: center;border-width: 1px;color: black;margin-bottom: 4px;"
+					$('#' + rootid).append('<div style="display:inline-block;margin-bottom: 4px;">' + prop + ': </div>');
 					$('#' + rootid).append('<input style="' + inputstyle + '" id="' + rootid + prop + 'value"></input>');
 					$('#' + rootid + prop + 'value').change(this.LayerPropTypein);
 					$('#' + rootid).append('<div id="' + rootid + prop + 'slider"/>');
@@ -586,6 +727,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					$('#' + rootid + prop + 'value').attr('prop', prop);
 					$('#' + rootid + prop + 'slider').attr('layer', i);
 					$('#' + rootid + prop + 'value').attr('layer', i);
+					$('#' + rootid + prop + 'slider').css('width', "95%");
 					var val = this.currentMaterial.layers[i][prop];
 					$('#' + rootid + prop + 'value').val(val);
 					$('#' + rootid + prop + 'slider').slider(
@@ -593,8 +735,10 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 						step: layersliderprops[j].step,
 						min: layersliderprops[j].min,
 						max: layersliderprops[j].max,
-						slide: this.LayerPropUpdate,
-						//stop: this.LayerPropUpdate,
+						slide: this.LayerPropSlide,
+						start:this.LayerPropSlideStart,
+						stop:this.LayerPropSlideStop,
+						
 						value: val
 					});
 				}
@@ -631,13 +775,30 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					_MaterialEditor.currentMaterial.layers[$(this).attr('layer')].blendMode = $(this).val();
 					_MaterialEditor.updateObject();
 				});
-				$('#' + rootid).append('<div id="' + rootid + 'deleteLayer" style="width: 100%;margin-top: 10px;"/>');
+				$('#' + rootid).append('<div id="' + rootid + 'deleteLayer" style="width: 100%;margin-top: 2px;"/>');
 				$('#' + rootid + 'deleteLayer').button(
 				{
 					label: 'Delete Layer'
 				});
 				$('#' + rootid + 'deleteLayer').attr('layer', i);
 				$('#' + rootid + 'deleteLayer').click(this.deletelayer);
+
+
+				$('#' + rootid).append('<div id="' + rootid + 'copyLayer" style="width: 100%;margin-top: 2px;"/>');
+				$('#' + rootid + 'copyLayer').button(
+				{
+					label: 'Copy Layer'
+				});
+				$('#' + rootid + 'copyLayer').attr('i', i);
+				$('#' + rootid + 'copyLayer').click(this.copyLayer);
+
+				$('#' + rootid).append('<div id="' + rootid + 'pasteLayer" style="width: 100%;margin-top: 2px;"/>');
+				$('#' + rootid + 'pasteLayer').button(
+				{
+					label: 'Paste Layer'
+				});
+				$('#' + rootid + 'pasteLayer').attr('i', i);
+				$('#' + rootid + 'pasteLayer').click(this.pasteLayer);
 			}
 			
 			
@@ -676,6 +837,8 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			newlayer.mapInput = 0;
 			newlayer.alpha = 1;
 			newlayer.src = 'checker.jpg';
+			if(!_MaterialEditor.currentMaterial.layers)
+				 _MaterialEditor.currentMaterial.layers = [];
 			_MaterialEditor.currentMaterial.layers.push(newlayer);
 			_MaterialEditor.updateObject();
 			_MaterialEditor.BuildGUI();
@@ -686,8 +849,11 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			{
 				if (node)
 				{
+					var mat = vwf.getProperty(node.id, 'materialDef');
+					if(!mat)
+						return;
 					
-					this.currentMaterial = vwf.getProperty(node.id, 'materialDef');
+					this.currentMaterial = JSON.parse(JSON.stringify(mat));
 					if (!this.currentMaterial){
 					if(this.isOpen()) this.hide();
 					return;

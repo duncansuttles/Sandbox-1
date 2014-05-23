@@ -17,11 +17,11 @@
 						if(oldmat)
 						{
 							//because we are reusing the material, we need to remove it from the cache
-							delete this.materials[JSON.stringify(oldmat.def)];
+							delete this.materials[oldmat.def];
 						}
 						this.materials[id] =  this.setMaterialByDef(oldmat,def);
 						if(this.materials[id])
-						this.materials[id].def = def;
+						this.materials[id].def = id;
 					}else
 						return null;
 					return this.materials[id];				
@@ -32,20 +32,36 @@
 			this.setMaterial = function(mesh,def)
 			{
 				
+				
 
 				var oldmat = mesh.material;
 				var newmat = this.getMaterialbyDef(oldmat&&oldmat.refCount==1?oldmat:null,def);
 				
 				if(oldmat == newmat) return;
 
-				if(oldmat && oldmat.refCount === undefined)
-					oldmat.refCount = 1;
-				if(oldmat)
+				//so, since the loader now does not clone materails on load, it's possible that the material is shared by other meshes
+				//even though we have not ref counted it. So, we can't dispose materials that have a refcount of undefined, since we have
+				//no idea if they are used elsewhere. Only dispose when refcount === 0
+				//if(oldmat && oldmat.refCount === undefined)
+				//	oldmat.refCount = 1;
+				if(oldmat && oldmat.refCount)
 					oldmat.refCount--;	
-				if(oldmat.refCount == 0)
+				if(oldmat.refCount === 0)
 				{
 					if(oldmat.dispose)
+					{
+						var mapnames = ['bumpMap','normalMap','map','specularMap','lightMap'];
+						for(var i =0; i < mapnames.length; i++)
+						{
+							if(oldmat[mapnames[i]] && oldmat[mapnames[i]].dispose)
+							{
+								oldmat[mapnames[i]].dispose();
+							}
+						}
+						//if we are disposing, then we know that this material was allocated by the materialdef system. Since this system does not
+						//cache maps independantly of materails, we can dispose all the maps as well.
 						oldmat.dispose();
+					}
 					var olddef = oldmat.def;
 					delete this.materials[olddef];
 				}				
@@ -75,8 +91,8 @@
 
 				if(value.type == 'phong')
 				{	
-					if(_SceneManager.useSimpleMaterials)
-						return this.setMaterialDefBasic(currentmat,value);
+					if(_SettingsManager.getKey('useSimpleMaterials'))
+						return this.setMaterialDefSimple(currentmat,value);
 					return this.setMaterialDefPhong(currentmat,value);
 				}
 				else if(value.type == 'video')	
@@ -120,6 +136,7 @@
 						"void main() { "+
 						"vec4 color1 = texture2D(texture1,tc);"+
 						"gl_FragColor = color1;"+
+						"gl_FragColor.a = 1.0;"+
 						
 						"}"
 						
@@ -141,7 +158,7 @@
 				
 				if(currentmat.videoUpdateCallback)
 				{
-					$(document).unbind('prerender',currentmat.videoUpdateCallback);
+					_dView.unbind('prerender',currentmat.videoUpdateCallback);
 					delete currentmat.videoUpdateCallback;
 				}
 				
@@ -157,7 +174,7 @@
 					
 					}.bind(currentmat);
 					
-					$(document).bind('prerender',currentmat.videoUpdateCallback.bind(currentmat));
+					_dView.bind('prerender',currentmat.videoUpdateCallback.bind(currentmat));
 					
 				}
 				if(value.layers[0])
@@ -177,8 +194,8 @@
 				
 					currentmat.video = video;
 					currentmat.uniforms.texture1.value = new THREE.Texture(video);
-					currentmat.uniforms.texture1.value.minFilter = THREE.LinearMipMapLinearFilter;
-					currentmat.uniforms.texture1.value.magFilter = THREE.LinearFilter;
+					currentmat.uniforms.texture1.value.minFilter = THREE.NearestFilter;
+					currentmat.uniforms.texture1.value.magFilter = THREE.NearestFilter;
 					currentmat.uniforms.texture1.value.format = THREE.RGBFormat;
 					currentmat.uniforms.texture1.value.generateMipmaps = false;
 				}
@@ -285,11 +302,12 @@
 				
 				currentmat.morphTargets = value.morphTargets || false;
 				currentmat.skinning = value.skinning || false;
-				currentmat.specular.r = value.specularColor.r * value.specularLevel;
-				currentmat.specular.g = value.specularColor.g * value.specularLevel;
-				currentmat.specular.b = value.specularColor.b * value.specularLevel;
+				currentmat.specular.r = value.specularColor.r * value.specularLevel/10;
+				currentmat.specular.g = value.specularColor.g * value.specularLevel/10;
+				currentmat.specular.b = value.specularColor.b * value.specularLevel/10;
 				
 				currentmat.side = value.side || 0;
+				if(window.isIE() && currentmat.side == 2)  currentmat.side = 0;
 				currentmat.opacity = value.alpha;
 				//if the alpha value less than 1, and the blendmode is defined but not noblending
 				if(value.alpha < 1 || (value.blendMode !== undefined && value.blendMode !== THREE.NoBlending))
@@ -351,29 +369,35 @@
 					currentmat.vertexColors = 0;
 				}
 					
-				var mapnames = ['map','bumpMap','lightMap','normalMap','specularMap','envMap'];
+				var mapnames = ['map','lightMap','specularMap','envMap'];
+				if(_dRenderer.supportsStandardDerivatives())
+				{
+					mapnames.push('normalMap');
+					mapnames.push('bumpMap');
+
+				}
 				currentmat.reflectivity = value.reflect/10;
 				
 				
 				for(var i =0; i < value.layers.length; i++)
 				{
-						var mapname;
+						var mapname = null;
 						if(value.layers[i].mapTo == 1)
 						{
 							mapname = 'map';
 							currentmat.alphaTest = 1 - value.layers[i].alpha;
 							
 						}
-						if(value.layers[i].mapTo == 2)
+						if(value.layers[i].mapTo == 2 && _dRenderer.supportsStandardDerivatives())
 						{
 							mapname = 'bumpMap';
-							currentmat.bumpScale = value.layers[i].alpha;
+							currentmat.bumpScale = value.layers[i].alpha/10.0;
 						}
 						if(value.layers[i].mapTo == 3)
 						{
 							mapname = 'lightMap';
 						}	
-						if(value.layers[i].mapTo == 4)
+						if(value.layers[i].mapTo == 4 && _dRenderer.supportsStandardDerivatives())
 						{
 							mapname = 'normalMap';
 							currentmat.normalScale.x = value.layers[i].alpha;
@@ -387,6 +411,164 @@
 						if(value.layers[i].mapTo == 6)
 						{
 							mapname = 'envMap';
+						}
+						
+						if(mapname)
+						{
+							mapnames.splice(mapnames.indexOf(mapname),1);				
+							
+							String.prototype.endsWith = function(suffix) {
+								return this.indexOf(suffix, this.length - suffix.length) !== -1;
+							};
+
+							if((currentmat[mapname] && currentmat[mapname]._SMsrc != value.layers[i].src) || !currentmat[mapname])
+							{
+								 _SceneManager.releaseTexture(currentmat[mapname]);
+								currentmat[mapname] = _SceneManager.getTexture(value.layers[i].src);
+								currentmat[mapname].needsUpdate = true;
+								currentmat.needsUpdate = true;
+								//currentmat[mapname] = THREE.ImageUtils.loadTexture(value.layers[i].src);
+								
+							}
+							if(value.layers[i].mapInput == 0)
+							{
+								currentmat[mapname].mapping = new THREE.UVMapping();
+							}
+							if(value.layers[i].mapInput == 1)
+							{
+								currentmat[mapname].mapping = new THREE.CubeReflectionMapping();
+							}
+							if(value.layers[i].mapInput == 2)
+							{
+								currentmat[mapname].mapping = new THREE.CubeRefractionMapping();
+							}
+							if(value.layers[i].mapInput == 3)
+							{
+								currentmat[mapname].mapping = new THREE.SphericalReflectionMapping();
+							}
+							if(value.layers[i].mapInput == 4)
+							{
+								currentmat[mapname].mapping = new THREE.SphericalRefractionMapping();
+							}
+							currentmat[mapname].wrapS = THREE.RepeatWrapping;
+							currentmat[mapname].wrapT = THREE.RepeatWrapping;
+							currentmat[mapname].repeat.x = value.layers[i].scalex;
+							currentmat[mapname].repeat.y = value.layers[i].scaley;
+							currentmat[mapname].offset.x = value.layers[i].offsetx;
+							currentmat[mapname].offset.y = value.layers[i].offsety;
+						}
+				}
+				for(var i in mapnames)
+				{
+					if(mapnames[i] == 'map')
+					{
+						currentmat.map =  _SceneManager.getTexture('white.png');
+						currentmat.map.wrapS = THREE.RepeatWrapping;
+						currentmat.map.wrapT = THREE.RepeatWrapping;
+						if(value.layers[0])
+						{
+						currentmat.map.repeat.x = value.layers[0].scalex;
+						currentmat.map.repeat.y = value.layers[0].scaley;
+						currentmat.map.offset.x = value.layers[0].offsetx;
+						currentmat.map.offset.y = value.layers[0].offsety;
+						}
+					}
+					else	
+					{
+						if(currentmat[mapnames[i]] != null)
+						{
+							currentmat[mapnames[i]] = null;
+							currentmat.needsUpdate = true;
+						}
+					}
+					
+				}
+				if(currentmat.reflectivity)
+				{
+					var sky = vwf_view.kernel.kernel.callMethod('index-vwf','getSkyMat')
+					if(sky)
+					{
+					currentmat.envMap = sky.uniforms.texture.value;
+					currentmat.envMap.mapping = new THREE.CubeReflectionMapping();
+					}
+				}
+				
+				return currentmat;
+			}
+			
+			this.setMaterialDefSimple = function(currentmat,value)
+			{
+				if(!value) return;
+				
+				
+				if(currentmat && !(currentmat instanceof THREE.MeshBasicMaterial))
+				{
+					if(currentmat && currentmat.dispose)
+						currentmat.dispose();
+					currentmat = null;
+				}
+				
+				if(!currentmat){
+				 currentmat = new THREE.MeshBasicMaterial();
+				 currentmat.needsUpdate = true;
+				}
+				
+				
+				currentmat.color.r = value.color.r;
+				currentmat.color.g = value.color.g;
+				currentmat.color.b = value.color.b;
+				
+				currentmat.morphTargets = value.morphTargets || false;
+				currentmat.skinning = value.skinning || false;
+				
+				
+				currentmat.side = value.side || 0;
+				if(window.isIE() && currentmat.side == 2)  currentmat.side = 0;
+				currentmat.opacity = value.alpha;
+				//if the alpha value less than 1, and the blendmode is defined but not noblending
+				if(value.alpha < 1 || (value.blendMode !== undefined && value.blendMode !== THREE.NoBlending))
+				{
+					if(currentmat.transparent == false) currentmat.needsUpdate = true;
+					currentmat.transparent = true;
+				}
+				else{
+
+					if(currentmat.transparent == true) currentmat.needsUpdate = true;	
+					currentmat.transparent = false;
+				}
+				
+				if(value.blendMode !== undefined)
+				{
+					if(currentmat.blending != value.blendMode) currentmat.needsUpdate = true;
+					currentmat.blending = value.blendMode;
+				}
+				if(value.fog !== undefined)
+				{
+					if(currentmat.fog != value.fog) currentmat.needsUpdate = true;
+					currentmat.fog = value.fog;
+				}
+				
+				currentmat.wireframe = value.wireframe || false;
+				
+				currentmat.combine = value.combine || 0;
+				
+				if(currentmat.wireframe != value.wireframe) currentmat.needsUpdate = true;
+				
+				if(currentmat.combine != value.combine) currentmat.needsUpdate = true;
+
+					
+				var mapnames = ['map'];
+				currentmat.reflectivity = 0;
+				
+
+				for(var i =0; i < value.layers.length; i++)
+				{
+						var mapname = null;
+						if(value.layers[i].mapTo == 1)
+						{
+							mapname = 'map';
+							currentmat.alphaTest = 1 - value.layers[i].alpha;
+							
 						}
 						
 						mapnames.splice(mapnames.indexOf(mapname),1);				
@@ -435,7 +617,7 @@
 				{
 					if(mapnames[i] == 'map')
 					{
-						currentmat.map =  _SceneManager.getTexture('white.png');
+						currentmat.map =  _SceneManager.getTexture('white.png',true);
 						currentmat.map.wrapS = THREE.RepeatWrapping;
 						currentmat.map.wrapT = THREE.RepeatWrapping;
 						if(value.layers[0])
@@ -468,7 +650,7 @@
 				
 				return currentmat;
 			}
-			
+
 			this.setMaterialDefBasic = function(currentmat,value)
 			{
 				if(!value) return;
@@ -497,6 +679,7 @@
 				
 				
 				currentmat.side = value.side || 0;
+				if(window.isIE() && currentmat.side == 2)  currentmat.side = 0;
 				currentmat.opacity = value.alpha;
 				//if the alpha value less than 1, and the blendmode is defined but not noblending
 				if(value.alpha < 1 || (value.blendMode !== undefined && value.blendMode !== THREE.NoBlending))
@@ -676,7 +859,7 @@
 							//config.uniforms.map.value = _SceneManager.getTexture(layer.src);
 
 						}
-						else if( layer.mapTo == 2 )
+						else if( layer.mapTo == 2 && _dRenderer.supportsStandardDerivatives())
 						{
 							render_flags['bumpMap'] = true;
 							config.uniforms.bumpMap.value = _SceneManager.getTexture(layer.src);
@@ -687,7 +870,7 @@
 							render_flags['lightMap'] = true;
 							config.uniforms.lightMap.value = _SceneManager.getTexture(layer.src);
 						}
-						else if( layer.mapTo == 4 )
+						else if( layer.mapTo == 4 && _dRenderer.supportsStandardDerivatives())
 						{
 							render_flags['normalMap'] = true;
 							config.uniforms.normalMap.value = _SceneManager.getTexture(layer.src);
@@ -727,6 +910,7 @@
 					config.uniforms.combine.value = value.combine || 0;
 
 					render_flags['side'] = value.side || 0;
+					if(window.isIE() && render_flags.side == 2)  render_flags.side = 0;
 
 					// configure transparency
 					if(value.alpha < 1 || (value.blendMode !== undefined && value.blendMode !== THREE.NoBlending)){
@@ -867,7 +1051,7 @@
 						].join("\n")
 
 					};
-					//config.fragmentShader = shader.slice(0,13).join('\n') + myUniforms + shader.slice(14,185).join('\n') + myShaderFrag + shader.slice(186).join('\n');
+					//config.fragmentShader = shader.slice(0,13).join('\n') + myUniforms + shader.slice(14,184).join('\n') + myShaderFrag + shader.slice(188).join('\n');
 
 					// apply renderer flags
 					currentmat = new THREE.ShaderMaterial(config);
@@ -888,12 +1072,12 @@
 		{
 			
 		    this.defaultmaterialDef = {
-                    shininess:15,
+                    shininess:0,
                     alpha:1,
                     ambient:{r:1,g:1,b:1},
                     color:{r:1,g:1,b:1,a:1},
                     emit:{r:0,g:0,b:0},
-                    reflect:0.8,
+                    reflect:0.0,
                     shadeless:false,
                     shadow:true,
                     specularColor:{r:0.5773502691896258,g:0.5773502691896258,b:0.5773502691896258},
@@ -1028,7 +1212,7 @@
 		this.getDefForMaterial = function (currentmat)
 		{
 		   try{
-		   
+		  
 			var value = {};
 			value.color = {}
 			value.color.r = currentmat.color.r;
@@ -1048,9 +1232,9 @@
 			value.specularColor.b = currentmat.specular.b;
 			value.specularLevel = 1;
 			value.alpha = currentmat.opacity;
-			value.shininess = (currentmat.shininess || 0) / 5 ;
-			value.side = currentmat.side;
-			 value.reflect = currentmat.reflectivity * 10;
+			value.shininess = (currentmat.shininess || 0) / 50 ;
+			value.side = currentmat.side || 0;
+			value.reflect = currentmat.reflectivity * 10/100;
 			var mapnames = ['map', 'bumpMap', 'lightMap', 'normalMap', 'specularMap'];
 			value.layers = [];
 			for (var i = 0; i < mapnames.length; i++)
@@ -1080,7 +1264,7 @@
 			return value;
 			}catch(e)
 			{
-				return {}
+				return this.defaultmaterialDef;
 			}
 		}
 		}

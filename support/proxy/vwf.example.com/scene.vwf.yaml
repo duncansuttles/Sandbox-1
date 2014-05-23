@@ -12,7 +12,7 @@
 # the License.
 
 --- 
-extends: http://vwf.example.com/node2.vwf
+extends: http://vwf.example.com/node.vwf
 implements:
 - http://vwf.example.com/xapi.vwf
 properties:
@@ -45,8 +45,146 @@ properties:
     set: |
       this.ambientColor = value;
     value: [ .5, .5, .5 ]
+  traceAPI:
+    get: |
+      if(!this._traceAPI)
+      {
+            Object.defineProperty(this,"_traceAPI",{enumerable:false,writable:true});
+            this._traceAPI = {};
+            var traceself = this._traceAPI;
+            this._traceAPI.___findVWFID = function(o)
+            {
+                if(!o) return null;
+                if(o.vwfID) return o.vwfID;
+                return traceself.___findVWFID(o.parent);
+            }
+            this._traceAPI.___getJSNode = function(o)
+            {
+              return vwf.models.javascript.nodes[o];
+            }
+            this._traceAPI.___filterResults = function(results)
+            {
+              if(!results) return results
+              results.node = traceself.___getJSNode(traceself.___findVWFID(results.object));
+              return results;
+            }
+            this._traceAPI.___buildOptions = function(options)
+            {
+              if(!options)
+              {
+                options = {ignore:[],filter:null}
+              }
+              for(var i =0; i < options.ignore.length; i++)
+              {
+                  if(options.ignore[i].constructor == String)
+                      options.ignore[i] = _Editor.findviewnode(options.ignore[i]);
+              }
+              options.ignore.push(_Editor.GetMoveGizmo());
+              options.ignore.push(_dSky);
+              options.oldfilter = options.filter || function(){return true};
+              
+              options.filter = function(o)
+              {
+                  if(options.oldfilter)
+                  {
+                     options.oldfilter(traceself.___getJSNode(traceself.___findVWFID(o)))
+                  }
+                  if(o.passable) return false;
+                  return true;
+              }
+              return options;
+            }
+            
+            this._traceAPI.rayCast = function(origin,direction,options)
+            {
+              var ret = _SceneManager.CPUPick(origin,direction,traceself.___buildOptions( options))
+              return this.___filterResults(ret);
+            }
+            this._traceAPI.sphereCast = function(origin,direction,options)
+            {
+              var ret = _SceneManager.sphereCast(origin,direction,options)
+              return this.___filterResults(ret);
+            }
+            this._traceAPI.frustCast = function(origin,direction,options)
+            {
+              var ret = _SceneManager.frustCast(origin,direction,options)
+              return this.___filterResults(ret);
+            }
+      }
+      return this._traceAPI;
+  audioAPI:
+    get: |
+          if(!this._audioAPI)
+          {
+            Object.defineProperty(this,"_audioAPI",{enumerable:false,writable:true});
+            this._audioAPI = {};
+            this._audioAPI.___self = this;
+            this._audioAPI.playSound=function(soundURL /* the url of the sound */, loop /* loop or not */, volume)
+            {
+                vwf.callMethod(this.id,'playSound',[soundURL,loop,volume])
+                
+            }
+            this._audioAPI.stopSound=function(soundURL /* the url of the sound */)
+            {
+                vwf.callMethod(this.id,'stopSound',[soundURL])
+               
+            }
+           this._audioAPI.pauseSound=function(soundURL /* the url of the sound */)
+            {
+                vwf.callMethod(this.id,'pauseSound',[soundURL])
+               
+            }
+            this._audioAPI.deleteSound=function(soundURL /* the url of the sound */)
+            {
+                vwf.callMethod(this.id,'deleteSound',[soundURL])
+                
+            }
+           }
+           return this._audioAPI;
+  createAPI:
+    get: |
+          if(!this._createAPI)
+          {
+            Object.defineProperty(this,"_createAPI",{enumerable:false,writable:true});
+            this._createAPI = {};
+            var self = this;
+            this._createAPI.___createInternal = function(proto,cb)
+            {
+                 this.children.create(proto,GUID(),function(id){
+                 if(cb)
+                 {
+                     cb(vwf.models.javascript.nodes[id]);
+                 }
+                });
+            }
+            this._createAPI.primitives = {};
+            this._createAPI.primitives.sphere = function(radius,position,cb) {};
+            this._createAPI.primitives.box = function(width,height,length,position,cb) {};
+            this._createAPI.primitives.plane = function(width,length,position,cb) {};
+            this._createAPI.primitives.cone = function(radius,height,position,cb) {};
+            this._createAPI.primitives.cylinder = function(radius,height,position,cb) {};
+            this._createAPI.primitives.text = function(text,size,position,cb) {};
+            this._createAPI.primitives.torus = function(radius1,radius2,position,cb) {};
+            this._createAPI.meshes = {};
+            this._createAPI.meshes.fromURL = function(URL,position,cb) {};
+            this._createAPI.meshes.from3DRPID = function(URL,position,cb) {};
+            this._createAPI.lights = {};
+            this._createAPI.lights.point = function(color,brightness,position,cb) {};
+            this._createAPI.lights.directional = function(color,brightness,position,orientation,cb) {};
+            this._createAPI.lights.spot = function(color,brightness,position,orientation,cb) {};
+            this._createAPI.particles = {};
+            this._createAPI.particles.basic = function(cb) {};
+            this._createAPI.behaviors = {};
+            this._createAPI.modifiers = {};
+            this._createAPI.inventory = {};
+            this._createAPI.cameras = {};
+            this._createAPI.cameras.perspective = function(fov, position,cb) {};
+            this._createAPI.cameras.orthographic = function(width,length, position,cb) {};
+          }
+          return this._createAPI;      
 methods:
   findNode:
+  findNodeByID:
 scripts:
 - |
     this.activeCameraComp = undefined;
@@ -81,8 +219,22 @@ scripts:
           if(ret) return ret;
       }
       return ret;
-    
-    
+    }
+    this.findNodeByID = function(id,node)
+    {
+      
+      if(!node)
+      node = this;
+      
+      if(node && node.id == id)
+        return node;
+      var ret = null;  
+      for(var i =0; i <  node.children.length; i++)
+      {
+          ret = this.findNodeByID(id,node.children[i]);
+          if(ret) return ret;
+      }
+      return ret;
     }
     this.getActiveCamera = function() {
       if ( !this.activeCameraComp ) {

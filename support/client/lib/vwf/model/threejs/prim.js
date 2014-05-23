@@ -20,6 +20,22 @@
 					return this.updateSelf();
 				}
 			}	
+			this.PrimGetAllLeafMeshes = function(threeObject,list)
+			{
+				if(!list) list = [];
+				if(threeObject instanceof THREE.Mesh || threeObject instanceof THREE.Line)
+				{
+					list.push(threeObject);
+				}
+				if(threeObject.children)
+				{
+					for(var i=0; i < threeObject.children.length; i++)
+					{
+						this.PrimGetAllLeafMeshes(threeObject.children[i],list);
+					}               
+				}
+				return list;
+			}
 			this.initializingNode = function()
 			{
 				this.dirtyStack();
@@ -163,12 +179,24 @@
 					mat =  new THREE.MeshPhongMaterial();
 				
 				if(this.mesh)
+				{
 					this.rootnode.remove(this.mesh);
+					//here, we need to deallocate the geometry
+					var list = [];
+					this.PrimGetAllLeafMeshes(this.mesh,list);
+					for(var i = 0; i < list.length; i++)
+					{
+						if(list[i] && list[i].geometry)
+						{
+							//currently, we can't deallocate because we cache cubes
+							//list[i].geometry.deallocate();
+						}
+					}
+				}
 				
 				var mesh = this.BuildMesh(mat,cache);
 				this.mesh = mesh;
-				
-				
+				this.mesh.name = "TESTSPHERE";
 				
 				this.rootnode.add(mesh);
 

@@ -133,6 +133,7 @@
 
         var socket = this.private.socket = undefined;
 
+
         // When saving and loading the application, we need to read and write node state without
         // coloring from any scripts. When isolateProperties is non-zero, property readers and
         // writers suppress kernel reentry to prevent drivers from modifying state while the
@@ -187,7 +188,15 @@
         //     [4] vwf.initialize( ..., [ "vwf/model/javascript" ], [ ... ] )
         //     [5] vwf.initialize( ..., [ { "vwf/model/glge": [ "#scene, "second param" ] } ], [ ... ] )
         //     [6] vwf.initialize( ..., [ { "vwf/model/glge": "#scene" } ], [ ... ] )
-
+        this.close = function()
+        {
+            if(socket)
+            {
+                socket.removeListener( "disconnect", vwf.disconnected);
+                socket.disconnect();
+                socket = null;
+            }
+        }
         this.initialize = function( /* [ componentURI|componentObject ] [ modelInitializers ]
             [ viewInitializers ] */ ) {
 
@@ -336,7 +345,23 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 			socket.disconnect();
 			socket = null;
 			window.setInterval(this.generateTick.bind(this),50);
-		};		
+		}
+        this.getInstanceHost = function()
+        {
+
+
+            var loadBalancerAddress = {{loadBalancerAddress}};
+            var instance = window.location.pathname;
+
+            var instanceHost = $.ajax({
+              dataType: "json",
+              url: loadBalancerAddress,
+              data: {instance:instance},
+              async:false
+            }).responseText;
+            return instanceHost;
+
+        }		
         this.ready = function( component_uri_or_json_or_object ) {
 
             // Connect to the reflector. This implementation uses the socket.io library, which
@@ -346,7 +371,12 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 
 				var space = window.location.pathname.slice( 1,
                         window.location.pathname.lastIndexOf("/") );
-				socket = io.connect("ws://"+window.location.host);
+                var protocol = window.location.protocol;
+                var host = {{host}};
+                if(protocol === 'http:')
+				    socket = io.connect("http://"+host);
+                if(protocol === 'https:')
+                    socket = io.connect("https://"+host);
 				
             } catch ( e ) {
 
@@ -669,6 +699,8 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
             // remove the message and perform the action. The simulation time is advanced to the
             // message time as each one is processed.
 
+           
+
             queue.time = Math.max( queue.time, currentTime ); // save current server time for pause/resume
 
             // Actions may use receive's ready function to suspend the queue for asynchronous
@@ -677,13 +709,22 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
             while ( queue.ready && queue.length > 0 && queue[0].time <= queue.time  ) {
 
                 var fields = queue.shift();
+                
 				this.message = fields;
-				 if(fields.action == 'getState' && this.creatingNodeCount!=0)
-				 {
-					 fields.time += .05;
-					 queue.push(fields);
-					 continue;
-				 }
+			
+
+                if(fields.action == 'setState')
+                {
+                this.receive( fields.node, fields.action, fields.member, fields.parameters, fields.respond, function( ready ) {
+                    if ( Boolean( ready ) != Boolean( queue.ready ) ) {
+                        vwf.logger.info( "vwf.dispatch:", ready ? "resuming" : "pausing", "queue at time", queue.time, "for", fields.action );
+                        queue.ready = ready;
+                        queue.ready && vwf.dispatch( queue.time );
+                    }
+                } );
+                return;
+                }
+
                 // Advance the time.
 
                 if ( this.now != fields.time ) {
@@ -772,11 +813,11 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 		   
 
 		 // Call tick() on each tickable node.
-		
-		for(var i =0; i < this.tickable.nodeIDs.length; i ++)
-		{	
-		  this.callMethod( this.tickable.nodeIDs[i], "tick", [ this.now ] );
-		}
+		//this is really a bad idea. swtiching to a depth first recurse on only actually existing nodes within the JS driver
+		//for(var i =0; i < this.tickable.nodeIDs.length; i ++)
+		//{	
+		 // this.callMethod( this.tickable.nodeIDs[i], "tick", [ this.now ] );
+		//}
 		
 		for(var i =0; i < this.views.length; i ++)
 		{	
@@ -790,7 +831,7 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
         this.setState = function( applicationState, set_callback /* () */ ) {
 
 			
-            this.logger.group( "vwf.setState" );  // TODO: loggableState
+       //     this.logger.group( "vwf.setState" );  // TODO: loggableState
 
             // Direct property accessors to suppress kernel reentry so that we can write the state
             // without coloring from scripts.
@@ -798,6 +839,50 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
             isolateProperties++;
 
             async.series( [
+
+                function( series_callback /* ( err, results ) */ ) {
+
+                    // Clear the queue, but leave any private direct messages in place. Update the queue
+                    // array in place so that existing references remain valid.
+
+                    var private_queue = [], fields;
+                    
+                    while ( queue.length > 0 ) {
+
+                        fields = queue.shift();
+            
+                        vwf.logger.info( "setState:", "removing", require( "vwf/utility" ).transform( fields, function( object, index, depth ) {
+                            return depth == 2 && object ? Array.prototype.slice.call( object ) : object
+                        } ), "from queue" );
+                        
+            //so, we now backdate the setstate so that create messges are not discarded, and now we need to
+            //actually process messages  that are currently on the queue, but happen in the future after the setstate;
+                       fields.respond &&  private_queue.push( fields );
+                       if(fields.time >= vwf.message.time)
+                           private_queue.push( fields );
+                    }
+
+                    while ( private_queue.length > 0 ) {
+
+                        fields = private_queue.shift();
+
+                        vwf.logger.info( "setState:", "returning", require( "vwf/utility" ).transform( fields, function( object, index, depth ) {
+                            return depth == 2 && object ? Array.prototype.slice.call( object ) : object
+                        } ), "to queue" );
+
+                        console.log('requre for ', fields);
+                        queue.push( fields );
+
+                    }
+
+                    // Add the incoming items to the queue.
+
+                    if ( applicationState.queue ) {
+                        vwf.queue( applicationState.queue );
+                    }
+                    console.log('queue before setstate',queue);
+                    series_callback( undefined, undefined );
+                },
 
                 function( series_callback /* ( err, results ) */ ) {
 
@@ -813,49 +898,6 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 
                 },
 
-                function( series_callback /* ( err, results ) */ ) {
-
-                    // Clear the queue, but leave any private direct messages in place. Update the queue
-                    // array in place so that existing references remain valid.
-
-                    var private_queue = [], fields;
-					
-                    while ( queue.length > 0 ) {
-
-                        fields = queue.shift();
-			
-                        vwf.logger.info( "setState:", "removing", require( "vwf/utility" ).transform( fields, function( object, index, depth ) {
-                            return depth == 2 && object ? Array.prototype.slice.call( object ) : object
-                        } ), "from queue" );
-						
-			//so, we now backdate the setstate so that create messges are not discarded, and now we need to
-			//actually process messages  that are currently on the queue, but happen in the future after the setstate;
-                       fields.respond &&  private_queue.push( fields );
-					   if(fields.time >= vwf.message.time)
-						   private_queue.push( fields );
-                    }
-
-                    while ( private_queue.length > 0 ) {
-
-                        fields = private_queue.shift();
-
-                        vwf.logger.info( "setState:", "returning", require( "vwf/utility" ).transform( fields, function( object, index, depth ) {
-                            return depth == 2 && object ? Array.prototype.slice.call( object ) : object
-                        } ), "to queue" );
-
-                        queue.push( fields );
-
-                    }
-
-                    // Add the incoming items to the queue.
-
-                    if ( applicationState.queue ) {
-                        vwf.queue( applicationState.queue );
-                    }
-
-                    series_callback( undefined, undefined );
-                },
-
             ], function( err, results ) {
 
                 // Restore kernel reentry from property accessors.
@@ -863,11 +905,17 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
                 isolateProperties--;
 				
                 set_callback && set_callback();
-				
+				console.log('advance time',queue.time,  applicationState.time);
+                
+                var timediff = applicationState.time - queue.time;
+
+
+
+                queue.time = applicationState.time;
 				
             } );
 
-            this.logger.groupEnd();
+         //   this.logger.groupEnd();
 			
         };
 
@@ -897,6 +945,7 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
 
                 queue: 
                     require( "vwf/utility" ).transform( queue, queueTransitTransformation ),
+                time:vwf.message.time 
 
             };
 
@@ -1160,11 +1209,11 @@ if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf
                 // Load the UI chrome if available.
 				
                 if ( nodeURI ) {  // TODO: normalizedComponent() on component["extends"] and use component.extends || component.source?
-if ( ! nodeURI.match( RegExp( "^http://vwf.example.com/|appscene.vwf$" ) ) ) {  // TODO: any better way to only attempt to load chrome for the main application and not the prototypes?
+                if ( nodeComponent == "index-vwf" ) {  // TODO: any better way to only attempt to load chrome for the main application and not the prototypes?
                     jQuery("body").append( "<div />" ).children( ":last" ).load( remappedURI( nodeURI ) + ".html", function() {  // TODO: move to index.html; don't reach out to the window from the kernel; connect through a future vwf.initialize callback.
                         // remove 'loading' overlay
                     } );
-}
+                }
                 }
 				
 				if(nodeComponent == "index-vwf")
@@ -1172,6 +1221,9 @@ if ( ! nodeURI.match( RegExp( "^http://vwf.example.com/|appscene.vwf$" ) ) ) {  
 					$(document).trigger('setstatecomplete');
 					$('#loadstatus').remove(); 
                     _ProgressBar.hide();
+                    vwf.decendants('index-vwf').forEach(function(i){
+                        vwf.callMethod(i,'ready',[]);
+                    })
 				}
 
             } );
@@ -1335,6 +1387,7 @@ if ( ! nodeURI.match( RegExp( "^http://vwf.example.com/|appscene.vwf$" ) ) ) {  
 
         this.getNode = function( nodeID, full ) {  // TODO: include/exclude children, prototypes
 
+        try{
 			if(!nodeID)
 				return null;
             this.logger.group( "vwf.getNode " + nodeID + " " + full );
@@ -1434,28 +1487,7 @@ if ( ! nodeURI.match( RegExp( "^http://vwf.example.com/|appscene.vwf$" ) ) ) {  
                     delete nodeComponent.events;
                 }
 
-            // nodeComponent.methods = {};  // TODO
-
-            // for ( var methodName in nodeComponent.methods ) {
-            //     nodeComponent.methods[methodName] === undefined &&
-            //         delete nodeComponent.methods[methodName];
-            // }
-
-            // Object.keys( nodeComponent.methods ).length ||
-            //     delete nodeComponent.methods;
-
-            // Events.
-
-            // nodeComponent.events = {};  // TODO
-
-            // for ( var eventName in nodeComponent.events ) {
-            //     nodeComponent.events[eventName] === undefined &&
-            //         delete nodeComponent.events[eventName];
-            // }
-
-            // Object.keys( nodeComponent.events ).length ||
-            //     delete nodeComponent.events;
-
+          
             // Restore kernel reentry.
 
             isolateProperties && vwf.models.kernel.enable();
@@ -1495,6 +1527,10 @@ if ( ! nodeURI.match( RegExp( "^http://vwf.example.com/|appscene.vwf$" ) ) ) {  
             } else {
                 return undefined;
             }
+        }catch(e)
+        {
+            return null;
+        }
 
         };
 
@@ -1707,7 +1743,7 @@ if ( ! childComponent.source ) {
                     // Call creatingNode() on each model. The node is considered to be constructed after
                     // each model has run.
 
-                    async.forEachSeries( vwf.models, function( model, each_callback /* ( err ) */ ) {
+                    async.forEach( vwf.models, function( model, each_callback /* ( err ) */ ) {
 
                         var driver_ready = true;
 
@@ -2009,6 +2045,26 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
             return parent;
         };
 
+        this.decendants = function(nodeID)
+        {
+
+            var list = [];
+            var walk = function(nodeid)
+            {
+                var children = vwf.children(nodeid);
+                if(children)
+                {
+                    list = list.concat(children);
+                    for(var i =0; i < children.length; i++ )
+                    {
+                        walk(children[i])
+                    }
+                }
+
+            }
+            walk(nodeID);
+            return list;
+        };
         // -- children -----------------------------------------------------------------------------
 
         this.children = function( nodeID ) {  // TODO: no need to pass through all models; maintain a single truth in vwf/model/object and delegate there directly
@@ -2529,7 +2585,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 		this.deleteMethod = function( nodeID, methodName) {
 
 			
-            this.logger.group( "deleteMethod", nodeID, methodName );
+         //   this.logger.group( "deleteMethod", nodeID, methodName );
 
             // Call creatingMethod() on each model. The method is considered created after each
             // model has run.
@@ -2548,13 +2604,13 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 			//remove from the tickable queue.
 			if(methodName == 'tick' && vwf.tickable.nodeIDs.indexOf(nodeID) != -1)
 				vwf.tickable.nodeIDs.splice(vwf.tickable.nodeIDs.indexOf(nodeID),1);
-            this.logger.groupEnd();
+        //    this.logger.groupEnd();
         };
         // -- callMethod ---------------------------------------------------------------------------
 
         this.callMethod = function( nodeID, methodName, methodParameters ) {
 
-            this.logger.group( "vwf.callMethod " + nodeID + " " + methodName + " " + methodParameters );
+          //  this.logger.group( "vwf.callMethod " + nodeID + " " + methodName + " " + methodParameters );
 
             // Call callingMethod() on each model. The first model to return a non-undefined value
             // dictates the return value.
@@ -2577,7 +2633,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 	    }
             
 
-            this.logger.groupEnd();
+           // this.logger.groupEnd();
 
             return methodValue;
         };
@@ -2586,7 +2642,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 
         this.createEvent = function( nodeID, eventName, eventParameters,eventBody ) {  // TODO: parameters (used? or just for annotation?)  // TODO: allow a handler body here and treat as this.*event* = function() {} (a self-targeted handler); will help with ui event handlers
 
-            this.logger.group( "vwf.createEvent " + nodeID + " " + eventName + " " + eventParameters );
+        //    this.logger.group( "vwf.createEvent " + nodeID + " " + eventName + " " + eventParameters );
 
             // Call creatingEvent() on each model. The event is considered created after each model
             // has run.
@@ -2602,12 +2658,12 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
                 view.createdEvent && view.createdEvent( nodeID, eventName, eventParameters,eventBody );
             } );
 
-            this.logger.groupEnd();
+         //   this.logger.groupEnd();
         };
 		this.deleteEvent = function( nodeID, eventName) {  // TODO: parameters (used? or just for annotation?)  // TODO: allow a handler body here and treat as this.*event* = function() {} (a self-targeted handler); will help with ui event handlers
 
 			
-            this.logger.group( "deleteEvent", nodeID,eventName);
+        //    this.logger.group( "deleteEvent", nodeID,eventName);
 
             // Call creatingEvent() on each model. The event is considered created after each model
             // has run.
@@ -2623,14 +2679,14 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
                 view.deletedEvent && view.deletedEvent( nodeID, eventName );
             } );
 
-            this.logger.groupEnd();
+         //   this.logger.groupEnd();
         };
         // -- fireEvent ----------------------------------------------------------------------------
 
         this.fireEvent = function( nodeID, eventName, eventParameters ) {
 
 			
-            this.logger.group( "vwf.fireEvent " + nodeID + " " + eventName + " " + eventParameters );
+       //     this.logger.group( "vwf.fireEvent " + nodeID + " " + eventName + " " + eventParameters );
 
             // Call firingEvent() on each model.
 
@@ -2644,7 +2700,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
                 view.firedEvent && view.firedEvent( nodeID, eventName, eventParameters );
             } );
 
-            this.logger.groupEnd();
+         //   this.logger.groupEnd();
 
             return handled;
         };
@@ -2658,7 +2714,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
         this.dispatchEvent = function( nodeID, eventName, eventParameters, eventNodeParameters ) {
 
 			
-            this.logger.group( "vwf.dispatchEvent " + nodeID + " " + eventName + " " + eventParameters + " " + eventNodeParameters );
+           // this.logger.group( "vwf.dispatchEvent " + nodeID + " " + eventName + " " + eventParameters + " " + eventNodeParameters );
 
             // Defaults for the parameter parameters.
 
@@ -2720,25 +2776,27 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
 
             // Bubbling phase.
 
-            phase = undefined; // invoke all handlers
+            //GUI does not distinguish between bubble and capture 
+            //invoke all parent handlers regardless of phase
+            //phase = 'bubble'; // invoke all handlers
 
             handled = handled || ancestorIDs.reverse().some( function( ancestorID ) {  // TODO: reverse updates the array in place every time and we'd rather not
 
                 targetEventParameters =
                     eventParameters.concat( cascadedEventNodeParameters[ancestorID], phase );
-
+                targetEventParameters.phase = phase;
                 return this.fireEvent( ancestorID, eventName, targetEventParameters );
 
             }, this );
 
-            this.logger.groupEnd();
+           // this.logger.groupEnd();
         };
 
         // -- execute ------------------------------------------------------------------------------
 
         this.execute = function( nodeID, scriptText, scriptType ) {
 
-            this.logger.group( "vwf.execute " + nodeID + " " + ( scriptText || "" ).replace( /\s+/g, " " ).substring( 0, 100 ) + " " + scriptType );
+        //    this.logger.group( "vwf.execute " + nodeID + " " + ( scriptText || "" ).replace( /\s+/g, " " ).substring( 0, 100 ) + " " + scriptType );
 
             // Assume JavaScript if the type is not specified and the text is a string.
 
@@ -2763,7 +2821,7 @@ vwf.addChild( nodeID, childID, childName );  // TODO: addChild is (almost) impli
                 view.executed && view.executed( nodeID, scriptText, scriptType );
             } );
 
-            this.logger.groupEnd();
+         //   this.logger.groupEnd();
 
             return scriptValue;
         };

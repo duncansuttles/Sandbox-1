@@ -47,17 +47,17 @@ function PainterTool()
 	}.bind(this));
 	$('#PainterToolGUIActivteTool').change(function(e){
 		
-		
 		var checked = ($(this).next().attr('aria-pressed'));
 		if(checked == 'true')
 		{
+			$(this).next().children().css('background-color','red');
 			_Editor.addTool('Painter',_PainterTool);
 			_Editor.setActiveTool('Painter');
 			_dScene.add(_PainterTool.display);
 		}
 		else
 		{
-			
+			$(this).next().children().css('background-color','');
 			_Editor.setActiveTool('Gizmo');
 			_dScene.remove(_PainterTool.display);
 		}
@@ -217,9 +217,15 @@ function PainterTool()
 		
 		console.log(vwfnode);
 		
-			
-		_Editor.SelectObject(vwfnode);
-		_Editor.DeleteSelection();
+		if(_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),vwfnode) == 0)
+		{
+			return;
+		}
+		_UndoManager.recordDelete(vwfnode);
+		vwf_view.kernel.deleteNode(vwfnode);
+
+		//_Editor.SelectObject(vwfnode);
+		//_Editor.DeleteSelection();
 	}
 	this.createObject = function(e)
 	{
@@ -236,11 +242,16 @@ function PainterTool()
 			t.properties.transform[12] = this.display.position.x;
 			t.properties.transform[13] = this.display.position.y;
 			t.properties.transform[14] = this.display.position.z;
+
+			t.properties.translation[0] = this.display.position.x;
+			t.properties.translation[1] = this.display.position.y;
+			t.properties.translation[2] = this.display.position.z;
 		
 			t.properties.DisplayName = _Editor.GetUniqueName(t.properties.DisplayName);
 			
 			var lastName = GUID();
 			this.lastNames.push(lastName);
+			
 			_Editor.createChild('index-vwf',lastName,t,null,null); 
 			
 		//this.mousemove(e);
@@ -276,9 +287,9 @@ function PainterTool()
 			
 
 			var pos = new THREE.Vector3();
-			console.log(pick.object.name);
 			
-			pos.getPositionFromMatrix(pick.object.matrixWorld);
+			
+			pos.setFromMatrixPosition(pick.object.matrixWorld);
 			
 			var bounds = pick.object.getBoundingBox();
 			var norm = pick.norm;
@@ -287,34 +298,34 @@ function PainterTool()
 			{
 				if(norm[0] == -1)
 				{
-					pos.x += bounds.min.x;
+					pos.x += bounds.min[0];
 					pos.x += (this.protoBounds.min.x);
 				}
 				if(norm[0] == 1)
 				{
-					pos.x += bounds.max.x;
+					pos.x += bounds.max[0];
 					pos.x += (this.protoBounds.max.x);
 				}
 				
 				if(norm[1] == -1)
 				{
-					pos.y += bounds.min.y;
+					pos.y += bounds.min[1];
 					pos.y += (this.protoBounds.min.y);
 				}
 				if(norm[1] == 1)
 				{
-					pos.y += bounds.max.y;
+					pos.y += bounds.max[1];
 					pos.y += (this.protoBounds.max.y);
 				}
 				
 				if(norm[2] == -1)
 				{
-					pos.z += bounds.min.z;
+					pos.z += bounds.min[2];
 					pos.z += (this.protoBounds.min.z);
 				}
 				if(norm[2] == 1)
 				{
-					pos.z += bounds.max.z;
+					pos.z += bounds.max[2];
 					pos.z += (this.protoBounds.max.z);
 				}
 			}else
@@ -339,7 +350,7 @@ function PainterTool()
 			this.display.position = pos.clone();
 			this.display.updateMatrixWorld();
 			
-			if(this.mouseisdown == true)
+			if(this.mouseisdown == true && this.currentClickCallback)
 			{
 				if(pick.object && pick.object.parent && pick.object.parent.parent)
 				{

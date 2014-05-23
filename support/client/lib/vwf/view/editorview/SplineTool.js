@@ -30,45 +30,59 @@ function SplineTool()
 	
 	$('#SplineToolGUIEditPoints').change(function(e){
 		
-		
 		var checked = ($(this).next().attr('aria-pressed'));
+
 		if(checked == 'true')
 		{
 			self.activate();
+			
 		}
 		else
 		{
 			self.deactivate();
+			
 		}
 	});
 	
+	self.createdNode = function(parentid,childid,childname,proto)
+	{
+
+
+	}
 	self.activate = function()
 	{
-	
-		var node = vwf.getNode(_Editor.GetSelectedVWFID());
 		
+		var node = vwf.getNode(_Editor.GetSelectedVWFID());
+		$('#SplineToolGUIEditPoints').next().attr('aria-pressed','true')
+		
+
 		if(_Editor.getSelectionCount() != 1)
 		{
 			_Notifier.alert('Select a single line object before using the Spline tool.'); 
 			return;
 		}
 		
-		if(!node || !node.properties || !(node.properties.type == 'Line' || node.properties.type == 'Spline'))
+		if(!node || !(vwf.getProperty(node.id,'type') == 'Line' || vwf.getProperty(node.id,'type') == 'Spline'))
 		{
 			_Notifier.alert('The Spline tools can only be used on a line object. The object selected cannot be edited with this tool.'); 
+			self.deactivate();	
 			return;
 		}
-		if(node.properties.type == 'Spline')
+		if(vwf.getProperty(node.id,'type') == 'Spline')
 		{
 			alertify.confirm('The Spline tools can only be used on a line object. The selected object can be converted into an editable line. This action cannot be undone. Continue?',function(e)
 			{
 				if(!e)
 				{
+					self.deactivate();	
 					return;
+
 					
 				}
 				else
 				{
+					_Editor.addTool('Spline',self);
+					_Editor.setActiveTool('Spline');
 					
 					var parent = vwf.parent(node.id);
 					var name = node.name
@@ -79,12 +93,30 @@ function SplineTool()
 					proto.source = "vwf/model/threejs/line.js"
 					_Editor.DeleteSelection();
 					_Editor.createChild(parent,name,proto);
-					_Editor.SelectOnNextCreate();
+
+					self.createdNode = function(nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType, childURI, childName)
+					{
+						
+						if(childName == name)
+						{
+							
+							_Editor.SelectObject(childID);
+							window.setTimeout(function(){
+							self.activate();	
+							},100)
+							
+						}
+						
+					}
+					
 				}
 			
 			}); 
 			return;
 		}
+		$('#SplineToolGUIEditPoints').next().children().css('background-color','red');
+		_Editor.addTool('Spline',self);
+		_Editor.setActiveTool('Spline');
 	
 			self.mousemoved = false;
 			self.selectedIndex = 0;
@@ -102,8 +134,7 @@ function SplineTool()
 			self.transform = vwf.getProperty(self.selectedID,'transform');
 			_Editor.SetSelectMode('None');
 			_Editor.updateGizmoLocation();
-			_Editor.addTool('Spline',self);
-			_Editor.setActiveTool('Spline');
+			
 			
 			if(!self.display)
 			{
@@ -113,7 +144,7 @@ function SplineTool()
 				self.display.remove(self.display.children[0]);
 			_dScene.add(self.display);	
 			self.updateDisplay();	
-			$(document).bind('prerender',self.prerender);
+			_dView.bind('prerender',self.prerender);
 	}
 	self.updateDisplay = function()
 	{
@@ -177,6 +208,8 @@ function SplineTool()
 	}
 	self.deactivate = function()
 	{
+		$('#SplineToolGUIEditPoints').next().removeAttr('aria-pressed');
+			$('#SplineToolGUIEditPoints').next().children().css('background-color','');
 			_Editor.setTransformCallback = _Editor.setTransform;
 			_Editor.setTranslationCallback = _Editor.setTranslation;
 			_Editor.setScaleCallback = _Editor.setScale;
@@ -186,8 +219,9 @@ function SplineTool()
 			_Editor.getScaleCallback = _Editor.getScale;
 			_Editor.updateGizmoLocation();
 			_Editor.setActiveTool('Gizmo');
-			_dScene.remove(this.display);
-			$(document).unbind('prerender',self.prerender);
+			if(this.display)
+				_dScene.remove(this.display);
+			_dView.unbind('prerender',self.prerender);
 	}
 	$('#SplineToolGUIRefine').change(function(e){
 		
@@ -531,6 +565,7 @@ function SplineTool()
 		//return $("#SplineToolGUI").dialog( "isOpen" );
 		return $('#SplineToolGUI').is(':visible');
 	}
+	$(document).bind('selectionChanged', self.deactivate.bind(self));
 }
 _SplineTool = new SplineTool();
 _SplineTool.hide();

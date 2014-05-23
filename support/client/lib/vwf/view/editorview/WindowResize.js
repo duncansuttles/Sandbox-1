@@ -101,6 +101,7 @@ define({
 			_Editor.findcamera().updateProjectionMatrix();
 			_Editor.SelectObject(null);
 			_Editor.SetSelectMode('none');
+			_Editor.hidePeerSelections();
 		}
 		window.showTools = function()
 		{
@@ -126,7 +127,7 @@ define({
 			if(!toolsLoaded) return false;
 			return !toolsHidden;
 		}
-		$(window).keypress(function(e)
+		$('#vwf-root').keypress(function(e)
 		{
 			if( e.charCode == 92)
 			{

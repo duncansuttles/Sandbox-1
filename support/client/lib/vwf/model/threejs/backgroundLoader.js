@@ -10,6 +10,7 @@ define(function ()
 		{
 			initialize.call(BackgroundLoader);
 			isInitialized = true;
+			window.backgroundLoader = BackgroundLoader;
 		}
 		return BackgroundLoader;
 	}
@@ -72,17 +73,6 @@ define(function ()
 			this.callbacks[cbid] = callback;
 			this.worker.postMessage({command:'load',data:{url:url,type:type,cbid:cbid}});
 		}
-		this.loaded = function(data)
-		{
-			var asset = data.asset;//hookParents(JSON.parse(data.asset));
-			var cbid = data.cbid;
-			if(this.callbacks[cbid])
-			{
-				this.callbacks[cbid](asset)
-				delete this.callbacks[cbid];
-			}
-		
-		}
 		this.decompress = function(data,callback)
 		{
 			
@@ -99,7 +89,16 @@ define(function ()
 				this.callbacks[cbid](asset)
 				delete this.callbacks[cbid];
 			}
-		
+		}
+		this.error = function(data)
+		{
+			console.log('error in loader thread:' + data.error);
+			var cbid = data.cbid;
+			if(this.callbacks[cbid])
+			{
+				this.callbacks[cbid](null);
+				delete this.callbacks[cbid];
+			}
 		}
 		this.loaded = function(data)
 		{

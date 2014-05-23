@@ -76,7 +76,8 @@ new (function(){
 		mesh.material.attributes.everyOtherZ.needsUpdate = true;
 		mesh.material.attributes.everyZ.needsUpdate = true;
 		mesh.material.attributes.ONormal.needsUpdate = true;
-	//	geo.verticesNeedUpdate = true;
+
+		//geo.verticesNeedUpdate = true;
 		geo.computeBoundingSphere();
 		geo.computeBoundingBox();
 				
@@ -117,17 +118,24 @@ new (function(){
 			if(this.currentMesh[j] === null)
 				var i = j;
 		}
-		if(this.currentMesh[i])
-			debugger;
+		//if(this.currentMesh[i])
+		//	debugger;
 		this.currentCB[i] = cb;
 		this.currentMesh[i] = mesh;
 		this.currentID[i] = Math.floor(Math.random()*10000000);
 		this.currentState[i] = RUNNING;
-		var request = {command:'generateTerrain',data:data,id:this.currentID[i],buffers:this.currentBuffers[i]};
-		this.worker[i].postMessage(request,request.buffers);
+		if(this.supportsTransferables)
+		{
+			var request = {command:'generateTerrain',data:data,id:this.currentID[i],buffers:this.currentBuffers[i]};
+			this.worker[i].postMessage(request,request.buffers);
+		}else
+		{
+			var request = {command:'generateTerrain',data:data,id:this.currentID[i],buffers:[]};
+			this.worker[i].postMessage(request);
+		}
 		
 	}
-	this.sample = function(vert)
+	this.sample = function(vert,matrix,res)
 	{
 		if(this.waitingForInit == true) return 0;
 		return this.terrainAlgorithm.displace(vert);
@@ -186,6 +194,14 @@ new (function(){
 			
 		}
 	}
+	this.deinit = function()
+	{
+		for(var i = 0; i < MAXWORKERS; i++)
+		{
+			if(this.worker && this.worker[i])
+				this.worker[i].terminate();
+		}
+	}
 	this.init = function(type,params)
 	{
 		for(var i = 0; i < MAXWORKERS; i++)
@@ -238,6 +254,8 @@ new (function(){
 			this.waitingForInit = false;
 			this.terrainAlgorithm.init(psd);
 			this.terrainAlgorithm.setAlgorithmDataPool(params);
+			
+
 			for(var i = 0; i < MAXWORKERS; i++)
 			{
 				this.worker[i] = new Worker("vwf/model/threejs/terrainGeneratorThread.js");
@@ -250,6 +268,29 @@ new (function(){
 				this.currentID[i] =  null;
 				this.currentBuffers[i] = [];
 			} 
+
+
+				this.supportsTransferables = true;
+				
+				try{
+				var ab = new ArrayBuffer(1);
+				this.worker[0].postMessage(ab, [ab]);
+				if (ab.byteLength) {
+				  console.log('Transferables are not supported in your browser!');
+				  this.supportsTransferables = false;
+				} else {
+				  // Transferables are supported.
+				}
+				}catch(e)
+				{
+					if (e.message == "DataCloneError")
+					{
+						console.log('Transferables are not supported in your browser!');
+				  		this.supportsTransferables = false;
+					}
+				}
+
+
 		}.bind(this);
 		
 		if(this.terrainAlgorithm.poolInit)
@@ -263,6 +304,10 @@ new (function(){
 		{
 		    init(poolSideData);	
 		}
+
+
+	
+
 		
 		
 	}
@@ -278,6 +323,13 @@ new (function(){
 		if(this.terrainAlgorithm.getDiffuseFragmentShader)
 			return this.terrainAlgorithm.getDiffuseFragmentShader(mesh,matrix);
 		return null;	
+	}
+	this.getNormalFragmentShader = function(mesh,matrix)
+	{
+		if(this.terrainAlgorithm.getNormalFragmentShader)
+			return this.terrainAlgorithm.getNormalFragmentShader(mesh,matrix);
+		return null;
+
 	}
 	this.updateMaterial = function(m,d)
 	{

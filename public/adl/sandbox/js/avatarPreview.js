@@ -18,6 +18,7 @@
 
 			renderer = new THREE.WebGLRenderer({ antialias: true, clearColor: 0xFFFFFF });
 			renderer.setSize( 400, 400 );
+			renderer.setClearColor(0xFFFFFF, 1);
 
 		   $("#previewRender").html( renderer.domElement );
 			//loader.load( "./avatars/VWS_Business_Male1.DAE", createScene );

@@ -1,7 +1,7 @@
 (function(){
 	function terrain(childID, childSource, childName)
 	{
-		
+		window._dTerrain = this;
 		var self = this;
 		var totalmintilesize = 16;
 		var tileres = 16;
@@ -21,10 +21,24 @@
 		
 		loadScript(   "vwf/model/threejs/terrainTileCache.js");
 		loadScript(   "vwf/model/threejs/terrainQuadtree.js");
+
 		
 		
 		
 		this.init = false;
+		this.childAdded = function(child)
+		{
+
+		
+		child.TerrainRoot = this.getRoot();	
+		child.setGenerator(this.terrainGenerator);
+		child.setRoot(this.getRoot());
+		child.init(8,8);
+
+		child.update(new THREE.Vector3(0,0,0));
+
+
+		}
 		this.initializingNode = function()
 		{
 			window.requestAnimationFrame(this.update);
@@ -39,7 +53,9 @@
 			
 			
 			this.terrainGenerator = loadScript("vwf/model/threejs/terrainGenerator.js");
-			
+			for(var i in this.children)
+				this.children[i].setGenerator(this.terrainGenerator);
+
 			self.TileCache.terrainGenerator = this.terrainGenerator;
 			
 			if(!this.terrainType)
@@ -134,6 +150,11 @@
 			
 			self.needRebuild = rebuildlist || self.needRebuild;
 			self.rebuild(true);	
+			//forceupdate children
+			for(var i in this.children)
+			{
+				this.children[i].update(null,true);
+			}
 			
 		}
 		this.getAlgorithmData = function()
@@ -159,6 +180,11 @@
 			this.quadtree = new QuadtreeNode([-worldExtents,-worldExtents],[worldExtents,worldExtents],this.getRoot(),0,-1,minTileSize,maxTileSize);
 			this.terrainGenerator.reInit(this.terrainType,this.terrainParams);
 			this.TileCache.clear();
+			//forceupdate children
+			for(var i in this.children)
+			{
+				this.children[i].update(null,true);
+			}
 		}
 		this.setTerrainAlgorithm = function(algo,params)
 		{
@@ -178,10 +204,27 @@
 				});
 				quadtreesetRes(tileres);
 				this.quadtree = new QuadtreeNode([-worldExtents,-worldExtents],[worldExtents,worldExtents],this.getRoot(),0,-1,minTileSize,maxTileSize);
+				//forceupdate children
+				for(var i in this.children)
+				{
+					this.children[i].update(null,true);
+				}
 			}catch(e)
 			{
 				console.log('terrain algorithm not found');
 			}
+		}
+		this.deletingNode = function()
+		{
+			
+			this.cancelUpdates();
+			this.terrainGenerator.deinit();
+			var children = this.getRoot().children;
+			for(var i =0 ; i < children.length; i++)
+			{
+				children[i].parent.remove(children[i]);
+			}
+			delete window._dTerrain;
 		}
 		this.cancelUpdates =function()
 		{
@@ -297,9 +340,18 @@
 			this.counter ++;
 			if(this.counter >= updateEvery && this.enabled)
 			{
+
 				this.counter = 0;
 				var now = performance.now();
 				var campos = _Editor.findcamera().position;
+
+				for(var i in this.children)
+				{
+
+					this.children[i].update(campos);
+				}
+
+				
 				var x = campos.x;
 				var y = campos.y;
 				
@@ -335,7 +387,7 @@
 					
 					
 					var cont = this.quadtree.containing([x,y]);
-					if(!cont) return;
+					if(!cont || !cont.parent) return;
 					this.containing = cont.parent;
 					
 					
@@ -638,6 +690,15 @@
 			}
 			
 			self.rebuild(force);
+
+			//forceupdate children - because the terrain decoration depends on the actual geometry, it needs to be marked dirty
+			//when a new tile is generated
+			//unfortunatly, we currently don't detect that a given tile has no effect on the decoration,so we end up generating 
+			//sometimes when we don't need to. Generation of the decoration is super fast, so not a big problem for now.
+			for(var i in this.children)
+			{
+				this.children[i].update(null,true);
+			}
 			
 			
 		}.bind(self)
@@ -715,10 +776,15 @@
 			{
 				
 				var algoprops = this.terrainGenerator.getAlgorithmData();
-				if(algoprops && algoprops[propertyName] != undefined)
+				if(algoprops && algoprops.hasOwnProperty(propertyName))
 				{
 					algoprops[propertyName] = propertyValue;
 					self.setAlgorithmData(algoprops);
+					//forceupdate children
+					for(var i in this.children)
+					{
+						this.children[i].update(null,true);
+					}
 				}
 			}
 				
@@ -800,8 +866,9 @@
 			{
 					
 					var editordata = {
-						_active:{displayname : 'Enabled',property:'enabled',type:'check',min:-10,max:10,step:.01},
-						extents:{
+						a_:{displayname:'Meshing Parameters',type:'sectionTitle'},
+						a__active:{displayname : 'Enabled',property:'enabled',type:'check',min:-10,max:10,step:.01},
+						a_extents:{
 								displayname : 'Extents (meters^2)',
 								property:'Extents',
 								type:'prompt',
@@ -809,32 +876,35 @@
 								max:1048576,
 								step:1024
 						},
-						tileRes:{
+						a_tileRes:{
 								displayname : 'Tile Res',
 								property:'tileRes',
 								type:'choice',
 								values:[2,4,8,16,26],
-								labels:['2','4','8','16',26],
+								labels:['2','4','8','16','26'],
 						},
-						maxTileSize:{
+						a_maxTileSize:{
 								displayname : 'Max Tile Size (m^2)',
 								property:'maxTileSize',
 								type:'choice',
 								values:[128,256,512,1024,2048,4096,8192],
 								labels:['128','256','512','1024','2048','4096','8192'],
 						},
-						minTileSize:{
+						a_minTileSize:{
 								displayname : 'Min Tile Size (m^2)',
 								property:'minTileSize',
 								type:'choice',
-								values:[16,23,64,128,256,512],
+								values:[16,32,64,128,256,512],
 								labels:['16','32','64','128','256','512'],
 						},
-						_generator:{
+						a__generator:{
 								displayname : 'Terrain Generator',
 								property:'terrainType',
-								type:'prompt'
-						}
+								type:'choice',
+								labels:['Height Map','Random Noise','Paging Database'],
+								values:['heightmapTerrainAlgorithm','NoiseTerrainAlgorithm','CesiumTerrainAlhorithm']
+						},
+
 					}
 					
 					var algodata = this.terrainGenerator.getEditorData();
@@ -859,6 +929,14 @@
 		//default factory code
 	return function(childID, childSource, childName) {
 		//name of the node constructor
+
+		//GUI should prevent us from getting here.
+		if(window._dTerrain)
+		{
+			console.log('Only one terrain can be created at a time');
+			return;
+		}
+
 		return new terrain(childID, childSource, childName);
 	}
 })();

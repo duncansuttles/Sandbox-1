@@ -1,9 +1,9 @@
 function clearCameraModeIcons()
 		{
-			$('#MenuCameraOrbiticon').css('background', '');
-			$('#MenuCamera3RDPersonicon').css('background', '');
-			$('#MenuCameraNavigateicon').css('background', '');
-			$('#MenuCameraFreeicon').css('background', '');
+			$('#MenuCameraOrbiticon').css('background-color', '');
+			$('#MenuCamera3RDPersonicon').css('background-color', '');
+			$('#MenuCameraNavigateicon').css('background-color', '');
+			$('#MenuCameraFreeicon').css('background-color', '');
 		}
 		
 define(
@@ -34,7 +34,13 @@ define(
 				return;
 			}
 
-				jQuery.ajax(
+			window.setTimeout(function(){
+							$('#SetThumbnail').click();
+
+						},10000)
+
+			//im tired of looking at all these blank thumbs. Lets snapshot every time, instead of just once
+			/*	jQuery.ajax(
 				{
 					type: 'GET',
 					url: './vwfDataManager.svc/thumbnail?SID='+_DataManager.getCurrentSession().replace(/\//g,'_'),
@@ -45,15 +51,12 @@ define(
 					},
 					error:function(xhr,status,err)
 					{
-						window.setTimeout(function(){
-							$('#SetThumbnail').click();
-
-						},10000)
+						
 						
 						
 					},
 					dataType: "text"
-				});	
+				});	*/
 
 
 
@@ -89,7 +92,8 @@ define(
 				{
 					type: 'POST',
 					url: './vwfDataManager.svc/thumbnail?SID='+_DataManager.getCurrentSession().replace(/\//g,'_'),
-					data: img,
+					data: JSON.stringify({image:img}),
+					contentType: "application/json; charset=utf-8",
 					success:function(data,status,xhr)
 					{
 						
@@ -109,16 +113,42 @@ define(
 			
 
 		});
-
+	
+	$('#MenuCreateGUIDialog').click(function(e){
+		_GUIView.createDialog();
+	});
+	$('#MenuCreateGUIButton').click(function(e){
+		_GUIView.createButton();
+	});
+	$('#MenuCreateGUILabel').click(function(e){
+		_GUIView.createLabel();
+	});
+	$('#MenuCreateGUISlider').click(function(e){
+		_GUIView.createSlider();
+	});
+	$('#MenuCreateGUICheck').click(function(e){
+		_GUIView.createCheckbox();
+	});
+	$('#MenuCreateGUIPanel').click(function(e){
+		_GUIView.createPanel();
+	});
+	  
 
 		$('#MenuEn').click(function (e)
 		{
-			localStorage.setItem("language","en");
+			i18n.setLng('en', function(t) { /* loading done */ });
 			location.reload();
 		});
+
 		$('#MenuRu').click(function (e)
 		{
-			localStorage.setItem("language","ru");
+			i18n.setLng('ru', function(t) { /* loading done */ });
+			location.reload();
+			
+		});
+		$('#MenuEs_ES').click(function (e)
+		{
+			i18n.setLng('es_ES', function(t) { /* loading done */ });
 			location.reload();
 		});
 
@@ -174,23 +204,23 @@ define(
 		$('#MenuMove').click(function (e)
 		{
 			_Editor.SetGizmoMode(_Editor.Move);
-			$('#MenuRotateicon').css('background', "");
-			$('#MenuScaleicon').css('background', "");
-			$('#MenuMoveicon').css('background', "#9999FF");
+			$('#MenuRotateicon').removeClass('iconselected');
+			$('#MenuScaleicon').removeClass('iconselected');
+			$('#MenuMoveicon').addClass('iconselected');
 		});
 		$('#MenuRotate').click(function (e)
 		{
 			_Editor.SetGizmoMode(_Editor.Rotate);
-			$('#MenuRotateicon').css('background', "#9999FF");
-			$('#MenuScaleicon').css('background', "");
-			$('#MenuMoveicon').css('background', "");
+			$('#MenuRotateicon').addClass('iconselected');
+			$('#MenuScaleicon').removeClass('iconselected');
+			$('#MenuMoveicon').removeClass('iconselected');
 		});
 		$('#MenuScale').click(function (e)
 		{
 			_Editor.SetGizmoMode(_Editor.Scale);
-			$('#MenuRotateicon').css('background', "");
-			$('#MenuScaleicon').css('background', "#9999FF");
-			$('#MenuMoveicon').css('background', "");
+			$('#MenuRotateicon').removeClass('iconselected');
+			$('#MenuScaleicon').addClass('iconselected');
+			$('#MenuMoveicon').removeClass('iconselected');
 		});
 		$('#MenuMulti').click(function (e)
 		{
@@ -271,7 +301,7 @@ define(
 		});
 		$('#MenuSnapOff').click(function (e)
 		{
-			_Editor.SetSnaps(.001, .01 * 0.0174532925, .001);
+			_Editor.SetSnaps(.001, .01 * 0.0174532925, .00005);
 		});
 		$('#MenuMaterialEditor').click(function (e)
 		{
@@ -310,6 +340,11 @@ define(
 			_Editor.Copy();
 		});
 
+		
+		$('#MenuSelectName').click(function (e)
+		{
+			_SelectionEditor.Show();
+		});
 		
 		$('#MenuPaste').click(function (e)
 		{
@@ -373,6 +408,7 @@ define(
 		{
 			_Editor.CreateBehavior('rotator', _UserManager.GetCurrentUserName());
 		});
+
 		$('#MenuCreateBehaviorDialog').click(function (e)
 		{
 			_Editor.CreateBehavior('DialogSystem', _UserManager.GetCurrentUserName());
@@ -409,12 +445,30 @@ define(
 		});
 		
 		
+
+		//trigger section
+		$('#MenuCreateTriggerDistance').click(function (e)
+		{
+			_Editor.CreateBehavior('distancetrigger', _UserManager.GetCurrentUserName());
+		});
+
+		//trigger section
+		$('#MenuCreateTriggerProperty').click(function (e)
+		{
+			_Editor.CreateBehavior('propertytrigger', _UserManager.GetCurrentUserName());
+		});
+
+		//trigger section
+		$('#MenuCreateTriggerMethod').click(function (e)
+		{
+			_Editor.CreateBehavior('methodtrigger', _UserManager.GetCurrentUserName());
+		});
 		
 		
 		
 		$('#MenuHelpBrowse').click(function (e)
 		{
-			window.open('../vwf/view/editorview/help/help.html', '_blank');
+			window.open('http://vwf.adlnet.gov/r/c/documentation/', '_blank');
 		});
 		$('#MenuHelpAbout').click(function (e)
 		{
@@ -576,11 +630,11 @@ define(
 					
 					var t = _Editor.GetMoveGizmo().parent.matrixWorld.getPosition();
 					var gizpos = [t.x, t.y, t.z];
-					var box = _Editor.findviewnode(focusID).getBoundingBox();
+					var box = _Editor.findviewnode(focusID).GetBoundingBox(true).transformBy(_Editor.findviewnode(focusID).matrixWorld.elements)
 					
 					var dist = 1;
 					if(box)
-						dist = MATH.distanceVec3([box.max.x, box.max.y, box.max.z], [box.min.x, box.min.y, box.min.z]);
+						dist = MATH.distanceVec3([box.max[0], box.max[1], box.max[2]], [box.min[0], box.min[1], box.min[2]]);
 					if(dist == Infinity)
 						dist = 1;
 					vwf.models[0].model.nodes['index-vwf'].orbitPoint(gizpos);
@@ -603,7 +657,7 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraOrbiticon').css('background', '#9999FF');
+			$('#MenuCameraOrbiticon').css('background-color', '#9999FF');
 			var campos = [_Editor.findcamera().position.x, _Editor.findcamera().position.y, _Editor.findcamera().position.z];
 			var ray = _Editor.GetCameraCenterRay();
 			var dxy = _Editor.intersectLinePlane(ray, campos, [0, 0, 0], _Editor.WorldZ);
@@ -621,25 +675,45 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraNavigateicon').css('background', '#9999FF');
+			$('#MenuCameraNavigateicon').css('background-color', '#9999FF');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Orbit');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Navigate');
 		});
+
+		$('#MenuCameraDeviceOrientation').click(function (e)
+		{
+			_dView.setCameraDefault();
+			clearCameraModeIcons();
+			vwf.models[0].model.nodes['index-vwf'].setCameraMode('DeviceOrientation');
+		});
+		$('#MenuViewHideTools').click(function (e)
+		{
+			hideTools();
+		});
+		
+		
 		
 		
 		$('#MenuCameraShare').click(function (e)
 		{
+			if(!_UserManager.GetCurrentUserName())
+			{
+				alertify.confirm("Anonymous users may not share their camera view.",function(ok)
+			    {
+			    });
+			}
 		    _dView.setCameraDefault();
 		    var broadcasting = vwf.callMethod('index-vwf','getBroadcasting',[]);
 		    if(!broadcasting)
 		    {
+
 			    alertify.confirm("Are you sure you want to share your camera position? Other users will be able to see from your camera!",function(ok)
 			    {
 				if(ok)
 				{
 							vwf_view.kernel.callMethod('index-vwf','cameraBroadcastStart',[]);
-				 
-				}
+				 			$('#MenuCameraShare').text('Stop Camera Sharing');
+				}	
 			    }.bind(this));
 		    }else
 		    {
@@ -648,6 +722,7 @@ define(
 				if(ok)
 				{
 							vwf_view.kernel.callMethod('index-vwf','cameraBroadcastEnd',[]);
+							$('#MenuCameraShare').text('Share Camera View');
 				 
 				}
 			    }.bind(this));
@@ -659,7 +734,7 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraNavigateicon').css('background', '#9999FF');
+			$('#MenuCameraNavigateicon').css('background-color', '#9999FF');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Fly');
 			
 		});
@@ -674,7 +749,7 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraFreeicon').css('background', '#9999FF');
+			$('#MenuCameraFreeicon').css('background-color', '#9999FF');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Orbit');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Free');
 		});
@@ -719,7 +794,7 @@ define(
 			{
 				_dView.setCameraDefault();
 				clearCameraModeIcons();
-				$('#MenuCamera3RDPersonicon').css('background', '#9999FF');
+				$('#MenuCamera3RDPersonicon').css('background-color', '#9999FF');
 				vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
 				vwf.models[0].model.nodes['index-vwf'].setCameraMode('3RDPerson');
 			}
@@ -780,15 +855,55 @@ define(
 		});
 		$('#MenuCreateTerrain').click(function (e)
 		{
+			if(!window._dTerrain)
 			_Editor.CreatePrim('terrain', [0,0,0], [1, 1, 1], 'checker.jpg', document.PlayerNumber, '');
+			else
+			{
+				alertify.alert('Only one terrain can be created at a time');
+			}
 		});
 		
+		$('#MenuCreateUploadMesh').click(function (e)
+		{
+			_ModelLibrary.showUpload();
+		});
+
+		
+		$('#MenuUndo').click(function (e)
+		{
+			_UndoManager.undo();
+		});
+		$('#MenuRedo').click(function (e)
+		{
+			_UndoManager.redo();
+		});
+
 		$('#MenuCreateLoadMeshURL').click(function (e)
 		{
-			alertify.prompt('Input a URL to a COLLADA mesh. Please note: this must serve from a CORS capable host!',function(ok,val){
-			if(ok)
-				_Editor.loadMesh(val);
-			},'http://');
+			alertify.choice("Choose the mesh format",function(ok,type)
+			{
+				
+				if(ok)
+				{
+					alertify.prompt('Input a URL to the mesh. Please note: this must serve from a CORS capable host!',function(ok,val)
+					{
+						if(ok)
+						{
+							if(type == 'Collada')
+								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.collada+xml');
+							if(type == 'Optimized Collada')
+								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.collada+xml+optimized');
+							if(type == '3DR JSON')
+								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.osgjs+json+compressed');
+
+							
+						}
+					},'http://');
+				}
+
+			},
+			["Collada","Optimized Collada","3DR JSON"])	
+			
 		});
 		
 		
@@ -837,10 +952,66 @@ define(
 			_LocationTools.AddPlacemark();
 		});
 		
+		$('#ToolsShowID').click(function (e)
+		{
+			if(_Editor.GetSelectedVWFID())
+			alertify.prompt(vwf.getProperty(_Editor.GetSelectedVWFID(),"DisplayName"),function(){},_Editor.GetSelectedVWFID());
+			else
+			alertify.alert('No Selection');
+		});
+
+		
+
 		$('#LocationMoveToGround').click(function (e)
 		{
 			_LocationTools.MoveToGround();
 		});
+
+		$('#MenuCreateTerrainGrass').click(function (e)
+		{
+			   if(!_dTerrain)
+			   {
+			   		alertify.alert('The scene must first contain a terrain object');
+			   		return
+			   }
+			   var parent = _dTerrain.ID;
+
+			  var GrassProto = {
+				extends: 'http://vwf.example.com/node3.vwf',
+				properties: {}
+				};
+				GrassProto.type = 'subDriver/threejs';
+				GrassProto.source = 'vwf/model/threejs/' + 'terrainDecorationManager' + '.js';
+			
+				GrassProto.properties.owner = _UserManager.GetCurrentUserName();
+				GrassProto.properties.DisplayName = _Editor.GetUniqueName('Grass');
+				_Editor.createChild(parent, GUID(), GrassProto, null, null);
+
+		});
+
+		$('#MenuCreateTerrainDecorator').click(function (e)
+		{
+			if(!_dTerrain)
+			{
+			   		alertify.alert('The scene must first contain a terrain object');
+			   		return
+			}
+		});
+
+		$('#MenuViewRenderNormal').click(function (e)
+		{
+			_dView.setRenderModeNormal();
+		});
+		$('#MenuViewRenderStereo').click(function (e)
+		{
+			_dView.setRenderModeStereo()
+		});
+
+		
+
+
+
+
 		list = $('#smoothmenu1').find('[id]');
 		
 		//make every clicked menu item close all menus

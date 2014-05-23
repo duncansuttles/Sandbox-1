@@ -7,11 +7,16 @@ require.config({
 			'vwf/view/xapi/xapiwrapper': {
 				deps: ['vwf/view/editorview/sha256', "vwf/view/editorview/_3DRIntegration"],
 				exports: 'XAPIWrapper'
-			}
+			},
+            
+                "vwf/model/threejs/three":{
+                    exports : 'THREE'
+                }
+            
 		},
 	    waitSeconds: 15
 	  });		
-        require( [
+define( [
             
             "domReady",
             "vwf/view/editorview/ObjectPools",
@@ -23,6 +28,7 @@ require.config({
             "vwf/model/jiglib",
             "vwf/model/threejs",
             "vwf/model/scenejs",
+            "vwf/model/wires",
             "vwf/model/object",
             "vwf/model/stage/log",
             "vwf/kernel/view",
@@ -34,18 +40,41 @@ require.config({
 			"vwf/view/WebRTC",
 			"vwf/view/audio",
 			"messageCompress",
-			"vwf/view/xapi"
+			"vwf/view/xapi",
+            "polyfills",
+			"assetLoader",
+            "vwf/model/jqueryui",
+            "vwf/view/jqueryui",
+            "SettingsManager"
 
         ], function( ready ) {
 
+            return function(stateData){
+            require("polyfills").setup();
             require("vwf/view/editorview/ObjectPools").getSingleton();
+            window.alertify = require("vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify");
+            window._SettingsManager = require("SettingsManager").getSingleton();
+            var assetLoader = require("assetLoader").getSingleton();
             ready( function() {
 
                 // With the scripts loaded, we must initialize the framework. vwf.initialize()
                 // accepts three parameters: a world specification, model configuration parameters,
                 // and view configuration parameters.
-				$(document.body).append('<div id="glyphOverlay" style="display:none"/>');
-                vwf.initialize(
+			$(document.body).append('<div id="glyphOverlay" style="display:none"/>');
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu.css" />');
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu-v.css" />')
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/Editorview.css" />')
+            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/sprites.css" />')
+            $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/MATH.js"></script>');
+            $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/_THREERayTracer.js"></script>');
+            $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/scenemanager.js"></script>');
+            $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/GeometryExporter.js"></script>');
+            
+            
+            $(document.head).append('<script src="vwf/model/threejs/helvetiker_regular.typeface.js"></script>');
+
+                assetLoader.load(stateData,function(){
+                    vwf.initialize(
 
                     // This is the world specification. The world may be specified using a component
                     // literal as shown here, or the specification may be placed in a network-
@@ -71,12 +100,14 @@ require.config({
                     [
                         "vwf/model/javascript",
                         "vwf/model/jiglib",
+                        "vwf/model/wires",
                         "vwf/model/threejs",
+                        "vwf/model/jqueryui",
                         "vwf/model/object",
                     ],
 
-                    // These are the view configurations. They use the same format as the model
-                    // configurations.
+                        // These are the view configurations. They use the same format as the model
+                        // configurations.
 
                     [
 						
@@ -87,11 +118,14 @@ require.config({
                     	"vwf/view/googleEarth",
 						"vwf/view/WebRTC",
 						"vwf/view/audio",
-						"vwf/view/xapi"
+						"vwf/view/xapi",
+                        "vwf/view/jqueryui",
                     ]
 
-                );
+                    );
+                });
 
             } );
 
-        } );
+        }} );
+$('#sidepanel .jspContainer .jspPane').css('left',0)

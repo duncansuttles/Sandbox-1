@@ -205,7 +205,13 @@ define(function ()
 				if (node.extends != "character.vwf" && node.extends != 'http://vwf.example.com/camera.vwf') nodes.push(node);
 				if (node.extends == "character.vwf" && node.properties.ownerClientID == null) nodes.push(node);
 			}
-			nodes.push(vwf.getProperties('index-vwf'));
+			
+			//note: we only save the scene properteis, so that users cannot overwrite parts of the 
+			//application that  control the enviornment or camera
+			var sceneprops = vwf.getProperties('index-vwf');
+			//also just a design choice here, so that wehn we update the scene properties, old states will show the updates
+			delete sceneprops.EditorData;
+			nodes.push(sceneprops);
 			var SID = this.getCurrentSession();
 			var UID = _UserManager.GetCurrentUserName();
 			if (!UID) return;
@@ -215,6 +221,8 @@ define(function ()
 					type: 'POST',
 					url:  './vwfDataManager.svc/state?SID=' + _DataManager.getCurrentSession(),
 					data: JSON.stringify(nodes),
+					dataType: 'json',
+					contentType: "application/json; charset=utf-8",
 					success: function(err,data,xhr)
 					{
 					
@@ -272,12 +280,13 @@ define(function ()
 		//get the Id of the current world from the url
 		this.getCurrentSession = function ()
 		{
-			return (/\/adl\/sandbox\/.*\//).exec(window.location.toString()).toString();
+            var regExp = new RegExp(window.appPath+".*\/");
+			return regExp.exec(window.location.toString()).toString();
 		}
 		//at this point, this server pretty much only supports the sandbox. This will return the sandbox root url
 		this.getCurrentApplication = function ()
 		{
-			return location.protocol +'//'+  location.host + '/adl/sandbox';
+			return location.protocol +'//'+  location.host + window.appPath;
 		}
 		//Get the number of users in this space. NOTE: Counts anonymous
 		this.getClientCount = function ()

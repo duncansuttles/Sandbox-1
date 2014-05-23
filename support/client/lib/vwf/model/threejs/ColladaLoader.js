@@ -49,9 +49,33 @@ THREE.ColladaLoader = function () {
 	};
 
 	var colladaUnit = 1.0;
-	var colladaUp = 'Y';
+	var colladaUp = null;
 	var upConversion = null;
 
+	function cleanup()
+	{
+			COLLADA = null;
+			scene = null;
+			daeScene = null;
+
+			readyCallbackFunc = null;
+
+		 	sources  = null;
+			images  = null;
+			animations  = null;
+			controllers  = null;
+			geometries  = null;
+			materials  = null;
+			effects  = null;
+			cameras  = null;
+			lights  = null;
+
+			animData = null;
+			visualScenes = null;
+			baseUrl = null;
+			morphs = null;
+			skins = null;
+	}
 	function load ( url, readyCallback, progressCallback ) {
 
 		var length = 0;
@@ -66,7 +90,7 @@ THREE.ColladaLoader = function () {
 
 					if( request.status == 0 || request.status == 200 ) {
 
-
+						
 						if ( request.responseXML ) {
 
 							readyCallbackFunc = readyCallback;
@@ -97,7 +121,8 @@ THREE.ColladaLoader = function () {
 
 						if ( length == 0 ) {
 
-							length = request.getResponseHeader( "x-vwf-length" );
+							//this just throws an error from xdomain, lets give up
+							//length = request.getResponseHeader( "x-vwf-length" );
 
 						}
 
@@ -110,6 +135,7 @@ THREE.ColladaLoader = function () {
 			}
 
 			request.open( "GET", url, true );
+			
 			request.send( null );
 
 		} else {
@@ -133,64 +159,67 @@ THREE.ColladaLoader = function () {
 
 		}
 
+		
 		parseAsset();
 		setUpConversion();
-		images = parseLib( "library_images image", _Image, "image" );
-		materials = parseLib( "library_materials material", Material, "material" );
-		effects = parseLib( "library_effects effect", Effect, "effect" );
-		geometries = parseLib( "library_geometries geometry", Geometry, "geometry" );
-		cameras = parseLib( "library_cameras camera", Camera, "camera" );
-		lights = parseLib( "library_lights light", Light, "light" );
-		controllers = parseLib( "library_controllers controller", Controller, "controller" );
-		animations = parseLib( "library_animations animation", Animation, "animation" );
-		visualScenes = parseLib( "library_visual_scenes visual_scene", VisualScene, "visual_scene" );
-		
-		morphs = [];
-		skins = [];
 
-		daeScene = parseScene();
-		scene = new THREE.Object3D();
+		async.series([
 
-		for ( var i = 0; i < daeScene.nodes.length; i ++ ) {
+		function(cb2){ images = parseLib( "library_images image", _Image, "image" ); window.setImmediate(cb2)},
+		function(cb2){ materials = parseLib( "library_materials material", Material, "material" );window.setImmediate(cb2)},
+		function(cb2){ effects = parseLib( "library_effects effect", Effect, "effect" );window.setImmediate(cb2)},
+		function(cb2){ geometries = parseLib( "library_geometries geometry", Geometry, "geometry" );window.setImmediate(cb2)},
+		function(cb2){ cameras = parseLib( "library_cameras camera", Camera, "camera" );window.setImmediate(cb2)},
+		function(cb2){ lights = parseLib( "library_lights light", Light, "light" );window.setImmediate(cb2)},
+		function(cb2){ controllers = parseLib( "library_controllers controller", Controller, "controller" );window.setImmediate(cb2)},
+		function(cb2){ animations = parseLib( "library_animations animation", Animation, "animation" );window.setImmediate(cb2)},
+		function(cb2){ visualScenes = parseLib( "library_visual_scenes visual_scene", VisualScene, "visual_scene" );window.setImmediate(cb2)},
 
-			scene.add( createSceneGraph( daeScene.nodes[ i ] ) );
+		],function(){
 
-		}
+			
+			morphs = [];
+			skins = [];
 
-		// unit conversion
-		scene.scale.multiplyScalar( colladaUnit );
+			daeScene = parseScene();
+			scene = new THREE.Object3D();
 
-		createAnimations();
 
-		var result = {
-
-			scene: scene,
-			morphs: morphs,
-			skins: skins,
-			animations: animData,
-			dae: {
-				images: images,
-				materials: materials,
-				cameras: cameras,
-				lights: lights,
-				effects: effects,
-				geometries: geometries,
-				controllers: controllers,
-				animations: animations,
-				visualScenes: visualScenes,
-				scene: daeScene
-			}
-
-		};
-
-		if ( callBack ) {
-
-			callBack( result );
-
-		}
-
-		return result;
-
+			async.eachSeries(daeScene.nodes,function(node,cb){
+				 createSceneGraph( node,null,function(threenode)
+				 {
+				 	scene.add(threenode);
+				 	window.setImmediate(cb);
+				 } );
+			},function(err)
+			{
+				// unit conversion
+				scene.scale.multiplyScalar( colladaUnit );
+				createAnimations();
+				var result = {
+					scene: scene,
+					morphs: morphs,
+					skins: skins,
+					animations: animData,
+					dae: {
+						images: images,
+						materials: materials,
+						cameras: cameras,
+						lights: lights,
+						effects: effects,
+						geometries: geometries,
+						controllers: controllers,
+						animations: animations,
+						visualScenes: visualScenes,
+						scene: daeScene
+					}
+				};
+				if ( callBack ) {
+					callBack( result );
+				}
+				return result;
+			});
+		});
 	};
 
 	function setPreferredShading ( shading ) {
@@ -530,7 +559,10 @@ THREE.ColladaLoader = function () {
 				bone.invBindMatrix = inv;
 				bone.skinningMatrix = new THREE.Matrix4();
 				bone.skinningMatrix.multiplyMatrices(bone.world, inv); // (IBMi * JMi)
-				
+				bone.skinningMatrixNormal = bone.skinningMatrix.clone();
+				bone.skinningMatrixNormal.elements[12] = 0;
+				bone.skinningMatrixNormal.elements[13] = 0;
+				bone.skinningMatrixNormal.elements[14] = 0;
 				
 				bone.weights = [];
 
@@ -571,12 +603,15 @@ THREE.ColladaLoader = function () {
 			bone.name = node.sid;
 			bone.parent = parentid;
 			bone.matrix = node.matrix;
-			var data = bone.matrix.decompose();
+			
+			var pos = new THREE.Vector3();
+			var scl = new THREE.Vector3();
+			var rotq = new THREE.Quaternion();
+			 bone.matrix.decompose(pos,rotq,scl);
 							
-			bone.pos = [data[0].x,data[0].y,data[0].z];
-							
-			bone.scl = [data[2].x,data[2].y,data[2].z];
-			bone.rotq = [data[1].x,data[1].y,data[1].z,data[1].w];
+			bone.pos = [pos.x,pos.y,pos.z];			
+			bone.scl = [scl.x,scl.y,scl.z];
+			bone.rotq = [rotq.x,rotq.y,rotq.z,rotq.w];
 			list.push(bone);
 			for(var i in node.nodes)
 			{
@@ -588,16 +623,21 @@ THREE.ColladaLoader = function () {
 
 	};
 	//Move the vertices into the pose that is proper for the start of the animation
-	function skinToBindPose(geometry,skeleton,skinController)
+	function skinToBindPose(geometry,skeleton,skinController,flipy)
 	{
 			var bones = [];
 			setupSkeleton( skeleton, bones, -1 );
 			setupSkinningMatrices( bones, skinController.skin );
 			v = new THREE.Vector3();
 			var skinned = [];
+			var skinnedNormals = [];
 			for(var i =0; i < geometry.vertices.length; i++)
 			{
 				skinned.push(new THREE.Vector3());
+			}
+			for(var i =0; i < geometry.faces.length; i++)
+			{
+				skinnedNormals.push([]);
 			}
 			for ( i = 0; i < bones.length; i ++ ) {
 
@@ -624,6 +664,8 @@ THREE.ColladaLoader = function () {
 						s.z += (v.z * weight);
 
 						
+						
+						
 
 					}
 
@@ -633,17 +675,19 @@ THREE.ColladaLoader = function () {
 				geometry.vertices[i] = skinned[i];
 			}	
 
+		
+
 	}
 	function applySkin ( geometry, instanceCtrl, frame ) {
 
 		
-		var maxbones = 32;
-		if(_dRenderer)
+		var maxbones = 58;
+		if(window._dRenderer)
 		{
 			//this does not really find the proper minimum
 			maxbones = 	Math.min(maxbones,Math.floor((_dRenderer.context.getParameter( _dRenderer.context.MAX_VERTEX_UNIFORM_VECTORS ) - 20)/4));
 		}
-
+		
 		var skinController = controllers[ instanceCtrl.url ];
 
 		frame = frame !== undefined ? frame : 40;
@@ -710,7 +754,18 @@ THREE.ColladaLoader = function () {
 		
 		for ( i = 0; i < geometry.vertices.length; i ++ ) {
 					geometry.vertices[i].applyMatrix4( skinController.skin.bindShapeMatrix );
+		}
+
+		var bindshapeNormal = skinController.skin.bindShapeMatrix.clone();
+		bindshapeNormal[12] = bindshapeNormal[13] =bindshapeNormal[14]  = 0;
+			for(var i =0; i < geometry.faces.length; i++)
+			{
+				for(var h =0; h < geometry.faces[i].vertexNormals.length; h++)
+				{
+					geometry.faces[i].vertexNormals[h].applyMatrix4(bindshapeNormal);
 				}
+			}
+
 
 		var skinIndices = [];
 		var skinWeights = [];
@@ -767,7 +822,28 @@ THREE.ColladaLoader = function () {
 		if(sortedbones.length < maxbones)
 		{
 			skinToBindPose(geometry,skeleton,skinController);
+			//hardware skinned meshes need to deal with this even when upconversion is off
+				if(colladaUp == 'Z')
+					{			
+						
+						for(var i =0; i < geometry.faces.length; i++)
+						{
+							for(var h =0; h < geometry.faces[i].vertexNormals.length; h++)
+							{
+									var temp = geometry.faces[i].vertexNormals[h].clone().normalize();
+									
+									geometry.faces[i].vertexNormals[h].x = temp.x;
+									geometry.faces[i].vertexNormals[h].y = temp.z;
+									geometry.faces[i].vertexNormals[h].z = -temp.y;
+							}
+						}
+					}
+		}else
+		{
+
 		}
+		
+		
 
 		for ( frame = 0; frame < animationBounds.frames; frame ++ ) {
 
@@ -796,12 +872,15 @@ THREE.ColladaLoader = function () {
 							if(frame == 0)
 								bones[i].matrix = key.matrix;
 
-							var data = key.matrix.decompose();
+							var pos = new THREE.Vector3();
+							var scl = new THREE.Vector3();
+							var rotq = new THREE.Quaternion();
+							var data = key.matrix.decompose(pos,rotq,scl);
 							
-							key.pos = [data[0].x,data[0].y,data[0].z];
+							key.pos = [pos.x,pos.y,pos.z];
 							
-							key.scl = [data[2].x,data[2].y,data[2].z];
-							key.rot = data[1];
+							key.scl = [scl.x,scl.y,scl.z];
+							key.rot = rotq;
 
 							animationdata.hierarchy[j].keys.push(key);
 						}
@@ -816,7 +895,7 @@ THREE.ColladaLoader = function () {
 			else
 			{
 				
-
+				console.warn('Too many bones on mesh',sortedbones.length, geometry);
 				for ( i = 0; i < geometry.vertices.length; i++ ) {
 
 					skinned.push( new THREE.Vector3() );
@@ -845,18 +924,19 @@ THREE.ColladaLoader = function () {
 						s.x += (v.x * weight);
 						s.y += (v.y * weight);
 						s.z += (v.z * weight);
-
 					}
 
 				}
 
 				geometry.morphTargets.push( { name: "target_" + frame, vertices: skinned } );
+
+
 			}
 		}
 
 	};
 
-	function createSceneGraph ( node, parent ) {
+	function createSceneGraph ( node, parent, cb) {
 
 		var obj = new THREE.Object3D();
 		var skinned = false;
@@ -1013,7 +1093,6 @@ THREE.ColladaLoader = function () {
 
 				if ( skinController !== undefined ) {
 
-					
 					applySkin( geom, skinController );
 					
 					if(geom.morphTargets.length > 0)
@@ -1134,11 +1213,14 @@ THREE.ColladaLoader = function () {
 		obj.name = node.name || node.id || "";
 		obj.matrix = node.matrix;
 
-		var props = node.matrix.decompose();
-		obj.position = props[ 0 ];
-		obj.quaternion = props[ 1 ];
-		obj.useQuaternion = true;
-		obj.scale = props[ 2 ];
+		obj.position = new THREE.Vector3();
+		obj.quaternion = new THREE.Quaternion();
+		obj.scale = new THREE.Vector3();
+
+		var props = node.matrix.decompose(obj.position,obj.quaternion,obj.scale);
+		
+		//obj.useQuaternion = true;
+		
 
 		if ( options.centerGeometry && obj.geometry ) {
 
@@ -1150,12 +1232,21 @@ THREE.ColladaLoader = function () {
 
 		}
 
-		for ( i = 0; i < node.nodes.length; i ++ ) {
+	
+		//make the scenegraph parsing async
+		async.eachSeries(node.nodes,function(nodeDAE,cb2){
+			createSceneGraph(nodeDAE,node,function(childTHREE)
+			{
 
-			obj.add( createSceneGraph( node.nodes[i], node ) );
+				obj.add(childTHREE);
+				window.setImmediate(cb2);
+			});
+		},function(err)
+		{
+			if(cb) {cb(obj)};
+		});
 
-		}
-
+		
 		return obj;
 
 	};
@@ -4933,7 +5024,8 @@ THREE.ColladaLoader = function () {
 		setPreferredShading: setPreferredShading,
 		applySkin: applySkin,
 		geometries : geometries,
-		options: options
+		options: options,
+		cleanup:cleanup
 
 	};
 

@@ -36,6 +36,11 @@ define({
 			var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
 			_Editor.mouseup(touch)
 		});
+		//deal with deactivating actions that should only work when a key is held,but the focus has left so the editor won't get the keyup
+		$('#index-vwf').blur(function()
+		{
+			_Editor.blur();
+		});
 		$('#vwf-root').keydown(function(e){
 			
 			try{
@@ -46,6 +51,10 @@ define({
 			{
 				
 			}
+		});
+		$(window).keypress(function(e)
+		{
+			
 		});
 		
 		

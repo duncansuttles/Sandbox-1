@@ -2,7 +2,7 @@
 	var sid = '{{sid}}'; 
 	$(document).ready(function()
 	{
-		getLoginInfo(function(){}, redirect);
+		
 		vwfPortalModel.restoreList = ko.observableArray();
 		vwfPortalModel.restoreState = function(obj, e){
 		
@@ -59,6 +59,7 @@
 			success:function(data,status,xhr)
 			{
 				var data = JSON.parse(xhr.responseText);
+				$('#txtTitle').text(data.title)
 				$('#txtInstanceName').val(data.title);
 				$('#txtInstanceDescription').val(data.description);
 			},
@@ -88,6 +89,7 @@
 			type: 'POST',
 			url: root + '/vwfDataManager.svc/statedata?SID='+sid,
 			data: JSON.stringify(statedata),
+			contentType: "application/json; charset=utf-8",
 			success:function(data,status,xhr)
 			{
 				
@@ -102,32 +104,33 @@
 	};
 </script>
 <div class="row" style="margin-bottom: 15px">
-	<div class="col-md-10" style="margin:0 auto;float:none;height:auto;">
-		This page allows you to reset the title or the description of the world, or to restore the world from a backup. Backups are created automatically, and never expire. When you restore your world, the current state will also be saved, so a restore can be undone by loading the most recent backup. We keep database snapshots of your world about once a minute, or whenever someone logs out. Please note that we reserve the right to purge this information periodically, as this is only a test environment.
-	</div>
+	
 </div>
-<div class="row">
-	<div class="col-md-6 col-md-offset-1">
-		<form data-bind="submit:handleEditButton" >
+<div id="content" class="row" >
+	<div class="col-md-5" style="margin:10px auto;float:none;text-align:center;">
+		
+		<div id='txtTitle' style="font-size: 2em;font-weight: bold;"></div>
+		<legend></legend>
+		<div class=''>
+			
+			
+			<div> <img style="width:100%;width: 100%;border-radius: 5px;box-shadow: 3px 3px 3px #444;" src="./vwfdatamanager.svc/thumbnail?SID={{sid}}" onload='center()' onerror = "this.src = '/adl/sandbox/img/thumbnotfound.png'"></img> </div>
+			
+		</div>
+
+
+		<form id='form' data-bind="submit:handleEditButton" >
 			<fieldset>
-				<legend>Edit world name and description</legend>
+				<legend></legend>
 				<input type='text' id='txtInstanceName' placeholder='World Name' class="col-md-5 form-control" /><br/><br/>
 				<textarea id='txtInstanceDescription' placeholder='Description' class="col-md-5 form-control"></textarea>
-				<input type="submit" class='btn btn-default' style="float:right;margin-top:7px;"  value="Edit"/>
+				<input type="submit" class='btn btn-default' style="float:right;margin-top:7px;"  value="{{#translate}}Edit{{/translate}}"/>
 			</fieldset>
 		</form>
 	</div>
-	<div class="col-md-3 col-md-offset-1">
-		<legend style="">Restore Backup</legend>
-		<p style="text-align:center;margin-top:60px;" data-bind="visible:restoreList().length==0">No backups found</p>
-		<table data-bind="submit:handleEditButton" class="table table-striped" style="border-top:none;">
-			<tbody data-bind="foreach:restoreList">
-				<tr>
-					<td><a href="#" data-bind="text:time, click:$root.restoreState"></a></td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
+	
+
+	
 </div>
 <div class="row">	
 	<div id='error' style="margin-top: 20px;margin-bottom:20px;font-size: 3EM;color: red;" class="span12"></div>

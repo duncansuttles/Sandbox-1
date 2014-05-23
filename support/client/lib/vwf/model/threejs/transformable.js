@@ -42,7 +42,10 @@
 						threeObject.matrixAutoUpdate = false;
 						for(var i = 0; i < 16; i++)
 						threeObject.matrix.elements[i] = transform[i];
-						threeObject.updateMatrixWorld(true);      
+						threeObject.updateMatrixWorld(true);
+						//if this transformable is a bone, we need to update the skin
+						if(threeObject.skin)
+							threeObject.skin.updateMatrixWorld(true);      
 						_SceneManager.setDirty(threeObject);							
 					}
 
@@ -97,6 +100,16 @@
 						goog.vec.Mat4.getColumn( value, 2, columnz );
 						goog.vec.Mat4.setColumn( value, 2, columny );
 						goog.vec.Mat4.setColumn( value, 1, goog.vec.Vec4.negate( columnz, columnz ) );
+					}
+					if ( threeObject instanceof THREE.Bone ) {
+
+						
+						var skinmat = threeObject.skin.matrixWorld.clone();
+						threeObject.updateMatrixWorld(true);
+						var mat = threeObject.matrixWorld.clone();
+					//	mat = (new THREE.Matrix4()).multiplyMatrices(skinmat,mat);
+						return mat.elements;
+
 					}
 					return value;
 				}

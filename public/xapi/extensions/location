@@ -1,0 +1,3 @@
+<h2>http://vwf.adlnet.gov/xapi/extensions/location</h2>
+
+<p>Specifies the virtual world coordinates at which an event occurred. Value should be an object of the form <code>{x:0, y:0, z:0}</code>.</p>

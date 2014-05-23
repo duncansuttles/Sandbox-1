@@ -13,7 +13,7 @@
 				//$('#data').text(xhr.responseText);
 				
 				
-				$('#data').append('<a style="display:block" href="./worlds#'+statedata.title+'" class="historythisstate">'+statedata.title+'</a>');
+				$('#data').append('<a style="display:block" href="{{root}}/world/'+location.search.substr(4)+'" class="historythisstate">'+statedata.title+'</a>');
 				
 				
 				$.ajax(root + '/vwfDataManager.svc/statehistory?SID=' + sid,
@@ -54,10 +54,8 @@
 		
 	});	
 </script>
-<div class="col-md-10" style="margin:0 auto;float:none;height:auto;">
-		This page allows you to explore the history of a world. Since a world can be cloned, it may be important for you to know what the original world was. You can also see who has copied a world of yours, and what the new world is called.
-	</div>
-<div class="row">
+
+<div id = 'content' class="row">
 	<div id = 'data' class="col-md-8 col-md-offset-2">
 	</div>
 </div>

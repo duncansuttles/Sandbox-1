@@ -2,10 +2,10 @@
 <html>
 <head>
 	<link rel="stylesheet" type="text/css" href="{{root}}/css/colorpicker.css" /> 
-    <link rel="stylesheet" media="screen" type="text/css" href="{{root}}/css/bootstrap.min.css" />
-	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/css/style.css" />
-	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/css/alertify.core.css" />
-	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/css/alertify.default.css" />
+    <link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/bootstrap.min.css" />
+	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/style.css" />
+	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/alertify.core.css" />
+	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/alertify.default.css" />
 	<style>
 		@media (max-width: 1420px){
 			#gitBanner{
@@ -21,7 +21,12 @@
 			.linkMenu{
 				left: 546px;
 			}
-		}							
+		}			
+		.lang li
+		{
+			float:left;	
+		}
+
 	</style>
 	<!--[if !IE 7]>
 	<style type="text/css">
@@ -114,6 +119,7 @@
 	</script>	
 	{{/avatar}}
 	<script type="text/javascript" src="{{root}}/vwfDataManager.svc/getanalytics.js"></script>
+	<script type="text/javascript" src="{{root}}/js/cookies.js"></script>
 </head>
 <body style="min-width:990px;">
 	{{#home}}
@@ -132,11 +138,59 @@
 					<span class="headerSpan" data-bind="text:'Logged in as: '"></span>
 					<a class="headerA" href="{{root}}/user" id="userOptions" data-bind="text: user().username"></a>
 				</div>
+
+		<!--localization start-->
+		<span class="dropdown headerA"> 
+          <a href="#" class="dropdown-toggle thinheaderlink" data-toggle="dropdown">{{#translate}}Language{{/translate}}<b class="caret"></b></a>
+          <ul class="dropdown-menu lang" role="menu">
+            <li class="langLi" lang="en"><a href="#">English</a></li>
+            <li class="langLi" lang="ru"><a href="#">Русский</a></li>
+            <li class="langLi" lang="es_ES"><a href="#">Español (España)</a></li>
+          </ul>
+      	</span>
+
+	<script type="text/javascript">
+
+	$(".langLi").click(function(){
+		var lang = $(this).attr('lang');
+    	//$.post(root + '/data/set_lang', JSON.stringify(lang), function(o){});
+    	//document.cookie = 'i18next='+lang;
+    	docCookies.setItem('i18next',lang, null, '/', null, null);
+		window.location.reload();
+		});
+	</script>
+		<!--localization end-->	
+
 				<div id="login">
-					<a class="headerA" href="{{root}}/login?return=worlds"  id="login"  data-bind="visible:!user().isLoggedIn">Login</a>
-					<a class="headerA" href="{{root}}/user"  id="user"  data-bind="visible:user().isLoggedIn">Account</a>
-					<a class="headerA" href="{{root}}/logout?return=index" id="logout" data-bind="visible:user().isLoggedIn">Logout</a>
-					<a class="headerA" href="{{root}}/signup?return=worlds" id="signup" data-bind="visible:!user().isLoggedIn">Create Account</a>
+					
+
+		<a class='headerA' href='{{root}}/search'>
+			{{#translate}}Worlds{{/translate}}
+		</a>
+		
+		{{^sessionData}}
+		<a class='headerA' href='{{root}}/signup'>
+			{{#translate}}Sign up{{/translate}}
+		</a>
+		{{/sessionData}}
+		
+	<!--	<a class='thinheaderlink' href='{{root}}/featuredWorlds/0'>
+			{{#translate}}Worlds{{/translate}}
+		</a> -->
+		<a class='headerA' href='{{root}}/tools'>
+			{{#translate}}Tools{{/translate}}
+		</a> 
+		{{^sessionData}}
+		<a id='login' class='headerA' href='{{root}}/login'>
+			{{#translate}}Log in{{/translate}}
+		</a>
+		{{/sessionData}}
+		{{#sessionData}}
+		<a id='logout' class='headerA' href='{{root}}/logout'>
+			{{#translate}}Log out{{/translate}}
+		</a>
+		{{/sessionData}}
+		
 				</div>
 			</div>
 		</div>		
@@ -155,10 +209,20 @@
 						</a>
 					</div>
 					<div class="linkMenu">
-						<a href="{{root}}">Home</a> 
-						<a href="{{root}}/worlds">Worlds</a> 
-						<a href="http://www.youtube.com/watch?list=PLbhwHX3OvksljQcxLkRT3YvyjgQaIY8m2&v=aWRQJJnBi5c">Videos</a> 
-						<a href="{{root}}/help">Help</a>
+						<a href="{{root}}">{{#translate}}Home{{/translate}}</a> 
+						<a href="{{root}}/featuredWorlds/0">{{#translate}}Worlds{{/translate}}</a> 
+						{{#blog}}
+							<a href="{{blog}}">{{#translate}}Blog{{/translate}}</a> 
+						{{/blog}}
+						{{#doc}}
+							<a href="{{doc}}">{{#translate}}Docs{{/translate}}</a>
+						{{/doc}}
+						{{^blog}}
+							<a href="http://www.youtube.com/watch?list=PLbhwHX3OvksljQcxLkRT3YvyjgQaIY8m2&v=aWRQJJnBi5c">{{#translate}}Videos{{/translate}}</a> 			
+						{{/blog}}
+						{{^doc}}
+							<a href="{{root}}/help">{{#translate}}Help{{/translate}}</a>
+						{{/doc}}
 					</div>
 				</div>
 			</div>	
@@ -168,22 +232,22 @@
 				<div class="sliderWrapper">
 					<div style="background-image:url('{{root}}/img/huge_terrain.jpg');" class="slide-item slide-item0">
 						<div class="pContainer">
-							<p>No extra plugins needed - just click and go</p>	
+							<p>{{#translate}}No extra plugins needed - just click and go{{/translate}}</p>	
 						</div>
 					</div>
 					<div style="background-image:url('{{root}}/img/huge_town.jpg');" class="slide-item slide-item1">
 						<div class="pContainer">
-							<p>Advanced scripting controls every aspect of your scenario</p>
+							<p>{{#translate}}Advanced scripting controls every aspect of your scenario{{/translate}}</p>
 						</div>	
 					</div>
 					<div style="background-image:url('{{root}}/img/huge_office.jpg');" class="slide-item slide-item2">
 						<div class="pContainer">
-							<p>Web RTC enables a higher level of collaboration</p>
+							<p>{{#translate}}Web RTC enables a higher level of collaboration{{/translate}}</p>
 						</div>	
 					</div>
 					<div style="background-image:url('{{root}}/img/huge_editor.jpg');" class="slide-item slide-item3">
 						<div class="pContainer">
-							<p>A full featured set of tools makes building worlds easy</p>
+							<p>{{#translate}}A full featured set of tools makes building worlds easy{{/translate}}</p>
 						</div>	
 					</div>
 				</div>
@@ -197,13 +261,16 @@
 
 			</div>
 			<div id="footer" class="container">
-				<br/><p style="color:#eee">A project from <a href='http://www.adlnet.gov'>ADL</a></p>
-				<a href="{{root}}/test">Test Browser Support</a> 
+				<br/><p>The views expressed on this website in the form of documentation, blog articles, or tutorials do not necessarily represent the views or policies of ADL or the U.S. Government.</p>
+
+				<p>Sponsored by the Office of the Under Secretary of Defense for Personnel and Readiness (OUSD P&amp;R).
+				This is an official website of the U.S. Government (c)2014 Advanced Distributed Learning (ADL).</p>
+				<a href="{{root}}/test">{{#translate}}Test Browser Support{{/translate}}</a> 
 			</div>
 
 		</div>
 	</div>
 	<a href="https://github.com/adlnet/Sandbox" id="gitBanner"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
-	<script type="text/javascript" src="{{root}}/js/alertify.min.js"></script>
+	<script type="text/javascript" src="{{root}}/vwf/view/editorview/lib/alertify.min.js"></script>
 </body>
 </html>

@@ -255,15 +255,19 @@ scripts:
       }
     }
     this.keyDown = function( parms ) {
+       return false;
       var active = this.input.futureActive();
       this.input.keyInfo = parms;
       this.handleKeyDown();
       if ( !active ) {
         this.future( 0.1 ).update();
       }
+
     }
     this.keyUp = function( parms ) {
+       return false;
       this.input.keyInfo = parms;
+      return false;
     }
     this.handleKeyDown = function() {
     return;
@@ -540,6 +544,8 @@ scripts:
       }      
     }
     this.update = function() {
+      
+      return false;
       if ( this.input ) {
         var delta = this.input.pointerDelta();
         var pi = this.input.pointerInfo;

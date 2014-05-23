@@ -15,12 +15,20 @@
 
 define( [ "module", "vwf/view" ], function( module, view ) {
 	var stats;
+	var NORMALRENDER = 0;
+	var STEREORENDER = 1;
     return view.load( module, {
 
-		
+		renderMode: NORMALRENDER,
         initialize: function( rootSelector ) {
            
-	 
+	    
+
+	    //here, we will keep a record of the incoming properties, mostly so that the fog can switch around and we still know the old values
+	    //for density and such, since we can't store them in the scene.fog when scene.fog is null
+
+
+
 	    $(document).on('selectionChanged',this.selectionChanged.bind(this));
 		this.renderTargetPasses = [];
             this.rootSelector = rootSelector;
@@ -50,6 +58,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			$(document).on('setstatecomplete',function()
 			{
 				this.paused = false;
+				$('#index-vwf').fadeIn();
 			}.bind(this));
 			
 			this.nodes = {};
@@ -202,6 +211,26 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		
 			
 		},
+		triggerWindowResize : function()
+		{
+
+				var origWidth = self.width;
+                var origHeight = self.height;
+                if ( window && window.innerHeight ) self.height = window.innerHeight;
+                if ( window && window.innerWidth ) self.width = window.innerWidth;
+
+                var resolutionScale = _SettingsManager.getKey('resolutionScale');
+
+                //if ((origWidth != self.width) || (origHeight != self.height)) {
+                    $('#index-vwf')[0].height = self.height/resolutionScale;
+                    $('#index-vwf')[0].width = self.width/resolutionScale;
+                    _dRenderer.setViewport(0,0,window.innerWidth/resolutionScale,window.innerHeight/resolutionScale)
+                    _dRenderer.setSize($('#index-vwf').width()/resolutionScale,$('#index-vwf').height()/resolutionScale);
+					_dView.getCamera().aspect =  $('#index-vwf')[0].width / $('#index-vwf')[0].height;
+					_dView.getCamera().updateProjectionMatrix()
+                   
+                //}
+		},
 		restoreTransforms: function()
 		{
 			for(var i in this.nodes)
@@ -225,6 +254,16 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				}
 				
 			}
+		},
+		setRenderModeStereo : function()
+		{
+			this.renderMode = STEREORENDER;
+			this.triggerWindowResize();
+		},
+		setRenderModeNormal: function()
+		{
+			this.renderMode = NORMALRENDER;
+			this.triggerWindowResize();
 		},
 		ticked: function()
 		{
@@ -265,7 +304,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             childSource, childType, childURI, childName, callback /* ( ready ) */) {
             
 			if(childID != 'http-vwf-example-com-camera-vwf-camera')
-				this.nodes[childID] = {id:childID,extends:childExtendsID};
+				this.nodes[childID] = {id:childID,extends:childExtendsID,properties:{}};
 			
             //the created node is a scene, and has already been added to the state by the model.
             //how/when does the model set the state object? 
@@ -276,8 +315,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 
                 
                 this.canvasQuery = jQuery(this.rootSelector).append("<canvas id='" + this.state.sceneRootID + "' width='"+this.width+"' height='"+this.height+"' class='vwf-scene'/>"
+                	 
                 ).children(":last");
-                
+                this.canvasQuery.css('display','none');
                 initScene.call(this,this.state.scenes[childID]);
             }
         },
@@ -341,6 +381,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		},
 		selectionChanged: function(e,selection)
 		{
+
 			this.selection = selection;
 			
 			if(this.cameraHelper)
@@ -350,10 +391,14 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			}
 			if(this.selection && vwf.getProperty(this.selection.id,'type') =='Camera')
 			{
-				var selcam = _Editor.findviewnode(this.selection.id).children[0];
-				this.cameraHelper = new THREE.CameraHelper(selcam);
-				this.cameraHelper.InvisibleToCPUPick = true;
-				selcam.add(this.cameraHelper,true);
+				var selnode = _Editor.findviewnode(this.selection.id);
+				if(selnode)
+				{
+					var selcam = selnode.children[0];
+					this.cameraHelper = new THREE.CameraHelper(selcam);
+					this.cameraHelper.InvisibleToCPUPick = true;
+					selcam.add(this.cameraHelper,true);
+				}
 			}
 			
 			
@@ -404,9 +449,17 @@ define( [ "module", "vwf/view" ], function( module, view ) {
         satProperty: function (nodeID, propertyName, propertyValue) {
         
             //console.log([nodeID,propertyName,propertyValue]);
-            var node = this.state.nodes[ nodeID ]; // { name: childName, threeObject: undefined }
+            //note! this is different than this.nodes, which stores data for this particualr driver
+            //this.state.nodes is shared with the threejs model!
+            var node = this.state.nodes[ nodeID ]; 
             if(!node) node = this.state.scenes[nodeID];
+
+             //this driver has no representation of this node, so there is nothing to do.
+            if(!node) return;
+            
             var value = undefined;
+            if(this.nodes[nodeID])
+            	this.nodes[nodeID].properties[propertyName] = propertyValue;
           
 			if(vwf.client())
 			{
@@ -431,9 +484,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			}
 			
 			
-			this.nodes[nodeID][propertyName] = propertyValue;
-            //this driver has no representation of this node, so there is nothing to do.
-            if(!node) return;
+			node[propertyName] = propertyValue;
+           
           
             var threeObject = node.threeObject;
             if(!threeObject)
@@ -446,16 +498,69 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             {
                 if(threeObject instanceof THREE.Scene)
                 {
-                    if(propertyName == 'enableShadows')
+                    if(propertyName == 'skyColorBlend')
                     {
-                        //debugger;
-                        var sceneNode = this.state.scenes[nodeID];
-                        sceneNode.renderer.shadowMapEnabled = propertyValue;
+                    	if(window._dSky && _dSky.material)
+                        _dSky.material.uniforms.colorBlend.value = propertyValue;
                     }
+                    if(propertyName == 'skyFogBlend')
+                    {
+                    	if(window._dSky && _dSky.material)
+                      	_dSky.material.uniforms.fogBlend.value = propertyValue;
+                    }
+                    if(propertyName == 'skyApexColor')
+                    {
+                        if(window._dSky && _dSky.material){
+                        	_dSky.material.uniforms.ApexColor.value.r = propertyValue[0];
+                        	_dSky.material.uniforms.ApexColor.value.g = propertyValue[1];
+                        	_dSky.material.uniforms.ApexColor.value.b = propertyValue[2];
+                        }
+                    }
+                    if(propertyName == 'skyHorizonColor')
+                    {
+                        if(window._dSky && _dSky.material){
+                        	_dSky.material.uniforms.HorizonColor.value.r = propertyValue[0];
+                        	_dSky.material.uniforms.HorizonColor.value.g = propertyValue[1];
+                        	_dSky.material.uniforms.HorizonColor.value.b = propertyValue[2];
+                        }
+                    }
+
+  					if(propertyName == 'skyApexColor')
+					{
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+						
+						if(!threeObject.fog.vApexColor)
+							threeObject.fog.vApexColor = new THREE.Color();
+
+						threeObject.fog.vApexColor.r = propertyValue[0];
+						threeObject.fog.vApexColor.g = propertyValue[1];
+						threeObject.fog.vApexColor.b = propertyValue[2];
+					}
+					if(propertyName == 'skyHorizonColor')
+					{
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+						
+						if(!threeObject.fog.vHorizonColor)
+							threeObject.fog.vHorizonColor = new THREE.Color();
+
+						threeObject.fog.vHorizonColor.r = propertyValue[0];
+						threeObject.fog.vHorizonColor.g = propertyValue[1];
+						threeObject.fog.vHorizonColor.b = propertyValue[2];
+
+					}
+					if(propertyName == 'skyAtmosphereDensity')
+					{
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+						
+						threeObject.fog.vAtmosphereDensity = propertyValue/500;
+					}
 					if(propertyName == 'fogType')
 					{
 						
-						var oldfog = threeObject.fog;
+						
 						var newfog;
 						if(propertyValue == 'exp')
 						{
@@ -469,14 +574,32 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 						{
 							newfog = null;
 						}
-						if(oldfog && newfog)
+						if(newfog)
 						{
-							newfog.color.r = oldfog.color.r;
-							newfog.color.g = oldfog.color.g;
-							newfog.color.b = oldfog.color.b;
-							newfog.near = oldfog.near;
-							newfog.far = oldfog.far;
-							newfog.density = oldfog.density;
+
+							//get all the fog values from the stored property values
+							newfog.color.r = this.nodes[nodeID].properties["fogColor"] ? this.nodes[nodeID].properties["fogColor"][0] : 1;
+							newfog.color.g = this.nodes[nodeID].properties["fogColor"] ? this.nodes[nodeID].properties["fogColor"][1] : 1;
+							newfog.color.b = this.nodes[nodeID].properties["fogColor"] ? this.nodes[nodeID].properties["fogColor"][2] : 1;
+							newfog.near = this.nodes[nodeID].properties["fogNear"] || 0;
+							newfog.far = this.nodes[nodeID].properties["fogFar"] || 1000;
+							newfog.density = this.nodes[nodeID].properties["fogDensity"] || 0;
+							newfog.vFalloff = this.nodes[nodeID].properties["fogVFalloff"] || 1;
+							newfog.vFalloffStart = this.nodes[nodeID].properties["fogVFalloffStart"] || 0;
+							newfog.vAtmosphereDensity = (this.nodes[nodeID].properties["skyAtmosphereDensity"] || 0)/500;
+
+							threeObject.fog.vHorizonColor = new THREE.Color();
+
+							threeObject.fog.vHorizonColor.r = this.nodes[nodeID].properties["skyApexColor"] ? this.nodes[nodeID].properties["skyHorizonColor"][0] : 1;
+							threeObject.fog.vHorizonColor.g = this.nodes[nodeID].properties["skyApexColor"] ? this.nodes[nodeID].properties["skyHorizonColor"][1] : 1;
+							threeObject.fog.vHorizonColor.b = this.nodes[nodeID].properties["skyApexColor"] ? this.nodes[nodeID].properties["skyHorizonColor"][2] : 1;
+
+							threeObject.fog.vApexColor = new THREE.Color();
+
+							threeObject.fog.vApexColor.r = this.nodes[nodeID].properties["skyHorizonColor"] ? this.nodes[nodeID].properties["skyHorizonColor"][0] : 1;
+							threeObject.fog.vApexColor.g = this.nodes[nodeID].properties["skyHorizonColor"] ? this.nodes[nodeID].properties["skyHorizonColor"][1] : 1;
+							threeObject.fog.vApexColor.b = this.nodes[nodeID].properties["skyHorizonColor"] ? this.nodes[nodeID].properties["skyHorizonColor"][2] : 1;
+
 						}
 						threeObject.fog = newfog;
 						rebuildAllMaterials.call(this,threeObject);
@@ -505,8 +628,26 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 						
 						if(!threeObject.fog)
 							threeObject.fog = new THREE.Fog();
-						threeObject.fog.near = propertyValue;	
+						
 						threeObject.fog.density = propertyValue;
+						rebuildAllMaterials.call(this,threeObject);
+					}
+					if(propertyName == 'fogVFalloff')
+					{
+						
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+							
+						threeObject.fog.vFalloff = propertyValue;
+						rebuildAllMaterials.call(this,threeObject);
+					}
+					if(propertyName == 'fogVFalloffStart')
+					{
+						
+						if(!threeObject.fog)
+							threeObject.fog = new THREE.Fog();
+							
+						threeObject.fog.vFalloffStart = propertyValue;
 						rebuildAllMaterials.call(this,threeObject);
 					}
 					if(propertyName == 'fogFar')
@@ -563,7 +704,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		createRenderTarget: function(cameraID)
 		{
 			
-			var rtt = new THREE.WebGLRenderTarget( 512,512, { format: THREE.RGBFormat } );
+			var rtt = new THREE.WebGLRenderTarget( 256,256, { format: THREE.RGBAFormat, minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter } );
 			this.renderTargetPasses.push({camera:cameraID,target:rtt});
 			return rtt;
 		},
@@ -602,7 +743,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		},
 		unbind:function (name,func)
 		{
-
+			
 			var queue = this.events[name];
 			if(!queue) return;
 
@@ -611,7 +752,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			else
 			{
 				func = queue.indexOf(func);
-				queue.splice(func,1);
+				if(func != -1)
+					queue.splice(func,1);
 			}
 		}
 		
@@ -677,6 +819,11 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			}			
 				return list;
 		}
+		function windowResize(){
+				
+        	}
+        
+
 	var timepassed;	
 	var now;
 	var cam;
@@ -700,6 +847,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 	var insetvp;
 	var vpargs = [];
 	var documentselector = $(document);
+
         function renderScene(time) {
 			
 			
@@ -722,13 +870,14 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			now = ( window.performance !== undefined && window.performance.now !== undefined ) ? window.performance.now() : time;
 			
 			timepassed = now - sceneNode.lastTime;
+
 			window.deltaTime = timepassed;
 			if(_SceneManager)
 				_SceneManager.update(timepassed);
 			pss = GetParticleSystems(sceneNode.threeScene);
 			for(var i in pss)
 			{
-				if(pss[i].update)
+				if(pss[i].update && pss[i].visible === true)
 					pss[i].update(timepassed || 0);
 			}
 
@@ -784,14 +933,22 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
                 var newPickId = newPick ? getPickObjectID.call( view, newPick.object ) : view.state.sceneRootID;
                 
-                
+               
 				if(self.lastPickId != newPickId && self.lastEventData)
                 {
 					
                     if(self.lastPickId)
-                    view.kernel.dispatchEvent( self.lastPickId, "pointerOut", self.lastEventData.eventData, self.lastEventData.eventNodeData );
+                    {
+                    	view.kernel.dispatchEvent( self.lastPickId, "pointerOut", self.lastEventData.eventData, self.lastEventData.eventNodeData );
+                    	
+                    }
+
 					if(newPickId)
-                    view.kernel.dispatchEvent( newPickId, "pointerOver", self.lastEventData.eventData, self.lastEventData.eventNodeData );
+					{
+						view.kernel.dispatchEvent( newPickId, "pointerOver", self.lastEventData.eventData, self.lastEventData.eventNodeData );	
+						
+					}
+                    
                 }
                 
                 self.lastPickId = newPickId;
@@ -816,10 +973,30 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			//var far = cam.far;
 			//var near = cam.near;
 			
+
+			_viewProjectionMatrix.multiplyMatrices( cam.projectionMatrix, cam.matrixWorldInverse );
+			vp =  _viewProjectionMatrix.transpose().flattenToArray(temparray);
+			vpargs[0] = vp.slice(0);
+
+			self.trigger('postprerender',vpargs);
+
+
+
+
+			//update the render passes - these may be added by render to texture materials, or from the terrain grass engine
+			for(var i = 0; i < self.renderTargetPasses.length; i++)
+			{
+				var rttcamID = self.renderTargetPasses[i].camera;
+				var rttcam = self.state.nodes[rttcamID].getRoot();
+				var rtt = self.renderTargetPasses[i].target;
+			   renderer.setRenderTarget( rtt );
+			   renderer.clear(scene,rttcam,rtt);
+			   renderer.setRenderTarget(  );
+			   renderer.render(scene,rttcam,rtt);	
+			}
+
 			
-			renderer.render(backgroundScene,cam);
-			
-			renderer.clear(false,true,false);
+		
 			
 			//use this for drawing really really far. Not usually necessary
 			//cam.near = cam.far - (cam.far - cam.near)/100.0;
@@ -830,60 +1007,126 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			//cam.near = near;
 			//cam.far = far;
 			//cam.updateProjectionMatrix();
-			renderer.render(scene,cam);
-			
-			
-			
-			if(self.selection && vwf.getProperty(self.selection.id,'type') =='Camera' && self.cameraID != self.selection.id)
+
+			if(self.renderMode === NORMALRENDER)
 			{
-				selcam = _Editor.findviewnode(self.selection.id).children[0];
-				oldaspect = selcam.aspect;
-				selcam.aspect = 1;
-				selcam.updateProjectionMatrix();
-				
-				t = $('#toolbar').offset().top + $('#toolbar').height() + 10;
-				l = 10;
-				w = ww/3;
-				h = wh/3;
-				
-				
-				
-				renderer.setViewport(0,0,w,w);
-				_Editor.hideMoveGizmo();
-				_dRenderer.setScissor(0,0,w,w);
+				cam.setViewOffset(undefined);
+				cam.updateProjectionMatrix();
+				renderer.render(scene,cam);
+			}
+			else if (self.renderMode === STEREORENDER)
+			{
+				var width = $('#index-vwf').attr('width');
+				var height = $('#index-vwf').attr('height');
+				var ww2 = width/2;
+				var h = ww2 / 1.333;
+				var hdif = (height - h)/2;
+				var centerh = hdif;
+
+				oldaspect = cam.aspect;
+				cam.aspect = 1.333;
 				renderer.enableScissorTest(true);
-				
-				
-				
-				camback = self.cameraID;
-				self.cameraID = self.selection.id;
-				
-			
-				selcam.matrixWorldInverse.getInverse( selcam.matrixWorld );
-				
-				_viewProjectionMatrix.multiplyMatrices( selcam.projectionMatrix, selcam.matrixWorldInverse );
-				insetvp =  MATH.transposeMat4(_viewProjectionMatrix.flattenToArray(temparray));
-				
-				
-				self.trigger('postprerender',[insetvp,w,w]);
-				
-				renderer.clear(true,true,true);
-				renderer.render(backgroundScene,selcam);
-				
-				renderer.clear(false,true,false);
-				renderer.render(scene,selcam);
-				
-				self.cameraID = camback;
-				_Editor.showMoveGizmo();
+
+				cam.fov = 60;
+				cam.updateProjectionMatrix();
+				var camX = new THREE.Vector3(cam.matrixWorld.elements[0],cam.matrixWorld.elements[1],cam.matrixWorld.elements[2]);
+				camX.normalize();
+				camX.setLength(.025);
+
+				//go left
+				cam.matrixWorld.elements[12] -= camX.x;
+				cam.matrixWorld.elements[13] -= camX.y;
+				cam.matrixWorld.elements[14] -= camX.z;
+
+				renderer.setViewport(0,centerh,ww2,h);
+				_dRenderer.setScissor(0,centerh,ww2,h);
+				cam.setViewOffset(ww2,h,-100,0,ww2,h);
+				cam.updateProjectionMatrix();
+
+				cam.setViewOffset(ww2,h,-_SettingsManager.getKey('stereoOffset') * ww2,0,ww2,h);
+				cam.updateProjectionMatrix();
+				renderer.render(scene,cam);
+
+				//go equally far right
+				cam.matrixWorld.elements[12] += camX.x * 2;
+				cam.matrixWorld.elements[13] += camX.y * 2;
+				cam.matrixWorld.elements[14] += camX.z * 2;
+
+				renderer.setViewport(ww2,centerh,ww2,h);
+				_dRenderer.setScissor(ww2,centerh,ww2,h);
+
+				cam.setViewOffset(ww2,h,_SettingsManager.getKey('stereoOffset') * ww2,0,ww2,h);
+				cam.updateProjectionMatrix();
+
+				renderer.render(scene,cam);
+
+				//return to center
+				cam.matrixWorld.elements[12] -= camX.x;
+				cam.matrixWorld.elements[13] -= camX.y;
+				cam.matrixWorld.elements[14] -= camX.z;
 				_dRenderer.setViewport(0,0,$('#index-vwf').attr('width'),$('#index-vwf').attr('height'));
 				_dRenderer.setScissor(0,0,$('#index-vwf').attr('width'),$('#index-vwf').attr('height'));
 				renderer.enableScissorTest(false);
-				selcam.aspect = oldaspect;
-				selcam.updateProjectionMatrix();
+				
+
+			}
+			
+			
+			
+			
+				
+
+			if(self.selection && vwf.getProperty(self.selection.id,'type') =='Camera' && self.cameraID != self.selection.id)
+			{
+				var selnode = _Editor.findviewnode(self.selection.id);
+				if(selnode)
+				{
+					selcam = selnode.children[0];
+					oldaspect = selcam.aspect;
+					selcam.aspect = 1;
+					selcam.updateProjectionMatrix();
+					
+					t = $('#toolbar').offset().top + $('#toolbar').height() + 10;
+					l = 10;
+					w = ww/3;
+					h = wh/3;
+					
+					
+					
+					renderer.setViewport(0,0,w,w);
+					_Editor.hideMoveGizmo();
+					_dRenderer.setScissor(0,0,w,w);
+					renderer.enableScissorTest(true);
+					
+					
+					
+					camback = self.cameraID;
+					self.cameraID = self.selection.id;
+					
+				
+					selcam.matrixWorldInverse.getInverse( selcam.matrixWorld );
+					
+					_viewProjectionMatrix.multiplyMatrices( selcam.projectionMatrix, selcam.matrixWorldInverse );
+					insetvp =  MATH.transposeMat4(_viewProjectionMatrix.flattenToArray(temparray));
+					
+					
+					self.trigger('postprerender',[insetvp,w,w]);
+					
+					renderer.clear(true,true,true);
+					renderer.render(scene,selcam);
+					
+					self.cameraID = camback;
+					_Editor.showMoveGizmo();
+					_dRenderer.setViewport(0,0,$('#index-vwf').attr('width'),$('#index-vwf').attr('height'));
+					_dRenderer.setScissor(0,0,$('#index-vwf').attr('width'),$('#index-vwf').attr('height'));
+					renderer.enableScissorTest(false);
+					selcam.aspect = oldaspect;
+					selcam.updateProjectionMatrix();
+				}
 			
 			}
 			
-			self.trigger('postprerender',vpargs);
+			
 			
 			
 			
@@ -894,18 +1137,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				self.trigger('glyphRender',vpargs);
 			}
 			
-			
-			for(var i = 0; i < self.renderTargetPasses.length; i++)
-			{
-				
-				var rttcamID = self.renderTargetPasses[i].camera;
-				var rttcam = self.state.nodes[rttcamID].getRoot();
-				var rtt = self.renderTargetPasses[i].target;
-				renderer.render(backgroundScene,rttcam,rtt,true);
-				renderer.render(scene,rttcam,rtt);
-				
-				
-			}
+		
+
 			
 			
 			
@@ -974,20 +1207,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             var hovering = false;
             var view = this;
             window.onresize = function () {
-                var origWidth = self.width;
-                var origHeight = self.height;
-                if ( window && window.innerHeight ) self.height = window.innerHeight - 20;
-                if ( window && window.innerWidth ) self.width = window.innerWidth - 20;
-
-                if ((origWidth != self.width) || (origHeight != self.height)) {
-                    mycanvas.height = self.height;
-                    mycanvas.width = self.width;
-                    sceneNode.renderer.setViewport(0,0,window.innerWidth,window.innerHeight)
-                    sceneNode.renderer.setSize($('#index-vwf').width(),$('#index-vwf').height());
-					self.getCamera().aspect =  mycanvas.width / mycanvas.height;
-					self.getCamera().updateProjectionMatrix()
-                   
-                }
+                self.triggerWindowResize();
             }
 
             if(detectWebGL() && getURLParameter('disableWebGL') == 'null')
@@ -996,25 +1216,29 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 sceneNode.renderer = new THREE.WebGLRenderer({canvas:mycanvas,antialias:true,alpha:false,stencil:false});
 				sceneNode.renderer.autoUpdateScene = false;
 				sceneNode.renderer.setSize($('#index-vwf').width(),$('#index-vwf').height());
-				sceneNode.renderer.shadowMapEnabled = true;
+				
+				
+				if(_SettingsManager.getKey('shadows'))
+				{
+					
+					
+				}
 				sceneNode.renderer.shadowMapType = THREE.PCFSoftShadowMap;
+				sceneNode.renderer.shadowMapEnabled = true;
 				sceneNode.renderer.autoClear = false;
-				sceneNode.renderer.setClearColor({r:0,g:0,b:0},1.0);
+				sceneNode.renderer.setClearColor({r:1,g:1,b:1},1.0);
             }else
             {
                 sceneNode.renderer = new THREE.CanvasRenderer({canvas:mycanvas,antialias:true});
                 sceneNode.renderer.setSize(window.innerWidth,window.innerHeight);
             }
-            //
-//            var ambientlight = new THREE.AmbientLight('#000000');
-//            ambientlight.color.setRGB(.7,.7,.7);
-//            sceneNode.threeScene.add(ambientlight);
+
             
             rebuildAllMaterials.call(this);
             if(sceneNode.renderer.setFaceCulling)
                 sceneNode.renderer.setFaceCulling(false);
             this.state.cameraInUse = sceneNode.camera.threeJScameras[sceneNode.camera.ID];
-           // this.state.cameraInUse.setAspect( ( mycanvas.width / mycanvas.height) /*/ 1.333 */ );
+         
 
             
             // Schedule the renderer.
@@ -1106,7 +1330,11 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
         var container = document.getElementById("container");
         var sceneCanvas = canvas;
-        //var mouse = new MATH.MouseInput( sceneCanvas );
+
+       
+    
+
+        
 
         var self = this;
 
@@ -1155,13 +1383,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             var worldCamPos, worldCamTrans, camInverse;
             if ( camera ) { 
                 worldCamTrans = new THREE.Vector3();
-				worldCamTrans.getPositionFromMatrix(camera.matrix);
+				worldCamTrans.setFromMatrixPosition(camera.matrix);
                 worldCamPos = [ worldCamTrans.x, worldCamTrans.y, worldCamTrans.y];
-                //worldCamPos = [ camera.getLocX(), camera.getLocY(), camera.getLocZ() ]; 
-//                worldCamTrans = goog.vec.Mat4.createFromArray( camera.getLocalMatrix() );
-//                goog.vec.Mat4.transpose( worldCamTrans, worldCamTrans );
-//                camInverse = goog.vec.Mat4.create();
-//                goog.vec.Mat4.invert( worldCamTrans, camInverse );
+
             }
 
             returnData.eventNodeData = { "": [ {
@@ -1186,6 +1410,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 var parentID = child.parentID;
                 var parent = sceneView.state.nodes[ child.parentID ];
                 var trans, parentTrans, localTrans, localNormal, parentInverse, relativeCamPos;
+                returnData.eventNodeData[''][0].sourceID = pointerPickID;
                 while ( child ) {
 
                     trans = goog.vec.Mat4.createFromArray( child.threeObject.matrix.elements );
@@ -1231,7 +1456,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                         distance: pickInfo ? pickInfo.distance : undefined,
                         globalPosition: pickInfo ? pickInfo.coord : undefined,
                         globalNormal: pickInfo ? pickInfo.normal : undefined,
-                        globalSource: worldCamPos,            
+                        globalSource: worldCamPos,  
+                        sourceID : pointerPickID,
                     } ];
 
                     childID = parentID;
@@ -1396,7 +1622,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     sceneView.keyStates.mods.shift = event.shiftKey;
                     sceneView.keyStates.mods.ctrl = event.ctrlKey;
                     sceneView.keyStates.mods.meta = event.metaKey;
-
+                    sceneView.keyStates.key = key;
                     var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
                     if (validKey && sceneNode && !keyAlreadyDown /*&& Object.keys( sceneView.keyStates.keysDown ).length > 0*/) {
                         //var params = JSON.stringify( sceneView.keyStates );
@@ -1416,6 +1642,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     if (sceneNode) {
                         //var params = JSON.stringify( sceneView.keyStates );
                         sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
+
                         
                     }
 				 for(var i in  sceneView.keyStates.keysUp)
@@ -1448,11 +1675,12 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                     sceneView.keyStates.mods.shift = event.shiftKey;
                     sceneView.keyStates.mods.ctrl = event.ctrlKey;
                     sceneView.keyStates.mods.meta = event.metaKey;
-
+                    sceneView.keyStates.key = key;
                     var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
                     if (validKey && sceneNode) {
                         //var params = JSON.stringify( sceneView.keyStates );
                         sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
+                        sceneView.kernel.dispatchEvent(sceneNode.ID, "keyPress", [sceneView.keyStates]);
                         delete sceneView.keyStates.keysUp[key.key];
                     }
 
@@ -1468,13 +1696,19 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                         deltaX: e.wheelDeltaX / -40,
                         deltaY: e.wheelDeltaY / -40,
                     };
+                    eData.eventData[0].wheelDelta = e.wheelDelta / -40;
+                    eData.eventData[0].wheelDeltaX = e.wheelDeltaX / -40;
+                    eData.eventData[0].wheelDeltaY = e.wheelDeltaY / -40;
                     var id = sceneID;
                     if ( pointerDownID && mouseRightDown || mouseLeftDown || mouseMiddleDown )
                         id = pointerDownID;
                     else if ( pointerOverID )
                         id = pointerOverID; 
                     if(id)    
-                    sceneView.kernel.dispatchEvent( id, "pointerWheel", eData.eventData, eData.eventNodeData );
+                    sceneView.kernel.dispatchEvent( id, "pointerWheel", JSON.parse(JSON.stringify(eData.eventData)),  JSON.parse(JSON.stringify(eData.eventNodeData)) );
+                	delete eData.eventData[0].wheelDelta;
+                	delete eData.eventData[0].wheelDeltaY;
+                	delete eData.eventData[0].wheelDeltaX;
                 }
             };
         }
@@ -1488,16 +1722,23 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                         deltaX: e.detail,
                         deltaY: e.detail,
                     };
+                    eData.eventData[0].wheelDelta = e.detail ;
+                    eData.eventData[0].wheelDeltaX = e.detail ;
+                    eData.eventData[0].wheelDeltaY = e.detail ;
                     var id = sceneID;
                     if ( pointerDownID && mouseRightDown || mouseLeftDown || mouseMiddleDown )
                         id = pointerDownID;
                     else if ( pointerOverID )
                         id = pointerOverID; 
                         
-                    sceneView.kernel.dispatchEvent( id, "pointerWheel", eData.eventData, eData.eventNodeData );
+                    sceneView.kernel.dispatchEvent( id, "pointerWheel", JSON.parse(JSON.stringify(eData.eventData)),  JSON.parse(JSON.stringify(eData.eventNodeData)));
+                    delete eData.eventData[0].wheelDelta;
+                	delete eData.eventData[0].wheelDeltaY;
+                	delete eData.eventData[0].wheelDeltaX;
                 }
             });
         }
+
 
         // == Draggable Content ========================================================================
 
@@ -1593,6 +1834,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
         };
          
     };
+
+    
+
     function mouseXPos(e) {
     	
         return e.clientX - e.currentTarget.offsetLeft + (window.scrollX || 0);
@@ -1602,10 +1846,13 @@ define( [ "module", "vwf/view" ], function( module, view ) {
         return e.clientY - e.currentTarget.offsetTop + (window.scrollY || 0);
     }
 
+	
    function ThreeJSPick(sceneNode,cam,SCREEN_WIDTH,SCREEN_HEIGHT)
     {
         if(!this.lastEventData) return;
         
+        if(!this.pickOptionsAvatar) this.pickOptionsAvatar = {filter:function(o){return !(o.isAvatar === true)}};
+    	if(!this.pickOptions) this.pickOptions = {};
         
         var threeCam = cam;//sceneNode.camera.threeJScameras[sceneNode.camera.ID];
         if(!this.ray) this.ray = new THREE.Ray();
@@ -1622,7 +1869,9 @@ define( [ "module", "vwf/view" ], function( module, view ) {
         this.projector.unprojectVector(this.directionVector, threeCam);
         var pos = new THREE.Vector3();
 		var pos2 = new THREE.Vector3();
-		pos2.getPositionFromMatrix(threeCam.matrixWorld);
+		pos2.x = threeCam.matrixWorld.elements[12];
+		pos2.y = threeCam.matrixWorld.elements[13];
+		pos2.z = threeCam.matrixWorld.elements[14];
         pos.copy(pos2);
         this.directionVector.sub(pos);
         this.directionVector.normalize();
@@ -1672,15 +1921,17 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		
 			
 			if(vwf.models[0].model.nodes['index-vwf'].cameramode == 'FirstPerson')
-				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[this.directionVector.x,this.directionVector.y,this.directionVector.z],{filter:function(o){return !(o.isAvatar === true)}});
+				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[this.directionVector.x,this.directionVector.y,this.directionVector.z],this.pickOptionsAvatar);
 			else
-				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[this.directionVector.x,this.directionVector.y,this.directionVector.z]);
+				intersects = _SceneManager.CPUPick([pos.x,pos.y,pos.z],[this.directionVector.x,this.directionVector.y,this.directionVector.z],this.pickOptions);
+			
 			
 				
 			return intersects;
 		}
     
     }
+    
     function getPickObjectID(threeObject)
     {   
         

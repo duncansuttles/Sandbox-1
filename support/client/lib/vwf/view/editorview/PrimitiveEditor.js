@@ -16,45 +16,9 @@ define(function ()
 
 	function initialize()
 	{
-		$(document.body).append("<div id='ShareWithDialog'> <select id='ShareWithNames'/> </div>");
+		
 		this.propertyEditorDialogs = [];
-		$('#ShareWithDialog').dialog(
-		{
-			title: "Share With User",
-			autoOpen: false,
-			moveable: false,
-			modal: true,
-			resizable: false,
-			resizable: false,
-			open: function ()
-			{
-				$('#ShareWithNames').empty();
-				for (var i = 0; i < document.Players.length; i++)
-				{
-					$('#ShareWithNames').append("<option value='" + document.Players[i] + "'>" + document.Players[i] + "</option>");
-				}
-				if (!_Editor.GetSelectedVWFNode())
-				{
-					_Notifier.notify('No object selected');
-					$('#ShareWithDialog').dialog('close');
-				}
-			},
-			buttons: {
-				Ok: function ()
-				{
-					var owner = vwf.getProperty(_Editor.GetSelectedVWFNode().id, 'owner');
-					if (typeof owner === "string") owner = [owner];
-					owner = owner.slice(0);
-					owner.push($('#ShareWithNames').val());
-					_Editor.setProperty(_Editor.GetSelectedVWFNode().id, 'owner', owner);
-					$('#ShareWithDialog').dialog('close');
-				},
-				Cancel: function ()
-				{
-					$('#ShareWithDialog').dialog('close');
-				}
-			}
-		});
+		
 		$('#sidepanel').append("<div id='PrimitiveEditor'>" 
 		+ "<div id='primeditortitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span id='primeditortitletext' class='ui-dialog-title' id='ui-dialog-title-Players'>Object Properties</span></div>" +
 		'<div id="accordion" style="height:100%;overflow:hidden">' +
@@ -64,21 +28,21 @@ define(function ()
 		"<input class='TransformEditorInput' style='width:50%;margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='text' id='dispName'>Name</input><br/>" +
 		"<input disabled='disabled' class='TransformEditorInput' style='width:50%;margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='text' id='dispOwner'>Owners</input><br/>" +
 		
-		"<input style='margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='checkbox' id='isVisible'>Visible</input><br/>" +
-		"<input style='margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='checkbox' id='isStatic'>Static</input><br/>" +
-		"<input style='margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='checkbox' id='isDynamic'>Dynamic</input><br/>" +
-		"<input style='margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='checkbox' id='castShadows'>Cast Shadows</input><br/>" +
-		"<input style='margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='checkbox' id='receiveShadows'>Receive Shadows</input><br/>" +
-		"<input style='margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='checkbox' id='passable'>Passable</input><br/>" +
+		"<input class='editorCheck' type='checkbox' id='isVisible'>Visible</input><br/>" +
+		"<input class='editorCheck' type='checkbox' id='isStatic'>Static</input><br/>" +
+		"<input class='editorCheck' type='checkbox' id='isDynamic'>Dynamic</input><br/>" +
+		"<input class='editorCheck' type='checkbox' id='castShadows'>Cast Shadows</input><br/>" +
+		"<input class='editorCheck'type='checkbox' id='receiveShadows'>Receive Shadows</input><br/>" +
+		"<input class='editorCheck' type='checkbox' id='passable'>Passable</input><br/>" +
 		"</div>" +
 		'</div>' +
 		'<h3><a href="#">Transforms</a></h3>' +
 		'<div>' +
 		"<div class='EditorLabel'>Translation</div>" +
 		"<div id='Translation'>" +
-		"<input type='number' step='.001' class='TransformEditorInput' id='PositionX'/>" +
-		"<input type='number' step='.001' class='TransformEditorInput' id='PositionY'/>" +
-		"<input type='number' step='.001' class='TransformEditorInput' id='PositionZ'/>" +
+		"<input type='number'  class='TransformEditorInput' id='PositionX'/>" +
+		"<input type='number'  class='TransformEditorInput' id='PositionY'/>" +
+		"<input type='number'  class='TransformEditorInput' id='PositionZ'/>" +
 		"</div>" + "<div class='EditorLabel'>Rotation</div>" +
 		"<div id='Rotation'>" +
 		"<input type='number' class='TransformEditorInput' id='RotationX'/>" +
@@ -88,14 +52,14 @@ define(function ()
 		"</div>" +
 		"<div class='EditorLabel'>Scale</div>" +
 		"<div id='Scale'>" +
-		"<input type='number' class='TransformEditorInput' id='ScaleX'/>" +
-		"<input type='number' class='TransformEditorInput' id='ScaleY'/>" +
-		"<input type='number' class='TransformEditorInput' id='ScaleZ'/>" +
+		"<input type='number' step='5'  class='TransformEditorInput' id='ScaleX'/>" +
+		"<input type='number' step='5' class='TransformEditorInput' id='ScaleY'/>" +
+		"<input type='number' step='5' class='TransformEditorInput' id='ScaleZ'/>" +
 		"</div>" +
 		'</div>' +
 		'</div>');
 		$('#primeditortitle').append('<a id="primitiveeditorclose" href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
-		$('#primeditortitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/properties.png" />');
+		$('#primeditortitle').prepend('<div class="headericon properties" />');
 		$('#primitiveeditorclose').click(function ()
 		{
 			_PrimitiveEditor.hide();
@@ -190,8 +154,11 @@ define(function ()
 			//return $("#PrimitiveEditor").dialog( "isOpen" )
 			return $('#PrimitiveEditor').is(':visible')
 		}
-		this.setProperty = function (id, prop, val)
+		this.setProperty = function (id, prop, val, skipUndo)
 		{
+			//prevent the handlers from firing setproperties when the GUI is first setup;
+			if(this.inSetup) return;
+
 			if(document.PlayerNumber == null)
 			{
 			_Notifier.notify('You must log in to participate');
@@ -204,11 +171,14 @@ define(function ()
 				_Notifier.notify('You do not have permission to edit this object');
 				return;
 				}
+				if(!skipUndo)
+					_UndoManager.recordSetProperty(id, prop, val);
 				vwf_view.kernel.setProperty(id, prop, val)
 			}
 			if (id == 'selection')
 			{
-				console.log(_Editor.getSelectionCount());
+				var undoEvent = new _UndoManager.CompoundEvent();
+
 				for (var k = 0; k < _Editor.getSelectionCount(); k++)
 				{
 					if(_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),_Editor.GetSelectedVWFNode(k).id) == 0)
@@ -216,8 +186,12 @@ define(function ()
 					_Notifier.notify('You do not have permission to edit this object');
 					continue;
 					}
+					
+					undoEvent.push(new _UndoManager.SetPropertyEvent(_Editor.GetSelectedVWFNode(k).id, prop, val));
 					vwf_view.kernel.setProperty(_Editor.GetSelectedVWFNode(k).id, prop, val)
 				}
+				if(!skipUndo)
+					_UndoManager.pushEvent(undoEvent);
 			}
 		}
 		
@@ -249,6 +223,7 @@ define(function ()
 			{
 				if (node)
 				{
+					this.inSetup = true;
 					this.clearPropertyEditorDialogs();
 					$("#accordion").accordion('destroy');
 					$("#accordion").children('.modifiersection').remove();
@@ -330,14 +305,14 @@ define(function ()
 					this.addBehaviors(node);
 					$("#accordion").accordion(
 					{
-						fillSpace: true,
-						change: function ()
+						heightStyle: 'fill',
+						activate: function ()
 						{
 							if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 						}
 					});
 					$(".ui-accordion-content").css('height', 'auto');
-					this.updateOtherWindows();
+					this.inSetup = false;
 				}
 				else
 				{
@@ -349,15 +324,7 @@ define(function ()
 				console.log(e);
 			}
 		}
-		this.updateOtherWindows = function ()
-		{
-			$('#materialeditor').dialog('option', 'position', [1282, 40]);
-			if (this.isOpen())
-			{
-				var t = $('#PrimitiveEditor').closest('.ui-dialog').height() + $('#PrimitiveEditor').offset().top;
-				$('#materialeditor').dialog('option', 'position', [1282, t - 20]);
-			}
-		}
+		
 		this.recursevlyAddModifiers = function (node)
 		{
 			for (var i in node.children)
@@ -399,6 +366,49 @@ define(function ()
 				}
 			}
 		}
+		this.primPropertySlide = function (e, ui)
+		{
+
+			var id = $(this).attr('nodename');
+			var prop = $(this).attr('propname');
+			$('#' + id + prop + 'value').val(ui.value);
+			var amount = ui.value;
+			//be sure to skip undo - handled better in slidestart and slidestop
+			_PrimitiveEditor.setProperty(id, prop, parseFloat(amount),true);
+
+		}
+		this.primPropertySlideStart = function (e, ui)
+		{
+			var id = $(this).attr('nodename');
+			var prop = $(this).attr('propname');
+			$('#' + id + prop + 'value').val(ui.value);
+			var amount = ui.value;
+			this.undoEvent = new _UndoManager.CompoundEvent();
+			if(id == 'selection')
+			{
+				for(var i =0; i < _Editor.getSelectionCount(); i++)
+					this.undoEvent.push(new _UndoManager.SetPropertyEvent(_Editor.GetSelectedVWFNode(i).id,prop,null))
+			}else
+			{
+					this.undoEvent.push(new _UndoManager.SetPropertyEvent(id,prop,null))
+			}
+			_PrimitiveEditor.setProperty(id, prop, parseFloat(amount),true);
+		}
+		this.primPropertySlideStop = function (e, ui)
+		{
+			var id = $(this).attr('nodename');
+			var prop = $(this).attr('propname');
+			$('#' + id + prop + 'value').val(ui.value);
+			var amount = ui.value;
+
+			if(this.undoEvent)
+				for(var i =0; i < this.undoEvent.list.length; i++)
+					this.undoEvent.list[i].val = amount;
+			_UndoManager.pushEvent(this.undoEvent);
+			this.undoEvent = null;
+
+			_PrimitiveEditor.setProperty(id, prop, parseFloat(amount),true);
+		}
 		this.primPropertyUpdate = function (e, ui)
 		{
 			var id = $(this).attr('nodename');
@@ -415,6 +425,16 @@ define(function ()
 			var slider = $(this).attr('slider');
 			$(slider).slider('value', amount);
 			_PrimitiveEditor.setProperty(id, prop, parseFloat(amount));
+		}
+		this.primSpinner = function (e, ui)
+		{		
+			var id = $(this).attr('nodename');
+			var prop = $(this).attr('propname');
+			var amount = $(this).val();
+			var slider = $(this).attr('slider');
+			$(slider).slider('value', ui.value);
+			_PrimitiveEditor.setProperty(id, prop, parseFloat(ui.value));
+			
 		}
 		this.primPropertyValue = function (e, ui)
 		{
@@ -567,16 +587,30 @@ define(function ()
 			for (var j = 0; j < editordatanames.length; j++)
 			{
 				var i = editordatanames[j];
+				if (editordata[i].type == 'sectionTitle')
+				{
+					var inputstyle = "";
+					$('#basicSettings' + nodeid).append('<div style="" class = "EditorDataSectionTitle">' + editordata[i].displayname + ': </div>');
+				}
 				if (editordata[i].type == 'slider')
 				{
 					var inputstyle = "";
-					$('#basicSettings' + nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">' + editordata[i].displayname + ': </div>');
-					$('#basicSettings' + nodeid).append('<input class="primeditorinputbox" style="' + inputstyle + '" type="number" id="' + nodeid + editordata[i].property + 'value"></input>');
-					$('#' + nodeid + editordata[i].property + 'value').val(vwf.getProperty(node.id, editordata[i].property));
-					$('#' + nodeid + editordata[i].property + 'value').change(this.primPropertyTypein);
+					$('#basicSettings' + nodeid).append('<div class="editorSliderLabel">' + editordata[i].displayname + ': </div>');
+					$('#basicSettings' + nodeid).append('<input class="primeditorinputbox" style="' + inputstyle + '" type="" id="' + nodeid + editordata[i].property + 'value"></input>');
+				//	$('#' + nodeid + editordata[i].property + 'value').val(vwf.getProperty(node.id, editordata[i].property));
+				//	$('#' + nodeid + editordata[i].property + 'value').change(this.primPropertyTypein);
 					$('#' + nodeid + editordata[i].property + 'value').attr("nodename", nodeid);
 					$('#' + nodeid + editordata[i].property + 'value').attr("propname", editordata[i].property);
 					$('#' + nodeid + editordata[i].property + 'value').attr("slider", '#' + nodeid + i);
+					$('#' + nodeid + editordata[i].property + 'value').spinner({
+						step:parseFloat(editordata[i].step) || 1,
+						change:this.primPropertyTypein,
+						spin:this.primSpinner
+						
+					})
+					$('#' + nodeid + editordata[i].property + 'value').spinner('value',vwf.getProperty(node.id, editordata[i].property));
+					$('#' + nodeid + editordata[i].property + 'value').parent().css('float','right');
+					
 					$('#basicSettings' + nodeid).append('<div id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/>');
 					var val = vwf.getProperty(node.id, editordata[i].property);
 					if (val == undefined) val = 0;
@@ -585,8 +619,9 @@ define(function ()
 						step: parseFloat(editordata[i].step),
 						min: parseFloat(editordata[i].min),
 						max: parseFloat(editordata[i].max),
-						slide: this.primPropertyUpdate,
-						stop: this.primPropertyUpdate,
+						slide: this.primPropertySlide,
+						stop: this.primPropertySlideStop,
+						start: this.primPropertySlideStart,
 						value: val
 					});
 					
@@ -623,30 +658,38 @@ define(function ()
 				{
 					
 					
-					$('#basicSettings' + nodeid).append('<div style="">' + editordata[i].displayname + '</div><input type="text" style="text-align: center;border: outset 1px;background-color: #DDDDDD;margin: 0px 0px 5px 0px;cursor: pointer;display: block;width: 100%;padding: 2px;border-radius: 5px;font-weight: bold;" id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/>');
-					$('#' + nodeid + i).val(vwf.getProperty(node.id, editordata[i].property));
+				//	$('#basicSettings' + nodeid).append('<input type="button" style="width: 100%;font-weight: bold;" id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' +  editordata[i].property + '"/>');
+					$('#basicSettings' + nodeid).append('<div><div class="editorSliderLabel">' + editordata[i].displayname + ': </div>'
+					+'<select id="' +  nodeid + i + '" style="float:right;clear:right" '+ ' nodename="' + nodeid + '" propname="' +  editordata[i].property +'"" ></select></div>');
+
+					$('#' + nodeid + i).val(editordata[i].displayname + ": " + editordata[i].labels[vwf.getProperty(node.id, editordata[i].property)]);
 					$('#' + nodeid + i).attr('index',i);
 					
-					$('#' + nodeid + i).click(function ()
+					for(var k = 0; k < editordata[i].labels.length; k++)
+					{
+						$('#' + nodeid + i).append("<option value='"+editordata[i].values[k]+"'>  "+editordata[i].labels[k]+"  </option>")
+					}
+					//$('#' + nodeid + i).button();
+					
+
+					//find and select the current value in the dropdown
+					var selectedindex = editordata[i].values.indexOf(vwf.getProperty(node.id, editordata[i].property));
+					var selectedLabel = editordata[i].labels[selectedindex];
+					$("select option").filter(function() {
+						    //may want to use $.trim in here
+						    return $.trim($(this).text()) == $.trim(selectedLabel); 
+						}).prop('selected', true);
+
+					$('#' + nodeid + i).change(function ()
 					{
 						
 						var propname = $(this).attr('propname');
 						var nodename = $(this).attr('nodename');
-						var values = editordata[$(this).attr('index')].values;
-						var labels = editordata[$(this).attr('index')].labels;
-						var div = this;
 						
-						alertify.choice('Enter a value for ' + propname,function(ok,value)
-						{
+						var value = $(this).val();
+						var div = this;	
+						_PrimitiveEditor.setProperty(nodename, propname, value);
 							
-							if(ok)
-							{
-								$(div).val(value);
-								var k = labels.indexOf(value)
-								
-								_PrimitiveEditor.setProperty(nodename, propname, values[k]);
-							}
-						},labels);
 					});
 					this.addPropertyEditorDialog(node.id,editordata[i].property,$('#' + nodeid + i),'text');
 					
@@ -654,7 +697,7 @@ define(function ()
 				}
 				if (editordata[i].type == 'rangeslider')
 				{
-					$('#basicSettings' + nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">' + editordata[i].displayname + ': </div>');
+					$('#basicSettings' + nodeid).append('<div  class="editorSliderLabel">' + editordata[i].displayname + ': </div>');
 					$('#basicSettings' + nodeid).append('<div style="display: block;margin: 5px;" id="' + nodeid + i + '" nodename="' + nodeid + '" propnamemax="' + editordata[i].property[2] + '" propnamemin="' + editordata[i].property[1] + '"/>');
 					var setval = vwf.getProperty(node.id, editordata[i].property[0]);
 					var minval = vwf.getProperty(node.id, editordata[i].property[1]);
@@ -699,7 +742,7 @@ define(function ()
 						var z = $('#' + thisid + 'Z').val();
 						_PrimitiveEditor.setProperty(nodeid, propname, [parseFloat(x), parseFloat(y), parseFloat(z)]);
 					}
-					$('#basicSettings' + nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">' + editordata[i].displayname + ': </div>');
+					$('#basicSettings' + nodeid).append('<div  class="editorSliderLabel">' + editordata[i].displayname + ': </div>');
 					var baseid = 'basicSettings' + nodeid + i + 'min';
 					$('#basicSettings' + nodeid).append('<div style="text-align:right"><div style="display:inline" >min:</div> <div style="display:inline-block;">' + '<input id="' + baseid + 'X' + '" component="X" nodename="' + nodeid + '" propname="' + editordata[i].property[0] + '" type="number" step="' + editordata[i].step + '" class="vectorinputfront"/>' + '<input id="' + baseid + 'Y' + '" component="Y" nodename="' + nodeid + '" propname="' + editordata[i].property[0] + '" type="number" step="' + editordata[i].step + '" class="vectorinput"/>' + '<input id="' + baseid + 'Z' + '" component="Z" nodename="' + nodeid + '" propname="' + editordata[i].property[0] + '" type="number" step="' + editordata[i].step + '" class="vectorinput"/>' + '</div></div>');
 					var propmin = vwf.getProperty(node.id, editordata[i].property[0]);
@@ -741,7 +784,7 @@ define(function ()
 					}
 					//$('#basicSettings'+nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">'+editordata[i].displayname+': </div>');
 					var baseid = 'basicSettings' + nodeid + i + 'min';
-					$('#basicSettings' + nodeid).append('<div style="text-align: left;margin-top: 4px;"><div style="display:inline" >' + editordata[i].displayname + ':</div> <div style="display:inline-block;float:right">' + '<input id="' + baseid + 'X' + '" component="X" nodename="' + nodeid + '" propname="' + editordata[i].property + '" type="number" step="' + editordata[i].step + '" class="vectorinputfront"/>' + '<input id="' + baseid + 'Y' + '" component="Y" nodename="' + nodeid + '" propname="' + editordata[i].property + '" type="number" step="' + editordata[i].step + '" class="vectorinput"/>' + '<input id="' + baseid + 'Z' + '" component="Z" nodename="' + nodeid + '" propname="' + editordata[i].property + '" type="number" step="' + editordata[i].step + '" class="vectorinput"/>' + '</div><div style="clear:both"/></div>');
+					$('#basicSettings' + nodeid).append('<div class="editorSliderLabel"  style="width:100%;text-align: left;margin-top: 4px;" ><div style="display:inline" >' + editordata[i].displayname + ':</div> <div style="display:inline-block;float:right">' + '<input id="' + baseid + 'X' + '" component="X" nodename="' + nodeid + '" propname="' + editordata[i].property + '" type="number" step="' + editordata[i].step + '" class="vectorinputfront"/>' + '<input id="' + baseid + 'Y' + '" component="Y" nodename="' + nodeid + '" propname="' + editordata[i].property + '" type="number" step="' + editordata[i].step + '" class="vectorinput"/>' + '<input id="' + baseid + 'Z' + '" component="Z" nodename="' + nodeid + '" propname="' + editordata[i].property + '" type="number" step="' + editordata[i].step + '" class="vectorinput"/>' + '</div><div style="clear:both"/></div>');
 					var propmin = vwf.getProperty(node.id, editordata[i].property);
 					if (propmin)
 					{
@@ -835,9 +878,10 @@ define(function ()
 				{
 					var colorswatchstyle = "margin: 5px;float:right;clear:right;background-color: #FF19E9;width: 25px;height: 25px;border: 2px solid lightgray;border-radius: 3px;display: inline-block;margin-left: 20px;vertical-align: middle;box-shadow: 2px 2px 5px,1px 1px 3px gray inset;background-image: url(vwf/view/editorview/images/select3.png);background-position: center;";
 					$('#basicSettings' + nodeid).append('<div style="margin-bottom:10px" id="' + nodeid + i + '" />');
-					$('#' + nodeid + i + '').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;">' + editordata[i].displayname + ': </div>');
+					$('#' + nodeid + i + '').append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 15px;"  class="editorSliderLabel">' + editordata[i].displayname + ': </div>');
 					$('#' + nodeid + i + '').append('<div id="' + nodeid + i + 'ColorPicker" style="' + colorswatchstyle + '"></div>')
 					var colorval = vwf.getProperty(node.id, editordata[i].property);
+					if(!colorval) colorval = [1,1,1];
 					colorval = 'rgb(' + parseInt(colorval[0] * 255) + ',' + parseInt(colorval[1] * 255) + ',' + parseInt(colorval[2] * 255) + ')';
 					$('#' + nodeid + i + 'ColorPicker').css('background-color', colorval);
 					var parentid = nodeid + i + 'ColorPicker';
@@ -947,55 +991,73 @@ define(function ()
 		}
 		this.positionChanged = function ()
 		{
+			this.setTransform();
+		}
+		this.makeRotMat = function(x,y,z)
+		{
+			var xm = [
+
+			1,           0,            0,     0,
+			0, Math.cos(x), -Math.sin(x),     0,
+			0, Math.sin(x),  Math.cos(x),     0,
+			0,           0,            0,     1
+
+			];
+
+			var ym = [
+
+			 Math.cos(y),  0,  Math.sin(y),   0,
+			           0,  1,            0,   0,
+			-Math.sin(y),  0,  Math.cos(y),   0,
+			           0,  0,            0,   1
+			];
+
+			var zm = [
+
+			Math.cos(z) , -Math.sin(z),  0,  0,
+			 Math.sin(z),  Math.cos(z),  0,  0,
+			           0,            0,  1,  0,
+			           0,            0,  0,  1
+
+			];
+			return goog.vec.Mat4.multMat(xm,goog.vec.Mat4.multMat(ym,zm,[]),[]);
+
+		}
+		this.rotationMatrix_2_XYZ = function(m)
+		{
+			var x = Math.atan2(m[9],m[10]);
+			var y = Math.atan2(-m[8],Math.sqrt(m[9]*m[9] + m[10]*m[10]));
+			var z = Math.atan2(m[4],m[0]);
+			return [x,y,z];
+		}
+		this.setTransform = function()
+		{
+			
 			var val = [0, 0, 0];
-			val[0] = $('#PositionX').val();
-			val[1] = $('#PositionY').val();
-			val[2] = $('#PositionZ').val();
-			this.setProperty(_Editor.GetSelectedVWFNode().id, 'translation', val);
+			val[0] = $('#RotationX').val();
+			val[1] = $('#RotationY').val();
+			val[2] = $('#RotationZ').val();
+			
+			var rotmat = this.makeRotMat(parseFloat(val[0])/57.2957795,parseFloat(val[1])/57.2957795,parseFloat(val[2])/57.2957795);
+			var scale = [parseFloat($('#ScaleX').val()),parseFloat($('#ScaleY').val()),parseFloat($('#ScaleZ').val())];
+			var pos = [parseFloat($('#PositionX').val()),parseFloat($('#PositionY').val()),parseFloat($('#PositionZ').val())];
+
+			
+			rotmat = goog.vec.Mat4.scale(rotmat,scale[0],scale[1],scale[2]);
+
+			pos = goog.vec.Mat4.translate(goog.vec.Mat4.createIdentity(),pos[0],pos[1],pos[2])
+			
+			var val = goog.vec.Mat4.multMat(pos,rotmat,[]);
+
+			this.setProperty(_Editor.GetSelectedVWFNode().id, 'transform', val);
 		}
 		this.rotationChanged = function ()
 		{
-			var val = [0, 0, 0, 0];
-			val[2] = $('#RotationX').val();
-			val[0] = $('#RotationY').val();
-			val[1] = $('#RotationZ').val();
-			//val[3] = $('#RotationW').val();
-			val[0] /= 57.2957795;
-			val[1] /= 57.2957795;
-			val[2] /= 57.2957795;
-			var c1 = Math.cos(val[0] / 2);
-			var c2 = Math.cos(val[1] / 2);
-			var c3 = Math.cos(val[2] / 2);
-			var s1 = Math.sin(val[0] / 2);
-			var s2 = Math.sin(val[1] / 2);
-			var s3 = Math.sin(val[2] / 2);
-			var w = c1 * c2 * c3 - s1 * s2 * s3;
-			var x = s1 * s2 * c3 + c1 * c2 * s3;
-			var y = s1 * c2 * c3 + c1 * s2 * s3;
-			var z = c1 * s2 * c3 - s1 * c2 * s3;
-			var q = goog.vec.Quaternion.createFloat32FromValues(x, y, z, w);
-			var axis = [0, 0, 0];
-			var angle = goog.vec.Quaternion.toAngleAxis(q, axis);
-			axis.push(angle * 57.2957795);
-			this.setProperty(_Editor.GetSelectedVWFNode().id, 'rotation', axis);
+			this.setTransform();
 		}
 		this.scaleChanged = function ()
 		{
-			var val = [0, 0, 0];
-			val[0] = $('#ScaleX').val();
-			val[1] = $('#ScaleY').val();
-			val[2] = $('#ScaleZ').val();
-			this.setProperty(_Editor.GetSelectedVWFNode().id, 'scale', val);
-		}
-		this.rotationMatrix_2_XYZ = function (m)
-		{
-			var theta1 = Math.atan2(m[6], m[10]);
-			var c2 = Math.sqrt((m[0] * m[0] + m[1] * m[1]));
-			var theta2 = Math.atan2(-m[2], c2);
-			var s1 = Math.sin(theta1);
-			var c1 = Math.cos(theta1);
-			var theta3 = Math.atan2(s1 * m[8] - c1 * m[4], c1 * m[5] - s1 * m[9]);
-			return [theta1, theta2, theta3];
+			this.setTransform();	
 		}
 		this.NodePropertyUpdate = function(nodeID,propName,propVal)
 		{
@@ -1035,7 +1097,8 @@ define(function ()
 			{
 				if (node)
 				{
-					var mat = MATH.transposeMat4(_Editor.findviewnode(node.id).matrix.elements);
+					
+					var mat = vwf.getProperty(node.id,'transform');
 					var angles = this.rotationMatrix_2_XYZ(mat);
 					var pos = vwf.getProperty(node.id, 'translation');
 					
@@ -1043,13 +1106,16 @@ define(function ()
 					$('#PositionX').val(Math.floor(pos[0]*1000)/1000);
 					$('#PositionY').val(Math.floor(pos[1]*1000)/1000);
 					$('#PositionZ').val(Math.floor(pos[2]*1000)/1000);
-					$('#RotationX').val(Math.floor(.05 + angles[0] * -57.2957795));
-					$('#RotationY').val(Math.floor(.05 + angles[1] * -57.2957795));
-					$('#RotationZ').val(Math.floor(.05 + angles[2] * -57.2957795));
+				
+					//since there is ambiguity in the matrix, we need to keep these values aroud. otherwise , the typeins don't really do what you would think		
+						$('#RotationX').val(Math.round(angles[0]*57.2957795));
+						$('#RotationY').val(Math.round(angles[1]*57.2957795));
+						$('#RotationZ').val(Math.round(angles[2]*57.2957795));
+					
 					//$('#RotationW').val(rot[3]);
-					$('#ScaleX').val(scl[0]);
-					$('#ScaleY').val(scl[1]);
-					$('#ScaleZ').val(scl[2]);
+					$('#ScaleX').val(Math.floor(scl[0]*1000)/1000);
+					$('#ScaleY').val(Math.floor(scl[1]*1000)/1000);
+					$('#ScaleZ').val(Math.floor(scl[2]*1000)/1000);
 				}
 			}
 			catch (e)

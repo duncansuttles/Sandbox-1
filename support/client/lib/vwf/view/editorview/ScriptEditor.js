@@ -136,8 +136,10 @@ define(function ()
 			$('#saveMethod').css('top', $('#ScriptEditor').height() - 75);
 			$('#saveEvent').css('top', $('#ScriptEditor').height() - 75);
 			$('#saveProperty').css('top', $('#ScriptEditor').height() - 75);
+			$('.ace_scroller').css('left',40);
+			$('.ace_gutter-layer').css('width',40);
 		}
-		$(document.body).append('<script src="../vwf/view/editorview/ace/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>');
+		$(document.body).append('<script src="../vwf/view/editorview/lib/ace/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>');
 		$(document.body).append("<div id='ScriptEditorAbandonChanges'>You have are about to load a different script,but you have unsaved changes to this script. Do you want to continue and abandon the changes? This action cannot be undone.</div>");
 		$(document.body).append("<div id='ScriptEditorCreateMethod'><input id='newMethodName' type='text' /></div>");
 		$(document.body).append("<div id='ScriptEditorCreateEvent'><input id='newEventName' type='text' /></div>");
@@ -184,9 +186,9 @@ define(function ()
 		this.MethodChanged = false;
 		this.EventChanged = false;
 		//$('#ScriptEditor').resize(function(){_ScriptEditor.resize()});
-		$('#scripteditortitle').prepend('<img class="headericon" src="../vwf/view/editorview/images/icons/script.png" />');
-		$('#scripteditortitle').append('<img id="maximizescripteditor" style="float:right" class="icon" src="../vwf/view/editorview/images/icons/up2.png" />');
-		$('#scripteditortitle').append('<img id="hidescripteditor" class="icon" style="float:right" src="../vwf/view/editorview/images/icons/down.png" />');
+		$('#scripteditortitle').prepend('<div class="headericon script"  />');
+		$('#scripteditortitle').append('<div id="maximizescripteditor" style="float:right" class="icon up2" />');
+		$('#scripteditortitle').append('<div id="hidescripteditor" class="icon down" style="float:right"  />');
 		$('#hidescripteditor').click(function ()
 		{
 			_ScriptEditor.hide();
@@ -818,7 +820,7 @@ define(function ()
 
 		this.show = function ()
 		{
-			//window.clearInterval(window.scripthideinterval);
+			
 			if (!this.isOpen())
 			{
 				if(!this.currentNode)
@@ -831,17 +833,9 @@ define(function ()
 					alertify.alert('The Scene object cannot accept scripts. Try creating a behavior on the scene instead.');
 					return;
 				}
-				
-				//window.scripthideinterval = window.setInterval(function(){
-				//		$('#ScriptEditorTabs').css('height',$('#ScriptEditor').height() + 'px');
-				//		$('#index-vwf').css('height',window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - //$('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top-25) + 'px');
-				//		_Editor.findscene().camera.setAspect($('#index-vwf').width()/$('#index-vwf').height());
-				//		
-				//	},33);
-				//$('#ScriptEditor').show('slide',{direction:'down'},function(){window.clearInterval(window.scripthideinterval);window.scripthideinterval=null;});
 				$('#ScriptEditor').show();
 				var newtop = $(window).height() - $('#ScriptEditor').height() - $('#statusbar').height() + 'px';
-				//console.log(newtop);
+				
 				$('#ScriptEditor').animate(
 				{
 					'top': newtop
@@ -867,15 +861,6 @@ define(function ()
 		}
 		this.hide = function ()
 		{
-			//$('#ScriptEditor').dialog('close');
-			//window.clearInterval(window.scripthideinterval);
-			//window.scripthideinterval = window.setInterval(function(){
-			//		$('#ScriptEditorTabs').css('height',$('#ScriptEditor').height() + 'px');
-			//		$('#index-vwf').css('height',window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - //$('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top-25) + 'px');
-			//		_Editor.findscene().camera.setAspect($('#index-vwf').width()/$('#index-vwf').height());
-			//		
-			//	},33);
-			//$('#ScriptEditor').hide('slide',{direction:'down'},function(){ window.clearInterval(window.scripthideinterval);window.scripthideinterval=null;});
 			if (this.isOpen())
 			{
 				$('#ScriptEditor').animate(
@@ -885,6 +870,7 @@ define(function ()
 				{
 					step: function ()
 					{
+						if(!$('#ScriptEditor').is(':visible')) return;
 						$('#ScriptEditorTabs').css('height', $('#ScriptEditor').height() + 'px');
 						$('#index-vwf').css('height', window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top - 25) + 'px');
 						_Editor.findcamera().aspect = ($('#index-vwf').width() / $('#index-vwf').height());
@@ -892,6 +878,7 @@ define(function ()
 					},
 					complete: function ()
 					{
+						
 						$('#ScriptEditor').hide();
 					}
 				});
@@ -1069,6 +1056,7 @@ define(function ()
 		
 		this.setSelectedProperty_internal = function (name, text)
 		{
+			text = text || null;
 			_ScriptEditor.selectedProperty = name;
 			_ScriptEditor.propertyEditor.setValue(js_beautify(text.toString(),{braces_on_own_line:true,opt_keep_array_indentation:true}));
 			_ScriptEditor.propertyEditor.selection.clearSelection();
@@ -1158,6 +1146,7 @@ define(function ()
 				$('#propertytext').find(".ace_content").css('background', 'url(vwf/view/editorview/images/ui-bg_diagonals-thick_8_cccccc_40x40.png) 50% 50% repeat');
 				_ScriptEditor.eventEditor.setValue('');
 				_ScriptEditor.methodEditor.setValue('');
+				_ScriptEditor.propertyEditor.setValue('');
 			}
 			if (!this.currentNode) return;
 			$('#methodlist').empty();
@@ -1253,8 +1242,8 @@ define(function ()
 					}
 				}
 			}
-			var methodsuggestions = ['tick','initialize','deinitialize','prerender','added'];
-			var methoddescription = {'tick':"The tick function is called 20 times every second. \n// Write code here to animate over time",'initialize':"Initialize is called when the node is constructed.\n//Write code here to setup the object, or hook up event handlers.\n//Note that the object is not yet hooked into the scene - that will happen during the 'Added' event.\n// You cannot access this.parent in this function.",'deinitialize':"Deinitialize is called when the object is being destroyed.\n// Clean up here if your object allocated any resources manually during initialize.",'prerender':"This function is called at every frame. Don't animate object properties here - that can break syncronization.\n//This can happen because each user might have a different framerate.\n//Most of the time, you should probably be using Tick instaed.",'added':"Added is called when the object is hooked up to the scene.\n// Note that this happens after initialize. At this point, you can access the objects parent."};
+			var methodsuggestions = ['tick','initialize','deinitialize','prerender','attached','ready'];
+			var methoddescription = {'ready':'The scene is now completely loaded. This will fire on each client when the client joins, so it`s not a great place to create objects','tick':"The tick function is called 20 times every second. \n// Write code here to animate over time",'initialize':"Initialize is called when the node is constructed.\n//Write code here to setup the object, or hook up event handlers.\n//Note that the object is not yet hooked into the scene - that will happen during the 'Added' event.\n// You cannot access this.parent in this function.",'deinitialize':"Deinitialize is called when the object is being destroyed.\n// Clean up here if your object allocated any resources manually during initialize.",'prerender':"This function is called at every frame. Don't animate object properties here - that can break syncronization.\n//This can happen because each user might have a different framerate.\n//Most of the time, you should probably be using Tick instaed.",'attached':"attached is called when the object is hooked up to the scene.\n// Note that this happens after initialize. At this point, you can access the objects parent."};
 			for(var i = 0; i < methodsuggestions.length; i++)
 			{
 				var thissug = methodsuggestions[i];
@@ -1286,7 +1275,7 @@ define(function ()
 					});
 				}
 			}
-			var pointersugs = ['pointerDown', 'pointerUp', 'pointerOver', 'pointerOut', 'pointerClick', 'pointerMove', 'keyDown', 'keyUp', 'keyPress'];
+			var pointersugs = ['pointerDown', 'pointerUp', 'pointerOver', 'pointerOut', 'pointerClick', 'pointerMove','pointerWheel', 'keyDown', 'keyUp', 'keyPress'];
 			for (var i in pointersugs)
 			{
 				if (!this.eventlist || (this.eventlist && this.eventlist[pointersugs[i]] === undefined))
@@ -1322,6 +1311,7 @@ define(function ()
 			$('#methodlist').children().sortElements(function(a,b){return ($(a).text().toLowerCase() > $(b).text().toLowerCase()  ? 1 : -1)});
 			$('#eventlist').children().sortElements(function(a,b){return ($(a).text().toLowerCase() > $(b).text().toLowerCase()  ? 1 : -1)});
 			$('#propertylist').children().sortElements(function(a,b){return ($(a).text().toLowerCase() > $(b).text().toLowerCase()  ? 1 : -1)});
+
 		}
 		this.getMethods = function()
 		{
@@ -1381,9 +1371,11 @@ define(function ()
 		{
 			if(!node)
 			{
+
 				if (this.isOpen()) this.hide();
+
 			}
-			if(node.id == 'index-vwf')
+			if(node && node.id == 'index-vwf')
 			{
 				if (this.isOpen()) this.hide();
 			}
@@ -1451,6 +1443,46 @@ define(function ()
 			$('#FunctionTip').css('left',(offset.left) + 'px');
 			$('#FunctionTip').show();
 		}
+		this.insetKeySuggestion = function(suggestedText)
+		{
+			$('#AutoComplete').hide();
+			if(suggestedText != "")
+			{
+				//backspace letters up to the dot or bracket
+				for(var i = 0; i < self.filter.length; i++)
+					_ScriptEditor.activeEditor.remove('left');
+				//insert
+				var isfunction = false;
+				for(var i =0; i < self.keys.length; i++)
+					if(self.keys[i][0] == suggestedText && self.keys[i][1] == Function) isfunction = true;
+
+
+				if(self.autoCompleteTriggerKey == '[')
+				{
+
+					suggestedText = suggestedText + "]";
+				}
+
+				if(isfunction)
+				{
+					suggestedText = suggestedText + "(";
+					//focus on the editor
+					window.setImmediate(function(){
+						_ScriptEditor.activeEditor.focus();
+						self.triggerFunctionTip(_ScriptEditor.activeEditor,true);
+					},0);
+				}else
+				{
+					window.setImmediate(function(){
+						_ScriptEditor.activeEditor.focus();
+					},0);
+				}
+
+				_ScriptEditor.activeEditor.insert(suggestedText);
+			}
+
+
+		}
 		//Setup the div for the autocomplete interface
 		this.setupAutocomplete = function(keys,editor)
 		{
@@ -1467,7 +1499,17 @@ define(function ()
 				$(document.body).append("<form id='AutoComplete' tabindex=890483 />");
 				$('#AutoComplete').on('blur',function(e,key)
 				{
-					$('#AutoComplete').hide();
+					//there is some sort of error here, this prevention is a workaround. 
+					//seems to get a blur event only on first show
+					if(!this.firstshow)
+					{
+						this.firstshow =  true;
+							
+					}else
+					{
+						$('#AutoComplete').hide();
+					}
+					
 				});
 				//bind up events
 				$('#AutoComplete').on('keydown',function(e,key)
@@ -1477,23 +1519,12 @@ define(function ()
 					{
 						//find the selected text
 						var index = $(this).attr('autocompleteindex');
-						$('#AutoComplete').hide();
 						
-						//backspace letters up to the dot or bracket
+						
+						
 						var text = $($(this).children()[index]).text();
-						if(text != "")
-						{
-							for(var i = 0; i < self.filter.length; i++)
-								_ScriptEditor.activeEditor.remove('left');
-							//insert	
-							_ScriptEditor.activeEditor.insert(text);
-						}
-						//focus on the editor
-						window.setTimeout(function(){
-						
-							_ScriptEditor.activeEditor.focus();
-						
-						},0);
+
+						_ScriptEditor.insetKeySuggestion(text);
 						return true;
 					
 					
@@ -1508,8 +1539,8 @@ define(function ()
 						$(this).attr('autocompleteindex',index);
 						
 						//deal with the scrolling
-						if((index+1) * $(children[0]).height() > 150 + $('#AutoComplete').scrollTop() )
-							$('#AutoComplete').scrollTop((index+1) * $(children[0]).height() - 150);
+						
+						$('#AutoComplete').scrollTop((index) * $(children[0]).height() + index - 75);
 						
 						//show the selection
 						for(var i = 0; i < children.length; i++)
@@ -1520,6 +1551,8 @@ define(function ()
 							}else
 								$(children[i]).css('background','white');
 						}
+						e.preventDefault();
+						return false;
 					}
 					else if(e.which == 38) //up
 					{
@@ -1532,9 +1565,9 @@ define(function ()
 						$(this).attr('autocompleteindex',index);
 						
 						//deal with scrolling drama
-						if((index) * $(children[0]).height() < $('#AutoComplete').scrollTop() )
-							$('#AutoComplete').scrollTop(index * $(children[0]).height());
+						$('#AutoComplete').scrollTop((index) * $(children[0]).height() + index - 75);
 						
+
 						//show the selected text
 						for(var i = 0; i < children.length; i++)
 						{
@@ -1544,6 +1577,8 @@ define(function ()
 							}else
 								$(children[i]).css('background','white');
 						}
+						e.preventDefault();
+						return false;
 					}
 					else if(e.which == 27) //esc
 					{
@@ -1574,7 +1609,7 @@ define(function ()
 							{	//if the backspace occurs with no filter, then close and remove
 								if(self.filter.length ==0)
 								{
-									window.setTimeout(function()
+									window.setImmediate(function()
 									{
 										_ScriptEditor.activeEditor.remove('left');
 										$('#AutoComplete').hide();
@@ -1590,7 +1625,7 @@ define(function ()
 								
 							}
 							//wait 15ms, then show this whole dialog again
-							window.setTimeout(function()
+							window.setImmediate(function()
 							{
 								//console.log(self.filter);
 								$('#AutoComplete').focus();
@@ -1601,7 +1636,7 @@ define(function ()
 						}else
 						{	
 							//any key that is not a character or backspace cancels the autocomplete
-							window.setTimeout(function()
+							window.setImmediate(function()
 							{
 								$('#AutoComplete').hide();
 									_ScriptEditor.activeEditor.focus();
@@ -1643,21 +1678,8 @@ define(function ()
 				//Clicking on the div just inserts the text, and hides the GUI
 				$('#AutoComplete_'+i).click(function()
 				{
-					
-					
-						$('#AutoComplete').hide();
-						
 						var text = $(this).text();
-						//Remove up the the last dot or bracket
-						for(var i = 0; i < self.filter.length; i++)
-							_ScriptEditor.activeEditor.remove('left');
-						_ScriptEditor.activeEditor.insert(text);
-						
-						window.setTimeout(function(){
-						
-							_ScriptEditor.activeEditor.focus();
-						
-						},0);
+						_ScriptEditor.insetKeySuggestion(text);
 						return true;
 					
 				});
@@ -1672,12 +1694,14 @@ define(function ()
 			$('#AutoComplete').attr('autocompleteindex',0);
 			$('#AutoComplete').css('overflow','hidden');
 			$('#AutoComplete').scrollTop(0);
-			window.setTimeout(function()
+			window.setImmediate(function()
 			{
 				$('#AutoComplete').focus();
 				
 			},0);
 		}
+		// a list of idenifiers to always ignore in the autocomplete
+		this.ignoreKeys = ["defineProperty"];
 		this.beginAutoComplete =function(editor,chr,line,filter)
 		{
 		
@@ -1691,6 +1715,35 @@ define(function ()
 					if(self.keys)
 					{
 					
+						//first, remove from the list all keys beginning with "___" and the set list of ignoreable keys
+						var i = 0;
+
+						while(i < self.keys.length)
+						{
+							if(self.keys[i][0].search(/^___/) != -1)
+							{
+								self.keys.splice(i,1);
+							}else
+							{
+							i++;
+							}
+						}
+
+						i = 0;
+
+						while(i < self.keys.length)
+						{
+							for(var j =0; j < self.ignoreKeys.length; j++)
+							{
+								if(self.keys[i][0] == self.ignoreKeys[j])
+								{
+									self.keys.splice(i,1);
+									break;
+								}
+							}
+							i++;
+						}
+						this.autoCompleteTriggerKey = chr;
 						//if the character that started the autocomplete is a dot, then remove the keys that have
 						//spaces or special characters, as they are not valid identifiers
 						if(chr == '.')
@@ -1727,7 +1780,7 @@ define(function ()
 						{
 							return a[0] > b[0]?1:-1;
 						})
-						window.setTimeout(function()
+						window.setImmediate(function()
 						{
 							self.filter = filter;
 							self.setupAutocomplete(self.keys,editor,filter);
@@ -1744,7 +1797,8 @@ define(function ()
 			var cur = editor.getCursorPosition();
 			var session = editor.getSession();
 			var line = session.getLine(cur.row);
-			var chr = line[cur.column] ;
+			var chr = line[cur.column];
+
 			//Open on . or [
 			if(chr== '.' || chr == '[')
 			{
@@ -1762,14 +1816,16 @@ define(function ()
 		
 		}
 		//Test for an open paren, then show the parameter help
-		this.triggerFunctionTip = function(editor)
+		this.triggerFunctionTip = function(editor, inserted)
 		{
 			var cur = editor.getCursorPosition();
 			var session = editor.getSession();
 			var line = session.getLine(cur.row);
 			//Only show for open paren
-			if(line[cur.column] == '(')
+
+			if(line[cur.column] == '(' || (inserted && line[cur.column-1] == '('))
 			{
+
 				//Get the line
 				line = line.substr(0,cur.column);
 				var splits = line.split(' ');
@@ -1778,6 +1834,12 @@ define(function ()
 				line = splits[splits.length-1];
 				//Don't show for lines that have ( or ) (other than the one that triggered the autocomplete) because function calls
 				//might have side effects
+
+				if(inserted && line.indexOf('(') == line.length -1)
+				{
+					line = line.substring(0, line.length - 1);
+				}
+
 				if(line.indexOf('(') == -1 && line.indexOf('=') == -1)
 				{
 					//Get the text for the tooltip
@@ -1786,7 +1848,7 @@ define(function ()
 			
 					if(text)
 					{
-						window.setTimeout(function()
+						window.setImmediate(function()
 						{
 							self.setupFunctionTip(text,editor,$(editor.renderer.$cursorLayer.cursor).offset(),$(editor.renderer.$cursorLayer.cursor).width());
 							
@@ -2038,6 +2100,9 @@ define(function ()
 			line = splits[splits.length-1];
 			splits = line.split(',');
 			line = splits[splits.length-1];
+			splits = line.split('!');
+			line = splits[splits.length-1];
+			console.log(line);
 			return line;
 		
 		}

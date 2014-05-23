@@ -1,8 +1,21 @@
-var maxObjects = 5; 
+//define( ["vwf/model/threejs/three","vwf/model/threejs/_THREERayTracer"], function( three, tracer ) {
+	
+
+function GUID()
+{
+	var S4 = function ()
+	{
+		return Math.floor(Math.random() * 0x10000 /* 65536 */ ).toString(16);
+	};
+	return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
+} 
+
+//values tuned for VTCE
+var maxObjects = 1; 
 var maxDepth = 16;
-var batchAtLevel = 8;
+var batchAtLevel = 0;
 var drawSceneManagerRegions = false;
-var maxSize = 64000;
+var maxSize = 640;
 function SceneManager(scene)
 {
 	
@@ -13,6 +26,10 @@ function GetAllLeafMeshes(threeObject,list)
 	if(threeObject instanceof THREE.Mesh || threeObject instanceof THREE.Line)
 	{
 		list.push(threeObject);
+		for(var i=0; i < threeObject.children.length; i++)
+		{
+			GetAllLeafMeshes(threeObject.children[i],list);
+		}               
 	}
 	if(threeObject.children)
 	{
@@ -24,12 +41,19 @@ function GetAllLeafMeshes(threeObject,list)
 }
 SceneManager.prototype.forceBatchAll = function()
 {
+
 	var list = [];
 	GetAllLeafMeshes(this.scene,list);
 	for(var i = 0; i < list.length; i++)
 	{
+		if(list[i].material.skinning) 
+		continue;
+		if(list[i] instanceof THREE.SkinnedMesh)
+		continue;
+
 		if(list[i].setStatic)
-			list[i].setStatic(true);
+			
+				list[i].setStatic(true);
 	}
 }
 SceneManager.prototype.forceUnbatchAll = function()
@@ -42,18 +66,47 @@ SceneManager.prototype.forceUnbatchAll = function()
 			list[i].setStatic(false);
 	}
 }
-SceneManager.prototype.rebuild = function(mo,md)
+SceneManager.prototype.setMaxObjects = function(mo)
+{
+	maxObjects = mo;
+	this.rebuild();
+}
+SceneManager.prototype.setMaxDepth = function(mo)
+{
+	maxDepth = mo;
+	this.rebuild();
+}
+SceneManager.prototype.setBatchLevel = function(bl)
+{
+	batchAtLevel = bl;
+	this.rebuild();
+}
+SceneManager.prototype.setShowRegions = function(bool)
+{
+	drawSceneManagerRegions = bool;	
+	this.rebuild();
+}
+SceneManager.prototype.setExtents = function(extents)
+{
+	maxSize = extents;	
+	this.rebuild();
+}
+SceneManager.prototype.rebuild = function()
 {
 	
-	maxObjects = mo;
-	maxDepth = md;
 	var children = this.root.getChildren();
 	this.root.deinitialize();
 	this.min = [-maxSize,-maxSize,-maxSize];
 	this.max = [maxSize,maxSize,maxSize];
 	this.root = new SceneManagerRegion(this.min,this.max,0,this.scene,0);
 	for(var i =0; i < children.length; i++)
-		this.root.addChild(children[i]);
+	{
+		if(!children[i].isDynamic())
+			this.root.addChild(children[i]);
+		else
+			this.addToRoot(children[i]);
+		
+	}
 }
 SceneManager.prototype.show = function()
 {
@@ -81,8 +134,18 @@ SceneManager.prototype.CPUPick = function(o,d,opts)
 		return null;
 	//console.profile("PickProfile");
 
-	
-	var hitlist = this.root.CPUPick(o,d,opts|| this.defaultPickOptions);
+	opts = opts|| this.defaultPickOptions
+	if(opts) opts.faceTests = 0;
+	if(opts) opts.objectTests = 0;
+	if(opts) opts.regionTests = 0;
+	if(opts) opts.regionsRejectedByDist = 0;
+	if(opts) opts.regionsRejectedByBounds = 0;
+	if(opts) opts.objectsRejectedByBounds = 0;
+	if(opts) opts.objectRegionsRejectedByDist = 0;
+	if(opts)  opts.objectRegionsRejectedByBounds = 0;
+	if(opts)  opts.objectRegionsTested = 0;
+	if(opts)  opts.objectsTested = [];
+	var hitlist = this.root.CPUPick(o,d,opts);
 	
 	for(var i = 0; i < this.specialCaseObjects.length; i++)
 	{
@@ -119,7 +182,7 @@ SceneManager.prototype.CPUPick = function(o,d,opts)
 }
 SceneManager.prototype.FrustrumCast = function(f,opts)
 {
-	//console.profile("PickProfile");
+	
 
 	var hitlist = this.root.FrustrumCast(f,opts || this.defaultPickOptions);
 	for(var i = 0; i < this.specialCaseObjects.length; i++)
@@ -132,6 +195,7 @@ SceneManager.prototype.FrustrumCast = function(f,opts)
 	//return an array that is not tracked by the pool, so users will not have to manually deallocate
 	var unTrackedReturn = [];
 	unTrackedReturn = hitlist.slice(0);
+	
 	return unTrackedReturn;
 }
 SceneManager.prototype.SphereCast = function(center,r,opts)
@@ -154,6 +218,14 @@ SceneManager.prototype.SphereCast = function(center,r,opts)
 SceneManager.prototype.dirtyObjects = [];
 SceneManager.prototype.setDirty = function(object)
 {
+	if(object.children && object.children.length)
+	{
+
+		for(var i = 0; i < object.children.length; i++)
+			this.setDirty(object.children[i]);
+		return;
+	}
+
 	if(this.dirtyObjects.indexOf(object) == -1)
 	{
 		this.dirtyObjects.push(object);
@@ -161,13 +233,19 @@ SceneManager.prototype.setDirty = function(object)
 }
 SceneManager.prototype.update = function(dt)
 {
+	var len = _SceneManager.root.getChildren().length;
 	if(!this.initialized) return;
+
+	
+
 	for(var i = 0; i < this.dirtyObjects.length; i++)
 	{
-		
 		this.dirtyObjects[i].sceneManagerUpdate();
-		
 	}
+	
+
+	var len = _SceneManager.root.getChildren().length;
+
 	this.dirtyObjects = [];
 	
 	var dirtybatchcount = 0;
@@ -185,16 +263,14 @@ SceneManager.prototype.update = function(dt)
 		//only update at most one batch manager per frame
 		if(this.BatchManagers[i].dirty)
 		{	
-			_ProgressBar.show()
-			_ProgressBar.setMessage('Batching');
-			_ProgressBar.setProgress(1- dirtybatchcount/this.BatchManagers.length);
+			
 			this.BatchManagers[i].update();
 			break;
 		}
 	}
 	if(dirtybatchcount == 0)
 	{
-		_ProgressBar.hide();
+		
 	}
 	var removelist = [];
 	for(var i =0; i < this.tempDebatchList.length; i++)
@@ -219,6 +295,7 @@ SceneManager.prototype.update = function(dt)
 		this.particleSystemList[i].update(dt);
 	}
 
+
 }
 SceneManager.prototype.releaseTexture = function(texture)
 {
@@ -240,7 +317,7 @@ SceneManager.prototype.getDefaultTexture = function()
 		this.defaultTexture.minFilter = THREE.LinearMipMapLinearFilter;
 		this.defaultTexture.magFilter = THREE.LinearFilter;
 		if(window._dRenderer)
-			this.defaultTexture = _dRenderer.getMaxAnisotropy();
+			this.defaultTexture = 1;//_dRenderer.getMaxAnisotropy();
 		this.defaultTexture.wrapS = THREE.RepeatWrapping;
 		this.defaultTexture.wrapT = THREE.RepeatWrapping;
 	}
@@ -249,37 +326,39 @@ SceneManager.prototype.getDefaultTexture = function()
 }
 SceneManager.prototype.loadTexture = function ( url, mapping, onLoad, onError ) {
 
+		
 		var image = new Image();
+		
 		var texture = new THREE.Texture( this.getDefaultTexture().image, mapping );
 		texture.format = this.getDefaultTexture().format;
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
 		texture.magFilter = THREE.LinearFilter;
 		
 		if(window._dRenderer)
-			texture.anisotropy = _dRenderer.getMaxAnisotropy();
+			texture.anisotropy = 1;//_dRenderer.getMaxAnisotropy();
 		texture.wrapS = THREE.RepeatWrapping;
 		texture.wrapT = THREE.RepeatWrapping;
 		var loader = new THREE.ImageLoader();
 
-		loader.addEventListener( 'load', function ( event ) {
+		var load = function ( event ) {
 
 
-			texture.image = event.content;
+			texture.image = event;
 			texture.format = THREE.RGBAFormat;
 			texture.needsUpdate = true;
 
 			if ( onLoad ) onLoad( texture );
 
-		} );
+		} ;
 
-		loader.addEventListener( 'error', function ( event ) {
+		var error = function ( event ) {
 
 			if ( onError ) onError( event.message );
 
-		} );
+		} ;
 
 		loader.crossOrigin = 'anonymous';
-		loader.load( url, image );
+		loader.load( url, load, null, error, image );
 
 		texture.sourceFile = url;
 
@@ -294,9 +373,19 @@ SceneManager.prototype.createMaterial = function()
 	return new THREE.MeshPhongMaterial();
 }
 
+SceneManager.prototype.GetLoadedTextures = function()
+{
+	var ret = []
+	for( var i in this.textureList)
+	{
+		if(this.textureList[i].image.src !== '')
+			ret.push(i);
+	}
+	return ret;
+}
 SceneManager.prototype.getTexture = function(src,noclone)
 {
-	
+	//return THREE.ImageUtils.loadTexture(src);
 	var originalSrc = src;
 	var p = window.location.pathname;
 	if(p[p.length-1] == '/') {p = p.substring(0,p.length -1)};
@@ -359,8 +448,8 @@ SceneManager.prototype.getTexture = function(src,noclone)
 }
 SceneManager.prototype.initialize = function(scene)
 {
-	this.min = [-64000,-64000,-64000];
-	this.max = [64000,64000,64000];
+	this.min = [-maxSize,-maxSize,-maxSize];
+	this.max = [maxSize,maxSize,maxSize];
 	this.BatchManagers = [];
 	this.specialCaseObjects = [];
 	this.tempDebatchList = [];
@@ -371,7 +460,7 @@ SceneManager.prototype.initialize = function(scene)
 	THREE.Object3D.prototype.add_internal = THREE.Object3D.prototype.add;
 	THREE.Object3D.prototype.add = function(child,SceneManagerIgnore)
 	{
-		
+		if(!child) return;
 		this.add_internal(child);
 		
 		
@@ -400,10 +489,21 @@ SceneManager.prototype.initialize = function(scene)
 		GetAllLeafMeshes(child,list);
 		for(var i =0; i < list.length; i++)
 		{
-			_SceneManager.addChild(list[i]);
+			
+			list[i].updateMatrixWorld(true);
+			
 		}
-		
-		
+		for(var i =0; i < list.length; i++)
+		{
+			if(!list[i].isDynamic())
+				_SceneManager.addChild(list[i]);
+			else
+				_SceneManager.addToRoot(list[i]);
+			_SceneManager.setDirty(list[i]);
+		}
+			
+		//DO NOT PUT OBJECT3Ds ON THE DIRTY LIST!	
+		//_SceneManager.setDirty(this);
 	}
 	THREE.Object3D.prototype.remove_internal = THREE.Object3D.prototype.remove;
 	THREE.Object3D.prototype.remove = function(child,SceneManagerIgnore)
@@ -416,13 +516,26 @@ SceneManager.prototype.initialize = function(scene)
 		if(SceneManagerIgnore)
 			return;
 		
-		GetAllLeafMeshes(child,meshes);		
+		GetAllLeafMeshes(child,meshes);	
+		
 		for(var i =0; i < meshes.length; i++)
 		{
 			meshes[i].sceneManagerDelete();
 			//_SceneManager.removeChild(meshes[i]);
 		}
 	}
+	THREE.Object3D.prototype.materialUpdated = function()
+	{
+		var meshes = [];
+		GetAllLeafMeshes(this,meshes);		
+		for(var i =0; i < meshes.length; i++)
+		{
+			meshes[i].materialUpdated();
+			//_SceneManager.removeChild(meshes[i]);
+		}
+	
+	}
+
 	THREE.Mesh.prototype.materialUpdated = function()
 	{
 		if(!this.updateCount)
@@ -484,6 +597,7 @@ SceneManager.prototype.initialize = function(scene)
 	}
 	THREE.Object3D.prototype.sceneManagerUpdate = function()
 	{
+		this.updateMatrixWorld(true);
 		if(this.isDynamic && this.isDynamic()) return;
 		for(var i =0; i <  this.children.length; i++)
 		{
@@ -522,13 +636,28 @@ SceneManager.prototype.addChild = function(c)
 }
 SceneManager.prototype.removeChild = function(c)
 {
-	this.root.removeChild(c);
+	
+	//be sure to remove objects from the dirty list, so they don't get sorted back in
+	if(this.dirtyObjects.indexOf(c) != -1)
+	{
+		this.dirtyObjects.splice(this.dirtyObjects.indexOf(c),1);
+	}	
+	if(this.tempDebatchList.indexOf(c) != -1)
+	{
+		this.tempDebatchList.splice(this.tempDebatchList.indexOf(c),1);
+	}	
+
+	var removed = this.root.removeChild(c);
+	
+	
 }
+
 function SceneManagerRegion(min, max, depth,scene,order)
 {
 	
 	this.min = min;
 	this.max = max;
+	this.r = Vec3.distance(min,max)/2;
 	this.childCount = 0;
 	this.c = [(this.max[0]+this.min[0])/2,(this.max[1]+this.min[1])/2,(this.max[2]+this.min[2])/2];
 	this.childRegions = [];
@@ -538,20 +667,18 @@ function SceneManagerRegion(min, max, depth,scene,order)
 	this.order = order;
 	if(drawSceneManagerRegions)
 	{
-		this.mesh = new THREE.Mesh(new THREE.CubeGeometry(this.max[0]-this.min[0],this.max[0]-this.min[0],this.max[0]-this.min[0]),new THREE.MeshBasicMaterial(0xFF0000));
-		this.mesh.material.wireframe = true;
+		this.mesh = this.BuildWireBox([this.max[0]-this.min[0],this.max[0]-this.min[0],this.max[0]-this.min[0]],[0,0,0],[(this.depth/maxDepth) * 2,0,0]);
+		
 		this.mesh.material.depthTest = false;
 		this.mesh.material.depthWrite = false;
 		this.mesh.material.transparent = true;
-		this.mesh.material.color.r = (this.depth/maxDepth) * 2;
-		this.mesh.material.color.g = 0;
-		this.mesh.material.color.b = 0;
 		this.mesh.position.x = this.c[0];
 		this.mesh.position.y = this.c[1];
 		this.mesh.position.z = this.c[2];
 		this.mesh.InvisibleToCPUPick =  true;
 		this.mesh.renderDepth = this.depth * 8 + this.order;
 		this.scene.add(this.mesh,true);
+		this.mesh.updateMatrixWorld(true);
 	}
 	if(this.depth <= batchAtLevel)
 	{
@@ -559,6 +686,61 @@ function SceneManagerRegion(min, max, depth,scene,order)
 		_SceneManager.BatchManagers.push(this.RenderBatchManager);
 	}
 }
+SceneManagerRegion.prototype.BuildWireBox = function (size, offset, color)
+	{
+		
+		var mesh = new THREE.Line(new THREE.Geometry(), new THREE.LineBasicMaterial(), THREE.LinePieces );
+		mesh.material.color.r = color[0];
+		mesh.material.color.g = color[1];
+		mesh.material.color.b = color[2];
+	
+		
+			var vertices = [
+				new THREE.Vector3(   size[0]/2,   size[1]/2,   size[2]/2 ),
+				new THREE.Vector3( - size[0]/2,   size[1]/2,   size[2]/2  ),
+				new THREE.Vector3( - size[0]/2, - size[1]/2,   size[2]/2  ),
+				new THREE.Vector3(   size[0]/2, - size[1]/2,   size[2]/2  ),
+
+				new THREE.Vector3(   size[0]/2,   size[1]/2, - size[2]/2  ),
+				new THREE.Vector3( - size[0]/2,   size[1]/2, - size[2]/2 ),
+				new THREE.Vector3( - size[0]/2, - size[1]/2, - size[2]/2  ),
+				new THREE.Vector3(   size[0]/2, - size[1]/2, - size[2]/2  )
+			];
+
+			//mesh.matrix.setPosition(new THREE.Vector3(offset[0],offset[1],offset[2]));
+			for (var i = 0; i < vertices.length; i++)
+			{
+				vertices[i].x += offset[0];
+				vertices[i].y += offset[1];
+				vertices[i].z += offset[2];
+			}
+
+			// TODO: Wouldn't be nice if Line had .segments?
+
+			var geometry = mesh.geometry;
+			geometry.vertices.push(
+				vertices[ 0 ], vertices[ 1 ],
+				vertices[ 1 ], vertices[ 2 ],
+				vertices[ 2 ], vertices[ 3 ],
+				vertices[ 3 ], vertices[ 0 ],
+
+				vertices[ 4 ], vertices[ 5 ],
+				vertices[ 5 ], vertices[ 6 ],
+				vertices[ 6 ], vertices[ 7 ],
+				vertices[ 7 ], vertices[ 4 ],
+
+				vertices[ 0 ], vertices[ 4 ],
+				vertices[ 1 ], vertices[ 5 ],
+				vertices[ 2 ], vertices[ 6 ],
+				vertices[ 3 ], vertices[ 7 ]
+			);
+
+		
+
+		mesh.matrixAutoUpdate = true;
+		mesh.updateMatrixWorld(true);
+		return mesh;
+	}
 SceneManagerRegion.prototype.deinitialize = function()
 {
 	if(this.mesh)
@@ -673,22 +855,34 @@ SceneManagerRegion.prototype.desplit = function()
 	
 	this.childRegions = [];
 }
+SceneManagerRegion.prototype.getLeaves = function(list)
+{
+	if(!list)
+		list = [];
+	for(var i = 0; i < this.childRegions.length; i++)
+	{
+		this.childRegions[i].getLeaves(list);
+	}
+	if(this.childRegions.length == 0)
+		list.push(this);
+}
 SceneManagerRegion.prototype.completelyContains = function(object)
 {
 	
 	//changing transforms make this cache not work
-	if(!object.tempbounds) 
-	{
-		object.updateMatrixWorld();
-		
-		object.tempbounds = object.GetBoundingBox(true).transformBy(object.getModelMatrix());
-	}
-	var box = object.tempbounds;
+	var box =  object.GetBoundingBox(true).transformBy(object.getModelMatrix());
+	return this.completelyContainsBox(box);
+}
+SceneManagerRegion.prototype.completelyContainsBox = function(box)
+{
+
+	
 	if(box.min[0] > this.min[0] && box.max[0] < this.max[0])
 	if(box.min[1] > this.min[1] && box.max[1] < this.max[1])
 	if(box.min[2] > this.min[2] && box.max[2] < this.max[2])
 		return true;
 	return false;	
+
 }
 SceneManagerRegion.prototype.addChild= function(child)
 {
@@ -743,6 +937,13 @@ SceneManagerRegion.prototype.distributeObject = function(object)
 			
 			object.sceneManagerUpdate = function()
 			{
+				//dynamic objects currently should not belong to the octree
+				//we really should  try to not get here in the first place. Because when we set 
+				if(this.isDynamic()) return;
+				for(var i =0; i < this.children.length; i++)
+				{
+					this.children[i].sceneManagerUpdate();
+				}
 				if(this.SceneManagerIgnore)
 					return;
 				
@@ -756,13 +957,20 @@ SceneManagerRegion.prototype.distributeObject = function(object)
 					_SceneManager.tempDebatchList.push(this);
 				}	
 				
-				this.updateMatrixWorld();
-				this.tempbounds = object.GetBoundingBox(true).transformBy(this.getModelMatrix());
+				this.updateMatrixWorld(true);
+
+				
+
+				
 				this.sceneManagerNode.updateObject(this);
+				
 			}.bind(object)
 			object.sceneManagerDelete = function()
 			{
-				
+				for(var i =0; i < this.children.length; i++)
+				{
+					this.children[i].sceneManagerDelete();
+				}
 				if(this.RenderBatchManager)
 					this.RenderBatchManager.remove(this);
 				_SceneManager.removeChild(this);
@@ -899,7 +1107,6 @@ SceneManagerRegion.prototype.CPUPick = function(o,d,opts)
 {
 	
 	var hits = [];
-	
 	//if no faces, can be no hits. 
 	//remember, faces is all faces in this node AND its children
 	if(this.getChildCount().length == 0)
@@ -907,17 +1114,32 @@ SceneManagerRegion.prototype.CPUPick = function(o,d,opts)
 		
 	//reject this node if the ray does not intersect it's bounding box
 	if(this.testBoundsRay(o,d) == false)
+	{
+		opts.regionsRejectedByBounds++
 		return hits;
+	}
 	
+	//use the render batch. Note that this will not give a VWFID, only good when you don't care what you hit
+	if(this.RenderBatchManager && opts && opts.useRenderBatches)
+	{
+		opts.batchesTested++;
+		return this.RenderBatchManager.CPUPick(o,d,opts);
+	}
+
 	//the the opts specify a max dist
 	//if the start is not in me, and im to far, don't bother with my children or my objcts
-	if(opts.maxDist > 0 && this.r + MATH.distanceVec3(o,this.c) > opts.maxDist)
+	if(opts.maxDist > 0)
 	{
-		
-		if(!this.contains(o))
-			return hits;
+
+		if( ( MATH.distanceVec3(o,this.c) - this.r) > opts.maxDist)
+		{
+
+				opts.regionsRejectedByDist++;
+				return hits;
+		}
 	}	
 	
+	opts.regionTests++;
 	//check either this nodes faces, or the not distributed faces. for a leaf, this will just loop all faces,
 	//for a non leaf, this will iterate over the faces that for some reason are not in children, which SHOULD be none
 	for(var i = 0; i < this.childRegions.length; i++)
@@ -1076,6 +1298,8 @@ THREE.RenderBatch = function(material,scene)
 {
 	this.objects = [];
 	this.material = material;
+	//hack for VTCE - should probably find and deal with mirrored meshes better
+	
 	this.dirty = false;
 	this.scene = scene;
 	this.totalVerts = 0;
@@ -1116,6 +1340,7 @@ THREE.RenderBatch.prototype.update = function()
 }
 THREE.RenderBatch.prototype.checkSuitability = function(object)
 {
+
 	if(this.totalFaces + object.geometry.faces.length > 32767 || this.totalVerts + object.geometry.vertices.length > 32767) return false;
 	return compareMaterials(this.material,object.material);
 }
@@ -1124,31 +1349,68 @@ THREE.RenderBatch.prototype.deinitialize = function()
 	if(this.mesh)
 		this.scene.remove_internal(this.mesh);
 }
+THREE.RenderBatch.prototype.CPUPick =function(o,d,opts)
+{
+	if(this.mesh)
+		return this.mesh.CPUPick(o,d,opts);
+	return [];
+}
+THREE.RenderBatch.prototype.testForMirroredMatrix = function(matrix)
+{
+	
+	if(!matrix)
+		throw new Error('matrix was null');
+
+	var xAxis = new THREE.Vector3(matrix.elements[0],matrix.elements[4],matrix.elements[8]);
+	var yAxis = new THREE.Vector3(matrix.elements[1],matrix.elements[5],matrix.elements[9]);
+	var zAxis = new THREE.Vector3(matrix.elements[2],matrix.elements[6],matrix.elements[10]);
+
+	xAxis.normalize();
+	yAxis.normalize();
+	zAxis.normalize();
+
+	var xDot = xAxis.clone().cross(yAxis).dot(zAxis);
+	var yDot = yAxis.clone().cross(zAxis).dot(xAxis);
+	var zDot = zAxis.clone().cross(xAxis).dot(yAxis);
+
+	if(xDot * yDot * zDot < 0) 
+	{
+		
+		return true;
+	}
+	return false;
+}
 THREE.RenderBatch.prototype.build = function()
 {
-	console.log('Building batch ' + this.name + ' : objects = ' + this.objects.length); 
+	//console.log('Building batch ' + this.name + ' : objects = ' + this.objects.length); 
 	
 	//do the merge:
 	if(this.mesh)
+	{
 		this.scene.remove_internal(this.mesh);
+		this.mesh.geometry.dispose();
+	}
 	
 	if(this.objects.length == 0) return;	
 	
 	this.mesh = null;
     var geo = new THREE.Geometry();
+    geo.normals = [];
 	this.mesh = new THREE.Mesh(geo,this.objects[0].material.clone());
-	this.mesh.castShadow=true;
-	this.mesh.receiveShadow=true;
+	this.mesh.castShadow= _SettingsManager.getKey('shadows');
+	this.mesh.receiveShadow=_SettingsManager.getKey('shadows');
 	this.scene.add_internal(this.mesh);
 	
 	var totalUVSets = 1;
 	
-	
+	var needColors = false;
 	for(var i =0; i < this.objects.length; i++)
 	{
+
 		totalUVSets = Math.max(totalUVSets,this.objects[i].geometry.faceVertexUvs.length);
+		needColors = needColors || (this.objects[i].geometry.vertexColors && this.objects[i].geometry.vertexColors.length); 
 	}
-	console.log(totalUVSets);
+	//console.log(totalUVSets);
 	for(var i = 0; i < totalUVSets; i++)
 	{
 		geo.faceVertexUvs[i] = [];
@@ -1158,6 +1420,8 @@ THREE.RenderBatch.prototype.build = function()
 		
 		var tg = this.objects[i].geometry;
 		var matrix = this.objects[i].matrixWorld.clone();
+		var matrixIsMirrored = this.testForMirroredMatrix(matrix);
+		
 		var normalMatrix = new THREE.Matrix3();
 		normalMatrix.getInverse(matrix);
 		normalMatrix.transpose();
@@ -1173,19 +1437,38 @@ THREE.RenderBatch.prototype.build = function()
 					newface = new THREE.Face4();
 				else
 					newface = new THREE.Face3();
-					
-				newface.a = face.a + geo.vertices.length;	
-				newface.b = face.b + geo.vertices.length;
-				newface.c = face.c + geo.vertices.length;
-				if(face.d !== undefined)
-					newface.d = face.d + geo.vertices.length;
-
+				
+				if(!matrixIsMirrored)
+				{	
+					newface.a = face.a + geo.vertices.length;	
+					newface.b = face.b + geo.vertices.length;
+					newface.c = face.c + geo.vertices.length;
+					if(face.d !== undefined)
+						newface.d = face.d + geo.vertices.length;
+				}else
+				{
+					newface.b = face.a + geo.vertices.length;	
+					newface.a = face.b + geo.vertices.length;
+					if(face.d !== undefined)
+					{
+						newface.d = face.c + geo.vertices.length;
+						newface.c = face.d + geo.vertices.length;
+					}else
+					{
+						newface.c = face.c + geo.vertices.length;
+					}
+						
+				}
 				//newface.materialIndex = face.materialIndex;
 				newface.centroid.copy( face.centroid );
-				newface.normal.copy(face.normal);		
+				newface.normal.copy(face.normal);	
+
 				newface.normal.applyMatrix3( normalMatrix ).normalize();
 				for(var k = 0; k < face.vertexNormals.length; k++)
 					newface.vertexNormals.push(face.vertexNormals[k].clone().applyMatrix3(normalMatrix).normalize());
+				for(var k = 0; k < face.vertexColors.length; k++)
+					if(face.vertexColors[k])
+						newface.vertexColors.push(face.vertexColors[k].clone());
 				
 				geo.faces.push(newface);
 			
@@ -1195,11 +1478,14 @@ THREE.RenderBatch.prototype.build = function()
 				geo.vertices.push(tg.vertices[j].clone().applyMatrix4(matrix));
 			}
 			
+			if(tg.normals)
 			for(var j = 0; j < tg.normals.length; j++)
 			{
 				geo.normals.push(tg.normals[j].clone().applyMatrix4(matrix));
 			}
 			
+			
+
 			
 			for(var l = 0; l < totalUVSets; l++)
 			{
@@ -1255,9 +1541,117 @@ function compareMaterials(m1,m2)
 	
 	if(!m1 || !m2) return false;
 
-	if(!(m1 instanceof THREE.MeshPhongMaterial)) return false;
-	if(!(m2 instanceof THREE.MeshPhongMaterial)) return false;
+	// this does not catch all!!!!
+	if(m1.constructor != m2.constructor)
+	{
+		return false;
+	}
+	if(m1 instanceof THREE.MeshPhongMaterial && m2 instanceof THREE.MeshPhongMaterial)
+	{
+		return compareMaterialsPhong(m1,m2);
+	}
+	if(m1 instanceof THREE.MeshBasicMaterial && m2 instanceof THREE.MeshBasicMaterial)
+	{
+		return compareMaterialsBasic(m1,m2);
+	}
+	if(m1 instanceof THREE.MeshLambertMaterial && m2 instanceof THREE.MeshLambertMaterial)
+	{
+		return compareMaterialsLambert(m1,m2);
+	}
+	if(m1 instanceof THREE.MeshFaceMaterial && m2 instanceof THREE.MeshFaceMaterial)
+	{
+		return compareMaterialsFace(m1,m2);
+	}
+	return false;
+}
 
+function compareMaterialsFace(m1,m2)
+{
+	//TODO: not used in VTCE
+}
+
+function compareMaterialsBasic(m1,m2)
+{
+	//TODO: not used in VTCE
+}
+
+function compareMaterialsLambert(m1,m2)
+{
+	
+	var delta = 0;
+	delta += Math.abs(m1.color.r - m2.color.r);
+	delta += Math.abs(m1.color.g - m2.color.g);
+	delta += Math.abs(m1.color.b - m2.color.b);
+	
+	delta += Math.abs(m1.ambient.r - m2.ambient.r);
+	delta += Math.abs(m1.ambient.g - m2.ambient.g);
+	delta += Math.abs(m1.ambient.b - m2.ambient.b);
+	
+	delta += Math.abs(m1.emissive.r - m2.emissive.r);
+	delta += Math.abs(m1.emissive.g - m2.emissive.g);
+	delta += Math.abs(m1.emissive.b - m2.emissive.b);
+
+	delta += Math.abs(m1.opacity - m2.opacity);
+	
+	delta += Math.abs(m1.transparent - m2.transparent);
+	
+	delta += Math.abs(m1.reflectivity - m2.reflectivity);
+	delta += Math.abs(m1.alphaTest - m2.alphaTest);	
+	
+	delta += m1.side != m2.side ? 1000 : 0;
+		var mapnames = ['map','lightMap','specularMap'];
+        for(var i =0; i < mapnames.length; i++)
+        {
+				var mapname = mapnames[i];
+				
+				
+				
+				
+				
+				if(m1[mapname] && !m2[mapname])
+				{
+					delta += 1000;
+				}
+				if(!m1[mapname] && m2[mapname])
+				{
+					delta += 1000;
+				}
+				if(m1[mapname] && m2[mapname])
+				{
+					if(m1[mapname].image && m2[mapname].image)
+					if(m1[mapname].image.src && m1[mapname].image.src)
+					{
+						if(m1[mapname].image.src.toString() != m2[mapname].image.src.toString())
+							delta += 1000;
+						if(m1[mapname]._SMsrc != m2[mapname]._SMsrc)
+							delta += 1000;
+					}else
+					{
+						if(m1[mapname].image != m2[mapname].image)
+							delta += 1000;
+					}
+				
+				
+               
+                delta += m1[mapname].wrapS != m1[mapname].wrapS;
+				delta += m1[mapname].wrapT != m1[mapname].wrapT;
+                delta += Math.abs(m1[mapname].mapping.constructor != m2[mapname].mapping.constructor) * 1000;	
+				delta += Math.abs(m1[mapname].repeat.x - m2[mapname].repeat.x);
+				delta += Math.abs(m1[mapname].repeat.y - m2[mapname].repeat.y);
+				delta += Math.abs(m1[mapname].offset.x - m2[mapname].offset.x);
+				delta += Math.abs(m1[mapname].offset.y - m2[mapname].offset.y);
+				}
+			
+        }
+   		
+	if(delta < .001)
+		return true;
+	return false;	
+}
+
+function compareMaterialsPhong(m1,m2)
+{
+	
 	var delta = 0;
 	delta += Math.abs(m1.color.r - m2.color.r);
 	delta += Math.abs(m1.color.g - m2.color.g);
@@ -1307,10 +1701,17 @@ function compareMaterials(m1,m2)
 				if(m1[mapname] && m2[mapname])
 				{
 					if(m1[mapname].image && m2[mapname].image)
-					if(m1[mapname].image.src.toString() != m2[mapname].image.src.toString())
-						delta += 1000;
-					if(m1[mapname]._SMsrc != m2[mapname]._SMsrc)
-						delta += 1000;
+					if(m1[mapname].image.src && m1[mapname].image.src)
+					{
+						if(m1[mapname].image.src.toString() != m2[mapname].image.src.toString())
+							delta += 1000;
+						if(m1[mapname]._SMsrc != m2[mapname]._SMsrc)
+							delta += 1000;
+					}else
+					{
+						if(m1[mapname].image != m2[mapname].image)
+							delta += 1000;
+					}
 				
 				
                
@@ -1341,7 +1742,14 @@ THREE.RenderBatchManager = function(scene,name)
 	this.batches = [];
 	
 }
+THREE.RenderBatchManager.prototype.CPUPick =function(o,d,opts)
+{
+	var hits = [];
+		for(var i =0; i < this.batches.length; i++)
+			hits = hits.concat(this.batches[i].CPUPick(o,d,opts));
+	return hits;	
 
+}
 THREE.RenderBatchManager.prototype.update = function()
 {
 	
@@ -1436,3 +1844,10 @@ THREE.RenderBatchManager.prototype.deinitialize = function(child)
 		this.batches[i].deinitialize();
 	}	
 }
+
+
+
+//return _SceneManager;
+//});
+
+

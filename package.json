@@ -24,7 +24,13 @@
     "yamljs": "~0.1.4",
     "socket.io-client": "~0.9.16",
     "mkdirp": "~0.3.5",
-    "xapiwrapper-node": "~0.1.0"
+    "adl-xapiwrapper": "~0.2.1",
+    "request": "~2.30.0",
+    "nodemailer": "~0.6.0",
+    "cryptojs": "~2.5.3",
+    "i18next": "~1.7.1",
+    "nedb": "~0.10.2",
+    "node-uuid": "1.4.x"
   },
   "devDependencies": {},
   "scripts": {

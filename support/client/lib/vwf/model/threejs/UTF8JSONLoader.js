@@ -81,6 +81,17 @@
 				decompressArrays(node.children[i]);
 		 }
 	}
+
+
+
+
+
+
+
+
+
+
+
     function UTF8JsonLoader(node,callback,errorCallback)
     {
         
@@ -88,66 +99,180 @@
         this.url = node.source;
         this.callback = callback;
         this.children=[];
+        this.errorCallback = errorCallback;
         
-        this.jsonLoaded = function(e)
-        {
-            var test = 1+1;
-            //async decompress UTF8 data in webworker
-			alertify.log('Decompressing ' + this.url);
-			
-			
-			
-			
-			
-			backgroundLoader.decompress(e,function(jsonData)
-			
-			{
-				
-//				var jsonData = JSON.parse(decompress(e));
-//				decompressArrays(jsonData)
-				
-				var texture_load_callback = function(texturename)
-				{
-					
-					var src = "";
-					if(this.url.toLowerCase().indexOf('3dr_federation') != -1)
-						src = this.url.substr(0,this.url.indexOf("Model/")) + "textures/NoRedirect/" + encodeURIComponent(texturename) +"?ID=00-00-00";
-					else
-						src = this.url.substr(0,this.url.indexOf("Model/")) + "textures/" + encodeURIComponent(texturename) +"?ID=00-00-00";
-					
-					src = src.replace("AnonymousUser:@","");
-					
-					var tex = _SceneManager.getTexture(src);
-					
-					return tex;
-				}
-				this.scene = ParseSceneGraph(jsonData,texture_load_callback.bind(this));
-				if(this.callback)
-					this.callback(this);
-				
-				
-			}.bind(this));
-				
-        }.bind(this);
+        var self = this;
         
-        this.error = function(e)
-        {
-           if(errorCallback)
-				errorCallback();
-        }.bind(this);
         
         $.ajax({
             url: this.url,
             data: {},
-            success: this.jsonLoaded,
-            error: this.error.bind(this),
+            success: function(e){self.jsonLoaded(e)},
+            error: function(e){self.error(e)},
             dataType:'text'
         });
-        ;
+        
     }
 
-    
+    function UTF8JsonLoader_Optimized(node,callback,errorCallback)
+    {
+        
+        var self = this;
+        this.url = node.source;
+        this.callback = callback;
+        this.children=[];
+        this.errorCallback = errorCallback;
+        
+        var self = this;
+        
+        this.parseMesh = this.parseMeshOptimize;
+        
+        $.ajax({
+            url: this.url,
+            data: {},
+            success: function(e){self.jsonLoaded(e)},
+            error: function(e){self.error(e)},
+            dataType:'text'
+        });
+    }
+    UTF8JsonLoader_Optimized.prototype = UTF8JsonLoader.prototype;
+    UTF8JsonLoader_Optimized.prototype.parseMeshOptimize = function(node)
+    {
 
+        
+        //newnode = new THREE.Object3D();
+            var geo = new THREE.BufferGeometry();
+           
+            
+            var verts = node.attributes["Vertex"].length/3;
+            var positions ;
+            var normals ;
+            var TexCoord0 ;
+            var colors = new Float32Array(verts*3);
+            
+            //vertex data
+            if (node.attributes) {
+                jQuery.each(node.attributes, function(key, element) {
+                   // debugarraytype = key;
+                   // var attributeArray = node.attributes[key];
+                   // node.attributes[key] = DecodeArray(attributeArray,key);
+                    if(key == "Vertex")
+                    { 
+                        positions = new Float32Array(node.attributes[key]); 
+                    }
+                    if(key == "Normal")
+                    {
+                        normals = new Float32Array(node.attributes[key]); 
+                    }
+                    if(key == "TexCoord0")
+                    {
+                        TexCoord0 = new Float32Array(node.attributes[key]); 
+                    }
+                    
+                    if(key == "VertexColor")
+                    {
+                        for(var i = 0; i < node.attributes[key].length-2; i+= 3)
+                        {
+                            
+                            colors[i] = (node.attributes[key][i]);
+                            colors[i+1] = (node.attributes[key][i+1]);
+                            colors[i+2] =(node.attributes[key][i+2]);
+                            
+                        }
+                    }               
+                });
+            }
+            
+            var indexes;
+            for (var i in node.primitives) {
+                
+                if (node.primitives[i].indices) {
+                        indexes = new Uint16Array(node.primitives[i].indices);
+                    }
+                
+            }
+            
+            geo.attributes = {
+            index: {
+                itemSize: 1,
+                array: indexes,
+                numItems: indexes.length
+            },
+            position: {
+                itemSize: 3,
+                array: positions,
+                numItems: positions.length
+            },
+            normal: {
+                itemSize: 3,
+                array: normals,
+                numItems: normals.length
+            },
+            color: {
+                itemSize: 3,
+                array: colors,
+                numItems: colors.length
+            },
+            uv: {
+                itemSize: 2,
+                array: TexCoord0,
+                numItems: TexCoord0.length
+            }
+        }
+        geo.offsets=[{ start: 0, count: indexes.length, index: 0 }];
+        var mesh  = new THREE.Mesh(geo,new THREE.MeshPhongMaterial());
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            return mesh;
+    }
+
+    UTF8JsonLoader.prototype.error = function(e)
+    {
+       if(this.errorCallback)
+            this.errorCallback();
+    }
+    UTF8JsonLoader.prototype.jsonLoaded = function(e)
+    {
+    
+            var self = this;
+            //async decompress UTF8 data in webworker
+            backgroundLoader.decompress(e,function(e){self.decompressed(e)});          
+    }
+
+    UTF8JsonLoader.prototype.decompressed =  function(jsonData)
+    { 
+//              var jsonData = JSON.parse(decompress(e));
+//              decompressArrays(jsonData)
+        if(!jsonData)
+        {
+            this.error();
+            return;
+        }
+        var self = this;
+        this.scene = this.ParseSceneGraph(jsonData,function(e){return self.texture_load_callback(e)});
+        if(this.callback)
+            this.callback(this);
+    }
+    UTF8JsonLoader.prototype.texture_load_callback = function(texturename)
+    {
+        
+
+        
+        var src = "";
+        if(this.url.toLowerCase().indexOf('3dr_federation') != -1)
+            src = this.url.substr(0,this.url.indexOf("Model/")) + "textures/NoRedirect/" + encodeURIComponent(texturename) +"?ID=00-00-00";
+        else
+            src = this.url.substr(0,this.url.indexOf("Model/")) + "textures/" + encodeURIComponent(texturename) +"?ID=00-00-00";
+        
+        src = src.replace("AnonymousUser:@","");
+        
+        if(this.url.toLowerCase().indexOf('vwfdatamanager') != -1)
+            src = './vwfdatamanager.svc/3drtexture?pid=' +  this.url.substr(this.url.indexOf("pid=")+4) + "&file=" + encodeURIComponent(texturename)
+        var tex = _SceneManager.getTexture(src);
+        
+        return tex;
+    }
+    
     function BuildUTF8JsonNode(node,callback,err)
     {
         return new UTF8JsonLoader(node,callback,err);
@@ -169,41 +294,39 @@
         }   
     }   
 	function isIdentityMatrix(matrix)
-{
-	
-	if(matrix == null)
-		return true;
-	if(
-	matrix[0] == 1 &&	
-	matrix[1] == 0 &&
-	matrix[2] == 0 &&
-	matrix[3] == 0 &&
-	matrix[4] == 0 &&
-	matrix[5] == 1 &&
-	matrix[6] == 0 &&
-	matrix[7] == 0 &&
-	matrix[8] == 0 &&
-	matrix[9] == 0 &&
-	matrix[10] == 1 &&
-	matrix[11] == 0 &&
-	matrix[12] == 0 &&
-	matrix[13] == 0 &&
-	matrix[14] == 0 &&
-	matrix[15] == 1)
-		return true;
-	return false;	
-}
-    function ParseSceneGraph(node, texture_load_callback) {
-        
-        var newnode;
-        //its geometry
-        if (node.primitives) {
-            
-            //newnode = new THREE.Object3D();
+    {
+    	
+    	if(matrix == null)
+    		return true;
+    	if(
+    	matrix[0] == 1 &&	
+    	matrix[1] == 0 &&
+    	matrix[2] == 0 &&
+    	matrix[3] == 0 &&
+    	matrix[4] == 0 &&
+    	matrix[5] == 1 &&
+    	matrix[6] == 0 &&
+    	matrix[7] == 0 &&
+    	matrix[8] == 0 &&
+    	matrix[9] == 0 &&
+    	matrix[10] == 1 &&
+    	matrix[11] == 0 &&
+    	matrix[12] == 0 &&
+    	matrix[13] == 0 &&
+    	matrix[14] == 0 &&
+    	matrix[15] == 1)
+    		return true;
+    	return false;	
+    }
+
+    UTF8JsonLoader.prototype.parseMesh = function(node)
+    {
+
+        //newnode = new THREE.Object3D();
             var geo = new THREE.Geometry();
-            var mesh = newnode = new THREE.Mesh(geo,new THREE.MeshPhongMaterial());
-			mesh.castShadow = true;
-			mesh.receiveShadow = true;
+            var mesh  = new THREE.Mesh(geo,new THREE.MeshPhongMaterial());
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
             mesh.geometry.normals = [];
             mesh.geometry.UVS = [];
             
@@ -266,11 +389,11 @@
                     {
                         var face = new THREE.Face3(array[j],array[j+1],array[j+2],new THREE.Vector3(0,1,0),new THREE.Color('#000000'),0);
                         //in this case, the compression of the mesh index array to 16 bits has wrapped some indexes around the maximum
-						if(face.a < 0 || face.b < 0 || face.c < 0)
-							continue;
-						if(face.a > mesh.geometry.vertices.length || face.b > mesh.geometry.vertices.length || face.c > mesh.geometry.vertices.length)
-							continue;	
-						face.vertexNormals.push(mesh.geometry.normals[face.a]);
+                        if(face.a < 0 || face.b < 0 || face.c < 0)
+                            continue;
+                        if(face.a > mesh.geometry.vertices.length || face.b > mesh.geometry.vertices.length || face.c > mesh.geometry.vertices.length)
+                            continue;   
+                        face.vertexNormals.push(mesh.geometry.normals[face.a]);
                         face.vertexNormals.push(mesh.geometry.normals[face.b]);
                         face.vertexNormals.push(mesh.geometry.normals[face.c]);
                         face.vertexColors.push(mesh.geometry.colors[face.a]);
@@ -278,10 +401,10 @@
                         face.vertexColors.push(mesh.geometry.colors[face.c]);
 
                         mesh.geometry.faces.push(face);
-						if(mesh.geometry.UVS && mesh.geometry.UVS.length > 0)
-							mesh.geometry.faceVertexUvs[0].push([mesh.geometry.UVS[face.a],mesh.geometry.UVS[face.b],mesh.geometry.UVS[face.c]]);
-						else
-							mesh.geometry.faceVertexUvs[0].push([new THREE.Vector2(0,0),new THREE.Vector2(0,1),new THREE.Vector2(1,1)]);	
+                        if(mesh.geometry.UVS && mesh.geometry.UVS.length > 0)
+                            mesh.geometry.faceVertexUvs[0].push([mesh.geometry.UVS[face.a],mesh.geometry.UVS[face.b],mesh.geometry.UVS[face.c]]);
+                        else
+                            mesh.geometry.faceVertexUvs[0].push([new THREE.Vector2(0,0),new THREE.Vector2(0,1),new THREE.Vector2(1,1)]);    
 
                     }
                 } else {
@@ -298,55 +421,65 @@
             mesh.geometry.verticesNeedUpdate  = true;
             mesh.geometry.colorsNeedUpdate  = true;
             mesh.geometry.facesNeedUpdate  = true;
-			mesh.geometry.computeBoundingSphere();
-			mesh.geometry.computeBoundingBox();
-         }
-            var newmaterial = null;
-            if (node.stateset) {
-                newmaterial = _SceneManager.createMaterial();
-               
-				newmaterial.map = _SceneManager.getTexture('white.png');
-                if (node.stateset.textures) {
-                    var textures = node.stateset.textures;
-                    for ( var t = 0, tl = textures.length; t < tl; t++) {
-                        if (textures[t] === undefined) {
-                            continue;
-                        }
-                        if (!textures[t].file) {
-                            if (console !== undefined) {
-                            console.log("no 'file' field for texture "
-                                + textures[t]);
-                            }
-                        }
+            mesh.geometry.computeBoundingSphere();
+            mesh.geometry.computeBoundingBox();
 
-                        var tex;
-                        if (texture_load_callback)
-                            tex = texture_load_callback(textures[t].file);
-                        else
-                        {
-                            tex = _SceneManager.getTexture(textures[t].file);
-                        }
-                        if (tex) {
-                            tex.wrapS = THREE.RepeatWrapping;
-                            tex.wrapT = THREE.RepeatWrapping;
-                            newmaterial.map = tex;
-                            newmaterial.needsUpdate = true;
+            return mesh;
+    }
+
+    UTF8JsonLoader.prototype.ParseSceneGraph = function (node, texture_load_callback) {
+        
+        var newnode;
+        //its geometry
+        if (node.primitives) 
+        {
+            newnode = this.parseMesh(node);
+            
+        }
+        var newmaterial = null;
+        if (node.stateset) {
+            newmaterial = _SceneManager.createMaterial();
+           
+			newmaterial.map = _SceneManager.getTexture('white.png');
+            if (node.stateset.textures) {
+                var textures = node.stateset.textures;
+                for ( var t = 0, tl = textures.length; t < tl; t++) {
+                    if (textures[t] === undefined) {
+                        continue;
+                    }
+                    if (!textures[t].file) {
+                        if (console !== undefined) {
+                        console.log("no 'file' field for texture "
+                            + textures[t]);
                         }
                     }
+
+                    var tex;
+                    if (texture_load_callback)
+                        tex = texture_load_callback(textures[t].file);
+                    else
+                    {
+                        tex = _SceneManager.getTexture(textures[t].file);
+                    }
+                    if (tex) {
+                        tex.wrapS = THREE.RepeatWrapping;
+                        tex.wrapT = THREE.RepeatWrapping;
+                        newmaterial.map = tex;
+                        newmaterial.needsUpdate = true;
+                    }
                 }
-                if (node.stateset.material) {
-                    newmaterial.ambient = (toColor(node.stateset.material.diffuse));
-                    newmaterial.color = (toColor(node.stateset.material.diffuse));
-                    newmaterial.alpha = 1.0;
-                    newmaterial.shininess = (node.stateset.material.shininess);
-                    newmaterial.specular = (toColor(node.stateset.material.specular));
-					newmaterial.reflectivity = 0;
-                    newmaterial.needsUpdate = true;
-                }
-                
+            }
+            if (node.stateset.material) {
+                newmaterial.ambient = (toColor(node.stateset.material.diffuse));
+                newmaterial.color = (toColor(node.stateset.material.diffuse));
+                newmaterial.alpha = 1.0;
+                newmaterial.shininess = (node.stateset.material.shininess);
+                newmaterial.specular = (toColor(node.stateset.material.specular));
+				newmaterial.reflectivity = 0;
+                newmaterial.needsUpdate = true;
             }
             
-            
+        }
             
         if (node.matrix) {
         
@@ -372,7 +505,7 @@
             if(newnode == null)
                 newnode = new THREE.Object3D();
             for ( var child = 0; child < node.children.length; child++) {
-                var childnode = ParseSceneGraph(node.children[child],texture_load_callback);
+                var childnode = this.ParseSceneGraph(node.children[child],texture_load_callback);
                 if(childnode)
                     newnode.add(childnode);
             }
