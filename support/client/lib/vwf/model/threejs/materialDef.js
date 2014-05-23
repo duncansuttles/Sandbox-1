@@ -840,7 +840,7 @@
 						'vertexShader': THREE.ShaderLib.phong.vertexShader,
 						'fragmentShader': 'void main(){}'
 					};
-					console.log('Shader config:', config);
+
 					var mix_pars_fragment = [
 						"#if defined( USE_MAP ) || defined( USE_BUMPMAP ) || defined( USE_NORMALMAP ) || defined( USE_SPECULARMAP )",
 							"varying vec2 vUv;",
@@ -898,13 +898,13 @@
 
 
 					config.fragmentShader = [
-
 						"uniform vec3 diffuse;",
 						"uniform float opacity;",
 						"uniform vec3 ambient;",
 						"uniform vec3 emissive;",
 						"uniform vec3 specular;",
 						"uniform float shininess;",
+						"varying vec3 vFogPosition;",
 						THREE.ShaderChunk[ "color_pars_fragment" ],
 
 						//THREE.ShaderChunk[ "map_pars_fragment" ],
@@ -912,17 +912,17 @@
 
 						THREE.ShaderChunk[ "lightmap_pars_fragment" ],
 						THREE.ShaderChunk[ "envmap_pars_fragment" ],
-						THREE.ShaderChunk[ "fog_pars_fragment" ],
 						THREE.ShaderChunk[ "lights_phong_pars_fragment" ],
+						THREE.ShaderChunk[ "fog_pars_fragment" ],
 						THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
 						THREE.ShaderChunk[ "bumpmap_pars_fragment" ],
 						THREE.ShaderChunk[ "normalmap_pars_fragment" ],
 						THREE.ShaderChunk[ "specularmap_pars_fragment" ],
 						THREE.ShaderChunk[ "sphericalHarmonicAmbient_pars_fragment" ],
-						"void main() {",
 
+						"void main() {",
 							"gl_FragColor = vec4( vec3 ( 1.0 ), opacity );",
-							THREE.ShaderChunk[ "sphericalHarmonicAmbient_fragment" ],
+							THREE.ShaderChunk[ "sphericalHarmonicAmbient_fragment" ],					
 
 							//THREE.ShaderChunk[ "map_fragment" ],
 							mix_fragment,
@@ -937,7 +937,6 @@
 							THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
 							THREE.ShaderChunk[ "fog_fragment" ],
 						"}"
-
 					].join("\n");
 
 					currentmat = new THREE.ShaderMaterial(config);
