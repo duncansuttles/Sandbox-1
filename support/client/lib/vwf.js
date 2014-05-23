@@ -518,6 +518,7 @@
         }
         this.goOffline = function()
         {
+
             socket.removeListener( "disconnect", vwf.disconnected);
             socket.disconnect();
             socket = null;
@@ -895,6 +896,12 @@
                             var fields = JSON.parse( message );
                         }
 
+                        if(fields.action == 'goOffline')
+                        {
+                            vwf.goOffline();
+                            return;
+                        }
+
                         fields.time = Number( fields.time );
                         // TODO: other message validation (check node id, others?)
 
@@ -1027,6 +1034,7 @@
     
                 // Send the message.
                 var message = JSON.stringify( fields );
+               
                 socket.send( messageCompress.pack(message) );
  
             } else {
@@ -1035,7 +1043,7 @@
 
                 fields.client = this.moniker_; // stamp with the originating client like the reflector does
                 fields.origin = "reflector";
-
+                
                 queue.insert( fields );
     
             }
@@ -1102,6 +1110,7 @@
 
             // Note that the message should be validated before looking up and invoking an arbitrary
             // handler.
+           
             if(actionName == 'status' && !nodeID)
             {
                 alertify.log(parameters[0]);
@@ -2331,7 +2340,7 @@ if ( useLegacyID ) {  // TODO: fix static ID references and remove
      //       childID = childComponent.id || childComponent.uri || ( childComponent["extends"] || nodeTypeURI ) + "." + childName; 
        //     childID = childID.replace( /[^0-9A-Za-z_]+/g, "-" ); // stick to HTML id-safe characters  // TODO: hash uri => childID to shorten for faster lookups?  // TODO: canonicalize uri
             
-console.log(childID);
+
             if ( nodeID === 0 && childName == "application" && ! applicationID ) {
                 applicationID = childID;
             }
