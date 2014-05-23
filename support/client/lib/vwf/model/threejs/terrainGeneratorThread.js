@@ -14,6 +14,27 @@ self.init = function(data)
   }
   console.log('init complete');
   
+  self.supportsTransferables = true;
+
+  try{
+		var ab = new ArrayBuffer(1);
+		self.postMessage(ab, [ab]);
+		if (ab.byteLength) {
+		  self.log('Transferables are not supported in your browser!');
+		  self.supportsTransferables = false;
+		} else {
+		  // Transferables are supported.
+		}
+	}
+	catch(e)
+	{
+		if (e.message == "DataCloneError")
+		{
+			 self.log('Transferables are not supported in your browser!');
+		  self.supportsTransferables = false;
+		}
+	}
+
 }
 
 self.threadInit = function(data)
@@ -315,8 +336,11 @@ self.generateTerrain = function(terraindata,id,buffers)
 	self.setTimeout(function()
 	{
 		var response = {command:'terrainData',data:data,id:id};
-		self.postMessage(response,[response.data.vertices,response.data.normals,response.data.everyOtherZ,response.data.everyOtherNormal]);
-	},Math.random() * 100);
+		if(self.supportsTransferables)
+			self.postMessage(response,[response.data.vertices,response.data.normals,response.data.everyOtherZ,response.data.everyOtherNormal]);
+		else
+			self.postMessage(response);
+	},0);
 }
   
 self.addEventListener('message', function(e) {
@@ -324,6 +348,8 @@ self.addEventListener('message', function(e) {
   var window = self;
   
   var data = e.data;
+  if(!data)
+  	return;
   var command = e.data.command;
   
   if(self[command])

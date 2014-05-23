@@ -140,11 +140,18 @@ function startVWF(){
 	
 	//save configuration into global scope so other modules can use.
 	global.configuration = configSettings;
+
+
+
+
 	var p = process.argv.indexOf('-p'), port = 0, datapath = "";
-	
+
 	//This is a bit ugly, but it does beat putting a ton of if/else statements everywhere
 	port = p >= 0 ? parseInt(process.argv[p+1]) : (configSettings.port ? configSettings.port : 3000);
 	
+	p = process.argv.indexOf('-sp');
+	sslPort =  p >= 0 ? parseInt(process.argv[p+1]) : (configSettings.sslPort ? configSettings.sslPort : 443);
+
 	p = process.argv.indexOf('-d');
 	datapath = p >= 0 ? process.argv[p+1] : (configSettings.datapath ? libpath.normalize(configSettings.datapath) : libpath.join(__dirname, "../../data"));
 	global.datapath = datapath;
@@ -329,7 +336,22 @@ function startVWF(){
 				listen= require('https').createServer({
 					pfx: fs.readFileSync(global.configuration.pfx),
 					passphrase:global.configuration.pfxPassphrase
-				},app).listen(port);
+				},app).listen(sslPort);
+
+				//setup a simple server to redirct all requests to the SSL port
+				var redirect = http.createServer(function(req,res){
+					var requrl = 'http://' +  req.headers.host + req.url;
+					requrl = url.parse(requrl);
+					
+					delete requrl.host;
+					requrl.port = sslPort;
+					requrl.protocol = "https:";
+					requrl = url.format(requrl);
+					res.writeHead(302, {
+					    "Location": requrl 
+					});
+					res.end();
+				}).listen(port);
 			}
 			else
 			{

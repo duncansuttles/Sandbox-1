@@ -124,8 +124,15 @@ new (function(){
 		this.currentMesh[i] = mesh;
 		this.currentID[i] = Math.floor(Math.random()*10000000);
 		this.currentState[i] = RUNNING;
-		var request = {command:'generateTerrain',data:data,id:this.currentID[i],buffers:this.currentBuffers[i]};
-		this.worker[i].postMessage(request,request.buffers);
+		if(this.supportsTransferables)
+		{
+			var request = {command:'generateTerrain',data:data,id:this.currentID[i],buffers:this.currentBuffers[i]};
+			this.worker[i].postMessage(request,request.buffers);
+		}else
+		{
+			var request = {command:'generateTerrain',data:data,id:this.currentID[i],buffers:[]};
+			this.worker[i].postMessage(request);
+		}
 		
 	}
 	this.sample = function(vert,matrix,res)
@@ -261,6 +268,29 @@ new (function(){
 				this.currentID[i] =  null;
 				this.currentBuffers[i] = [];
 			} 
+
+
+				this.supportsTransferables = true;
+				
+				try{
+				var ab = new ArrayBuffer(1);
+				this.worker[0].postMessage(ab, [ab]);
+				if (ab.byteLength) {
+				  console.log('Transferables are not supported in your browser!');
+				  this.supportsTransferables = false;
+				} else {
+				  // Transferables are supported.
+				}
+				}catch(e)
+				{
+					if (e.message == "DataCloneError")
+					{
+						console.log('Transferables are not supported in your browser!');
+				  		this.supportsTransferables = false;
+					}
+				}
+
+
 		}.bind(this);
 		
 		if(this.terrainAlgorithm.poolInit)
@@ -274,6 +304,10 @@ new (function(){
 		{
 		    init(poolSideData);	
 		}
+
+
+	
+
 		
 		
 	}

@@ -94,7 +94,7 @@ exports.statsHandler = function(req, res, next){
 	sessions.GetSessionData(req,function(sessionData)
 	{
 		var allSessions = sessions.getAllSessions();
-		var instances = global.instances;
+		var instances = global.instances.instances;
 		var allConnections = 0;
 		for(var i in instances)
 		{
@@ -292,7 +292,7 @@ exports.world = function(req, res, next){
 				res.status(404).render('_404');
 				return;
 			}
-			var instance = global.instances ? global.instances[global.appPath+"/"+req.params.page+"/"] : false;
+			var instance = global.instances ? global.instances.get(global.appPath+"/"+req.params.page+"/") : false;
 			var anonymous = [];
 			var users = [];
 
@@ -348,7 +348,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 				inst.shortid = i.substr(global.appPath.length+1,16);
 				if(global.instances)
 				{
-					if(global.instances[i.replace(/_/g,"/")])
+					if(global.instances.get(i.replace(/_/g,"/")))
 						results.push(inst);
 				}
 			}

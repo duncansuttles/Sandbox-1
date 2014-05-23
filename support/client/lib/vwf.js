@@ -1612,13 +1612,16 @@
                     } );
                 }
 
-                //debugger
-                if(nodeComponent == "index-vwf")
-                {
-                        $(document).trigger('setstatecomplete');
-                        $('#loadstatus').remove(); 
-                }
-
+                
+				if(nodeComponent == "index-vwf")
+				{
+					$(document).trigger('setstatecomplete');
+					$('#loadstatus').remove(); 
+                    _ProgressBar.hide();
+                    vwf.decendants('index-vwf').forEach(function(i){
+                        vwf.callMethod(i,'ready',[]);
+                    })
+				}
 
             } );
 

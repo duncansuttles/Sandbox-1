@@ -672,7 +672,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				$('#materialaccordion').append('	<h3>' + '		<a href="#">Texture Layer ' + i + '</a>' + '	</h3>' + '	<div id="Layer' + i + 'Settings">' + '	</div>');
 				var layer = this.currentMaterial.layers[i];
 				var rootid = 'Layer' + i + 'Settings';
-				$('#' + rootid).append('<img id="' + rootid + 'thumb" class="BigTextureThumb"/>');
+				$('#' + rootid).append('<img crossOrigin="Anonymous" id="' + rootid + 'thumb" class="BigTextureThumb"/>');
 				$('#' + rootid + 'thumb').attr('src', this.currentMaterial.layers[i].src);
 				$('#' + rootid).append('<div id="' + rootid + 'thumbsrc" class="BigTextureThumbSrc" style="overflow:hidden; text-overflow:ellipsis; text-align: center;font-weight: bold;border: none;"/>');
 				$('#' + rootid + 'thumbsrc').text(this.currentMaterial.layers[i].src);
@@ -849,8 +849,11 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			{
 				if (node)
 				{
+					var mat = vwf.getProperty(node.id, 'materialDef');
+					if(!mat)
+						return;
 					
-					this.currentMaterial = JSON.parse(JSON.stringify(vwf.getProperty(node.id, 'materialDef')));
+					this.currentMaterial = JSON.parse(JSON.stringify(mat));
 					if (!this.currentMaterial){
 					if(this.isOpen()) this.hide();
 					return;

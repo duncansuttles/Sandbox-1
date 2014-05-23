@@ -113,7 +113,26 @@ define(
 			
 
 		});
-
+	
+	$('#MenuCreateGUIDialog').click(function(e){
+		_GUIView.createDialog();
+	});
+	$('#MenuCreateGUIButton').click(function(e){
+		_GUIView.createButton();
+	});
+	$('#MenuCreateGUILabel').click(function(e){
+		_GUIView.createLabel();
+	});
+	$('#MenuCreateGUISlider').click(function(e){
+		_GUIView.createSlider();
+	});
+	$('#MenuCreateGUICheck').click(function(e){
+		_GUIView.createCheckbox();
+	});
+	$('#MenuCreateGUIPanel').click(function(e){
+		_GUIView.createPanel();
+	});
+	  
 
 		$('#MenuEn').click(function (e)
 		{

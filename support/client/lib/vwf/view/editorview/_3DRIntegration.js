@@ -204,6 +204,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 
 		this.displayUploadPercent = function(per)
 		{
+			per = per - Math.floor(per);
 			var f = 2 * Math.PI * per;
 			var x = -1;
 			var y = 0;
@@ -228,34 +229,31 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 			$('#ModelUploadFile').change(function(){
 
 				var files = $('#ModelUploadFile')[0].files;
+				if(!files) return;
 				var file = files[0];
+				if(!file) return;
 				console.log(file);
+
+				var type = file.name.substr(file.name.lastIndexOf('.'));
+				if(type != '.zip')
+				{
+					$('#uploadStatus').text('Choose a ZIP file that contains a 3D Model and the associated textures');
+					return;
+
+				}
+
 				$('#filename').text(file.name)
-				$('#filesize').text(file.size)
-				$('#filetype').text(file.type)
+				$('#filesize').text(Math.floor(file.size/1000) + 'KB');
+				$('#filetype').text(type)
 				$('#uploadTitle').val(file.name)
-				
+				$('#uploadStatus').text('Ready. Click "Upload"');
+				$('#submit3DRUpload').removeClass('_3drDisabled');
+				$('#progresspath').attr('stroke','#779');
+				__3DRIntegration.displayUploadPercent(0);
 			})
 			
 			
-			$('#dragArea').on('drop',function(e){
-
-				console.log(e);
-				var dt = dt.dataTransfer;
-				var file = dt.files[0]
-				$('#ModelUploadFile')[0].files = dt.files[0];
-				e.preventDefault();
-				return false;
-
-			});
-			$('#dragArea').on('dragenter', function (e) {
-     			 if (e.preventDefault) { e.preventDefault(); }
-     			 return false;
-    		});
-    		$('#dragArea').on('dragover', function (e) {
-     			 if (e.preventDefault) { e.preventDefault(); }
-     			 return false;
-    		});
+			
 
 
 
@@ -268,60 +266,89 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 			$('#submit3DRUpload').click(function()
 			{
 				
+				if($('#submit3DRUpload').hasClass('_3drDisabled'))
+				{
+					return;
+				}
 				var files = $('#ModelUploadFile')[0].files;
 				var file = files[0];
 				var xhr = new XMLHttpRequest();
-				if (xhr.upload && file.size <= 15 * 1024 * 1024) {
+				if (xhr.upload && file.size <= 30 * 1024 * 1024) {
 					xhr.open("POST", "./vwfdatamanager.svc/3drupload", true);
 					xhr.setRequestHeader("X_FILENAME", file.name);
 					
 					
-					
-
-					
-					_Notifier.startWait('Uploading')
+					$('#uploadStatus').text('Uploading')
 					xhr.upload.addEventListener("progress", function(oEvent)
 					{
 						//upload progress
 						var percentComplete = oEvent.loaded / oEvent.total;
-						
-						_Notifier.startWait('Uploading ' + percentComplete + '%')
+						__3DRIntegration.displayUploadPercent(percentComplete);
+						$('#uploadStatus').text('Uploading ' + percentComplete + '%')
 					}, false);
 					xhr.upload.addEventListener("load", function()
 					{
-						_Notifier.startWait("Waiting for conversion.");
+						$('#uploadStatus').text("Waiting for conversion.");
+						$('#progresspath').attr('stroke','#7E9');
+
+						var percent = 0;
+						
+						var animateWait = function()
+						{
+							percent += .01;
+							__3DRIntegration.displayUploadPercent(percent);
+							if($('#uploadStatus').text() == "Waiting for conversion.")
+							{
+								window.setTimeout(animateWait,20);
+							}
+						}
+						window.setTimeout(animateWait,20);
+
 					}, false);
 
 					xhr.upload.addEventListener("error", function()
 					{
-						console.log("upload error.");
-						_Notifier.stopWait();
+						$('#uploadStatus').text("upload error.");
+						$('#progresspath').attr('stroke','#E79');
 
 					}, false);
 
 					xhr.addEventListener("error",function()
 					{
-						console.log("xhr error.");
-						_Notifier.stopWait();
+						$('#uploadStatus').text("xhr error.");
+						$('#progresspath').attr('stroke','#E79');
 
 					},false);
 					xhr.addEventListener("load",function()
 					{
 						var pid = JSON.parse(xhr.responseText);
-						_Notifier.startWait("Fetching Metadata");
+						$('#uploadStatus').text("Fetching Metadata");
 
 						_ModelLibrary.getMetadata(pid,
 						function (object)
 						{
 							var metadata = object;
+							if(metadata.ConversionAvailable == false)
+							{
+								$('#uploadStatus').text("Model could not be converted.");
+								$('#progresspath').attr('stroke','#E79');
+								return;
+							}
+
 							_ModelLibrary.MetadataCache[pid] = object;
 							__3DRIntegration.insertObject(pid);
-							_Notifier.startWait("Downloading");
+							var proto = _ModelLibrary.createProtoForPID(pid);
+							_InventoryManager.addProto(proto,$('#uploadTitle').val(),'3DRObject');
+							$('#uploadStatus').text("Downloading");
+							window.setTimeout(function()
+							{
+								$('#ModelUploadDialog').hide();
+							},500);
 						},
 						function (thrownError)
 						{
-							_Notifier.stopWait();
-							alert(thrownError);
+							
+							$('#uploadStatus').text(thrownError);
 						});
 
 						
@@ -334,6 +361,10 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 					formData.append('model', file);
 
 					xhr.send(formData);
+				}else
+				{
+					$('#uploadStatus').text('Error. Choose a different file.');
+
 				}
 			});
 		}
@@ -397,16 +428,20 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 		}
 		this.showUpload = function()
 		{
+			if(!_UserManager.GetCurrentUserName())
+			{
+				alertify.alert('You must be logged in to upload a model');
+				return;
+			}
 			$('#ModelUploadDialog').show();
-			var x = $('.dragArea').offset().top;
-			var y = $('.dragArea').offset().left;
-			var w = $('.dragArea').width();
-			var h = $('.dragArea').height();
-			var x2 = x + w;
-			var y2 = y + h;
-			
-
-			
+			$('#filename').text('')
+			$('#filesize').text('')
+			$('#filetype').text('')
+			$('#uploadTitle').val('')
+			$('#uploadStatus').text('Choose a ZIP file containing a DAE, FBX, OBJ, 3DS, or SKP file and textures.');
+			$('#submit3DRUpload').addClass('_3drDisabled');
+			__3DRIntegration.displayUploadPercent(0);
+			$('#progresspath').attr('stroke','#779');
 
 		}
 		this.BuildModelRequest = function (pid)
@@ -425,6 +460,26 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 			}).responseText.toLowerCase();
 			return (downloadPermssion == '"fetchable"' || downloadPermssion == '"editable"' || downloadPermssion == '"admin"' )
 		}
+		this.createProtoForPID = function(pid)
+		{
+			var pos = [0, 0, 0];
+			var proto = {
+					extends: 'asset.vwf',
+					source: _ModelLibrary.BuildModelRequest(pid),
+					type: 'subDriver/threejs/asset/vnd.osgjs+json+compressed',
+					properties: {
+						rotation: [1, 0, 0, 0],
+						translation: pos,
+						scale: [_ModelLibrary.MetadataCache[pid].UnitScale, _ModelLibrary.MetadataCache[pid].UnitScale, _ModelLibrary.MetadataCache[pid].UnitScale],
+						owner: document.PlayerNumber,
+						type: '3DR Object',
+						DisplayName: _ModelLibrary.MetadataCache[pid].Title
+
+					}
+				};
+				proto.properties.DisplayName = Editor.GetUniqueName(proto.properties.DisplayName);
+			return proto;	
+		}
 		this.insertObject = function (pid)
 		{
 			var pos = [0, 0, 0];
@@ -440,26 +495,15 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 			pos[0] = Editor.SnapTo(pos[0], Editor.MoveSnap);
 			pos[1] = Editor.SnapTo(pos[1], Editor.MoveSnap);
 			pos[2] = Editor.SnapTo(pos[2], Editor.MoveSnap);
+
+
 			if (_ModelLibrary.canDownload(pid))
 			{
-			
+				
+				var proto = this.createProtoForPID(pid);
+				proto.properties.translation = pos;
 				
 				
-				var proto = {
-					extends: 'asset.vwf',
-					source: _ModelLibrary.BuildModelRequest(pid),
-					type: 'subDriver/threejs/asset/vnd.osgjs+json+compressed',
-					properties: {
-						rotation: [1, 0, 0, 0],
-						translation: pos,
-						scale: [_ModelLibrary.MetadataCache[pid].UnitScale, _ModelLibrary.MetadataCache[pid].UnitScale, _ModelLibrary.MetadataCache[pid].UnitScale],
-						owner: document.PlayerNumber,
-						type: '3DR Object',
-						DisplayName: _ModelLibrary.MetadataCache[pid].Title
-
-					}
-				};
-				proto.properties.DisplayName = Editor.GetUniqueName(proto.properties.DisplayName);
 				//vwf_view.kernel.createNode(proto , null);
 				//vwf_view.kernel.createChild('index-vwf',GUID(),proto,null,null); 
 				_UndoManager.recordCreate('index-vwf', _ModelLibrary.MetadataCache[pid].Title, proto);

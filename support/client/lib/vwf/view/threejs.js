@@ -1407,6 +1407,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 var parentID = child.parentID;
                 var parent = sceneView.state.nodes[ child.parentID ];
                 var trans, parentTrans, localTrans, localNormal, parentInverse, relativeCamPos;
+                returnData.eventNodeData[''][0].sourceID = pointerPickID;
                 while ( child ) {
 
                     trans = goog.vec.Mat4.createFromArray( child.threeObject.matrix.elements );
@@ -1452,7 +1453,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                         distance: pickInfo ? pickInfo.distance : undefined,
                         globalPosition: pickInfo ? pickInfo.coord : undefined,
                         globalNormal: pickInfo ? pickInfo.normal : undefined,
-                        globalSource: worldCamPos,            
+                        globalSource: worldCamPos,  
+                        sourceID : pointerPickID,
                     } ];
 
                     childID = parentID;
@@ -1691,13 +1693,19 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                         deltaX: e.wheelDeltaX / -40,
                         deltaY: e.wheelDeltaY / -40,
                     };
+                    eData.eventData[0].wheelDelta = e.wheelDelta / -40;
+                    eData.eventData[0].wheelDeltaX = e.wheelDeltaX / -40;
+                    eData.eventData[0].wheelDeltaY = e.wheelDeltaY / -40;
                     var id = sceneID;
                     if ( pointerDownID && mouseRightDown || mouseLeftDown || mouseMiddleDown )
                         id = pointerDownID;
                     else if ( pointerOverID )
                         id = pointerOverID; 
                     if(id)    
-                    sceneView.kernel.dispatchEvent( id, "pointerWheel", eData.eventData, eData.eventNodeData );
+                    sceneView.kernel.dispatchEvent( id, "pointerWheel", JSON.parse(JSON.stringify(eData.eventData)),  JSON.parse(JSON.stringify(eData.eventNodeData)) );
+                	delete eData.eventData[0].wheelDelta;
+                	delete eData.eventData[0].wheelDeltaY;
+                	delete eData.eventData[0].wheelDeltaX;
                 }
             };
         }
@@ -1711,13 +1719,19 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                         deltaX: e.detail,
                         deltaY: e.detail,
                     };
+                    eData.eventData[0].wheelDelta = e.detail ;
+                    eData.eventData[0].wheelDeltaX = e.detail ;
+                    eData.eventData[0].wheelDeltaY = e.detail ;
                     var id = sceneID;
                     if ( pointerDownID && mouseRightDown || mouseLeftDown || mouseMiddleDown )
                         id = pointerDownID;
                     else if ( pointerOverID )
                         id = pointerOverID; 
                         
-                    sceneView.kernel.dispatchEvent( id, "pointerWheel", eData.eventData, eData.eventNodeData );
+                    sceneView.kernel.dispatchEvent( id, "pointerWheel", JSON.parse(JSON.stringify(eData.eventData)),  JSON.parse(JSON.stringify(eData.eventNodeData)));
+                    delete eData.eventData[0].wheelDelta;
+                	delete eData.eventData[0].wheelDeltaY;
+                	delete eData.eventData[0].wheelDeltaX;
                 }
             });
         }

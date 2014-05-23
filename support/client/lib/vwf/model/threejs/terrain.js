@@ -34,6 +34,7 @@
 		child.setGenerator(this.terrainGenerator);
 		child.setRoot(this.getRoot());
 		child.init(8,8);
+
 		child.update(new THREE.Vector3(0,0,0));
 
 
@@ -52,7 +53,7 @@
 			
 			
 			this.terrainGenerator = loadScript("vwf/model/threejs/terrainGenerator.js");
-			for(var i = 0; i < this.children.length; i++)
+			for(var i in this.children)
 				this.children[i].setGenerator(this.terrainGenerator);
 
 			self.TileCache.terrainGenerator = this.terrainGenerator;
@@ -149,6 +150,11 @@
 			
 			self.needRebuild = rebuildlist || self.needRebuild;
 			self.rebuild(true);	
+			//forceupdate children
+			for(var i in this.children)
+			{
+				this.children[i].update(null,true);
+			}
 			
 		}
 		this.getAlgorithmData = function()
@@ -174,6 +180,11 @@
 			this.quadtree = new QuadtreeNode([-worldExtents,-worldExtents],[worldExtents,worldExtents],this.getRoot(),0,-1,minTileSize,maxTileSize);
 			this.terrainGenerator.reInit(this.terrainType,this.terrainParams);
 			this.TileCache.clear();
+			//forceupdate children
+			for(var i in this.children)
+			{
+				this.children[i].update(null,true);
+			}
 		}
 		this.setTerrainAlgorithm = function(algo,params)
 		{
@@ -193,6 +204,11 @@
 				});
 				quadtreesetRes(tileres);
 				this.quadtree = new QuadtreeNode([-worldExtents,-worldExtents],[worldExtents,worldExtents],this.getRoot(),0,-1,minTileSize,maxTileSize);
+				//forceupdate children
+				for(var i in this.children)
+				{
+					this.children[i].update(null,true);
+				}
 			}catch(e)
 			{
 				console.log('terrain algorithm not found');
@@ -331,6 +347,7 @@
 
 				for(var i in this.children)
 				{
+
 					this.children[i].update(campos);
 				}
 
@@ -673,6 +690,15 @@
 			}
 			
 			self.rebuild(force);
+
+			//forceupdate children - because the terrain decoration depends on the actual geometry, it needs to be marked dirty
+			//when a new tile is generated
+			//unfortunatly, we currently don't detect that a given tile has no effect on the decoration,so we end up generating 
+			//sometimes when we don't need to. Generation of the decoration is super fast, so not a big problem for now.
+			for(var i in this.children)
+			{
+				this.children[i].update(null,true);
+			}
 			
 			
 		}.bind(self)
@@ -754,6 +780,11 @@
 				{
 					algoprops[propertyName] = propertyValue;
 					self.setAlgorithmData(algoprops);
+					//forceupdate children
+					for(var i in this.children)
+					{
+						this.children[i].update(null,true);
+					}
 				}
 			}
 				
