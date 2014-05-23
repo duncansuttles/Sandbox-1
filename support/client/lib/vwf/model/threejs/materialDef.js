@@ -370,7 +370,7 @@
 				}
 					
 				var mapnames = ['map','lightMap','specularMap','envMap'];
-				if(_dRenderer.supportsStandardDerivatives())
+				if(window._dRenderer && _dRenderer.supportsStandardDerivatives())
 				{
 					mapnames.push('normalMap');
 					mapnames.push('bumpMap');
@@ -388,7 +388,7 @@
 							currentmat.alphaTest = 1 - value.layers[i].alpha;
 							
 						}
-						if(value.layers[i].mapTo == 2 && _dRenderer.supportsStandardDerivatives())
+						if(window._dRenderer && value.layers[i].mapTo == 2 && _dRenderer.supportsStandardDerivatives())
 						{
 							mapname = 'bumpMap';
 							currentmat.bumpScale = value.layers[i].alpha/10.0;
@@ -397,7 +397,7 @@
 						{
 							mapname = 'lightMap';
 						}	
-						if(value.layers[i].mapTo == 4 && _dRenderer.supportsStandardDerivatives())
+						if(window._dRenderer && value.layers[i].mapTo == 4 && _dRenderer.supportsStandardDerivatives())
 						{
 							mapname = 'normalMap';
 							currentmat.normalScale.x = value.layers[i].alpha;

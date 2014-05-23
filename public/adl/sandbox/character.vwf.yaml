@@ -145,6 +145,7 @@ scripts:
     }
     this.initCycles = function()
     {
+        if(!this.cycles) return;
         var cycles = this.cycles.internal_val;
         for(var i in cycles)
         {
@@ -165,6 +166,7 @@ scripts:
                     this.current=0;
             }.bind(cycles[i]);
         }
+        this.cycleInit = true;
     }
     this.createNameTag = function(PlayerNumber)
     {
@@ -430,7 +432,8 @@ scripts:
     this.update = function(moniker)
     {
        
-      
+        if(!this.cycleInit)
+          this.initCycles();
         this.updatecounter++;
         var updateFreqDivisor = 1;
         

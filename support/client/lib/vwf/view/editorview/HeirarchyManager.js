@@ -249,7 +249,7 @@ define(function ()
 			var ret = {name:'',vwfID:'',children:[]};
 			ret.vwfID = nodeID;
 
-			var vwfnode = vwf.getNode(nodeID);
+			var vwfnode = _Editor.getNode(nodeID);
 			ret.name = ret.vwfID;
 			if(vwfnode.properties && vwfnode.properties.DisplayName)
 				ret.name = vwfnode.properties.DisplayName;
@@ -273,7 +273,7 @@ define(function ()
 			if (!node) return null;
 			var parent = vwf.parent(node);
 			if (!parent) return null;
-			parent = vwf.getNode(parent);
+			parent = _Editor.getNode(parent);
 			if (!parent) return null;
 			return parent.properties.DisplayName || parent.id;
 		}

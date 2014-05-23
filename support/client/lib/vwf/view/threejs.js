@@ -22,13 +22,10 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		renderMode: NORMALRENDER,
         initialize: function( rootSelector ) {
            
-	    
-
-	    //here, we will keep a record of the incoming properties, mostly so that the fog can switch around and we still know the old values
-	    //for density and such, since we can't store them in the scene.fog when scene.fog is null
-
-
-
+          rootSelector = {"application-root":'#vwf-root'}; 
+	    if(!this.events)
+				this.events = {};
+			
 	    $(document).on('selectionChanged',this.selectionChanged.bind(this));
 		this.renderTargetPasses = [];
             this.rootSelector = rootSelector;
@@ -308,14 +305,14 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
             //the created node is a scene, and has already been added to the state by the model.
             //how/when does the model set the state object? 
+            console.log('view saw: ',childID);
             if(this.state.scenes[childID])
             {
                 var threeview = this;
                 var domWin = window;
                 
                 
-                this.canvasQuery = jQuery(this.rootSelector).append("<canvas id='" + this.state.sceneRootID + "' width='"+this.width+"' height='"+this.height+"' class='vwf-scene'/>"
-                	 
+                this.canvasQuery = jQuery(this.rootSelector["application-root"]).append("<canvas id='" + 'index-vwf' + "' width='"+this.width+"' height='"+this.height+"' class='vwf-scene'/>"
                 ).children(":last");
                 this.canvasQuery.css('display','none');
                 initScene.call(this,this.state.scenes[childID]);

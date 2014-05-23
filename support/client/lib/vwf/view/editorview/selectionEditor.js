@@ -126,7 +126,7 @@ $('#selectionEditorSearch').keyup(function () {
 			$.jstree.defaults.core.themes.dots = true;
 			$.jstree.defaults.core.themes.stripes = true;
 			$.jstree.defaults.checkbox.three_state = false;
-			var root = JSON.parse(JSON.stringify(vwf.getNode('index-vwf',true)));
+			var root = JSON.parse(JSON.stringify(_Editor.getNode('index-vwf',true)));
 			this.nodeData = root;
 			this.walkToBuildJSTreeData(root);
 			root.state.opened = true;
