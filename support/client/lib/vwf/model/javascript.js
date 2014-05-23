@@ -225,12 +225,57 @@ node.id = childID; // TODO: move to vwf/model/object
                 enumerable: true,
             } );
 
-	    Object.defineProperty( node, "Scene", {  // TODO: only define on shared "node" prototype?
+	   		Object.defineProperty( node, "Scene", {  // TODO: only define on shared "node" prototype?
                 get: function() {
                     return jsDriverSelf.nodes['index-vwf'];
                 },
                 enumerable: true,
             } );
+
+            Object.defineProperty(node, 'bind',{
+
+            	value:function(eventName,value)
+            	{
+            		 var listeners = this.private.listeners[eventName] ||
+                        ( this.private.listeners[eventName] = [] ); // array of { handler: function, context: node, phases: [ "phase", ... ] }
+                    if ( typeof value == "function" || value instanceof Function ) {
+                        listeners.push( { handler: value, context: this } ); // for n
+                    }else
+                    {
+                    	console.error('bound value must be a function');
+                    }
+
+            	},
+            	enumerable:true,
+            	configurable:false
+            });
+            Object.defineProperty(node, 'unbind',{
+
+            	value:function(eventName,value)
+            	{
+            		 var listeners = this.private.listeners[eventName] ||
+                        ( this.private.listeners[eventName] = [] ); // array of { handler: function, context: node, phases: [ "phase", ... ] }
+                     if ( typeof value == "function" || value instanceof Function ) {
+                        
+                        var found = -1;
+                        for(var i = 0; i < listeners.length; i++)
+                        {
+                        	if(listeners[i].handler == value)
+                        		found = i;
+                        }
+                        if(found != -1)
+                        {
+                        	listeners.splice(found,1);
+                        }
+                    }else
+                    {
+                    	console.error('bound value must be a function');
+                    }
+
+            	},
+            	enumerable:true,
+            	configurable:false
+            });
 	    
             // Define a "future" proxy so that for any this.property, this.method, or this.event, we
             // can reference this.future( when, callback ).property/method/event and have the
@@ -1370,6 +1415,7 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
             if(handled) return handled;
 
             //if not handled, iterate over all children.
+            /*
             handled = handled || phase != 'bubble' && node.children && node.children.reduce( function( handled, child ) {
                         
                         //don't distribute to child behaviors.
@@ -1379,7 +1425,7 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
 
                         var result = handled || jsDriverSelf.firingEvent(child.id,eventName, eventParameters); // default context is the global root  // TODO: this presumes this.creatingNode( undefined, 0 ) is retained above
                         return handled || result===true || result===undefined; // interpret no return as "return true"
-            }, handled );
+            }, handled );*/
 			
 			
             return handled;

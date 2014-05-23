@@ -251,6 +251,8 @@ events:
   pointerDown:
   pointerUp:
   pointerMove:
+  keyDown:
+  keyUp:
 methods:  
   AmLocal:
   newplayer:

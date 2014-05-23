@@ -1121,6 +1121,18 @@
             if ( memberName ) args.push( memberName );
             if ( parameters ) args = args.concat( parameters ); // flatten
 
+            if(actionName == 'createChild')
+            {
+                args.push(function(childID)
+                {
+                    //when creating over the reflector, call ready on heirarchy after create.
+                    //nodes from setState are readied in createNode
+                    vwf.decendants(childID).forEach(function(i){
+                        vwf.callMethod(i,'ready',[]);
+                    });
+                    vwf.callMethod(childID,'ready',[]);
+                });
+            }
             // Invoke the action.
 
             var result = this[actionName] && this[actionName].apply( this, args );
@@ -1479,7 +1491,7 @@
             // `createNode( nodeComponent, undefined, callback )`. (`nodeAnnotation` was added in
             // 0.6.12.)
 
-            if(nodeComponent && nodeComponent.id == "index-vwf")
+            if(nodeComponent && nodeComponent.id == vwf.application())
             {
                     $(document).trigger('setstatebegin');
             }
@@ -1658,9 +1670,12 @@
 					$(document).trigger('setstatecomplete');
 					$('#loadstatus').remove(); 
                     _ProgressBar.hide();
-                    vwf.decendants('index-vwf').forEach(function(i){
+
+                    vwf.decendants(vwf.application()).forEach(function(i){
                         vwf.callMethod(i,'ready',[]);
-                    })
+                    });
+                    vwf.callMethod(vwf.application(),'ready',[]);
+
 				}
 
             } );
@@ -2280,8 +2295,9 @@
         /// 
         /// @see {@link module:vwf/api/kernel.createChild}
 
+        this.createDepth = 0;
         this.createChild = function( nodeID, childName, childComponent, childURI, callback_async /* ( childID ) */ ) {
-
+            vwf.createDepth++;
             this.logger.debuggx( "createChild", function() {
                 return [ nodeID, childName, JSON.stringify( loggableComponent( childComponent ) ), childURI ];
             } );
@@ -2797,6 +2813,7 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
 
                 // Always complete asynchronously so that the stack doesn't grow from node to node
                 // while createChild() recursively traverses a component.
+               
 
                 if ( callback_async ) {
 

@@ -29,17 +29,26 @@ methods:
   satProperty:
   deletingNode:
   setPosition:  
+  keyUp:
+  keyDown:
+  ready:  
 events:
   pointerOver:
   pointerOut:
-  keyUp:
-  keyDown:
 scripts:
 - |
     this.attached = function()
     {
         //called when added to the scene, after initialize is called and parent is set.
         this.parent.newClient(this.PlayerNumber);
+    }
+    this.ready = function()
+    {
+        var self = this;
+        this.kd = function(e,d){ return self.keyDown(e,d)};
+        this.ku = function(e,d){ return self.keyUp(e,d)};
+        this.Scene.bind('keyDown', this.kd);
+        this.Scene.bind('keyUp' , this.ku);
     }
     this.initialize = function(){
 
@@ -191,7 +200,9 @@ scripts:
        _dView.unbind('postprerender',this.prerendercallback);
         _UserManager.PlayerDeleted(this.PlayerNumber);
        //this.deleteMe = true;            
-       $(this.nametag).remove()
+       $(this.nametag).remove();
+       this.Scene.unbind('keyDown', this.kd);
+       this.Scene.unbind('keyUp' , this.ku);
        
     }
     this.placeNameTag = function(e,viewprojection,wh, ww)

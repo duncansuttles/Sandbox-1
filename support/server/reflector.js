@@ -202,7 +202,7 @@ function getBlankScene(state,cb)
      //get the session information for the socket
      sessions.GetSessionData(socket.handshake,function(loginData){
 
-            console.log(loginData);
+            
 
             socket.loginData = loginData;
 
@@ -308,7 +308,7 @@ function getBlankScene(state,cb)
         	 var Message = messageCompress.pack(message);
 	     	 for(var i in this.clients)
 	     	 {
-	     	 		console.log(Message);
+	     	 		
 	     	 		if(!this.clients[i].pending)
 	          			this.clients[i].emit('message',Message);   
 	          		else
@@ -418,7 +418,7 @@ function getBlankScene(state,cb)
 
       //add the new client to the instance data
       thisInstance.clients[socket.id] = socket;   
-      console.log(socket.loginData);
+     
 
 
       socket.pending = true;
@@ -703,7 +703,7 @@ function getBlankScene(state,cb)
                   else
                   {
                     thisInstance.Error('permission denied for modifying ' + node.id,1);
-                    console.log(sendingclient.loginData);
+                    
                     return;
                   }
             }
