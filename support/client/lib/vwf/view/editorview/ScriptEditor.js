@@ -501,7 +501,7 @@ define(function ()
 				vwf_view.kernel.deleteMethod(_ScriptEditor.currentNode.id, this.selectedMethod);
 				window.setTimeout(function ()
 				{
-					_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+					_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 					_ScriptEditor.BuildGUI();
 				}, 500);
 			}
@@ -514,7 +514,7 @@ define(function ()
 				vwf_view.kernel.deleteProperty(_ScriptEditor.currentNode.id, this.selectedProperty);
 				window.setTimeout(function ()
 				{
-					_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+					_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 					_ScriptEditor.BuildGUI();
 				}, 500);
 			}
@@ -564,7 +564,7 @@ define(function ()
 				vwf_view.kernel.deleteEvent(_ScriptEditor.currentNode.id, this.selectedEvent);
 				window.setTimeout(function ()
 				{
-					_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+					_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 					_ScriptEditor.BuildGUI();
 				}, 500);
 			}
@@ -891,7 +891,7 @@ define(function ()
 		}
 		this.PostSaveMethod = function ()
 		{
-			_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+			_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 			_ScriptEditor.MethodChanged = false;
 			$('#methodtext').css('border-color', 'black');
 			_ScriptEditor.BuildGUI(true);
@@ -931,7 +931,7 @@ define(function ()
 		this.PostSaveEvent = function ()
 		{
 			
-			_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+			_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 			_ScriptEditor.EventChanged = false;
 			$('#eventtext').css('border-color', 'black');
 			_ScriptEditor.BuildGUI(true);
@@ -972,7 +972,7 @@ define(function ()
 		
 		this.PostSaveProperty = function ()
 		{
-			_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+			_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 			_ScriptEditor.PropertyChanged = false;
 			$('#propertytext').css('border-color', 'black');
 			_ScriptEditor.BuildGUI(true);
@@ -1326,7 +1326,7 @@ define(function ()
 				methods[i] = node.methods[i];
 			
 			}
-			node = vwf.getNode(vwf.prototype(node.id),true);
+			node = _Editor.getNode(vwf.prototype(node.id),true);
 			}
 			
 			return methods;
@@ -1345,7 +1345,7 @@ define(function ()
 				properties[i] = node.properties[i];
 			
 			}
-			node = vwf.getNode(vwf.prototype(node.id),true);
+			node = _Editor.getNode(vwf.prototype(node.id),true);
 			}
 			return properties;
 		}
@@ -1361,7 +1361,7 @@ define(function ()
 				events[i] = node.events[i];
 			
 			}
-			node = vwf.getNode(vwf.prototype(node.id),true);
+			node = _Editor.getNode(vwf.prototype(node.id),true);
 			}
 			return events;
 		

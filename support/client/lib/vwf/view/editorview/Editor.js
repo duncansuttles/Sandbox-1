@@ -400,7 +400,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						{
 							if (vwf.views[0].lastPickId && vwf.views[0].lastPickId != 'index-vwf')
 							{
-								this.SelectObject(vwf.getNode(vwf.views[0].lastPickId), this.PickMod);
+								this.SelectObject(_Editor.getNode(vwf.views[0].lastPickId), this.PickMod);
 							}else
 							{
 								this.SelectObject(null);
@@ -478,7 +478,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 				if (SelectMode == 'TempPick')
 				{
-					if (this.TempPickCallback) this.TempPickCallback(vwf.getNode(vwf.views[0].lastPickId));
+					if (this.TempPickCallback) this.TempPickCallback(_Editor.getNode(vwf.views[0].lastPickId));
 					e.stopPropagation();
 				}
 				if (SelectMode == 'PointPick')
@@ -2223,11 +2223,31 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			}
 			this.updateBounds();
 		}
+		//new vwf kernel does not add the ID to the get node, but all our old code expects it. Add it and return the node.
+		this.getNode = function(id)
+		{
+			var node = vwf.getNode(id);
+			node.id = id;
+
+			var walk = function(parent)
+			{
+				for(var i in parent.children)
+				{
+					parent.children[i].name = i;
+					walk(parent.children[i]);
+				}
+
+			}
+			walk(node);
+
+
+			return node;
+		}
 		this.SelectObjectPublic = function (VWFNodeid)
 		{
 			if (SelectMode == 'TempPick')
 			{
-				if (this.TempPickCallback) this.TempPickCallback(vwf.getNode(VWFNodeid));
+				if (this.TempPickCallback) this.TempPickCallback(_Editor.getNode(VWFNodeid));
 			}
 			else
 			{
@@ -2242,10 +2262,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			this.guiNodeDragEnd();
 			if (VWFNode && VWFNode.constructor == Array)
 			{
-				for (var i = 0; i < VWFNode.length; i++) VWFNode[i] = vwf.getNode(VWFNode[i]);
+				for (var i = 0; i < VWFNode.length; i++) VWFNode[i] = _Editor.getNode(VWFNode[i]);
 			}
 			else if (typeof (VWFNode) == 'object') VWFNode = [VWFNode];
-			else if (typeof (VWFNode) == 'string') VWFNode = [vwf.getNode(VWFNode)];
+			else if (typeof (VWFNode) == 'string') VWFNode = [_Editor.getNode(VWFNode)];
 		
 		//this causes too much drama. look into solution in future	
 		//	if(!skipUndo)
@@ -2273,7 +2293,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 								}
 								else
 								{
-									testnode = vwf.getNode(vwf.parent(testnode.id));
+									testnode = _Editor.getNode(vwf.parent(testnode.id));
 								}
 							}
 							if(testnode)
@@ -3138,7 +3158,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			if (idx === undefined) idx = 0;
 			try
 			{
-				if (SelectedVWFNodes[idx]) return vwf.getNode(SelectedVWFNodes[idx].id);
+				if (SelectedVWFNodes[idx]) return _Editor.getNode(SelectedVWFNodes[idx].id);
 			}
 			catch (e)
 			{

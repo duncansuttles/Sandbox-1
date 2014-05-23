@@ -52,7 +52,7 @@ function SplineTool()
 	self.activate = function()
 	{
 		
-		var node = vwf.getNode(_Editor.GetSelectedVWFID());
+		var node = _Editor.getNode(_Editor.GetSelectedVWFID());
 		$('#SplineToolGUIEditPoints').next().attr('aria-pressed','true')
 		
 

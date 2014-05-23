@@ -151,7 +151,7 @@ define(function ()
 		}
 		this.GetNode = function (id)
 		{
-			var node = vwf.getNode(id);
+			var node = _Editor.getNode(id);
 			if (node.properties)
 			{
 				for (var i in node.properties)
@@ -197,7 +197,7 @@ define(function ()
 				return;
 			}
 			
-			var scene = vwf.getNode('index-vwf');
+			var scene = _Editor.getNode('index-vwf');
 			var nodes = [];
 			for (var i in scene.children)
 			{
