@@ -2240,7 +2240,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 
 			}
 			walk(node);
-
+			node.name = vwf.name(id);
 
 			return node;
 		}

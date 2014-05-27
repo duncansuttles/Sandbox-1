@@ -151,6 +151,7 @@ define(function ()
 		}
 		this.GetNode = function (id)
 		{
+
 			var node = _Editor.getNode(id);
 			if (node.properties)
 			{
@@ -183,6 +184,7 @@ define(function ()
 		}
 		this.saveToServer = function (sync)
 		{
+			
 			if(!sync) sync = false;
 			if (!_UserManager.GetCurrentUserName())
 			{
@@ -215,7 +217,7 @@ define(function ()
 			var SID = this.getCurrentSession();
 			var UID = _UserManager.GetCurrentUserName();
 			if (!UID) return;
-			var P = _DataManager.GetProfileForUser(_UserManager.GetCurrentUserName()).Password;
+			
 			if (nodes.length > 0) var ret = jQuery.ajax(
 				{
 					type: 'POST',

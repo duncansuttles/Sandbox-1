@@ -3506,7 +3506,7 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
 
                 if ( propertyValue === undefined && ! ignorePrototype ) {
 
-                    this.behaviors( nodeID ).reverse().concat( this.prototype( nodeID ) ).
+                    this.behaviors( nodeID ) && this.behaviors( nodeID ).reverse().concat( this.prototype( nodeID ) ).
                         some( function( prototypeID, prototypeIndex, prototypeArray ) {
 
                         if(!prototypeID)

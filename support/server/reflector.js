@@ -35,7 +35,7 @@ function getNamespace(socket)
 {
 
         try{
-        var referer = (socket.handshake.headers.referer);
+        var referer = require('url').parse(socket.handshake.headers.referer).pathname;
         
         var index = referer.indexOf(global.appPath);
         var namespace = referer.substring(index);
