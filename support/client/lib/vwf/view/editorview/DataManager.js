@@ -184,7 +184,7 @@ define(function ()
 		}
 		this.saveToServer = function (sync)
 		{
-			
+
 			if(!sync) sync = false;
 			if (!_UserManager.GetCurrentUserName())
 			{
@@ -283,7 +283,7 @@ define(function ()
 		this.getCurrentSession = function ()
 		{
             var regExp = new RegExp(window.appPath+".*\/");
-			return regExp.exec(window.location.toString()).toString();
+			return regExp.exec(window.location.pathname.toString()).toString();
 		}
 		//at this point, this server pretty much only supports the sandbox. This will return the sandbox root url
 		this.getCurrentApplication = function ()

@@ -81,6 +81,7 @@ properties:
   type: scene
   clientAPI:
     get : |
+           
            if(this.___clientAPI) return this.___clientAPI;
            this.___clientAPI = {};
            this.___clientAPI.getUserNameForConnectionID = function(id)
@@ -102,6 +103,7 @@ properties:
            {
            	  return this.findNodeByID('character-vwf-' + name);
            }.bind(this);
+           return this.___clientAPI;
   EditorData:
     fog:
       displayname: 'Fog'
@@ -242,7 +244,7 @@ properties:
       type: color
 events:
   disconnected:
-  newClient:
+  avatarCreated:
   clientConnected:
   clientDisconnected:
   pointerOver:
@@ -502,7 +504,7 @@ scripts:
         window.location.reload();
     }
     //a new client has joined the simulation
-    this.newClient = function(id)
+    this.avatarCreated = function(id)
     {
     
     
