@@ -148,7 +148,88 @@ define([], function ()
 				}
 
 
+
 			}
+
+		}
+		this.calledMethod = function(id,name,args)
+		{
+			
+			if(id == vwf.application() && name == 'restoreState')
+			{
+				
+				this.restoreState_imp(args[0]);
+
+
+
+
+
+			}
+		}
+		this.restoreState_imp = function(s)
+		{
+
+			vwf.private.queue.suspend();
+			var currentState = _Editor.getNode(vwf.application());
+			var find = function(node,id)
+			{
+				if(node.id == id)
+					return true;
+				for(var i in node.children)
+				{
+					var ret = find(node.children[i],id);
+					if(ret) return true;
+				}
+				return false;
+
+				
+			}
+			var walk = function(node)
+			{
+				async.eachSeries(Object.keys(node.children),function(i,cb)
+				{
+
+					var exists = false;
+					try
+					{
+					exists = vwf.getNode(node.children[i].id);
+					}catch(e)
+					{
+						vwf.createChild(node.id,i,node.children[i],null,null,cb);
+					}
+					if(exists)
+					{
+						for(var j in node.children[i].properties)
+						{
+							vwf.setProperty(node.children[i].id,j,node.children[i].properties[j]);
+						}
+						cb();
+
+					}else
+					{
+						vwf.createChild(node.id,i,node.children[i],null,null,cb);
+					}
+
+				});
+
+			}
+			walk(s);
+
+			var walk2 = function(node)
+			{
+				if(!find(s,node.id))
+				{
+					vwf.deleteNode(node.id);
+				}else
+					{ 
+ 						for(var i in node.children)
+ 						{
+ 							walk2(node.children[i]);
+ 						}
+					}
+			}
+			walk2(currentState);
+			vwf.private.queue.resume();
 
 		}
 		this.restoreState = function()
@@ -156,36 +237,8 @@ define([], function ()
 			
 			var s = vwf.getProperty(vwf.application(),'playBackup');
 			vwf_view.kernel.setProperty(vwf.application(),'playBackup',null);
-			var walk = function(node)
-			{
-
-
-				for(var i in node.children)
-				{
-					try
-					{
-					var exists = vwf.getNode(node.children[i].id);
-					}catch(e)
-					{
-						vwf_view.kernel.createChild(node.id,i,node.children[i]);
-					}
-					if(exists)
-					{
-						for(var j in node.children[i].properties)
-						{
-							vwf_view.kernel.setProperty(node.children[i].id,j,node.children[i].properties[j]);
-						}
-
-					}else
-					{
-
-						
-					}
-
-				}
-
-			}
-			walk(s);
+			vwf_view.kernel.callMethod(vwf.application(),'restoreState',[s]);
+			
 			
 
 		}
