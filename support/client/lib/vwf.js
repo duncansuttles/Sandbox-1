@@ -2655,7 +2655,7 @@ if ( ! childComponent.source ) {
 
                        
                         if ( valueHasBody( eventValue ) ) {
-                            vwf.createEvent( childID, eventName, eventValue.parameters );
+                            vwf.createEvent( childID, eventName, eventValue.parameters, eventValue.body );
                         } else {
                             vwf.createEvent( childID, eventName, undefined );
                         }
@@ -3626,7 +3626,7 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
         /// 
         /// @see {@link module:vwf/api/kernel.createEvent}
 
-        this.createEvent = function( nodeID, eventName, eventParameters ) {  // TODO: parameters (used? or just for annotation?)  // TODO: allow a handler body here and treat as this.*event* = function() {} (a self-targeted handler); will help with ui event handlers
+        this.createEvent = function( nodeID, eventName, eventParameters, eventBody ) {  // TODO: parameters (used? or just for annotation?)  // TODO: allow a handler body here and treat as this.*event* = function() {} (a self-targeted handler); will help with ui event handlers
 
             this.logger.debuggx( "createEvent", nodeID, eventName, eventParameters );
 
@@ -3634,14 +3634,14 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
             // have run.
 
             this.models.forEach( function( model ) {
-                model.creatingEvent && model.creatingEvent( nodeID, eventName, eventParameters );
+                model.creatingEvent && model.creatingEvent( nodeID, eventName, eventParameters,eventBody );
             } );
 
             // Call createdEvent() on each view. The view is being notified that a event has been
             // created.
 
             this.views.forEach( function( view ) {
-                view.createdEvent && view.createdEvent( nodeID, eventName, eventParameters );
+                view.createdEvent && view.createdEvent( nodeID, eventName, eventParameters,eventBody );
             } );
 
             this.logger.debugu();
