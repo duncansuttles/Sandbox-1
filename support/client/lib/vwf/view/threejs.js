@@ -351,6 +351,21 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				return this.state.scenes['index-vwf'].camera.threeJScameras[this.state.scenes['index-vwf'].camera.ID];
 			return this.activeCamera;	
 		},
+		getCameraList : function()
+		{
+			var namelist = ['Editor Camera'];
+			var idlist = [''];
+			
+			for(var i in this.nodes)
+			{
+				if(this.nodes[i].extends == 'SandboxCamera-vwf')
+				{
+					idlist.push(i);
+					namelist.push(vwf.getProperty(i,'DisplayName'));
+				}
+			}
+			return [namelist,idlist];
+		},
 		chooseCamera: function()
 		{
 			var namelist = ['Editor Camera'];

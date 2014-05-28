@@ -169,6 +169,7 @@ function getBlankScene(state,cb)
                     }
                     //don't allow the clients to persist between a save/load cycle
                     blankscene.properties['clients'] = null;
+                    blankscene.properties['playMode'] = 'stop';
                 }
             }catch(e)
             {

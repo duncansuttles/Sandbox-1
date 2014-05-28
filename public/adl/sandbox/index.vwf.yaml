@@ -61,6 +61,7 @@ properties:
   skyApexColor: [ 0 , .5 , 1.0 ]
   skyHorizonColor: [ 0 , .5 , 1.0 ]
   vAtmosphereDensity: .0005
+  playMode: "paused"
   materialDef:
     set: |  
            this.materialDef = value;

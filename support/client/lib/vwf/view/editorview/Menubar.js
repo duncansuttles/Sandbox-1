@@ -1007,8 +1007,15 @@ define(
 			_dView.setRenderModeStereo()
 		});
 
-		
+		$('#TestSettings').click(function (e)
+		{
+			_Publisher.show();
+		});
 
+		$('#TestLaunch').click(function (e)
+		{
+			_Publisher.testPublish();
+		});
 
 
 

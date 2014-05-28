@@ -106,11 +106,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 			$(document.body).append('<div id="statusbar" class="statusbar" />');
 			$('#statusbar').css('top', (document.height - 25) + 'px');
+
+			$('#statusbar').append('<div id="TimeControl" style="height: 59px;display: inline-block;margin-top: -42px;background: #444;border-radius: 5px;border: 1px solid #555;"><div class="timeControl" id="playButton">▸</div><div id="pauseButton" class="timeControl">∥</div><div id="stopButton" class="timeControl">▄</div></div>');
+
 			$('#statusbar').append('<div id="SceneSaved" class="statusbarElement" />');
 			$('#SceneSaved').text('Not Saved');
 			$('#statusbar').append('<div id="StatusSelectedName" style="color:lightblue" class="statusbarElement" />');
 			$('#StatusSelectedName').text('No Selection');
-			$('#statusbar').append('<div id="StatusSelectedID" class="statusbarElement" />');
+			$('#statusbar').append('<div id="StatusSelectedID" class="statusbarElement" style="display:none" />');
 			$('#StatusSelectedID').text('No Selection');
 			$('#statusbar').append('<div id="StatusPickMode" class="statusbarElement" />');
 			$('#StatusPickMode').text('Pick: None');
@@ -127,6 +130,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			$('#statusbar').append('<div id="StatusCameraLocation" class="statusbarElement" />');
 			$('#StatusCameraLocation').text('[0,0,0]');
 		}
+
+		$('#playButton').click(function(){_Publisher.playWorld();});
+		$('#pauseButton').click(function(){_Publisher.togglePauseWorld();});
+		$('#stopButton').click(function(){_Publisher.stopWorld();});
 		//create progressbar and the log bar
 		ProgressBar.initialize('statusbar');
 		window._ProgressBar = ProgressBar;
@@ -634,7 +641,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.keydown_Gizmo = function (e)
 		{
-			////console.log(e);
+			
 			if (e.keyCode == 17)
 			{
 				this.PickMod = Add;
@@ -696,6 +703,18 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			{
 				_DataManager.saveToServer();
 				e.preventDefault();
+			}
+			if (e.keyCode == 48 && e.ctrlKey)
+			{
+				_Publisher.testPublish();
+				e.preventDefault();
+				return false;
+			}
+			if (e.keyCode == 57 && e.ctrlKey)
+			{
+				_Publisher.show();
+				e.preventDefault();
+				return false;
 			}
 		}.bind(this);
 		this.NotifyPeersOfSelection = function()

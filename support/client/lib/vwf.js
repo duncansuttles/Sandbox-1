@@ -1135,6 +1135,17 @@
             }
             // Invoke the action.
 
+            //prevent the game from moving forward if the state is paused
+            if(nodes.existing[this.application()])
+            {
+            var paused = this.getProperty(vwf.application(),'playMode');
+            if(paused === 'paused' || paused === 'stop')
+            {
+                if(actionName == 'tick' ||
+                actionName == 'dispatchEvent')
+                    return false;
+            }}
+
             var result = this[actionName] && this[actionName].apply( this, args );
 
             // Return the result.
@@ -1194,7 +1205,7 @@
                                                         var realTickDif = now - this.lastRealTick;
                                                         this.lastRealTick = now;
                                                        
-                                                        this.tick();
+                                                        this.receive(0,'tick');
                                                 
                                                         time -= .05;
                                                         
