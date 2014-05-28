@@ -22,13 +22,10 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		renderMode: NORMALRENDER,
         initialize: function( rootSelector ) {
            
-	    
-
-	    //here, we will keep a record of the incoming properties, mostly so that the fog can switch around and we still know the old values
-	    //for density and such, since we can't store them in the scene.fog when scene.fog is null
-
-
-
+          rootSelector = {"application-root":'#vwf-root'}; 
+	    if(!this.events)
+				this.events = {};
+			
 	    $(document).on('selectionChanged',this.selectionChanged.bind(this));
 		this.renderTargetPasses = [];
             this.rootSelector = rootSelector;
@@ -308,14 +305,14 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
             //the created node is a scene, and has already been added to the state by the model.
             //how/when does the model set the state object? 
+           
             if(this.state.scenes[childID])
             {
                 var threeview = this;
                 var domWin = window;
                 
                 
-                this.canvasQuery = jQuery(this.rootSelector).append("<canvas id='" + this.state.sceneRootID + "' width='"+this.width+"' height='"+this.height+"' class='vwf-scene'/>"
-                	 
+                this.canvasQuery = jQuery(this.rootSelector["application-root"]).append("<canvas id='" + 'index-vwf' + "' width='"+this.width+"' height='"+this.height+"' class='vwf-scene'/>"
                 ).children(":last");
                 this.canvasQuery.css('display','none');
                 initScene.call(this,this.state.scenes[childID]);
@@ -353,6 +350,21 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			if( !this.activeCamera)
 				return this.state.scenes['index-vwf'].camera.threeJScameras[this.state.scenes['index-vwf'].camera.ID];
 			return this.activeCamera;	
+		},
+		getCameraList : function()
+		{
+			var namelist = ['Editor Camera'];
+			var idlist = [''];
+			
+			for(var i in this.nodes)
+			{
+				if(this.nodes[i].extends == 'SandboxCamera-vwf')
+				{
+					idlist.push(i);
+					namelist.push(vwf.getProperty(i,'DisplayName'));
+				}
+			}
+			return [namelist,idlist];
 		},
 		chooseCamera: function()
 		{
@@ -1410,6 +1422,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                 var parentID = child.parentID;
                 var parent = sceneView.state.nodes[ child.parentID ];
                 var trans, parentTrans, localTrans, localNormal, parentInverse, relativeCamPos;
+                returnData.eventNodeData[''][0].sourceID = pointerPickID;
                 while ( child ) {
 
                     trans = goog.vec.Mat4.createFromArray( child.threeObject.matrix.elements );
@@ -1455,7 +1468,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                         distance: pickInfo ? pickInfo.distance : undefined,
                         globalPosition: pickInfo ? pickInfo.coord : undefined,
                         globalNormal: pickInfo ? pickInfo.normal : undefined,
-                        globalSource: worldCamPos,            
+                        globalSource: worldCamPos,  
+                        sourceID : pointerPickID,
                     } ];
 
                     childID = parentID;
@@ -1694,13 +1708,19 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                         deltaX: e.wheelDeltaX / -40,
                         deltaY: e.wheelDeltaY / -40,
                     };
+                    eData.eventData[0].wheelDelta = e.wheelDelta / -40;
+                    eData.eventData[0].wheelDeltaX = e.wheelDeltaX / -40;
+                    eData.eventData[0].wheelDeltaY = e.wheelDeltaY / -40;
                     var id = sceneID;
                     if ( pointerDownID && mouseRightDown || mouseLeftDown || mouseMiddleDown )
                         id = pointerDownID;
                     else if ( pointerOverID )
                         id = pointerOverID; 
                     if(id)    
-                    sceneView.kernel.dispatchEvent( id, "pointerWheel", eData.eventData, eData.eventNodeData );
+                    sceneView.kernel.dispatchEvent( id, "pointerWheel", JSON.parse(JSON.stringify(eData.eventData)),  JSON.parse(JSON.stringify(eData.eventNodeData)) );
+                	delete eData.eventData[0].wheelDelta;
+                	delete eData.eventData[0].wheelDeltaY;
+                	delete eData.eventData[0].wheelDeltaX;
                 }
             };
         }
@@ -1714,13 +1734,19 @@ define( [ "module", "vwf/view" ], function( module, view ) {
                         deltaX: e.detail,
                         deltaY: e.detail,
                     };
+                    eData.eventData[0].wheelDelta = e.detail ;
+                    eData.eventData[0].wheelDeltaX = e.detail ;
+                    eData.eventData[0].wheelDeltaY = e.detail ;
                     var id = sceneID;
                     if ( pointerDownID && mouseRightDown || mouseLeftDown || mouseMiddleDown )
                         id = pointerDownID;
                     else if ( pointerOverID )
                         id = pointerOverID; 
                         
-                    sceneView.kernel.dispatchEvent( id, "pointerWheel", eData.eventData, eData.eventNodeData );
+                    sceneView.kernel.dispatchEvent( id, "pointerWheel", JSON.parse(JSON.stringify(eData.eventData)),  JSON.parse(JSON.stringify(eData.eventNodeData)));
+                    delete eData.eventData[0].wheelDelta;
+                	delete eData.eventData[0].wheelDeltaY;
+                	delete eData.eventData[0].wheelDeltaX;
                 }
             });
         }

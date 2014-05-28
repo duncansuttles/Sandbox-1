@@ -139,7 +139,7 @@ define(function ()
 		this.getProperties = function(id)
 		{
 			var properties = {};
-			var node = vwf.getNode(id);
+			var node = _Editor.getNode(id);
 			while(node)
 			{
 				for ( var i in node.properties)

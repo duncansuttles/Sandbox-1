@@ -273,7 +273,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 				var files = $('#ModelUploadFile')[0].files;
 				var file = files[0];
 				var xhr = new XMLHttpRequest();
-				if (xhr.upload && file.size <= 15 * 1024 * 1024) {
+				if (xhr.upload && file.size <= 30 * 1024 * 1024) {
 					xhr.open("POST", "./vwfdatamanager.svc/3drupload", true);
 					xhr.setRequestHeader("X_FILENAME", file.name);
 					

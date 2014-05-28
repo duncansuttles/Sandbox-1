@@ -1,5 +1,5 @@
 "use strict";
-define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify","vwf/view/editorview/Menubar","vwf/view/editorview/ObjectPools","vwf/view/editorview/LocationTools", "vwf/view/editorview/WindowResize","vwf/view/editorview/_PermissionsManager", "vwf/view/editorview/InputSetup", "vwf/view/editorview/SaveLoadTimer", "vwf/view/editorview/TouchHandler", "vwf/view/editorview/SidePanel", "vwf/view/editorview/Toolbar", "vwf/view/editorview/ChatSystemGUI", "vwf/view/editorview/PrimitiveEditor", "vwf/view/editorview/MaterialEditor", "vwf/view/editorview/Notifier", "vwf/view/editorview/ScriptEditor", "vwf/view/editorview/Editor", "vwf/view/editorview/_3DRIntegration", "vwf/view/editorview/InventoryManager", "vwf/view/editorview/HeirarchyManager",  "vwf/view/editorview/DataManager", "vwf/view/editorview/UserManager", "vwf/view/editorview/help","vwf/view/editorview/SideTabs","vwf/view/editorview/wireeditor","vwf/view/editorview/selectionEditor","vwf/view/editorview/UndoManager"], function (module, version, view)
+define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify","vwf/view/editorview/Menubar","vwf/view/editorview/ObjectPools","vwf/view/editorview/LocationTools", "vwf/view/editorview/WindowResize","vwf/view/editorview/_PermissionsManager", "vwf/view/editorview/InputSetup", "vwf/view/editorview/SaveLoadTimer", "vwf/view/editorview/TouchHandler", "vwf/view/editorview/SidePanel", "vwf/view/editorview/Toolbar", "vwf/view/editorview/ChatSystemGUI", "vwf/view/editorview/PrimitiveEditor", "vwf/view/editorview/MaterialEditor", "vwf/view/editorview/Notifier", "vwf/view/editorview/ScriptEditor", "vwf/view/editorview/Editor", "vwf/view/editorview/_3DRIntegration", "vwf/view/editorview/InventoryManager", "vwf/view/editorview/HeirarchyManager",  "vwf/view/editorview/DataManager", "vwf/view/editorview/UserManager", "vwf/view/editorview/help","vwf/view/editorview/SideTabs","vwf/view/editorview/wireeditor","vwf/view/editorview/selectionEditor","vwf/view/editorview/UndoManager","vwf/view/editorview/Publisher"], function (module, version, view)
 {
 	return view.load(module,
 	{
@@ -65,7 +65,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
 						window._Notifier = require("vwf/view/editorview/Notifier").getSingleton();
 						window._ScriptEditor = require("vwf/view/editorview/ScriptEditor").getSingleton();;
 						window._ModelLibrary = require("vwf/view/editorview/_3DRIntegration").getSingleton();
-						
+						window._Publisher = require("vwf/view/editorview/Publisher").getSingleton();
 						window._InventoryManager = require("vwf/view/editorview/InventoryManager").getSingleton();;
 						window.HierarchyManager = require("vwf/view/editorview/HeirarchyManager").getSingleton();;
 						window._PermissionsManager = require("vwf/view/editorview/_PermissionsManager").getSingleton();
@@ -82,6 +82,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
 						this.addManager(_PermissionsManager);
 						this.addManager(_WireEditor);
 						this.addManager(HierarchyManager);
+						this.addManager(_Publisher);
 					}
 					window._LocationTools = require("vwf/view/editorview/LocationTools").getSingleton();
 					window._UserManager = require("vwf/view/editorview/UserManager").getSingleton();;

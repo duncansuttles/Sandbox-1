@@ -125,6 +125,8 @@ define(function ()
 						t.properties.transform[12] = newintersectxy[0];
 						t.properties.transform[13] = newintersectxy[1];
 						t.properties.transform[14] = newintersectxy[2];
+
+						t.properties.translation = [];
 						t.properties.translation[0] = newintersectxy[0];
 						t.properties.translation[1] = newintersectxy[1];
 						t.properties.translation[2] = newintersectxy[2];

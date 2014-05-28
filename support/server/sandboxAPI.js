@@ -116,11 +116,11 @@ function GetLoginData(response,URL)
 		logindata.instances = [];
 		logindata.clients = [];
 		
-		for(var i in global.instances)
+		for(var i in global.instances.instances)
 		{
-			for(var j in global.instances[i].clients)
+			for(var j in global.instances.instances[i].clients)
 			{
-				if(global.instances[i].clients[j].loginData && global.instances[i].clients[j].loginData.UID == URL.loginData.UID)
+				if(global.instances.instances[i].clients[j].loginData && global.instances.instances[i].clients[j].loginData.UID == URL.loginData.UID)
 				{
 					logindata.instances.push(i);
 					logindata.clients.push(j);
@@ -144,44 +144,7 @@ function GetLoginData(response,URL)
 //The reflector will not accept incomming messages from an anonymous connection
 function InstanceLogin(response,URL)
 {
-			
-			global.log('instance login',2);
-			if(!URL.loginData)
-			{
-				global.log("Client Not Logged In",1);
-				respond(response,401,"Client Not Logged In");
-				return;
-			}			
-			var instance = URL.query.S;
-			var cid = URL.query.CID;
-			
-			
-			if(URL.loginData.clients[cid])
-			{
-				
-				respond(response,401,"Client already logged into session");
-				return;
-			}	
-			
-			if(global.instances[instance] && global.instances[instance].clients[cid])
-			{
-				URL.loginData.clients[cid] = instance;
-				global.instances[instance].clients[cid].loginData = URL.loginData;
-				
-				if(global.instances[instance].state.findNode('index-vwf').properties['owner'] == undefined)
-					global.instances[instance].state.findNode('index-vwf').properties['owner'] = URL.loginData.UID;
-					
-				respond(response,200,"Client Logged Into " + instance);
-
-				xapi.sendStatement(URL.loginData.UID, xapi.verbs.logged_in, instance);
-
-				return;
-			}else
-			{
-				respond(response,200,"Client Or Instance does not exist " + instance);
-				return;
-			}
-			
+	respond(response,200,"No longer supported. Login now travels over the socket handshake");
 }
 
 function InstanceLogout(response,URL)
@@ -189,7 +152,7 @@ function InstanceLogout(response,URL)
 			if(!URL.loginData)
 			{
 				respond("Client Not Logged In",401,response);
-				return;
+				return;z
 			}	
 			
 			var instance = URL.query.S;
@@ -199,13 +162,13 @@ function InstanceLogout(response,URL)
 			if(URL.loginData.clients[cid])
 			{
 			
-				if(global.instances[URL.loginData.clients[cid]])
+				if(global.instances.get(URL.loginData.clients[cid]))
 				{
 					
-					if(global.instances[URL.loginData.clients[cid]].clients[cid])
+					if(global.instances.get(URL.loginData.clients[cid]).clients[cid])
 					{
 						
-						delete global.instances[URL.loginData.clients[cid]].clients[cid].loginData;
+						delete global.instances.get(URL.loginData.clients[cid]).clients[cid].loginData;
 							
 					}
 				}

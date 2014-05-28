@@ -7,11 +7,9 @@ require.config({
 			'vwf/view/xapi/xapiwrapper': {
 				deps: ['vwf/view/editorview/sha256', "vwf/view/editorview/_3DRIntegration"],
 				exports: 'XAPIWrapper'
-			},
+			}
             
-                "vwf/model/threejs/three":{
-                    exports : 'THREE'
-                }
+               
             
 		},
 	    waitSeconds: 15
@@ -60,7 +58,7 @@ define( [
                 // With the scripts loaded, we must initialize the framework. vwf.initialize()
                 // accepts three parameters: a world specification, model configuration parameters,
                 // and view configuration parameters.
-			$(document.body).append('<div id="glyphOverlay" style="display:none"/>');
+				$(document.body).append('<div id="glyphOverlay" style="display:none"/>');
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu.css" />');
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu-v.css" />')
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/Editorview.css" />')
@@ -70,11 +68,12 @@ define( [
             $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/scenemanager.js"></script>');
             $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/GeometryExporter.js"></script>');
             
+               
             
             $(document.head).append('<script src="vwf/model/threejs/helvetiker_regular.typeface.js"></script>');
-
+            
                 assetLoader.load(stateData,function(){
-                    vwf.initialize(
+                 /*   vwf.initialize(
 
                     // This is the world specification. The world may be specified using a component
                     // literal as shown here, or the specification may be placed in a network-
@@ -122,9 +121,15 @@ define( [
                         "vwf/view/jqueryui",
                     ]
 
-                    );
+                    );*/
+                    
+                    vwf.loadConfiguration(null, {model: [],view:[]});
+
                 });
 
+                 
+                 
+                
             } );
 
         }} );

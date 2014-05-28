@@ -228,7 +228,7 @@ define(function ()
 					$("#accordion").accordion('destroy');
 					$("#accordion").children('.modifiersection').remove();
 					//update to ensure freshness
-					node = vwf.getNode(node.id);
+					node = _Editor.getNode(node.id);
 					node.properties = vwf.getProperties(node.id);
 					if (!node.properties) return;
 					

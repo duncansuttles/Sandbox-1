@@ -106,11 +106,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 			$(document.body).append('<div id="statusbar" class="statusbar" />');
 			$('#statusbar').css('top', (document.height - 25) + 'px');
+
+			$('#statusbar').append('<div id="TimeControl" style="height: 59px;display: inline-block;margin-top: -42px;background: #444;border-radius: 5px;border: 1px solid #555;"><div class="timeControl" id="playButton">▸</div><div id="pauseButton" class="timeControl">∥</div><div id="stopButton" class="timeControl">▄</div></div>');
+
 			$('#statusbar').append('<div id="SceneSaved" class="statusbarElement" />');
 			$('#SceneSaved').text('Not Saved');
 			$('#statusbar').append('<div id="StatusSelectedName" style="color:lightblue" class="statusbarElement" />');
 			$('#StatusSelectedName').text('No Selection');
-			$('#statusbar').append('<div id="StatusSelectedID" class="statusbarElement" />');
+			$('#statusbar').append('<div id="StatusSelectedID" class="statusbarElement" style="display:none" />');
 			$('#StatusSelectedID').text('No Selection');
 			$('#statusbar').append('<div id="StatusPickMode" class="statusbarElement" />');
 			$('#StatusPickMode').text('Pick: None');
@@ -127,6 +130,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			$('#statusbar').append('<div id="StatusCameraLocation" class="statusbarElement" />');
 			$('#StatusCameraLocation').text('[0,0,0]');
 		}
+
+		$('#playButton').click(function(){_Publisher.playWorld();});
+		$('#pauseButton').click(function(){_Publisher.togglePauseWorld();});
+		$('#stopButton').click(function(){_Publisher.stopWorld();});
 		//create progressbar and the log bar
 		ProgressBar.initialize('statusbar');
 		window._ProgressBar = ProgressBar;
@@ -362,7 +369,6 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 			if (e.button == 2 && !MouseMoved && document.AxisSelected == -1)
 			{
-				
 				self.ShowContextMenu(e);
 				this.undoPoint = null;
 				return false;
@@ -401,7 +407,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						{
 							if (vwf.views[0].lastPickId && vwf.views[0].lastPickId != 'index-vwf')
 							{
-								this.SelectObject(vwf.getNode(vwf.views[0].lastPickId), this.PickMod);
+								this.SelectObject(_Editor.getNode(vwf.views[0].lastPickId), this.PickMod);
 							}else
 							{
 								this.SelectObject(null);
@@ -479,7 +485,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 				if (SelectMode == 'TempPick')
 				{
-					if (this.TempPickCallback) this.TempPickCallback(vwf.getNode(vwf.views[0].lastPickId));
+					if (this.TempPickCallback) this.TempPickCallback(_Editor.getNode(vwf.views[0].lastPickId));
 					e.stopPropagation();
 				}
 				if (SelectMode == 'PointPick')
@@ -635,7 +641,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.keydown_Gizmo = function (e)
 		{
-			////console.log(e);
+			
 			if (e.keyCode == 17)
 			{
 				this.PickMod = Add;
@@ -698,6 +704,18 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				_DataManager.saveToServer();
 				e.preventDefault();
 			}
+			if (e.keyCode == 48 && e.ctrlKey)
+			{
+				_Publisher.testPublish();
+				e.preventDefault();
+				return false;
+			}
+			if (e.keyCode == 57 && e.ctrlKey)
+			{
+				_Publisher.show();
+				e.preventDefault();
+				return false;
+			}
 		}.bind(this);
 		this.NotifyPeersOfSelection = function()
 		{
@@ -736,6 +754,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				if(vwf.client() != vwf.moniker())
 				{
 					var ids = args[0];
+					//why does this happen? 
+					if(!ids)
+					{
+						return;
+					}
 					if(!this.peerSelections)
 						this.peerSelections = {};
 					if(!this.peerSelections[vwf.client()])
@@ -2219,11 +2242,32 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			}
 			this.updateBounds();
 		}
+		//new vwf kernel does not add the ID to the get node, but all our old code expects it. Add it and return the node.
+		this.getNode = function(id)
+		{
+			if(!id) return null;
+			var node = vwf.getNode(id,true,true);
+			node.id = id;
+
+			var walk = function(parent)
+			{
+				for(var i in parent.children)
+				{
+					parent.children[i].name = i;
+					walk(parent.children[i]);
+				}
+
+			}
+			walk(node);
+			node.name = vwf.name(id);
+
+			return node;
+		}
 		this.SelectObjectPublic = function (VWFNodeid)
 		{
 			if (SelectMode == 'TempPick')
 			{
-				if (this.TempPickCallback) this.TempPickCallback(vwf.getNode(VWFNodeid));
+				if (this.TempPickCallback) this.TempPickCallback(_Editor.getNode(VWFNodeid));
 			}
 			else
 			{
@@ -2238,10 +2282,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			this.guiNodeDragEnd();
 			if (VWFNode && VWFNode.constructor == Array)
 			{
-				for (var i = 0; i < VWFNode.length; i++) VWFNode[i] = vwf.getNode(VWFNode[i]);
+				for (var i = 0; i < VWFNode.length; i++) VWFNode[i] = _Editor.getNode(VWFNode[i]);
 			}
 			else if (typeof (VWFNode) == 'object') VWFNode = [VWFNode];
-			else if (typeof (VWFNode) == 'string') VWFNode = [vwf.getNode(VWFNode)];
+			else if (typeof (VWFNode) == 'string') VWFNode = [_Editor.getNode(VWFNode)];
 		
 		//this causes too much drama. look into solution in future	
 		//	if(!skipUndo)
@@ -2269,7 +2313,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 								}
 								else
 								{
-									testnode = vwf.getNode(vwf.parent(testnode.id));
+									testnode = _Editor.getNode(vwf.parent(testnode.id));
 								}
 							}
 							if(testnode)
@@ -3134,7 +3178,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			if (idx === undefined) idx = 0;
 			try
 			{
-				if (SelectedVWFNodes[idx]) return vwf.getNode(SelectedVWFNodes[idx].id);
+				if (SelectedVWFNodes[idx]) return _Editor.getNode(SelectedVWFNodes[idx].id);
 			}
 			catch (e)
 			{

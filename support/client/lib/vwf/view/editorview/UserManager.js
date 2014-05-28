@@ -126,15 +126,15 @@ define(function ()
 							var logindata = JSON.parse(xhr.responseText);
 							var username = logindata.username;
 							
-							if(logindata.instances.indexOf(_DataManager.getCurrentSession()) != -1)
-							{
-								_Notifier.alert('You are already logged into this space from another tab, browser or computer. This session will be a guest.');
-							}
-							else
-							{
+							
+								//only the first client from a given login should create the avatart
 								if(vwf.models[0].model.nodes['character-vwf-' + username.replace(/ /g,'-')] == undefined)
-								this.Login(username);
-							}
+									this.Login(username);
+								else
+								{
+									alertify.alert('You are already logged into this space from another tab.');
+								}
+							
 							
 						}.bind(this),
 						error:function(xhr,status,err)

@@ -283,7 +283,7 @@
 			
 			
 			
-			
+		
 			
 		this.assetRegistry	= assetRegistry;
 		this.assetSource = assetSource;
@@ -312,14 +312,14 @@
 				assetRegistry[assetSource].node = _assetLoader.getUtf8JsonOptimized(assetSource).scene;
 				this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
 			}
-			if(childType == 'subDriver/threejs/asset/vnd.collada+xml+optimized' && _assetLoader.getCollada(assetSource))
+			if(childType == 'subDriver/threejs/asset/vnd.collada+xml' && _assetLoader.getCollada(assetSource))
 			{
 				assetRegistry[assetSource].loaded = true;
 				assetRegistry[assetSource].pending = false;
 				assetRegistry[assetSource].node = _assetLoader.getCollada(assetSource).scene;
 				this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
 			}
-			if(childType == 'subDriver/threejs/asset/vnd.collada+xml+optimized' && _assetLoader.getCollada(assetSource))
+			if(childType == 'subDriver/threejs/asset/vnd.collada+xml+optimized' && _assetLoader.getColladaOptimized(assetSource))
 			{
 				assetRegistry[assetSource].loaded = true;
 				assetRegistry[assetSource].pending = false;

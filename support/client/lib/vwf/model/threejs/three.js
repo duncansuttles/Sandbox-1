@@ -26183,7 +26183,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 			_gl.pixelStorei( _gl.UNPACK_ALIGNMENT, texture.unpackAlignment );
 
 			var image = texture.image,
-			isImagePowerOfTwo = isPowerOfTwo( image.width ) && isPowerOfTwo( image.height ),
+			isImagePowerOfTwo = image ? isPowerOfTwo( image.width ) && isPowerOfTwo( image.height ) : true,
 			glFormat = paramThreeToGL( texture.format ),
 			glType = paramThreeToGL( texture.type );
 
@@ -31124,7 +31124,7 @@ THREE.Animation.prototype.debug = function(size)
 }
 THREE.Animation.prototype.setKey = function(keyf)
 {
-	
+	if(!this.data) return;
 	var l = keyf - Math.floor(keyf);
 	var l2 = 1-l;
 

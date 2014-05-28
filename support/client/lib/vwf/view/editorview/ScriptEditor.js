@@ -501,7 +501,7 @@ define(function ()
 				vwf_view.kernel.deleteMethod(_ScriptEditor.currentNode.id, this.selectedMethod);
 				window.setTimeout(function ()
 				{
-					_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+					_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 					_ScriptEditor.BuildGUI();
 				}, 500);
 			}
@@ -514,7 +514,7 @@ define(function ()
 				vwf_view.kernel.deleteProperty(_ScriptEditor.currentNode.id, this.selectedProperty);
 				window.setTimeout(function ()
 				{
-					_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+					_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 					_ScriptEditor.BuildGUI();
 				}, 500);
 			}
@@ -564,7 +564,7 @@ define(function ()
 				vwf_view.kernel.deleteEvent(_ScriptEditor.currentNode.id, this.selectedEvent);
 				window.setTimeout(function ()
 				{
-					_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+					_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 					_ScriptEditor.BuildGUI();
 				}, 500);
 			}
@@ -891,7 +891,7 @@ define(function ()
 		}
 		this.PostSaveMethod = function ()
 		{
-			_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+			_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 			_ScriptEditor.MethodChanged = false;
 			$('#methodtext').css('border-color', 'black');
 			_ScriptEditor.BuildGUI(true);
@@ -931,7 +931,7 @@ define(function ()
 		this.PostSaveEvent = function ()
 		{
 			
-			_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+			_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 			_ScriptEditor.EventChanged = false;
 			$('#eventtext').css('border-color', 'black');
 			_ScriptEditor.BuildGUI(true);
@@ -972,7 +972,7 @@ define(function ()
 		
 		this.PostSaveProperty = function ()
 		{
-			_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+			_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 			_ScriptEditor.PropertyChanged = false;
 			$('#propertytext').css('border-color', 'black');
 			_ScriptEditor.BuildGUI(true);
@@ -1226,12 +1226,12 @@ define(function ()
 						params += _ScriptEditor.eventlist[event].parameters[j] + ','
 					}
 					var eventstring = 'function ' + event + '(';
-					for (var i in _ScriptEditor.currentNode.events[event].parameters)
+					for (var i in _ScriptEditor.eventlist[event].parameters)
 					{
 						eventstring += _ScriptEditor.eventlist[event].parameters[i] + ',';
 					}
 					eventstring = eventstring.substring(0, eventstring.length - 1);
-					eventstring += ')\n{\n' + _ScriptEditor.currentNode.events[event].body + '\n}';
+					eventstring += ')\n{\n' + _ScriptEditor.eventlist[event].body + '\n}';
 					_ScriptEditor.setSelectedEvent(event, eventstring);
 				});
 				if (refresh)
@@ -1242,8 +1242,8 @@ define(function ()
 					}
 				}
 			}
-			var methodsuggestions = ['tick','initialize','deinitialize','prerender','added'];
-			var methoddescription = {'tick':"The tick function is called 20 times every second. \n// Write code here to animate over time",'initialize':"Initialize is called when the node is constructed.\n//Write code here to setup the object, or hook up event handlers.\n//Note that the object is not yet hooked into the scene - that will happen during the 'Added' event.\n// You cannot access this.parent in this function.",'deinitialize':"Deinitialize is called when the object is being destroyed.\n// Clean up here if your object allocated any resources manually during initialize.",'prerender':"This function is called at every frame. Don't animate object properties here - that can break syncronization.\n//This can happen because each user might have a different framerate.\n//Most of the time, you should probably be using Tick instaed.",'added':"Added is called when the object is hooked up to the scene.\n// Note that this happens after initialize. At this point, you can access the objects parent."};
+			var methodsuggestions = ['tick','initialize','deinitialize','prerender','attached','ready'];
+			var methoddescription = {'ready':'The scene is now completely loaded. This will fire on each client when the client joins, so it`s not a great place to create objects','tick':"The tick function is called 20 times every second. \n// Write code here to animate over time",'initialize':"Initialize is called when the node is constructed.\n//Write code here to setup the object, or hook up event handlers.\n//Note that the object is not yet hooked into the scene - that will happen during the 'Added' event.\n// You cannot access this.parent in this function.",'deinitialize':"Deinitialize is called when the object is being destroyed.\n// Clean up here if your object allocated any resources manually during initialize.",'prerender':"This function is called at every frame. Don't animate object properties here - that can break syncronization.\n//This can happen because each user might have a different framerate.\n//Most of the time, you should probably be using Tick instaed.",'attached':"attached is called when the object is hooked up to the scene.\n// Note that this happens after initialize. At this point, you can access the objects parent."};
 			for(var i = 0; i < methodsuggestions.length; i++)
 			{
 				var thissug = methodsuggestions[i];
@@ -1275,7 +1275,7 @@ define(function ()
 					});
 				}
 			}
-			var pointersugs = ['pointerDown', 'pointerUp', 'pointerOver', 'pointerOut', 'pointerClick', 'pointerMove', 'keyDown', 'keyUp', 'keyPress'];
+			var pointersugs = ['pointerDown', 'pointerUp', 'pointerOver', 'pointerOut', 'pointerClick', 'pointerMove','pointerWheel', 'keyDown', 'keyUp', 'keyPress'];
 			for (var i in pointersugs)
 			{
 				if (!this.eventlist || (this.eventlist && this.eventlist[pointersugs[i]] === undefined))
@@ -1326,7 +1326,7 @@ define(function ()
 				methods[i] = node.methods[i];
 			
 			}
-			node = vwf.getNode(vwf.prototype(node.id),true);
+			node = _Editor.getNode(vwf.prototype(node.id),true);
 			}
 			
 			return methods;
@@ -1345,7 +1345,7 @@ define(function ()
 				properties[i] = node.properties[i];
 			
 			}
-			node = vwf.getNode(vwf.prototype(node.id),true);
+			node = _Editor.getNode(vwf.prototype(node.id),true);
 			}
 			return properties;
 		}
@@ -1361,7 +1361,7 @@ define(function ()
 				events[i] = node.events[i];
 			
 			}
-			node = vwf.getNode(vwf.prototype(node.id),true);
+			node = _Editor.getNode(vwf.prototype(node.id),true);
 			}
 			return events;
 		
