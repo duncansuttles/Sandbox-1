@@ -127,15 +127,21 @@ define([], function ()
 			{
 				if(prop == 'playMode' && val == 'play')
 				{
-					$('#playButton').css('background','lightblue');
+					$('#playButton').css('background','rgb(153, 153, 255)');
 					$('#pauseButton').css('background','');
 					$('#stopButton').css('background','');
+					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('opacity',.8);
+					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('background-color','red');
+					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('pointer-events','none');
+					_Editor.SelectObject(null);
+					_Editor.SetSelectMode('none');
+					$('#index-vwf').focus();
 				}
 
 				if(prop == 'playMode' && val == 'paused')
 				{
-					$('#playButton').css('background','lightblue');
-					$('#pauseButton').css('background','lightblue');
+					$('#playButton').css('background','rgb(153, 153, 255)');
+					$('#pauseButton').css('background','rgb(153, 153, 255)');
 					$('#stopButton').css('background','');
 				}
 				if(prop == 'playMode' && val == 'stop')
@@ -143,7 +149,10 @@ define([], function ()
 					
 					$('#playButton').css('background','');
 					$('#pauseButton').css('background','');
-					$('#stopButton').css('background','lightblue');
+					$('#stopButton').css('background','rgb(153, 153, 255)');
+					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('opacity','');
+					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('pointer-events','');
+					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('background-color','');
 					
 				}
 

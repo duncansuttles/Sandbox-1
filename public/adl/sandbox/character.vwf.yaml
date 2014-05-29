@@ -161,7 +161,8 @@ scripts:
           cycle.current = cycle.length;    
       if(cycle.current >= cycle.length && cycle.loop == false)
           cycle.current = cycle.length-1;
-      return cycle.current;
+       
+      return cycle.current + cycle.start;
     }
     this.initCycles = function()
     {
@@ -453,6 +454,7 @@ scripts:
         if(this.activeCycle[this.activeCycle.length-1])
         {
 
+
             var newframe = this.increment(this.cycles[this.activeCycle[this.activeCycle.length-1]],updateFreqDivisor);
             newframe = Math.max(newframe,0);
            
@@ -678,8 +680,9 @@ scripts:
         if(this.updatecounter > 180 && document["PlayerNumber"] == this.PlayerNumber)
           {
             
-            vwf_view.kernel.setProperty(this.id,'transform',this.transform.internal_val,0,null);
-            vwf_view.kernel.setProperty(this.id,'rotZ',this.rotZ,0,null);
+            //if the system works properly, this is really a no-no
+            //vwf_view.kernel.setProperty(this.id,'transform',this.transform.internal_val,0,null);
+            //vwf_view.kernel.setProperty(this.id,'rotZ',this.rotZ,0,null);
              this.updatecounter = 0;
           }
           
