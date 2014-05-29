@@ -410,7 +410,7 @@ node.id = childID; // TODO: move to vwf/model/object
 
 			
             var child = this.nodes[nodeID];
-            this.callMethodTraverse(this.nodes['index-vwf'],'deletingNode',[nodeID]);
+            //this.callMethodTraverse(this.nodes['index-vwf'],'deletingNode',[nodeID]);
             var node = child.parent;
 
 			if(child.parent && child.parent.__children_by_name)
@@ -886,7 +886,7 @@ node.id = childID; // TODO: move to vwf/model/object
         settingProperty: function( nodeID, propertyName, propertyValue ) {
 
             //notify all nodes of property changes
-            this.callMethodTraverse(this.nodes['index-vwf'],'satProperty',[nodeID, propertyName, propertyValue]);
+            //this.callMethodTraverse(this.nodes['index-vwf'],'satProperty',[nodeID, propertyName, propertyValue]);
 
             var node = this.nodes[nodeID];
 
@@ -1038,7 +1038,7 @@ if ( ! node ) return;  // TODO: patch until full-graph sync is working; drivers 
         creatingMethod: function( nodeID, methodName, methodParameters, methodBody ) {
 
             var node = this.nodes[nodeID];
-            this.callMethodTraverse(this.nodes['index-vwf'],'creatingMethod',[methodName, methodParameters, methodBody]);
+            //this.callMethodTraverse(this.nodes['index-vwf'],'creatingMethod',[methodName, methodParameters, methodBody]);
 
             Object.defineProperty( node.methods, methodName, { // "this" is node.methods in get/set
                 get: function() {
@@ -1095,7 +1095,7 @@ node.hasOwnProperty( methodName ) ||  // TODO: recalculate as properties, method
 
 			
             var node = this.nodes[nodeID];
-			this.callMethodTraverse(this.nodes['index-vwf'],'deletingMethod',[nodeID,methodName]);
+			//this.callMethodTraverse(this.nodes['index-vwf'],'deletingMethod',[nodeID,methodName]);
             if(!node) return undefined;
 
 
@@ -1141,7 +1141,7 @@ node.hasOwnProperty( methodName ) ||  // TODO: recalculate as properties, method
         callingMethod: function( nodeID, methodName, methodParameters ) {
 
 	
-            this.callMethodTraverse(this.nodes['index-vwf'],'calledMethod',[nodeID, methodName, methodParameters]);
+            //this.callMethodTraverse(this.nodes['index-vwf'],'calledMethod',[nodeID, methodName, methodParameters]);
 
             var node = this.nodes[nodeID];
 			if(!node) return undefined;
@@ -1354,6 +1354,7 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
 		},
     callMethodTraverse:function(node,method,args)
     {
+
             if(!node) return;
             
             
@@ -1366,7 +1367,7 @@ node.hasOwnProperty( eventName ) ||  // TODO: recalculate as properties, methods
             if(node.children)
                 for(var i =0; i < node.children.length; i++)
                 {
-                    jsDriverSelf.callMethodTraverse(node.children[i],method,args);
+                    this.callMethodTraverse(node.children[i],method,args);
                 }
     },    
     ticking: function()

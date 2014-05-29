@@ -200,6 +200,11 @@ define(function ()
 			}
 			
 			var scene = _Editor.getNode('index-vwf');
+
+			//if the editor is playing the scene, save the backup from before play was hit
+			if(scene.properties.playMode == 'play' && scene.properties.playBackup)
+				scene = scene.properties.playBackup;
+			
 			var nodes = [];
 			for (var i in scene.children)
 			{

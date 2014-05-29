@@ -20,8 +20,8 @@ properties:
   test:  
   motionStack: []
   activeCycle: []
-  standingOnID:
-  standingOnOffset:
+  standingOnID: 
+  standingOnOffset: 
 methods:
   update:
   tick:

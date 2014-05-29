@@ -179,6 +179,7 @@ define([], function ()
 		{
 
 			vwf.private.queue.suspend();
+			vwf.models.kernel.disable();
 			var currentState = _Editor.getNode(vwf.application());
 			var find = function(node,id)
 			{
@@ -212,7 +213,13 @@ define([], function ()
 						{
 							vwf.setProperty(node.children[i].id,j,node.children[i].properties[j]);
 						}
-						cb();
+					//	var childBack = node.children[i].children;
+					//	node.children[i].children = {};
+					//	vwf.setNode(node.children[i].id,node.children[i],function(){
+					//		node.children[i].children = childBack;
+							cb();	
+					//	})
+						
 
 					}else
 					{
@@ -238,6 +245,7 @@ define([], function ()
 					}
 			}
 			walk2(currentState);
+			vwf.models.kernel.enable();
 			vwf.private.queue.resume();
 
 		}

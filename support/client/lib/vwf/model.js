@@ -127,6 +127,7 @@ define( [ "module", "logger", "vwf/api/kernel", "vwf/api/model" ], function( mod
 
             instance.state = state || {};
 
+           
             // Call the driver's initialize().
 
             initialize.apply( instance, parameters );

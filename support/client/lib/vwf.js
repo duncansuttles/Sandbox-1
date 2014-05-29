@@ -101,7 +101,7 @@
                 // Follow a pipeline to the last stage.
 
                 function last( model ) {
-                    while ( model.model ) model = model.model;
+                   // while ( model.model ) model = model.model;
                     return model;
                 }
 
@@ -622,26 +622,28 @@
 
                     var model = require( modelName ).create(
                         this.models.kernel,                         // model's kernel access
-                        [ require( "vwf/model/stage/log" ) ],       // stages between the kernel and model
+                        {},
+                        null,       // stages between the kernel and model
                         {},                                         // state shared with a paired view
                         [].concat( modelArguments || [] )           // arguments for initialize()
                     );
 
                     if ( model ) {
+                        model.model = model;
                         this.models.push( model );
                         this.models[modelName] = model; // also index by id  // TODO: this won't work if multiple model instances are allowed
 
                         if ( modelName == "vwf/model/javascript" ) {  // TODO: need a formal way to follow prototype chain from vwf.js; this is peeking inside of vwf-model-javascript
                             this.models.javascript = model;
-                            while ( this.models.javascript.model ) this.models.javascript = this.models.javascript.model;
+                          //  while ( this.models.javascript.model ) this.models.javascript = this.models.javascript.model;
                         }
 
                         if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf-model-object
                             this.models.object = model;
-                            while ( this.models.object.model ) this.models.object = this.models.object.model;
+                           // while ( this.models.object.model ) this.models.object = this.models.object.model;
                         }
                         
-                        if(model.model.compatibilityStatus) {
+                        if(model.model && model.model.compatibilityStatus) {
                             if(!model.model.compatibilityStatus.compatible) {
                                 compatibilityStatus.compatible = false;
                                 jQuery.extend(compatibilityStatus.errors, model.model.compatibilityStatus.errors);
@@ -1973,11 +1975,12 @@
 
                 nodeComponent.properties = this.getProperties( nodeID );
 
-                for ( var propertyName in nodeComponent.properties ) {  // TODO: distinguish add, change, remove
-                    if ( nodeComponent.properties[propertyName] === undefined ) {
-                        delete nodeComponent.properties[propertyName];
-                    }
-                }
+            //need to know about existance of properties, event if they are undefined;    
+           //     for ( var propertyName in nodeComponent.properties ) {  // TODO: distinguish add, change, remove
+           //         if ( nodeComponent.properties[propertyName] === undefined ) {
+           //             delete nodeComponent.properties[propertyName];
+           //         }
+           //     }
 
                 if ( Object.keys( nodeComponent.properties ).length == 0 ) { 
                     delete nodeComponent.properties;

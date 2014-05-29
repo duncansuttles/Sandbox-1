@@ -286,7 +286,9 @@ define(function ()
 				isDynamic: true,
 				castShadows: true,
 				receiveShadows: true,
-				activeCycle : []
+				activeCycle : [],
+				standingOnID: null,
+  				standingOnOffset: null
 			},
 			events: {
 				ShowProfile: null,
@@ -510,6 +512,7 @@ define(function ()
 			
 			_DataManager.saveToServer(true);
 
+			//inform the server that you intend to disconnect from the world
 			if(needlogin)
 			{	
 				var data = jQuery.ajax(
@@ -527,11 +530,12 @@ define(function ()
 					return;
 				}
 			}
+
 			document[document.PlayerNumber + 'link'] = null;
 			document.PlayerNumber = null;
 			_UserManager.currentUsername = null;
 			
-			window.location = _DataManager.getCurrentApplication();
+			window.location = window.location.pathname.replace('/sandbox/','/sandbox/world/')
 			return;
 		}
 		this.showLogin = function ()

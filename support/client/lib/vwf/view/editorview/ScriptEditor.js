@@ -880,6 +880,10 @@ define(function ()
 					{
 						
 						$('#ScriptEditor').hide();
+						var resolutionScale = _SettingsManager.getKey('resolutionScale');
+						$('#index-vwf')[0].height = $('#index-vwf').height() / resolutionScale;
+						$('#index-vwf')[0].width = $(window).width()/ resolutionScale;
+						_dRenderer.setSize($('#index-vwf').width()/ resolutionScale,$('#index-vwf').height()/ resolutionScale,false);
 					}
 				});
 			}

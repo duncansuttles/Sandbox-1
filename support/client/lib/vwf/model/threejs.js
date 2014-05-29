@@ -116,7 +116,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
            
             this.state.scenes = {}; // id => { MATHDocument: new MATH.Document(), MATHRenderer: new MATH.Renderer(), MATHScene: new MATH.Scene() }
             this.state.nodes = {}; // id => { name: string, MATHObject: MATH.Object, MATH.Collada, MATH.Light, or other...? }
-            this.state.kernel = this.kernel.kernel.kernel;
+            this.state.kernel = this.kernel.kernel;
             this.state.sceneRootID = "index-vwf";
 			
 			window.backgroundLoader = backgroundLoader;
@@ -192,7 +192,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
                     }
                 }               
             }
-            var kernel = this.kernel.kernel.kernel;
+            var kernel = this.kernel.kernel;
             
             
             var protos = getPrototypes.call( this, kernel, childExtendsID );
