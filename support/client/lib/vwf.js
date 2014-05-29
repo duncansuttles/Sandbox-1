@@ -910,7 +910,7 @@
                         // Update the queue. Insert the message (unless it is only a time tick), and
                         // advance the queue's record of the current time. Messages in the queue are
                         // ordered by time, then by order of arrival.
-
+                        
                         queue.insert( fields, true ); // may invoke dispatch(), so call last before returning to the host
 
                         // Each message from the server allows us to move time forward. Parse the

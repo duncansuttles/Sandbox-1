@@ -40,7 +40,7 @@ scripts:
     this.attached = function()
     {
         //called when added to the scene, after initialize is called and parent is set.
-        this.parent.avatarCreated(this.PlayerNumber);
+        //this.parent.avatarCreated(this.PlayerNumber);
     }
     this.ready = function()
     {
@@ -49,6 +49,7 @@ scripts:
         this.ku = function(e,d){ return self.keyUp(e,d)};
         this.Scene.bind('keyDown', this.kd);
         this.Scene.bind('keyUp' , this.ku);
+        this.Scene.avatarCreated(this);
     }
     this.initialize = function(){
 
@@ -380,6 +381,7 @@ scripts:
         }
 
     }
+
     this.recordStandingOn = function(intersect)
     {
        
