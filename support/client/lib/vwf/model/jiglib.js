@@ -42,7 +42,7 @@ define( [ "module", "vwf/model" ], function( module, model ) {
 
 		  return;
 		  
-          var kernel = this.kernel.kernel.kernel;
+          var kernel = this.kernel.kernel;
           //this.logger.enable = true;
           //this.logger.infoc( "creatingNode", nodeID, childID, childExtendsID, childImplementsIDs,
           //                  childSource, childType, childURI, childName );

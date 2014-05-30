@@ -20,8 +20,8 @@ properties:
   test:  
   motionStack: []
   activeCycle: []
-  standingOnID:
-  standingOnOffset:
+  standingOnID: 
+  standingOnOffset: 
 methods:
   update:
   tick:
@@ -40,7 +40,7 @@ scripts:
     this.attached = function()
     {
         //called when added to the scene, after initialize is called and parent is set.
-        this.parent.avatarCreated(this.PlayerNumber);
+        //this.parent.avatarCreated(this.PlayerNumber);
     }
     this.ready = function()
     {
@@ -49,6 +49,7 @@ scripts:
         this.ku = function(e,d){ return self.keyUp(e,d)};
         this.Scene.bind('keyDown', this.kd);
         this.Scene.bind('keyUp' , this.ku);
+        this.Scene.avatarCreated(this);
     }
     this.initialize = function(){
 
@@ -161,7 +162,8 @@ scripts:
           cycle.current = cycle.length;    
       if(cycle.current >= cycle.length && cycle.loop == false)
           cycle.current = cycle.length-1;
-      return cycle.current;
+       
+      return cycle.current + cycle.start;
     }
     this.initCycles = function()
     {
@@ -379,6 +381,7 @@ scripts:
         }
 
     }
+
     this.recordStandingOn = function(intersect)
     {
        
@@ -452,6 +455,7 @@ scripts:
         var standing = this.standing;
         if(this.activeCycle[this.activeCycle.length-1])
         {
+
 
             var newframe = this.increment(this.cycles[this.activeCycle[this.activeCycle.length-1]],updateFreqDivisor);
             newframe = Math.max(newframe,0);
@@ -678,8 +682,9 @@ scripts:
         if(this.updatecounter > 180 && document["PlayerNumber"] == this.PlayerNumber)
           {
             
-            vwf_view.kernel.setProperty(this.id,'transform',this.transform.internal_val,0,null);
-            vwf_view.kernel.setProperty(this.id,'rotZ',this.rotZ,0,null);
+            //if the system works properly, this is really a no-no
+            //vwf_view.kernel.setProperty(this.id,'transform',this.transform.internal_val,0,null);
+            //vwf_view.kernel.setProperty(this.id,'rotZ',this.rotZ,0,null);
              this.updatecounter = 0;
           }
           

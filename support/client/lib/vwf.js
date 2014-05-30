@@ -101,7 +101,7 @@
                 // Follow a pipeline to the last stage.
 
                 function last( model ) {
-                    while ( model.model ) model = model.model;
+                   // while ( model.model ) model = model.model;
                     return model;
                 }
 
@@ -622,26 +622,28 @@
 
                     var model = require( modelName ).create(
                         this.models.kernel,                         // model's kernel access
-                        [ require( "vwf/model/stage/log" ) ],       // stages between the kernel and model
+                        {},
+                        null,       // stages between the kernel and model
                         {},                                         // state shared with a paired view
                         [].concat( modelArguments || [] )           // arguments for initialize()
                     );
 
                     if ( model ) {
+                        model.model = model;
                         this.models.push( model );
                         this.models[modelName] = model; // also index by id  // TODO: this won't work if multiple model instances are allowed
 
                         if ( modelName == "vwf/model/javascript" ) {  // TODO: need a formal way to follow prototype chain from vwf.js; this is peeking inside of vwf-model-javascript
                             this.models.javascript = model;
-                            while ( this.models.javascript.model ) this.models.javascript = this.models.javascript.model;
+                          //  while ( this.models.javascript.model ) this.models.javascript = this.models.javascript.model;
                         }
 
                         if ( modelName == "vwf/model/object" ) {  // TODO: this is peeking inside of vwf-model-object
                             this.models.object = model;
-                            while ( this.models.object.model ) this.models.object = this.models.object.model;
+                           // while ( this.models.object.model ) this.models.object = this.models.object.model;
                         }
                         
-                        if(model.model.compatibilityStatus) {
+                        if(model.model && model.model.compatibilityStatus) {
                             if(!model.model.compatibilityStatus.compatible) {
                                 compatibilityStatus.compatible = false;
                                 jQuery.extend(compatibilityStatus.errors, model.model.compatibilityStatus.errors);
@@ -910,7 +912,7 @@
                         // Update the queue. Insert the message (unless it is only a time tick), and
                         // advance the queue's record of the current time. Messages in the queue are
                         // ordered by time, then by order of arrival.
-
+                        
                         queue.insert( fields, true ); // may invoke dispatch(), so call last before returning to the host
 
                         // Each message from the server allows us to move time forward. Parse the
@@ -1973,11 +1975,12 @@
 
                 nodeComponent.properties = this.getProperties( nodeID );
 
-                for ( var propertyName in nodeComponent.properties ) {  // TODO: distinguish add, change, remove
-                    if ( nodeComponent.properties[propertyName] === undefined ) {
-                        delete nodeComponent.properties[propertyName];
-                    }
-                }
+            //need to know about existance of properties, event if they are undefined;    
+           //     for ( var propertyName in nodeComponent.properties ) {  // TODO: distinguish add, change, remove
+           //         if ( nodeComponent.properties[propertyName] === undefined ) {
+           //             delete nodeComponent.properties[propertyName];
+           //         }
+           //     }
 
                 if ( Object.keys( nodeComponent.properties ).length == 0 ) { 
                     delete nodeComponent.properties;
@@ -2655,7 +2658,7 @@ if ( ! childComponent.source ) {
 
                        
                         if ( valueHasBody( eventValue ) ) {
-                            vwf.createEvent( childID, eventName, eventValue.parameters );
+                            vwf.createEvent( childID, eventName, eventValue.parameters, eventValue.body );
                         } else {
                             vwf.createEvent( childID, eventName, undefined );
                         }
@@ -3626,7 +3629,7 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
         /// 
         /// @see {@link module:vwf/api/kernel.createEvent}
 
-        this.createEvent = function( nodeID, eventName, eventParameters ) {  // TODO: parameters (used? or just for annotation?)  // TODO: allow a handler body here and treat as this.*event* = function() {} (a self-targeted handler); will help with ui event handlers
+        this.createEvent = function( nodeID, eventName, eventParameters, eventBody ) {  // TODO: parameters (used? or just for annotation?)  // TODO: allow a handler body here and treat as this.*event* = function() {} (a self-targeted handler); will help with ui event handlers
 
             this.logger.debuggx( "createEvent", nodeID, eventName, eventParameters );
 
@@ -3634,14 +3637,14 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
             // have run.
 
             this.models.forEach( function( model ) {
-                model.creatingEvent && model.creatingEvent( nodeID, eventName, eventParameters );
+                model.creatingEvent && model.creatingEvent( nodeID, eventName, eventParameters,eventBody );
             } );
 
             // Call createdEvent() on each view. The view is being notified that a event has been
             // created.
 
             this.views.forEach( function( view ) {
-                view.createdEvent && view.createdEvent( nodeID, eventName, eventParameters );
+                view.createdEvent && view.createdEvent( nodeID, eventName, eventParameters,eventBody );
             } );
 
             this.logger.debugu();

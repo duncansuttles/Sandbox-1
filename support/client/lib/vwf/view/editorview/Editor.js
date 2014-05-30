@@ -108,26 +108,26 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			$('#statusbar').css('top', (document.height - 25) + 'px');
 
 			$('#statusbar').append('<div id="TimeControl" style="height: 59px;display: inline-block;margin-top: -42px;background: #444;border-radius: 5px;border: 1px solid #555;"><div class="timeControl" id="playButton">▸</div><div id="pauseButton" class="timeControl">∥</div><div id="stopButton" class="timeControl">▄</div></div>');
-
-			$('#statusbar').append('<div id="SceneSaved" class="statusbarElement" />');
+			$('#statusbar').append('<div id="statusbarinner"></div>');
+			$('#statusbarinner').append('<div id="SceneSaved" class="statusbarElement" />');
 			$('#SceneSaved').text('Not Saved');
-			$('#statusbar').append('<div id="StatusSelectedName" style="color:lightblue" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusSelectedName" style="color:lightblue" class="statusbarElement" />');
 			$('#StatusSelectedName').text('No Selection');
-			$('#statusbar').append('<div id="StatusSelectedID" class="statusbarElement" style="display:none" />');
+			$('#statusbarinner').append('<div id="StatusSelectedID" class="statusbarElement" style="display:none" />');
 			$('#StatusSelectedID').text('No Selection');
-			$('#statusbar').append('<div id="StatusPickMode" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusPickMode" class="statusbarElement" />');
 			$('#StatusPickMode').text('Pick: None');
-			$('#statusbar').append('<div id="StatusSnaps" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusSnaps" class="statusbarElement" />');
 			$('#StatusSnaps').text('Snaps: 15deg, .5m, .1%');
-			$('#statusbar').append('<div id="StatusAxis" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusAxis" class="statusbarElement" />');
 			$('#StatusAxis').text('Axis: -1');
-			$('#statusbar').append('<div id="StatusCoords" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusCoords" class="statusbarElement" />');
 			$('#StatusCoords').text('World Coords');
-			$('#statusbar').append('<div id="StatusTransform" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusTransform" class="statusbarElement" />');
 			$('#StatusTransform').text('Move');
-			$('#statusbar').append('<div id="StatusGizmoLocation" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusGizmoLocation" class="statusbarElement" />');
 			$('#StatusGizmoLocation').text('[0,0,0]');
-			$('#statusbar').append('<div id="StatusCameraLocation" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusCameraLocation" class="statusbarElement" />');
 			$('#StatusCameraLocation').text('[0,0,0]');
 		}
 

@@ -1,5 +1,4 @@
-//define( ["vwf/model/threejs/three","vwf/model/threejs/_THREERayTracer"], function( three, tracer ) {
-	
+
 
 function GUID()
 {
@@ -385,7 +384,8 @@ SceneManager.prototype.GetLoadedTextures = function()
 }
 SceneManager.prototype.getTexture = function(src,noclone)
 {
-	//return THREE.ImageUtils.loadTexture(src);
+	//return THREE.ImageUtils.loadTexture(src)
+
 	var originalSrc = src;
 	var p = window.location.pathname;
 	if(p[p.length-1] == '/') {p = p.substring(0,p.length -1)};

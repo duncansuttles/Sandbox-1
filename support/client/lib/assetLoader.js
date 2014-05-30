@@ -380,6 +380,7 @@ function ()
                     {
                         //because of the way texture loads are handled in the scenemanager, we can actually go ahead and continue immediately here
                         //though we might as well let the scenemanager know to set started
+                       
                         _SceneManager.getTexture(url);
                         cb2();
                     }

@@ -472,6 +472,14 @@ function getBlankScene(state,cb)
                     }
                 }
             }
+            thisInstance.state.callMethod = function(id,name,args)
+            {
+                if(id == 'index-vwf' && name == 'restoreState')
+                {
+                    console.log('Restore State from Play Backup');
+                    this.nodes['index-vwf'] = args[0][0];
+                }
+            }
             socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State loaded, sending..."],"time":thisInstance.time}))); 
             getBlankScene(state,function(blankscene)
             {
@@ -630,6 +638,10 @@ function getBlankScene(state,cb)
                     thisInstance.Error('DENIED ' + JSON.stringify(message), 2);              
                 return;
             }
+
+            //route callmessage to the state to it can respond to manip the server side copy
+            if(message.action == 'callMethod')
+                thisInstance.state.callMethod(message.node, message.member, message.parameters);
             if(message.action == 'callMethod' && message.node =='index-vwf' && message.member=='PM')
             {
                 var textmessage = JSON.parse(message.parameters[0]);

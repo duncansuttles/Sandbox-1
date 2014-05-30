@@ -26246,7 +26246,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				} else {
 
-					_gl.texImage2D( _gl.TEXTURE_2D, 0, glFormat, glFormat, glType, texture.image );
+						_gl.texImage2D( _gl.TEXTURE_2D, 0, glFormat, glFormat, glType, texture.image  );
 
 				}
 

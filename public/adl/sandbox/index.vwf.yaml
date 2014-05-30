@@ -658,8 +658,8 @@ scripts:
             }
         }
         this.objectFollowed = value; 
-        if(this.objectFollowed)
-        this.oldRotZ = vwf.getProperty(this.objectFollowed.id,'rotZ');
+        //if(this.objectFollowed)
+        //this.oldRotZ = vwf.getProperty(this.objectFollowed.id,'rotZ');
     }
     this.targetUpdated = function(obj)
     {
@@ -788,8 +788,8 @@ scripts:
       if(parms.which == 2) this.middledown = true;
       if(parms.which == 3) this.rightdown = true;
      
-      if(this.objectFollowed)
-        this.oldRotZ = vwf.getProperty(this.objectFollowed.id,'rotZ');
+      //if(this.objectFollowed)
+      //  this.oldRotZ = vwf.getProperty(this.objectFollowed.id,'rotZ');
      
       if(parms.which == 3 || parms.which == 2 && (this.cameramode == 'Orbit' || this.cameramode == 'Free'))
         {
@@ -858,9 +858,10 @@ scripts:
         
         if(this.objectFollowed)
         {  
-            this.oldRotZ += this.rel_x*10 || 0;
-            vwf_view.kernel.setProperty(this.objectFollowed.id,'rotZ', this.oldRotZ);
-            //_Editor.findviewnode(this.objectFollowed.id).setRotZ(this.oldRotZ);
+        	var rz = this.objectFollowed.rotZ;
+            rz  = (rz +(this.rel_x*10 || 0)) || 0;
+            vwf_view.kernel.setProperty(this.objectFollowed.id,'rotZ',rz);
+            
             
         }
         
@@ -1039,7 +1040,7 @@ scripts:
             try{
             //this.oldRotZ var xmatrix = MATH.angleAxis(this.x_rot*10,[0,0,1]);
             var rotation = this.objectFollowed.rotation;
-            var xmatrix = MATH.angleAxis(this.oldRotZ,[0,0,1]);
+            var xmatrix = MATH.angleAxis(this.objectFollowed.rotZ,[0,0,1]);
             var offset = MATH.mulMat4Vec3(xmatrix,[0,1.5,.5]);
             
             offset = MATH.scaleVec3(offset,1/MATH.lengthVec3(offset));

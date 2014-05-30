@@ -87,14 +87,18 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
 					window._LocationTools = require("vwf/view/editorview/LocationTools").getSingleton();
 					window._UserManager = require("vwf/view/editorview/UserManager").getSingleton();;
 					
-
+					
 					if(needTools)
 					{
 						require("vwf/view/editorview/help").getSingleton();
+					
 						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/PainterTool.js"></script>');
+
 						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/AlignTool.js"></script>');
+
 						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/SplineTool.js"></script>');
 						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/TerrainTool.js"></script>');
+
 						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/lib/jquery.qtip-1.0.0-rc3.min.js"></script>');
 						$(document.head).append('<script type="text/javascript" src="vwf/view/editorview/lib/beautify.module.js"></script>');
 					}

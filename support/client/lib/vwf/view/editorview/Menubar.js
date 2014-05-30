@@ -35,7 +35,7 @@ define(
 			}
 
 			window.setTimeout(function(){
-							$('#SetThumbnail').click();
+							window.setThumbnail(); 
 
 						},10000)
 
@@ -62,9 +62,9 @@ define(
 
 		});
 
-		$('#SetThumbnail').click(function(e){
+		window.setThumbnail = function()
+		{
 
-			
 			if(vwf.getProperty('index-vwf','owner') != _UserManager.GetCurrentUserName())
 			{
 				alertify.alert('Sorry, only the world owner can set the thumbnail');
@@ -110,8 +110,12 @@ define(
 			}
 			_dView.bind('postrender',takeimage);
 
-			
 
+
+		}
+
+		$('#SetThumbnail').click(function(e){
+			window.setThumbnail();
 		});
 	
 	$('#MenuCreateGUIDialog').click(function(e){

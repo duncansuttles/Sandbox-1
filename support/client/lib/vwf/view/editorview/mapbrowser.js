@@ -181,7 +181,7 @@ define(function ()
 					$('#MapChoice' + i).click(this.dirpicked);
 				}
 			}
-			$('#MapBrowser').append('<img id="MapChoiceadd" class="textureChoice" src="images/plus.png" />');
+			$('#MapBrowser').append('<img id="MapChoiceadd" class="textureChoice" src="./vwf/view/editorview/images/plus.png" />');
 			$('#MapChoiceadd').css('background','white');
 			$('#MapChoiceadd').click(self.manualEntry);
 		}
