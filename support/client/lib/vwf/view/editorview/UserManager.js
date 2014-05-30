@@ -302,9 +302,9 @@ define(function ()
 
 			if(!profile) profile = {};
 
-			this.PlayerProto.source = profile.avatarModel || './avatars/VWS_Business_Female1.DAE';
+			this.PlayerProto.source = profile.avatarModel || './avatars/avatar_0001_01.dae';
 
-            this.PlayerProto.properties.cycles = 
+            this.PlayerProto.properties.cycles =
             {
                 stand:{start:1,length:0,speed:1.25,current:0,loop:true},
                 walk:{start:6,length:27,speed:1.0,current:0,loop:true},
@@ -316,7 +316,7 @@ define(function ()
                 runningjump:{start:109,length:48,speed:1.25,current:0,loop:false}
             };
 
-            
+
             this.PlayerProto.properties.materialDef = {
 			    "color":
 			    {
@@ -332,7 +332,7 @@ define(function ()
 			    },
 			    "emit":
 			    {
-			        "r": 0.27058823529411763,
+			        "r": 0.25058823529411763,
 			        "g": 0.2549019607843137,
 			        "b": 0.2549019607843137
 			    },
@@ -350,12 +350,12 @@ define(function ()
 			    "layers": [
 			        {
 			            "mapTo": 1,
-			            "scalex": 1,
-			            "scaley": 1,
+			            "scalex": 2.2,
+			            "scaley": 2.2,
 			            "offsetx": 0,
 			            "offsety": 0,
 			            "alpha": 1,
-			            "src": profile.avatarTexture || "./avatars/VWS_B_Female1-1.jpg",
+			            "src": profile.avatarTexture || "./avatars/160by160fb.jpg",
 			            "mapInput": 0
 			        }
 			    ],

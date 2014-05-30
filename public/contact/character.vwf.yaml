@@ -89,8 +89,8 @@ scripts:
           }
          
         
-          this.prerendercallback = this.placeNameTag.bind(this);
-          _dView.bind('postprerender',this.prerendercallback);
+          //this.prerendercallback = this.placeNameTag.bind(this);
+          //_dView.bind('postprerender',this.prerendercallback);
           this.updatecounter = 0;
           this.mesh = findChildViewNode(findscene(),this.id);
           //debugger;
@@ -99,29 +99,69 @@ scripts:
            
         //  this.mesh.children[0].children[0].children[0].position.z = -.85
         //  this.mesh.children[0].children[0].children[0].updateMatrixWorld(true);
-          
+          //alert(this.mesh.children[0].children[0]);
+         /* this.mesh.traverse( function( node ) {
+              if( node.material ) {
+                  alert(node.material.id);
+                  var image = THREE.ImageUtils.loadTexture('./avatars/160by160fb.jpg');
+                  var texture = new THREE.Texture(image);
+                  texture.repeat.x = 4;
+                  texture.repeat.y = 4;
+
+                     var cubeMaterial = new THREE.MeshBasicMaterial({
+                                       map:texture,
+                                       side:THREE.DoubleSide
+                                  });
+                  //node.material = cubeMaterial; //new THREE.MeshBasicMaterial({map: texture});;
+                  //node.material.needsUpdate;
+                  node.material.opacity = 0.72;
+                  node.material.transparent = true;
+              }
+          });*/
+
           var findSkin = function(root)
           {
               if(root instanceof THREE.SkinnedMesh) return root;
               var found = null;
               for(var i =0; i < root.children.length; i++)
               {
+                alert(root.children[i]);
                 found = findSkin(root.children[i]);
                 if(found) return found;
               }
 
           }
+          var setMaterial = function(node, material) {
+            if (node.material!=undefined) {
+              alert(node);
+              node.material.texture = material;
+              node.material.needsUpdate = true
+              node.material.texture.needsUpdate = true;
 
-          this.skin = findSkin(this.mesh);
-          if(this.skin.material.ambient)
-          {
-             this.skin.material.ambient.r = 1;
-             this.skin.material.ambient.g = 1;
-             this.skin.material.ambient.b = 1;
+            }
+            if (node.children) {
+              for (var i = 0; i < node.children.length; i++) {
+                setMaterial(node.children[i], material);
+              }
+            }
           }
+          var image = THREE.ImageUtils.loadTexture('./avatars/160by160fb.jpg');
+          var texture = new THREE.Texture(image);
+          texture.repeat.set(0.3,0.3);
+
+          //setMaterial(this.mesh, new THREE.MeshBasicMaterial({color: 0x3D59AB, map: texture, specular: 0x555555, shininess: 20})); //new THREE.MeshBasicMaterial({color: 0xff0000}));
+          setMaterial(this.mesh, texture);
+
+          //this.skin = findSkin(this.mesh);
+         // if(this.skin.material.ambient)
+          //{
+          //   this.skin.material.ambient.r = 1;
+          //   this.skin.material.ambient.g = 1;
+          //   this.skin.material.ambient.b = 1;
+        //  }
 
           
-          this.skin.isAvatar = true;
+          //this.skin.isAvatar = true;
           this.jumpcounter = 0.0;
           //this.stand();
          
@@ -566,7 +606,7 @@ scripts:
             //for intersetions, and prevent penetration through objects
             if((MATH.lengthVec3(this.originalvelocity) > .001 || motionvec || this.jumpcounter > jumpstart || this.inMotion('turnleft') || this.inMotion('turnright')))
             {
-                this.skin.PickPriority = -1;
+                //this.skin.PickPriority = -1;
                 
                 
                 motionvec = motionvec ? motionvec : [0,0,0];
@@ -659,7 +699,7 @@ scripts:
                 }
                 _DEALLOC(intersect);
               }
-                this.skin.PickPriority = 1;
+                //this.skin.PickPriority = 1;
                  
             }
            
@@ -684,7 +724,7 @@ scripts:
           }
           
         
-        this.skin.PickPriority = 1;
+        //this.skin.PickPriority = 1;
         this.tbak = finalt;
         this.translation = finalt;
       
