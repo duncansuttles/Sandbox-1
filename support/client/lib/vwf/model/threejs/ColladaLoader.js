@@ -165,15 +165,15 @@ THREE.ColladaLoader = function () {
 
 		async.series([
 
-		function(cb2){ images = parseLib( "library_images image", _Image, "image" ); window.setImmediate(cb2)},
-		function(cb2){ materials = parseLib( "library_materials material", Material, "material" );window.setImmediate(cb2)},
-		function(cb2){ effects = parseLib( "library_effects effect", Effect, "effect" );window.setImmediate(cb2)},
-		function(cb2){ geometries = parseLib( "library_geometries geometry", Geometry, "geometry" );window.setImmediate(cb2)},
-		function(cb2){ cameras = parseLib( "library_cameras camera", Camera, "camera" );window.setImmediate(cb2)},
-		function(cb2){ lights = parseLib( "library_lights light", Light, "light" );window.setImmediate(cb2)},
-		function(cb2){ controllers = parseLib( "library_controllers controller", Controller, "controller" );window.setImmediate(cb2)},
-		function(cb2){ animations = parseLib( "library_animations animation", Animation, "animation" );window.setImmediate(cb2)},
-		function(cb2){ visualScenes = parseLib( "library_visual_scenes visual_scene", VisualScene, "visual_scene" );window.setImmediate(cb2)},
+		function(cb2){ images = parseLib( "library_images image", _Image, "image" ); async.nextTick(cb2)},
+		function(cb2){ materials = parseLib( "library_materials material", Material, "material" );async.nextTick(cb2)},
+		function(cb2){ effects = parseLib( "library_effects effect", Effect, "effect" );async.nextTick(cb2)},
+		function(cb2){ geometries = parseLib( "library_geometries geometry", Geometry, "geometry" );async.nextTick(cb2)},
+		function(cb2){ cameras = parseLib( "library_cameras camera", Camera, "camera" );async.nextTick(cb2)},
+		function(cb2){ lights = parseLib( "library_lights light", Light, "light" );async.nextTick(cb2)},
+		function(cb2){ controllers = parseLib( "library_controllers controller", Controller, "controller" );async.nextTick(cb2)},
+		function(cb2){ animations = parseLib( "library_animations animation", Animation, "animation" );async.nextTick(cb2)},
+		function(cb2){ visualScenes = parseLib( "library_visual_scenes visual_scene", VisualScene, "visual_scene" );async.nextTick(cb2)},
 
 		],function(){
 
@@ -189,7 +189,7 @@ THREE.ColladaLoader = function () {
 				 createSceneGraph( node,null,function(threenode)
 				 {
 				 	scene.add(threenode);
-				 	window.setImmediate(cb);
+				 	async.nextTick(cb);
 				 } );
 			},function(err)
 			{
@@ -1239,7 +1239,7 @@ THREE.ColladaLoader = function () {
 			{
 
 				obj.add(childTHREE);
-				window.setImmediate(cb2);
+				async.nextTick(cb2);
 			});
 		},function(err)
 		{
