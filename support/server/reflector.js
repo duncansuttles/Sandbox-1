@@ -122,7 +122,7 @@ var fixIDs = function(node)
     }
 }
 
-function getBlankScene(state,cb)
+function getBlankScene(state,instanceData, cb)
 {
     var state2 = JSON.parse(JSON.stringify(state));
     fs.readFile("./public"+global.appPath+"/index.vwf.yaml", 'utf8',function(err,blankscene)
@@ -169,7 +169,10 @@ function getBlankScene(state,cb)
                     }
                     //don't allow the clients to persist between a save/load cycle
                     blankscene.properties['clients'] = null;
-                    blankscene.properties['playMode'] = 'stop';
+                    if(!instanceData.publishSettings)
+                        blankscene.properties['playMode'] = 'stop';
+                    else
+                        blankscene.properties['playMode'] = 'play';
                 }
             }catch(e)
             {
@@ -189,8 +192,14 @@ function getBlankScene(state,cb)
         var state = SandboxAPI.getState(instance,function(state){
             if(!state) state = [{owner:undefined}];
             
-            getBlankScene(state,function(blankscene){
+            getBlankScene(state,instancedata,function(blankscene){
                 socket.emit('message',{"action":"createNode","parameters":[blankscene],"time":0});
+
+                var id = socket.id;
+                var name = socket.loginData? socket.loginData.UID : 'anonymous';
+                var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientConnected",[id,name]],node:"index-vwf","time":0}));
+                socket.emit('message',joinMessage);
+
                 socket.emit('message',{"action":"goOffline","parameters":[blankscene],"time":0});
                 socket.pending = false;
             });
@@ -481,7 +490,7 @@ function getBlankScene(state,cb)
                 }
             }
             socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State loaded, sending..."],"time":thisInstance.time}))); 
-            getBlankScene(state,function(blankscene)
+            getBlankScene(state,instancedata,function(blankscene)
             {
 
                
