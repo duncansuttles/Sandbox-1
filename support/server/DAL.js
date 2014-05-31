@@ -638,7 +638,11 @@ function CheckHash(filename,data,callback)
 }
 function saveInstanceState(id,data,cb)
 {
-	
+	if(!data)
+	{
+		throw (new Error('Data was null in saveInstanceState for instance: ' + id));
+		cb(false);
+	}
 	var parsedData = typeof data == 'string' ? JSON.parse(data) : data;
 	getInstance(id,function(instance){
 	
