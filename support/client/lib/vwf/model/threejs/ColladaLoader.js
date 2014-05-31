@@ -3517,8 +3517,7 @@ THREE.ColladaLoader = function () {
 			var transparentColor = this['transparent'];
 			var transparencyLevel = (this.transparent.color.r +
 										this.transparent.color.g + 
-										this.transparent.color.b)
-										/ 3 * this.transparency;
+										this.transparent.color.b) / 3 * this.transparency;
 			
 			if (transparencyLevel > 0)
 			{
@@ -3553,7 +3552,7 @@ THREE.ColladaLoader = function () {
 
 								if (image) {
 
-									var texture =  _SceneManager.getTexture(baseUrl + image.init_from);
+									var texture =  window._SceneManager ? _SceneManager.getTexture(baseUrl + image.init_from): THREE.ImageUtils.loadTexture(baseUrl + image.init_from);
 									texture.wrapS = cot.texOpts.wrapU ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
 									texture.wrapT = cot.texOpts.wrapV ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
 									texture.offset.x = cot.texOpts.offsetU;
