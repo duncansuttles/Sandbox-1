@@ -316,7 +316,16 @@ define(function ()
                 runningjump:{start:109,length:48,speed:1.25,current:0,loop:false}
             };
 
+            if (!profile.avatarTexture) {
+                if (username=="maren") {
+                    profile.avatarTexture = "./avatars/maren160fb.jpg";
+                } else if (username=="gunnar") {
+                    profile.avatarTexture = "./avatars/gunnar160fb.jpg"
 
+                } else {
+                    profile.avatarTexture = "./avatars/160by160fb.jpg"
+                }
+            }
             this.PlayerProto.properties.materialDef = {
 			    "color":
 			    {
@@ -350,8 +359,8 @@ define(function ()
 			    "layers": [
 			        {
 			            "mapTo": 1,
-			            "scalex": 2.2,
-			            "scaley": 2.2,
+			            "scalex": 1,
+			            "scaley": 1,
 			            "offsetx": 0,
 			            "offsety": 0,
 			            "alpha": 1,
