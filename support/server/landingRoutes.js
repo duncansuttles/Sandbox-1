@@ -338,6 +338,17 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 		
 		var results = [];
 		
+		//clean up and make sure that the data is not null
+		for (var i in allinstances)
+		{
+			if(!allinstances[i])
+				continue;
+			if(!allinstances[i].title)
+				allinstances[i].title = 'No Title';
+			if(!allinstances[i].description)
+				allinstances[i].description = 'No Description';
+
+		}
 		if(mode == 'active')
 		{
 			for(var i in allinstances)
@@ -365,7 +376,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 				var inst = allinstances[i];
 				if(!inst) continue;
 				inst.id = i;
-				inst.shortid = i.substr(global.appPath.length+1,16)
+				inst.shortid = i.substr(global.appPath.length+1,16);
 				if(inst.title.toLowerCase().indexOf(search) != -1 || inst.description.toLowerCase().indexOf(search) != -1 || inst.owner.toLowerCase().indexOf(search) != -1 || inst.shortid.toLowerCase().indexOf(search) != -1)
 					results.push(inst);
 			}

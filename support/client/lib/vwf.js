@@ -3401,7 +3401,7 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
         /// 
         /// @see {@link module:vwf/api/kernel.getProperty}
 
-        this.getProperty = function( nodeID, propertyName, ignorePrototype ) {
+        this.getProperty = function( nodeID, propertyName, ignorePrototype, testDelegation) {
 
             this.logger.debuggx( "getProperty", nodeID, propertyName );
 
@@ -3552,6 +3552,11 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
             }
 
             this.logger.debugu();
+
+            if(testDelegation)
+            {
+                return delegated;
+            }
 
             return propertyValue;
         };
