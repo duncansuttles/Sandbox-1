@@ -20,8 +20,8 @@ properties:
   test:  
   motionStack: []
   activeCycle: []
-  standingOnID:
-  standingOnOffset:
+  standingOnID: 
+  standingOnOffset: 
 methods:
   update:
   tick:
@@ -40,7 +40,7 @@ scripts:
     this.attached = function()
     {
         //called when added to the scene, after initialize is called and parent is set.
-        this.parent.avatarCreated(this.PlayerNumber);
+        //this.parent.avatarCreated(this.PlayerNumber);
     }
     this.ready = function()
     {
@@ -49,6 +49,7 @@ scripts:
         this.ku = function(e,d){ return self.keyUp(e,d)};
         this.Scene.bind('keyDown', this.kd);
         this.Scene.bind('keyUp' , this.ku);
+        this.Scene.avatarCreated(this);
     }
     this.initialize = function(){
 
@@ -89,8 +90,8 @@ scripts:
           }
          
         
-          //this.prerendercallback = this.placeNameTag.bind(this);
-          //_dView.bind('postprerender',this.prerendercallback);
+          this.prerendercallback = this.placeNameTag.bind(this);
+          _dView.bind('postprerender',this.prerendercallback);
           this.updatecounter = 0;
           this.mesh = findChildViewNode(findscene(),this.id);
           //debugger;
@@ -99,58 +100,18 @@ scripts:
            
         //  this.mesh.children[0].children[0].children[0].position.z = -.85
         //  this.mesh.children[0].children[0].children[0].updateMatrixWorld(true);
-          //alert(this.mesh.children[0].children[0]);
-         /* this.mesh.traverse( function( node ) {
-              if( node.material ) {
-                  alert(node.material.id);
-                  var image = THREE.ImageUtils.loadTexture('./avatars/160by160fb.jpg');
-                  var texture = new THREE.Texture(image);
-                  texture.repeat.x = 4;
-                  texture.repeat.y = 4;
-
-                     var cubeMaterial = new THREE.MeshBasicMaterial({
-                                       map:texture,
-                                       side:THREE.DoubleSide
-                                  });
-                  //node.material = cubeMaterial; //new THREE.MeshBasicMaterial({map: texture});;
-                  //node.material.needsUpdate;
-                  node.material.opacity = 0.72;
-                  node.material.transparent = true;
-              }
-          });*/
-
+          
           var findSkin = function(root)
           {
               if(root instanceof THREE.SkinnedMesh) return root;
               var found = null;
               for(var i =0; i < root.children.length; i++)
               {
-                alert(root.children[i]);
                 found = findSkin(root.children[i]);
                 if(found) return found;
               }
 
           }
-          var setMaterial = function(node, material) {
-            if (node.material!=undefined) {
-              alert(node);
-              node.material.texture = material;
-              node.material.needsUpdate = true
-              node.material.texture.needsUpdate = true;
-
-            }
-            if (node.children) {
-              for (var i = 0; i < node.children.length; i++) {
-                setMaterial(node.children[i], material);
-              }
-            }
-          }
-          var image = THREE.ImageUtils.loadTexture('./avatars/160by160fb.jpg');
-          var texture = new THREE.Texture(image);
-          texture.repeat.set(0.3,0.3);
-
-          //setMaterial(this.mesh, new THREE.MeshBasicMaterial({color: 0x3D59AB, map: texture, specular: 0x555555, shininess: 20})); //new THREE.MeshBasicMaterial({color: 0xff0000}));
-          //setMaterial(this.mesh, texture);
 
           //this.skin = findSkin(this.mesh);
          // if(this.skin.material.ambient)
@@ -201,7 +162,8 @@ scripts:
           cycle.current = cycle.length;    
       if(cycle.current >= cycle.length && cycle.loop == false)
           cycle.current = cycle.length-1;
-      return cycle.current;
+       
+      return cycle.current + cycle.start;
     }
     this.initCycles = function()
     {
@@ -419,6 +381,7 @@ scripts:
         }
 
     }
+
     this.recordStandingOn = function(intersect)
     {
        
@@ -492,6 +455,7 @@ scripts:
         var standing = this.standing;
         if(this.activeCycle[this.activeCycle.length-1])
         {
+
 
             var newframe = this.increment(this.cycles[this.activeCycle[this.activeCycle.length-1]],updateFreqDivisor);
             newframe = Math.max(newframe,0);
@@ -718,8 +682,9 @@ scripts:
         if(this.updatecounter > 180 && document["PlayerNumber"] == this.PlayerNumber)
           {
             
-            vwf_view.kernel.setProperty(this.id,'transform',this.transform.internal_val,0,null);
-            vwf_view.kernel.setProperty(this.id,'rotZ',this.rotZ,0,null);
+            //if the system works properly, this is really a no-no
+            //vwf_view.kernel.setProperty(this.id,'transform',this.transform.internal_val,0,null);
+            //vwf_view.kernel.setProperty(this.id,'rotZ',this.rotZ,0,null);
              this.updatecounter = 0;
           }
           
