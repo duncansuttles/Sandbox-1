@@ -196,7 +196,8 @@ define([], function ()
 		}
 		this.restoreState_imp = function(s)
 		{
-
+			//when stopping a published world, there will be no backup
+			if(!s) return;
 			vwf.private.queue.suspend();
 			vwf.models.kernel.disable();
 			var currentState = _Editor.getNode(vwf.application());

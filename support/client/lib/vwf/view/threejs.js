@@ -160,12 +160,12 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			var step = (this.tickTime) / (this.realTickDif);
 			
 			
-			deltaTime = Math.min(deltaTime,this.realTickDif)
+			//deltaTime = Math.min(deltaTime,this.realTickDif)
 			this.tickTime += deltaTime || 0;
 
 			if(this.tickTime > this.realTickDif)
 				this.future = this.tickTime - this.realTickDif;
-			//else
+			else
 				this.future = 0;
 			//if going slower than tick rate, don't make life harder by changing values. it would be invisible anyway
 			if(step > 2) return;
@@ -268,7 +268,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			this.realTickDif = now - this.lastRealTick;
 			this.lastRealTick = now;
 			
-			this.tickTime = this.future;
+			this.tickTime = 0;//this.future;
 			//reset - loading can cause us to get behind and always but up against the max prediction value
 			//if(this.future > 1) this.future = 0;
 			this.future = 0;
@@ -886,6 +886,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			window.deltaTime = timepassed;
 			if(_SceneManager)
 				_SceneManager.update(timepassed);
+			sceneNode.lastTime = now;
 			pss = GetParticleSystems(sceneNode.threeScene);
 			for(var i in pss)
 			{
@@ -1155,7 +1156,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
 			
 			
-			sceneNode.lastTime = now;
+			
 			if(stats.domElement.style.display == 'block')
 				stats.update();
 			

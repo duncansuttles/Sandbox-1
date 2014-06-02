@@ -1200,7 +1200,7 @@
                                         if(time < 1)
                                         {
                                                 
-                                                while(time > 0)
+                                                while(time >= .5)
                                                 {        
                                                         
                                                         var now = performance.now();

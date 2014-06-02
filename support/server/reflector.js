@@ -122,7 +122,7 @@ var fixIDs = function(node)
     }
 }
 
-function getBlankScene(state,instanceData, cb)
+function getBlankScene(state,cb)
 {
     var state2 = JSON.parse(JSON.stringify(state));
     fs.readFile("./public"+global.appPath+"/index.vwf.yaml", 'utf8',function(err,blankscene)
@@ -169,10 +169,7 @@ function getBlankScene(state,instanceData, cb)
                     }
                     //don't allow the clients to persist between a save/load cycle
                     blankscene.properties['clients'] = null;
-                    if(!instanceData.publishSettings)
-                        blankscene.properties['playMode'] = 'stop';
-                    else
-                        blankscene.properties['playMode'] = 'play';
+                    blankscene.properties['playMode'] = 'stop';
                 }
             }catch(e)
             {
@@ -192,14 +189,8 @@ function getBlankScene(state,instanceData, cb)
         var state = SandboxAPI.getState(instance,function(state){
             if(!state) state = [{owner:undefined}];
             
-            getBlankScene(state,instancedata,function(blankscene){
+            getBlankScene(state,function(blankscene){
                 socket.emit('message',{"action":"createNode","parameters":[blankscene],"time":0});
-
-                var id = socket.id;
-                var name = socket.loginData? socket.loginData.UID : 'anonymous';
-                var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientConnected",[id,name]],node:"index-vwf","time":0}));
-                socket.emit('message',joinMessage);
-
                 socket.emit('message',{"action":"goOffline","parameters":[blankscene],"time":0});
                 socket.pending = false;
             });
@@ -340,35 +331,41 @@ function getBlankScene(state,instanceData, cb)
         this.totalerr = 0;
         //keep track of the timer for this instance
         var self = this;
-        this.timerID = setInterval(function(){
+        self.accum = 0;
+        var timer = function(){
         
             var now = process.hrtime();
             now = now[0] * 1e9 + now[1];
             now = now/1e9;
             
-            
+            if(!self.lasttime)  self.lasttime = now;
+
             var timedelta = (now - self.lasttime) || 0;
-            var timeerr = (timedelta - .050)*1000;
-            self.lasttime = now;
-            self.totalerr += timeerr;
-            
-            
-            self.time += .05;
-            
-            var tickmessage = messageCompress.pack(JSON.stringify({"action":"tick","parameters":[],"time":self.time}));
-            for(var i in self.clients)
-            {
-                var client = self.clients[i];
-                if(!client.pending)
-                    client.emit('message',tickmessage);
-                else
+
+            self.accum += timedelta;
+           
+            while(self.accum > .05)
+            {  
+                self.accum -= .05;
+                self.time += .05;
+                
+                var tickmessage = messageCompress.pack(JSON.stringify({"action":"tick","parameters":[],"time":self.time}));
+                for(var i in self.clients)
                 {
-                    client.pendingList.push(tickmessage);
-                    global.log('pending tick');
-                }
+                    var client = self.clients[i];
+                    if(!client.pending)
+                        client.emit('message',tickmessage);
+                    else
+                    {
+                        client.pendingList.push(tickmessage);
+                        global.log('pending tick');
+                    }
+                 }
             }
-        
-        },50);
+            self.lasttime = now;
+            self.timerID = setTimeout(timer,5);
+        }.bind(self);
+        self.timerID = setTimeout(timer,5);
 
     }
     function runningInstanceList()
@@ -490,7 +487,7 @@ function getBlankScene(state,instanceData, cb)
                 }
             }
             socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State loaded, sending..."],"time":thisInstance.time}))); 
-            getBlankScene(state,instancedata,function(blankscene)
+            getBlankScene(state,function(blankscene)
             {
 
                
