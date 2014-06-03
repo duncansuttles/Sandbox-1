@@ -1181,7 +1181,7 @@
 
             while ( fields = /* assignment! */ queue.pull() ) {
 
-                // Advance time to the message time.
+                // Advance time to the message time.s
 
                 
                 
@@ -1207,7 +1207,7 @@
                                                         var realTickDif = now - this.lastRealTick;
                                                         this.lastRealTick = now;
                                                        
-                                                        this.receive(0,'tick');
+                                                        //this.receive(0,'tick');
                                                 
                                                         time -= .05;
                                                         
@@ -1227,7 +1227,7 @@
 
                 // Perform the action.
 
-                if ( fields.action && fields.action != 'tick') {  // TODO: don't put ticks on the queue but just use them to fast-forward to the current time (requires removing support for passing ticks to the drivers and nodes)
+                if ( fields.action ) {  // TODO: don't put ticks on the queue but just use them to fast-forward to the current time (requires removing support for passing ticks to the drivers and nodes)
                     this.sequence_ = fields.sequence; // note the message's queue sequence number for the duration of the action
                     this.client_ = fields.client;     // ... and note the originating client
                     this.receive( fields.node, fields.action, fields.member, fields.parameters, fields.respond, fields.origin );
@@ -5741,7 +5741,7 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
                 // to the host after invoking insert with chronic set.
 
                 if ( chronic ) {
-                    vwf.dispatch();
+                        vwf.dispatch();    
                 }
 
             },

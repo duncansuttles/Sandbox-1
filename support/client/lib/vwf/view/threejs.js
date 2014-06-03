@@ -163,16 +163,16 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			//deltaTime = Math.min(deltaTime,this.realTickDif)
 			this.tickTime += deltaTime || 0;
 
-			var step = (this.tickTime) / (50);
-			step = step - Math.floor(step);
-			if(step < 0) step = 0;
-			var hit = false;
+			
+
+			var hit = 0;
 			while(this.tickTime > 50)
 			{
-				hit = true;
+				hit ++;
 				this.tickTime -= 50;
 			}
-			if(hit) 
+			var step = (this.tickTime) / (50);
+			if(hit === 1) 
 			{
 				
 				for(var i in this.nodes)
@@ -188,6 +188,22 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				
 						this.nodes[i].lastAnimationFrame = this.nodes[i].thisAnimationFrame;
 						this.nodes[i].thisAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
+						
+					}
+				}
+			}
+			if(hit > 1)
+			{
+				this.tickTime = 0;
+				for(var i in this.nodes)
+				{
+					if(this.state.nodes[i] && this.state.nodes[i].gettingProperty)
+					{				
+						this.nodes[i].lastTickTransform = null;
+						this.nodes[i].thisTickTransform = null;
+						this.nodes[i].lastAnimationFrame = null;
+						this.nodes[i].thisAnimationFrame = null;
+						
 						
 					}
 				}
@@ -210,13 +226,13 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 						
 						interp = this.matrixLerp(last,now,step);
 						
-						this.nodes[i].currentTickTransform = this.state.nodes[i].gettingProperty('transform');
+						this.nodes[i].currentTickTransform = matCpy(this.state.nodes[i].gettingProperty('transform'));
 						this.state.nodes[i].settingProperty('transform',interp);
 
 						
 						
 					}
-					/*
+					
 					last = this.nodes[i].lastAnimationFrame;
 					now = this.nodes[i].thisAnimationFrame;
 					if(last && now && Math.abs(now - last) < 3)
@@ -232,7 +248,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 						this.nodes[i].currentAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
 						this.state.nodes[i].settingProperty('animationFrame',interp);
 						
-					}*/
+					}
 					
 					
 			}
@@ -268,20 +284,21 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				if(this.nodes[i].isStatic)  continue;
 
 				var now = this.nodes[i].currentTickTransform;
-				
+				this.nodes[i].currentTickTransform = null;
 				if(now )
 				{
 					
 					this.state.nodes[i].settingProperty('transform',now);
 					
 				}
-				/*
+				
 				now = this.nodes[i].currentAnimationFrame;
+				this.nodes[i].currentAnimationFrame = null;
 				if(now != null )
 				{
 					this.state.nodes[i].settingProperty('animationFrame',now);
 					
-				}*/
+				}
 				
 			}
 		},
