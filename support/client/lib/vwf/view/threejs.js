@@ -164,7 +164,8 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			this.tickTime += deltaTime || 0;
 
 			var step = (this.tickTime) / (50);
-			step = step - Math.floor(step)
+			step = step - Math.floor(step);
+			if(step < 0) step = 0;
 			var hit = false;
 			while(this.tickTime > 50)
 			{
@@ -211,8 +212,27 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 						
 						this.nodes[i].currentTickTransform = this.state.nodes[i].gettingProperty('transform');
 						this.state.nodes[i].settingProperty('transform',interp);
+
+						
 						
 					}
+					/*
+					last = this.nodes[i].lastAnimationFrame;
+					now = this.nodes[i].thisAnimationFrame;
+					if(last && now && Math.abs(now - last) < 3)
+					{
+						
+						var interp = 0;
+						 
+						
+						interp = this.lerp(last,now,step);
+						
+						
+
+						this.nodes[i].currentAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
+						this.state.nodes[i].settingProperty('animationFrame',interp);
+						
+					}*/
 					
 					
 			}
@@ -255,13 +275,13 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 					this.state.nodes[i].settingProperty('transform',now);
 					
 				}
-				
-				now = this.nodes[i].thisAnimationFrame;
+				/*
+				now = this.nodes[i].currentAnimationFrame;
 				if(now != null )
 				{
 					this.state.nodes[i].settingProperty('animationFrame',now);
 					
-				}
+				}*/
 				
 			}
 		},
@@ -856,7 +876,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			window.deltaTime = timepassed;
 			if(_SceneManager)
 				_SceneManager.update(timepassed);
-			sceneNode.lastTime = now;
+			
 			pss = GetParticleSystems(sceneNode.threeScene);
 			for(var i in pss)
 			{
@@ -1133,6 +1153,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			if(self.interpolateTransforms)
 				self.restoreTransforms();
 			
+			sceneNode.lastTime = now;
 			self.inFrame = false;
 			
         };
