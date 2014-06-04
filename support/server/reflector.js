@@ -196,6 +196,9 @@ function getBlankScene(state,instanceData,cb)
             
             getBlankScene(state,instancedata,function(blankscene){
                 socket.emit('message',{"action":"createNode","parameters":[blankscene],"time":0});
+                var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientConnected",[socket.id,socket.loginData? socket.loginData.UID : "anonymous"]],node:"index-vwf","time":0}));
+                socket.emit('message',joinMessage);
+
                 socket.emit('message',{"action":"goOffline","parameters":[blankscene],"time":0});
                 socket.pending = false;
             });
