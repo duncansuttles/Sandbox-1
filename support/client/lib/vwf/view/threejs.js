@@ -1655,14 +1655,17 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				
 				  for(var i in  sceneView.keyStates.keysDown)
 				  {
+
 					var key = sceneView.keyStates.keysDown[i];
 					delete sceneView.keyStates.keysDown[i];
 					sceneView.keyStates.keysUp[key.key] = key;
+					sceneView.keyStates.key = key;
+					 if (sceneNode) sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
 				  }
 				  var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
                     if (sceneNode) {
                         //var params = JSON.stringify( sceneView.keyStates );
-                        sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
+                        
 
                         
                     }
