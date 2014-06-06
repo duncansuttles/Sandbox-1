@@ -631,7 +631,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
               {
                 if(threeObject instanceof THREE.Object3D)
                 {
-                    if(propertyName == 'transform' || propertyName == 'localMatrix')
+                    if((propertyName == 'transform' || propertyName == 'localMatrix') && nodeID != vwf.application())
                     {
                        
 						
