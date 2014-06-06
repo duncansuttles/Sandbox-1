@@ -431,7 +431,7 @@
         
         var newnode;
         //its geometry
-        if (node.primitives) 
+        if (node.primitives && node.primitives.length > 0) 
         {
             newnode = this.parseMesh(node);
             
