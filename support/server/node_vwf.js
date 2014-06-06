@@ -319,14 +319,33 @@ function startVWF(){
 			
 			app.get(global.appPath+'/vwf.js', Landing.serveVWFcore);
 
-		
+            app.get(global.appPath+'/auth/facebook',
+                passport.authenticate('facebook'));
 
-			app.post(global.appPath+'/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
+            app.get(global.appPath+'/auth/facebook/callback',
+                passport.authenticate('facebook', { failureRedirect: global.appPath+'/login' }),
+                function(req, res) {
+                    // Successful authentication, redirect home.
+                    res.redirect('/');
+                });
+
+            passport.use(new FacebookStrategy({
+                    clientID: process.env.FACEBOOK_APP_ID,
+                    clientSecret: process.env.FACEBOOK_APP_SECRET,
+                    callbackURL: "http://localhost:3000/auth/facebook/callback",
+                    enableProof: false
+                },
+                function(accessToken, refreshToken, profile, done) {
+                    User.findOrCreate({ facebookId: profile.id }, function (err, user) {
+                        return done(err, user);
+                    });
+                }
+            ));
+
+            app.post(global.appPath+'/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
 			app.post(global.appPath+'/data/:action([a-zA-Z_]+)', Landing.handlePostRequest);
 
-
-			
-			//The file handleing logic for vwf engine files
+                //The file handleing logic for vwf engine files
 			app.use(appserver.handleRequest); 
 			//var listen = app.listen(port);
 			var listen = null;

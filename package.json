@@ -30,7 +30,9 @@
     "cryptojs": "~2.5.3",
     "i18next": "~1.7.1",
     "nedb": "~0.10.2",
-    "node-uuid": "1.4.x"
+    "node-uuid": "1.4.x",
+    "passport": "0.2.x",
+    "passport-facebook": "1.0.3"
   },
   "devDependencies": {},
   "scripts": {
