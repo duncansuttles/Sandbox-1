@@ -19,6 +19,7 @@
 			{
 				if(propname == 'visible')
 				{
+					
 					this.visible = propval;
 					if(!this.gettingProperty('isStatic'))
 					{
