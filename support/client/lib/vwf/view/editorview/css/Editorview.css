@@ -53,7 +53,7 @@
 }	
 #TimeControl
 {
-	height: 59px;
+height: 59px;
 display: inline-block;
 margin-top: -45px;
 background: #444;
@@ -61,17 +61,36 @@ border-radius: 5px;
 border: 1px solid #555;
 padding: 10px 2px 10px 10px;
 }
+#playButton
+{
+
+	background-image: url(../images/icons/sprites.png) !important;
+background-origin: content-box !important;
+background-position: -212px -56px;
+background-size: 646px;
+}
+#pauseButton
+{
+
+	background-image: url(../images/icons/sprites.png) !important;
+background-origin: content-box !important;
+background-position: -261px -56px;
+background-size: 645px;
+}
+#stopButton
+{
+
+	background-image: url(../images/icons/sprites.png) !important;
+background-origin: content-box !important;
+background-position: -309px  -56px;
+background-size: 646px;
+}
 .timeControl {
--moz-box-shadow: inset 0px 0px 2px 1px #ffffff;
--webkit-box-shadow: inset 0px 0px 2px 1px #ffffff;
-box-shadow: inset 0px 0px 2px 1px #ffffff;
-background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
-background: -moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
-background-color: #ededed;
+
+
 
 text-indent: 0px;
-border: 1px solid #555;
+
 display: inline-block;
 color: #777777;
 font-family: Arial;
@@ -80,7 +99,7 @@ font-weight: bold;
 font-style: normal;
 height: 45px;
 line-height: 45px;
-width: 55px;
+width: 50px;
 text-decoration: none;
 text-align: center;
 text-shadow: 1px 1px 0px #ffffff;
@@ -89,7 +108,7 @@ margin-bottom: -3px;
 cursor: pointer;
 margin-right: 9px;
 margin-bottom: 4px;
-box-shadow: 2px 2px 5px black,2px 2px 16px grey inset;
+
 border-radius: 10px;
 }
 .timeControl:hover {
@@ -797,6 +816,10 @@ left: -40px;
 top: 17px;
 }
 
+.sidetab:hover
+{
+	color: lightblue;
+}
 .sidetab
 {
 

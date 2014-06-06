@@ -107,7 +107,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			$(document.body).append('<div id="statusbar" class="statusbar" />');
 			$('#statusbar').css('top', (document.height - 25) + 'px');
 
-			$('#statusbar').append('<div id="TimeControl" style="height: 59px;display: inline-block;margin-top: -42px;background: #444;border-radius: 5px;border: 1px solid #555;"><div class="timeControl" id="playButton">▸</div><div id="pauseButton" class="timeControl">∥</div><div id="stopButton" class="timeControl">▄</div></div>');
+			$('#statusbar').append('<div id="TimeControl" style="height: 59px;display: inline-block;margin-top: -42px;background: #444;border-radius: 5px;border: 1px solid #555;"><div class="timeControl" id="playButton"></div><div id="pauseButton" class="timeControl"></div><div id="stopButton" class="timeControl"></div></div>');
 			$('#statusbar').append('<div id="statusbarinner"></div>');
 			$('#statusbarinner').append('<div id="SceneSaved" class="statusbarElement" />');
 			$('#SceneSaved').text('Not Saved');

@@ -906,7 +906,7 @@ scripts:
         this.removeCycle('stand');
         this.addCycle('stand');
     }
-    this.reset = function(cycle)
+    this.resetCycle = function(cycle)
     {
       cycle.current = 0;
     }
@@ -916,7 +916,7 @@ scripts:
         if(this.inMotion('jump'))return;
         this.addMotion('jump');
         this.jumpcounter = 0;
-        this.reset(this.cycles.jump);
+        this.resetCycle(this.cycles.jump);
         this.removeCycle('jump');
         this.addCycle('jump');
         this.jumpstart = this.translation[2];
@@ -928,7 +928,7 @@ scripts:
         if(this.inMotion('jump'))return;
         this.addMotion('jump');
         this.jumpcounter = 0;
-        this.reset(this.cycles.runningjump);
+        this.resetCycle(this.cycles.runningjump);
         this.removeCycle('runningjump');
         this.addCycle('runningjump');
        

@@ -1046,6 +1046,10 @@
                 fields.client = this.moniker_; // stamp with the originating client like the reflector does
                 fields.origin = "reflector";
                 
+                //need to make sure that the data is serialized and deserialized or else there will be confusion
+                //data in the params can be a structure that changes after the send, which would not be possible if 
+                //the data traveled over the reflector
+                fields = JSON.parse(JSON.stringify(fields));
                 queue.insert( fields );
     
             }
@@ -1181,7 +1185,7 @@
 
             while ( fields = /* assignment! */ queue.pull() ) {
 
-                // Advance time to the message time.
+                // Advance time to the message time.s
 
                 
                 
@@ -1200,14 +1204,14 @@
                                         if(time < 1)
                                         {
                                                 
-                                                while(time > 0)
+                                                while(time >= .5)
                                                 {        
                                                         
                                                         var now = performance.now();
                                                         var realTickDif = now - this.lastRealTick;
                                                         this.lastRealTick = now;
                                                        
-                                                        this.receive(0,'tick');
+                                                        //this.receive(0,'tick');
                                                 
                                                         time -= .05;
                                                         
@@ -1227,7 +1231,7 @@
 
                 // Perform the action.
 
-                if ( fields.action && fields.action != 'tick') {  // TODO: don't put ticks on the queue but just use them to fast-forward to the current time (requires removing support for passing ticks to the drivers and nodes)
+                if ( fields.action ) {  // TODO: don't put ticks on the queue but just use them to fast-forward to the current time (requires removing support for passing ticks to the drivers and nodes)
                     this.sequence_ = fields.sequence; // note the message's queue sequence number for the duration of the action
                     this.client_ = fields.client;     // ... and note the originating client
                     this.receive( fields.node, fields.action, fields.member, fields.parameters, fields.respond, fields.origin );
@@ -3401,7 +3405,7 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
         /// 
         /// @see {@link module:vwf/api/kernel.getProperty}
 
-        this.getProperty = function( nodeID, propertyName, ignorePrototype ) {
+        this.getProperty = function( nodeID, propertyName, ignorePrototype, testDelegation) {
 
             this.logger.debuggx( "getProperty", nodeID, propertyName );
 
@@ -3552,6 +3556,11 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
             }
 
             this.logger.debugu();
+
+            if(testDelegation)
+            {
+                return delegated;
+            }
 
             return propertyValue;
         };
@@ -5736,7 +5745,7 @@ if ( vwf.execute( childID, "Boolean( this.tick )" ) ) {
                 // to the host after invoking insert with chronic set.
 
                 if ( chronic ) {
-                    vwf.dispatch();
+                        vwf.dispatch();    
                 }
 
             },

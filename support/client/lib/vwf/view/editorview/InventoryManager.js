@@ -445,7 +445,8 @@ define(function ()
 				return;
 			}
 			this.getInventory(function(inventory)
-			{
+			{		
+				$('#MenuInventoryicon').addClass('iconselected');
 				//$('#InventoryManager').dialog('open');
 				$('#InventoryManager').prependTo($('#InventoryManager').parent());
 				$('#InventoryManager').show('blind', function ()
@@ -504,6 +505,7 @@ define(function ()
 				if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 				if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 			});
+			$('#MenuInventoryicon').removeClass('iconselected');
 		}
 		this.isOpen = function ()
 		{

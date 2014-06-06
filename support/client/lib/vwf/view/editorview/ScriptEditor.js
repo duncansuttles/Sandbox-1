@@ -202,14 +202,14 @@ define(function ()
 				$('#ScriptEditor').css('top', $('#toolbar').offset().top + $('#toolbar').height() + 'px');
 				$('#ScriptEditor').attr('maximized', true);
 				$('#ScriptEditor').css('height', $(window).height() - $('#toolbar').height() - $('#smoothmenu1').height() - $('#statusbar').height() + 'px');
-				$('#maximizescripteditor').attr('src', 'vwf/view/editorview/images/icons/window.png');
+				$('#maximizescripteditor').attr('class', 'icon window');
 			}
 			else
 			{
 				$('#ScriptEditor').css('top', $('#ScriptEditor').attr('originaltop') + 'px');
 				$('#ScriptEditor').css('height', $(window).height() - $('#ScriptEditor').offset().top - $('#statusbar').height() + 'px');
 				$('#ScriptEditor').removeAttr('maximized');
-				$('#maximizescripteditor').attr('src', 'vwf/view/editorview/images/icons/up2.png');
+				$('#maximizescripteditor').attr('class', 'icon up2');
 				var scripteditorheight = $('#ScriptEditor').offset().top;
 				if (scripteditorheight != 0) scripteditorheight = $(window).height() - scripteditorheight;
 				$('#index-vwf').css('height', window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - (scripteditorheight - 25) + 'px');
@@ -823,6 +823,7 @@ define(function ()
 			
 			if (!this.isOpen())
 			{
+
 				if(!this.currentNode)
 				{
 					alertify.alert('No object is selected.');
@@ -857,6 +858,7 @@ define(function ()
 				});
 				_ScriptEditor.BuildGUI();
 				_ScriptEditor.open = true;
+				$('#MenuScriptEditoricon').addClass('iconselected');
 			}
 		}
 		this.hide = function ()
@@ -887,6 +889,7 @@ define(function ()
 					}
 				});
 			}
+			$('#MenuScriptEditoricon').removeClass('iconselected');
 		}
 		this.isOpen = function ()
 		{
@@ -1060,11 +1063,34 @@ define(function ()
 		
 		this.setSelectedProperty_internal = function (name, text)
 		{
+			try{
+				text = JSON.parse(text);
+			}catch(e)
+			{
+
+			}
+			try{
 			text = text || null;
 			_ScriptEditor.selectedProperty = name;
-			_ScriptEditor.propertyEditor.setValue(js_beautify(text.toString(),{braces_on_own_line:true,opt_keep_array_indentation:true}));
+			if(!text)
+					_ScriptEditor.propertyEditor.setValue( "null" );
+			else if(text.constructor == String)
+					_ScriptEditor.propertyEditor.setValue("\"" + text + "\"");
+			else if(text.constructor == Number)
+					_ScriptEditor.propertyEditor.setValue( text.toString() )
+			else if(text.constructor == Object || text.constructor == Array)
+			{
+					try
+					{
+					_ScriptEditor.propertyEditor.setValue(js_beautify(JSON.stringify(text).toString(),{braces_on_own_line:true,opt_keep_array_indentation:true}));
+					}catch(e)
+					{
+						_ScriptEditor.propertyEditor.setValue("[object]");
+					}
+			}
 			_ScriptEditor.propertyEditor.selection.clearSelection();
-			if (this.properties && this.properties[name] !== undefined)
+			;
+			if (Object.keys(this.properties).indexOf(name)>-1)
 			{
 				_ScriptEditor.PropertyChanged = false;
 				$('#propertytext').css('border-color', 'black');
@@ -1078,9 +1104,14 @@ define(function ()
 			//$('#methodtextback').text(_ScriptEditor.formatScript(indentedtext));
 			$('#propertytext').find(".ace_content").css('background', 'url(vwf/view/editorview/images/stripe.png) 100% 100% repeat');
 			$('#propertytext').removeAttr('disabled');
+			}catch(e)
+			{
+
+			}
 		}
 		this.setSelectedProperty = function (name, text)
 		{
+			
 			if (_ScriptEditor.PropertyChanged) _ScriptEditor.PromptAbandon(function ()
 				{
 					_ScriptEditor.setSelectedProperty_internal(name, text);
@@ -1202,7 +1233,14 @@ define(function ()
 					var property = $(this).attr('property');
 					var val = vwf.getProperty(_ScriptEditor.currentNode.id,property);
 					if(typeof(val) == 'object')
-						val = JSON.stringify(val);
+					{
+						try{
+								val = JSON.stringify(val);
+							}catch(e)
+							{
+
+							}
+					}
 					_ScriptEditor.setSelectedProperty(property, val );
 				});
 				if (refresh)
@@ -1376,7 +1414,11 @@ define(function ()
 			if(!node)
 			{
 
-				if (this.isOpen()) this.hide();
+				if (this.isOpen()) 
+					{
+						this.hide();
+						this.currentNode = null;
+					}
 
 			}
 			if(node && node.id == 'index-vwf')

@@ -31149,12 +31149,9 @@ THREE.Animation.prototype.setKey = function(keyf)
 			object.scale.y = key.scl[1] * l2 + key2.scl[1] * l;
 			object.scale.z = key.scl[2] * l2 + key2.scl[2] * l;
 
-			object.quaternion.w = key.rot.w;
-			object.quaternion.y = key.rot.y;
-			object.quaternion.z = key.rot.z;
-			object.quaternion.x = key.rot.x;
+			object.quaternion.set(key.rot.x,key.rot.y,key.rot.z,key.rot.w);
 			object.quaternion.slerp(key2.rot,l);
-			object.updateMatrixWorld();
+			
 			if(object.debugobject)
 			{
 				object.debugobject.matrix.copy(object.matrix);
@@ -31174,7 +31171,7 @@ THREE.Animation.prototype.setKey = function(keyf)
 			object.quaternion.y = key.rot.y;
 			object.quaternion.z = key.rot.z;
 			object.quaternion.x = key.rot.x;
-			object.updateMatrixWorld();
+			
 			if(object.debugobject)
 			{
 				object.debugobject.matrix.copy(object.matrix);
@@ -31184,7 +31181,7 @@ THREE.Animation.prototype.setKey = function(keyf)
 		}
 
 	}
-	this.root.updateMatrixWorld()
+	
 	if(this.debugroot)
 	{
 		this.debugroot.updateMatrixWorld()

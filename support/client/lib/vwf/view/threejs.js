@@ -56,6 +56,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			{
 				this.paused = false;
 				$('#index-vwf').fadeIn();
+				
 			}.bind(this));
 			
 			this.nodes = {};
@@ -70,7 +71,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
         },
 		lerp: function(a,b,l,c)
 		{
-			if(c) l = Math.min(1,Math.max(l,0));
+			//if(c) l = Math.min(1,Math.max(l,0));
 			return (b*l) + a*(1.0-l);
 		},
 		matCmp: function(a,b,delta)
@@ -157,18 +158,57 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 		{
 			
 			
-			var step = (this.tickTime) / (this.realTickDif);
 			
 			
-			deltaTime = Math.min(deltaTime,this.realTickDif)
+			//deltaTime = Math.min(deltaTime,this.realTickDif)
 			this.tickTime += deltaTime || 0;
 
-			if(this.tickTime > this.realTickDif)
-				this.future = this.tickTime - this.realTickDif;
-			//else
-				this.future = 0;
-			//if going slower than tick rate, don't make life harder by changing values. it would be invisible anyway
-			if(step > 2) return;
+			
+
+			var hit = 0;
+			while(this.tickTime > 50)
+			{
+				hit ++;
+				this.tickTime -= 50;
+			}
+			var step = (this.tickTime) / (50);
+			if(hit === 1) 
+			{
+				
+				for(var i in this.nodes)
+				{
+					//don't do interpolation for static objects
+					if(this.nodes[i].isStatic)  continue;
+
+					if(this.state.nodes[i] && this.state.nodes[i].gettingProperty)
+					{				
+						this.nodes[i].lastTickTransform = this.nodes[i].thisTickTransform;
+						this.nodes[i].thisTickTransform = this.state.nodes[i].gettingProperty('transform');
+						if(this.nodes[i].thisTickTransform) this.nodes[i].thisTickTransform = matCpy(this.nodes[i].thisTickTransform);
+				
+						this.nodes[i].lastAnimationFrame = this.nodes[i].thisAnimationFrame;
+						this.nodes[i].thisAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
+						
+					}
+				}
+			}
+			if(hit > 1)
+			{
+				this.tickTime = 0;
+				for(var i in this.nodes)
+				{
+					if(this.state.nodes[i] && this.state.nodes[i].gettingProperty)
+					{				
+						this.nodes[i].lastTickTransform = null;
+						this.nodes[i].thisTickTransform = null;
+						this.nodes[i].lastAnimationFrame = null;
+						this.nodes[i].thisAnimationFrame = null;
+						
+						
+					}
+				}
+			}
+			
 			
 			for(var i in this.nodes)
 			{
@@ -178,7 +218,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 
 					var last = this.nodes[i].lastTickTransform;
 					var now = this.nodes[i].thisTickTransform;
-					if(last && now && !this.matCmp(last,now,.001))
+					if(last && now )
 					{
 						
 						var interp = last.slice(0);
@@ -186,23 +226,31 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 						
 						interp = this.matrixLerp(last,now,step);
 						
-						
+						this.nodes[i].currentTickTransform = matCpy(this.state.nodes[i].gettingProperty('transform'));
 						this.state.nodes[i].settingProperty('transform',interp);
-						this.nodes[i].needTransformRestore = true;
+
+						
+						
 					}
 					
 					last = this.nodes[i].lastAnimationFrame;
 					now = this.nodes[i].thisAnimationFrame;
-					
-					if(last != null && now != null && Math.abs(now - last) < 3 && Math.abs(now - last) > .01)
+					if(last && now && Math.abs(now - last) < 3)
 					{
 						
-						var interp = this.lerp(last,now,step,true);
+						var interp = 0;
+						 
+						
+						interp = this.lerp(last,now,step);
 						
 						
+
+						this.nodes[i].currentAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
 						this.state.nodes[i].settingProperty('animationFrame',interp);
-						this.nodes[i].needFrameRestore = true;
+						
 					}
+					
+					
 			}
 			
 		
@@ -235,19 +283,21 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				//don't do interpolation for static objects
 				if(this.nodes[i].isStatic)  continue;
 
-				var now = this.nodes[i].thisTickTransform;
-				
-				if(now && this.nodes[i].needTransformRestore)
+				var now = this.nodes[i].currentTickTransform;
+				this.nodes[i].currentTickTransform = null;
+				if(now )
 				{
+					
 					this.state.nodes[i].settingProperty('transform',now);
-					this.nodes[i].needTransformRestore = false;
+					
 				}
 				
-				now = this.nodes[i].thisAnimationFrame;
-				if(now != null &&  this.nodes[i].needFrameRestore)
+				now = this.nodes[i].currentAnimationFrame;
+				this.nodes[i].currentAnimationFrame = null;
+				if(now != null )
 				{
 					this.state.nodes[i].settingProperty('animationFrame',now);
-					this.nodes[i].needFrameRestore = true;
+					
 				}
 				
 			}
@@ -262,35 +312,12 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			this.renderMode = NORMALRENDER;
 			this.triggerWindowResize();
 		},
-		ticked: function()
+		ticklocal: function()
 		{
-			var now = performance.now();
-			this.realTickDif = now - this.lastRealTick;
-			this.lastRealTick = now;
-			
-			this.tickTime = this.future;
-			//reset - loading can cause us to get behind and always but up against the max prediction value
-			//if(this.future > 1) this.future = 0;
-			this.future = 0;
 			
 			
 			
-			for(var i in this.nodes)
-			{
-				//don't do interpolation for static objects
-				if(this.nodes[i].isStatic)  continue;
-
-				if(this.state.nodes[i] && this.state.nodes[i].gettingProperty)
-				{				
-					this.nodes[i].lastTickTransform = this.nodes[i].thisTickTransform;
-					this.nodes[i].thisTickTransform = this.state.nodes[i].gettingProperty('transform');
-					if(this.nodes[i].thisTickTransform) this.nodes[i].thisTickTransform = matCpy(this.nodes[i].thisTickTransform);
 			
-					this.nodes[i].lastAnimationFrame = this.nodes[i].thisAnimationFrame;
-					this.nodes[i].thisAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
-					this.nodes[i].animationFrameTickChanged = false;
-				}
-			}
 		
 		},
 		deletedNode: function(childID)
@@ -473,27 +500,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             if(this.nodes[nodeID])
             	this.nodes[nodeID].properties[propertyName] = propertyValue;
           
-			if(vwf.client())
-			{
-			if(propertyName == 'transform')
-			{
-				if(this.nodes[nodeID])
-				{
-					
-					this.nodes[nodeID].lastTickTransform = null;
-					this.nodes[nodeID].thisTickTransform = null;
-				
-				}
-			}
-			if(propertyName == 'animationFrame')
-			{
-				if(this.nodes[nodeID])
-				{
-					this.nodes[nodeID].lastAnimationFrame = null;
-					this.nodes[nodeID].thisAnimationFrame = null;
-				}
-			}
-			}
+			
 			
 			
 			node[propertyName] = propertyValue;
@@ -886,6 +893,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			window.deltaTime = timepassed;
 			if(_SceneManager)
 				_SceneManager.update(timepassed);
+			
 			pss = GetParticleSystems(sceneNode.threeScene);
 			for(var i in pss)
 			{
@@ -1155,13 +1163,14 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
 			
 			
-			sceneNode.lastTime = now;
+			
 			if(stats.domElement.style.display == 'block')
 				stats.update();
 			
 			if(self.interpolateTransforms)
 				self.restoreTransforms();
 			
+			sceneNode.lastTime = now;
 			self.inFrame = false;
 			
         };
@@ -1646,14 +1655,17 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 				
 				  for(var i in  sceneView.keyStates.keysDown)
 				  {
+
 					var key = sceneView.keyStates.keysDown[i];
 					delete sceneView.keyStates.keysDown[i];
 					sceneView.keyStates.keysUp[key.key] = key;
+					sceneView.keyStates.key = key;
+					 if (sceneNode) sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
 				  }
 				  var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
                     if (sceneNode) {
                         //var params = JSON.stringify( sceneView.keyStates );
-                        sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
+                        
 
                         
                     }

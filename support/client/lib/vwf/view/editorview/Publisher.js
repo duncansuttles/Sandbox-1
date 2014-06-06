@@ -118,7 +118,26 @@ define([], function ()
 		this.backupState = function()
 		{
 			var s = _Editor.getNode(vwf.application());
+			function walk(node)
+			{
+				for(var i in node.properties)
+				{
+					//4th param as true returns whether or not delegation happened during get. if so, no need to store this property.
+					if(vwf.getProperty(node.id,i,false,true))
+					{
+						console.log('Removing delegated property',node.id,i);
+						delete node.properties[i];
+					}
+				}
+				for(var i in node.children)
+				{
+					walk(node.children[i]);
+				}
+			}
+			walk(s)
+
 			vwf_view.kernel.setProperty(vwf.application(),'playBackup',s);
+
 
 		}
 		this.satProperty = function(id,prop,val)
@@ -127,9 +146,9 @@ define([], function ()
 			{
 				if(prop == 'playMode' && val == 'play')
 				{
-					$('#playButton').css('background','rgb(153, 153, 255)');
-					$('#pauseButton').css('background','');
-					$('#stopButton').css('background','');
+					$('#playButton').css('background-color','rgb(153, 153, 255)');
+					$('#pauseButton').css('background-color','');
+					$('#stopButton').css('background-color','');
 					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('opacity',.8);
 					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('background-color','red');
 					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('pointer-events','none');
@@ -140,16 +159,16 @@ define([], function ()
 
 				if(prop == 'playMode' && val == 'paused')
 				{
-					$('#playButton').css('background','rgb(153, 153, 255)');
-					$('#pauseButton').css('background','rgb(153, 153, 255)');
-					$('#stopButton').css('background','');
+					$('#playButton').css('background-color','rgb(153, 153, 255)');
+					$('#pauseButton').css('background-color','rgb(153, 153, 255)');
+					$('#stopButton').css('background-color','');
 				}
 				if(prop == 'playMode' && val == 'stop')
 				{
 					
-					$('#playButton').css('background','');
-					$('#pauseButton').css('background','');
-					$('#stopButton').css('background','rgb(153, 153, 255)');
+					$('#playButton').css('background-color','');
+					$('#pauseButton').css('background-color','');
+					$('#stopButton').css('background-color','rgb(153, 153, 255)');
 					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('opacity','');
 					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('pointer-events','');
 					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('background-color','');
@@ -177,10 +196,13 @@ define([], function ()
 		}
 		this.restoreState_imp = function(s)
 		{
-
+			//when stopping a published world, there will be no backup
+			if(!s) return;
 			vwf.private.queue.suspend();
 			vwf.models.kernel.disable();
 			var currentState = _Editor.getNode(vwf.application());
+			
+			//find a node from one state in another
 			var find = function(node,id)
 			{
 				if(node.id == id)
@@ -191,62 +213,71 @@ define([], function ()
 					if(ret) return true;
 				}
 				return false;
-
-				
 			}
-			var walk = function(node)
+			//async walk the graph and create nodes that don't exist. if htey do exist, set all their props
+			var walk = function(node,walkCallback)
 			{
-				async.eachSeries(Object.keys(node.children),function(i,cb)
+				if(!node.children)
 				{
-
+					walkCallback();
+					return;
+				}
+				async.eachSeries(Object.keys(node.children),function(i,eachSeriesCallback)
+				{
+					//does the node exist?
 					var exists = false;
 					try
 					{
 					exists = vwf.getNode(node.children[i].id);
 					}catch(e)
-					{
-						vwf.createChild(node.id,i,node.children[i],null,null,cb);
+					{	
+						//create it and when done, do the next child of the current node
+						vwf.createChild(node.id,i,node.children[i],null,null,eachSeriesCallback);
+						return;
 					}
 					if(exists)
 					{
+						//set all the props of this node
 						for(var j in node.children[i].properties)
 						{
+							console.log('setProperty',node.children[i].id,j,node.children[i].properties[j])
 							vwf.setProperty(node.children[i].id,j,node.children[i].properties[j]);
 						}
-					//	var childBack = node.children[i].children;
-					//	node.children[i].children = {};
-					//	vwf.setNode(node.children[i].id,node.children[i],function(){
-					//		node.children[i].children = childBack;
-							cb();	
-					//	})
-						
-
+						//create or set props of the child
+						walk(node.children[i],eachSeriesCallback) 
+				
 					}else
 					{
-						vwf.createChild(node.id,i,node.children[i],null,null,cb);
+						//create it and when done, do the next child of the current node
+						vwf.createChild(node.id,i,node.children[i],null,null,eachSeriesCallback);
 					}
 
-				});
-
+				},walkCallback);
 			}
-			walk(s);
+			//walk, and when done, delete anything that was created
+			walk(s,function(){
 
-			var walk2 = function(node)
-			{
-				if(!find(s,node.id))
+				//synchronous walk of graph to find children that exist in the current state but not the old one. Delete nodes that were created
+				var walk2 = function(node)
 				{
-					vwf.deleteNode(node.id);
-				}else
-					{ 
- 						for(var i in node.children)
- 						{
- 							walk2(node.children[i]);
- 						}
-					}
-			}
-			walk2(currentState);
-			vwf.models.kernel.enable();
-			vwf.private.queue.resume();
+					if(!find(s,node.id))
+					{
+						vwf.deleteNode(node.id);
+					}else
+						{ 
+	 						for(var i in node.children)
+	 						{
+	 							walk2(node.children[i]);
+	 						}
+						}
+				}
+				walk2(currentState);
+				vwf.models.kernel.enable();
+				vwf.private.queue.resume();
+
+			});
+
+			
 
 		}
 		this.restoreState = function()
