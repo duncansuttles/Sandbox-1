@@ -1063,11 +1063,34 @@ define(function ()
 		
 		this.setSelectedProperty_internal = function (name, text)
 		{
+			try{
+				text = JSON.parse(text);
+			}catch(e)
+			{
+
+			}
+			try{
 			text = text || null;
 			_ScriptEditor.selectedProperty = name;
-			_ScriptEditor.propertyEditor.setValue(js_beautify(text.toString(),{braces_on_own_line:true,opt_keep_array_indentation:true}));
+			if(!text)
+					_ScriptEditor.propertyEditor.setValue( "null" );
+			else if(text.constructor == String)
+					_ScriptEditor.propertyEditor.setValue("\"" + text + "\"");
+			else if(text.constructor == Number)
+					_ScriptEditor.propertyEditor.setValue( text.toString() )
+			else if(text.constructor == Object || text.constructor == Array)
+			{
+					try
+					{
+					_ScriptEditor.propertyEditor.setValue(js_beautify(JSON.stringify(text).toString(),{braces_on_own_line:true,opt_keep_array_indentation:true}));
+					}catch(e)
+					{
+						_ScriptEditor.propertyEditor.setValue("[object]");
+					}
+			}
 			_ScriptEditor.propertyEditor.selection.clearSelection();
-			if (this.properties && this.properties[name] !== undefined)
+			;
+			if (Object.keys(this.properties).indexOf(name)>-1)
 			{
 				_ScriptEditor.PropertyChanged = false;
 				$('#propertytext').css('border-color', 'black');
@@ -1081,9 +1104,14 @@ define(function ()
 			//$('#methodtextback').text(_ScriptEditor.formatScript(indentedtext));
 			$('#propertytext').find(".ace_content").css('background', 'url(vwf/view/editorview/images/stripe.png) 100% 100% repeat');
 			$('#propertytext').removeAttr('disabled');
+			}catch(e)
+			{
+
+			}
 		}
 		this.setSelectedProperty = function (name, text)
 		{
+			
 			if (_ScriptEditor.PropertyChanged) _ScriptEditor.PromptAbandon(function ()
 				{
 					_ScriptEditor.setSelectedProperty_internal(name, text);
@@ -1205,7 +1233,14 @@ define(function ()
 					var property = $(this).attr('property');
 					var val = vwf.getProperty(_ScriptEditor.currentNode.id,property);
 					if(typeof(val) == 'object')
-						val = JSON.stringify(val);
+					{
+						try{
+								val = JSON.stringify(val);
+							}catch(e)
+							{
+
+							}
+					}
 					_ScriptEditor.setSelectedProperty(property, val );
 				});
 				if (refresh)
