@@ -126,6 +126,7 @@ define(function ()
 		$(".ui-accordion-content").css('height', 'auto');
 		this.show = function ()
 		{
+			$('#MenuObjectPropertiesicon').addClass('iconselected');
 			//$('#PrimitiveEditor').dialog('open');
 			//$('#PrimitiveEditor').dialog('option','position',[1282,40]);
 			$('#PrimitiveEditor').prependTo($('#PrimitiveEditor').parent());
@@ -136,6 +137,7 @@ define(function ()
 			showSidePanel();
 			this.SelectionChanged(null, _Editor.GetSelectedVWFNode());
 			this.open = true;
+			
 		}
 		this.hide = function ()
 		{
@@ -147,7 +149,9 @@ define(function ()
 					if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 					if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 				});
+
 			}
+			$('#MenuObjectPropertiesicon').removeClass('iconselected');
 		}
 		this.isOpen = function ()
 		{

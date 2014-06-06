@@ -48,6 +48,8 @@ define(function ()
 		{
 			$("#UserProfileWindow").hide('blind', function ()
 			{
+
+				
 				if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 				if (!$('#sidepanel').children().is(':visible')) hideSidePanel();
 			});
@@ -58,6 +60,7 @@ define(function ()
 		{
 			$('#Players').hide('blind', function ()
 			{
+				$('#MenuUsersicon').removeClass('iconselected');
 				if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 				if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 			});
@@ -171,7 +174,10 @@ define(function ()
 			if (!profile) return;
 			$('#UserProfileWindow').prependTo($('#UserProfileWindow').parent());
 			$('#UserProfileWindow').show('blind', function ()
-			{});
+			{
+				$('#MenuUsersicon').addClass('iconselected');
+
+			});
 			showSidePanel();
 			this.SelectedProfile = profile;
 			//$('#UserProfileWindow').dialog('open');
@@ -211,7 +217,7 @@ define(function ()
 					
 					_dView.setCameraDefault();
 					clearCameraModeIcons();
-					$('#MenuCamera3RDPersonicon').css('background-color', '#9999FF');
+					$('#MenuCamera3RDPersonicon').addClass('iconselected');
 					vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
 					vwf.models[0].model.nodes['index-vwf'].setCameraMode('3RDPerson');
 				}

@@ -1,9 +1,9 @@
 function clearCameraModeIcons()
 		{
-			$('#MenuCameraOrbiticon').css('background-color', '');
-			$('#MenuCamera3RDPersonicon').css('background-color', '');
-			$('#MenuCameraNavigateicon').css('background-color', '');
-			$('#MenuCameraFreeicon').css('background-color', '');
+			$('#MenuCameraOrbiticon').removeClass('iconselected');
+			$('#MenuCamera3RDPersonicon').removeClass('iconselected');
+			$('#MenuCameraNavigateicon').removeClass('iconselected');
+			$('#MenuCameraFreeicon').removeClass('iconselected');
 		}
 		
 define(
@@ -256,7 +256,10 @@ define(
 		});
 		$('#MenuHierarchyManager').click(function (e)
 		{
-			HierarchyManager.show();
+				if(HierarchyManager.isOpen())
+						HierarchyManager.hide();
+				else		
+						HierarchyManager.show();
 		});
 		$('#MenuLocal').click(function (e)
 		{
@@ -309,25 +312,49 @@ define(
 		});
 		$('#MenuMaterialEditor').click(function (e)
 		{
-			_MaterialEditor.show();
+			
+			if(_MaterialEditor.isOpen())
+				_MaterialEditor.hide();
+			else
+				_MaterialEditor.show();
 		});
 		$('#MenuScriptEditor').click(function (e)
 		{
-			_ScriptEditor.show();
+			if(_ScriptEditor.isOpen())
+				_ScriptEditor.hide();
+			else
+				_ScriptEditor.show();	
 		});
 		$('#MenuInventory').click(function (e)
 		{
-			_InventoryManager.show();
-			$( "#InventoryTypeChoicePersonal" ).click()
+			if(_InventoryManager.isOpen())
+				_InventoryManager.hide();
+			else
+			{
+				_InventoryManager.show();
+				$( "#InventoryTypeChoicePersonal" ).click()
+			}
+
+			
 		});
 		$('#MenuObjectProperties').click(function (e)
 		{
-			_PrimitiveEditor.show();
+			
+			if(_PrimitiveEditor.isOpen())
+				_PrimitiveEditor.hide();
+			else
+				_PrimitiveEditor.show();
 		});
 		$('#MenuGlobalInventory').click(function (e)
 		{
-			_InventoryManager.show();
-			$( "#InventoryTypeChoiceGlobal" ).click()
+			if(_InventoryManager.isOpen())
+				_InventoryManager.hide();
+			else
+			{
+				_InventoryManager.show();
+				$( "#InventoryTypeChoiceGlobal" ).click()
+			}
+
 		});
 		$('#MenuLatencyTest').click(function (e)
 		{
@@ -629,7 +656,7 @@ define(
 				focusID = _Editor.GetSelectedVWFNode().id;
 			if(!focusID)
 				focusID =  _UserManager.GetAvatarForClientID(vwf.moniker()) &&  _UserManager.GetAvatarForClientID(vwf.moniker()).id;
-			if (focusID)
+			if (focusID && _Editor.findviewnode(focusID))
 			{
 					
 					var t = _Editor.GetMoveGizmo().parent.matrixWorld.getPosition();
@@ -661,7 +688,7 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraOrbiticon').css('background-color', '#9999FF');
+			$('#MenuCameraOrbiticon').addClass('iconselected');
 			var campos = [_Editor.findcamera().position.x, _Editor.findcamera().position.y, _Editor.findcamera().position.z];
 			var ray = _Editor.GetCameraCenterRay();
 			var dxy = _Editor.intersectLinePlane(ray, campos, [0, 0, 0], _Editor.WorldZ);
@@ -679,7 +706,7 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraNavigateicon').css('background-color', '#9999FF');
+			$('#MenuCameraNavigateicon').addClass('iconselected');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Orbit');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Navigate');
 		});
@@ -738,7 +765,7 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraNavigateicon').css('background-color', '#9999FF');
+			$('#MenuCameraNavigateicon').addClass('iconselected');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Fly');
 			
 		});
@@ -753,7 +780,7 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraFreeicon').css('background-color', '#9999FF');
+			$('#MenuCameraFreeicon').addClass('iconselected');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Orbit');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Free');
 		});
@@ -798,7 +825,7 @@ define(
 			{
 				_dView.setCameraDefault();
 				clearCameraModeIcons();
-				$('#MenuCamera3RDPersonicon').css('background-color', '#9999FF');
+				$('#MenuCamera3RDPersonicon').addClass('iconselected');
 				vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
 				vwf.models[0].model.nodes['index-vwf'].setCameraMode('3RDPerson');
 			}

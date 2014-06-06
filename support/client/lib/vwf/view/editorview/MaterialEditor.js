@@ -25,12 +25,13 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 		$(document.head).append('<script type="text/javascript" src="js/colorpicker.js"></script>');
 		this.show = function ()
 		{
+
 			if(!this.currentMaterial)
 			{
 				alertify.alert('This object does not expose a material interface');
 				return;
 			}
-			//$('#materialeditor').dialog('open');
+			
 			$('#materialeditor').prependTo($('#materialeditor').parent());
 			$('#materialeditor').show('blind', function ()
 			{
@@ -38,11 +39,8 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			});
 			showSidePanel();
 			this.BuildGUI();
-			//if(_PrimitiveEditor.isOpen())
-			//$('#materialeditor').dialog('option','position',[1282,456]);
-			//else
-			//$('#materialeditor').dialog('option','position',[1282,40]);
-			//this.open =true;
+			$('#MenuMaterialEditoricon').addClass('iconselected');
+			
 		}
 		this.hide = function ()
 		{
@@ -54,6 +52,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 					if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 				});
+				$('#MenuMaterialEditoricon').removeClass('iconselected');
 			}
 		}
 		this.isOpen = function ()
@@ -862,6 +861,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				}
 				else
 				{
+					this.currentMaterial = null;
 					this.hide();
 				}
 			}

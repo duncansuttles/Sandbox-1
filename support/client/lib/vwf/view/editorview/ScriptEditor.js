@@ -202,14 +202,14 @@ define(function ()
 				$('#ScriptEditor').css('top', $('#toolbar').offset().top + $('#toolbar').height() + 'px');
 				$('#ScriptEditor').attr('maximized', true);
 				$('#ScriptEditor').css('height', $(window).height() - $('#toolbar').height() - $('#smoothmenu1').height() - $('#statusbar').height() + 'px');
-				$('#maximizescripteditor').attr('src', 'vwf/view/editorview/images/icons/window.png');
+				$('#maximizescripteditor').attr('class', 'icon window');
 			}
 			else
 			{
 				$('#ScriptEditor').css('top', $('#ScriptEditor').attr('originaltop') + 'px');
 				$('#ScriptEditor').css('height', $(window).height() - $('#ScriptEditor').offset().top - $('#statusbar').height() + 'px');
 				$('#ScriptEditor').removeAttr('maximized');
-				$('#maximizescripteditor').attr('src', 'vwf/view/editorview/images/icons/up2.png');
+				$('#maximizescripteditor').attr('class', 'icon up2');
 				var scripteditorheight = $('#ScriptEditor').offset().top;
 				if (scripteditorheight != 0) scripteditorheight = $(window).height() - scripteditorheight;
 				$('#index-vwf').css('height', window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - (scripteditorheight - 25) + 'px');
@@ -823,6 +823,7 @@ define(function ()
 			
 			if (!this.isOpen())
 			{
+
 				if(!this.currentNode)
 				{
 					alertify.alert('No object is selected.');
@@ -857,6 +858,7 @@ define(function ()
 				});
 				_ScriptEditor.BuildGUI();
 				_ScriptEditor.open = true;
+				$('#MenuScriptEditoricon').addClass('iconselected');
 			}
 		}
 		this.hide = function ()
@@ -887,6 +889,7 @@ define(function ()
 					}
 				});
 			}
+			$('#MenuScriptEditoricon').removeClass('iconselected');
 		}
 		this.isOpen = function ()
 		{
@@ -1376,7 +1379,11 @@ define(function ()
 			if(!node)
 			{
 
-				if (this.isOpen()) this.hide();
+				if (this.isOpen()) 
+					{
+						this.hide();
+						this.currentNode = null;
+					}
 
 			}
 			if(node && node.id == 'index-vwf')
