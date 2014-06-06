@@ -1046,6 +1046,10 @@
                 fields.client = this.moniker_; // stamp with the originating client like the reflector does
                 fields.origin = "reflector";
                 
+                //need to make sure that the data is serialized and deserialized or else there will be confusion
+                //data in the params can be a structure that changes after the send, which would not be possible if 
+                //the data traveled over the reflector
+                fields = JSON.parse(JSON.stringify(fields));
                 queue.insert( fields );
     
             }
