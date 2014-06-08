@@ -449,7 +449,6 @@ function CreateProfile(URL,data,response)
 	});
 }
 
-
 //Check that the UID is the author of the asset
 function CheckAuthor(UID,assetFilename, callback)
 {

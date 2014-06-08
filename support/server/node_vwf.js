@@ -69,6 +69,47 @@ var reflector = require("./reflector.js");
 var appserver = require("./appserver.js");
 var ServerFeatures = require("./serverFeatures.js");
 
+var passport = require('passport');
+var FacebookStrategy = require('passport-facebook').Strategy;
+
+// used to serialize the user for the session
+passport.serializeUser(function (user, done) {
+    done(null, user.id);
+});
+
+// used to deserialize the user
+passport.deserializeUser(function (id, done) {
+    DAL.getUser(id, function (user) {
+        done(null, user);
+    });
+});
+
+passport.use(new FacebookStrategy({
+        clientID: global.configuration.facebook_app_id,
+        clientSecret: global.configuration.facebook_app_secret,
+        callbackURL: global.configuration.facebook_callback_url
+    },
+    function (accessToken, refreshToken, profile, done) {
+        process.nextTick(function () {
+            DAL.getUser(profile.id, function (user) {
+                if (user) {
+                    done(null, user);
+                } else {
+                    user = DAL.createProfileFromFacebook(profile, function (results) {
+                        if (results === "ok") {
+                            DAL.getUser(profile.id, function (user) {
+                                done(null, user);
+                            });
+                        } else {
+                            done("Error creating user " + results, null);
+                        }
+                    });
+                }
+            });
+        }
+      );
+    }
+));
 
 //localization
 var i18n = require("i18next");
@@ -296,9 +337,11 @@ function startVWF(){
 			app.use(express.cookieParser());
     		app.use(i18n.handle);
 
-			app.use(app.router);
+            app.use(passport.initialize());
+            app.use(passport.session());
 
-			
+            app.use(app.router);
+
 			app.get(global.appPath+'/:page([a-zA-Z\\0-9\?/]*)', Landing.redirectPasswordEmail);
 			app.get(global.appPath, Landing.redirectPasswordEmail);
 			
@@ -319,29 +362,6 @@ function startVWF(){
 			
 			app.get(global.appPath+'/vwf.js', Landing.serveVWFcore);
 
-            app.get(global.appPath+'/auth/facebook',
-                passport.authenticate('facebook'));
-
-            app.get(global.appPath+'/auth/facebook/callback',
-                passport.authenticate('facebook', { failureRedirect: global.appPath+'/login' }),
-                function(req, res) {
-                    // Successful authentication, redirect home.
-                    res.redirect('/');
-                });
-
-            passport.use(new FacebookStrategy({
-                    clientID: process.env.FACEBOOK_APP_ID,
-                    clientSecret: process.env.FACEBOOK_APP_SECRET,
-                    callbackURL: "http://localhost:3000/auth/facebook/callback",
-                    enableProof: false
-                },
-                function(accessToken, refreshToken, profile, done) {
-                    User.findOrCreate({ facebookId: profile.id }, function (err, user) {
-                        return done(err, user);
-                    });
-                }
-            ));
-
             app.post(global.appPath+'/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
 			app.post(global.appPath+'/data/:action([a-zA-Z_]+)', Landing.handlePostRequest);
 
@@ -350,7 +370,24 @@ function startVWF(){
 			//var listen = app.listen(port);
 			var listen = null;
 
-			if(global.configuration.pfx)
+            app.get(global.appPath+'/auth/facebook',
+                passport.authenticate('facebook', { scope : 'email' }));
+
+            app.get(global.appPath+'/auth/facebook/callback',
+                passport.authenticate('facebook', { failureRedirect: global.appPath+'/login' }),
+                function(req, res) {
+                    // Successful authentication, redirect home.
+                    res.redirect('/');
+                });
+
+
+            // route for logging out
+            app.get('/fb_logout', function(req, res) {
+                req.logout();
+                res.redirect('/');
+            });
+
+            if(global.configuration.pfx)
 			{
 				listen= require('https').createServer({
 					pfx: fs.readFileSync(global.configuration.pfx),
