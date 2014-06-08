@@ -323,14 +323,7 @@ define(function ()
             };
 
             if (!profile.avatarTexture) {
-                if (username=="maren") {
-                    profile.avatarTexture = "./avatars/maren160fb.jpg";
-                } else if (username=="gunnar") {
-                    profile.avatarTexture = "./avatars/gunnar160fb.jpg"
-
-                } else {
-                    profile.avatarTexture = "./avatars/160by160fb.jpg"
-                }
+                profile.avatarTexture = "https://graph.facebook.com/"+username+"/picture?width=160&height=160";
             }
             this.PlayerProto.properties.materialDef = {
 			    "color":

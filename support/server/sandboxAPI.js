@@ -112,7 +112,7 @@ function GetLoginData(response,URL)
 {
 	if(URL.loginData)
 	{
-		var logindata = {username:URL.loginData.UID,admin:URL.loginData.UID==global.adminUID};
+		var logindata = {username:URL.loginData.UID,username_full:URL.loginData.Username,admin:URL.loginData.UID==global.adminUID};
 		logindata.instances = [];
 		logindata.clients = [];
 		

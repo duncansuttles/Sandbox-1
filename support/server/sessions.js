@@ -119,11 +119,12 @@ DB.get(SessionID,function(err,val,key)
    }
    return null;*/
 }
-exports.createSession = function(UID,Password,isTemp,cb)
+exports.createSession = function(UID,Username,Password,isTemp,cb)
 {
 
 	var session = new SessionData();
 	session.UID = UID;
+    session.Username = Username;
 	session.Password = Password;
 	session.PasswordIsTemp = isTemp;
 	session.updated = function(cb2)

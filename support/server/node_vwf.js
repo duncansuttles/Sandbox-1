@@ -493,7 +493,7 @@ function startVWF(){
 }
 // used to serialize the user for the session
 passport.serializeUser(function (user, done) {
-    sessions.createSession(user.id,"",false,function(session){
+    sessions.createSession(user.id,user.Username,"",false,function(session){
         xapi.sendStatement(user.id,xapi.verbs.logged_in);
         userStorage = { id: user.id, sessionId: session.sessionId}
         done(null, userStorage);

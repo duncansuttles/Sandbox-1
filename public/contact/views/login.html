@@ -58,6 +58,8 @@
 		<form data-bind="submit:handleLoginButton" >
 			<fieldset>
 				<legend style="padding-bottom:5px;">{{#translate}}Log in{{/translate}}</legend>
+                <a href="/contact/auth/facebook" class="btn btn-primary"><span class="fa fa-facebook"></span>Facebook login</a>
+                <br/><br/>
 				<div class="col-md-10" style="margin:0 auto;float:none;">
 					<input type='text' id='txtusername' placeholder='{{#translate}}Username{{/translate}}' class="form-control" /><br/>
 					<input type='password' id='txtpassword' placeholder='{{#translate}}Password{{/translate}}' class="form-control"/><br/>
@@ -68,7 +70,7 @@
 				<legend style="padding-bottom:5px;"></legend>
 			</fieldset>
 		</form>
-		<a href='signup' class='' style=""  value="" >{{#translate}}Sign Up{{/translate}}</a><span style="margin-left:3em" />   
+		<a href='signup' class='' style=""  value="" >{{#translate}}Sign Up{{/translate}}</a><span style="margin-left:3em" />
 		<a href='forgotPassword' class='' style=""  value="" >{{#translate}}Forgot your password?{{/translate}}</a>
 	</div>
 </div>
