@@ -52,9 +52,13 @@ exports.GetSessionData = function(request,cb)
 	var parts = cookielist[i].split('=');
     cookies[parts[0].trim()] = (parts[1] || '').trim();
   }
+  var SessionID;
+  if (global.userStorageSessionId!=undefined) {
+    SessionID = global.userStorageSessionId;
+  } else {
+    SessionID = cookies.session;
+  }
 
-  var SessionID = cookies.session;
-  
   //if there is no session ID, return ull
   if(!SessionID){
   cb(); return null}

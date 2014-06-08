@@ -72,44 +72,8 @@ var ServerFeatures = require("./serverFeatures.js");
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
 
-// used to serialize the user for the session
-passport.serializeUser(function (user, done) {
-    done(null, user.id);
-});
-
-// used to deserialize the user
-passport.deserializeUser(function (id, done) {
-    DAL.getUser(id, function (user) {
-        done(null, user);
-    });
-});
-
-passport.use(new FacebookStrategy({
-        clientID: global.configuration.facebook_app_id,
-        clientSecret: global.configuration.facebook_app_secret,
-        callbackURL: global.configuration.facebook_callback_url
-    },
-    function (accessToken, refreshToken, profile, done) {
-        process.nextTick(function () {
-            DAL.getUser(profile.id, function (user) {
-                if (user) {
-                    done(null, user);
-                } else {
-                    user = DAL.createProfileFromFacebook(profile, function (results) {
-                        if (results === "ok") {
-                            DAL.getUser(profile.id, function (user) {
-                                done(null, user);
-                            });
-                        } else {
-                            done("Error creating user " + results, null);
-                        }
-                    });
-                }
-            });
-        }
-      );
-    }
-));
+var sessions = require('./sessions');
+var xapi = require('./xapi');
 
 //localization
 var i18n = require("i18next");
@@ -319,8 +283,6 @@ function startVWF(){
 			// we append a version to the front if every request to keep the clients fresh
 			// otherwise, a user would have to know to refresh the cache every time we release
 			app.use(ServerFeatures.versioning);
-			
-			
 
 			//find pretty world URL's, and redirect to the non-pretty url for the world
 			app.use(ServerFeatures.prettyWorldURL);
@@ -337,6 +299,7 @@ function startVWF(){
 			app.use(express.cookieParser());
     		app.use(i18n.handle);
 
+            app.use(express.session({ secret: 'keyboard cat' }));
             app.use(passport.initialize());
             app.use(passport.session());
 
@@ -528,5 +491,48 @@ function startVWF(){
 	}
 	
 }
+// used to serialize the user for the session
+passport.serializeUser(function (user, done) {
+    sessions.createSession(user.id,"",false,function(session){
+        xapi.sendStatement(user.id,xapi.verbs.logged_in);
+        userStorage = { id: user.id, sessionId: session.sessionId}
+        done(null, userStorage);
+    });
+});
+
+// used to deserialize the user
+passport.deserializeUser(function (userStorage, done) {
+    DAL.getUser(userStorage.id, function (user) {
+        global.userStorageSessionId = userStorage.sessionId;
+        done(null, user);
+    });
+});
+
+passport.use(new FacebookStrategy({
+        clientID: global.configuration.facebook_app_id,
+        clientSecret: global.configuration.facebook_app_secret,
+        callbackURL: global.configuration.facebook_callback_url
+    },
+    function (accessToken, refreshToken, profile, done) {
+        process.nextTick(function () {
+                DAL.getUser(profile.id, function (user) {
+                    if (user) {
+                        done(null, user);
+                    } else {
+                        user = DAL.createProfileFromFacebook(profile, function (results) {
+                            if (results === "ok") {
+                                DAL.getUser(profile.id, function (user) {
+                                    done(null, user);
+                                });
+                            } else {
+                                done("Error creating user " + results, null);
+                            }
+                        });
+                    }
+                });
+            }
+        );
+    }
+));
 
 exports.startVWF = startVWF;
