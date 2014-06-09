@@ -146,9 +146,9 @@ define([], function ()
 			{
 				if(prop == 'playMode' && val == 'play')
 				{
-					$('#playButton').css('background','rgb(153, 153, 255)');
-					$('#pauseButton').css('background','');
-					$('#stopButton').css('background','');
+					$('#playButton').css('background-color','rgb(153, 153, 255)');
+					$('#pauseButton').css('background-color','');
+					$('#stopButton').css('background-color','');
 					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('opacity',.8);
 					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('background-color','red');
 					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('pointer-events','none');
@@ -159,16 +159,16 @@ define([], function ()
 
 				if(prop == 'playMode' && val == 'paused')
 				{
-					$('#playButton').css('background','rgb(153, 153, 255)');
-					$('#pauseButton').css('background','rgb(153, 153, 255)');
-					$('#stopButton').css('background','');
+					$('#playButton').css('background-color','rgb(153, 153, 255)');
+					$('#pauseButton').css('background-color','rgb(153, 153, 255)');
+					$('#stopButton').css('background-color','');
 				}
 				if(prop == 'playMode' && val == 'stop')
 				{
 					
-					$('#playButton').css('background','');
-					$('#pauseButton').css('background','');
-					$('#stopButton').css('background','rgb(153, 153, 255)');
+					$('#playButton').css('background-color','');
+					$('#pauseButton').css('background-color','');
+					$('#stopButton').css('background-color','rgb(153, 153, 255)');
 					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('opacity','');
 					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('pointer-events','');
 					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('background-color','');

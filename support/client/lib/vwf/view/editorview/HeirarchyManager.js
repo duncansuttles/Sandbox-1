@@ -86,6 +86,7 @@ define(function ()
 			HierarchyManager.BuildGUI();
 			showSidePanel();
 			HierarchyManager.open = true;
+			$('#MenuHierarchyManagericon').addClass('iconselected');
 		}
 		this.hide = function ()
 		{
@@ -97,6 +98,7 @@ define(function ()
 					if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 					if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 				});
+				$('#MenuHierarchyManagericon').removeClass('iconselected');
 			}
 		}
 		this.isOpen = function ()

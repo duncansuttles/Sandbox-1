@@ -85,7 +85,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 			},
 			open:function()
 			{
-				$('#PermissionsManager').dialog('option','title','Edit Permissions:' + _Editor.GetSelectedVWFID());
+				$('#PermissionsManager').dialog('option','title','Edit Permissions:Scene');
 				self.BuildGUI();
 			}
 		});
@@ -96,7 +96,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 				newperm[$(v).attr('user')] = $(v).attr('checked')=='checked'?1:0;
 			
 			});
-			this.setProperty(_Editor.GetSelectedVWFID(),'permission',newperm,'You do not have permission to edit this object');
+			this.setProperty(vwf.application(),'permission',newperm,'You do not have permission to edit this object');
 		}
 		this.getPermission = function(user,id)
 		{
@@ -171,8 +171,8 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 		{
 			$('#PermissionsDisplay').empty();
 			
-			$('#PermissionsOwner').text('Owner: ' + vwf.getProperty(_Editor.GetSelectedVWFID(),'owner'));
-			var permission = vwf.getProperty(_Editor.GetSelectedVWFID(),'permission');
+			$('#PermissionsOwner').text('Owner: ' + vwf.getProperty(vwf.application(),'owner'));
+			var permission = vwf.getProperty(vwf.application(),'permission');
 			if(permission)
 			{
 				for(var i in permission)

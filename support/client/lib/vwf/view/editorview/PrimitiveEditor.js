@@ -126,6 +126,7 @@ define(function ()
 		$(".ui-accordion-content").css('height', 'auto');
 		this.show = function ()
 		{
+			$('#MenuObjectPropertiesicon').addClass('iconselected');
 			//$('#PrimitiveEditor').dialog('open');
 			//$('#PrimitiveEditor').dialog('option','position',[1282,40]);
 			$('#PrimitiveEditor').prependTo($('#PrimitiveEditor').parent());
@@ -136,6 +137,7 @@ define(function ()
 			showSidePanel();
 			this.SelectionChanged(null, _Editor.GetSelectedVWFNode());
 			this.open = true;
+			
 		}
 		this.hide = function ()
 		{
@@ -147,7 +149,9 @@ define(function ()
 					if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 					if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 				});
+
 			}
+			$('#MenuObjectPropertiesicon').removeClass('iconselected');
 		}
 		this.isOpen = function ()
 		{
@@ -225,6 +229,7 @@ define(function ()
 				{
 					this.inSetup = true;
 					this.clearPropertyEditorDialogs();
+					var lastTab = $("#accordion").accordion('option', 'active');
 					$("#accordion").accordion('destroy');
 					$("#accordion").children('.modifiersection').remove();
 					//update to ensure freshness
@@ -313,6 +318,8 @@ define(function ()
 					});
 					$(".ui-accordion-content").css('height', 'auto');
 					this.inSetup = false;
+					
+					$("#accordion").accordion({'active':lastTab});
 				}
 				else
 				{
@@ -1062,13 +1069,17 @@ define(function ()
 		this.NodePropertyUpdate = function(nodeID,propName,propVal)
 		{
 			
+
 			for(var i = 0; i < this.propertyEditorDialogs.length; i++)
 			{	
 				
 				var diag = this.propertyEditorDialogs[i];
+				
 				if(diag.propName == propName && diag.nodeid == nodeID)
 				{
-					if(diag.type == 'text')
+					//typing into the textbox can be infuriating if it updates while you type!
+					//need to filter out sets from self
+					if(diag.type == 'text' && vwf.client() != vwf.moniker())
 						diag.element.val(propVal);
 					if(diag.type == 'slider')
 						diag.element.slider('value',propVal);
