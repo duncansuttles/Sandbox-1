@@ -1808,6 +1808,20 @@ future.hasOwnProperty( eventName ) ||  // TODO: calculate so that properties tak
 
 // TODO: this walks the full prototype chain and is probably horribly inefficient.
 
+    function nodeInstanceOf(node,type)
+    {
+        while(node)
+        {
+            if(node.childExtendsID == type)
+                return true;
+            if(vwf.prototype(node.id))
+                node = jsDriverSelf.nodes[vwf.prototype(node.id)];
+            else
+                node = null;
+
+        }
+        return false;
+    }
     function findListeners( node, eventName, targetOnly ) {
 
         var prototypeListeners = Object.getPrototypeOf( node ).private ? // get any jsDriverSelf-targeted listeners from the prototypes
@@ -1825,7 +1839,7 @@ future.hasOwnProperty( eventName ) ||  // TODO: calculate so that properties tak
             var childBehaviorListeners = [];
             for(var i =0; i < node.children.length; i++)
             {
-                if(node.children[i].childExtendsID == 'http-vwf-example-com-behavior-vwf')
+                if(nodeInstanceOf(node.children[i], 'http-vwf-example-com-behavior-vwf'))
                     childBehaviorListeners = childBehaviorListeners.concat(findListeners(node.children[i],eventName));
             }
 
