@@ -526,9 +526,12 @@
         };      
 		this.close = function()
 		{
-			socket.removeListener( "disconnect", vwf.disconnected);
-            socket.disconnect();
-            socket = null;
+            if(socket)
+            {
+    			socket.removeListener( "disconnect", vwf.disconnected);
+                socket.disconnect();
+                socket = null;
+            }
 		}
         // -- initialize ---------------------------------------------------------------------------
 
