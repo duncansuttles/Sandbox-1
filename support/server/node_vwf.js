@@ -256,6 +256,9 @@ function startVWF(){
 
 		DAL.startup(function(){
 			
+			//make sure that we can connect to the 3DR. Why is the cert untrusted?
+			
+			process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 			//start the session database
 			require('./sessions.js').sessionStartup(function(){
 
@@ -310,7 +313,7 @@ function startVWF(){
 			
 			app.get(global.appPath+'/help', Landing.help);
 			app.get(global.appPath+'/help/:page([a-zA-Z]+)', Landing.help);
-			app.get(global.appPath+'/world/:page([a-zA-Z0-9]+)', Landing.world);
+			app.get(global.appPath+'/world/:page([_a-zA-Z0-9]+)', Landing.world);
 			app.get(global.appPath+'/searchResults/:term([a-zA-Z0-9%]+)/:page([0-9]+)', Landing.searchResults);
 			app.get(global.appPath+'/newWorlds', Landing.newWorlds);
 			app.get(global.appPath+'/allWorlds/:page([0-9]+)', Landing.allWorlds);

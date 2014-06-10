@@ -491,7 +491,8 @@ function getBlankScene(state,instanceData,cb)
                 if(id == 'index-vwf' && name == 'restoreState')
                 {
                     console.log('Restore State from Play Backup');
-                    this.nodes['index-vwf'] = args[0][0];
+                    if(args[0][0])
+                    	this.nodes['index-vwf'] = args[0][0];
                 }
             }
             socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State loaded, sending..."],"time":thisInstance.time}))); 

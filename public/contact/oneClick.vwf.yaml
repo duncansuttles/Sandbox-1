@@ -3,19 +3,55 @@ properties:
   type: behavior
   NotProto: null
   EditorData:
-    URL:
-      displayname: URL
-      property: url
-      type: text
-    Pop:
-      displayname: Popup
-      property: popup
+    Active:
+      property: Active
+      displayname: Active
       type: check
+    lookaxis:
+      displayname: look axis
+      property: lookatVec
+      type: choice
+      labels:
+        - X
+        - Y
+        - Z
+        - -Y
+      values:
+        - X
+        - Y
+        - Z
+        - -Y
+    lookup:
+      displayname: look axis
+      property: lookatUp
+      type: choice
+      labels:
+        - X
+        - Y
+        - Z
+      values:
+        - X
+        - Y
+        - Z
+  Target: line ID
+  lookatVec: 'Y'
+  lookatUp: 'Z'
   DisplayName: OneClick
-  url: 'http://www.google.com'
-  popup: true
 methods:
   initialize: "   "
+  bringPlayerToMe: |
+    var player = this.Scene.clientAPI.getAvatarForUserName("treboro");
+    console.log(player);
+    var worldpos = this.transformAPI.getWorldPosition();
+    console.log(worldpos);
+    console.log(this.parent);
+    console.log("look");
+    player.transformAPI.lookat(worldpos);
+    console.log("afterlook");
+    var camTargetName = this.parent.children_by_name.Camera1;
+    var camTargetObject = this.Scene.findNode(camTargetName);
+    var camTargetPos = camTargetObject.transformAPI.getWorldPosition();
+
 events:
   pointerOver:
     parameters:
@@ -31,4 +67,4 @@ events:
     parameters:
       - '  eventData'
       - '  nodeData  '
-    body: "window.open(this.url,'_blank');"
+    body: "this.bringPlayerToMe();"

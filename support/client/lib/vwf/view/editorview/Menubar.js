@@ -790,7 +790,7 @@ define(
 		});
 		var pfx = ["webkit", "moz", "ms", "o", ""];
 
-		function RunPrefixMethod(obj, method)
+		function RunPrefixMethod(obj, method,param)
 		{
 			var p = 0,
 				m, t;
@@ -806,7 +806,7 @@ define(
 				if (t != "undefined")
 				{
 					pfx = [pfx[p]];
-					return (t == "function" ? obj[m]() : obj[m]);
+					return (t == "function" ? obj[m](param) : obj[m]);
 				}
 				p++;
 			}
@@ -819,7 +819,8 @@ define(
 			}
 			else
 			{
-				RunPrefixMethod(document.body, "RequestFullScreen");
+				
+				RunPrefixMethod(document.body, "RequestFullScreen", Element.ALLOW_KEYBOARD_INPUT);
 			}
 		});
 		$('#MenuCamera3RDPerson').click(function (e)
@@ -1051,6 +1052,13 @@ define(
 		{
 			_Publisher.testPublish();
 		});
+		$('#MenuViewTabletDemo').click(function (e)
+		{
+			$('#MenuViewRenderStereo').click();
+			$('#MenuCameraDeviceOrientation').click();
+			$('#MenuViewFullscreen').click();
+		});
+
 
 
 
