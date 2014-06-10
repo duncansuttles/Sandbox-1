@@ -491,10 +491,7 @@ scripts:
         
         var motionvec;
         
-        if(this.motionStack.length)
-            this.playSound('./vwfDataManager.svc/datafile/sounds/footsteps.mp3',true,.1);
-        else
-            this.pauseSound('./vwfDataManager.svc/datafile/sounds/footsteps.mp3');
+
         
         for(var i=0; i < this.motionStack.length; i++)
         {
@@ -953,6 +950,11 @@ scripts:
                 {this.removeMotion('turnleft'); this.removeMotion('turnright'); this.removeCycle('turnleft'); this.removeCycle('turnright');}        
             if(!e.keysDown.W  && !e.keysDown.uparrow && this.inMotion('run'))
                 this.cancelRun(); 
+
+                
+            this.pauseSound('./vwfDataManager.svc/datafile/sounds/footsteps.mp3');
+
+
             return false;          
             
          }
@@ -1002,6 +1004,10 @@ scripts:
                { this.addMotion('turnright');    }
             if(e.mods.shift && e.keysDown.W)
                 this.run();  
+
+          
+            this.playSound('./vwfDataManager.svc/datafile/sounds/footsteps.mp3',true,5);
+            
             return false;
          }
     

@@ -78,6 +78,7 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 	//note: the 3D driver must keep track of this
 	SoundSource.prototype.updateSourcePosition = function()
 	{
+		
 		this.position = vwf.getProperty(this.id,'worldPosition');
 	}
 	//use inverse falloff, adjust the range parameters of the falloff curve by the "volume"
