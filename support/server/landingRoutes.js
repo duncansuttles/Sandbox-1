@@ -289,7 +289,8 @@ exports.world = function(req, res, next){
 			if(!doc)
 			{
 				res.locals = {sessionData:sessionData,url:req.url,root:getRoot()};
-				res.status(404).render('_404');
+				//res.status(404).render('_404');
+				res.redirect(global.appPath);
 				return;
 			}
 			var instance = global.instances ? global.instances.get(global.appPath+"/"+req.params.page+"/") : false;

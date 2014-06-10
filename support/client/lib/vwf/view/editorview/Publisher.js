@@ -224,6 +224,13 @@ define([], function ()
 				}
 				async.eachSeries(Object.keys(node.children),function(i,eachSeriesCallback)
 				{
+
+					//dont create or destroy avatars
+					if(node.children[i].extends == 'character.vwf')
+					{
+						eachSeriesCallback();
+						return;
+					}
 					//does the node exist?
 					var exists = false;
 					try
@@ -240,7 +247,6 @@ define([], function ()
 						//set all the props of this node
 						for(var j in node.children[i].properties)
 						{
-							console.log('setProperty',node.children[i].id,j,node.children[i].properties[j])
 							vwf.setProperty(node.children[i].id,j,node.children[i].properties[j]);
 						}
 						//create or set props of the child
@@ -257,10 +263,17 @@ define([], function ()
 			//walk, and when done, delete anything that was created
 			walk(s,function(){
 
+				//set all the properties on the root scene
+				for(var j in s.properties)
+				{
+					if(j !== 'clients')
+					vwf.setProperty(s.id,j,s.properties[j]);
+				}
 				//synchronous walk of graph to find children that exist in the current state but not the old one. Delete nodes that were created
 				var walk2 = function(node)
 				{
-					if(!find(s,node.id))
+					//don't delete avatars
+					if(!find(s,node.id) && node.extends != 'character.vwf')
 					{
 						vwf.deleteNode(node.id);
 					}else

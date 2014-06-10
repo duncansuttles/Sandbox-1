@@ -113,6 +113,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			$('#SceneSaved').text('Not Saved');
 			$('#statusbarinner').append('<div id="StatusSelectedName" style="color:lightblue" class="statusbarElement" />');
 			$('#StatusSelectedName').text('No Selection');
+			$('#statusbarinner').append('<div id="StatusMouseOverName" style="color:lightblue" class="statusbarElement" />');
+			$('#StatusMouseOverName').text('No Selection');
 			$('#statusbarinner').append('<div id="StatusSelectedID" class="statusbarElement" style="display:none" />');
 			$('#StatusSelectedID').text('No Selection');
 			$('#statusbarinner').append('<div id="StatusPickMode" class="statusbarElement" />');
@@ -242,13 +244,13 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 			}
 		}.bind(this);
-		this.GetUniqueName = function (newname)
+		this.GetUniqueName = function (newname,addcount)
 		{
-			
+			if(!addcount) addcount = 0;
 			if (!newname) newname = 'Object';
 			newname = newname.replace(/[0-9]*$/g, "");
 			var nodes = vwf.models.object.objects;
-			var count = 1;
+			var count = 1 + addcount;
 			for (var i in nodes)
 			{
 				var thisname = vwf.getProperty(nodes[i].id,'DisplayName') || '';
@@ -1539,6 +1541,17 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				{
 					if (vwf.views[0].lastPick && vwf.views[0].lastPick.object && vwf.views[0].lastPick.object == MoveGizmo.children[i]) axis = i;
 				}
+				//display the name of the objject under the mouse
+				if(vwf.views[0].lastPickId)
+				{
+					var mouseovernode = vwf.getProperty(vwf.views[0].lastPickId,'DisplayName');
+					$('#StatusMouseOverName').text(mouseovernode || vwf.views[0].lastPickId);
+				}else
+				{
+					$('#StatusMouseOverName').text('Scene');
+				}
+				
+
 				for (var i = 0; i < MoveGizmo.children.length; i++)
 				{
 					if (i != document.AxisSelected) if (MoveGizmo.children[i].material)
@@ -1638,7 +1651,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					DisplayName: self.GetUniqueName('Light')
 				}
 			};
-			this.createChild('index-vwf', GUID(), proto, null, null);
+			var newname = GUID();
+			this.createChild('index-vwf', newname, proto, null, null);
+			this.SelectOnNextCreate([newname]);
 		}
 		this.createParticleSystem = function (type, pos, owner)
 		{
@@ -1652,7 +1667,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					DisplayName: self.GetUniqueName('ParticleSystem')
 				}
 			};
-			this.createChild('index-vwf', GUID(), proto, null, null);
+			var newname = GUID();
+			this.createChild('index-vwf', newname, proto, null, null);
+			this.SelectOnNextCreate([newname]);
 		}
 		this.CreateCamera = function(translation, owner, id)
 		{
@@ -1668,7 +1685,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			CamProto.properties.rotation = [0, 0, 1, 0];
 			CamProto.properties.owner = owner;
 			CamProto.properties.DisplayName = self.GetUniqueName('Camera');
-			this.createChild('index-vwf', GUID(), CamProto, null, null);
+			var newname = GUID();
+			this.createChild('index-vwf',newname, CamProto, null, null);
+			this.SelectOnNextCreate([newname]);
 		};
 		this.CreatePrim = function (type, translation, size, texture, owner, id)
 		{
@@ -1719,7 +1738,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			proto.properties.type = 'primitive';
 			proto.properties.tempid = id;
 			proto.properties.DisplayName = self.GetUniqueName(type);
-			this.createChild('index-vwf', GUID(), proto, null, null);
+			var newname = GUID();
+			this.createChild('index-vwf', newname, proto, null, null);
+			this.SelectOnNextCreate([newname])
 		}.bind(this);
 		this.AddBlankBehavior = function ()
 		{
@@ -1745,7 +1766,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				_Notifier.notify('You do not have permission to edit this object');
 				return;
 			}
-			this.createChild(id, GUID(), proto, null, null);
+			var newname = GUID();
+			this.createChild(id,newname , proto, null, null);
+			
 		}
 		this.CreateBehavior = function(type,owner)
 		{
@@ -1771,7 +1794,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				_Notifier.notify('You do not have permission to edit this object');
 				return;
 			}
-			this.createChild(id, GUID(), proto, null, null);
+			var newname = GUID();
+			this.createChild(id, newname, proto, null, null);
+			
 			window.setTimeout(function ()
 			{
 				$(document).trigger('modifierCreated', self.GetSelectedVWFNode());
@@ -1878,19 +1903,21 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					_Notifier.alert('Avatars cannot be copied');
 					return
 			}
-			
+			var newnames = [];
 			for (var i = 0; i < SelectedVWFNodes.length; i++)
 			{
 				var proto = _DataManager.getCleanNodePrototype(SelectedVWFNodes[i].id);
 				proto.properties.DisplayName = self.GetUniqueName(proto.properties.DisplayName);
 				var parent = vwf.parent(self.GetSelectedVWFID());
-				self.createChild(parent, GUID(), proto, null, null, function ()
+				var newname = GUID();
+				newnames.push(newname);
+				self.createChild(parent, newname, proto, null, null, function ()
 				{
 					alert();
 				});
 			}
-			self.SelectOnNextCreate(SelectedVWFNodes.length);
-			self.SelectObject(null);
+			self.SelectOnNextCreate(newnames);
+			
 		}.bind(this);
 		this.DeleteIDs = function (t)
 		{
@@ -1956,7 +1983,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		this.Paste = function (useMousePoint)
 		{
 			
-			
+			var newnames = [];
 			for (var i = 0; i < _CopiedNodes.length; i++)
 			{
 				var t = _CopiedNodes[i];
@@ -1987,7 +2014,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					t.properties.transform[12] += newintersectxy[0];
 					t.properties.transform[13] += newintersectxy[1];
 					t.properties.transform[14] += newintersectxy[2];
-					t.properties.DisplayName = self.GetUniqueName(t.properties.DisplayName);
+					t.properties.DisplayName = self.GetUniqueName(t.properties.DisplayName,i);
 				}
 
 				
@@ -2005,9 +2032,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 				else	
 				{
-					self.SelectObject(null);
-					self.SelectOnNextCreate();
-					self.createChild('index-vwf', GUID(), t, null, null);
+					
+					var newname = GUID();
+					newnames.push(newname);
+					
+					self.createChild('index-vwf', newname, t, null, null);
 				}
 				
 				//reset in c ase we paste again
@@ -2018,6 +2047,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					t.properties.transform[14] -= newintersectxy[2];
 				}
 			}
+			self.SelectOnNextCreate(newnames);
 		}
 		this.getTransform = function(id)
 		{
@@ -2799,6 +2829,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		this.PickParentCallback = function (parentnode)
 		{
 			_UndoManager.startCompoundEvent();
+			var newnames = [];
 			if(parentnode)
 			{
 				
@@ -2824,8 +2855,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 								delete node.properties.quaternion;
 								delete node.properties.scale;
 								node.properties.transform = MATH.transposeMat4(childmat);
-								
-								this.createChild(parentnode.id, GUID(), node);
+								var newname = GUID();
+								newnames.push(newname)
+								this.createChild(parentnode.id, newname, node);
 							}else
 							{
 								alertify.alert('This object cannot be assigned to be a child of one of its decendants')
@@ -2848,13 +2880,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 
 			this.DeleteSelection();
 			this.TempPickCallback = null;
-			self.SelectOnNextCreate();
+			self.SelectOnNextCreate(newnames);
 			this.SetSelectMode('Pick');
 			_UndoManager.stopCompoundEvent();
 		}
 		this.RemoveParent = function ()
 		{
 			_UndoManager.startCompoundEvent();
+			var newnames = [];
 			for(var i = 0; i < this.getSelectionCount(); i++)
 			{
 				var id = this.GetSelectedVWFNode(i).id;
@@ -2865,11 +2898,13 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				delete node.properties.quaternion;
 				delete node.properties.scale;
 				node.properties.transform = MATH.transposeMat4(childmat);
-				this.createChild('index-vwf', GUID(), node);
+				var newname =  GUID();
+				newnames.push(newname);
+				this.createChild('index-vwf',newname, node);
 			}
 
 			this.DeleteSelection();
-			self.SelectOnNextCreate(this.getSelectionCount());
+			self.SelectOnNextCreate(newnames);
 			this.SetSelectMode('Pick');
 			_UndoManager.stopCompoundEvent();
 		}
@@ -2980,7 +3015,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var newname = GUID();
 			_UndoManager.recordCreate('index-vwf', newname, proto)
 			vwf_view.kernel.createChild('index-vwf',newname, proto);
-			self.SelectOnNextCreate();
+			self.SelectOnNextCreate([newname]);
 			this.SetSelectMode('Pick');
 			_UndoManager.stopCompoundEvent();
 		}
@@ -3138,11 +3173,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 			return this.SelectedVWFID;
 		}
-		this.CallCreateNodeCallback = function (e, p)
+		this.CallCreateNodeCallback = function (c, p, n)
 		{
 			try
 			{
-				this.createNodeCallback(e, p);
+				this.createNodeCallback(c, p, n);
 			}
 			catch (e)
 			{
@@ -3153,21 +3188,22 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 			this.createNodeCallback = callback;
 		}
-		this.SelectOnNextCreate = function (count)
+		this.SelectOnNextCreate = function (names)
 		{
-			if (!count) count = 1;
-			this.toSelect = count;
+			
+			this.toSelect = names;
 			this.tempSelect = [];
-			this.expectedParent = vwf.parent(self.GetSelectedVWFID());
-			this.SetCreateNodeCallback(function (e, p)
+			
+			this.SetCreateNodeCallback(function (c, p,n)
 			{
-				if (p == this.expectedParent)
+				if(self.toSelect.indexOf(n) >= 0)
 				{
-					self.tempSelect.push(e);
-					self.toSelect--;
-					if (self.toSelect == 0)
+					self.tempSelect.push(c);
+					self.toSelect.splice(self.toSelect.indexOf(n),1);
+					if (self.toSelect.length == 0)
 					{
 						self.createNodeCallback = null;
+						self.SelectObject(null);
 						self.SelectObject(self.tempSelect, Add);
 					}
 				}

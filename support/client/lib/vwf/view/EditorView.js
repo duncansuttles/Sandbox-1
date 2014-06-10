@@ -197,7 +197,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
 			{
 				if (window._Editor.createNodeCallback != null)
 				{
-					window._Editor.CallCreateNodeCallback(childID, nodeID);
+					window._Editor.CallCreateNodeCallback(childID, nodeID,vwf.name(childID));
 				}
 			}
 		},
