@@ -389,6 +389,13 @@ border-radius: 10px;
 		width: 100%;
 		height: 25px;
 		z-index: 101;
+		background: #444;
+		white-space: nowrap;
+	}
+	#statusbarinner
+	{
+		display: inline-block;
+		width: 100%;
 	}
 	.usertable
 	{
