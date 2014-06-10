@@ -94,7 +94,7 @@ exports.statsHandler = function(req, res, next){
 	sessions.GetSessionData(req,function(sessionData)
 	{
 		var allSessions = sessions.getAllSessions();
-		var instances = global.instances;
+		var instances = global.instances.instances;
 		var allConnections = 0;
 		for(var i in instances)
 		{
@@ -289,10 +289,11 @@ exports.world = function(req, res, next){
 			if(!doc)
 			{
 				res.locals = {sessionData:sessionData,url:req.url,root:getRoot()};
-				res.status(404).render('_404');
+				//res.status(404).render('_404');
+				res.redirect(global.appPath);
 				return;
 			}
-			var instance = global.instances ? global.instances[global.appPath+"/"+req.params.page+"/"] : false;
+			var instance = global.instances ? global.instances.get(global.appPath+"/"+req.params.page+"/") : false;
 			var anonymous = [];
 			var users = [];
 
@@ -338,6 +339,17 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 		
 		var results = [];
 		
+		//clean up and make sure that the data is not null
+		for (var i in allinstances)
+		{
+			if(!allinstances[i])
+				continue;
+			if(!allinstances[i].title)
+				allinstances[i].title = 'No Title';
+			if(!allinstances[i].description)
+				allinstances[i].description = 'No Description';
+
+		}
 		if(mode == 'active')
 		{
 			for(var i in allinstances)
@@ -348,7 +360,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 				inst.shortid = i.substr(global.appPath.length+1,16);
 				if(global.instances)
 				{
-					if(global.instances[i.replace(/_/g,"/")])
+					if(global.instances.get(i.replace(/_/g,"/")))
 						results.push(inst);
 				}
 			}
@@ -365,7 +377,7 @@ var search = decodeURIComponent( req.params.term).toLowerCase();
 				var inst = allinstances[i];
 				if(!inst) continue;
 				inst.id = i;
-				inst.shortid = i.substr(global.appPath.length+1,16)
+				inst.shortid = i.substr(global.appPath.length+1,16);
 				if(inst.title.toLowerCase().indexOf(search) != -1 || inst.description.toLowerCase().indexOf(search) != -1 || inst.owner.toLowerCase().indexOf(search) != -1 || inst.shortid.toLowerCase().indexOf(search) != -1)
 					results.push(inst);
 			}

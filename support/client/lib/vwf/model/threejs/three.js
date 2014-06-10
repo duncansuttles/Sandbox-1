@@ -26183,7 +26183,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 			_gl.pixelStorei( _gl.UNPACK_ALIGNMENT, texture.unpackAlignment );
 
 			var image = texture.image,
-			isImagePowerOfTwo = isPowerOfTwo( image.width ) && isPowerOfTwo( image.height ),
+			isImagePowerOfTwo = image ? isPowerOfTwo( image.width ) && isPowerOfTwo( image.height ) : true,
 			glFormat = paramThreeToGL( texture.format ),
 			glType = paramThreeToGL( texture.type );
 
@@ -26246,7 +26246,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				} else {
 
-					_gl.texImage2D( _gl.TEXTURE_2D, 0, glFormat, glFormat, glType, texture.image );
+						_gl.texImage2D( _gl.TEXTURE_2D, 0, glFormat, glFormat, glType, texture.image  );
 
 				}
 
@@ -31124,7 +31124,7 @@ THREE.Animation.prototype.debug = function(size)
 }
 THREE.Animation.prototype.setKey = function(keyf)
 {
-	
+	if(!this.data) return;
 	var l = keyf - Math.floor(keyf);
 	var l2 = 1-l;
 
@@ -31149,12 +31149,9 @@ THREE.Animation.prototype.setKey = function(keyf)
 			object.scale.y = key.scl[1] * l2 + key2.scl[1] * l;
 			object.scale.z = key.scl[2] * l2 + key2.scl[2] * l;
 
-			object.quaternion.w = key.rot.w;
-			object.quaternion.y = key.rot.y;
-			object.quaternion.z = key.rot.z;
-			object.quaternion.x = key.rot.x;
+			object.quaternion.set(key.rot.x,key.rot.y,key.rot.z,key.rot.w);
 			object.quaternion.slerp(key2.rot,l);
-			object.updateMatrixWorld();
+			
 			if(object.debugobject)
 			{
 				object.debugobject.matrix.copy(object.matrix);
@@ -31174,7 +31171,7 @@ THREE.Animation.prototype.setKey = function(keyf)
 			object.quaternion.y = key.rot.y;
 			object.quaternion.z = key.rot.z;
 			object.quaternion.x = key.rot.x;
-			object.updateMatrixWorld();
+			
 			if(object.debugobject)
 			{
 				object.debugobject.matrix.copy(object.matrix);
@@ -31184,7 +31181,7 @@ THREE.Animation.prototype.setKey = function(keyf)
 		}
 
 	}
-	this.root.updateMatrixWorld()
+	
 	if(this.debugroot)
 	{
 		this.debugroot.updateMatrixWorld()

@@ -90,7 +90,7 @@ THREE.ColladaLoader = function () {
 
 					if( request.status == 0 || request.status == 200 ) {
 
-
+						
 						if ( request.responseXML ) {
 
 							readyCallbackFunc = readyCallback;
@@ -135,6 +135,7 @@ THREE.ColladaLoader = function () {
 			}
 
 			request.open( "GET", url, true );
+			
 			request.send( null );
 
 		} else {
@@ -158,64 +159,67 @@ THREE.ColladaLoader = function () {
 
 		}
 
+		
 		parseAsset();
 		setUpConversion();
-		images = parseLib( "library_images image", _Image, "image" );
-		materials = parseLib( "library_materials material", Material, "material" );
-		effects = parseLib( "library_effects effect", Effect, "effect" );
-		geometries = parseLib( "library_geometries geometry", Geometry, "geometry" );
-		cameras = parseLib( "library_cameras camera", Camera, "camera" );
-		lights = parseLib( "library_lights light", Light, "light" );
-		controllers = parseLib( "library_controllers controller", Controller, "controller" );
-		animations = parseLib( "library_animations animation", Animation, "animation" );
-		visualScenes = parseLib( "library_visual_scenes visual_scene", VisualScene, "visual_scene" );
-		
-		morphs = [];
-		skins = [];
 
-		daeScene = parseScene();
-		scene = new THREE.Object3D();
+		async.series([
 
-		for ( var i = 0; i < daeScene.nodes.length; i ++ ) {
+		function(cb2){ images = parseLib( "library_images image", _Image, "image" ); async.nextTick(cb2)},
+		function(cb2){ materials = parseLib( "library_materials material", Material, "material" );async.nextTick(cb2)},
+		function(cb2){ effects = parseLib( "library_effects effect", Effect, "effect" );async.nextTick(cb2)},
+		function(cb2){ geometries = parseLib( "library_geometries geometry", Geometry, "geometry" );async.nextTick(cb2)},
+		function(cb2){ cameras = parseLib( "library_cameras camera", Camera, "camera" );async.nextTick(cb2)},
+		function(cb2){ lights = parseLib( "library_lights light", Light, "light" );async.nextTick(cb2)},
+		function(cb2){ controllers = parseLib( "library_controllers controller", Controller, "controller" );async.nextTick(cb2)},
+		function(cb2){ animations = parseLib( "library_animations animation", Animation, "animation" );async.nextTick(cb2)},
+		function(cb2){ visualScenes = parseLib( "library_visual_scenes visual_scene", VisualScene, "visual_scene" );async.nextTick(cb2)},
 
-			scene.add( createSceneGraph( daeScene.nodes[ i ] ) );
+		],function(){
 
-		}
+			
+			morphs = [];
+			skins = [];
 
-		// unit conversion
-		scene.scale.multiplyScalar( colladaUnit );
+			daeScene = parseScene();
+			scene = new THREE.Object3D();
 
-		createAnimations();
 
-		var result = {
-
-			scene: scene,
-			morphs: morphs,
-			skins: skins,
-			animations: animData,
-			dae: {
-				images: images,
-				materials: materials,
-				cameras: cameras,
-				lights: lights,
-				effects: effects,
-				geometries: geometries,
-				controllers: controllers,
-				animations: animations,
-				visualScenes: visualScenes,
-				scene: daeScene
-			}
-
-		};
-
-		if ( callBack ) {
-
-			callBack( result );
-
-		}
-
-		return result;
-
+			async.eachSeries(daeScene.nodes,function(node,cb){
+				 createSceneGraph( node,null,function(threenode)
+				 {
+				 	scene.add(threenode);
+				 	async.nextTick(cb);
+				 } );
+			},function(err)
+			{
+				// unit conversion
+				scene.scale.multiplyScalar( colladaUnit );
+				createAnimations();
+				var result = {
+					scene: scene,
+					morphs: morphs,
+					skins: skins,
+					animations: animData,
+					dae: {
+						images: images,
+						materials: materials,
+						cameras: cameras,
+						lights: lights,
+						effects: effects,
+						geometries: geometries,
+						controllers: controllers,
+						animations: animations,
+						visualScenes: visualScenes,
+						scene: daeScene
+					}
+				};
+				if ( callBack ) {
+					callBack( result );
+				}
+				return result;
+			});
+		});
 	};
 
 	function setPreferredShading ( shading ) {
@@ -932,7 +936,7 @@ THREE.ColladaLoader = function () {
 
 	};
 
-	function createSceneGraph ( node, parent ) {
+	function createSceneGraph ( node, parent, cb) {
 
 		var obj = new THREE.Object3D();
 		var skinned = false;
@@ -1228,12 +1232,21 @@ THREE.ColladaLoader = function () {
 
 		}
 
-		for ( i = 0; i < node.nodes.length; i ++ ) {
+	
+		//make the scenegraph parsing async
+		async.eachSeries(node.nodes,function(nodeDAE,cb2){
+			createSceneGraph(nodeDAE,node,function(childTHREE)
+			{
 
-			obj.add( createSceneGraph( node.nodes[i], node ) );
+				obj.add(childTHREE);
+				async.nextTick(cb2);
+			});
+		},function(err)
+		{
+			if(cb) {cb(obj)};
+		});
 
-		}
-
+		
 		return obj;
 
 	};
@@ -3504,8 +3517,7 @@ THREE.ColladaLoader = function () {
 			var transparentColor = this['transparent'];
 			var transparencyLevel = (this.transparent.color.r +
 										this.transparent.color.g + 
-										this.transparent.color.b)
-										/ 3 * this.transparency;
+										this.transparent.color.b) / 3 * this.transparency;
 			
 			if (transparencyLevel > 0)
 			{
@@ -3540,7 +3552,7 @@ THREE.ColladaLoader = function () {
 
 								if (image) {
 
-									var texture =  _SceneManager.getTexture(baseUrl + image.init_from);
+									var texture =  window._SceneManager ? _SceneManager.getTexture(baseUrl + image.init_from): THREE.ImageUtils.loadTexture(baseUrl + image.init_from);
 									texture.wrapS = cot.texOpts.wrapU ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
 									texture.wrapT = cot.texOpts.wrapV ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
 									texture.offset.x = cot.texOpts.offsetU;

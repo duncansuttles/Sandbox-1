@@ -48,6 +48,8 @@ define(function ()
 		{
 			$("#UserProfileWindow").hide('blind', function ()
 			{
+
+				
 				if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 				if (!$('#sidepanel').children().is(':visible')) hideSidePanel();
 			});
@@ -58,6 +60,7 @@ define(function ()
 		{
 			$('#Players').hide('blind', function ()
 			{
+				$('#MenuUsersicon').removeClass('iconselected');
 				if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 				if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 			});
@@ -126,15 +129,15 @@ define(function ()
 							var logindata = JSON.parse(xhr.responseText);
 							var username = logindata.username;
 							
-							if(logindata.instances.indexOf(_DataManager.getCurrentSession()) != -1)
-							{
-								_Notifier.alert('You are already logged into this space from another tab, browser or computer. This session will be a guest.');
-							}
-							else
-							{
+							
+								//only the first client from a given login should create the avatart
 								if(vwf.models[0].model.nodes['character-vwf-' + username.replace(/ /g,'-')] == undefined)
-								this.Login(username);
-							}
+									this.Login(username);
+								else
+								{
+									alertify.alert('You are already logged into this space from another tab.');
+								}
+							
 							
 						}.bind(this),
 						error:function(xhr,status,err)
@@ -171,7 +174,10 @@ define(function ()
 			if (!profile) return;
 			$('#UserProfileWindow').prependTo($('#UserProfileWindow').parent());
 			$('#UserProfileWindow').show('blind', function ()
-			{});
+			{
+				$('#MenuUsersicon').addClass('iconselected');
+
+			});
 			showSidePanel();
 			this.SelectedProfile = profile;
 			//$('#UserProfileWindow').dialog('open');
@@ -211,7 +217,7 @@ define(function ()
 					
 					_dView.setCameraDefault();
 					clearCameraModeIcons();
-					$('#MenuCamera3RDPersonicon').css('background-color', '#9999FF');
+					$('#MenuCamera3RDPersonicon').addClass('iconselected');
 					vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
 					vwf.models[0].model.nodes['index-vwf'].setCameraMode('3RDPerson');
 				}
@@ -286,7 +292,9 @@ define(function ()
 				isDynamic: true,
 				castShadows: true,
 				receiveShadows: true,
-				activeCycle : []
+				activeCycle : [],
+				standingOnID: null,
+  				standingOnOffset: null
 			},
 			events: {
 				ShowProfile: null,
@@ -510,6 +518,7 @@ define(function ()
 			
 			_DataManager.saveToServer(true);
 
+			//inform the server that you intend to disconnect from the world
 			if(needlogin)
 			{	
 				var data = jQuery.ajax(
@@ -527,11 +536,12 @@ define(function ()
 					return;
 				}
 			}
+
 			document[document.PlayerNumber + 'link'] = null;
 			document.PlayerNumber = null;
 			_UserManager.currentUsername = null;
 			
-			window.location = _DataManager.getCurrentApplication();
+			window.location = window.location.pathname.replace('/sandbox/','/sandbox/world/')
 			return;
 		}
 		this.showLogin = function ()

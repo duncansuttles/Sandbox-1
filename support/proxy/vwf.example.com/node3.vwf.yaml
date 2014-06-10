@@ -114,6 +114,20 @@ properties:
                     vec = Mat4.multVec3(targetTransform,vec,[]);
                     return vec;
                 },
+                localToGlobalRotation: function(x,y,z)
+                {
+                    if(x.length)
+                    {
+                        y = x[1];
+                        z = x[2];
+                        x = x[0];
+                    }
+                    var vec = [x,y,z];
+                    var targetTransform = self.worldTransform.internal_val;
+                   
+                    vec = Mat4.multVec3NoTranslate(targetTransform,vec,[]);
+                    return vec;
+                },
                 globalToLocal: function(x,y,z)
                 {
                     if(x.length)
@@ -128,6 +142,36 @@ properties:
                     var invTransform = Mat4.create();
                     Mat4.invert(targetTransform,invTransform);
                     vec = Mat4.multVec3(invTransform,vec,[]);
+                    return vec;
+                },
+                globalToLocalRotation: function(x,y,z)
+                {
+                  
+                    if(x.length)
+                    {
+                        y = x[1];
+                        z = x[2];
+                        x = x[0];
+                    }
+                    var vec = [x,y,z];
+
+                    vec[0] /= 57.2957795;
+                    vec[1] /= 57.2957795;
+                    vec[2] /= 57.2957795;
+
+                    var targetTransform = self.worldTransform.internal_val;
+                    
+                    var mat = Mat4.makeEulerZXZ([],x,y,z);
+
+                    var invTransform = Mat4.create();
+                    Mat4.invert(targetTransform,invTransform);
+                    var mat = Mat4.multMat(mat,invTransform,[]);
+                    Mat4.toEulerZXZ(mat,vec);
+
+                    vec[0] *= 57.2957795;
+                    vec[1] *= 57.2957795;
+                    vec[2] *= 57.2957795;
+
                     return vec;
                 },
                 setPosition: function(x,y,z)

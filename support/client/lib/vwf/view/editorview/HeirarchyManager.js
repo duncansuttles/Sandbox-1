@@ -23,6 +23,7 @@ define(function ()
 		$('#hierarchyManager').append("<div id='hierarchyDisplay' style=''></div>");
 		$('#hierarchyManager').append("<div id='hierarchyManagerMakeNode'></div>");
 		$('#hierarchyManager').append("<div id='hierarchyManagerSelect'></div>");
+		$('#hierarchyManager').append("<div id='hierarchyManagerExplode'></div>");
 		
 		$('#HeirarchyFilter').keyup(function()
 		{
@@ -32,6 +33,10 @@ define(function ()
 		$('#hierarchyManagerMakeNode').button(
 		{
 			label: 'Make VWF Node'
+		});
+		$('#hierarchyManagerExplode').button(
+		{
+			label: 'Explode'
 		});
 		$('#hierarchyManagerSelect').button(
 		{
@@ -52,6 +57,10 @@ define(function ()
 		$('#hierarchyManagerSelect').click(function ()
 		{
 			HierarchyManager.select()
+		});
+		$('#hierarchyManagerExplode').click(function ()
+		{
+			HierarchyManager.explode()
 		});
 		this.createChild = function (parent, name, proto, uri, callback)
 		{
@@ -77,6 +86,7 @@ define(function ()
 			HierarchyManager.BuildGUI();
 			showSidePanel();
 			HierarchyManager.open = true;
+			$('#MenuHierarchyManagericon').addClass('iconselected');
 		}
 		this.hide = function ()
 		{
@@ -88,6 +98,7 @@ define(function ()
 					if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 					if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 				});
+				$('#MenuHierarchyManagericon').removeClass('iconselected');
 			}
 		}
 		this.isOpen = function ()
@@ -168,6 +179,32 @@ define(function ()
 				vwf_view.kernel.createChild(parent, newname, proto, null);
 			}
 		}
+		this.explode = function()
+		{
+				
+				var nodes = this.getTHREEChildren(this.findTHREEChild(_Editor.findviewnode(this.selectedID),  this.selectedName));
+
+				for(var i in nodes.children)
+				{
+					var node = this.findTHREEChild(_Editor.findviewnode(this.selectedID),  nodes.children[i].name);
+					var parent = this.selectedID;
+					var childname = nodes.children[i].name;
+					var proto = {
+						extends: 'asset.vwf',
+						type: "link_existing/threejs",
+						source: childname,
+						properties: {
+							owner: document.PlayerNumber,
+							type: '3DR Object',
+							DisplayName: childname,
+							transform: matCpy(node.matrix.elements)
+						}
+					};
+					var newname = GUID();
+					_UndoManager.recordCreate(parent, newname, proto);
+					vwf_view.kernel.createChild(parent, newname, proto, null);
+				}
+		}
 		this.select = function ()
 		{
 			if (HierarchyManager.selectedType == 'vwf')
@@ -214,7 +251,7 @@ define(function ()
 			var ret = {name:'',vwfID:'',children:[]};
 			ret.vwfID = nodeID;
 
-			var vwfnode = vwf.getNode(nodeID);
+			var vwfnode = _Editor.getNode(nodeID);
 			ret.name = ret.vwfID;
 			if(vwfnode.properties && vwfnode.properties.DisplayName)
 				ret.name = vwfnode.properties.DisplayName;
@@ -238,7 +275,7 @@ define(function ()
 			if (!node) return null;
 			var parent = vwf.parent(node);
 			if (!parent) return null;
-			parent = vwf.getNode(parent);
+			parent = _Editor.getNode(parent);
 			if (!parent) return null;
 			return parent.properties.DisplayName || parent.id;
 		}

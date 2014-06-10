@@ -202,14 +202,14 @@ define(function ()
 				$('#ScriptEditor').css('top', $('#toolbar').offset().top + $('#toolbar').height() + 'px');
 				$('#ScriptEditor').attr('maximized', true);
 				$('#ScriptEditor').css('height', $(window).height() - $('#toolbar').height() - $('#smoothmenu1').height() - $('#statusbar').height() + 'px');
-				$('#maximizescripteditor').attr('src', 'vwf/view/editorview/images/icons/window.png');
+				$('#maximizescripteditor').attr('class', 'icon window');
 			}
 			else
 			{
 				$('#ScriptEditor').css('top', $('#ScriptEditor').attr('originaltop') + 'px');
 				$('#ScriptEditor').css('height', $(window).height() - $('#ScriptEditor').offset().top - $('#statusbar').height() + 'px');
 				$('#ScriptEditor').removeAttr('maximized');
-				$('#maximizescripteditor').attr('src', 'vwf/view/editorview/images/icons/up2.png');
+				$('#maximizescripteditor').attr('class', 'icon up2');
 				var scripteditorheight = $('#ScriptEditor').offset().top;
 				if (scripteditorheight != 0) scripteditorheight = $(window).height() - scripteditorheight;
 				$('#index-vwf').css('height', window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - (scripteditorheight - 25) + 'px');
@@ -501,7 +501,7 @@ define(function ()
 				vwf_view.kernel.deleteMethod(_ScriptEditor.currentNode.id, this.selectedMethod);
 				window.setTimeout(function ()
 				{
-					_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+					_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 					_ScriptEditor.BuildGUI();
 				}, 500);
 			}
@@ -514,7 +514,7 @@ define(function ()
 				vwf_view.kernel.deleteProperty(_ScriptEditor.currentNode.id, this.selectedProperty);
 				window.setTimeout(function ()
 				{
-					_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+					_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 					_ScriptEditor.BuildGUI();
 				}, 500);
 			}
@@ -564,7 +564,7 @@ define(function ()
 				vwf_view.kernel.deleteEvent(_ScriptEditor.currentNode.id, this.selectedEvent);
 				window.setTimeout(function ()
 				{
-					_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+					_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 					_ScriptEditor.BuildGUI();
 				}, 500);
 			}
@@ -823,6 +823,7 @@ define(function ()
 			
 			if (!this.isOpen())
 			{
+
 				if(!this.currentNode)
 				{
 					alertify.alert('No object is selected.');
@@ -853,10 +854,15 @@ define(function ()
 					complete: function ()
 					{
 						_ScriptEditor.resize();
+						var resolutionScale = _SettingsManager.getKey('resolutionScale');
+						$('#index-vwf')[0].height = $('#index-vwf').height()/ resolutionScale;
+						$('#index-vwf')[0].width = $('#index-vwf').width()/ resolutionScale;
+						_dRenderer.setSize($('#index-vwf').width()/ resolutionScale,$('#index-vwf').height()/ resolutionScale,false)
 					}
 				});
 				_ScriptEditor.BuildGUI();
 				_ScriptEditor.open = true;
+				$('#MenuScriptEditoricon').addClass('iconselected');
 			}
 		}
 		this.hide = function ()
@@ -880,9 +886,14 @@ define(function ()
 					{
 						
 						$('#ScriptEditor').hide();
+						var resolutionScale = _SettingsManager.getKey('resolutionScale');
+						$('#index-vwf')[0].height = $('#index-vwf').height() / resolutionScale;
+						$('#index-vwf')[0].width = $(window).width()/ resolutionScale;
+						_dRenderer.setSize($('#index-vwf').width()/ resolutionScale,$('#index-vwf').height()/ resolutionScale,false);
 					}
 				});
 			}
+			$('#MenuScriptEditoricon').removeClass('iconselected');
 		}
 		this.isOpen = function ()
 		{
@@ -891,7 +902,7 @@ define(function ()
 		}
 		this.PostSaveMethod = function ()
 		{
-			_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+			_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 			_ScriptEditor.MethodChanged = false;
 			$('#methodtext').css('border-color', 'black');
 			_ScriptEditor.BuildGUI(true);
@@ -931,7 +942,7 @@ define(function ()
 		this.PostSaveEvent = function ()
 		{
 			
-			_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+			_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 			_ScriptEditor.EventChanged = false;
 			$('#eventtext').css('border-color', 'black');
 			_ScriptEditor.BuildGUI(true);
@@ -972,7 +983,7 @@ define(function ()
 		
 		this.PostSaveProperty = function ()
 		{
-			_ScriptEditor.currentNode = vwf.getNode(_ScriptEditor.currentNode.id);
+			_ScriptEditor.currentNode = _Editor.getNode(_ScriptEditor.currentNode.id);
 			_ScriptEditor.PropertyChanged = false;
 			$('#propertytext').css('border-color', 'black');
 			_ScriptEditor.BuildGUI(true);
@@ -1056,11 +1067,34 @@ define(function ()
 		
 		this.setSelectedProperty_internal = function (name, text)
 		{
+			try{
+				text = JSON.parse(text);
+			}catch(e)
+			{
+
+			}
+			try{
 			text = text || null;
 			_ScriptEditor.selectedProperty = name;
-			_ScriptEditor.propertyEditor.setValue(js_beautify(text.toString(),{braces_on_own_line:true,opt_keep_array_indentation:true}));
+			if(!text)
+					_ScriptEditor.propertyEditor.setValue( "null" );
+			else if(text.constructor == String)
+					_ScriptEditor.propertyEditor.setValue("\"" + text + "\"");
+			else if(text.constructor == Number)
+					_ScriptEditor.propertyEditor.setValue( text.toString() )
+			else if(text.constructor == Object || text.constructor == Array)
+			{
+					try
+					{
+					_ScriptEditor.propertyEditor.setValue(js_beautify(JSON.stringify(text).toString(),{braces_on_own_line:true,opt_keep_array_indentation:true}));
+					}catch(e)
+					{
+						_ScriptEditor.propertyEditor.setValue("[object]");
+					}
+			}
 			_ScriptEditor.propertyEditor.selection.clearSelection();
-			if (this.properties && this.properties[name] !== undefined)
+			;
+			if (Object.keys(this.properties).indexOf(name)>-1)
 			{
 				_ScriptEditor.PropertyChanged = false;
 				$('#propertytext').css('border-color', 'black');
@@ -1074,9 +1108,14 @@ define(function ()
 			//$('#methodtextback').text(_ScriptEditor.formatScript(indentedtext));
 			$('#propertytext').find(".ace_content").css('background', 'url(vwf/view/editorview/images/stripe.png) 100% 100% repeat');
 			$('#propertytext').removeAttr('disabled');
+			}catch(e)
+			{
+
+			}
 		}
 		this.setSelectedProperty = function (name, text)
 		{
+			
 			if (_ScriptEditor.PropertyChanged) _ScriptEditor.PromptAbandon(function ()
 				{
 					_ScriptEditor.setSelectedProperty_internal(name, text);
@@ -1198,7 +1237,14 @@ define(function ()
 					var property = $(this).attr('property');
 					var val = vwf.getProperty(_ScriptEditor.currentNode.id,property);
 					if(typeof(val) == 'object')
-						val = JSON.stringify(val);
+					{
+						try{
+								val = JSON.stringify(val);
+							}catch(e)
+							{
+
+							}
+					}
 					_ScriptEditor.setSelectedProperty(property, val );
 				});
 				if (refresh)
@@ -1226,12 +1272,12 @@ define(function ()
 						params += _ScriptEditor.eventlist[event].parameters[j] + ','
 					}
 					var eventstring = 'function ' + event + '(';
-					for (var i in _ScriptEditor.currentNode.events[event].parameters)
+					for (var i in _ScriptEditor.eventlist[event].parameters)
 					{
 						eventstring += _ScriptEditor.eventlist[event].parameters[i] + ',';
 					}
 					eventstring = eventstring.substring(0, eventstring.length - 1);
-					eventstring += ')\n{\n' + _ScriptEditor.currentNode.events[event].body + '\n}';
+					eventstring += ')\n{\n' + _ScriptEditor.eventlist[event].body + '\n}';
 					_ScriptEditor.setSelectedEvent(event, eventstring);
 				});
 				if (refresh)
@@ -1242,8 +1288,8 @@ define(function ()
 					}
 				}
 			}
-			var methodsuggestions = ['tick','initialize','deinitialize','prerender','added'];
-			var methoddescription = {'tick':"The tick function is called 20 times every second. \n// Write code here to animate over time",'initialize':"Initialize is called when the node is constructed.\n//Write code here to setup the object, or hook up event handlers.\n//Note that the object is not yet hooked into the scene - that will happen during the 'Added' event.\n// You cannot access this.parent in this function.",'deinitialize':"Deinitialize is called when the object is being destroyed.\n// Clean up here if your object allocated any resources manually during initialize.",'prerender':"This function is called at every frame. Don't animate object properties here - that can break syncronization.\n//This can happen because each user might have a different framerate.\n//Most of the time, you should probably be using Tick instaed.",'added':"Added is called when the object is hooked up to the scene.\n// Note that this happens after initialize. At this point, you can access the objects parent."};
+			var methodsuggestions = ['tick','initialize','deinitialize','prerender','attached','ready'];
+			var methoddescription = {'ready':'The scene is now completely loaded. This will fire on each client when the client joins, so it`s not a great place to create objects','tick':"The tick function is called 20 times every second. \n// Write code here to animate over time",'initialize':"Initialize is called when the node is constructed.\n//Write code here to setup the object, or hook up event handlers.\n//Note that the object is not yet hooked into the scene - that will happen during the 'Added' event.\n// You cannot access this.parent in this function.",'deinitialize':"Deinitialize is called when the object is being destroyed.\n// Clean up here if your object allocated any resources manually during initialize.",'prerender':"This function is called at every frame. Don't animate object properties here - that can break syncronization.\n//This can happen because each user might have a different framerate.\n//Most of the time, you should probably be using Tick instaed.",'attached':"attached is called when the object is hooked up to the scene.\n// Note that this happens after initialize. At this point, you can access the objects parent."};
 			for(var i = 0; i < methodsuggestions.length; i++)
 			{
 				var thissug = methodsuggestions[i];
@@ -1275,7 +1321,7 @@ define(function ()
 					});
 				}
 			}
-			var pointersugs = ['pointerDown', 'pointerUp', 'pointerOver', 'pointerOut', 'pointerClick', 'pointerMove', 'keyDown', 'keyUp', 'keyPress'];
+			var pointersugs = ['pointerDown', 'pointerUp', 'pointerOver', 'pointerOut', 'pointerClick', 'pointerMove','pointerWheel', 'keyDown', 'keyUp', 'keyPress'];
 			for (var i in pointersugs)
 			{
 				if (!this.eventlist || (this.eventlist && this.eventlist[pointersugs[i]] === undefined))
@@ -1326,7 +1372,7 @@ define(function ()
 				methods[i] = node.methods[i];
 			
 			}
-			node = vwf.getNode(vwf.prototype(node.id),true);
+			node = _Editor.getNode(vwf.prototype(node.id),true);
 			}
 			
 			return methods;
@@ -1345,7 +1391,7 @@ define(function ()
 				properties[i] = node.properties[i];
 			
 			}
-			node = vwf.getNode(vwf.prototype(node.id),true);
+			node = _Editor.getNode(vwf.prototype(node.id),true);
 			}
 			return properties;
 		}
@@ -1361,7 +1407,7 @@ define(function ()
 				events[i] = node.events[i];
 			
 			}
-			node = vwf.getNode(vwf.prototype(node.id),true);
+			node = _Editor.getNode(vwf.prototype(node.id),true);
 			}
 			return events;
 		
@@ -1372,7 +1418,11 @@ define(function ()
 			if(!node)
 			{
 
-				if (this.isOpen()) this.hide();
+				if (this.isOpen()) 
+					{
+						this.hide();
+						this.currentNode = null;
+					}
 
 			}
 			if(node && node.id == 'index-vwf')

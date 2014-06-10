@@ -121,7 +121,7 @@ function TerrainTool()
 	self.activate = function()
 	{
 	
-		var node = vwf.getNode(_Editor.GetSelectedVWFID());
+		var node = _Editor.getNode(_Editor.GetSelectedVWFID());
 		
 		if(_Editor.getSelectionCount() != 1)
 		{

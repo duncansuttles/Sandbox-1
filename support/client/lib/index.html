@@ -27,8 +27,12 @@
 
     <!-- The Virtual World Framework makes use of the jQuery library.                            -->
 
+   
+
     <script type="text/javascript" src="require.js"></script>
     <script type="text/javascript" src="/vwfDataManager.svc/getanalytics.js"></script>
+
+    
 
     <!-- This is the main client library. vwf.js creates a framework manager and attaches it to  -->
     <!-- the global window object as window.vwf. All access to the framework is through that     -->
@@ -43,6 +47,7 @@
     <!-- in a shared world. Views may accept external input -such as pointer and key events or   -->
     <!-- directives from a connection to an outside engine that is not visible to all users- but -->
     <!-- may only affect the simulation indirectly through the synchronization server.           -->
+    
 
    
     <link rel="stylesheet" type="text/css" href="vwf/view/editorview/lib/alertify.js-0.3.9/themes/alertify.core.css" />
@@ -50,7 +55,7 @@
     <link rel="stylesheet" type="text/css" href="index.css" />
     <link rel="stylesheet" type="text/css" href="vwf/view/editor/editor.css" />
     <link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/jquery-ui-1.10.3.custom.css" />
-    
+
     <script type="text/javascript">
      //here we go! this fires a bunch of loads, and when they are don, launches the VWF
 	   require(['load']);
@@ -66,22 +71,12 @@
     <!-- The main content renders to "#vwf-root", the item with the id "vwf-root".               -->
 
     <div id="vwf-root"></div>
-
-    <!-- Overlay div to display loading information -->
-    <div id='loadstatus' class='overlay'>
-      <div class='loading'>
-        <div class='requirements'>
-          <p><span>Checking Compatibility</span></p>
-          <p><span id='WGL' class='req'>WebGL</span></p>
-          <p><span id='ES5' class='req'>ECMAScript5</span></p>
-          <p><span id='WS' class='req'>WebSockets</span></p>
-        </div>
-        <div id='loadText'>    
-          <span class='loadText'>LOADING</span>
-          <img class='loadImg' src='images/loading.gif' alt=' '/>
-        </div>
-      </div>
-    </div>
+  
+    <!-- Overlay div to display loading information> -->
+    
   </body>
 
 </html>
+
+
+

@@ -273,7 +273,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 				var files = $('#ModelUploadFile')[0].files;
 				var file = files[0];
 				var xhr = new XMLHttpRequest();
-				if (xhr.upload && file.size <= 15 * 1024 * 1024) {
+				if (xhr.upload && file.size <= 30 * 1024 * 1024) {
 					xhr.open("POST", "./vwfdatamanager.svc/3drupload", true);
 					xhr.setRequestHeader("X_FILENAME", file.name);
 					
@@ -503,11 +503,12 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 				var proto = this.createProtoForPID(pid);
 				proto.properties.translation = pos;
 				
-				
+				var newname = GUID();
 				//vwf_view.kernel.createNode(proto , null);
 				//vwf_view.kernel.createChild('index-vwf',GUID(),proto,null,null); 
-				_UndoManager.recordCreate('index-vwf', _ModelLibrary.MetadataCache[pid].Title, proto);
-				vwf_view.kernel.createChild('index-vwf', _ModelLibrary.MetadataCache[pid].Title, proto, null, null);
+				_UndoManager.recordCreate('index-vwf', newname, proto);
+				vwf_view.kernel.createChild('index-vwf', newname, proto, null, null);
+				_Editor.SelectOnNextCreate([newname]);
 			}
 			else
 			{

@@ -243,15 +243,41 @@ function _FileCache()
             //if the client cannot accept the gzip, send raw
             else
             {
-                response.writeHead(200, {
-                    "Content-Type": type,
-                    "x-vwf-length":(file.contentlength + ''),
-                    "Last-Modified": file.stats.mtime,
-                    "ETag": file.hash,
-                    "Cache-Control":"public; max-age=31536000"
-                    
-                });
-                response.write(file.data, file.datatype);
+                if(!request.headers['range'])
+                {
+                    response.writeHead(200, {
+                        "Content-Type": type,
+                        "x-vwf-length":(file.contentlength + ''),
+                        "Last-Modified": file.stats.mtime,
+                        "ETag": file.hash,
+                        "Cache-Control":"public; max-age=31536000"
+                        
+                    });
+                    response.write(file.data, file.datatype);
+                }else
+                {
+                   
+                    var range = request.headers['range'];
+                    range = range.split('=')[1];
+                    var ranges = range.split('-');
+                    var start = parseInt(ranges[0]); 
+                    var end = parseInt(ranges[1]) || (file.contentlength-1);
+                   
+
+                    var bytesheader = 'bytes ' + start + '-' +end + '/' + file.contentlength;
+
+                     response.writeHead(206, {
+                        "Content-Type": type,
+                        "Content-Length":(end-start)+1,
+                        "Last-Modified": file.stats.mtime,
+                        "ETag": file.hash,
+                        "Cache-Control":"public; max-age=31536000",
+                        "Accept-Ranges":"bytes",
+                        "Content-Range":bytesheader
+                    });
+                     var newdata  =file.data.slice(start,end+1);
+                    response.write(newdata, file.datatype);
+                }
             }
             
             

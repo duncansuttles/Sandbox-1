@@ -151,7 +151,8 @@ define(function ()
 		}
 		this.GetNode = function (id)
 		{
-			var node = vwf.getNode(id);
+
+			var node = _Editor.getNode(id);
 			if (node.properties)
 			{
 				for (var i in node.properties)
@@ -183,6 +184,7 @@ define(function ()
 		}
 		this.saveToServer = function (sync)
 		{
+
 			if(!sync) sync = false;
 			if (!_UserManager.GetCurrentUserName())
 			{
@@ -197,7 +199,12 @@ define(function ()
 				return;
 			}
 			
-			var scene = vwf.getNode('index-vwf');
+			var scene = _Editor.getNode('index-vwf');
+
+			//if the editor is playing the scene, save the backup from before play was hit
+			if(scene.properties.playMode == 'play' && scene.properties.playBackup)
+				scene = scene.properties.playBackup;
+			
 			var nodes = [];
 			for (var i in scene.children)
 			{
@@ -215,7 +222,7 @@ define(function ()
 			var SID = this.getCurrentSession();
 			var UID = _UserManager.GetCurrentUserName();
 			if (!UID) return;
-			var P = _DataManager.GetProfileForUser(_UserManager.GetCurrentUserName()).Password;
+			
 			if (nodes.length > 0) var ret = jQuery.ajax(
 				{
 					type: 'POST',
@@ -281,7 +288,7 @@ define(function ()
 		this.getCurrentSession = function ()
 		{
             var regExp = new RegExp(window.appPath+".*\/");
-			return regExp.exec(window.location.toString()).toString();
+			return regExp.exec(window.location.pathname.toString()).toString();
 		}
 		//at this point, this server pretty much only supports the sandbox. This will return the sandbox root url
 		this.getCurrentApplication = function ()

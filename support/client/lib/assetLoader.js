@@ -84,21 +84,28 @@ function ()
         this.utf8JsonOptimized = {};
         this.colladaOptimized = {};
 
-        this.BuildCollisionData = function(root)
+        this.BuildCollisionData = function(root,cb3)
         {
+            var self = this;
             if(root instanceof THREE.Geometry || root instanceof THREE.BufferGeometry)
             {
                 root.GenerateBounds();
                 root.BuildRayTraceAccelerationStructure();
+                $('#preloadguiText').text($('#preloadguiText').text() + '.');
             }
             if(root.children)
             {
-                for(var i =0;i < root.children.length; i++)
-                    this.BuildCollisionData(root.children[i]);
+                //for(var i =0;i < root.children.length; i++)
+                //make this async so that we can get GUI updates.
+                async.eachSeries(root.children,function(child,cb4){
+                    self.BuildCollisionData(child,function(){
+                        window.setImmediate(cb4);
+                    });
+                },cb3)           
             }
             if(root.geometry)
             {
-                this.BuildCollisionData(root.geometry);
+                self.BuildCollisionData(root.geometry,cb3);
             }
 
         }
@@ -142,10 +149,13 @@ function ()
                     console.log(url,performance.now() - time);
                     
                     assetLoader.collada[url] = asset;
-                    assetLoader.BuildCollisionData(asset.scene);
-                    delete asset.dae;
-                    cb2();
-                    loader.cleanup();
+                    assetLoader.BuildCollisionData(asset.scene,function(cb3)
+                        {
+                            delete asset.dae;
+                            cb2();
+                            loader.cleanup();
+                        });
+                  
                 },function(progress)
                 {
                     //it's really failed
@@ -163,13 +173,17 @@ function ()
             var time = performance.now();
             loader.load(url,function(asset)
                 {
-                    console.log(url,performance.now() - time);
+                  
                     
                     assetLoader.colladaOptimized[url] = asset;
-                    assetLoader.BuildCollisionData(asset.scene);
-                    delete asset.dae;
-                    cb2();
-                    loader.cleanup();
+                    assetLoader.BuildCollisionData(asset.scene,function(cb3)
+                    {
+                        delete asset.dae;
+                        cb2();
+                        loader.cleanup();
+                    });
+
+                  
                 },function(progress)
                 {
                     //it's really failed
@@ -188,10 +202,11 @@ function ()
                 {
                     console.log(url,performance.now() - time);
                     assetLoader.utf8Json[url] = asset;
-                    assetLoader.BuildCollisionData(asset.scene);
-                    console.log(url,performance.now() - time);
-                    
-                    cb2();
+                    assetLoader.BuildCollisionData(asset.scene,function(cb3)
+                    {
+                       console.log(url,performance.now() - time);
+                       cb2();
+                    });
                 },function(err)
                 {
                     cb2();
@@ -205,10 +220,11 @@ function ()
                 {
                     console.log(url,performance.now() - time);
                     assetLoader.utf8JsonOptimized[url] = asset;
-                    assetLoader.BuildCollisionData(asset.scene);
-                    console.log(url,performance.now() - time);
-                    
-                    cb2();
+                    assetLoader.BuildCollisionData(asset.scene,function(cb3)
+                    {
+                       console.log(url,performance.now() - time);
+                       cb2();
+                    });
                 },function(err)
                 {
                     cb2();
@@ -364,6 +380,7 @@ function ()
                     {
                         //because of the way texture loads are handled in the scenemanager, we can actually go ahead and continue immediately here
                         //though we might as well let the scenemanager know to set started
+                       
                         _SceneManager.getTexture(url);
                         cb2();
                     }

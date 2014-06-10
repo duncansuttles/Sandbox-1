@@ -308,12 +308,12 @@ function ServeYAML(filename,response, URL)
                 {   
                     
                     var data = {}, tempLoginData;
-                    for(var i in global.instances)
+                    for(var i in global.instances.instances)
                     {
                         data[i] = {clients:{}};
-                        for(var j in global.instances[i].clients)
+                        for(var j in global.instances.instances[i].clients)
                         {
-                            tempLoginData = global.instances[i].clients[j].loginData;
+                            tempLoginData = global.instances.instances[i].clients[j].loginData;
                             data[i].clients[j] = {UID: tempLoginData.UID, loginTime: tempLoginData.loginTime, lastUpdate: tempLoginData.lastUpdate};
                         }
                     }

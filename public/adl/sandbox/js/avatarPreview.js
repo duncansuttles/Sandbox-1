@@ -30,14 +30,14 @@
 			requestAnimationFrame( loop, renderer.domElement );
 			var delta = clock.getDelta();
 			
+			
 			if ( t > 1.2 ) t = 0;
 			var currentFrame = startFrame + Math.floor(t*totalFrames/1.2);
 			
 			for(var i = 0; i < skin.length; i++){
-				if ( skin[i] )
+				if ( skin[i] && skin[i].animationHandle)
 				{
-					skin[i].morphTargetInfluences[lastFrame] = 0;
-					skin[i].morphTargetInfluences[currentFrame] = 1;
+					skin[i].animationHandle.setKey(currentFrame);
 				}
 			}
 			

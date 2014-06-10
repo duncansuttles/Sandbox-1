@@ -125,15 +125,18 @@ define(function ()
 						t.properties.transform[12] = newintersectxy[0];
 						t.properties.transform[13] = newintersectxy[1];
 						t.properties.transform[14] = newintersectxy[2];
+
+						t.properties.translation = [];
 						t.properties.translation[0] = newintersectxy[0];
 						t.properties.translation[1] = newintersectxy[1];
 						t.properties.translation[2] = newintersectxy[2];
 						t.properties.DisplayName = _Editor.GetUniqueName(t.properties.DisplayName);
 						t = _DataManager.getCleanNodePrototype(t);
 						_InventoryManager.setOwner(t, _UserManager.GetCurrentUserName());
-						_Editor.SelectOnNextCreate();
-					
-						_InventoryManager.createChild('index-vwf', GUID(), t, null, null);
+						
+						var newname = GUID()
+						_InventoryManager.createChild('index-vwf',newname , t, null, null);
+						_Editor.SelectOnNextCreate([newname]);
 					}
 					else
 					{
@@ -443,7 +446,8 @@ define(function ()
 				return;
 			}
 			this.getInventory(function(inventory)
-			{
+			{		
+				$('#MenuInventoryicon').addClass('iconselected');
 				//$('#InventoryManager').dialog('open');
 				$('#InventoryManager').prependTo($('#InventoryManager').parent());
 				$('#InventoryManager').show('blind', function ()
@@ -502,6 +506,7 @@ define(function ()
 				if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 				if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 			});
+			$('#MenuInventoryicon').removeClass('iconselected');
 		}
 		this.isOpen = function ()
 		{

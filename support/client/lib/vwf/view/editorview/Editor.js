@@ -106,27 +106,36 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 			$(document.body).append('<div id="statusbar" class="statusbar" />');
 			$('#statusbar').css('top', (document.height - 25) + 'px');
-			$('#statusbar').append('<div id="SceneSaved" class="statusbarElement" />');
+
+			$('#statusbar').append('<div id="TimeControl" style="height: 59px;display: inline-block;margin-top: -42px;background: #444;border-radius: 5px;border: 1px solid #555;"><div class="timeControl" id="playButton"></div><div id="pauseButton" class="timeControl"></div><div id="stopButton" class="timeControl"></div></div>');
+			$('#statusbar').append('<div id="statusbarinner"></div>');
+			$('#statusbarinner').append('<div id="SceneSaved" class="statusbarElement" />');
 			$('#SceneSaved').text('Not Saved');
-			$('#statusbar').append('<div id="StatusSelectedName" style="color:lightblue" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusSelectedName" style="color:lightblue" class="statusbarElement" />');
 			$('#StatusSelectedName').text('No Selection');
-			$('#statusbar').append('<div id="StatusSelectedID" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusMouseOverName" style="color:lightblue" class="statusbarElement" />');
+			$('#StatusMouseOverName').text('No Selection');
+			$('#statusbarinner').append('<div id="StatusSelectedID" class="statusbarElement" style="display:none" />');
 			$('#StatusSelectedID').text('No Selection');
-			$('#statusbar').append('<div id="StatusPickMode" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusPickMode" class="statusbarElement" />');
 			$('#StatusPickMode').text('Pick: None');
-			$('#statusbar').append('<div id="StatusSnaps" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusSnaps" class="statusbarElement" />');
 			$('#StatusSnaps').text('Snaps: 15deg, .5m, .1%');
-			$('#statusbar').append('<div id="StatusAxis" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusAxis" class="statusbarElement" />');
 			$('#StatusAxis').text('Axis: -1');
-			$('#statusbar').append('<div id="StatusCoords" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusCoords" class="statusbarElement" />');
 			$('#StatusCoords').text('World Coords');
-			$('#statusbar').append('<div id="StatusTransform" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusTransform" class="statusbarElement" />');
 			$('#StatusTransform').text('Move');
-			$('#statusbar').append('<div id="StatusGizmoLocation" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusGizmoLocation" class="statusbarElement" />');
 			$('#StatusGizmoLocation').text('[0,0,0]');
-			$('#statusbar').append('<div id="StatusCameraLocation" class="statusbarElement" />');
+			$('#statusbarinner').append('<div id="StatusCameraLocation" class="statusbarElement" />');
 			$('#StatusCameraLocation').text('[0,0,0]');
 		}
+
+		$('#playButton').click(function(){_Publisher.playWorld();});
+		$('#pauseButton').click(function(){_Publisher.togglePauseWorld();});
+		$('#stopButton').click(function(){_Publisher.stopWorld();});
 		//create progressbar and the log bar
 		ProgressBar.initialize('statusbar');
 		window._ProgressBar = ProgressBar;
@@ -235,13 +244,13 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 			}
 		}.bind(this);
-		this.GetUniqueName = function (newname)
+		this.GetUniqueName = function (newname,addcount)
 		{
-			
+			if(!addcount) addcount = 0;
 			if (!newname) newname = 'Object';
 			newname = newname.replace(/[0-9]*$/g, "");
 			var nodes = vwf.models.object.objects;
-			var count = 1;
+			var count = 1 + addcount;
 			for (var i in nodes)
 			{
 				var thisname = vwf.getProperty(nodes[i].id,'DisplayName') || '';
@@ -362,7 +371,6 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 			if (e.button == 2 && !MouseMoved && document.AxisSelected == -1)
 			{
-				
 				self.ShowContextMenu(e);
 				this.undoPoint = null;
 				return false;
@@ -401,7 +409,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						{
 							if (vwf.views[0].lastPickId && vwf.views[0].lastPickId != 'index-vwf')
 							{
-								this.SelectObject(vwf.getNode(vwf.views[0].lastPickId), this.PickMod);
+								this.SelectObject(_Editor.getNode(vwf.views[0].lastPickId), this.PickMod);
 							}else
 							{
 								this.SelectObject(null);
@@ -479,7 +487,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 				if (SelectMode == 'TempPick')
 				{
-					if (this.TempPickCallback) this.TempPickCallback(vwf.getNode(vwf.views[0].lastPickId));
+					if (this.TempPickCallback) this.TempPickCallback(_Editor.getNode(vwf.views[0].lastPickId));
 					e.stopPropagation();
 				}
 				if (SelectMode == 'PointPick')
@@ -617,6 +625,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		//	$('#vwf-root').keyup(function(e){
 		this.keyup_Gizmo = function (e)
 		{
+			if(vwf.getProperty(vwf.application(),'playMode') == 'play') return;
 			if (e.keyCode == 17)
 			{
 				this.PickMod = NewSelect;
@@ -635,7 +644,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.keydown_Gizmo = function (e)
 		{
-			////console.log(e);
+			if(vwf.getProperty(vwf.application(),'playMode') == 'play') return;
 			if (e.keyCode == 17)
 			{
 				this.PickMod = Add;
@@ -697,6 +706,18 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			{
 				_DataManager.saveToServer();
 				e.preventDefault();
+			}
+			if (e.keyCode == 48 && e.ctrlKey)
+			{
+				_Publisher.testPublish();
+				e.preventDefault();
+				return false;
+			}
+			if (e.keyCode == 57 && e.ctrlKey)
+			{
+				_Publisher.show();
+				e.preventDefault();
+				return false;
 			}
 		}.bind(this);
 		this.NotifyPeersOfSelection = function()
@@ -1521,6 +1542,17 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				{
 					if (vwf.views[0].lastPick && vwf.views[0].lastPick.object && vwf.views[0].lastPick.object == MoveGizmo.children[i]) axis = i;
 				}
+				//display the name of the objject under the mouse
+				if(vwf.views[0].lastPickId)
+				{
+					var mouseovernode = vwf.getProperty(vwf.views[0].lastPickId,'DisplayName');
+					$('#StatusMouseOverName').text(mouseovernode || vwf.views[0].lastPickId);
+				}else
+				{
+					$('#StatusMouseOverName').text('Scene');
+				}
+				
+
 				for (var i = 0; i < MoveGizmo.children.length; i++)
 				{
 					if (i != document.AxisSelected) if (MoveGizmo.children[i].material)
@@ -1620,7 +1652,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					DisplayName: self.GetUniqueName('Light')
 				}
 			};
-			this.createChild('index-vwf', GUID(), proto, null, null);
+			var newname = GUID();
+			this.createChild('index-vwf', newname, proto, null, null);
+			this.SelectOnNextCreate([newname]);
 		}
 		this.createParticleSystem = function (type, pos, owner)
 		{
@@ -1634,7 +1668,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					DisplayName: self.GetUniqueName('ParticleSystem')
 				}
 			};
-			this.createChild('index-vwf', GUID(), proto, null, null);
+			var newname = GUID();
+			this.createChild('index-vwf', newname, proto, null, null);
+			this.SelectOnNextCreate([newname]);
 		}
 		this.CreateCamera = function(translation, owner, id)
 		{
@@ -1650,7 +1686,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			CamProto.properties.rotation = [0, 0, 1, 0];
 			CamProto.properties.owner = owner;
 			CamProto.properties.DisplayName = self.GetUniqueName('Camera');
-			this.createChild('index-vwf', GUID(), CamProto, null, null);
+			var newname = GUID();
+			this.createChild('index-vwf',newname, CamProto, null, null);
+			this.SelectOnNextCreate([newname]);
 		};
 		this.CreatePrim = function (type, translation, size, texture, owner, id)
 		{
@@ -1701,7 +1739,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			proto.properties.type = 'primitive';
 			proto.properties.tempid = id;
 			proto.properties.DisplayName = self.GetUniqueName(type);
-			this.createChild('index-vwf', GUID(), proto, null, null);
+			var newname = GUID();
+			this.createChild('index-vwf', newname, proto, null, null);
+			this.SelectOnNextCreate([newname])
 		}.bind(this);
 		this.AddBlankBehavior = function ()
 		{
@@ -1727,7 +1767,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				_Notifier.notify('You do not have permission to edit this object');
 				return;
 			}
-			this.createChild(id, GUID(), proto, null, null);
+			var newname = GUID();
+			this.createChild(id,newname , proto, null, null);
+			
 		}
 		this.CreateBehavior = function(type,owner)
 		{
@@ -1753,7 +1795,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				_Notifier.notify('You do not have permission to edit this object');
 				return;
 			}
-			this.createChild(id, GUID(), proto, null, null);
+			var newname = GUID();
+			this.createChild(id, newname, proto, null, null);
+			
 			window.setTimeout(function ()
 			{
 				$(document).trigger('modifierCreated', self.GetSelectedVWFNode());
@@ -1860,19 +1904,21 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					_Notifier.alert('Avatars cannot be copied');
 					return
 			}
-			
+			var newnames = [];
 			for (var i = 0; i < SelectedVWFNodes.length; i++)
 			{
 				var proto = _DataManager.getCleanNodePrototype(SelectedVWFNodes[i].id);
 				proto.properties.DisplayName = self.GetUniqueName(proto.properties.DisplayName);
 				var parent = vwf.parent(self.GetSelectedVWFID());
-				self.createChild(parent, GUID(), proto, null, null, function ()
+				var newname = GUID();
+				newnames.push(newname);
+				self.createChild(parent, newname, proto, null, null, function ()
 				{
 					alert();
 				});
 			}
-			self.SelectOnNextCreate(SelectedVWFNodes.length);
-			self.SelectObject(null);
+			self.SelectOnNextCreate(newnames);
+			
 		}.bind(this);
 		this.DeleteIDs = function (t)
 		{
@@ -1938,7 +1984,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		this.Paste = function (useMousePoint)
 		{
 			
-			
+			var newnames = [];
 			for (var i = 0; i < _CopiedNodes.length; i++)
 			{
 				var t = _CopiedNodes[i];
@@ -1969,7 +2015,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					t.properties.transform[12] += newintersectxy[0];
 					t.properties.transform[13] += newintersectxy[1];
 					t.properties.transform[14] += newintersectxy[2];
-					t.properties.DisplayName = self.GetUniqueName(t.properties.DisplayName);
+					t.properties.DisplayName = self.GetUniqueName(t.properties.DisplayName,i);
 				}
 
 				
@@ -1987,9 +2033,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 				else	
 				{
-					self.SelectObject(null);
-					self.SelectOnNextCreate();
-					self.createChild('index-vwf', GUID(), t, null, null);
+					
+					var newname = GUID();
+					newnames.push(newname);
+					
+					self.createChild('index-vwf', newname, t, null, null);
 				}
 				
 				//reset in c ase we paste again
@@ -2000,6 +2048,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					t.properties.transform[14] -= newintersectxy[2];
 				}
 			}
+			self.SelectOnNextCreate(newnames);
 		}
 		this.getTransform = function(id)
 		{
@@ -2224,11 +2273,32 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			}
 			this.updateBounds();
 		}
+		//new vwf kernel does not add the ID to the get node, but all our old code expects it. Add it and return the node.
+		this.getNode = function(id)
+		{
+			if(!id) return null;
+			var node = vwf.getNode(id,true,true);
+			node.id = id;
+
+			var walk = function(parent)
+			{
+				for(var i in parent.children)
+				{
+					parent.children[i].name = i;
+					walk(parent.children[i]);
+				}
+
+			}
+			walk(node);
+			node.name = vwf.name(id);
+
+			return node;
+		}
 		this.SelectObjectPublic = function (VWFNodeid)
 		{
 			if (SelectMode == 'TempPick')
 			{
-				if (this.TempPickCallback) this.TempPickCallback(vwf.getNode(VWFNodeid));
+				if (this.TempPickCallback) this.TempPickCallback(_Editor.getNode(VWFNodeid));
 			}
 			else
 			{
@@ -2243,10 +2313,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			this.guiNodeDragEnd();
 			if (VWFNode && VWFNode.constructor == Array)
 			{
-				for (var i = 0; i < VWFNode.length; i++) VWFNode[i] = vwf.getNode(VWFNode[i]);
+				for (var i = 0; i < VWFNode.length; i++) VWFNode[i] = _Editor.getNode(VWFNode[i]);
 			}
 			else if (typeof (VWFNode) == 'object') VWFNode = [VWFNode];
-			else if (typeof (VWFNode) == 'string') VWFNode = [vwf.getNode(VWFNode)];
+			else if (typeof (VWFNode) == 'string') VWFNode = [_Editor.getNode(VWFNode)];
 		
 		//this causes too much drama. look into solution in future	
 		//	if(!skipUndo)
@@ -2274,7 +2344,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 								}
 								else
 								{
-									testnode = vwf.getNode(vwf.parent(testnode.id));
+									testnode = _Editor.getNode(vwf.parent(testnode.id));
 								}
 							}
 							if(testnode)
@@ -2760,6 +2830,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		this.PickParentCallback = function (parentnode)
 		{
 			_UndoManager.startCompoundEvent();
+			var newnames = [];
 			if(parentnode)
 			{
 				
@@ -2785,8 +2856,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 								delete node.properties.quaternion;
 								delete node.properties.scale;
 								node.properties.transform = MATH.transposeMat4(childmat);
-								
-								this.createChild(parentnode.id, GUID(), node);
+								var newname = GUID();
+								newnames.push(newname)
+								this.createChild(parentnode.id, newname, node);
 							}else
 							{
 								alertify.alert('This object cannot be assigned to be a child of one of its decendants')
@@ -2809,13 +2881,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 
 			this.DeleteSelection();
 			this.TempPickCallback = null;
-			self.SelectOnNextCreate();
+			self.SelectOnNextCreate(newnames);
 			this.SetSelectMode('Pick');
 			_UndoManager.stopCompoundEvent();
 		}
 		this.RemoveParent = function ()
 		{
 			_UndoManager.startCompoundEvent();
+			var newnames = [];
 			for(var i = 0; i < this.getSelectionCount(); i++)
 			{
 				var id = this.GetSelectedVWFNode(i).id;
@@ -2826,11 +2899,13 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				delete node.properties.quaternion;
 				delete node.properties.scale;
 				node.properties.transform = MATH.transposeMat4(childmat);
-				this.createChild('index-vwf', GUID(), node);
+				var newname =  GUID();
+				newnames.push(newname);
+				this.createChild('index-vwf',newname, node);
 			}
 
 			this.DeleteSelection();
-			self.SelectOnNextCreate(this.getSelectionCount());
+			self.SelectOnNextCreate(newnames);
 			this.SetSelectMode('Pick');
 			_UndoManager.stopCompoundEvent();
 		}
@@ -2941,7 +3016,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var newname = GUID();
 			_UndoManager.recordCreate('index-vwf', newname, proto)
 			vwf_view.kernel.createChild('index-vwf',newname, proto);
-			self.SelectOnNextCreate();
+			self.SelectOnNextCreate([newname]);
 			this.SetSelectMode('Pick');
 			_UndoManager.stopCompoundEvent();
 		}
@@ -3099,11 +3174,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 			return this.SelectedVWFID;
 		}
-		this.CallCreateNodeCallback = function (e, p)
+		this.CallCreateNodeCallback = function (c, p, n)
 		{
 			try
 			{
-				this.createNodeCallback(e, p);
+				this.createNodeCallback(c, p, n);
 			}
 			catch (e)
 			{
@@ -3114,21 +3189,22 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		{
 			this.createNodeCallback = callback;
 		}
-		this.SelectOnNextCreate = function (count)
+		this.SelectOnNextCreate = function (names)
 		{
-			if (!count) count = 1;
-			this.toSelect = count;
+			
+			this.toSelect = names;
 			this.tempSelect = [];
-			this.expectedParent = vwf.parent(self.GetSelectedVWFID());
-			this.SetCreateNodeCallback(function (e, p)
+			
+			this.SetCreateNodeCallback(function (c, p,n)
 			{
-				if (p == this.expectedParent)
+				if(self.toSelect.indexOf(n) >= 0)
 				{
-					self.tempSelect.push(e);
-					self.toSelect--;
-					if (self.toSelect == 0)
+					self.tempSelect.push(c);
+					self.toSelect.splice(self.toSelect.indexOf(n),1);
+					if (self.toSelect.length == 0)
 					{
 						self.createNodeCallback = null;
+						self.SelectObject(null);
 						self.SelectObject(self.tempSelect, Add);
 					}
 				}
@@ -3139,7 +3215,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			if (idx === undefined) idx = 0;
 			try
 			{
-				if (SelectedVWFNodes[idx]) return vwf.getNode(SelectedVWFNodes[idx].id);
+				if (SelectedVWFNodes[idx]) return _Editor.getNode(SelectedVWFNodes[idx].id);
 			}
 			catch (e)
 			{

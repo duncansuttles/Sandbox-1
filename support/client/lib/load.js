@@ -14,9 +14,13 @@ if(false)
     "closure/vec/quaternion.js",
     "./vwfbuild.js","boot"]);
 }
+
+
+
 //if window.jQuery is defined, than the Require Optimizer has run, and appended it to the top of this file. Thus, we don't need to worry about loading all the dependancy libraries
 if(!window.jQuery)	
 {
+ 
   //so,we are doing a regular load, and the optimizer has not run. 
   //this is somewhat carefully scripted to specify which files can download in parallel.
   require(["./vwf/view/editorview/lib/jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js"],
@@ -31,7 +35,7 @@ if(!window.jQuery)
 					require(["closure/vec/vec3.js","closure/vec/vec4.js"],
 			       	function()
 			       	{
-			       		require(["closure/vec/mat4.js","closure/vec/quaternion.js"],
+			       		require(["closure/vec/mat4.js","closure/vec/quaternion.js","alea.js","mash.js","Class.create.js","jquery-encoder-0.1.0.js","rAF.js","centerinclient.js"],
 					       	function()
 					       	{
 						       require(["boot"],function(boot)
@@ -185,7 +189,7 @@ else
 
                   //if they choose to go back and log in
                   if(e)
-                    window.location =  "../login?return=" + window.location.pathname.substring(window.location.pathname.indexOf(window.appPath)+window.appPath.length) + window.location.hash;
+                    window.location =  "../login?return=" + window.location.pathname.substring(window.location.pathname.indexOf(window.appPath)+window.appPath.length) + window.location.hash + window.location.search;
                   else
                   {
 

@@ -1,9 +1,9 @@
 function clearCameraModeIcons()
 		{
-			$('#MenuCameraOrbiticon').css('background-color', '');
-			$('#MenuCamera3RDPersonicon').css('background-color', '');
-			$('#MenuCameraNavigateicon').css('background-color', '');
-			$('#MenuCameraFreeicon').css('background-color', '');
+			$('#MenuCameraOrbiticon').removeClass('iconselected');
+			$('#MenuCamera3RDPersonicon').removeClass('iconselected');
+			$('#MenuCameraNavigateicon').removeClass('iconselected');
+			$('#MenuCameraFreeicon').removeClass('iconselected');
 		}
 		
 define(
@@ -35,7 +35,7 @@ define(
 			}
 
 			window.setTimeout(function(){
-							$('#SetThumbnail').click();
+							window.setThumbnail(); 
 
 						},10000)
 
@@ -62,9 +62,9 @@ define(
 
 		});
 
-		$('#SetThumbnail').click(function(e){
+		window.setThumbnail = function()
+		{
 
-			
 			if(vwf.getProperty('index-vwf','owner') != _UserManager.GetCurrentUserName())
 			{
 				alertify.alert('Sorry, only the world owner can set the thumbnail');
@@ -110,8 +110,12 @@ define(
 			}
 			_dView.bind('postrender',takeimage);
 
-			
 
+
+		}
+
+		$('#SetThumbnail').click(function(e){
+			window.setThumbnail();
 		});
 	
 	$('#MenuCreateGUIDialog').click(function(e){
@@ -252,7 +256,10 @@ define(
 		});
 		$('#MenuHierarchyManager').click(function (e)
 		{
-			HierarchyManager.show();
+				if(HierarchyManager.isOpen())
+						HierarchyManager.hide();
+				else		
+						HierarchyManager.show();
 		});
 		$('#MenuLocal').click(function (e)
 		{
@@ -305,25 +312,49 @@ define(
 		});
 		$('#MenuMaterialEditor').click(function (e)
 		{
-			_MaterialEditor.show();
+			
+			if(_MaterialEditor.isOpen())
+				_MaterialEditor.hide();
+			else
+				_MaterialEditor.show();
 		});
 		$('#MenuScriptEditor').click(function (e)
 		{
-			_ScriptEditor.show();
+			if(_ScriptEditor.isOpen())
+				_ScriptEditor.hide();
+			else
+				_ScriptEditor.show();	
 		});
 		$('#MenuInventory').click(function (e)
 		{
-			_InventoryManager.show();
-			$( "#InventoryTypeChoicePersonal" ).click()
+			if(_InventoryManager.isOpen())
+				_InventoryManager.hide();
+			else
+			{
+				_InventoryManager.show();
+				$( "#InventoryTypeChoicePersonal" ).click()
+			}
+
+			
 		});
 		$('#MenuObjectProperties').click(function (e)
 		{
-			_PrimitiveEditor.show();
+			
+			if(_PrimitiveEditor.isOpen())
+				_PrimitiveEditor.hide();
+			else
+				_PrimitiveEditor.show();
 		});
 		$('#MenuGlobalInventory').click(function (e)
 		{
-			_InventoryManager.show();
-			$( "#InventoryTypeChoiceGlobal" ).click()
+			if(_InventoryManager.isOpen())
+				_InventoryManager.hide();
+			else
+			{
+				_InventoryManager.show();
+				$( "#InventoryTypeChoiceGlobal" ).click()
+			}
+
 		});
 		$('#MenuLatencyTest').click(function (e)
 		{
@@ -625,7 +656,7 @@ define(
 				focusID = _Editor.GetSelectedVWFNode().id;
 			if(!focusID)
 				focusID =  _UserManager.GetAvatarForClientID(vwf.moniker()) &&  _UserManager.GetAvatarForClientID(vwf.moniker()).id;
-			if (focusID)
+			if (focusID && _Editor.findviewnode(focusID))
 			{
 					
 					var t = _Editor.GetMoveGizmo().parent.matrixWorld.getPosition();
@@ -657,7 +688,7 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraOrbiticon').css('background-color', '#9999FF');
+			$('#MenuCameraOrbiticon').addClass('iconselected');
 			var campos = [_Editor.findcamera().position.x, _Editor.findcamera().position.y, _Editor.findcamera().position.z];
 			var ray = _Editor.GetCameraCenterRay();
 			var dxy = _Editor.intersectLinePlane(ray, campos, [0, 0, 0], _Editor.WorldZ);
@@ -675,7 +706,7 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraNavigateicon').css('background-color', '#9999FF');
+			$('#MenuCameraNavigateicon').addClass('iconselected');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Orbit');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Navigate');
 		});
@@ -734,7 +765,7 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraNavigateicon').css('background-color', '#9999FF');
+			$('#MenuCameraNavigateicon').addClass('iconselected');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Fly');
 			
 		});
@@ -749,13 +780,13 @@ define(
 		{
 			_dView.setCameraDefault();
 			clearCameraModeIcons();
-			$('#MenuCameraFreeicon').css('background-color', '#9999FF');
+			$('#MenuCameraFreeicon').addClass('iconselected');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Orbit');
 			vwf.models[0].model.nodes['index-vwf'].setCameraMode('Free');
 		});
 		var pfx = ["webkit", "moz", "ms", "o", ""];
 
-		function RunPrefixMethod(obj, method)
+		function RunPrefixMethod(obj, method,param)
 		{
 			var p = 0,
 				m, t;
@@ -771,7 +802,7 @@ define(
 				if (t != "undefined")
 				{
 					pfx = [pfx[p]];
-					return (t == "function" ? obj[m]() : obj[m]);
+					return (t == "function" ? obj[m](param) : obj[m]);
 				}
 				p++;
 			}
@@ -784,7 +815,8 @@ define(
 			}
 			else
 			{
-				RunPrefixMethod(document.body, "RequestFullScreen");
+				
+				RunPrefixMethod(document.body, "RequestFullScreen", Element.ALLOW_KEYBOARD_INPUT);
 			}
 		});
 		$('#MenuCamera3RDPerson').click(function (e)
@@ -794,7 +826,7 @@ define(
 			{
 				_dView.setCameraDefault();
 				clearCameraModeIcons();
-				$('#MenuCamera3RDPersonicon').css('background-color', '#9999FF');
+				$('#MenuCamera3RDPersonicon').addClass('iconselected');
 				vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
 				vwf.models[0].model.nodes['index-vwf'].setCameraMode('3RDPerson');
 			}
@@ -1007,7 +1039,21 @@ define(
 			_dView.setRenderModeStereo()
 		});
 
-		
+		$('#TestSettings').click(function (e)
+		{
+			_Publisher.show();
+		});
+
+		$('#TestLaunch').click(function (e)
+		{
+			_Publisher.testPublish();
+		});
+		$('#MenuViewTabletDemo').click(function (e)
+		{
+			$('#MenuViewRenderStereo').click();
+			$('#MenuCameraDeviceOrientation').click();
+			$('#MenuViewFullscreen').click();
+		});
 
 
 
@@ -1015,7 +1061,7 @@ define(
 		list = $('#smoothmenu1').find('[id]');
 		
 		//make every clicked menu item close all menus
-		 $('#smoothmenu1').find('[id]').filter(':only-child').click(function(){ddsmoothmenu.closeall({type:'click',target:'asd'})});
+		// $('#smoothmenu1').find('[id]').filter(':only-child').click(function(){ddsmoothmenu.closeall({type:'click',target:'asd'})});
 		
 	}
 });

@@ -127,6 +127,7 @@ define( [ "module", "vwf/model" ], function( module, model ) {
         creatingNode: function( nodeID, childID, childExtendsID, childImplementsIDs,
             childSource, childType, childURI, childName, callback /* ( ready ) */ ) {
 
+            return;
             this.objects[childID] = {
 
                 name: childName,
@@ -159,6 +160,7 @@ define( [ "module", "vwf/model" ], function( module, model ) {
         // -- deletingNode -------------------------------------------------------------------------
 
         deletingNode: function( nodeID ) {
+            return;
             delete this.objects[nodeID];
             this.wires.incoming[nodeID];
             this.wires.outgoing[nodeID];
@@ -181,7 +183,7 @@ define( [ "module", "vwf/model" ], function( module, model ) {
         // -- settingProperties --------------------------------------------------------------------
 
         settingProperties: function( nodeID, properties ) {
-
+            return;
             if ( ! this.objects[nodeID] ) return;  // TODO: patch until full-graph sync is working; drivers should be able to assume that nodeIDs refer to valid objects
 
             var node_properties = this.objects[nodeID].properties;
@@ -197,6 +199,7 @@ define( [ "module", "vwf/model" ], function( module, model ) {
         // -- gettingProperties --------------------------------------------------------------------
 
         gettingProperties: function( nodeID, properties ) {
+            return;
             return this.objects[nodeID].properties;
         },
 
@@ -217,6 +220,7 @@ define( [ "module", "vwf/model" ], function( module, model ) {
         // -- settingProperty ----------------------------------------------------------------------
 
         settingProperty: function( nodeID, propertyName, propertyValue ) {
+            return;
             var node = this.objects[nodeID];
             
             if(propertyName == 'wires')
@@ -280,6 +284,7 @@ define( [ "module", "vwf/model" ], function( module, model ) {
         // -- gettingProperty ----------------------------------------------------------------------
 
         gettingProperty: function( nodeID, propertyName, propertyValue ) {
+            return;
             if(propertyName == 'wires')
             {
               

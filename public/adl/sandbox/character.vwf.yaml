@@ -20,8 +20,8 @@ properties:
   test:  
   motionStack: []
   activeCycle: []
-  standingOnID:
-  standingOnOffset:
+  standingOnID: 
+  standingOnOffset: 
 methods:
   update:
   tick:
@@ -29,17 +29,27 @@ methods:
   satProperty:
   deletingNode:
   setPosition:  
+  keyUp:
+  keyDown:
+  ready:  
 events:
   pointerOver:
   pointerOut:
-  keyUp:
-  keyDown:
 scripts:
 - |
     this.attached = function()
     {
         //called when added to the scene, after initialize is called and parent is set.
-        this.parent.newClient(this.PlayerNumber);
+        //this.parent.avatarCreated(this.PlayerNumber);
+    }
+    this.ready = function()
+    {
+        var self = this;
+        this.kd = function(e,d){ return self.keyDown(e,d)};
+        this.ku = function(e,d){ return self.keyUp(e,d)};
+        this.Scene.bind('keyDown', this.kd);
+        this.Scene.bind('keyUp' , this.ku);
+        this.Scene.avatarCreated(this);
     }
     this.initialize = function(){
 
@@ -143,28 +153,22 @@ scripts:
     {
         
     }
+    this.increment = function(cycle,steps)
+    {
+      cycle.current+=cycle.speed * steps;
+      if(cycle.current >= cycle.length && cycle.loop == true)
+          cycle.current = 0;
+      if(cycle.current < 0 && cycle.loop == true)
+          cycle.current = cycle.length;    
+      if(cycle.current >= cycle.length && cycle.loop == false)
+          cycle.current = cycle.length-1;
+       
+      return cycle.current + cycle.start;
+    }
     this.initCycles = function()
     {
-        var cycles = this.cycles.internal_val;
-        for(var i in cycles)
-        {
-            cycles[i].getFrame = function() { 
-                    return this.current + this.start;
-                }.bind(cycles[i]);
-            cycles[i].increment = function(steps) { 
-                    this.current+=this.speed * steps;
-                    if(this.current >= this.length && this.loop == true)
-                        this.current = 0;
-                    if(this.current < 0 && this.loop == true)
-                        this.current = this.length;    
-                    if(this.current >= this.length && this.loop == false)
-                        this.current = this.length-1;
-                    return this.getFrame();
-                }.bind(cycles[i]);
-            cycles[i].reset = function() {
-                    this.current=0;
-            }.bind(cycles[i]);
-        }
+        
+        this.cycleInit = true;
     }
     this.createNameTag = function(PlayerNumber)
     {
@@ -189,7 +193,9 @@ scripts:
        _dView.unbind('postprerender',this.prerendercallback);
         _UserManager.PlayerDeleted(this.PlayerNumber);
        //this.deleteMe = true;            
-       $(this.nametag).remove()
+       $(this.nametag).remove();
+       this.Scene.unbind('keyDown', this.kd);
+       this.Scene.unbind('keyUp' , this.ku);
        
     }
     this.placeNameTag = function(e,viewprojection,wh, ww)
@@ -375,6 +381,7 @@ scripts:
         }
 
     }
+
     this.recordStandingOn = function(intersect)
     {
        
@@ -430,14 +437,15 @@ scripts:
     this.update = function(moniker)
     {
        
-      
+        if(!this.cycleInit)
+          this.initCycles();
         this.updatecounter++;
         var updateFreqDivisor = 1;
         
         if(this.id == 'character-vwf') return;
        
        this.standingUpdate();
-        
+      
         
         
           var backupr = this.rotation;
@@ -448,7 +456,8 @@ scripts:
         if(this.activeCycle[this.activeCycle.length-1])
         {
 
-            var newframe = this.cycles[this.activeCycle[this.activeCycle.length-1]].increment(updateFreqDivisor);
+
+            var newframe = this.increment(this.cycles[this.activeCycle[this.activeCycle.length-1]],updateFreqDivisor);
             newframe = Math.max(newframe,0);
            
             if(this.currentframe != newframe)
@@ -482,10 +491,7 @@ scripts:
         
         var motionvec;
         
-        if(this.motionStack.length)
-            this.playSound('./vwfDataManager.svc/datafile/sounds/footsteps.mp3',true,.1);
-        else
-            this.pauseSound('./vwfDataManager.svc/datafile/sounds/footsteps.mp3');
+
         
         for(var i=0; i < this.motionStack.length; i++)
         {
@@ -673,8 +679,9 @@ scripts:
         if(this.updatecounter > 180 && document["PlayerNumber"] == this.PlayerNumber)
           {
             
-            vwf_view.kernel.setProperty(this.id,'transform',this.transform.internal_val,0,null);
-            vwf_view.kernel.setProperty(this.id,'rotZ',this.rotZ,0,null);
+            //if the system works properly, this is really a no-no
+            //vwf_view.kernel.setProperty(this.id,'transform',this.transform.internal_val,0,null);
+            //vwf_view.kernel.setProperty(this.id,'rotZ',this.rotZ,0,null);
              this.updatecounter = 0;
           }
           
@@ -896,13 +903,17 @@ scripts:
         this.removeCycle('stand');
         this.addCycle('stand');
     }
+    this.resetCycle = function(cycle)
+    {
+      cycle.current = 0;
+    }
     this.jump = function()
     {
         if(this.inMotion('walkback'))return;
         if(this.inMotion('jump'))return;
         this.addMotion('jump');
         this.jumpcounter = 0;
-        this.cycles.jump.reset();
+        this.resetCycle(this.cycles.jump);
         this.removeCycle('jump');
         this.addCycle('jump');
         this.jumpstart = this.translation[2];
@@ -914,7 +925,7 @@ scripts:
         if(this.inMotion('jump'))return;
         this.addMotion('jump');
         this.jumpcounter = 0;
-        this.cycles.runningjump.reset();
+        this.resetCycle(this.cycles.runningjump);
         this.removeCycle('runningjump');
         this.addCycle('runningjump');
        
@@ -939,6 +950,11 @@ scripts:
                 {this.removeMotion('turnleft'); this.removeMotion('turnright'); this.removeCycle('turnleft'); this.removeCycle('turnright');}        
             if(!e.keysDown.W  && !e.keysDown.uparrow && this.inMotion('run'))
                 this.cancelRun(); 
+
+                
+            this.pauseSound('./vwfDataManager.svc/datafile/sounds/footsteps.mp3');
+
+
             return false;          
             
          }
@@ -988,6 +1004,10 @@ scripts:
                { this.addMotion('turnright');    }
             if(e.mods.shift && e.keysDown.W)
                 this.run();  
+
+          
+            this.playSound('./vwfDataManager.svc/datafile/sounds/footsteps.mp3',true,5);
+            
             return false;
          }
     

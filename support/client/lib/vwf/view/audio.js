@@ -3,9 +3,10 @@
  * Maps simple 1:1 signal model to a broadcast model using target and sender ids
  */
 
-define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, view, buzz ) {
+define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, view ) {
 
-
+		
+	
 	//a simple structure to hold the BUZZ sound reference and position data
 	function SoundSource()
 	{
@@ -77,6 +78,7 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 	//note: the 3D driver must keep track of this
 	SoundSource.prototype.updateSourcePosition = function()
 	{
+		
 		this.position = vwf.getProperty(this.id,'worldPosition');
 	}
 	//use inverse falloff, adjust the range parameters of the falloff curve by the "volume"
@@ -97,6 +99,8 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 		initialize : function()
 		{
 			this.buzz = require("buzz");
+			window._buzz = this.buzz;
+			
 			this.sounds = {};
 			this.soundSources = {};
 			//set this up as a global, so that we can play a click to indicate GUI actions
@@ -107,7 +111,6 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 		playSound:function(url,volume)
 		{
 			this.calledMethod('index-vwf','playSound',[url,false,volume]);
-		
 		},
 		calledMethod : function(id,name,params)
 		{
@@ -132,10 +135,11 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 				else
 				{
 					var mySound = new this.buzz.sound(url,{
-						autoplay: true,
-						loop: loop
+						autoplay: false,
+						loop: false
 					});
 					this.sounds[url] = mySound;
+					mySound.play();
 				
 				}
 				
@@ -166,6 +170,9 @@ define( [ "module", "vwf/view", "vwf/view/buzz/buzz.min"], function( module, vie
 					window._dSound = Sound;
 				}else
 				{
+					if(Sound.sound.getPercent() == 100)
+						Sound.stop();
+					Sound.sound.setPercent(0);
 					Sound.play();
 					if(loop)
 					Sound.loop();
