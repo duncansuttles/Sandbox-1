@@ -133,9 +133,10 @@ define(function ()
 						t.properties.DisplayName = _Editor.GetUniqueName(t.properties.DisplayName);
 						t = _DataManager.getCleanNodePrototype(t);
 						_InventoryManager.setOwner(t, _UserManager.GetCurrentUserName());
-						_Editor.SelectOnNextCreate();
-					
-						_InventoryManager.createChild('index-vwf', GUID(), t, null, null);
+						
+						var newname = GUID()
+						_InventoryManager.createChild('index-vwf',newname , t, null, null);
+						_Editor.SelectOnNextCreate([newname]);
 					}
 					else
 					{

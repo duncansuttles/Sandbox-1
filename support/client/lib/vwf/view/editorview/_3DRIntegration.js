@@ -503,11 +503,12 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 				var proto = this.createProtoForPID(pid);
 				proto.properties.translation = pos;
 				
-				
+				var newname = GUID();
 				//vwf_view.kernel.createNode(proto , null);
 				//vwf_view.kernel.createChild('index-vwf',GUID(),proto,null,null); 
-				_UndoManager.recordCreate('index-vwf', _ModelLibrary.MetadataCache[pid].Title, proto);
-				vwf_view.kernel.createChild('index-vwf', _ModelLibrary.MetadataCache[pid].Title, proto, null, null);
+				_UndoManager.recordCreate('index-vwf', newname, proto);
+				vwf_view.kernel.createChild('index-vwf', newname, proto, null, null);
+				_Editor.SelectOnNextCreate([newname]);
 			}
 			else
 			{
