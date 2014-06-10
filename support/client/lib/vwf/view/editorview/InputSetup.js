@@ -43,6 +43,7 @@ define({
 		});
 		$('#vwf-root').keydown(function(e){
 			
+			if(vwf.getProperty(vwf.application(),'playMode') == 'play') return;
 			try{
 			_Editor.keydown(e)
 			if(e.keyCode == 32 && e.shiftKey)

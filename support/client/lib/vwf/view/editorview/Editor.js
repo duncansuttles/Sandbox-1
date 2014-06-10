@@ -625,6 +625,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		//	$('#vwf-root').keyup(function(e){
 		this.keyup_Gizmo = function (e)
 		{
+			if(vwf.getProperty(vwf.application(),'playMode') == 'play') return;
 			if (e.keyCode == 17)
 			{
 				this.PickMod = NewSelect;
@@ -643,7 +644,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.keydown_Gizmo = function (e)
 		{
-			
+			if(vwf.getProperty(vwf.application(),'playMode') == 'play') return;
 			if (e.keyCode == 17)
 			{
 				this.PickMod = Add;

@@ -225,12 +225,7 @@ define([], function ()
 				async.eachSeries(Object.keys(node.children),function(i,eachSeriesCallback)
 				{
 
-					//dont create or destroy avatars
-					if(node.children[i].extends == 'character.vwf')
-					{
-						eachSeriesCallback();
-						return;
-					}
+					
 					//does the node exist?
 					var exists = false;
 					try
@@ -239,7 +234,10 @@ define([], function ()
 					}catch(e)
 					{	
 						//create it and when done, do the next child of the current node
-						vwf.createChild(node.id,i,node.children[i],null,null,eachSeriesCallback);
+						if(node.children[i].extends != 'character.vwf')
+							vwf.createChild(node.id,i,node.children[i],null,null,eachSeriesCallback);
+						else
+							eachSeriesCallback();
 						return;
 					}
 					if(exists)
@@ -255,7 +253,10 @@ define([], function ()
 					}else
 					{
 						//create it and when done, do the next child of the current node
-						vwf.createChild(node.id,i,node.children[i],null,null,eachSeriesCallback);
+						if(node.children[i].extends != 'character.vwf')
+							vwf.createChild(node.id,i,node.children[i],null,null,eachSeriesCallback);
+						else
+							eachSeriesCallback();
 					}
 
 				},walkCallback);
