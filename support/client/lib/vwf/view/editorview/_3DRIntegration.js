@@ -274,7 +274,7 @@ define(["vwf/view/editorview/Editor"], function (Editor)
 				var file = files[0];
 				var xhr = new XMLHttpRequest();
 				if (xhr.upload && file.size <= 30 * 1024 * 1024) {
-					xhr.open("POST", "./vwfdatamanager.svc/3drupload", true);
+					xhr.open("POST", "./vwfdatamanager.svc/3drupload?title=" + encodeURIComponent($('#uploadTitle').val()) + "&description=" + encodeURIComponent($('#uploadDescription').val()), true);
 					xhr.setRequestHeader("X_FILENAME", file.name);
 					
 					
