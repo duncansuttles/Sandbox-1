@@ -48,9 +48,9 @@ methods:
     console.log("look");
     player.transformAPI.lookat(worldpos);
     console.log("afterlook");
-    var camTargetName = this.parent.children_by_name.Camera1;
-    var camTargetObject = this.Scene.findNode(camTargetName);
-    var camTargetPos = camTargetObject.transformAPI.getWorldPosition();
+    a=_dView;
+    debugger;
+    _Editor.findcamera().lookat(worldpos);
 
 events:
   pointerOver:
