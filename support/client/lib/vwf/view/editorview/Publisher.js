@@ -75,7 +75,7 @@ define([], function ()
 			statedata.allowAnonymous  = $('#allowAnonymous').is(':checked');
 			statedata.createAvatar =  $('#createAvatar').is(':checked');
 			statedata.allowTools  = $('#allowTools').is(':checked');
-			vwf.setProperty(vwf.application(),'publishSettings',statedata);
+			_Editor.setProperty(vwf.application(),'publishSettings',statedata);
 		}
 		this.loadPublishSettings = function()
 		{
@@ -174,24 +174,13 @@ define([], function ()
 					$('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('background-color','');
 					
 				}
-
-
-
 			}
-
 		}
 		this.calledMethod = function(id,name,args)
 		{
-			
 			if(id == vwf.application() && name == 'restoreState')
 			{
-				
 				this.restoreState_imp(args[0]);
-
-
-
-
-
 			}
 		}
 		this.restoreState_imp = function(s)
@@ -296,7 +285,11 @@ define([], function ()
 		}
 		this.restoreState = function()
 		{
-			
+			if(_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),vwf.application()) == 0)
+			{
+				alertify.log('You do not have permission to modify this world');
+				return;
+			}
 			var s = vwf.getProperty(vwf.application(),'playBackup');
 			vwf_view.kernel.setProperty(vwf.application(),'playBackup',null);
 			vwf_view.kernel.callMethod(vwf.application(),'restoreState',[s]);
@@ -306,6 +299,11 @@ define([], function ()
 		}
 		this.playWorld = function()
 		{
+			if(_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),vwf.application()) == 0)
+			{
+				alertify.log('You do not have permission to modify this world');
+				return;
+			}
 			var currentState = vwf.getProperty(vwf.application(),'playMode');
 			if(currentState === 'play' ) return;
 			if(currentState === 'stop')
@@ -315,6 +313,11 @@ define([], function ()
 		}
 		this.stopWorld = function()
 		{
+			if(_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),vwf.application()) == 0)
+			{
+				alertify.log('You do not have permission to modify this world');
+				return;
+			}
 			var currentState = vwf.getProperty(vwf.application(),'playMode');
 			if(currentState === 'stop') return;
 				this.restoreState();
@@ -324,6 +327,11 @@ define([], function ()
 		}
 		this.togglePauseWorld = function()
 		{
+			if(_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),vwf.application()) == 0)
+			{
+				alertify.log('You do not have permission to modify this world');
+				return;
+			}
 			var currentState = vwf.getProperty(vwf.application(),'playMode');
 			if(currentState === 'stop') return;
 			vwf_view.kernel.setProperty(vwf.application(),'playMode','paused')
@@ -331,6 +339,7 @@ define([], function ()
 		//quickly clone a world, publish it and open it. When that world closes, delete it.
 		this.testPublish = function()
 		{
+			
 
 			var testSettings = vwf.getProperty(vwf.application(),'publishSettings') || {
 				SinglePlayer:true,

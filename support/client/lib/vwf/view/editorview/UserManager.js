@@ -576,7 +576,7 @@ define(function ()
 						
 						window.onbeforeunload = '';
 						
-						window.location = _DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substring(window.location.pathname.indexOf(window.appPath)+window.appPath.length) + window.location.hash;
+						window.location = _DataManager.getCurrentApplication() + "login?return=" + _DataManager.getCurrentSession().substring(window.location.pathname.indexOf(window.appPath)+window.appPath.length) + window.location.hash;
 					}.bind(this)
 				});
 			

@@ -313,8 +313,14 @@ function ServeYAML(filename,response, URL)
                         data[i] = {clients:{}};
                         for(var j in global.instances.instances[i].clients)
                         {
-                            tempLoginData = global.instances.instances[i].clients[j].loginData;
-                            data[i].clients[j] = {UID: tempLoginData.UID, loginTime: tempLoginData.loginTime, lastUpdate: tempLoginData.lastUpdate};
+                            if(global.instances.instances[i].clients[j].loginData)
+                            {
+                                tempLoginData = global.instances.instances[i].clients[j].loginData;
+                                data[i].clients[j] = {UID: tempLoginData.UID, loginTime: tempLoginData.loginTime, lastUpdate: tempLoginData.lastUpdate};
+                            }else
+                            {
+                                data[i].clients[j] = {UID: 'anonymous'};
+                            }
                         }
                     }
                     ServeJSON(data,response,URL);

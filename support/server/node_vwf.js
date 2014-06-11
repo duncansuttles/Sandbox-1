@@ -257,7 +257,7 @@ function startVWF(){
 		DAL.startup(function(){
 			
 			//make sure that we can connect to the 3DR. Why is the cert untrusted?
-			
+
 			process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 			//start the session database
 			require('./sessions.js').sessionStartup(function(){
@@ -357,7 +357,10 @@ function startVWF(){
 			{
 				listen= require('https').createServer({
 					pfx: fs.readFileSync(global.configuration.pfx),
-					passphrase:global.configuration.pfxPassphrase
+					passphrase:global.configuration.pfxPassphrase,
+					ca:[fs.readFileSync(global.configuration.sslCA[0]),fs.readFileSync(global.configuration.sslCA[1])],
+
+					
 				},app).listen(sslPort);
 
 				//setup a simple server to redirct all requests to the SSL port

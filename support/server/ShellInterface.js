@@ -84,9 +84,16 @@ function StartShellInterface()
 			'command': 'show instances',
 			'description': 'Lists active instances. Fails if run before any world loaded.',
 			'callback': function(commands){
-				var keys = Object.keys(global.instances);
+				var keys = Object.keys(global.instances.instances);
 				for(var i in keys)
+				{
 					console.log(keys[i]);
+					if(global.instances.instances[keys[i]])
+					{
+						for(var j in global.instances.instances[keys[i]].clients)
+						console.log(j,global.instances.instances[keys[i]].clients[j].loginData);
+					}
+				}
 			}
 		},
 		{
