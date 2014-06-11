@@ -62,7 +62,7 @@ define( [ "module", "vwf/view", "vwf/view/rtcObject" ], function( module, view, 
 
 			$('#vidFrame #messagePanel input#reject' ).button().click(function(evt){
 				console.log('Call rejected');
-				$('#vidFrame').dialog('close');
+				//$('#vidFrame').dialog('close');
 			}.bind(this));
 
 			// hook up the PM button

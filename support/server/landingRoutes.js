@@ -301,7 +301,7 @@ exports.world = function(req, res, next){
 			{
 				for(var i in instance.clients)
 				{
-					if(instance.clients[i].loginData.UID)
+					if(instance.clients[i].loginData && instance.clients[i].loginData.UID)
 					{
 						users.push(instance.clients[i].loginData.UID);
 					}

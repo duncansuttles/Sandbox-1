@@ -51,6 +51,11 @@ define(
 
 		function setupPmWindow(e)
 		{
+			if(!e)
+			{
+				alertify.log('Chat with anonymous users is not currently supported')
+				return;
+			}
 			var s = e;
 			e = ToSafeID(e);
 			if ($('#PM' + e).length == 1)

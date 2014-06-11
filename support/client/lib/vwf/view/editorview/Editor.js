@@ -3622,32 +3622,37 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		this.mouseup = function (e)
 		{
 			if(!toolsOpen()) return;
-			
+			if(vwf.getProperty(vwf.application(),'playMode') == 'play') return;
 			if (this.activeTool && this.activeTool.mouseup) this.activeTool.mouseup(e);
 		}
 		this.click = function (e)
 		{
 			if(!toolsOpen()) return;
+			if(vwf.getProperty(vwf.application(),'playMode') == 'play') return;
 			if (this.activeTool && this.activeTool.click) this.activeTool.click(e);
 		}
 		this.mousemove = function (e)
 		{
 			if(!toolsOpen()) return;
+			if(vwf.getProperty(vwf.application(),'playMode') == 'play') return;
 			if (this.activeTool && this.activeTool.mousemove) this.activeTool.mousemove(e);
 		}
 		this.mousewheel = function (e)
 		{
 			if(!toolsOpen()) return;
+			if(vwf.getProperty(vwf.application(),'playMode') == 'play') return;
 			if (this.activeTool && this.activeTool.mousewheel) this.activeTool.mousewheel(e);
 		}
 		this.keyup = function (e)
 		{
 			if(!toolsOpen()) return;
+			if(vwf.getProperty(vwf.application(),'playMode') == 'play') return;
 			if (this.activeTool && this.activeTool.keyup) this.activeTool.keyup(e);
 		}
 		this.keydown = function (e)
 		{
 			if(!toolsOpen()) return;
+			if(vwf.getProperty(vwf.application(),'playMode') == 'play') return;
 			if (this.activeTool && this.activeTool.keydown) this.activeTool.keydown(e);
 		}
 		this.createdNode = function()
