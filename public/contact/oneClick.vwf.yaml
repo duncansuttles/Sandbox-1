@@ -40,7 +40,7 @@ properties:
 methods:
   initialize: "   "
   bringPlayerToMe: |
-    var player = this.Scene.clientAPI.getAvatarForUserName("treboro");
+    var player =  _UserManager.GetAvatarForClientID(this.client)
     console.log(player);
     var worldpos = this.transformAPI.getWorldPosition();
     console.log(worldpos);
@@ -48,9 +48,6 @@ methods:
     console.log("look");
     player.transformAPI.lookat(worldpos);
     console.log("afterlook");
-    a=_dView;
-    debugger;
-    _Editor.findcamera().lookat(worldpos);
 
 events:
   pointerOver:
