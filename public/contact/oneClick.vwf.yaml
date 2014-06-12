@@ -33,22 +33,40 @@ properties:
         - X
         - Y
         - Z
+    Offset:
+      property: Offset
+      displayname: offset
+      type: vector
+    strength:
+      property: strength
+      displayname: Strength
+      type: slider
+      min: 0
+      max: 1
   Target: line ID
   lookatVec: 'Y'
   lookatUp: 'Z'
+  strength: .01
   DisplayName: OneClick
 methods:
   initialize: "   "
   bringPlayerToMe: |
     var player =  _UserManager.GetAvatarForClientID(this.client)
-    console.log(player);
     var worldpos = this.transformAPI.getWorldPosition();
-    console.log(worldpos);
-    console.log(this.parent);
-    console.log("look");
     player.transformAPI.lookat(worldpos);
-    console.log("afterlook");
-
+    var _offset = this.Offset.internal_val;
+    console.log(_offset);
+    var targetTransform = worldpos;
+    debugger;
+    var targetTrandformI =[];
+    _offset = Mat4.multVec3(targetTransform,_offset,[]);
+    console.log(_offset);
+    var worldpos = this.transformAPI.getWorldPosition();
+    _offset = Vec3.subtract(_offset,worldpos,[]);
+    _offset = Vec3.scale(_offset,this.strength,[]);
+    _offset = Vec3.add(worldpos,_offset,[]);
+    console.log(_offset);
+    player.transformAPI.setPosition(_offset);
 events:
   pointerOver:
     parameters:
