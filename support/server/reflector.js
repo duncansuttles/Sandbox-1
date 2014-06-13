@@ -486,13 +486,34 @@ function getBlankScene(state,instanceData,cb)
                     }
                 }
             }
+            thisInstance.state.reattachParents = function(node)
+            {
+                if(node && node.children)
+                {
+                    for(var i in node.children)
+                    {
+                        node.children[i].parent = node;
+                        this.reattachParents(node.children[i]);
+                    }
+                }
+            }
+            // so, the player has hit pause after hitting play. They are going to reset the entire state with the state backup. 
+            //The statebackup travels over the wire (though technically I guess we should have a copy of that data in our state already)
+            //when it does, we can receive it here. Because the server is doing some tracking of state, we need to restore the server
+            //side state.
             thisInstance.state.callMethod = function(id,name,args)
             {
                 if(id == 'index-vwf' && name == 'restoreState')
                 {
                     console.log('Restore State from Play Backup');
+                    //args[0][0] should be a vwf root node definition
                     if(args[0][0])
-                    	this.nodes['index-vwf'] = args[0][0];
+                    {
+                        //note we have to JSON parse and stringify here to avoid creating a circular structure that cannot be reserialized 
+                    	this.nodes['index-vwf'] = JSON.parse(JSON.stringify(args[0][0]));
+                        //here, we need to hook back up the .parent property, so we can walk the graph for other operations.
+                        this.reattachParents(this.nodes['index-vwf']);
+                    }
                 }
             }
             socket.emit('message',messageCompress.pack(JSON.stringify({"action":"status","parameters":["State loaded, sending..."],"time":thisInstance.time}))); 
