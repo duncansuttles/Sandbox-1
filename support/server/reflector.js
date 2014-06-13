@@ -196,7 +196,7 @@ function getBlankScene(state,instanceData,cb)
             
             getBlankScene(state,instancedata,function(blankscene){
                 socket.emit('message',{"action":"createNode","parameters":[blankscene],"time":0});
-                var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientConnected",[socket.id,socket.loginData? socket.loginData.UID : "anonymous"]],node:"index-vwf","time":0}));
+                var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientConnected",[socket.id,socket.loginData? socket.loginData.Username : "anonymous",socket.loginData?  socket.loginData.UID : "anonymous"]],node:"index-vwf","time":0}));
                 socket.emit('message',joinMessage);
 
                 socket.emit('message',{"action":"goOffline","parameters":[blankscene],"time":0});
@@ -326,14 +326,14 @@ function getBlankScene(state,instanceData,cb)
 	          		}
 	      	 }
         }
-        this.messageConnection = function(id,name)
+        this.messageConnection = function(id,name,UID)
         {
-	     	 var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientConnected",[id,name]],node:"index-vwf","time":this.time}));
+	     	 var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientConnected",[id,name,UID]],node:"index-vwf","time":this.time}));
 	     	 this.messageClients(joinMessage);
         }
-        this.messageDisconnection = function(id,name)
+        this.messageDisconnection = function(id,name,UID)
         {
-	      	var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientDisconnected",[id,name]],node:"index-vwf","time":this.time}));
+	      	var joinMessage = messageCompress.pack(JSON.stringify({"action":"fireEvent","parameters":["clientDisconnected",[id,name,UID]],node:"index-vwf","time":this.time}));
 	     	this.messageClients(joinMessage);
         }
         this.totalerr = 0;
@@ -539,7 +539,7 @@ function getBlankScene(state,instanceData,cb)
                 
                 socket.pending = false;
                 //this must come after the client is added. Here, there is only one client
-			    thisInstance.messageConnection(socket.id, socket.loginData? socket.loginData.UID : null);
+			    thisInstance.messageConnection(socket.id, socket.loginData? socket.loginData.Username : null,socket.loginData? socket.loginData.UID : null);
 
                
             });
@@ -917,13 +917,13 @@ function getBlankScene(state,instanceData,cb)
               //if it's the last client, delete the data and the timer
               
               //message to each user the join of the new client. Queue it up for the new guy, since he should not send it until after getstate
-	     	  thisInstance.messageDisconnection(socket.id, socket.loginData? socket.loginData.UID : null);
+	     	  thisInstance.messageDisconnection(socket.id, socket.loginData? socket.loginData.Username : null);
 
               if(loginData && loginData.clients)
               {
                   delete loginData.clients[socket.id];
                   global.error("Disconnect. Deleting node for user avatar " + loginData.UID);
-                 var avatarID = 'character-vwf-'+loginData.UID;
+                 var avatarID = 'character-vwf-'+loginData.Username;
                  for(var i in thisInstance.clients)
                   {
                         var cl = thisInstance.clients[i];

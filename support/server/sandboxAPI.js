@@ -1401,7 +1401,7 @@ function serve (request, response)
 						SiteLogin(response,URL);		
 					} break;
 					case "sitelogout":{
-						SiteLogout(response,URL);		
+						SiteLogout(request, response,URL);		
 					} break;
 					case "logindata":{
 						GetLoginData(response,URL);		

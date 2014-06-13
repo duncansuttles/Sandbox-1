@@ -78,6 +78,7 @@ function getUser (id,cb)
 				try{
 				var doc = JSON.parse(JSON.stringify(doc));
                 doc["id"] = id;
+                if(!doc.Username) doc.Username = id;
 				cb(doc);
 				}
 				catch(e)

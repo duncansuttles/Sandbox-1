@@ -511,7 +511,7 @@ scripts:
     
     }
     //a new client has joined the simulation
-    this.clientConnected = function(id,name)
+    this.clientConnected = function(id,name,UID)
     {
      
     	if(!this.clients)
@@ -519,11 +519,11 @@ scripts:
     		this.clients = {}
     	}
     	if(!this.clients[id])
-    		this.clients.defineProperty(id,{cid:id,name:name});
+    		this.clients.defineProperty(id,{cid:id,name:name,UID:UID});
     	
     }
     // a client other than this one has left
-    this.clientDisconnected = function(id,name)
+    this.clientDisconnected = function(id,name,UID)
     {
     	if(this.clients)
     	{
