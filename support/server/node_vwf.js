@@ -302,9 +302,15 @@ function startVWF(){
 			app.use(express.cookieParser());
     		app.use(i18n.handle);
 
-            app.use(express.session({ secret: 'keyboard cat' }));
+			var MemoryStore = express.session.MemoryStore;
+			var sessionStore = new MemoryStore();
+			sessions.expressStorage = sessionStore;
+            app.use(express.session({secret: 'keyboard cat',store:sessionStore
+        	}));
             app.use(passport.initialize());
-            app.use(passport.session());
+            app.use(passport.session({secret: 'keyboard cat', store:sessionStore
+        	}));
+            
 
             app.use(app.router);
 

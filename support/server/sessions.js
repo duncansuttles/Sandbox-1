@@ -1,5 +1,5 @@
 
-
+var connectUtils = require("express/node_modules/connect/lib/utils");
 
 function SessionData()
 {
@@ -33,31 +33,9 @@ exports.getAllSessions = function()
 {
 	return __Sessions;
 }
-//find the session data for a request
-exports.GetSessionData = function(request,cb)
+exports.getSessionInner = function(SessionID,cb)
 {
-  //request should contain the session ID in the cookie header
-  if(!request.headers['cookie'])
-  {
-	cb();
-  return null;
-}
-	
-  //extract our session ID from the header	
-  cookies = {};
-  var cookielist = request.headers.cookie.split(';');
-  
-  for(var i = 0; i < cookielist.length; i++)
-  {
-	var parts = cookielist[i].split('=');
-    cookies[parts[0].trim()] = (parts[1] || '').trim();
-  }
-  var SessionID;
-  if (global.userStorageSessionId!=undefined) {
-    SessionID = global.userStorageSessionId;
-  } else {
-    SessionID = cookies.session;
-  }
+
 
   //if there is no session ID, return ull
   if(!SessionID){
@@ -93,6 +71,48 @@ exports.GetSessionData = function(request,cb)
 			 	 return;
 			}
 		});
+
+
+}
+//find the session data for a request
+exports.GetSessionData = function(request,cb)
+{
+  //request should contain the session ID in the cookie header
+  if(!request.headers['cookie'])
+  {
+	cb();
+  return null;
+}
+	
+  //extract our session ID from the header	
+  cookies = {};
+  var cookielist = request.headers.cookie.split(';');
+  
+  for(var i = 0; i < cookielist.length; i++)
+  {
+	var parts = cookielist[i].split('=');
+    cookies[parts[0].trim()] = (parts[1] || '').trim();
+  }
+  var SessionID;
+  if (request.session && request.session.passport.user) {
+    SessionID = request.session.passport.user.sessionId;
+  } else {
+    SessionID = cookies.session;
+    if(!SessionID)
+    {
+    	//ok - the request did not go through the middleware, and it's not using our session format, so it must be the passport sessions
+    	var connectSessionID = connectUtils.parseSignedCookie(cookies['connect.sid'].split('.')[0].substr(4), 'keyboard cat');
+    	exports.expressStorage.get(connectSessionID,function(err,sessionData)
+    		{
+				if(sessionData && sessionData.passport.user && sessionData.passport.user.sessionId)
+    				SessionID = sessionData.passport.user.sessionId
+    			exports.getSessionInner(SessionID,cb);
+    		});
+    	return;
+    }
+  }
+exports.getSessionInner(SessionID,cb);
+
 }
 
 exports.getSessionByID = function(SessionID,cb)

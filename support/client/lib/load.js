@@ -64,7 +64,7 @@ else
   {
      //TODO: Try to read this and set from config.json in the build process
      //window.appPath = "/adl/sandbox/";
-     window.appPath = "/contact/";
+     window.appPath = "/adl/sandbox/";
 
      $.ajaxPrefilter( function(options, originalOptions, jqXHR) 
      {
