@@ -234,7 +234,10 @@ define([], function ()
 						//set all the props of this node
 						for(var j in node.children[i].properties)
 						{
-							vwf.setProperty(node.children[i].id,j,node.children[i].properties[j]);
+							var currentprop = vwf.getProperty(node.children[i].id,j); 
+							//dont set props that have not changed, as this can be a lot of work for nothign
+							if(JSON.stringify(currentprop) !== JSON.stringify(node.children[i].properties[j]))
+								vwf.setProperty(node.children[i].id,j,node.children[i].properties[j]);
 						}
 						//create or set props of the child
 						walk(node.children[i],eachSeriesCallback) 
@@ -256,8 +259,10 @@ define([], function ()
 				//set all the properties on the root scene
 				for(var j in s.properties)
 				{
-					if(j !== 'clients')
-					vwf.setProperty(s.id,j,s.properties[j]);
+					var currentprop = vwf.getProperty(s.id,j); 
+					//dont set props that have not changed, as this can be a lot of work for nothign
+					if(JSON.stringify(currentprop) !== JSON.stringify(s.properties[j]) && j !== 'clients')
+						vwf.setProperty(s.id,j,s.properties[j]);
 				}
 				//synchronous walk of graph to find children that exist in the current state but not the old one. Delete nodes that were created
 				var walk2 = function(node)
