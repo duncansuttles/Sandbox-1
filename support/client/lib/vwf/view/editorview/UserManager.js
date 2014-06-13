@@ -127,12 +127,12 @@ define(function ()
 						success:function(data,status,xhr)
 						{
 							var logindata = JSON.parse(xhr.responseText);
-							var username = logindata.username;
-							
+							var user_uid = logindata.user_uid;
+                            var username = logindata.username;
 							
 								//only the first client from a given login should create the avatart
-								if(vwf.models[0].model.nodes['character-vwf-' + username.replace(/ /g,'-')] == undefined)
-									this.Login(username);
+								if(vwf.models[0].model.nodes['character-vwf-' + user_uid.replace(/ /g,'-')] == undefined)
+									this.Login(user_uid,username);
 								else
 								{
 									alertify.alert('You are already logged into this space from another tab.');
@@ -161,7 +161,7 @@ define(function ()
 				}else
 				{
 					//this is a published world, and you do not need to hit the login server
-					this.Login('Anonymous' + _UserManager.getPlayers().length);
+					this.Login('Anonymous' + _UserManager.getPlayers().length,'Anonymous' + _UserManager.getPlayers().length);
 				}
 			
 			
@@ -226,7 +226,7 @@ define(function ()
 
 			}
 		}
-		this.Login = function (username)
+		this.Login = function (user_uid,username)
 		{
 		
 			var needlogin = true;
@@ -260,10 +260,10 @@ define(function ()
 					dataType: "json"
 				});
 				
-				var profile = _DataManager.GetProfileForUser(username, true);
+				var profile = _DataManager.GetProfileForUser(user_uid, true);
 				if (!profile)
 				{
-					alert('There is no account with that username');
+					alert('There is no account with that user_uid');
 					return;
 				}
 				if (profile.constructor == String)
@@ -308,9 +308,9 @@ define(function ()
 
 			if(!profile) profile = {};
 
-			this.PlayerProto.source = profile.avatarModel || './avatars/VWS_Business_Female1.DAE';
+			this.PlayerProto.source = profile.avatarModel || './avatars/avatar_0001_01.dae';
 
-            this.PlayerProto.properties.cycles = 
+            this.PlayerProto.properties.cycles =
             {
                 stand:{start:1,length:0,speed:1.25,current:0,loop:true},
                 walk:{start:6,length:27,speed:1.0,current:0,loop:true},
@@ -322,7 +322,9 @@ define(function ()
                 runningjump:{start:109,length:48,speed:1.25,current:0,loop:false}
             };
 
-            
+            if (!profile.avatarTexture) {
+                profile.avatarTexture = "https://graph.facebook.com/"+user_uid+"/picture?width=160&height=160";
+            }
             this.PlayerProto.properties.materialDef = {
 			    "color":
 			    {
@@ -338,7 +340,7 @@ define(function ()
 			    },
 			    "emit":
 			    {
-			        "r": 0.27058823529411763,
+			        "r": 0.25058823529411763,
 			        "g": 0.2549019607843137,
 			        "b": 0.2549019607843137
 			    },
@@ -361,7 +363,7 @@ define(function ()
 			            "offsetx": 0,
 			            "offsety": 0,
 			            "alpha": 1,
-			            "src": profile.avatarTexture || "./avatars/VWS_B_Female1-1.jpg",
+			            "src": profile.avatarTexture || "./avatars/160by160fb.jpg",
 			            "mapInput": 0
 			        }
 			    ],
@@ -373,7 +375,7 @@ define(function ()
             this.PlayerProto.properties.standing = 0;
 
 
-			if (document.Players && document.Players.indexOf(username) != -1)
+			if (document.Players && document.Players.indexOf(user_uid) != -1)
 			{
 				alert('User is already logged into this space');
 				return;
@@ -381,19 +383,20 @@ define(function ()
 			var newintersectxy = _LocationTools.getCurrentPlacemarkPosition()||_LocationTools.getPlacemarkPosition('Origin') || _Editor.GetInsertPoint();
 			//vwf.models[0].model.nodes['index-vwf'].orbitPoint(newintersectxy);
 			this.PlayerProto.properties.PlayerNumber = username;
-			this.PlayerProto.properties.owner = username;
+            this.PlayerProto.properties.UserUID = user_uid;
+			this.PlayerProto.properties.owner = user_uid;
 			this.PlayerProto.properties.ownerClientID = vwf.moniker();
 			this.PlayerProto.properties.profile = profile;
 			this.PlayerProto.properties.translation = newintersectxy;
 			this.PlayerProto.properties.scale = [profile.avatarHeight || 1.0, profile.avatarHeight || 1.0, profile.avatarHeight || 1.0];
 
 			vwf.models.javascript.nodes['index-vwf'].orbitPoint(newintersectxy);
-			document[username + 'link'] = null;
-			//this.PlayerProto.id = "player"+username;
-			document["PlayerNumber"] = username;
+			document[user_uid + 'link'] = null;
+			//this.PlayerProto.id = "player"+user_uid;
+			document["PlayerNumber"] = user_uid;
 			var parms = new Array();
 			parms.push(JSON.stringify(this.PlayerProto));
-			this.currentUsername = username;
+			this.currentUsername = user_uid;
 			//vwf_view.kernel.callMethod('index-vwf','newplayer',parms);
 			
 			if(createAvatar)
@@ -555,7 +558,8 @@ define(function ()
 					success:function(data,status,xhr)
 					{
 						var logindata = JSON.parse(xhr.responseText);
-						var username = logindata.username;
+						var user_uid = logindata.user_uid;
+                        var username = logindata.username;
 						
 						if(logindata.instances.indexOf(_DataManager.getCurrentSession()) != -1)
 						{
@@ -563,7 +567,7 @@ define(function ()
 						}
 						else
 						{
-							this.Login(username);
+							this.Login(user_uid,username);
 						}
 						
 					}.bind(this),

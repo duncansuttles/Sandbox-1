@@ -177,7 +177,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 							"Message": null
 						},
 						"scripts": [
-							"this.ShowProfile = function(){if(vwf.client() != vwf.moniker()) return; _UserManager.showProfile(_DataManager.GetProfileForUser(this.PlayerNumber))     }; \nthis.Message = function(){if(vwf.client() != vwf.moniker()) return; setupPmWindow(this.PlayerNumber)     }"
+							"this.ShowProfile = function(){if(vwf.client() != vwf.moniker()) return; _UserManager.showProfile(_DataManager.GetProfileForUser(this.UserUID))     }; \nthis.Message = function(){if(vwf.client() != vwf.moniker()) return; setupPmWindow(this.PlayerNumber)     }"
 						]
 					}
 				]

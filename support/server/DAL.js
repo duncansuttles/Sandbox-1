@@ -6,6 +6,9 @@ require('./hash.js');
 var mkdirp = require('mkdirp');
 var datapath = '';
 
+var xapi = require('./xapi');
+var mailTools = require('./mailTools');
+
 //NOTE: upgrade your database! if your db is users.db and not users.nedb, you need to run the upgrade_db script!
 var DBTablePath = libpath.sep+'users.nedb';
 
@@ -71,10 +74,10 @@ function getUser (id,cb)
 		if(UserIndex && UserIndex.indexOf(id) != -1)
 		{
 			DB.get(id,function(err,doc,key){
-			
 				//make super sure that the object that is returned is a copy of the data in memory, not a reference
 				try{
 				var doc = JSON.parse(JSON.stringify(doc));
+                doc["id"] = id;
 				cb(doc);
 				}
 				catch(e)
@@ -1277,9 +1280,21 @@ function getHistory(id,cb)
 	});
 }
 
-
-
-
+function createProfileFromFacebook(profile,cb) {
+    data = { id: profile.id, Username: profile.displayName, Email: profile.email };
+    createUser(profile.id, data,function(ok,err){
+        if (ok) {
+            mailTools.newUser(profile.id, data.Email);
+            xapi.sendStatement(profile.id, xapi.verbs.registered);
+            cb("ok");
+        }
+        else {
+            xapi.sendStatement(profile.id, xapi.verbs.unsuccessful_registered_attempt);
+            global.log("Failed registration with "+err);
+            cb(err);
+        }
+    });
+}
 
 //create a new state from the old one, setting the publish settings for the new state
 //cb with the ID of the new state
@@ -1538,6 +1553,7 @@ function startup(callback)
 			DAL_Singleton.deleteUser = deleteUser;
 			DAL_Singleton.deleteUsers = deleteUsers;
 			DAL_Singleton.getAllUsersInfo = getAllUsersInfo;
+            DAL_Singleton.createProfileFromFacebook = createProfileFromFacebook;
 			
 			DAL_Singleton.find = findInDB;
 			

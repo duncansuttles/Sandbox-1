@@ -52,9 +52,13 @@ exports.GetSessionData = function(request,cb)
 	var parts = cookielist[i].split('=');
     cookies[parts[0].trim()] = (parts[1] || '').trim();
   }
+  var SessionID;
+  if (global.userStorageSessionId!=undefined) {
+    SessionID = global.userStorageSessionId;
+  } else {
+    SessionID = cookies.session;
+  }
 
-  var SessionID = cookies.session;
-  
   //if there is no session ID, return ull
   if(!SessionID){
   cb(); return null}
@@ -115,11 +119,12 @@ DB.get(SessionID,function(err,val,key)
    }
    return null;*/
 }
-exports.createSession = function(UID,Password,isTemp,cb)
+exports.createSession = function(UID,Username,Password,isTemp,cb)
 {
 
 	var session = new SessionData();
 	session.UID = UID;
+    session.Username = Username;
 	session.Password = Password;
 	session.PasswordIsTemp = isTemp;
 	session.updated = function(cb2)

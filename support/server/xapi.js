@@ -133,5 +133,8 @@ exports.verbs = {
 		'display': {'en-US': 'published to global inventory'}},
 	'registered': {
 		'id': 'http://adlnet.gov/expapi/verbs/registered',
-		'display': {'en-US': 'registered with'}}
+		'display': {'en-US': 'registered with'}},
+    'unsuccessful_registered_attempt': {
+        'id': 'http://adlnet.gov/expapi/verbs/unsuccessful_registered_attempt',
+        'display': {'en-US': 'attempted unsuccessfully to registered with'}}
 };

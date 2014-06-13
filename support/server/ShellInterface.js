@@ -544,7 +544,7 @@ function StartShellInterface()
 								"this.ShowProfile = "+
 								"function(){ "+
 								"	if(vwf.client() != vwf.moniker()) return; "+
-								"   _UserManager.showProfile(_DataManager.GetProfileForUser(this.PlayerNumber))     "+
+								"   _UserManager.showProfile(_DataManager.GetProfileForUser(this.UserUID))     "+
 								" }; \n"+
 								"this.Message = function(){"+
 								"	if(vwf.client() != vwf.moniker()) return; "+

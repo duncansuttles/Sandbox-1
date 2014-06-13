@@ -202,7 +202,7 @@ exports.SiteLogin = function (response,URL)
 				global.log("Login "+ ok,2);
 				if(ok)
 				{
-					sessions.createSession(UID,password,isTemp,function(session){
+					sessions.createSession(UID,UID,password,isTemp,function(session){
 
 
 					xapi.sendStatement(UID,xapi.verbs.logged_in); 
@@ -250,3 +250,5 @@ exports.SiteLogout = function (response,URL)
 	}
 	return;
 }
+
+

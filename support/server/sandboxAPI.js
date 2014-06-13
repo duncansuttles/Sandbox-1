@@ -112,7 +112,7 @@ function GetLoginData(response,URL)
 {
 	if(URL.loginData)
 	{
-		var logindata = {username:URL.loginData.UID,admin:URL.loginData.UID==global.adminUID};
+		var logindata = {user_uid:URL.loginData.UID,username:URL.loginData.Username,admin:URL.loginData.UID==global.adminUID};
 		logindata.instances = [];
 		logindata.clients = [];
 		
@@ -448,7 +448,6 @@ function CreateProfile(URL,data,response)
 		return;
 	});
 }
-
 
 //Check that the UID is the author of the asset
 function CheckAuthor(UID,assetFilename, callback)

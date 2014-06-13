@@ -14,4 +14,6 @@ config.json
 *.crt
 *.key
 *.pfx
+.idea
+/public/contact/local/*
 *.pem

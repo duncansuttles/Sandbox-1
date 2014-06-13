@@ -69,6 +69,11 @@ var reflector = require("./reflector.js");
 var appserver = require("./appserver.js");
 var ServerFeatures = require("./serverFeatures.js");
 
+var passport = require('passport');
+var FacebookStrategy = require('passport-facebook').Strategy;
+
+var sessions = require('./sessions');
+var xapi = require('./xapi');
 
 //localization
 var i18n = require("i18next");
@@ -281,8 +286,6 @@ function startVWF(){
 			// we append a version to the front if every request to keep the clients fresh
 			// otherwise, a user would have to know to refresh the cache every time we release
 			app.use(ServerFeatures.versioning);
-			
-			
 
 			//find pretty world URL's, and redirect to the non-pretty url for the world
 			app.use(ServerFeatures.prettyWorldURL);
@@ -299,9 +302,12 @@ function startVWF(){
 			app.use(express.cookieParser());
     		app.use(i18n.handle);
 
-			app.use(app.router);
+            app.use(express.session({ secret: 'keyboard cat' }));
+            app.use(passport.initialize());
+            app.use(passport.session());
 
-			
+            app.use(app.router);
+
 			app.get(global.appPath+'/:page([a-zA-Z\\0-9\?/]*)', Landing.redirectPasswordEmail);
 			app.get(global.appPath, Landing.redirectPasswordEmail);
 			
@@ -322,19 +328,32 @@ function startVWF(){
 			
 			app.get(global.appPath+'/vwf.js', Landing.serveVWFcore);
 
-		
-
-			app.post(global.appPath+'/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
+            app.post(global.appPath+'/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
 			app.post(global.appPath+'/data/:action([a-zA-Z_]+)', Landing.handlePostRequest);
 
-
-			
-			//The file handleing logic for vwf engine files
+                //The file handleing logic for vwf engine files
 			app.use(appserver.handleRequest); 
 			//var listen = app.listen(port);
 			var listen = null;
 
-			if(global.configuration.pfx)
+            app.get(global.appPath+'/auth/facebook',
+                passport.authenticate('facebook', { scope : 'email' }));
+
+            app.get(global.appPath+'/auth/facebook/callback',
+                passport.authenticate('facebook', { failureRedirect: global.appPath+'/login' }),
+                function(req, res) {
+                    // Successful authentication, redirect home.
+                    res.redirect('/');
+                });
+
+
+            // route for logging out
+            app.get('/fb_logout', function(req, res) {
+                req.logout();
+                res.redirect('/');
+            });
+
+            if(global.configuration.pfx)
 			{
 				listen= require('https').createServer({
 					pfx: fs.readFileSync(global.configuration.pfx),
@@ -478,5 +497,48 @@ function startVWF(){
 	}
 	
 }
+// used to serialize the user for the session
+passport.serializeUser(function (user, done) {
+    sessions.createSession(user.id,user.Username,"",false,function(session){
+        xapi.sendStatement(user.id,xapi.verbs.logged_in);
+        userStorage = { id: user.id, sessionId: session.sessionId}
+        done(null, userStorage);
+    });
+});
+
+// used to deserialize the user
+passport.deserializeUser(function (userStorage, done) {
+    DAL.getUser(userStorage.id, function (user) {
+        global.userStorageSessionId = userStorage.sessionId;
+        done(null, user);
+    });
+});
+
+passport.use(new FacebookStrategy({
+        clientID: global.configuration.facebook_app_id,
+        clientSecret: global.configuration.facebook_app_secret,
+        callbackURL: global.configuration.facebook_callback_url
+    },
+    function (accessToken, refreshToken, profile, done) {
+        process.nextTick(function () {
+                DAL.getUser(profile.id, function (user) {
+                    if (user) {
+                        done(null, user);
+                    } else {
+                        user = DAL.createProfileFromFacebook(profile, function (results) {
+                            if (results === "ok") {
+                                DAL.getUser(profile.id, function (user) {
+                                    done(null, user);
+                                });
+                            } else {
+                                done("Error creating user " + results, null);
+                            }
+                        });
+                    }
+                });
+            }
+        );
+    }
+));
 
 exports.startVWF = startVWF;
