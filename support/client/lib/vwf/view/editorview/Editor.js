@@ -2522,19 +2522,22 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var cubeX = new THREE.Mesh(new THREE.CubeGeometry(10.00, .40, .40), new THREE.MeshLambertMaterial(
 			{
 				color: 0xFF0000,
-				emissive: 0xFF0000
+				emissive: 0xFF0000,
+				ambient : 0xFF0000
 			}));
 			cubeX.position.set(5.00, .15, .15);
 			var cubeY = new THREE.Mesh(new THREE.CubeGeometry(.40, 10.00, .40), new THREE.MeshLambertMaterial(
 			{
 				color: 0x00FF00,
-				emissive: 0x00FF00
+				emissive: 0x00FF00,
+				ambient : 0x00FF00
 			}));
 			cubeY.position.set(.15, 5.00, .15);
 			var cubeZ = new THREE.Mesh(new THREE.CubeGeometry(.40, .40, 10.00), new THREE.MeshLambertMaterial(
 			{
 				color: 0x0000FF,
-				emissive: 0x0000FF
+				emissive: 0x0000FF,
+				ambient : 0x0000FF
 			}));
 			cubeZ.position.set(.15, .15, 5.00);
 			MoveGizmo = new THREE.Object3D();
@@ -2548,17 +2551,20 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var rotx = new THREE.Mesh(new THREE.TorusGeometry(7, .50, 4, 20), new THREE.MeshLambertMaterial(
 			{
 				color: 0xFF0000,
-				emissive: 0xFF0000
+				emissive: 0xFF0000,
+				ambient : 0xFF0000
 			}));
 			var roty = new THREE.Mesh(new THREE.TorusGeometry(7, .50, 4, 20), new THREE.MeshLambertMaterial(
 			{
 				color: 0x00FF00,
-				emissive: 0x00FF00
+				emissive: 0x00FF00,
+				ambient : 0x00FF00
 			}));
 			var rotz = new THREE.Mesh(new THREE.TorusGeometry(7, .50, 4, 20), new THREE.MeshLambertMaterial(
 			{
 				color: 0x0000FF,
-				emissive: 0x0000FF
+				emissive: 0x0000FF,
+				ambient : 0x0000FF
 			}));
 			MoveGizmo.allChildren.push(rotx);
 			roty.rotation.x = Math.PI / 2;
@@ -2736,6 +2742,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			mesh.material.color.r = color[0];
 			mesh.material.color.g = color[1];
 			mesh.material.color.b = color[2];
+			mesh.material.ambient.r = color[0];
+			mesh.material.ambient.g = color[1];
+			mesh.material.ambient.b = color[2];
 			mesh.material.emissive.r = color[0];
 			mesh.material.emissive.g = color[1];
 			mesh.material.emissive.b = color[2];
