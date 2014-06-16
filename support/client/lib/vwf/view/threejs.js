@@ -909,7 +909,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			cam.matrixWorldInverse.getInverse( cam.matrixWorld );
 			 
 			_viewProjectionMatrix.multiplyMatrices( cam.projectionMatrix, cam.matrixWorldInverse );
-			vp =  _viewProjectionMatrix.transpose().flattenToArray(temparray);
+			vp =  _viewProjectionMatrix.transpose().toArray(temparray);
 			
 			if(!rootdiv)
 				rootdiv = document.getElementById('index-vwf');
@@ -939,7 +939,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			//the camera changes the view projection in the prerender call
 			
 			_viewProjectionMatrix.multiplyMatrices( cam.projectionMatrix, cam.matrixWorldInverse );
-			 vp =  _viewProjectionMatrix.transpose().flattenToArray(temparray);
+			 vp =  _viewProjectionMatrix.transpose().toArray(temparray);
 			
 			
 			
@@ -995,7 +995,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 			
 
 			_viewProjectionMatrix.multiplyMatrices( cam.projectionMatrix, cam.matrixWorldInverse );
-			vp =  _viewProjectionMatrix.transpose().flattenToArray(temparray);
+			vp =  _viewProjectionMatrix.transpose().toArray(temparray);
 			vpargs[0] = vp.slice(0);
 
 			self.trigger('postprerender',vpargs);
@@ -1127,7 +1127,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
 					selcam.matrixWorldInverse.getInverse( selcam.matrixWorld );
 					
 					_viewProjectionMatrix.multiplyMatrices( selcam.projectionMatrix, selcam.matrixWorldInverse );
-					insetvp =  MATH.transposeMat4(_viewProjectionMatrix.flattenToArray(temparray));
+					insetvp =  MATH.transposeMat4(_viewProjectionMatrix.toArray(temparray));
 					
 					
 					self.trigger('postprerender',[insetvp,w,w]);

@@ -3259,7 +3259,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			cam.matrixWorldInverse.getInverse(cam.matrixWorld);
 			var _viewProjectionMatrix = new THREE.Matrix4();
 			_viewProjectionMatrix.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
-			return MATH.transposeMat4(_viewProjectionMatrix.flattenToArray([]));
+			return MATH.transposeMat4(_viewProjectionMatrix.toArray([]));
 		}
 
 		function toGMat(threemat)
@@ -3552,7 +3552,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		this.loadMesh = function(url,type)
 		{
-			
+			debugger;
 			var Proto = 
 			{
 				extends: 'asset.vwf',

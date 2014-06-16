@@ -4,7 +4,30 @@
 		
 			
 			//asyncCallback(false);
-			
+
+			//handle for wrapping the glTF animation format so animatable.js can read it
+			function AnimationHandleWrapper(gltfAnimations)
+			{
+				this.duration = 0;
+				this.glTFAnimations = gltfAnimations;
+				for(var i in this.glTFAnimations)
+				{
+					this.duration = Math.max(this.duration,this.glTFAnimations[i].duration)
+				}
+				this.setKey = function(key)
+				{
+					for(var j in this.glTFAnimations)
+					{
+						var i, len = this.glTFAnimations[j].interps.length;
+						for (i = 0; i < len; i++)
+						{
+							this.glTFAnimations[j].interps[i].interp(key/30);
+						}
+					}
+
+				}
+				this.data = {length:this.duration,fps:30};
+			}
 		
 			this.inherits = ['vwf/model/threejs/transformable.js','vwf/model/threejs/materialDef.js','vwf/model/threejs/animatable.js','vwf/model/threejs/shadowcaster.js','vwf/model/threejs/passable.js','vwf/model/threejs/visible.js','vwf/model/threejs/static.js'];
 			this.initializingNode = function()
@@ -248,14 +271,31 @@
 				reg.loaded = true;
 				//store this asset in the registry
 
-				reg.node = asset.scene.clone();
-				
-				
+				//somehow the glTF loader creates meshes that do not clone properly
+				if(childType !== 'subDriver/threejs/asset/vnd.gltf+json')
+					reg.node = asset.scene.clone();
+				else
+				{
+
+					reg.node = asset.scene;
+					var list = [];
+					this.GetAllLeafMeshes(reg.node,list);
+					for(var i =0; i < list.length; i++)
+					{
+						if(list[i] instanceof THREE.SkinnedMesh)
+							list[i].animationHandle = new AnimationHandleWrapper(asset.animations);
+					}
+				}
+
+
 
 				this.cleanTHREEJSnodes(reg.node);
 				
-				this.getRoot().add(reg.node.clone());
-				
+				//somehow the glTF loader creates meshes that do not clone properly
+				if(childType !== 'subDriver/threejs/asset/vnd.gltf+json')
+					this.getRoot().add(reg.node.clone());
+				else
+					this.getRoot().add(reg.node);
 				
 				this.settingProperty('materialDef',this.materialDef);
 				//if any callbacks were waiting on the asset, call those callbacks
@@ -366,6 +406,14 @@
 				{
 					
 					this.loader = new UTF8JsonLoader({source:assetSource},this.loaded.bind(this),this.loadFailed.bind(this));
+					
+					asyncCallback(false);
+				}
+				if(childType == 'subDriver/threejs/asset/vnd.gltf+json')
+				{
+					this.loader = new THREE.glTFLoader()
+                	this.loader.useBufferGeometry = true;
+					this.loader.load(assetSource,this.loaded.bind(this));
 					
 					asyncCallback(false);
 				}

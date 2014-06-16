@@ -2,6 +2,7 @@
 	
 		function getSkin(node,list)
 		{
+			
 			if(!list) list = [];
 			if(node instanceof THREE.SkinnedMesh)
 			{

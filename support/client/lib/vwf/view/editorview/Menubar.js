@@ -927,6 +927,8 @@ define(
 								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.collada+xml+optimized');
 							if(type == '3DR JSON')
 								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.osgjs+json+compressed');
+							if(type == 'glTF JSON')
+								_Editor.loadMesh(val,'subDriver/threejs/asset/vnd.gltf+json');
 
 							
 						}
@@ -934,7 +936,7 @@ define(
 				}
 
 			},
-			["Collada","Optimized Collada","3DR JSON"])	
+			["Collada","Optimized Collada","3DR JSON",'glTF JSON'])	
 			
 		});
 		
