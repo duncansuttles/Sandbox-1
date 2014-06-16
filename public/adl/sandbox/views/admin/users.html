@@ -123,12 +123,12 @@
 		});
 		*/
 		$.ajax ({
-    url: root + '/data/delete_users',
-    type: "POST",
-    data: JSON.stringify(tempArr),
-    dataType: "json",
-    contentType: "application/json; charset=utf-8",
-    success: function(o){
+   			url: root + '/data/delete_users',
+    		type: "POST",
+    		data: JSON.stringify(tempArr),
+    		dataType: "json",
+    		contentType: "application/json; charset=utf-8",
+    		complete: function(o){
 			
 			for(var i in tempUserArr){
 				vwfPortalModel.adminDisplayList.remove(tempUserArr[i]);

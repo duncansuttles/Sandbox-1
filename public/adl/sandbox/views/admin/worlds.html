@@ -123,8 +123,7 @@
    				data: JSON.stringify(dataSendArr),
     			dataType: "json",
     			contentType: "application/json; charset=utf-8",
-    			success: function(o){
-				
+    			complete: function(o){
 				for(var i in tempWorldArr){
 					for(var g in vwfPortalModel.adminDisplayList()){
 						if(vwfPortalModel.adminDisplayList()[g]().id == tempWorldArr[i]){
