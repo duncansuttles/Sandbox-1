@@ -115,12 +115,29 @@
 		}
 		
 		//Make the request to the server to delete these users
-		$.post(root + '/data/delete_users', JSON.stringify(tempArr), function(o){
+		/* $.post(root + '/data/delete_users', JSON.stringify(tempArr), function(o){
 			
 			for(var i in tempUserArr){
 				vwfPortalModel.adminDisplayList.remove(tempUserArr[i]);
 			}
 		});
+		*/
+		$.ajax ({
+    url: root + '/data/delete_users',
+    type: "POST",
+    data: JSON.stringify(tempArr),
+    dataType: "json",
+    contentType: "application/json; charset=utf-8",
+    success: function(o){
+			
+			for(var i in tempUserArr){
+				vwfPortalModel.adminDisplayList.remove(tempUserArr[i]);
+			}
+	}
+
+});
+
+
 		console.log("Delete users ", tempUserArr);
 		$('input').prop("checked", false);
 		vwfPortalModel.setSelectAll(false);
