@@ -527,6 +527,7 @@ passport.use(new FacebookStrategy({
     },
     function (accessToken, refreshToken, profile, done) {
         process.nextTick(function () {
+                profile.id = "facebook_"+profile.id;
                 DAL.getUser(profile.id, function (user) {
                     if (user) {
                         done(null, user);
@@ -537,7 +538,35 @@ passport.use(new FacebookStrategy({
                                     done(null, user);
                                 });
                             } else {
-                                done("Error creating user " + results, null);
+                                done("Error creating user from facebook " + results, null);
+                            }
+                        });
+                    }
+                });
+            }
+        );
+    }
+));
+
+passport.use(new TwitterStrategy({
+        consumerKey: global.configuration.twitter_consumer_key,
+        consumerSecret: global.configuration.twitter_consumer_secret,
+        callbackURL: global.configuration.twitter_callback_url
+    },
+    function (accessToken, refreshToken, profile, done) {
+        process.nextTick(function () {
+                profile.id = "twitter_"+profile.id;
+                DAL.getUser(profile.id, function (user) {
+                    if (user) {
+                        done(null, user);
+                    } else {
+                        user = DAL.createProfileFromTwitter(profile, function (results) {
+                            if (results === "ok") {
+                                DAL.getUser(profile.id, function (user) {
+                                    done(null, user);
+                                });
+                            } else {
+                                done("Error creating user from twitter " + results, null);
                             }
                         });
                     }
