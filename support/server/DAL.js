@@ -1281,8 +1281,41 @@ function getHistory(id,cb)
 	});
 }
 
+// TODO Make dry
 function createProfileFromFacebook(profile,cb) {
     data = { id: profile.id, Username: profile.displayName, Email: profile.email };
+    createUser(profile.id, data,function(ok,err){
+        if (ok) {
+            mailTools.newUser(profile.id, data.Email);
+            xapi.sendStatement(profile.id, xapi.verbs.registered);
+            cb("ok");
+        }
+        else {
+            xapi.sendStatement(profile.id, xapi.verbs.unsuccessful_registered_attempt);
+            global.log("Failed registration with "+err);
+            cb(err);
+        }
+    });
+}
+
+function createProfileFromTwitter(profile,cb) {
+    data = { id: profile.id, Username: profile.displayName, Email: "", Avatar: "default.dae", Photo: profile.photos[0].value };
+    createUser(profile.id, data,function(ok,err){
+        if (ok) {
+            mailTools.newUser(profile.id, data.Email);
+            xapi.sendStatement(profile.id, xapi.verbs.registered);
+            cb("ok");
+        }
+        else {
+            xapi.sendStatement(profile.id, xapi.verbs.unsuccessful_registered_attempt);
+            global.log("Failed registration with "+err);
+            cb(err);
+        }
+    });
+}
+
+function createProfileFromGoogle(profile,cb) {
+    data = { id: profile.id, Username: profile.displayName, Email: profile.emails[0].value, Avatar: "default.dae", identifier: profile.identifier };
     createUser(profile.id, data,function(ok,err){
         if (ok) {
             mailTools.newUser(profile.id, data.Email);
@@ -1555,6 +1588,8 @@ function startup(callback)
 			DAL_Singleton.deleteUsers = deleteUsers;
 			DAL_Singleton.getAllUsersInfo = getAllUsersInfo;
             DAL_Singleton.createProfileFromFacebook = createProfileFromFacebook;
+            DAL_Singleton.createProfileFromTwitter = createProfileFromTwitter;
+            DAL_Singleton.createProfileFromGoogle = createProfileFromGoogle;
 			
 			DAL_Singleton.find = findInDB;
 			

@@ -71,6 +71,8 @@ var ServerFeatures = require("./serverFeatures.js");
 
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
+var TwitterStrategy = require('passport-twitter').Strategy;
+var GoogleStrategy = require('passport-google').Strategy;
 
 var sessions = require('./sessions');
 var xapi = require('./xapi');
@@ -79,7 +81,7 @@ var xapi = require('./xapi');
 var i18n = require("i18next");
 var option = {
         //lng: 'en',
-        resGetPath: (libpath.resolve("./locales/__lng__/__ns__.json")),
+        resGetPath: (libpath.resolve("./locales/__lng__/__ns__.json"))
         //debug: true
       };
 i18n.init(option);
@@ -352,6 +354,36 @@ function startVWF(){
                     res.redirect('/');
                 });
 
+            // Twitter authentication routing
+            app.get(global.appPath+'/auth/twitter', passport.authenticate('twitter'));
+
+            app.get(global.appPath+'/auth/twitter/callback',
+                passport.authenticate('twitter', { failureRedirect: global.appPath+'/login' }),
+                function(req, res) {
+                    var redirectUrl = '/';
+                    // If we have previously stored a redirectUrl, use that,
+                    // otherwise, use the default.
+                    if (req.session.redirectUrl) {
+                        redirectUrl = req.session.redirectUrl;
+                        req.session.redirectUrl = null;
+                    }
+                    res.redirect(redirectUrl);
+                });
+
+             // Google authentication routing
+             app.get(global.appPath+'/auth/google', passport.authenticate('google'));
+             app.get(global.appPath+'/auth/google/return',
+                 passport.authenticate('google', { failureRedirect: global.appPath+'/login' }),
+                 function(req, res) {
+                     var redirectUrl = '/';
+                     // If we have previously stored a redirectUrl, use that,
+                     // otherwise, use the default.
+                     if (req.session.redirectUrl) {
+                         redirectUrl = req.session.redirectUrl;
+                         req.session.redirectUrl = null;
+                     }
+                     res.redirect(redirectUrl);
+                 });
 
             // route for logging out
             app.get('/fb_logout', function(req, res) {
@@ -505,7 +537,7 @@ function startVWF(){
 }
 // used to serialize the user for the session
 passport.serializeUser(function (user, done) {
-    sessions.createSession(user.id,user.Username,"",false,function(session){
+    sessions.createSession(user.id,user.Username ? user.Username : user.displayName,"",false,function(session){
         xapi.sendStatement(user.id,xapi.verbs.logged_in);
         userStorage = { id: user.id, sessionId: session.sessionId}
         done(null, userStorage);
@@ -575,5 +607,35 @@ passport.use(new TwitterStrategy({
         );
     }
 ));
+
+passport.use(new GoogleStrategy({
+        returnURL: global.configuration.google_return_url,
+        realm: global.configuration.google_realm
+    },
+    function(identifier, profile, done) {
+        // asynchronous verification, for effect...
+        process.nextTick(function () {
+            profile.identifier = identifier;
+            profile.id = identifier;
+            DAL.getUser(profile.id, function (user) {
+                if (user) {
+                    done(null, user);
+                } else {
+                    user = DAL.createProfileFromGoogle(profile, function (results) {
+                        if (results === "ok") {
+                            DAL.getUser(profile.id, function (user) {
+                                done(null, user);
+                            });
+                        } else {
+                            done("Error creating user from google " + results, null);
+                        }
+                    });
+                }
+            });
+            return done(null, profile);
+        });
+    }
+));
+
 
 exports.startVWF = startVWF;
