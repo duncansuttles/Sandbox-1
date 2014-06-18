@@ -72,7 +72,7 @@ var ServerFeatures = require("./serverFeatures.js");
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
 var TwitterStrategy = require('passport-twitter').Strategy;
-var GoogleStrategy = require('passport-google').Strategy;
+var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
 var sessions = require('./sessions');
 var xapi = require('./xapi');
@@ -371,19 +371,15 @@ function startVWF(){
                 });
 
              // Google authentication routing
-             app.get(global.appPath+'/auth/google', passport.authenticate('google'));
-             app.get(global.appPath+'/auth/google/return',
-                 passport.authenticate('google', { failureRedirect: global.appPath+'/login' }),
-                 function(req, res) {
-                     var redirectUrl = '/';
-                     // If we have previously stored a redirectUrl, use that,
-                     // otherwise, use the default.
-                     if (req.session.redirectUrl) {
-                         redirectUrl = req.session.redirectUrl;
-                         req.session.redirectUrl = null;
-                     }
-                     res.redirect(redirectUrl);
-                 });
+            app.get(global.appPath+'/auth/google',
+                passport.authenticate('google', { scope: ['profile','email'] }));
+
+            app.get(global.appPath+'/auth/google/return',
+                passport.authenticate('google', { failureRedirect: global.appPath+'/login' }),
+                function(req, res) {
+                    // Successful authentication, redirect home.
+                    res.redirect('/');
+                });
 
             // route for logging out
             app.get('/fb_logout', function(req, res) {
@@ -609,14 +605,14 @@ passport.use(new TwitterStrategy({
 ));
 
 passport.use(new GoogleStrategy({
-        returnURL: global.configuration.google_return_url,
-        realm: global.configuration.google_realm
+        clientID: global.configuration.google_client_id,
+        clientSecret: global.configuration.google_client_secret,
+        callbackURL: global.configuration.google_callback_url
     },
-    function(identifier, profile, done) {
+    function(token, tokenSecret, profile, done) {
         // asynchronous verification, for effect...
         process.nextTick(function () {
-            profile.identifier = identifier;
-            profile.id = identifier;
+            profile.id = "google_"+profile.id;
             DAL.getUser(profile.id, function (user) {
                 if (user) {
                     done(null, user);
