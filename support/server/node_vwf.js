@@ -119,6 +119,16 @@ global.error = function()
 	}
 }
 
+ var handleRedirectAfterLogin = function(req,res) {
+    var redirectUrl = global.appPath+'/';
+    // If we have previously stored a redirectUrl, use that,
+    // otherwise, use the default.
+    if (req.session && req.session.redirectUrl) {
+        redirectUrl = global.appPath+'/'+req.session.redirectUrl;
+        req.session.redirectUrl = null;
+    }
+    res.redirect(redirectUrl);
+};
 
 //Start the VWF HTTP server
 function startVWF(){
@@ -350,8 +360,7 @@ function startVWF(){
             app.get(global.appPath+'/auth/facebook/callback',
                 passport.authenticate('facebook', { failureRedirect: global.appPath+'/login' }),
                 function(req, res) {
-                    // Successful authentication, redirect home.
-                    res.redirect('/');
+                    handleRedirectAfterLogin(req,res);
                 });
 
             // Twitter authentication routing
@@ -360,14 +369,7 @@ function startVWF(){
             app.get(global.appPath+'/auth/twitter/callback',
                 passport.authenticate('twitter', { failureRedirect: global.appPath+'/login' }),
                 function(req, res) {
-                    var redirectUrl = '/';
-                    // If we have previously stored a redirectUrl, use that,
-                    // otherwise, use the default.
-                    if (req.session.redirectUrl) {
-                        redirectUrl = req.session.redirectUrl;
-                        req.session.redirectUrl = null;
-                    }
-                    res.redirect(redirectUrl);
+                    handleRedirectAfterLogin(req,res);
                 });
 
              // Google authentication routing
@@ -377,8 +379,7 @@ function startVWF(){
             app.get(global.appPath+'/auth/google/return',
                 passport.authenticate('google', { failureRedirect: global.appPath+'/login' }),
                 function(req, res) {
-                    // Successful authentication, redirect home.
-                    res.redirect('/');
+                    handleRedirectAfterLogin(req,res);
                 });
 
             // route for logging out

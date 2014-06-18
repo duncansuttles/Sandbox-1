@@ -113,6 +113,9 @@ exports.statsHandler = function(req, res, next){
 }
 exports.redirectPasswordEmail = function(req,res,next)
 {
+    if (req.query && req.query.return) {
+        req.session.redirectUrl = req.query.return;
+    }
 
 	sessions.GetSessionData(req,function(sessionData)
 	{
