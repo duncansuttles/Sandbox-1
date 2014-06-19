@@ -354,33 +354,42 @@ function startVWF(){
 			//var listen = app.listen(port);
 			var listen = null;
 
-            app.get(global.appPath+'/auth/facebook',
-                passport.authenticate('facebook', { scope : 'email' }));
 
-            app.get(global.appPath+'/auth/facebook/callback',
-                passport.authenticate('facebook', { failureRedirect: global.appPath+'/login' }),
-                function(req, res) {
-                    handleRedirectAfterLogin(req,res);
-                });
+			if(global.configuration.facebook_app_id)
+			{
+	            app.get(global.appPath+'/auth/facebook',
+	                passport.authenticate('facebook', { scope : 'email' }));
 
-            // Twitter authentication routing
-            app.get(global.appPath+'/auth/twitter', passport.authenticate('twitter'));
+	            app.get(global.appPath+'/auth/facebook/callback',
+	                passport.authenticate('facebook', { failureRedirect: global.appPath+'/login' }),
+	                function(req, res) {
+	                    handleRedirectAfterLogin(req,res);
+	                });
+        	}
 
-            app.get(global.appPath+'/auth/twitter/callback',
-                passport.authenticate('twitter', { failureRedirect: global.appPath+'/login' }),
-                function(req, res) {
-                    handleRedirectAfterLogin(req,res);
-                });
+        	if(global.configuration.twitter_consumer_key)
+			{
+	            // Twitter authentication routing
+	            app.get(global.appPath+'/auth/twitter', passport.authenticate('twitter'));
 
-             // Google authentication routing
-            app.get(global.appPath+'/auth/google',
-                passport.authenticate('google', { scope: ['profile','email'] }));
+	            app.get(global.appPath+'/auth/twitter/callback',
+	                passport.authenticate('twitter', { failureRedirect: global.appPath+'/login' }),
+	                function(req, res) {
+	                    handleRedirectAfterLogin(req,res);
+	                });
+        	}
+        	if(global.configuration.google_client_id)
+			{
+	             // Google authentication routing
+	            app.get(global.appPath+'/auth/google',
+	                passport.authenticate('google', { scope: ['profile','email'] }));
 
-            app.get(global.appPath+'/auth/google/callback',
-                passport.authenticate('google', { failureRedirect: global.appPath+'/login' }),
-                function(req, res) {
-                    handleRedirectAfterLogin(req,res);
-                });
+	            app.get(global.appPath+'/auth/google/callback',
+	                passport.authenticate('google', { failureRedirect: global.appPath+'/login' }),
+	                function(req, res) {
+	                    handleRedirectAfterLogin(req,res);
+	                });
+        	}
 
             // route for logging out
             app.get('/fb_logout', function(req, res) {
@@ -549,90 +558,97 @@ passport.deserializeUser(function (userStorage, done) {
     });
 });
 
-passport.use(new FacebookStrategy({
-        clientID: global.configuration.facebook_app_id,
-        clientSecret: global.configuration.facebook_app_secret,
-        callbackURL: global.configuration.facebook_callback_url
-    },
-    function (accessToken, refreshToken, profile, done) {
-        process.nextTick(function () {
-                profile.id = "facebook_"+profile.id;
-                DAL.getUser(profile.id, function (user) {
-                    if (user) {
-                        done(null, user);
-                    } else {
-                        user = DAL.createProfileFromFacebook(profile, function (results) {
-                            if (results === "ok") {
-                                DAL.getUser(profile.id, function (user) {
-                                    done(null, user);
-                                });
-                            } else {
-                                done("Error creating user from facebook " + results, null);
-                            }
-                        });
-                    }
-                });
-            }
-        );
-    }
-));
+if(global.configuration.facebook_app_id)
+{
+	passport.use(new FacebookStrategy({
+	        clientID: global.configuration.facebook_app_id,
+	        clientSecret: global.configuration.facebook_app_secret,
+	        callbackURL: global.configuration.facebook_callback_url
+	    },
+	    function (accessToken, refreshToken, profile, done) {
+	        process.nextTick(function () {
+	                profile.id = "facebook_"+profile.id;
+	                DAL.getUser(profile.id, function (user) {
+	                    if (user) {
+	                        done(null, user);
+	                    } else {
+	                        user = DAL.createProfileFromFacebook(profile, function (results) {
+	                            if (results === "ok") {
+	                                DAL.getUser(profile.id, function (user) {
+	                                    done(null, user);
+	                                });
+	                            } else {
+	                                done("Error creating user from facebook " + results, null);
+	                            }
+	                        });
+	                    }
+	                });
+	            }
+	        );
+	    }
+	));
+}
+if(global.configuration.twitter_consumer_key)
+{
+	passport.use(new TwitterStrategy({
+	        consumerKey: global.configuration.twitter_consumer_key,
+	        consumerSecret: global.configuration.twitter_consumer_secret,
+	        callbackURL: global.configuration.twitter_callback_url
+	    },
+	    function (accessToken, refreshToken, profile, done) {
+	        process.nextTick(function () {
+	                profile.id = "twitter_"+profile.id;
+	                DAL.getUser(profile.id, function (user) {
+	                    if (user) {
+	                        done(null, user);
+	                    } else {
+	                        user = DAL.createProfileFromTwitter(profile, function (results) {
+	                            if (results === "ok") {
+	                                DAL.getUser(profile.id, function (user) {
+	                                    done(null, user);
+	                                });
+	                            } else {
+	                                done("Error creating user from twitter " + results, null);
+	                            }
+	                        });
+	                    }
+	                });
+	            }
+	        );
+	    }
+	));
+}
 
-passport.use(new TwitterStrategy({
-        consumerKey: global.configuration.twitter_consumer_key,
-        consumerSecret: global.configuration.twitter_consumer_secret,
-        callbackURL: global.configuration.twitter_callback_url
-    },
-    function (accessToken, refreshToken, profile, done) {
-        process.nextTick(function () {
-                profile.id = "twitter_"+profile.id;
-                DAL.getUser(profile.id, function (user) {
-                    if (user) {
-                        done(null, user);
-                    } else {
-                        user = DAL.createProfileFromTwitter(profile, function (results) {
-                            if (results === "ok") {
-                                DAL.getUser(profile.id, function (user) {
-                                    done(null, user);
-                                });
-                            } else {
-                                done("Error creating user from twitter " + results, null);
-                            }
-                        });
-                    }
-                });
-            }
-        );
-    }
-));
-
-passport.use(new GoogleStrategy({
-        clientID: global.configuration.google_client_id,
-        clientSecret: global.configuration.google_client_secret,
-        callbackURL: global.configuration.google_callback_url
-    },
-    function(token, tokenSecret, profile, done) {
-        // asynchronous verification, for effect...
-        process.nextTick(function () {
-            profile.id = "google_"+profile.id;
-            DAL.getUser(profile.id, function (user) {
-                if (user) {
-                    done(null, user);
-                } else {
-                    user = DAL.createProfileFromGoogle(profile, function (results) {
-                        if (results === "ok") {
-                            DAL.getUser(profile.id, function (user) {
-                                done(null, user);
-                            });
-                        } else {
-                            done("Error creating user from google " + results, null);
-                        }
-                    });
-                }
-            });
-            return done(null, profile);
-        });
-    }
-));
-
+if(global.configuration.google_client_id)
+{
+	passport.use(new GoogleStrategy({
+	        clientID: global.configuration.google_client_id,
+	        clientSecret: global.configuration.google_client_secret,
+	        callbackURL: global.configuration.google_callback_url
+	    },
+	    function(token, tokenSecret, profile, done) {
+	        // asynchronous verification, for effect...
+	        process.nextTick(function () {
+	            profile.id = "google_"+profile.id;
+	            DAL.getUser(profile.id, function (user) {
+	                if (user) {
+	                    done(null, user);
+	                } else {
+	                    user = DAL.createProfileFromGoogle(profile, function (results) {
+	                        if (results === "ok") {
+	                            DAL.getUser(profile.id, function (user) {
+	                                done(null, user);
+	                            });
+	                        } else {
+	                            done("Error creating user from google " + results, null);
+	                        }
+	                    });
+	                }
+	            });
+	            return done(null, profile);
+	        });
+	    }
+	));
+}
 
 exports.startVWF = startVWF;
