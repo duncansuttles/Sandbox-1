@@ -523,7 +523,7 @@ function TileCache()
 							}
 						}
 					}
-					geo.computeCentroids();
+					
 					return geo;
 				}				
 				this.returnMesh = function(mesh)	
