@@ -376,7 +376,7 @@ function startVWF(){
             app.get(global.appPath+'/auth/google',
                 passport.authenticate('google', { scope: ['profile','email'] }));
 
-            app.get(global.appPath+'/auth/google/return',
+            app.get(global.appPath+'/auth/google/callback',
                 passport.authenticate('google', { failureRedirect: global.appPath+'/login' }),
                 function(req, res) {
                     handleRedirectAfterLogin(req,res);
