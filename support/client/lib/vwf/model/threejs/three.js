@@ -39133,3 +39133,9 @@ THREE.ShaderFlares = {
 
 };
 
+var update = THREE.Bone.prototype.update;
+THREE.Bone.prototype.update = function(parentSkinMatrix, forceUpdate) {
+update.call(this, parentSkinMatrix, forceUpdate);
+this.updateMatrixWorld( true );
+};
+THREE.Object3D.prototype.update = function() {};
