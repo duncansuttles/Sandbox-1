@@ -550,11 +550,16 @@ function startVWF(){
 }
 // used to serialize the user for the session
 passport.serializeUser(function (user, done) {
-    sessions.createSession(user.id,user.Username ? user.Username : user.displayName,"",false,function(session){
+ 
         xapi.sendStatement(user.id,xapi.verbs.logged_in);
-        userStorage = { id: user.id, sessionId: session.sessionId}
+        var userStorage = require('./sessions.js').createSession();
+        userStorage.id = user.id;
+        userStorage.UID = user.id;
+        userStorage.Username = user.Username || user.id;
+        userStorage.PasswordIsTemp = user.isTemp;
+		userStorage.Password = user.Password;
         done(null, userStorage);
-    });
+    
 });
 
 // used to deserialize the user
