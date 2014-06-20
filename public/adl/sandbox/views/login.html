@@ -23,7 +23,7 @@
 		window.location = vwfPortalModel.returnVal;
 	}
 	
-	vwfPortalModel.handleLoginButton = function(o, e){
+	vwfPortalModel.handleLoginButton = function(o, e){ 
 	
 		var username = $('#txtusername').val();
 		var password = $('#txtpassword').val();
@@ -32,25 +32,38 @@
 		
 		password = EncryptPassword(password,username,$.trim(salt));
 		
-		$.ajax(root + '/vwfDataManager.svc/sitelogin?UID=' + username +"&P=" + password,
+		var formData = new FormData();
+		formData.append('username', username);
+		formData.append('password', password);
+
+		var xhr = new XMLHttpRequest();
+		xhr.open("POST", "../../auth/local");
+		xhr.addEventListener("load",function(xhr)
 		{
-			cache:false,
-			success:function(data,status,xhr)
+			if(xhr.target.status === 301 || xhr.target.status === 302 || xhr.target.status === 200)
 			{
 				$('#txtusername').val('');
 				$('#txtpassword').val('');
 				redirect();
-			},
-			error:function(xhr,status,err)
+			}else
 			{
+				$('#txtusername').val('');
 				$('#txtpassword').val('');
 				vwfPortalModel.errorText("Error: Please ensure your username and password are both correct");
-				
-				window.setTimeout(function(){
-					vwfPortalModel.errorText("");				
-				}, 6000);
 			}
+			
 		});
+		xhr.addEventListener("error",function()
+		{
+			$('#txtusername').val('');
+			$('#txtpassword').val('');
+			
+			vwfPortalModel.errorText("Error: Please ensure your username and password are both correct");
+
+		},false);
+
+		xhr.send(formData);
+
 	};
 </script>
 <div id="content" class="row" style="margin:10px auto;float:none;text-align:center;height:260px;">

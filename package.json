@@ -35,7 +35,8 @@
     "passport-facebook": "1.0.3",
     "passport-twitter": "1.0.2",
     "passport-google-oauth": "0.1.5",
-    "connect": "2.19.2"
+    "connect": "2.19.2",
+    "passport-local": "~1.0.0"
   },
   "devDependencies": {},
   "scripts": {

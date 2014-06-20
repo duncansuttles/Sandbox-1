@@ -71,6 +71,7 @@ var ServerFeatures = require("./serverFeatures.js");
 
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
+var LocalStrategy = require('passport-local').Strategy;
 var TwitterStrategy = require('passport-twitter').Strategy;
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
@@ -353,6 +354,13 @@ function startVWF(){
 			//var listen = app.listen(port);
 			var listen = null;
 
+			app.post('/auth/local', 
+			  passport.authenticate('local', { failureRedirect: '/login' }),
+			  function(req, res) {
+			    
+			    	handleRedirectAfterLogin(req,res);
+
+				});
 
 			if(global.configuration.facebook_app_id)
 			{
@@ -555,6 +563,30 @@ passport.deserializeUser(function (userStorage, done) {
         done(null, user);
     });
 });
+
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    DAL.getUser(username, function (user) {
+        if (user) {
+        	require('./passwordUtils.js').CheckPassword(username,password,function(ok,isTemp)
+        	{
+				if(ok === true)
+				{
+					xapi.sendStatement(username,xapi.verbs.logged_in); 
+					if(isTemp)
+						user.isTemp = true;
+					done(null, user);
+				}else
+						done(null,null);
+        	})
+            
+        }else
+        {
+        	done(null,null);
+        } 
+    })
+    })
+);
 
 if(global.configuration.facebook_app_id)
 {
