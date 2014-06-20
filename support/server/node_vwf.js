@@ -313,16 +313,15 @@ function startVWF(){
 			//i18n support
 			app.use(express.cookieParser());
     		app.use(i18n.handle);
-
-			var MemoryStore = express.session.MemoryStore;
-			var sessionStore = new MemoryStore();
-			sessions.expressStorage = sessionStore;
-            app.use(express.session({secret: 'keyboard cat',store:sessionStore
-        	}));
+            app.use(express.cookieSession({
+                key    : global.configuration.sessionKey ? global.configuration.sessionKey : 'virtual',
+                secret : global.configuration.sessionSecret ? global.configuration.sessionSecret : 'unsecure cookie secret',
+                cookie : {
+                    maxAge: global.configuration.sessionTimeoutMs ? global.configuration.sessionTimeoutMs : 10000000
+                }
+            }));
             app.use(passport.initialize());
-            app.use(passport.session({secret: 'keyboard cat', store:sessionStore
-        	}));
-            
+            app.use(passport.session());
 
             app.use(app.router);
 
@@ -553,7 +552,6 @@ passport.serializeUser(function (user, done) {
 // used to deserialize the user
 passport.deserializeUser(function (userStorage, done) {
     DAL.getUser(userStorage.id, function (user) {
-        global.userStorageSessionId = userStorage.sessionId;
         done(null, user);
     });
 });

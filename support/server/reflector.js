@@ -6,6 +6,9 @@ var url = require("url");
 var mime = require('mime');
 var sessions = require('./sessions.js');
 var messageCompress = require('../client/lib/messageCompress').messageCompress;
+var connect           = require('connect'),
+    parseSignedCookie = connect.utils.parseSignedCookie,
+    cookie            = require('express/node_modules/cookie');
 
 YAML = require('js-yaml');
 
@@ -21,6 +24,14 @@ function startup(listen) {
         //Somehow, we still need to get the timeouts lower. This does tot seem to do it.
         sio.set('heartbeat interval', 20);
         sio.set('heartbeat timeout', 30);
+        sio.set('authorization', function (data, callback) {
+        	if(data.headers.cookie) {
+                // save parsedSessionId to handshakeData
+                data.cookieData = parseSignedCookie(cookie.parse(data.headers.cookie)[global.configuration.sessionKey ? global.configuration.sessionKey : 'virtual'],
+               				                        global.configuration.sessionSecret ? global.configuration.sessionSecret : 'unsecure cookie secret' );
+            }
+            callback(null, true);
+        });
 
     });
     sio.set('heartbeat interval', 20);
