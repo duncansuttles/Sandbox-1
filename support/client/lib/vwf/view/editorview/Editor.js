@@ -2841,7 +2841,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		//callback for setPArent. CAlled once a node is picked. Selected objects will become children of this node
 		this.PickParentCallback = function (parentnode)
 		{
-			_UndoManager.startCompoundEvent();
+
+			
 			var newnames = [];
 			if(parentnode)
 			{
@@ -2858,6 +2859,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						{
 							if(vwf.decendants(id).indexOf(parent) == -1)
 							{
+								_UndoManager.startCompoundEvent();
+
 								var node = _DataManager.getCleanNodePrototype(id);
 								var childmat = toGMat(this.findviewnode(id).matrixWorld);
 								var parentmat = toGMat(this.findviewnode(parentnode.id).matrixWorld);
@@ -2871,6 +2874,12 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 								var newname = GUID();
 								newnames.push(newname)
 								this.createChild(parentnode.id, newname, node);
+								this.DeleteSelection();
+								this.TempPickCallback = null;
+								self.SelectOnNextCreate(newnames);
+								this.SetSelectMode('Pick');
+								_UndoManager.stopCompoundEvent();
+								
 							}else
 							{
 								alertify.alert('This object cannot be assigned to be a child of one of its decendants')
@@ -2891,11 +2900,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					alertify.alert('No object selected')
 			}
 
-			this.DeleteSelection();
-			this.TempPickCallback = null;
-			self.SelectOnNextCreate(newnames);
-			this.SetSelectMode('Pick');
-			_UndoManager.stopCompoundEvent();
+		
 		}
 		this.RemoveParent = function ()
 		{
