@@ -2551,6 +2551,24 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			cubeX.geometry.setPickGeometry(new THREE.CubeGeometry(10.00, 1.80, 1.80));
 			cubeY.geometry.setPickGeometry(new THREE.CubeGeometry(1.80, 10.00, 1.80));
 			cubeZ.geometry.setPickGeometry(new THREE.CubeGeometry(1.80, 1.80, 10.00));
+
+			
+			var arrowX = new THREE.Mesh(new THREE.CylinderGeometry(0,1,2,10,0),cubeX.material);
+			cubeX.add(arrowX,true);
+			arrowX.rotation.z = -90 * 0.0174532925;
+			arrowX.position.x = 5
+
+			var arrowY = new THREE.Mesh(new THREE.CylinderGeometry(0,1,2,10,0),cubeY.material);
+			cubeY.add(arrowY,true);
+			//arrowX.rotation.z = -90 * 0.0174532925;
+			arrowY.position.y = 5
+
+			var arrowZ = new THREE.Mesh(new THREE.CylinderGeometry(0,1,2,10,0),cubeZ.material);
+			cubeZ.add(arrowZ,true);
+			arrowZ.rotation.y = -90 * 0.0174532925;
+			arrowZ.rotation.z = -90 * 0.0174532925
+			arrowZ.position.z = 5
+
 			var rotx = new THREE.Mesh(new THREE.TorusGeometry(7, .50, 4, 20), new THREE.MeshLambertMaterial(
 			{
 				color: 0xFF0000,
@@ -2581,12 +2599,12 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			MoveGizmo.allChildren.push(this.BuildBox([.85, .85, .85], [9.25, 0, 0], red)); //scale xyz
 			MoveGizmo.allChildren.push(this.BuildBox([.85, .85, .85], [0, 9.25, 0], green)); //scale xyz
 			MoveGizmo.allChildren.push(this.BuildBox([.85, .85, .85], [0, 0, 9.25], blue)); //scale xyz
-			MoveGizmo.allChildren.push(this.BuildBox([1.50, 1.50, .30], [.75, .75, .15], [75, 75, 0, 1])); //movexy
-			MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( 8, 8, .30 ));
-			MoveGizmo.allChildren.push(this.BuildBox([1.50, .30, 1.50], [.75, .15, .75], [75, 0, 75, 1])); //movexz
-			MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( 8, .30, 8 ));
-			MoveGizmo.allChildren.push(this.BuildBox([.30, 1.50, 1.50], [.15, .75, .75], [0, 75, 75, 1])); //moveyz
-			MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( .30, 8, 8 ));
+			MoveGizmo.allChildren.push(this.BuildBox([6, 6, 0], [3, 3, -.2], [75, 75, 0, 1],.5)); //movexy
+			//MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( 8, 8, .30 ));
+			MoveGizmo.allChildren.push(this.BuildBox([6, 0, 6], [3.2, -.2, 3], [75, 0, 75, 1],.5)); //movexz
+			//MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( 8, .30, 8 ));
+			MoveGizmo.allChildren.push(this.BuildBox([0,6, 6], [-.2, 3.2, 3], [0, 75, 75, 1],.5)); //moveyz
+			//MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( .30, 8, 8 ));
 			MoveGizmo.allChildren.push(this.BuildRing(12, .7, [0, 0, 1], 30, [1, 1, 1, 1], 90, 450)); //rotate z
 			MoveGizmo.allChildren.push(this.BuildRing(7, 0.5, [1, 0, 0], 37, red, 0, 370)); //rotate x
 			MoveGizmo.allChildren.push(this.BuildRing(7, 0.5, [0, 1, 0], 37, green, 0, 370)); //rotate y
@@ -2739,7 +2757,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			mesh.updateMatrixWorld(true);
 			return mesh;
 		}.bind(this);
-		this.BuildBox = function (size, offset, color)
+		this.BuildBox = function (size, offset, color,alpha)
 		{
 			var mesh = new THREE.Mesh(new THREE.CubeGeometry(size[0], size[1], size[2]), new THREE.MeshLambertMaterial());
 			mesh.material.color.r = color[0];
@@ -2752,6 +2770,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			mesh.material.emissive.g = color[1];
 			mesh.material.emissive.b = color[2];
 			mesh.material.shading = false;
+			mesh.material.transparent = true;
+			mesh.material.opacity = alpha || 1;
 			//mesh.matrix.setPosition(new THREE.Vector3(offset[0],offset[1],offset[2]));
 			for (var i = 0; i < mesh.geometry.vertices.length; i++)
 			{
@@ -2879,7 +2899,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 								self.SelectOnNextCreate(newnames);
 								this.SetSelectMode('Pick');
 								_UndoManager.stopCompoundEvent();
-								
+
 							}else
 							{
 								alertify.alert('This object cannot be assigned to be a child of one of its decendants')
