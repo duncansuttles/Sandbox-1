@@ -1143,16 +1143,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						this.undoPoint.push(new _UndoManager.SetPropertyEvent(SelectedVWFNodes[i].id,'transform',null)) // we are going to track this as it changes, and only record the new value on mouseup
 				}
 				var relscreeny = this.lastScalePoint - e.clientY;
-				if(relscreeny > 30 * this.ScaleSnap )
-				{
-					this.lastScalePoint = e.clientY;
 				
-				}
-				if(relscreeny < -30 * this.ScaleSnap)
-				{
-					this.lastScalePoint = e.clientY;
-					
-				}
+				
+				
 							
 				var t = new THREE.Vector3();
 				t.setFromMatrixPosition(MoveGizmo.parent.matrixWorld);
@@ -1357,22 +1350,32 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						{
 							
 							
-							if(relscreeny > 30 * this.ScaleSnap )
+							if(relscreeny > 10  )
+							{
+								while(relscreeny > 10)
+								{
+									wasScaled = true;
+									tempscale[2] *= 1.0 + this.ScaleSnap;
+									tempscale[1] *= 1.0 + this.ScaleSnap;
+									tempscale[0] *= 1.0 + this.ScaleSnap;
+									this.lastScalePoint -= 10;
+									relscreeny -=10;
+								}
+							}
+							if(relscreeny < -10 )
 							{
 								
+								while(relscreeny < -10)
+								{
 								wasScaled = true;
-								tempscale[2] +=  this.ScaleSnap;
-								tempscale[1] += this.ScaleSnap;
-								tempscale[0] += this.ScaleSnap;
+								tempscale[2] *= 1.0 - this.ScaleSnap;
+								tempscale[1] *= 1.0 - this.ScaleSnap;
+								tempscale[0] *= 1.0 - this.ScaleSnap;
+								this.lastScalePoint += 10;
+								relscreeny +=10;
+								}
 							}
-							if(relscreeny < -30 * this.ScaleSnap)
-							{
-								
-								wasScaled = true;
-								tempscale[2] -=  this.ScaleSnap;
-								tempscale[1] -= this.ScaleSnap;
-								tempscale[0] -= this.ScaleSnap;
-							}
+
 						}
 						if (document.AxisSelected == 9) // || document.AxisSelected == 10 || document.AxisSelected == 11)
 						{
@@ -3571,6 +3574,34 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			_UndoManager.recordCreate('index-vwf', newname, Proto);
 			vwf_view.kernel.createChild('index-vwf', newname, Proto);
 			
+		}
+		this.focusSelected = function()
+		{
+			var focusID = null;
+			if (_Editor.GetSelectedVWFNode())
+				focusID = _Editor.GetSelectedVWFNode().id;
+			if(!focusID)
+				focusID =  _UserManager.GetAvatarForClientID(vwf.moniker()) &&  _UserManager.GetAvatarForClientID(vwf.moniker()).id;
+			if (focusID && _Editor.findviewnode(focusID))
+			{
+					
+					var t = _Editor.GetMoveGizmo().parent.matrixWorld.getPosition();
+					var gizpos = [t.x, t.y, t.z];
+					var matrix = _Editor.findviewnode(focusID).matrixWorld.elements;
+					matrix = MATH.transposeMat4(matrix);
+					var box = _Editor.findviewnode(focusID).GetBoundingBox(true);
+					box = box.transformBy(matrix);
+					
+					var dist = 1;
+					if(box)
+						dist = Math.max(box.max[0] - box.min[0],box.max[1] - box.min[1],box.max[2] - box.min[2]);
+					if(dist == Infinity)
+						dist = 1;
+					vwf.models[0].model.nodes['index-vwf'].orbitPoint(gizpos);
+					vwf.models[0].model.nodes['index-vwf'].zoom = dist;
+					vwf.models[0].model.nodes['index-vwf'].updateCamera();
+				
+			}
 		}
 		this.initialize = function ()
 		{
