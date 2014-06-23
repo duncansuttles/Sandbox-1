@@ -10,50 +10,56 @@
         this.TransformEnabled = function() {
             return !this.overrideTransform;
         }
+        //this my be called by the view driver during interpolation
+        //in which case, there is no point in dirtying the scenemanager, as you may not 
+        //reason over the interpolated values anyway
+        this.setTransformInternal = function(propertyValue, sceneManagerUpdate) {
+            var threeObject = this.getRoot().parent;
+            if (this.getRoot().initializedFromAsset)
+                threeObject = this.getRoot();
+            var transform = propertyValue || goog.vec.Mat4.createIdentity();
+
+            var det = goog.vec.Mat4.determinant(transform);
+            if (det == 0) {
+                console.log('error setting matrix. determinant is 0');
+                return;
+            }
+            // Rotate 90 degress around X to convert from VWF Z-up to MATH Y-up.
+            if (threeObject instanceof THREE.Camera) {
+                var columny = goog.vec.Vec4.create();
+                goog.vec.Mat4.getColumn(transform, 1, columny);
+                var columnz = goog.vec.Vec4.create();
+                goog.vec.Mat4.getColumn(transform, 2, columnz);
+                goog.vec.Mat4.setColumn(transform, 1, columnz);
+                goog.vec.Mat4.setColumn(transform, 2, goog.vec.Vec4.negate(columny, columny));
+            }
+
+            if (!matComploose(transform, threeObject.matrix.elements)) {
+                if (threeObject instanceof THREE.ParticleSystem) {
+                    threeObject.updateTransform(transform);
+                }
+
+                threeObject.matrixAutoUpdate = false;
+                for (var i = 0; i < 16; i++)
+                    threeObject.matrix.elements[i] = transform[i];
+                threeObject.updateMatrixWorld(true);
+                //removed as of threejs r67
+                //if this transformable is a bone, we need to update the skin
+                //if (threeObject.skin)
+                //    threeObject.skin.updateMatrixWorld(true);
+                if (sceneManagerUpdate)
+                    _SceneManager.setDirty(threeObject);
+            }
+
+            //signals the driver that we don't have to process further, this prop was handled
+            return propertyValue;
+        }
         this.settingProperty = function(propertyName, propertyValue) {
             if (!this.TransformEnabled()) {
                 return propertyValue
             };
             if (propertyName == 'transform') {
-
-                var threeObject = this.getRoot().parent;
-                if (this.getRoot().initializedFromAsset)
-                    threeObject = this.getRoot();
-                var transform = propertyValue || goog.vec.Mat4.createIdentity();
-
-                var det = goog.vec.Mat4.determinant(transform);
-                if (det == 0) {
-                    console.log('error setting matrix. determinant is 0');
-                    return;
-                }
-                // Rotate 90 degress around X to convert from VWF Z-up to MATH Y-up.
-                if (threeObject instanceof THREE.Camera) {
-                    var columny = goog.vec.Vec4.create();
-                    goog.vec.Mat4.getColumn(transform, 1, columny);
-                    var columnz = goog.vec.Vec4.create();
-                    goog.vec.Mat4.getColumn(transform, 2, columnz);
-                    goog.vec.Mat4.setColumn(transform, 1, columnz);
-                    goog.vec.Mat4.setColumn(transform, 2, goog.vec.Vec4.negate(columny, columny));
-                }
-
-                if (!matComploose(transform, threeObject.matrix.elements)) {
-                    if (threeObject instanceof THREE.ParticleSystem) {
-                        threeObject.updateTransform(transform);
-                    }
-
-                    threeObject.matrixAutoUpdate = false;
-                    for (var i = 0; i < 16; i++)
-                        threeObject.matrix.elements[i] = transform[i];
-                    threeObject.updateMatrixWorld(true);
-                    //removed as of threejs r67
-                    //if this transformable is a bone, we need to update the skin
-                    //if (threeObject.skin)
-                    //    threeObject.skin.updateMatrixWorld(true);
-                    _SceneManager.setDirty(threeObject);
-                }
-
-                //signals the driver that we don't have to process further, this prop was handled
-                return propertyValue;
+                return this.setTransformInternal(propertyValue, true);
             }
 
         }

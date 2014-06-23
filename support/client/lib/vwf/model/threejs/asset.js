@@ -112,7 +112,7 @@
 						this.backupmats[i][0].material = this.backupmats[i][1];
 					}
 					this.rootnode.matrix = this.backupMatrix
-					this.rootnode.updateMatrixWorld(true);
+                this.rootnode.updateMatrixWorld(true);
 				}
 			}
 			this.loadFailed = function(id)
