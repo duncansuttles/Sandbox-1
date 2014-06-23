@@ -40361,6 +40361,8 @@ THREE.ShaderFlares = {
 var update = THREE.Bone.prototype.update;
 THREE.Bone.prototype.update = function(parentSkinMatrix, forceUpdate) {
     update.call(this, parentSkinMatrix, forceUpdate);
+
+    //don't do this here - it walks down the graph, so we get a graph traverse within a graph traverse
     //this.updateMatrixWorld(true);
 };
 THREE.Object3D.prototype.update = function() {};
