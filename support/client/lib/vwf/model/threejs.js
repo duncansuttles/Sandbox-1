@@ -48,7 +48,7 @@
 		return true;	
 	}
 	
-define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/threejs/backgroundLoader" ], function( module, model, utility, Color, backgroundLoader) {
+define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/threejs/backgroundLoader","vwf/model/threejs/glTF-parser","vwf/model/threejs/glTFLoaderUtils","vwf/model/threejs/glTFLoader","vwf/model/threejs/glTFAnimation","vwf/model/threejs/webgl-tf-deprecated" ], function( module, model, utility, Color, backgroundLoader) {
 
 
 
@@ -439,7 +439,7 @@ define( [ "module", "vwf/model", "vwf/utility", "vwf/utility/color","vwf/model/t
 					node.threeObject.add(node.getRoot());
 					threeParent.add(node.threeObject);
 				}
-				else if(childType ==  "subDriver/threejs/asset/vnd.collada+xml" || childType ==  "subDriver/threejs/asset/vnd.osgjs+json+compressed" || childType == "subDriver/threejs/asset/vnd.collada+xml+optimized")
+				else if(childType ==  "subDriver/threejs/asset/vnd.collada+xml" || childType ==  "subDriver/threejs/asset/vnd.osgjs+json+compressed" || childType == "subDriver/threejs/asset/vnd.collada+xml+optimized"|| childType == "subDriver/threejs/asset/vnd.gltf+json")
 				{
 					
 					node = this.state.nodes[childID] = this.subDriverFactory.createNode(childID, 'vwf/model/threejs/asset.js', childName, childType, childSource, callback);

@@ -6,13 +6,6 @@
 
 var THREE = { REVISION: '67' };
 
- // stats.js - http://github.com/mrdoob/stats.js
-THREE.Stats=function(){var l=Date.now(),m=l,g=0,n=Infinity,o=0,h=0,p=Infinity,q=0,r=0,s=0,f=document.createElement("div");f.id="stats";f.addEventListener("mousedown",function(b){b.preventDefault();t(++s%2)},!1);f.style.cssText="width:80px;opacity:0.9;cursor:pointer";var a=document.createElement("div");a.id="fps";a.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#002";f.appendChild(a);var i=document.createElement("div");i.id="fpsText";i.style.cssText="color:#0ff;font-family:Helvetica,Arial,sans-serif;font-size:9px;font-weight:bold;line-height:15px";
-i.innerHTML="FPS";a.appendChild(i);var c=document.createElement("div");c.id="fpsGraph";c.style.cssText="position:relative;width:74px;height:30px;background-color:#0ff";for(a.appendChild(c);74>c.children.length;){var j=document.createElement("span");j.style.cssText="width:1px;height:30px;float:left;background-color:#113";c.appendChild(j)}var d=document.createElement("div");d.id="ms";d.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#020;display:none";f.appendChild(d);var k=document.createElement("div");
-k.id="msText";k.style.cssText="color:#0f0;font-family:Helvetica,Arial,sans-serif;font-size:9px;font-weight:bold;line-height:15px";k.innerHTML="MS";d.appendChild(k);var e=document.createElement("div");e.id="msGraph";e.style.cssText="position:relative;width:74px;height:30px;background-color:#0f0";for(d.appendChild(e);74>e.children.length;)j=document.createElement("span"),j.style.cssText="width:1px;height:30px;float:left;background-color:#131",e.appendChild(j);var t=function(b){s=b;switch(s){case 0:a.style.display=
-"block";d.style.display="none";break;case 1:a.style.display="none",d.style.display="block"}};return{REVISION:11,domElement:f,setMode:t,begin:function(){l=Date.now()},end:function(){var b=Date.now();g=b-l;n=Math.min(n,g);o=Math.max(o,g);k.textContent=g+" MS ("+n+"-"+o+")";var a=Math.min(30,30-30*(g/200));e.appendChild(e.firstChild).style.height=a+"px";r++;b>m+1E3&&(h=Math.round(1E3*r/(b-m)),p=Math.min(p,h),q=Math.max(q,h),i.textContent=h+" FPS ("+p+"-"+q+")",a=Math.min(30,30-30*(h/100)),c.appendChild(c.firstChild).style.height=
-a+"px",m=b,r=0);return b},update:function(){l=this.end()}}};
-
 self.console = self.console || {
 
 	info: function () {},
@@ -15619,15 +15612,6 @@ THREE.Mesh.prototype.clone = function ( object, recursive ) {
 
 	THREE.Object3D.prototype.clone.call( this, object, recursive );
 
-	if(this.animationHandle)
-	{
-	var animation = new THREE.Animation(
-	    object,
-	    object.geometry.animation.name,
-	    THREE.AnimationHandler.LINEAR
-	  );
-	object.animationHandle = animation;
-	}		
 	return object;
 
 };
@@ -15783,7 +15767,6 @@ THREE.Skeleton = function ( boneList, useVertexTexture ) {
 			this.boneTextureHeight = size;
 
 			this.boneMatrices = new Float32Array( this.boneTextureWidth * this.boneTextureHeight * 4 ); // 4 floats per RGBA pixel
-			
 			this.boneTexture = new THREE.DataTexture( this.boneMatrices, this.boneTextureWidth, this.boneTextureHeight, THREE.RGBAFormat, THREE.FloatType );
 			this.boneTexture.minFilter = THREE.NearestFilter;
 			this.boneTexture.magFilter = THREE.NearestFilter;
@@ -16525,28 +16508,6 @@ THREE.FogExp2 = function ( color, density ) {
 
 	this.color = new THREE.Color( color );
 	this.density = ( density !== undefined ) ? density : 0.00025;
-	this.vFalloff = 20;
-	this.vFalloffStart = 0;
-	this.vAtmosphereColor = new THREE.Color( 0x000000 );
-	
-	this.vAtmosphereColor.r = 0.0;
-	this.vAtmosphereColor.r = 0.02;
-	this.vAtmosphereColor.r = 0.04;
-
-	this.vAtmosphereDensity = .0005;
-
-	this.vHorizonColor = new THREE.Color( 0x000000 );
-	this.vHorizonColor.r = 0.88;
-	this.vHorizonColor.r = 0.94;
-	this.vHorizonColor.r = 0.999;
-
-
-	this.vApexColor = new THREE.Color( 0x000000 );
-	this.vApexColor.r = 0.78;
-	this.vApexColor.r = 0.82;
-	this.vApexColor.r = 0.999;
-
-	
 
 };
 
@@ -17620,43 +17581,12 @@ THREE.ShaderChunk = {
 
 		"#ifdef USE_FOG",
 
-			"uniform vec3 fogColor;\n" +
+		"	uniform vec3 fogColor;",
 
 		"	#ifdef FOG_EXP2",
 
-				"uniform vec3 vAtmosphereColor;\n" + //vec3(0.0, 0.02, 0.04);
-				"uniform vec3 vHorizonColor;\n" + //vec3(0.88, 0.94, 0.999);
-				"uniform vec3 vApexColor;\n" + //vec3(0.78, 0.82, 0.999)
-				"uniform float vAtmosphereDensity;\n" + //.0005
-				"uniform float vFalloff;\n"+
-				"uniform float vFalloffStart;\n"+
 		"		uniform float fogDensity;",
 
-				"#if MAX_DIR_LIGHTS > 0\n"+		
-					"vec3 horizonColor = vHorizonColor; \n"+
-					"vec3 zenithColor = vApexColor;\n"+
-					
-					"vec3 atmosphereColor(vec3 rayDirection){\n"+
-					"    float a = max(0.0, dot(rayDirection, vec3(0.0, 1.0, 0.0)));\n"+
-					"    vec3 skyColor = mix(horizonColor, zenithColor, a);\n"+
-					"    float sunTheta = max( dot(rayDirection, directionalLightDirection[0].xzy), 0.0 );\n"+
-					"    return skyColor+directionalLightColor[0]*4.0*pow(sunTheta, 16.0)*0.5;\n"+
-					"}\n"+
-
-					"vec3 applyFog(vec3 albedo, float dist, vec3 rayOrigin, vec3 rayDirection){\n"+
-					"    float fogDensityA = fogDensity ;\n"+ 
-					"    float fog = exp((-rayOrigin.y*vFalloff)*fogDensityA) * (1.0-exp(-dist*rayDirection.y*vFalloff*fogDensityA))/(rayDirection.y*vFalloff);\n"+
-					"    return mix(albedo, fogColor, clamp(fog, 0.0, 1.0));\n"+
-					"}\n"+
-
-					"vec3 aerialPerspective(vec3 albedo, float dist, vec3 rayOrigin, vec3 rayDirection){\n"+
-					" rayOrigin.y += vFalloffStart;\n" + 
-					"    vec3 atmosphere = atmosphereColor(rayDirection)+vAtmosphereColor; \n"+
-					"    atmosphere = mix( atmosphere, atmosphere*.85, clamp(1.0-exp(-dist*vAtmosphereDensity), 0.0, 1.0));\n"+
-					"    vec3 color = mix( applyFog(albedo, dist, rayOrigin, rayDirection), atmosphere, clamp(1.0-exp(-dist*vAtmosphereDensity), 0.0, 1.0));\n"+
-					"    return color;\n"+
-					"}						\n"+
-				"#endif",
 		"	#else",
 
 		"		uniform float fogNear;",
@@ -17672,23 +17602,29 @@ THREE.ShaderChunk = {
 
 		"#ifdef USE_FOG",
 
+		"	#ifdef USE_LOGDEPTHBUF_EXT",
+
+		"		float depth = gl_FragDepthEXT / gl_FragCoord.w;",
+
+		"	#else",
+
 		"		float depth = gl_FragCoord.z / gl_FragCoord.w;",
+
+		"	#endif",
 
 		"	#ifdef FOG_EXP2",
 
 		"		const float LOG2 = 1.442695;",
 		"		float fogFactor = exp2( - fogDensity * fogDensity * depth * depth * LOG2 );",
 		"		fogFactor = 1.0 - clamp( fogFactor, 0.0, 1.0 );",
-				"#if MAX_DIR_LIGHTS > 0\n"+		
-				"gl_FragColor.xyz = aerialPerspective(gl_FragColor.xyz, distance(vFogPosition.xyz,cameraPosition),cameraPosition.xzy, normalize(vFogPosition.xyz-cameraPosition).xzy);\n"+
-				"#endif",
+
 		"	#else",
 
 		"		float fogFactor = smoothstep( fogNear, fogFar, depth );",
-				"gl_FragColor = mix( gl_FragColor, vec4( fogColor, gl_FragColor.w ), fogFactor );",
-			"#endif",
 
+		"	#endif",
 
+		"	gl_FragColor = mix( gl_FragColor, vec4( fogColor, gl_FragColor.w ), fogFactor );",
 
 		"#endif"
 
@@ -18340,81 +18276,11 @@ THREE.ShaderChunk = {
 
 	].join("\n"),
 
-		sphericalHarmonicAmbient_pars_vertex :[
-
-		"varying vec4 vWorldNormal;",
-
-
-
-	].join("\n"),
-	sphericalHarmonicAmbient_vertex :[
-
-		//"shAmbient = vec3(1.0,1.0,0.0);"
-		"mat4 normMat = modelMatrix;",
-		"normMat[3][0] = normMat[3][1] = normMat[3][2] = 0.0;",
-		"vWorldNormal = normalize(normMat * vec4(normal,1.0));",
-
-
-	].join("\n"),
-	sphericalHarmonicAmbient_pars_fragment :[
-
-		"varying vec3 shAmbient;",
-		"varying vec4 vWorldNormal;",
-
-		"const float C1 = 0.429043;",
-		"const float C2 = 0.511664;",
-		"const float C3 = 0.743125;",
-		"const float C4 = 0.886227;",
-		"const float C5 = 0.247708;",
-
-		// Constants for Old Town Square lighting
-		"const vec3 L00  = vec3( 0.871297,  0.875222,  0.864470);",
-		"const vec3 L1m1 = vec3( 0.175058,  0.245335,  0.312891);",
-		"const vec3 L10  = vec3( 0.034675,  0.036107,  0.037362);",
-		"const vec3 L11  = vec3(-0.004629, -0.029448, -0.048028);",
-		"const vec3 L2m2 = vec3(-0.120535, -0.121160, -0.117507);",
-		"const vec3 L2m1 = vec3( 0.003242,  0.003624,  0.007511);",
-		"const vec3 L20  = vec3(-0.028667, -0.024926, -0.020998);",
-		"const vec3 L21  = vec3(-0.077539, -0.086325, -0.091591);",
-		"const vec3 L22  = vec3(-0.161784, -0.191783, -0.219152);",
-
-
-		
-
-	].join("\n"),
-	sphericalHarmonicAmbient_fragment :[
-
-		"vec3 shAmbient;",
-		
-		"vec3 tnorm    = normalize(vWorldNormal.xzy);",
-    	"#ifdef USE_BUMPMAP",
-
-    	"tnorm  = perturbNormalArb( -vViewPosition, normalize( vNormal ), dHdxy_fwd() );",
-
-    	"#endif",
-    	"#ifdef USE_NORMALMAP",
-
-    	"tnorm  = perturbNormal2Arb( vWorldPosition.xzy, normalize( tnorm ));",
-    	
-    	"#endif",
-    	"shAmbient =  C1 * L22 * (tnorm.x * tnorm.x - tnorm.y * tnorm.y) +",
-        "            C3 * L20 * tnorm.z * tnorm.z +",
-        "            C4 * L00 -",
-        "            C5 * L20 +",
-         "           2.0 * C1 * L2m2 * tnorm.x * tnorm.y +",
-         "           2.0 * C1 * L21  * tnorm.x * tnorm.z +",
-         "           2.0 * C1 * L2m1 * tnorm.y * tnorm.z +",
-          "          2.0 * C2 * L11  * tnorm.x +",
-          "          2.0 * C2 * L1m1 * tnorm.y + ",  
-          "          2.0 * C2 * L10  * tnorm.z;",
-		"shAmbient *= length(ambientLightColor);",
-
-	].join("\n"),
 	// LIGHTS PHONG
 
 	lights_phong_pars_vertex: [
 
-		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( USE_ENVMAP ) || defined( USE_NORMALMAP )",
+		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( USE_ENVMAP )",
 
 		"	varying vec3 vWorldPosition;",
 
@@ -18473,7 +18339,7 @@ THREE.ShaderChunk = {
 
 		"#endif",
 
-		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( USE_ENVMAP ) || defined( USE_NORMALMAP )",
+		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( USE_ENVMAP )",
 
 		"	varying vec3 vWorldPosition;",
 
@@ -18771,12 +18637,11 @@ THREE.ShaderChunk = {
 
 		"#ifdef METAL",
 
-			"gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ( shAmbient) * ambient + totalSpecular );",
-			//"gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ambientLightColor * ambient + totalSpecular );",
+		"	gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ambientLightColor * ambient + totalSpecular );",
 
 		"#else",
-			"gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ( shAmbient) * ambient ) + totalSpecular;",
-			//"gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ambientLightColor * ambient ) + totalSpecular;",
+
+		"	gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ambientLightColor * ambient ) + totalSpecular;",
 
 		"#endif"
 
@@ -19093,7 +18958,8 @@ THREE.ShaderChunk = {
 		"#endif"
 
 	].join("\n"),
-shadowmap_fragment_basic: [
+
+	shadowmap_fragment: [
 
 		"#ifdef USE_SHADOWMAP",
 
@@ -19113,7 +18979,7 @@ shadowmap_fragment_basic: [
 		"	#endif",
 
 		"	float fDepth;",
-			"vec3 shadowColor = vec3( 0.0, 0.0, 0.0 );",
+		"	vec3 shadowColor = vec3( 1.0 );",
 
 		"	for( int i = 0; i < MAX_SHADOWS; i ++ ) {",
 
@@ -19143,7 +19009,7 @@ shadowmap_fragment_basic: [
 		"		bool frustumTest = all( frustumTestVec );",
 
 		"		if ( frustumTest ) {",
-					"shadowColor = vec3( 1.0 );",
+
 		"			shadowCoord.z += shadowBias[ i ];",
 
 		"			#if defined( SHADOWMAP_TYPE_PCF )",
@@ -19187,9 +19053,6 @@ shadowmap_fragment_basic: [
 		"				float dx1 = 1.25 * xPixelOffset;",
 		"				float dy1 = 1.25 * yPixelOffset;",
 
-						"if(shadowCoord.x + dx1 > 1.0 || shadowCoord.x - dx1 < 0.0 || shadowCoord.y + dy1 > 1.0 || shadowCoord.y - dy1 < 0.0)",
-						"shadow = 0.0;",
-						"else {",
 		"				fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy0 ) ) );",
 		"				if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
 
@@ -19217,11 +19080,8 @@ shadowmap_fragment_basic: [
 		"				fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy1 ) ) );",
 		"				if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
 
-						"}",
-						
-				
 		"				shadowColor = shadowColor * vec3( ( 1.0 - shadowDarkness[ i ] * shadow ) );",
-						"shadowColor = mix(shadowColor,vec3(1.0,1.0,1.0),clamp(0.0,1.0,pow(length(shadowCoord.xy - .5)*2.0,4.0)));",
+
 		"			#elif defined( SHADOWMAP_TYPE_PCF_SOFT )",
 
 						// Percentage-close filtering
@@ -19242,40 +19102,24 @@ shadowmap_fragment_basic: [
 		"				mat3 depthKernel;",
 
 		"				depthKernel[0][0] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy0 ) ) );",
-						"if ( depthKernel[0][0] < shadowCoord.z ) shadowKernel[0][0] = 0.25;",
-						"else shadowKernel[0][0] = 0.0;",
-
 		"				depthKernel[0][1] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, 0.0 ) ) );",
-						"if ( depthKernel[0][1] < shadowCoord.z ) shadowKernel[0][1] = 0.25;",
-						"else shadowKernel[0][1] = 0.0;",
-
 		"				depthKernel[0][2] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy1 ) ) );",
-						"if ( depthKernel[0][2] < shadowCoord.z ) shadowKernel[0][2] = 0.25;",
-						"else shadowKernel[0][2] = 0.0;",
-
 		"				depthKernel[1][0] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy0 ) ) );",
-						"if ( depthKernel[1][0] < shadowCoord.z ) shadowKernel[1][0] = 0.25;",
-						"else shadowKernel[1][0] = 0.0;",
-
 		"				depthKernel[1][1] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy ) );",
-						"if ( depthKernel[1][1] < shadowCoord.z ) shadowKernel[1][1] = 0.25;",
-						"else shadowKernel[1][1] = 0.0;",
-
 		"				depthKernel[1][2] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy1 ) ) );",
-						"if ( depthKernel[1][2] < shadowCoord.z ) shadowKernel[1][2] = 0.25;",
-						"else shadowKernel[1][2] = 0.0;",
-
 		"				depthKernel[2][0] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy0 ) ) );",
-						"if ( depthKernel[2][0] < shadowCoord.z ) shadowKernel[2][0] = 0.25;",
-						"else shadowKernel[2][0] = 0.0;",
-
 		"				depthKernel[2][1] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, 0.0 ) ) );",
-						"if ( depthKernel[2][1] < shadowCoord.z ) shadowKernel[2][1] = 0.25;",
-						"else shadowKernel[2][1] = 0.0;",
-
 		"				depthKernel[2][2] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy1 ) ) );",
-						"if ( depthKernel[2][2] < shadowCoord.z ) shadowKernel[2][2] = 0.25;",
-						"else shadowKernel[2][2] = 0.0;",
+
+		"				vec3 shadowZ = vec3( shadowCoord.z );",
+		"				shadowKernel[0] = vec3(lessThan(depthKernel[0], shadowZ ));",
+		"				shadowKernel[0] *= vec3(0.25);",
+													
+		"				shadowKernel[1] = vec3(lessThan(depthKernel[1], shadowZ ));",
+		"				shadowKernel[1] *= vec3(0.25);",
+
+		"				shadowKernel[2] = vec3(lessThan(depthKernel[2], shadowZ ));",
+		"				shadowKernel[2] *= vec3(0.25);",
 
 		"				vec2 fractionalCoord = 1.0 - fract( shadowCoord.xy * shadowMapSize[i].xy );",
 
@@ -19290,17 +19134,7 @@ shadowmap_fragment_basic: [
 
 		"				shadow = dot( shadowValues, vec4( 1.0 ) );",
 
-
-			
-						"shadowColor = shadowColor * vec3( ( shadowDarkness[ i ] * shadow   ) );",
-						
-						//"shadowColor = shadowColor * vec3( ( 1.0 - shadowDarkness[ i ] * 1.0 * smoothstep(-0.05,0.05,-dotProduct)  ) ) * ambient;",
-						
-						
-						
-						//"shadowColor *= vec3(dotProduct);",
-						//"shadowColor = shadowColor * vec3( ( 1.0 - shadowDarkness[ i ] * shadow * dotProduct ) );",
-						"shadowColor = mix(shadowColor,vec3(0.0,0.0,0.0),clamp(0.0,1.0,pow(length(shadowCoord.xy - .5)*2.0,4.0)));",
+		"				shadowColor = shadowColor * vec3( ( 1.0 - shadowDarkness[ i ] * shadow ) );",
 
 		"			#else",
 
@@ -19344,276 +19178,12 @@ shadowmap_fragment_basic: [
 
 		"	#endif",
 
-			"gl_FragColor.xyz = gl_FragColor.xyz * (1.0-shadowColor);",
+		"	gl_FragColor.xyz = gl_FragColor.xyz * shadowColor;",
 
 		"#endif"
 
 	].join("\n"),
-shadowmap_fragment: [
 
-			"#ifdef USE_SHADOWMAP",
-
-			"#ifdef SHADOWMAP_DEBUG",
-
-				"vec3 frustumColors[3];",
-				"frustumColors[0] = vec3( 1.0, 0.5, 0.0 );",
-				"frustumColors[1] = vec3( 0.0, 1.0, 0.8 );",
-				"frustumColors[2] = vec3( 0.0, 0.5, 1.0 );",
-
-			"#endif",
-
-			"#ifdef SHADOWMAP_CASCADE",
-
-				"int inFrustumCount = 0;",
-
-			"#endif",
-
-			"float fDepth;",
-			"vec3 shadowColor = vec3( 0.0, 0.0, 0.0 );",
-
-			"for( int i = 0; i < MAX_SHADOWS; i ++ ) {",
-
-				"vec3 shadowCoord = vShadowCoord[ i ].xyz / vShadowCoord[ i ].w;",
-
-				// "if ( something && something )" 		 breaks ATI OpenGL shader compiler
-				// "if ( all( something, something ) )"  using this instead
-
-				"bvec4 inFrustumVec = bvec4 ( shadowCoord.x >= 0.0, shadowCoord.x <= 1.0, shadowCoord.y >= 0.0, shadowCoord.y <= 1.0 );",
-				"bool inFrustum = all( inFrustumVec );",
-
-				// don't shadow pixels outside of light frustum
-				// use just first frustum (for cascades)
-				// don't shadow pixels behind far plane of light frustum
-
-				"#ifdef SHADOWMAP_CASCADE",
-
-					"inFrustumCount += int( inFrustum );",
-					"bvec3 frustumTestVec = bvec3( inFrustum, inFrustumCount == 1, shadowCoord.z <= 1.0 );",
-
-				"#else",
-
-					"bvec2 frustumTestVec = bvec2( inFrustum, shadowCoord.z <= 1.0 );",
-
-				"#endif",
-
-				"bool frustumTest = all( frustumTestVec );",
-
-				"if ( frustumTest ) {",
-					"shadowColor = vec3( 1.0 );",
-					"shadowCoord.z += shadowBias[ i ];",
-
-					"#if defined( SHADOWMAP_TYPE_PCF )",
-
-						// Percentage-close filtering
-						// (9 pixel kernel)
-						// http://fabiensanglard.net/shadowmappingPCF/
-
-						"float shadow = 0.0;",
-
-						/*
-						// nested loops breaks shader compiler / validator on some ATI cards when using OpenGL
-						// must enroll loop manually
-
-						"for ( float y = -1.25; y <= 1.25; y += 1.25 )",
-							"for ( float x = -1.25; x <= 1.25; x += 1.25 ) {",
-
-								"vec4 rgbaDepth = texture2D( shadowMap[ i ], vec2( x * xPixelOffset, y * yPixelOffset ) + shadowCoord.xy );",
-
-								// doesn't seem to produce any noticeable visual difference compared to simple "texture2D" lookup
-								//"vec4 rgbaDepth = texture2DProj( shadowMap[ i ], vec4( vShadowCoord[ i ].w * ( vec2( x * xPixelOffset, y * yPixelOffset ) + shadowCoord.xy ), 0.05, vShadowCoord[ i ].w ) );",
-
-								"float fDepth = unpackDepth( rgbaDepth );",
-
-								"if ( fDepth < shadowCoord.z )",
-									"shadow += 1.0;",
-
-						"}",
-
-						"shadow /= 9.0;",
-
-						*/
-
-						"const float shadowDelta = 1.0 / 9.0;",
-
-						"float xPixelOffset = 1.0 / shadowMapSize[ i ].x;",
-						"float yPixelOffset = 1.0 / shadowMapSize[ i ].y;",
-
-						"float dx0 = -1.25 * xPixelOffset;",
-						"float dy0 = -1.25 * yPixelOffset;",
-						"float dx1 = 1.25 * xPixelOffset;",
-						"float dy1 = 1.25 * yPixelOffset;",
-						
-						"if(shadowCoord.x + dx1 > 1.0 || shadowCoord.x - dx1 < 0.0 || shadowCoord.y + dy1 > 1.0 || shadowCoord.y - dy1 < 0.0)",
-						"shadow = 0.0;",
-						"else {",
-							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy0 ) ) );",
-							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
-
-							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy0 ) ) );",
-							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
-
-							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy0 ) ) );",
-							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
-
-							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, 0.0 ) ) );",
-							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
-
-							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy ) );",
-							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
-
-							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, 0.0 ) ) );",
-							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
-
-							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy1 ) ) );",
-							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
-
-							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy1 ) ) );",
-							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
-
-							"fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy1 ) ) );",
-							"if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
-
-						"}",
-						
-						"vec4 lDirection = viewMatrix * vec4( directionalLightDirection[ i ], 0.0 );",
-						"vec3 dirVector = normalize( lDirection.xyz );",
-						"float dotProduct = 1.0-clamp(dot( normal, -dirVector ),0.0,1.0);",
-						"dotProduct = pow(dotProduct,4.0);",
-						"shadowColor = shadowColor * vec3( ( 1.0 - shadowDarkness[ i ] * shadow * dotProduct ) );",
-						"shadowColor = mix(shadowColor,vec3(1.0,1.0,1.0),clamp(0.0,1.0,pow(length(shadowCoord.xy - .5)*2.0,4.0)));",
-					"#elif defined( SHADOWMAP_TYPE_PCF_SOFT )",
-
-						// Percentage-close filtering
-						// (9 pixel kernel)
-						// http://fabiensanglard.net/shadowmappingPCF/
-
-						"float shadow = 0.0;",
-
-						"float xPixelOffset = 1.0 / shadowMapSize[ i ].x;",
-						"float yPixelOffset = 1.0 / shadowMapSize[ i ].y;",
-
-						"float dx0 = -1.0 * xPixelOffset;",
-						"float dy0 = -1.0 * yPixelOffset;",
-						"float dx1 = 1.0 * xPixelOffset;",
-						"float dy1 = 1.0 * yPixelOffset;",
-
-						"mat3 shadowKernel;",
-						"mat3 depthKernel;",
-
-						"depthKernel[0][0] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy0 ) ) );",
-						"if ( depthKernel[0][0] < shadowCoord.z ) shadowKernel[0][0] = 0.25;",
-						"else shadowKernel[0][0] = 0.0;",
-
-						"depthKernel[0][1] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, 0.0 ) ) );",
-						"if ( depthKernel[0][1] < shadowCoord.z ) shadowKernel[0][1] = 0.25;",
-						"else shadowKernel[0][1] = 0.0;",
-
-						"depthKernel[0][2] = unpackDepth( texture2D( shadowMap[ i], shadowCoord.xy + vec2( dx0, dy1 ) ) );",
-						"if ( depthKernel[0][2] < shadowCoord.z ) shadowKernel[0][2] = 0.25;",
-						"else shadowKernel[0][2] = 0.0;",
-
-						"depthKernel[1][0] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy0 ) ) );",
-						"if ( depthKernel[1][0] < shadowCoord.z ) shadowKernel[1][0] = 0.25;",
-						"else shadowKernel[1][0] = 0.0;",
-
-						"depthKernel[1][1] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy ) );",
-						"if ( depthKernel[1][1] < shadowCoord.z ) shadowKernel[1][1] = 0.25;",
-						"else shadowKernel[1][1] = 0.0;",
-
-						"depthKernel[1][2] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy1 ) ) );",
-						"if ( depthKernel[1][2] < shadowCoord.z ) shadowKernel[1][2] = 0.25;",
-						"else shadowKernel[1][2] = 0.0;",
-
-						"depthKernel[2][0] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy0 ) ) );",
-						"if ( depthKernel[2][0] < shadowCoord.z ) shadowKernel[2][0] = 0.25;",
-						"else shadowKernel[2][0] = 0.0;",
-
-						"depthKernel[2][1] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, 0.0 ) ) );",
-						"if ( depthKernel[2][1] < shadowCoord.z ) shadowKernel[2][1] = 0.25;",
-						"else shadowKernel[2][1] = 0.0;",
-
-						"depthKernel[2][2] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy1 ) ) );",
-						"if ( depthKernel[2][2] < shadowCoord.z ) shadowKernel[2][2] = 0.25;",
-						"else shadowKernel[2][2] = 0.0;",
-
-						"vec2 fractionalCoord = 1.0 - fract( shadowCoord.xy * shadowMapSize[i].xy );",
-
-						"shadowKernel[0] = mix( shadowKernel[1], shadowKernel[0], fractionalCoord.x );",
-						"shadowKernel[1] = mix( shadowKernel[2], shadowKernel[1], fractionalCoord.x );",
-
-						"vec4 shadowValues;",
-						"shadowValues.x = mix( shadowKernel[0][1], shadowKernel[0][0], fractionalCoord.y );",
-						"shadowValues.y = mix( shadowKernel[0][2], shadowKernel[0][1], fractionalCoord.y );",
-						"shadowValues.z = mix( shadowKernel[1][1], shadowKernel[1][0], fractionalCoord.y );",
-						"shadowValues.w = mix( shadowKernel[1][2], shadowKernel[1][1], fractionalCoord.y );",
-
-						"shadow = dot( shadowValues, vec4( 1.0 ) );",
-
-						
-						
-						"vec4 lDirection = viewMatrix * vec4( directionalLightDirection[ i ], 0.0 );",
-						"vec3 dirVector = normalize( lDirection.xyz );",
-						"float dotProduct = clamp(dot( normal, dirVector ),0.0,1.0);",
-						//"dotProduct = pow(dotProduct,4.0);",
-						"if(dotProduct > 0.05)",
-						"shadowColor = shadowColor * vec3( ( shadowDarkness[ i ] * shadow *dotProduct  ) );",
-						"else",
-						"shadowColor = vec3(0.0);",
-						//"shadowColor = shadowColor * vec3( ( 1.0 - shadowDarkness[ i ] * 1.0 * smoothstep(-0.05,0.05,-dotProduct)  ) ) * ambient;",
-						
-						
-						
-						//"shadowColor *= vec3(dotProduct);",
-						//"shadowColor = shadowColor * vec3( ( 1.0 - shadowDarkness[ i ] * shadow * dotProduct ) );",
-						"shadowColor = mix(shadowColor,vec3(0.0,0.0,0.0),clamp(pow(length(shadowCoord.xy - .5)*2.0,4.0),0.0,1.0));",
-						
-					"#else",
-
-						"vec4 rgbaDepth = texture2D( shadowMap[ i ], shadowCoord.xy );",
-						"float fDepth = unpackDepth( rgbaDepth );",
-
-						"if ( fDepth < shadowCoord.z )",
-
-							// spot with multiple shadows is darker
-
-							"shadowColor = shadowColor * vec3( 1.0 - shadowDarkness[ i ] );",
-
-							// spot with multiple shadows has the same color as single shadow spot
-
-							//"shadowColor = min( shadowColor, vec3( shadowDarkness[ i ] ) );",
-
-					"#endif",
-
-				"}",
-
-
-				"#ifdef SHADOWMAP_DEBUG",
-
-					"#ifdef SHADOWMAP_CASCADE",
-
-						"if ( inFrustum && inFrustumCount == 1 ) gl_FragColor.xyz *= frustumColors[ i ];",
-
-					"#else",
-
-						"if ( inFrustum ) gl_FragColor.xyz *= frustumColors[ i ];",
-
-					"#endif",
-
-				"#endif",
-
-			"}",
-
-			"#ifdef GAMMA_OUTPUT",
-
-				"shadowColor *= shadowColor;",
-
-			"#endif",
-
-			"gl_FragColor.xyz = gl_FragColor.xyz * (1.0-shadowColor);",
-
-		"#endif"
-
-	].join("\n"),
 	shadowmap_pars_vertex: [
 
 		"#ifdef USE_SHADOWMAP",
@@ -19847,16 +19417,7 @@ THREE.UniformsLib = {
 		"fogDensity" : { type: "f", value: 0.00025 },
 		"fogNear" : { type: "f", value: 1 },
 		"fogFar" : { type: "f", value: 2000 },
-		"fogColor" : { type: "c", value: new THREE.Color( 0xffffff ) },
-		"vAtmosphereColor" : { type: "c", value: new THREE.Color( 0xffffff ) },
-		"vHorizonColor" : { type: "c", value: new THREE.Color( 0xffffff ) },
-		"vApexColor" : { type: "c", value: new THREE.Color( 0xffffff ) },
-		"vFalloff" : { type: "f", value: 20 },
-		"vFalloffStart" : { type: "f", value: 1 },
-		"vAtmosphereDensity" : { type: "f", value: .0005 },
-
-
-
+		"fogColor" : { type: "c", value: new THREE.Color( 0xffffff ) }
 
 	},
 
@@ -19923,83 +19484,6 @@ THREE.UniformsLib = {
 
 THREE.ShaderLib = {
 
-	'sky':{
-                vertexShader: 
-                "varying vec3 pos;"+
-                "varying vec3 vFogPosition;\n"+
-                "varying float vFar;"+
-                "void main() {\n"+
-
-               
-                "float near   = projectionMatrix[3][2]/(projectionMatrix[2][2]-1.0);"+
-                "float far    = projectionMatrix[3][2]/(projectionMatrix[2][2]+1.0);"+
-                "vFar = far * 10.0;"+
-                 " vec3 nposition = (position * ((near+far)/2.0 + near)) + cameraPosition;\n"+
-                " vec4 mvPosition = viewMatrix * vec4( nposition, 1.0 );\n"+
-                " pos = position;"+
-                "   gl_Position = projectionMatrix * mvPosition;\n"+
-                "vFogPosition = position.xyz; \n" + 
-                "}    \n",
-
-                fragmentShader : 
-               	
-               	THREE.ShaderChunk[ "lights_phong_pars_fragment" ]+"\n"+
-				THREE.ShaderChunk[ "fog_pars_fragment" ]+"\n"+
-
-                "uniform samplerCube texture;\n"+
-                "varying vec3 pos;"+
-                "uniform vec3 HorizonColor;"+
-                "uniform vec3 ApexColor;"+
-                "uniform float colorBlend;"+
-                "uniform float fogBlend;"+
-                "varying vec3 vFogPosition;"+
-                "varying float vFar;"+
-                "void main() {\n"+
-
-                "   vec4 cubeColor = textureCube(texture,pos);\n"+
-                "   vec4 tFogColor = cubeColor;\n"+
-                "   float dotZ = abs(dot(normalize(pos),vec3(0.0,0.0,1.0)));\n"+
-                "   vec3 skycolor = mix(HorizonColor,ApexColor,dotZ);\n" +
-	                "#ifdef USE_FOG\n"+
-						"float depth = vFar;\n"+
-						"#ifdef FOG_EXP2\n"+
-							"const float LOG2 = 1.442695;\n"+
-							"float fogFactor = exp2( - fogDensity * fogDensity * depth * depth * LOG2 );\n"+
-							"fogFactor = 1.0 - clamp( fogFactor, 0.0, 1.0 );\n"+
-							"#if MAX_DIR_LIGHTS > 0\n"+
-							
-							"tFogColor.xyz = aerialPerspective(gl_FragColor.xyz, vFar,cameraPosition.xzy, normalize(vFogPosition.xyz).xzy);\n"+
-							"#endif\n"+
-						"#else\n"+
-							"float fogFactor = smoothstep( fogNear, fogFar, depth );\n"+
-							"tFogColor = mix( gl_FragColor, vec4( fogColor, gl_FragColor.w ), fogFactor );\n"+
-						"#endif\n"+
-					"#endif\n"+
-	                "   gl_FragColor = vec4(mix(cubeColor.xyz,skycolor,colorBlend),1.0);\n" +
-	                "   gl_FragColor = vec4(mix(gl_FragColor.xyz,tFogColor.xyz,fogBlend),1.0);\n" +
-                "}\n",
-                
-                //the default shader - the one used by the analytic solver, just has some simple stuff
-                //note that this could be changed to do just life and lifespan, and calculate the 
-                //size and color from to uniforms. Im not going to bother
-                attributes : {
-                   
-                    
-                },
-                uniforms: THREE.UniformsUtils.merge( [
-				THREE.UniformsLib[ "fog" ],
-				THREE.UniformsLib[ "lights" ],
-                {
-                   
-                    texture:   { type: "t", value: null },
-                 	fogBlend:   { type: "f", value: 0 },
-                    colorBlend:   { type: "f", value: 0 },
-                    ApexColor:   { type: "c", value: new THREE.Color(0x0077FF) },
-                    HorizonColor:   { type: "c", value: new THREE.Color(0xffffff) },
-                  
-                }])
-              
-    },
 	'basic': {
 
 		uniforms: THREE.UniformsUtils.merge( [
@@ -20058,7 +19542,7 @@ THREE.ShaderLib = {
 			THREE.ShaderChunk[ "map_pars_fragment" ],
 			THREE.ShaderChunk[ "lightmap_pars_fragment" ],
 			THREE.ShaderChunk[ "envmap_pars_fragment" ],
-		//	THREE.ShaderChunk[ "fog_pars_fragment" ],
+			THREE.ShaderChunk[ "fog_pars_fragment" ],
 			THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
 			THREE.ShaderChunk[ "specularmap_pars_fragment" ],
 			THREE.ShaderChunk[ "logdepthbuf_pars_fragment" ],
@@ -20074,11 +19558,11 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "lightmap_fragment" ],
 				THREE.ShaderChunk[ "color_fragment" ],
 				THREE.ShaderChunk[ "envmap_fragment" ],
-				THREE.ShaderChunk[ "shadowmap_fragment_basic" ],
+				THREE.ShaderChunk[ "shadowmap_fragment" ],
 
 				THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
 
-				//THREE.ShaderChunk[ "fog_fragment" ],
+				THREE.ShaderChunk[ "fog_fragment" ],
 
 			"}"
 
@@ -20203,7 +19687,7 @@ THREE.ShaderLib = {
 
 				THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
 
-				//THREE.ShaderChunk[ "fog_fragment" ],
+				THREE.ShaderChunk[ "fog_fragment" ],
 
 			"}"
 
@@ -20237,7 +19721,6 @@ THREE.ShaderLib = {
 			"#define PHONG",
 
 			"varying vec3 vViewPosition;",
-			"varying vec3 vFogPosition;",
 			"varying vec3 vNormal;",
 
 			THREE.ShaderChunk[ "map_pars_vertex" ],
@@ -20249,11 +19732,9 @@ THREE.ShaderLib = {
 			THREE.ShaderChunk[ "skinning_pars_vertex" ],
 			THREE.ShaderChunk[ "shadowmap_pars_vertex" ],
 			THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ],
-			THREE.ShaderChunk[ "sphericalHarmonicAmbient_pars_vertex" ],
 
 			"void main() {",
 
-				"vFogPosition = (modelMatrix * vec4(position,1.0)).xyz; \n" + 
 				THREE.ShaderChunk[ "map_vertex" ],
 				THREE.ShaderChunk[ "lightmap_vertex" ],
 				THREE.ShaderChunk[ "color_vertex" ],
@@ -20276,7 +19757,6 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "envmap_vertex" ],
 				THREE.ShaderChunk[ "lights_phong_vertex" ],
 				THREE.ShaderChunk[ "shadowmap_vertex" ],
-				THREE.ShaderChunk[ "sphericalHarmonicAmbient_vertex" ],
 
 			"}"
 
@@ -20291,25 +19771,23 @@ THREE.ShaderLib = {
 			"uniform vec3 emissive;",
 			"uniform vec3 specular;",
 			"uniform float shininess;",
-			"varying vec3 vFogPosition;",
+
 			THREE.ShaderChunk[ "color_pars_fragment" ],
 			THREE.ShaderChunk[ "map_pars_fragment" ],
 			THREE.ShaderChunk[ "lightmap_pars_fragment" ],
 			THREE.ShaderChunk[ "envmap_pars_fragment" ],
-			
-			THREE.ShaderChunk[ "lights_phong_pars_fragment" ],
 			THREE.ShaderChunk[ "fog_pars_fragment" ],
+			THREE.ShaderChunk[ "lights_phong_pars_fragment" ],
 			THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
 			THREE.ShaderChunk[ "bumpmap_pars_fragment" ],
 			THREE.ShaderChunk[ "normalmap_pars_fragment" ],
 			THREE.ShaderChunk[ "specularmap_pars_fragment" ],
 			THREE.ShaderChunk[ "logdepthbuf_pars_fragment" ],
-THREE.ShaderChunk[ "sphericalHarmonicAmbient_pars_fragment" ],
+
 			"void main() {",
 
 			"	gl_FragColor = vec4( vec3( 1.0 ), opacity );",
 
-				THREE.ShaderChunk[ "sphericalHarmonicAmbient_fragment" ],	
 				THREE.ShaderChunk[ "logdepthbuf_fragment" ],
 				THREE.ShaderChunk[ "map_fragment" ],
 				THREE.ShaderChunk[ "alphatest_fragment" ],
@@ -20392,7 +19870,7 @@ THREE.ShaderChunk[ "sphericalHarmonicAmbient_pars_fragment" ],
 				THREE.ShaderChunk[ "alphatest_fragment" ],
 				THREE.ShaderChunk[ "color_fragment" ],
 				THREE.ShaderChunk[ "shadowmap_fragment" ],
-				//THREE.ShaderChunk[ "fog_fragment" ],
+				THREE.ShaderChunk[ "fog_fragment" ],
 
 			"}"
 
@@ -20466,7 +19944,7 @@ THREE.ShaderChunk[ "sphericalHarmonicAmbient_pars_fragment" ],
 
 				THREE.ShaderChunk[ "logdepthbuf_fragment" ],
 				THREE.ShaderChunk[ "color_fragment" ],
-				//THREE.ShaderChunk[ "fog_fragment" ],
+				THREE.ShaderChunk[ "fog_fragment" ],
 
 			"}"
 
@@ -20980,8 +20458,8 @@ THREE.ShaderChunk[ "sphericalHarmonicAmbient_pars_fragment" ],
 
 				// all lights contribution summation
 
-				"vec3 totalDiffuse = vec3( 0.0, 0.0, 0.0 );",
-				"vec3 totalSpecular = vec3( 0.0, 0.0, 0.0 );",
+			"	vec3 totalDiffuse = vec3( 0.0 );",
+			"	vec3 totalSpecular = vec3( 0.0 );",
 
 			"	#if MAX_DIR_LIGHTS > 0",
 
@@ -21050,7 +20528,7 @@ THREE.ShaderChunk[ "sphericalHarmonicAmbient_pars_fragment" ],
 
 				THREE.ShaderChunk[ "shadowmap_fragment" ],
 				THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
-				//THREE.ShaderChunk[ "fog_fragment" ],
+				THREE.ShaderChunk[ "fog_fragment" ],
 
 			"}"
 
@@ -25646,7 +25124,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 					var textureUnit = getTextureUnit();
 
 					_gl.uniform1i( p_uniforms.boneTexture, textureUnit );
-					
 					_this.setTexture( object.skeleton.boneTexture, textureUnit );
 
 				}
@@ -25922,24 +25399,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		} else if ( fog instanceof THREE.FogExp2 ) {
 
-			if(uniforms.fogDensity)
 			uniforms.fogDensity.value = fog.density;
-			if(uniforms.vFalloff)
-				uniforms.vFalloff.value = fog.vFalloff;
-			if(uniforms.vFalloffStart)				
-				uniforms.vFalloffStart.value = fog.vFalloffStart;
-			if(uniforms.vAtmosphereColor)				
-				uniforms.vAtmosphereColor.value = fog.vAtmosphereColor;
-			if(uniforms.vAtmosphereDensity)				
-				uniforms.vAtmosphereDensity.value = fog.vAtmosphereDensity;
-			if(uniforms.vHorizonColor)				
-				uniforms.vHorizonColor.value = fog.vHorizonColor;
-			if(uniforms.vApexColor)				
-				uniforms.vApexColor.value = fog.vApexColor;
-
-
-
-			
 
 		}
 
@@ -26846,7 +26306,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			var mipmap, mipmaps = texture.mipmaps;
 
-			if ( texture instanceof THREE.DataTexture ||( texture.image && texture.image.data)) {
+			if ( texture instanceof THREE.DataTexture ) {
 
 				// use manually created mipmaps if available
 				// if there are no manual mipmaps
@@ -28389,7 +27849,7 @@ THREE.GeometryUtils = {
 
 THREE.ImageUtils = {
 
-	crossOrigin: true,
+	crossOrigin: undefined,
 
 	loadTexture: function ( url, mapping, onLoad, onError ) {
 
@@ -32194,110 +31654,6 @@ THREE.Animation = function ( root, name ) {
 	this.interpolationType = THREE.AnimationHandler.LINEAR;
 
 };
-THREE.Animation.prototype.debug = function(size)
-{
- 
- size = size || .1;
- var debugobjects = [];
- var debugroot;
- var walk = function(bone,debugparent)
- {
-
- 	var debug = new THREE.Mesh(new THREE.CubeGeometry(size,size,size));
- 	
- 	if(!debugroot) debugroot = debug;
- 	debug.matrixAutoUpdate = false;
- 	debug.matrix.copy(bone.matrix);
- 	debug.bone = bone;
- 	bone.debugobject = debug;
- 	
- 	debugobjects.push(debug);
- 	
- 	var parentbonepos = (new THREE.Vector3()).getPositionFromMatrix(debug.matrix);
- 	parentbonepos.x = Math.abs(parentbonepos.x+1);
- 	parentbonepos.y = Math.abs(parentbonepos.y+1);
- 	parentbonepos.z = Math.abs(parentbonepos.z+1);
- 	
- 	for(var i =0; i < bone.children.length; i++)
- 	{
- 		walk(bone.children[i],debug);
- 	}
-
- 	
-	debugparent.add(debug);
- }
-
- walk(this.root.children[0],this.root);
- 
- this.debugobjects = debugobjects;
- this.debugroot = debugroot;
-}
-THREE.Animation.prototype.setKey = function(keyf)
-{
-	if(!this.data) return;
-	var l = keyf - Math.floor(keyf);
-	var l2 = 1-l;
-
-	for ( var h = 0, hl = this.hierarchy.length; h < hl; h ++ ) {
-		var object = this.hierarchy[h];
-		var key = this.data.hierarchy[h].keys[ Math.floor(keyf) ];
-		var key2 = this.data.hierarchy[h].keys[ Math.floor(keyf+1) ];
-		
-		//object.matrixAutoUpdate = false;
-		//object.matrix.copy(key.matrix);
-		//object.updateMatrixWorld();
-		//object.matrixWorldNeedsUpdate = true;
-
-		if(key && key2)
-		{
-			
-			object.position.x = key.pos[0] * l2 + key2.pos[0] * l;
-			object.position.y = key.pos[1] * l2 + key2.pos[1] * l;
-			object.position.z = key.pos[2] * l2 + key2.pos[2] * l;
-
-			object.scale.x = key.scl[0] * l2 + key2.scl[0] * l;
-			object.scale.y = key.scl[1] * l2 + key2.scl[1] * l;
-			object.scale.z = key.scl[2] * l2 + key2.scl[2] * l;
-
-			object.quaternion.set(key.rot.x,key.rot.y,key.rot.z,key.rot.w);
-			object.quaternion.slerp(key2.rot,l);
-			
-			if(object.debugobject)
-			{
-				object.debugobject.matrix.copy(object.matrix);
-				object.debugobject.updateMatrixWorld();
-			}
-		}else if (key)
-		{
-
-			object.position.x = key.pos[0] 
-			object.position.y = key.pos[1] 
-			object.position.z = key.pos[2] 
-
-			object.scale.x = key.scl[0] 
-			object.scale.y = key.scl[1] 
-			object.scale.z = key.scl[2] 
-			object.quaternion.w = key.rot.w;
-			object.quaternion.y = key.rot.y;
-			object.quaternion.z = key.rot.z;
-			object.quaternion.x = key.rot.x;
-			
-			if(object.debugobject)
-			{
-				object.debugobject.matrix.copy(object.matrix);
-				object.debugobject.updateMatrixWorld();
-			}
-
-		}
-
-	}
-	
-	if(this.debugroot)
-	{
-		this.debugroot.updateMatrixWorld()
-	}
-
-}
 
 
 THREE.Animation.prototype.keyTypes = [ "pos", "rot", "scl" ];
@@ -39133,9 +38489,3 @@ THREE.ShaderFlares = {
 
 };
 
-var update = THREE.Bone.prototype.update;
-THREE.Bone.prototype.update = function(parentSkinMatrix, forceUpdate) {
-update.call(this, parentSkinMatrix, forceUpdate);
-this.updateMatrixWorld( true );
-};
-THREE.Object3D.prototype.update = function() {};

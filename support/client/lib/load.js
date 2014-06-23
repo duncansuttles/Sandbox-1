@@ -28,6 +28,7 @@ if(!window.jQuery)
   require(["./vwf/view/editorview/lib/jquery-2.0.3.min.js","closure/base.js","async.js","crypto.js"],
   	function()
   	{
+      
 	    require(["../vwf/view/editorview/lib/jquery-migrate-1.2.1.min.js","../vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js","md5.js","closure/deps.js","../vwf/view/editorview/lib/jquery.transit.min.js","../vwf/view/editorview/lib/jquery-mousewheel.js","../vwf/view/editorview/lib/jquery-scrollpane.min.js","../vwf/model/threejs/three.js","closure/vec/float32array.js","closure/vec/float64array.js"],
 	    	function()
 	    	{
