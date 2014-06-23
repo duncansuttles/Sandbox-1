@@ -25,6 +25,7 @@ global.version = 1;
 
 var libpath = require('path'),
 http = require("http"),
+spdy = require("spdy"),
 fs = require('fs'),
 url = require("url"),
 mime = require('mime'),
@@ -336,7 +337,7 @@ function startVWF(){
 
 			if(global.configuration.pfx)
 			{
-				listen= require('https').createServer({
+				listen= spdy.createServer({
 					pfx: fs.readFileSync(global.configuration.pfx),
 					passphrase:global.configuration.pfxPassphrase,
 					ca:[fs.readFileSync(global.configuration.sslCA[0]),fs.readFileSync(global.configuration.sslCA[1])],
@@ -407,35 +408,14 @@ function startVWF(){
 			async.series([
 			function(cb3)
 			{
-				//fs.unlinkSync('./support/client/lib/vwfbuild.js',landingRoutes.getVWFCore());
+				
 				global.log('Closure Build start');
 				//lets do the most agressive compile possible here!
-				if(false && fs.existsSync("./build/compiler.jar"))
-				{
-
-					var c1 = exec('java -jar compiler.jar --js boot.js --compilation_level ADVANCED_OPTIMIZATIONS --js_output_file boot-c.js',{cwd:"./build/",maxBuffer:1024*1024},
-					function (error, stdout, stderr) {
-					  
-					 	//global.log('stdout: ' + stdout);
-					    //global.log('stderr: ' + stderr);
-					    if (error !== null) {
-					      global.log('exec error: ' + error);
-					    }
-						if(fs.existsSync("./build/boot-c.js"))
-						{
-							config.out = './build/boot-c.js';
-						}
-						cb3();
-
-					});
+				//not looking good on ever getting this through the compiler
+			cb3();
+	
 
 
-
-				}else
-				{
-					global.log('compiler.jar not found');
-					cb3();
-				}
 			},
 			function(cb3)
 			{

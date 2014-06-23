@@ -153,7 +153,7 @@ define(function ()
 									$('#GuestLogin').click(function()
 									{
 
-										window.location = _DataManager.getCurrentApplication() + "login?return=" + _DataManager.getCurrentSession().substring(window.location.pathname.indexOf(window.appPath)+window.appPath.length) + window.location.hash;
+										window.location = _DataManager.getCurrentApplication() + "login?return=" +  window.location.pathname.substring(window.location.pathname.indexOf(window.appPath)+window.appPath.length) + window.location.hash + window.location.search;
 									});
 								
 						}.bind(this)
