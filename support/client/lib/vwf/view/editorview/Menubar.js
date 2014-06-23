@@ -296,15 +296,15 @@ define(
 		});
 		$('#MenuSnapLarge').click(function (e)
 		{
-			_Editor.SetSnaps(1, 15 * 0.0174532925, 5);
+			_Editor.SetSnaps(1, 15 * 0.0174532925, .15);
 		});
 		$('#MenuSnapMedium').click(function (e)
 		{
-			_Editor.SetSnaps(.5, 5 * 0.0174532925, 2);
+			_Editor.SetSnaps(.5, 5 * 0.0174532925, .05);
 		});
 		$('#MenuSnapSmall').click(function (e)
 		{
-			_Editor.SetSnaps(.25, 1 * 0.0174532925, .5);
+			_Editor.SetSnaps(.25, 1 * 0.0174532925, .01);
 		});
 		$('#MenuSnapOff').click(function (e)
 		{
@@ -655,28 +655,7 @@ define(
 
 		function focusSelected()
 		{
-			var focusID = null;
-			if (_Editor.GetSelectedVWFNode())
-				focusID = _Editor.GetSelectedVWFNode().id;
-			if(!focusID)
-				focusID =  _UserManager.GetAvatarForClientID(vwf.moniker()) &&  _UserManager.GetAvatarForClientID(vwf.moniker()).id;
-			if (focusID && _Editor.findviewnode(focusID))
-			{
-					
-					var t = _Editor.GetMoveGizmo().parent.matrixWorld.getPosition();
-					var gizpos = [t.x, t.y, t.z];
-					var box = _Editor.findviewnode(focusID).GetBoundingBox(true).transformBy(_Editor.findviewnode(focusID).matrixWorld.elements)
-					
-					var dist = 1;
-					if(box)
-						dist = MATH.distanceVec3([box.max[0], box.max[1], box.max[2]], [box.min[0], box.min[1], box.min[2]]);
-					if(dist == Infinity)
-						dist = 1;
-					vwf.models[0].model.nodes['index-vwf'].orbitPoint(gizpos);
-					vwf.models[0].model.nodes['index-vwf'].zoom = dist * 2;
-					vwf.models[0].model.nodes['index-vwf'].updateCamera();
-				
-			}
+			_Editor.focusSelected();
 		}
 		
 		$('#MenuActivateCamera').click(function (e)

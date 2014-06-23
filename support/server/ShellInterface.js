@@ -9,24 +9,7 @@ var libpath = require('path'),
 	readline = require('readline');
 var passwordUtils = require('./passwordUtils');
 var DAL = require('./DAL').DAL;
-
-	function GUID()
-    {
-        var S4 = function ()
-        {
-            return Math.floor(
-                    Math.random() * 0x10000 /* 65536 */
-                ).toString(16);
-        };
-
-        return (
-                S4() + S4() + "-" +
-                S4() + "-" +
-                S4() + "-" +
-                S4() + "-" +
-                S4() + S4() + S4()
-            );
-    }
+var GUID = require('node-uuid').v4;
 
 function ParseLine(str)
 {

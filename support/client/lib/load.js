@@ -12,6 +12,8 @@ if(false)
     "closure/vec/vec4.js",
     "closure/vec/mat4.js",
     "closure/vec/quaternion.js",
+    "alea.js",
+    "mash.js",
     "./vwfbuild.js","boot"]);
 }
 

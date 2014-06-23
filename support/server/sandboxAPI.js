@@ -24,21 +24,7 @@ var xapi = require('./xapi');
 // default path to data. over written by setup flags
 
 //generate a random id.
-function GUID() {
-	var S4 = function() {
-		return Math.floor(
-			Math.random() * 0x10000 /* 65536 */
-		).toString(16);
-	};
-
-	return (
-		S4() + S4() + "-" +
-		S4() + "-" +
-		S4() + "-" +
-		S4() + "-" +
-		S4() + S4() + S4()
-	);
-}
+var GUID = require('node-uuid').v4;
 
 
 

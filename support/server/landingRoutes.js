@@ -636,8 +636,8 @@ exports.createNew = function(req, res, next){
 }
 
 exports.handlePostRequest = function(req, res, next){
-
-	var data = req.body ? JSON.parse(req.body) : '';
+	//JSON.parse(req.body)
+	var data = req.body ? req.body : '';
 
 	sessions.GetSessionData(req,function(sessionData)
 		{

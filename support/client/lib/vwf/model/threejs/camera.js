@@ -8,9 +8,7 @@
 			this.fov = 45;
 			this.initializingNode = function()
 			{
-				this.near = 1;
-				this.far = 1000;
-				this.fov = 45;
+				
 			}
 			this.gettingProperty = function(propertyName)
 			{
