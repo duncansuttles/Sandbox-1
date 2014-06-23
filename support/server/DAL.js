@@ -5,7 +5,7 @@ var fs = require('fs-extra');
 require('./hash.js');
 var mkdirp = require('mkdirp');
 var datapath = '';
-
+var GUID = require('node-uuid').v4;
 //NOTE: upgrade your database! if your db is users.db and not users.nedb, you need to run the upgrade_db script!
 var DBTablePath = libpath.sep+'users.nedb';
 
@@ -28,24 +28,7 @@ function sanitizeString(str){
 	return str.replace(/[^a-zA-Z0-9\-\_ ]/gi,'')
 }
 
-//generate a random id.
-function GUID()
-    {
-        var S4 = function ()
-        {
-            return Math.floor(
-                    Math.random() * 0x10000 /* 65536 */
-                ).toString(16);
-        };
 
-        return (
-                S4() + S4() + "-" +
-                S4() + "-" +
-                S4() + "-" +
-                S4() + "-" +
-                S4() + S4() + S4()
-            );
-    }
 	
 function findInDB(obj, cb){
 	DB.find(obj, cb);

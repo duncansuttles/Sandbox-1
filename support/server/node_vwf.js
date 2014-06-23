@@ -362,7 +362,7 @@ function startVWF(){
 			}
 			else
 			{
-				listen= spdy.createServer(app).listen(port);
+				listen= http.createServer(app).listen(port);
 			}
 			
 			global.log(brown+'Admin is "' + global.adminUID+"\""+reset,0);
