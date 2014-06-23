@@ -29,7 +29,22 @@
 
     "pfx": null,              //the path and name of the PFX credential file. If not null, server will use HTTPS and WSS
     "pfxPassphrase": null,    //the passphrase to open the pfx file
-    "sslPort" : 443           //the port to use for the secure server. Requests to the nonSSL port will redirect here
+    "sslPort" : 443,           //the port to use for the secure server. Requests to the nonSSL port will redirect here
+
+    "sslCA" : ["./ca1.pem","./ca2.pem"],   //intermediate certificate authority
+  
+   
+    //use the the following settings to enable social media logins
+    "facebook_app_id": null,
+    "facebook_app_secret": null,
+    "facebook_callback_url": "http://localhost:3000/adl/sandbox/auth/facebook/callback",
+    "twitter_consumer_key": null,
+    "twitter_consumer_secret": null,
+    "twitter_callback_url":"http://localhost:3000/adl/sandbox/auth/twitter/callback",
+    "google_client_id":null,
+    "google_client_secret":null,
+    "google_callback_url":"http://localhost:3000/adl/sandbox/auth/google/callback"
+
 }
 
 

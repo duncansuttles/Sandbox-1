@@ -127,12 +127,13 @@ define(function ()
 						success:function(data,status,xhr)
 						{
 							var logindata = JSON.parse(xhr.responseText);
-							var username = logindata.username;
+							var username =  logindata.username || logindata.user_uid || logindata.UID;
+							var userID = logindata.user_uid || logindata.UID;
 							
 							
 								//only the first client from a given login should create the avatart
 								if(vwf.models[0].model.nodes['character-vwf-' + username.replace(/ /g,'-')] == undefined)
-									this.Login(username);
+									this.Login(username,userID);
 								else
 								{
 									alertify.alert('You are already logged into this space from another tab.');
@@ -226,7 +227,7 @@ define(function ()
 
 			}
 		}
-		this.Login = function (username)
+		this.Login = function (username,userID)
 		{
 		
 			var needlogin = true;
@@ -260,7 +261,7 @@ define(function ()
 					dataType: "json"
 				});
 				
-				var profile = _DataManager.GetProfileForUser(username, true);
+				var profile = _DataManager.GetProfileForUser(userID, true);
 				if (!profile)
 				{
 					alert('There is no account with that username');
@@ -373,7 +374,7 @@ define(function ()
             this.PlayerProto.properties.standing = 0;
 
 
-			if (document.Players && document.Players.indexOf(username) != -1)
+			if (document.Players && document.Players.indexOf(userID) != -1)
 			{
 				alert('User is already logged into this space');
 				return;
@@ -381,7 +382,7 @@ define(function ()
 			var newintersectxy = _LocationTools.getCurrentPlacemarkPosition()||_LocationTools.getPlacemarkPosition('Origin') || _Editor.GetInsertPoint();
 			//vwf.models[0].model.nodes['index-vwf'].orbitPoint(newintersectxy);
 			this.PlayerProto.properties.PlayerNumber = username;
-			this.PlayerProto.properties.owner = username;
+			this.PlayerProto.properties.owner = userID;
 			this.PlayerProto.properties.ownerClientID = vwf.moniker();
 			this.PlayerProto.properties.profile = profile;
 			this.PlayerProto.properties.translation = newintersectxy;
@@ -393,7 +394,7 @@ define(function ()
 			document["PlayerNumber"] = username;
 			var parms = new Array();
 			parms.push(JSON.stringify(this.PlayerProto));
-			this.currentUsername = username;
+			this.currentUsername = userID;
 			//vwf_view.kernel.callMethod('index-vwf','newplayer',parms);
 			
 			if(createAvatar)

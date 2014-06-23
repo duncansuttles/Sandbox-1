@@ -23,7 +23,7 @@
 		window.location = vwfPortalModel.returnVal;
 	}
 	
-	vwfPortalModel.handleLoginButton = function(o, e){
+	vwfPortalModel.handleLoginButton = function(o, e){ 
 	
 		var username = $('#txtusername').val();
 		var password = $('#txtpassword').val();
@@ -32,25 +32,38 @@
 		
 		password = EncryptPassword(password,username,$.trim(salt));
 		
-		$.ajax(root + '/vwfDataManager.svc/sitelogin?UID=' + username +"&P=" + password,
+		var formData = new FormData();
+		formData.append('username', username);
+		formData.append('password', password);
+
+		var xhr = new XMLHttpRequest();
+		xhr.open("POST", "../../auth/local");
+		xhr.addEventListener("load",function(xhr)
 		{
-			cache:false,
-			success:function(data,status,xhr)
+			if(xhr.target.status === 301 || xhr.target.status === 302 || xhr.target.status === 200)
 			{
 				$('#txtusername').val('');
 				$('#txtpassword').val('');
 				redirect();
-			},
-			error:function(xhr,status,err)
+			}else
 			{
+				$('#txtusername').val('');
 				$('#txtpassword').val('');
 				vwfPortalModel.errorText("Error: Please ensure your username and password are both correct");
-				
-				window.setTimeout(function(){
-					vwfPortalModel.errorText("");				
-				}, 6000);
 			}
+			
 		});
+		xhr.addEventListener("error",function()
+		{
+			$('#txtusername').val('');
+			$('#txtpassword').val('');
+			
+			vwfPortalModel.errorText("Error: Please ensure your username and password are both correct");
+
+		},false);
+
+		xhr.send(formData);
+
 	};
 </script>
 <div id="content" class="row" style="margin:10px auto;float:none;text-align:center;height:260px;">
@@ -58,6 +71,12 @@
 		<form data-bind="submit:handleLoginButton" >
 			<fieldset>
 				<legend style="padding-bottom:5px;">{{#translate}}Log in{{/translate}}</legend>
+                {{#facebookLogin}}<a href="/adl/sandbox/auth/facebook" class="btn btn-primary"><span class="fa fa-facebook"></span>Facebook login</a>{{/facebookLogin}}
+                {{#twitterLogin}}<a href="/adl/sandbox/auth/twitter" class="btn btn-primary"><span class="fa fa-facebook"></span>Twitter login</a>
+                {{/twitterLogin}}
+                {{#googleLogin}}<a href="/adl/sandbox/auth/google" class="btn btn-primary"><span class="fa fa-facebook"></span>Google login</a>
+                {{/googleLogin}}
+                <br/><br/>
 				<div class="col-md-10" style="margin:0 auto;float:none;">
 					<input type='text' id='txtusername' placeholder='{{#translate}}Username{{/translate}}' class="form-control" /><br/>
 					<input type='password' id='txtpassword' placeholder='{{#translate}}Password{{/translate}}' class="form-control"/><br/>
@@ -68,7 +87,7 @@
 				<legend style="padding-bottom:5px;"></legend>
 			</fieldset>
 		</form>
-		<a href='signup' class='' style=""  value="" >{{#translate}}Sign Up{{/translate}}</a><span style="margin-left:3em" />   
+		<a href='signup' class='' style=""  value="" >{{#translate}}Sign Up{{/translate}}</a><span style="margin-left:3em" />
 		<a href='forgotPassword' class='' style=""  value="" >{{#translate}}Forgot your password?{{/translate}}</a>
 	</div>
 </div>

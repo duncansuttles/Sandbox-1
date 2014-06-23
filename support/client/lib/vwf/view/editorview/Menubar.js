@@ -462,6 +462,10 @@ define(
 		{
 			_Editor.CreateBehavior('lookat', _UserManager.GetCurrentUserName());
 		});
+        $('#MenuCreateBehaviorOneClick').click(function (e)
+        {
+            _Editor.CreateBehavior('oneClick', _UserManager.GetCurrentUserName());
+        });
 		$('#MenuCreateBehaviorSeek').click(function (e)
 		{
 			_Editor.CreateBehavior('seek', _UserManager.GetCurrentUserName());

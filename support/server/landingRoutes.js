@@ -113,6 +113,9 @@ exports.statsHandler = function(req, res, next){
 }
 exports.redirectPasswordEmail = function(req,res,next)
 {
+    if (req.query && req.query.return) {
+        req.session.redirectUrl = req.query.return;
+    }
 
 	sessions.GetSessionData(req,function(sessionData)
 	{
@@ -208,7 +211,17 @@ exports.generalHandler = function(req, res, next){
 					return;
 				}
 
+
 				res.locals = {sessionData:sessionData, sid: sid, root: getRoot(req), title: title, fileList:fileList, home: home, avatar:avatar, blog:blog, doc:doc, user:user, translate:translate(req)};
+
+				//hook up the buttons to show the social media logins
+				if(req.params.page =='login')
+				{
+					res.locals.twitterLogin = global.configuration.twitter_consumer_key ? true:false;
+					res.locals.googleLogin = global.configuration.google_client_id ? true:false;
+					res.locals.facebookLogin = global.configuration.facebook_app_id ? true:false;
+
+				}
 				res.render(template,{layout:layout});
 				
 				

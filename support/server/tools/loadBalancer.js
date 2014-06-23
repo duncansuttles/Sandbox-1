@@ -23,7 +23,11 @@ app.use(ServerFeatures.CORSSupport);
 app.use(express.cookieParser());
 
 app.use(express.bodyParser());
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(app.router);
+
 
 function Host(url)
 {

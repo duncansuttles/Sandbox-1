@@ -70,12 +70,20 @@ var reflector = require("./reflector.js");
 var appserver = require("./appserver.js");
 var ServerFeatures = require("./serverFeatures.js");
 
+var passport = require('passport');
+var FacebookStrategy = require('passport-facebook').Strategy;
+var LocalStrategy = require('passport-local').Strategy;
+var TwitterStrategy = require('passport-twitter').Strategy;
+var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+
+var sessions = require('./sessions');
+var xapi = require('./xapi');
 
 //localization
 var i18n = require("i18next");
 var option = {
         //lng: 'en',
-        resGetPath: (libpath.resolve("./locales/__lng__/__ns__.json")),
+        resGetPath: (libpath.resolve("./locales/__lng__/__ns__.json"))
         //debug: true
       };
 i18n.init(option);
@@ -113,6 +121,16 @@ global.error = function()
 	}
 }
 
+ var handleRedirectAfterLogin = function(req,res) {
+    var redirectUrl = global.appPath+'/';
+    // If we have previously stored a redirectUrl, use that,
+    // otherwise, use the default.
+    if (req.session && req.session.redirectUrl) {
+        redirectUrl = global.appPath+'/'+req.session.redirectUrl;
+        req.session.redirectUrl = null;
+    }
+    res.redirect(redirectUrl);
+};
 
 //Start the VWF HTTP server
 function startVWF(){
@@ -282,8 +300,6 @@ function startVWF(){
 			// we append a version to the front if every request to keep the clients fresh
 			// otherwise, a user would have to know to refresh the cache every time we release
 			app.use(ServerFeatures.versioning);
-			
-			
 
 			//find pretty world URL's, and redirect to the non-pretty url for the world
 			app.use(ServerFeatures.prettyWorldURL);
@@ -299,10 +315,18 @@ function startVWF(){
 			//i18n support
 			app.use(express.cookieParser());
     		app.use(i18n.handle);
+            app.use(express.cookieSession({
+                key    : global.configuration.sessionKey ? global.configuration.sessionKey : 'virtual',
+                secret : global.configuration.sessionSecret ? global.configuration.sessionSecret : 'unsecure cookie secret',
+                cookie : {
+                    maxAge: global.configuration.sessionTimeoutMs ? global.configuration.sessionTimeoutMs : 10000000
+                }
+            }));
+            app.use(passport.initialize());
+            app.use(passport.session());
 
-			app.use(app.router);
+            app.use(app.router);
 
-			
 			app.get(global.appPath+'/:page([a-zA-Z\\0-9\?/]*)', Landing.redirectPasswordEmail);
 			app.get(global.appPath, Landing.redirectPasswordEmail);
 			
@@ -323,19 +347,65 @@ function startVWF(){
 			
 			app.get(global.appPath+'/vwf.js', Landing.serveVWFcore);
 
-		
-
-			app.post(global.appPath+'/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
+            app.post(global.appPath+'/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
 			app.post(global.appPath+'/data/:action([a-zA-Z_]+)', Landing.handlePostRequest);
 
-
-			
-			//The file handleing logic for vwf engine files
+                //The file handleing logic for vwf engine files
 			app.use(appserver.handleRequest); 
 			//var listen = app.listen(port);
 			var listen = null;
 
-			if(global.configuration.pfx)
+			app.post('/auth/local', 
+			  passport.authenticate('local', { failureRedirect: '/login' }),
+			  function(req, res) {
+			    
+			    	handleRedirectAfterLogin(req,res);
+
+				});
+
+			if(global.configuration.facebook_app_id)
+			{
+	            app.get(global.appPath+'/auth/facebook',
+	                passport.authenticate('facebook', { scope : 'email' }));
+
+	            app.get(global.appPath+'/auth/facebook/callback',
+	                passport.authenticate('facebook', { failureRedirect: global.appPath+'/login' }),
+	                function(req, res) {
+	                    handleRedirectAfterLogin(req,res);
+	                });
+        	}
+
+        	if(global.configuration.twitter_consumer_key)
+			{
+	            // Twitter authentication routing
+	            app.get(global.appPath+'/auth/twitter', passport.authenticate('twitter'));
+
+	            app.get(global.appPath+'/auth/twitter/callback',
+	                passport.authenticate('twitter', { failureRedirect: global.appPath+'/login' }),
+	                function(req, res) {
+	                    handleRedirectAfterLogin(req,res);
+	                });
+        	}
+        	if(global.configuration.google_client_id)
+			{
+	             // Google authentication routing
+	            app.get(global.appPath+'/auth/google',
+	                passport.authenticate('google', { scope: ['profile','email'] }));
+
+	            app.get(global.appPath+'/auth/google/callback',
+	                passport.authenticate('google', { failureRedirect: global.appPath+'/login' }),
+	                function(req, res) {
+	                    handleRedirectAfterLogin(req,res);
+	                });
+        	}
+
+            // route for logging out
+            app.get('/fb_logout', function(req, res) {
+                req.logout();
+                res.redirect('/');
+            });
+
+            if(global.configuration.pfx)
 			{
 				listen= spdy.createServer({
 					pfx: fs.readFileSync(global.configuration.pfx),
@@ -457,6 +527,143 @@ function startVWF(){
 		StartUp();
 	}
 	
+}
+// used to serialize the user for the session
+passport.serializeUser(function (user, done) {
+ 
+        xapi.sendStatement(user.id,xapi.verbs.logged_in);
+        var userStorage = require('./sessions.js').createSession();
+        userStorage.id = user.id;
+        userStorage.UID = user.id;
+        userStorage.Username = user.Username || user.id;
+        userStorage.PasswordIsTemp = user.isTemp;
+		userStorage.Password = user.Password;
+        done(null, userStorage);
+    
+});
+
+// used to deserialize the user
+passport.deserializeUser(function (userStorage, done) {
+    DAL.getUser(userStorage.id, function (user) {
+        done(null, user);
+    });
+});
+
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    DAL.getUser(username, function (user) {
+        if (user) {
+        	require('./passwordUtils.js').CheckPassword(username,password,function(ok,isTemp)
+        	{
+				if(ok === true)
+				{
+					xapi.sendStatement(username,xapi.verbs.logged_in); 
+					if(isTemp)
+						user.isTemp = true;
+					done(null, user);
+				}else
+						done(null,null);
+        	})
+            
+        }else
+        {
+        	done(null,null);
+        } 
+    })
+    })
+);
+
+if(global.configuration.facebook_app_id)
+{
+	passport.use(new FacebookStrategy({
+	        clientID: global.configuration.facebook_app_id,
+	        clientSecret: global.configuration.facebook_app_secret,
+	        callbackURL: global.configuration.facebook_callback_url
+	    },
+	    function (accessToken, refreshToken, profile, done) {
+	        process.nextTick(function () {
+	                profile.id = "facebook_"+profile.id;
+	                DAL.getUser(profile.id, function (user) {
+	                    if (user) {
+	                        done(null, user);
+	                    } else {
+	                        user = DAL.createProfileFromFacebook(profile, function (results) {
+	                            if (results === "ok") {
+	                                DAL.getUser(profile.id, function (user) {
+	                                    done(null, user);
+	                                });
+	                            } else {
+	                                done("Error creating user from facebook " + results, null);
+	                            }
+	                        });
+	                    }
+	                });
+	            }
+	        );
+	    }
+	));
+}
+if(global.configuration.twitter_consumer_key)
+{
+	passport.use(new TwitterStrategy({
+	        consumerKey: global.configuration.twitter_consumer_key,
+	        consumerSecret: global.configuration.twitter_consumer_secret,
+	        callbackURL: global.configuration.twitter_callback_url
+	    },
+	    function (accessToken, refreshToken, profile, done) {
+	        process.nextTick(function () {
+	                profile.id = "twitter_"+profile.id;
+	                DAL.getUser(profile.id, function (user) {
+	                    if (user) {
+	                        done(null, user);
+	                    } else {
+	                        user = DAL.createProfileFromTwitter(profile, function (results) {
+	                            if (results === "ok") {
+	                                DAL.getUser(profile.id, function (user) {
+	                                    done(null, user);
+	                                });
+	                            } else {
+	                                done("Error creating user from twitter " + results, null);
+	                            }
+	                        });
+	                    }
+	                });
+	            }
+	        );
+	    }
+	));
+}
+
+if(global.configuration.google_client_id)
+{
+	passport.use(new GoogleStrategy({
+	        clientID: global.configuration.google_client_id,
+	        clientSecret: global.configuration.google_client_secret,
+	        callbackURL: global.configuration.google_callback_url
+	    },
+	    function(token, tokenSecret, profile, done) {
+	        // asynchronous verification, for effect...
+	        process.nextTick(function () {
+	            profile.id = "google_"+profile.id;
+	            DAL.getUser(profile.id, function (user) {
+	                if (user) {
+	                    done(null, user);
+	                } else {
+	                    user = DAL.createProfileFromGoogle(profile, function (results) {
+	                        if (results === "ok") {
+	                            DAL.getUser(profile.id, function (user) {
+	                                done(null, user);
+	                            });
+	                        } else {
+	                            done("Error creating user from google " + results, null);
+	                        }
+	                    });
+	                }
+	            });
+	            return done(null, profile);
+	        });
+	    }
+	));
 }
 
 exports.startVWF = startVWF;

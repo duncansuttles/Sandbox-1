@@ -202,7 +202,7 @@ exports.SiteLogin = function (response,URL)
 				global.log("Login "+ ok,2);
 				if(ok)
 				{
-					sessions.createSession(UID,password,isTemp,function(session){
+					sessions.createSession(UID,UID,password,isTemp,function(session){
 
 
 					xapi.sendStatement(UID,xapi.verbs.logged_in); 
@@ -228,25 +228,36 @@ exports.SiteLogin = function (response,URL)
 }
 
 //login to the site
-exports.SiteLogout = function (response,URL)
+exports.SiteLogout = function (req,response,URL)
 {
 	if(!URL.loginData)
 	{
-		respond(response,401,"Client Not Logged In");
+		if(req.logout)
+			req.logout();
+		
+		response.writeHead(200, {
+						"Content-Type":  "text/plain",
+						"Set-Cookie": "session=; Path=/; HttpOnly;, connect.sid=; Path=/; HttpOnly;"
+				});
+		response.end();	
 		return;
 	}
 	else
 	{
+		if(req.logout)
+			req.logout();
 		var username = URL.loginData.UID;
 		sessions.deleteSession(URL.loginData,function(){
 
 			xapi.sendStatement(username,xapi.verbs.logged_out);
 			response.writeHead(200, {
 						"Content-Type":  "text/plain",
-						"Set-Cookie": "session=; Path=/; HttpOnly;"
+						"Set-Cookie": "session=; Path=/; HttpOnly;, connect.sid=; Path=/; HttpOnly;"
 				});
 			response.end();	
 		});
 	}
 	return;
 }
+
+

@@ -65,8 +65,8 @@ else
   function startup(boot)
   {
      //TODO: Try to read this and set from config.json in the build process
+     //window.appPath = "/adl/sandbox/";
      window.appPath = "/adl/sandbox/";
-     //window.appPath = "/contact/";
 
      $.ajaxPrefilter( function(options, originalOptions, jqXHR) 
      {
@@ -108,33 +108,6 @@ else
     //start when document is ready
     $(window).ready(function(){
 
-   
-      //do the check for support, and callback when done
-      //this checks for support for webgl, websockets and javascript
-      updateOverlay(function(supported){
-
-        //if not supported, load alertify, alert, and stop
-        if(!supported)
-        {
-
-          
-          window.setTimeout(function(){
-
-            $('#loadstatus').fadeOut();
-            require(['vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify'], function (alertify) {
-              alertify.alert(i18n.t('Sorry, this browser is not supported')+"."+i18n.t('Click ok to view the browser test page')+'.',
-               function(){
-
-                window.location = window.location +"../test";
-              });
-            });
-
-
-          },1500);
-
-
-          return;
-        }
 
         //hide the compatibility check
         $('#loadstatus').fadeOut();
@@ -211,5 +184,4 @@ else
             });
           }});
   });
-  }) ;
 }
