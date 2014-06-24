@@ -43,6 +43,12 @@
                 for (var i = 0; i < 16; i++)
                     threeObject.matrix.elements[i] = transform[i];
                 threeObject.updateMatrixWorld(true);
+
+                //need to set this to update bone handle positions
+                if(this.setAnimationFrameInternal)
+                    this.setAnimationFrameInternal(this.gettingProperty('animationFrame'),sceneManagerUpdate);
+
+                
                 //removed as of threejs r67
                 //if this transformable is a bone, we need to update the skin
                 //if (threeObject.skin)
