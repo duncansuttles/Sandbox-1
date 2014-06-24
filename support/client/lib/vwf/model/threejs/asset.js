@@ -83,9 +83,10 @@
 
 				if (asset instanceof THREE.Bone) {
 
+
 					for (var i in asset.children) {
 						if (asset.children[i].name == 'BoneSelectionHandle') {
-							asset.children[i].material.r = 1;
+							asset.children[i].material.color.r = 1;
 						}
 					}
 				}
@@ -104,6 +105,31 @@
 				}
 				this.rootnode.matrix = this.backupMatrix
 				this.rootnode.updateMatrixWorld(true);
+
+				//AHH be very careful - this is handled in the main driver, and if you do it here,
+				//the main driver will not know that it was linked, and will delete the node
+				//delete this.rootnode.initializedFromAsset;
+				if (this.rootnode instanceof THREE.Bone) {
+
+					for (var i in this.rootnode.children) {
+						if (this.rootnode.children[i].name == 'BoneSelectionHandle') {
+							this.rootnode.children[i].material.color.r = .5;
+						}
+					}
+					//need to update root skin if changed transform of bone
+					var parent = this.rootnode.parent;
+                    while(parent)
+                    {
+                        if(parent instanceof THREE.SkinnedMesh)
+                        {
+                           parent.updateMatrixWorld();
+                            //since it makes no sense for a bone to effect the skin farther up the hierarchy
+                           break;
+                        }
+                        parent = parent.parent
+                    }
+				}
+
 			}
 		}
 		this.loadFailed = function(id) {
