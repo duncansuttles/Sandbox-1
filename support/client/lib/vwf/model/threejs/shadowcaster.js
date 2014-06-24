@@ -13,7 +13,7 @@
 			this.CasterGetAllLeafMeshes = function(threeObject,list)
 			{
 				if(!list) list = [];
-				if(threeObject instanceof THREE.Mesh)
+				if(threeObject instanceof THREE.Mesh && threeObject.name !== 'BoneSelectionHandle')
 				{
 					list.push(threeObject);
 				}
