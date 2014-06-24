@@ -245,6 +245,7 @@ function TileCache()
 						
 						
 						
+						if(this.mat) return this.mat;
 						
 						var algorithmShaderStringDiffuse = this.terrainGenerator.getDiffuseFragmentShader?this.terrainGenerator.getDiffuseFragmentShader():'';
 						var algorithmShaderStringNormal = this.terrainGenerator.getNormalFragmentShader? this.terrainGenerator.getNormalFragmentShader() : '';
