@@ -157,7 +157,9 @@
 			//forceupdate children
 			for(var i in this.children)
 			{
-				this.children[i].update(null,true);
+				//not sure why, as of threejs r67, this is causing issues
+				//unfortunate, not doing this causes visible pop on first update
+				//this.children[i].update(null,true);
 			}
 			
 		}
@@ -187,7 +189,9 @@
 			//forceupdate children
 			for(var i in this.children)
 			{
-				this.children[i].update(null,true);
+				//not sure why, as of threejs r67, this is causing issues
+				//unfortunate, not doing this causes visible pop on first update
+				//this.children[i].update(null,true);
 			}
 		}
 		this.setTerrainAlgorithm = function(algo,params)
@@ -211,7 +215,9 @@
 				//forceupdate children
 				for(var i in this.children)
 				{
-					this.children[i].update(null,true);
+					//not sure why, as of threejs r67, this is causing issues
+				//unfortunate, not doing this causes visible pop on first update
+				//this.children[i].update(null,true);
 				}
 			}catch(e)
 			{
@@ -789,7 +795,9 @@
 					//forceupdate children
 					for(var i in this.children)
 					{
-						this.children[i].update(null,true);
+						//not sure why, as of threejs r67, this is causing issues
+						//unfortunate, not doing this causes visible pop on first update
+						//this.children[i].update(null,true);
 					}
 				}
 			}
