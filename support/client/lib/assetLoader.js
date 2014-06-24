@@ -361,17 +361,19 @@ function ()
             $('#preloadGUIBack').fadeOut();
             },1000);
         }
-        this.loadAssets = function(assets,cb)
+        this.loadAssets = function(assets,cb,noProgressbar)
         {
 
 
             var total = assets.length;
-            assetLoader.startProgressGui(total);
+            if(!noProgressbar)
+                assetLoader.startProgressGui(total);
             var count = 0;
             async.forEachSeries(assets,function(i,cb2)
             {
                 count++;
-                assetLoader.updateProgressGui(count/total,i);
+                if(!noProgressbar)
+                    assetLoader.updateProgressGui(count/total,i);
                 var type = i.type;
                 var url = i.url;
                 if(url)
@@ -434,7 +436,8 @@ function ()
             },function(err)
             {
                 //assetLoader.closeProgressGui();
-                $(window).bind('setstatecomplete',function(){assetLoader.closeProgressGui();return false});
+                if(!noProgressbar)
+                    $(window).bind('setstatecomplete',function(){assetLoader.closeProgressGui();return false});
                 cb();
             })
             

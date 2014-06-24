@@ -108,8 +108,6 @@ THREE.Scene.prototype.CPUPick = function(origin, direction, options) {
 
 
 
-
-
 //MATH.Collada.prototype.CPUPick = MATH.Group.prototype.CPUPick;
 //MATH.Collada.prototype.FrustrumCast = MATH.Group.prototype.FrustrumCast;
 //this is a custom geometry type, not included in MATH distro
@@ -166,143 +164,144 @@ function intersectLinePlane(ray, raypoint, planepoint, planenormal) {
 
 //return the intersection of a ray and a sphere
 var intersectRaySphere = function(origin, direction, center, radius) {
-    direction = MATH.scaleVec3(direction, 1.0 / MATH.lengthVec3(direction));
-    center = MATH.subVec3(center, origin);
-    var LdotC = MATH.dotVec3(direction, center);
-    var c = MATH.lengthVec3(center);
-    var d = Math.sqrt((LdotC * LdotC) - (c * c) + (radius * radius));
-    var d1 = LdotC + d;
-    var d2 = LdotC - d;
-    return Math.max(d1, d2);
+        direction = MATH.scaleVec3(direction, 1.0 / MATH.lengthVec3(direction));
+        center = MATH.subVec3(center, origin);
+        var LdotC = MATH.dotVec3(direction, center);
+        var c = MATH.lengthVec3(center);
+        var d = Math.sqrt((LdotC * LdotC) - (c * c) + (radius * radius));
+        var d1 = LdotC + d;
+        var d2 = LdotC - d;
+        return Math.max(d1, d2);
+    }
+    //The basic representation of a face
+
+function face(v0, v1, v2) {
+    this.v0 = v0;
+    this.v1 = v1;
+    this.v2 = v2;
+    //Find the face center
+    //NOTE: no longer used. profiling shows rejecting face bounding sphere too slow.
+    this.c = [0, 0, 0];
+    this.c[0] = (this.v0[0] + this.v1[0] + this.v2[0]) / 3.0;
+    this.c[1] = (this.v0[1] + this.v1[1] + this.v2[1]) / 3.0;
+    this.c[2] = (this.v0[2] + this.v1[2] + this.v2[2]) / 3.0;
+    this.r = Math.max(MATH.distanceVec3(this.v0, this.c), MATH.distanceVec3(this.v1, this.c), MATH.distanceVec3(this.v2, this.c));
+
+    //precomp some values used in intersection
+    var s1 = MATH.subVec3(v1, v0);
+    var s2 = MATH.subVec3(v2, v0);
+    this.area = (MATH.lengthVec3(s1) * MATH.lengthVec3(s2)) / 2.0
+    s1 = MATH.scaleVec3(s1, 1.0 / MATH.lengthVec3(s1));
+    s2 = MATH.scaleVec3(s2, 1.0 / MATH.lengthVec3(s2));
+
+    //generate the face normal
+    var norm = MATH.crossVec3(s2, s1);
+    norm = MATH.scaleVec3(norm, 1.0 / MATH.lengthVec3(norm));
+    this.norm = norm;
+
 }
-//The basic representation of a face
-    function face(v0, v1, v2) {
-        this.v0 = v0;
-        this.v1 = v1;
-        this.v2 = v2;
-        //Find the face center
-        //NOTE: no longer used. profiling shows rejecting face bounding sphere too slow.
-        this.c = [0, 0, 0];
-        this.c[0] = (this.v0[0] + this.v1[0] + this.v2[0]) / 3.0;
-        this.c[1] = (this.v0[1] + this.v1[1] + this.v2[1]) / 3.0;
-        this.c[2] = (this.v0[2] + this.v1[2] + this.v2[2]) / 3.0;
-        this.r = Math.max(MATH.distanceVec3(this.v0, this.c), MATH.distanceVec3(this.v1, this.c), MATH.distanceVec3(this.v2, this.c));
 
-        //precomp some values used in intersection
-        var s1 = MATH.subVec3(v1, v0);
-        var s2 = MATH.subVec3(v2, v0);
-        this.area = (MATH.lengthVec3(s1) * MATH.lengthVec3(s2)) / 2.0
-        s1 = MATH.scaleVec3(s1, 1.0 / MATH.lengthVec3(s1));
-        s2 = MATH.scaleVec3(s2, 1.0 / MATH.lengthVec3(s2));
+function crossProduct(a, b, c) {
+    a[0] = b[1] * c[2] - c[1] * b[2];
+    a[1] = b[2] * c[0] - c[2] * b[0];
+    a[2] = b[0] * c[1] - c[0] * b[1];
+}
 
-        //generate the face normal
-        var norm = MATH.crossVec3(s2, s1);
-        norm = MATH.scaleVec3(norm, 1.0 / MATH.lengthVec3(norm));
-        this.norm = norm;
+function innerProduct(v, q) {
+    return (v[0] * q[0] +
+        v[1] * q[1] +
+        v[2] * q[2]);
+}
 
+function vector(a, b, c) {
+    a[0] = b[0] - c[0];
+    a[1] = b[1] - c[1];
+    a[2] = b[2] - c[2];
+}
+
+
+function distanceLineSegment(o, d, v1, v2, hitData) {
+    //P(s) = P0 + sU
+    //Q(t) = Q0 + tV
+
+    var p0 = o;
+    var q0 = v1;
+    var s = 1;
+    var t = MATH.distanceVec3(v1, v2);
+    var v = MATH.toUnitVec3(MATH.subVec3(v2, v1));
+    var u = d;
+    var a = MATH.dotVec3(u, u);
+    var b = MATH.dotVec3(u, v);
+    var c = MATH.dotVec3(v, v);
+
+    var w0 = MATH.subVec3(p0, q0);
+
+    var d = MATH.dotVec3(u, w0);
+    var e = MATH.dotVec3(v, w0);
+
+    var Sc = (b * e - c * d) / (a * c - b * b);
+    var Tc = (a * e - b * d) / (a * c - b * b);
+
+    if (Tc / t < 0 || Tc / t > 1)
+        return Infinity;
+
+    var I1 = MATH.addVec3(p0, MATH.scaleVec3(u, Sc));
+    var I2 = MATH.addVec3(q0, MATH.scaleVec3(v, Tc));
+    hitData.point = I2;
+    var dist = MATH.distanceVec3(I1, I2)
+    hitData.t = Tc / MATH.distanceVec3(v1, v2);
+
+    return dist;
+}
+
+
+function pointInFrustrum(point, frustrum) {
+    //checks if cube points are within the frustum planes
+
+
+    var x, y, z;
+
+    x = point[0];
+    y = point[1];
+    z = point[2];
+
+    for (var i = 0; i < frustrum.planes.length; i++) {
+        var vec = MATH.subVec3(point, frustrum.planes[i].point);
+        vec = MATH.toUnitVec3(vec);
+        if (MATH.dotVec3(vec, frustrum.planes[i].normal) < 0)
+            return false;
     }
+    return true;
 
-    function crossProduct(a, b, c) {
-        a[0] = b[1] * c[2] - c[1] * b[2];
-        a[1] = b[2] * c[0] - c[2] * b[0];
-        a[2] = b[0] * c[1] - c[0] * b[1];
-    }
+}
 
-    function innerProduct(v, q) {
-        return (v[0] * q[0] +
-            v[1] * q[1] +
-            v[2] * q[2]);
-    }
+function buildFaceListFromBounds(bound) {
+    var p1 = [bound.min[0], bound.min[1], bound.min[2]];
+    var p2 = [bound.max[0], bound.min[1], bound.min[2]];
+    var p3 = [bound.min[0], bound.max[1], bound.min[2]];
+    var p4 = [bound.max[0], bound.max[1], bound.min[2]];
+    var p5 = [bound.min[0], bound.min[1], bound.max[2]];
+    var p6 = [bound.max[0], bound.min[1], bound.max[2]];
+    var p7 = [bound.min[0], bound.max[1], bound.max[2]];
+    var p8 = [bound.max[0], bound.max[1], bound.max[2]];
 
-    function vector(a, b, c) {
-        a[0] = b[0] - c[0];
-        a[1] = b[1] - c[1];
-        a[2] = b[2] - c[2];
-    }
+    var f1 = new face(p1, p2, p4);
+    var f2 = new face(p4, p3, p1);
+    var f3 = new face(p5, p6, p8);
+    var f4 = new face(p8, p7, p5);
+    var f5 = new face(p1, p2, p6);
+    var f6 = new face(p6, p5, p1);
+    var f7 = new face(p3, p4, p8);
+    var f8 = new face(p8, p7, p3);
+    var f9 = new face(p2, p4, p8);
+    var f10 = new face(p8, p6, p2);
+    var f11 = new face(p1, p3, p7);
+    var f12 = new face(p7, p5, p1);
 
-
-    function distanceLineSegment(o, d, v1, v2, hitData) {
-        //P(s) = P0 + sU
-        //Q(t) = Q0 + tV
-
-        var p0 = o;
-        var q0 = v1;
-        var s = 1;
-        var t = MATH.distanceVec3(v1, v2);
-        var v = MATH.toUnitVec3(MATH.subVec3(v2, v1));
-        var u = d;
-        var a = MATH.dotVec3(u, u);
-        var b = MATH.dotVec3(u, v);
-        var c = MATH.dotVec3(v, v);
-
-        var w0 = MATH.subVec3(p0, q0);
-
-        var d = MATH.dotVec3(u, w0);
-        var e = MATH.dotVec3(v, w0);
-
-        var Sc = (b * e - c * d) / (a * c - b * b);
-        var Tc = (a * e - b * d) / (a * c - b * b);
-
-        if (Tc / t < 0 || Tc / t > 1)
-            return Infinity;
-
-        var I1 = MATH.addVec3(p0, MATH.scaleVec3(u, Sc));
-        var I2 = MATH.addVec3(q0, MATH.scaleVec3(v, Tc));
-        hitData.point = I2;
-        var dist = MATH.distanceVec3(I1, I2)
-        hitData.t = Tc / MATH.distanceVec3(v1, v2);
-
-        return dist;
-    }
-
-
-    function pointInFrustrum(point, frustrum) {
-        //checks if cube points are within the frustum planes
-
-
-        var x, y, z;
-
-        x = point[0];
-        y = point[1];
-        z = point[2];
-
-        for (var i = 0; i < frustrum.planes.length; i++) {
-            var vec = MATH.subVec3(point, frustrum.planes[i].point);
-            vec = MATH.toUnitVec3(vec);
-            if (MATH.dotVec3(vec, frustrum.planes[i].normal) < 0)
-                return false;
-        }
-        return true;
-
-    }
-
-    function buildFaceListFromBounds(bound) {
-        var p1 = [bound.min[0], bound.min[1], bound.min[2]];
-        var p2 = [bound.max[0], bound.min[1], bound.min[2]];
-        var p3 = [bound.min[0], bound.max[1], bound.min[2]];
-        var p4 = [bound.max[0], bound.max[1], bound.min[2]];
-        var p5 = [bound.min[0], bound.min[1], bound.max[2]];
-        var p6 = [bound.max[0], bound.min[1], bound.max[2]];
-        var p7 = [bound.min[0], bound.max[1], bound.max[2]];
-        var p8 = [bound.max[0], bound.max[1], bound.max[2]];
-
-        var f1 = new face(p1, p2, p4);
-        var f2 = new face(p4, p3, p1);
-        var f3 = new face(p5, p6, p8);
-        var f4 = new face(p8, p7, p5);
-        var f5 = new face(p1, p2, p6);
-        var f6 = new face(p6, p5, p1);
-        var f7 = new face(p3, p4, p8);
-        var f8 = new face(p8, p7, p3);
-        var f9 = new face(p2, p4, p8);
-        var f10 = new face(p8, p6, p2);
-        var f11 = new face(p1, p3, p7);
-        var f12 = new face(p7, p5, p1);
-
-        var list = new SimpleFaceListRTAS([]);
-        list.faces = [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12];
-        return list;
-    }
+    var list = new SimpleFaceListRTAS([]);
+    list.faces = [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12];
+    return list;
+}
 
 face.prototype.intersectFrustrum = function(frustrum, opts) {
     if (pointInFrustrum(this.v0, frustrum) || pointInFrustrum(this.v0, frustrum) || pointInFrustrum(this.v0, frustrum)) {
@@ -884,7 +883,14 @@ function Project(points, norm) {
 
 function getCorners(box) {
     return [
-        [box.min[0], box.min[1], box.min[2]], [box.min[0], box.min[1], box.max[2]], [box.min[0], box.max[1], box.min[2]], [box.min[0], box.max[1], box.max[2]], [box.max[0], box.min[1], box.min[2]], [box.max[0], box.min[1], box.max[2]], [box.max[0], box.max[1], box.min[2]], [box.max[0], box.max[1], box.max[2]],
+        [box.min[0], box.min[1], box.min[2]],
+        [box.min[0], box.min[1], box.max[2]],
+        [box.min[0], box.max[1], box.min[2]],
+        [box.min[0], box.max[1], box.max[2]],
+        [box.max[0], box.min[1], box.min[2]],
+        [box.max[0], box.min[1], box.max[2]],
+        [box.max[0], box.max[1], box.min[2]],
+        [box.max[0], box.max[1], box.max[2]],
     ];
 }
 
@@ -1016,7 +1022,6 @@ OctreeRegion.prototype.intersect = function(o, d, opts) {
             }
         }
     }
-
 
 
 
@@ -1297,7 +1302,7 @@ THREE.Geometry.prototype.BuildRayTraceAccelerationStructure = function() {
     var volCm3 = volumeM3 * (100 * 100 * 100);
 
     var denPerCm3 = this.faces.length / volCm3;
-    
+
     if (denPerCm3 > .001 && this.faces.length > OCTMaxFaces) {
         console.warn('Mesh density is greater than one poly per cubic centimeter. This is insane. Bailing out of octree generation');
         this.RayTraceAccelerationStructure = buildFaceListFromBounds(bounds);
@@ -1611,6 +1616,34 @@ THREE.Object3D.prototype.GetBoundingBox = function(local) {
     return box;
 }
 
+THREE.Bone.prototype.buildSelectionHandles = function() {
+    var pos = [0, 0, 0];
+    var dist = Vec3.magnitude([this.matrix.elements[12], this.matrix.elements[13], this.matrix.elements[14]]);
+    if (this.children[0]) {
+        var dist2 = Vec3.magnitude([this.children[0].matrix.elements[12], this.children[0].matrix.elements[13], this.children[0].matrix.elements[14]]);
+        var offx = this.children[0].matrix.elements[12] / 2;
+        var offy = this.children[0].matrix.elements[13] / 2;
+        var offz = this.children[0].matrix.elements[14] / 2;
+        pos = [offx, offy, offz];
+        dist = dist2;
+    }
+
+    this.debugDist = dist;
+
+    var d = this.debugDist;
+    this.debug = new THREE.Mesh(new THREE.BoxGeometry(d, d, d, 1, 1, 1));
+    this.debug.name = "BoneSelectionHandle";
+    this.debug.material.color.r = this.initializedFromAsset ? 1 : .5;
+    this.debug.material.color.g = .5;
+    this.debug.material.color.b = .5;
+    this.debug.material.transparent = true;
+    this.debug.material.opacity = .5;
+    this.debug.position.x = pos[0];
+    this.debug.position.y = pos[1];
+    this.debug.position.z = pos[2];
+    this.debug.visible = _SceneManager ? _SceneManager.getBonesVisible() : false;
+    this.add(this.debug);
+}
 //dont take the mesh into account for the skinned meshes
 //roll up the bounds from the bones
 THREE.SkinnedMesh.prototype.GetBoundingBox = function(local) {
@@ -1630,6 +1663,13 @@ THREE.SkinnedMesh.prototype.GetBoundingBox = function(local) {
     return box;
 }
 
+THREE.Bone.prototype.GetBoundingBox = function(local)
+{
+     if (!this.debug) {
+            this.buildSelectionHandles();
+     }
+     return THREE.Object3D.prototype.GetBoundingBox.call(this,local);
+}
 THREE.Object3D.prototype.getBoundingBox = THREE.Object3D.prototype.GetBoundingBox;
 //Should I ignore this? true for yes
 THREE.Object3D.prototype.ignoreTest = function(ignore) {
@@ -1664,36 +1704,11 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options) {
     if (this.InvisibleToCPUPick)
         return null;
 
-
+    //really should be initialized before this.
     if (this instanceof THREE.Bone) {
 
         if (!this.debug) {
-            var pos = [0,0,0];
-            var dist = Vec3.magnitude([this.matrix.elements[12], this.matrix.elements[13], this.matrix.elements[14]]);
-            if (this.children[0]) {
-                var dist2 = Vec3.magnitude([this.children[0].matrix.elements[12], this.children[0].matrix.elements[13], this.children[0].matrix.elements[14]]);
-                var offx = this.children[0].matrix.elements[12]/2;
-                var offy = this.children[0].matrix.elements[13]/2;
-                var offz = this.children[0].matrix.elements[14]/2;
-                pos = [offx,offy,offz];
-                dist = dist2;
-            }
-
-            this.debugDist = dist;
-
-            var d = this.debugDist;
-            this.debug = new THREE.Mesh(new THREE.BoxGeometry(d, d, d, 1, 1, 1));
-            this.debug.name = "BoneSelectionHandle";
-            this.debug.material.color.r = this.initializedFromAsset ? 1 : .5;
-            this.debug.material.color.g = .5;
-            this.debug.material.color.b = .5;
-            this.debug.material.transparent = true;
-            this.debug.material.opacity = .5;
-            this.debug.position.x = pos[0];
-            this.debug.position.y = pos[1];
-            this.debug.position.z = pos[2];
-            this.debug.visible = _SceneManager? _SceneManager.getBonesVisible() : false;
-            this.add(this.debug);
+            this.buildSelectionHandles();
         }
 
     }
@@ -1915,8 +1930,6 @@ THREE.Object3D.prototype.FrustrumCast = function(frustrum, options) {
 
 
 
-
-
     if (this.geometry) {
 
         //at this point, were going to move the ray into the space relative to the mesh. until now, the ray has been in worldspace.
@@ -2001,8 +2014,6 @@ THREE.Object3D.prototype.SphereCast = function(center, r, options) {
 
 
 
-
-
     if (this.geometry) {
 
         //at this point, were going to move the ray into the space relative to the mesh. until now, the ray has been in worldspace.
@@ -2024,7 +2035,6 @@ THREE.Object3D.prototype.SphereCast = function(center, r, options) {
         mat3[3] = 0;
         mat3[7] = 0;
         mat3[11] = 0;
-
 
 
 
@@ -2241,7 +2251,6 @@ THREE.Scene.prototype.FrustrumCast = function(frustrum) {
     return hitlist;
 
 }
-
 
 
 

@@ -3187,23 +3187,31 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             currentmat.needsUpdate = true;
         }
         this.loadMesh = function(url, type) {
-
-            var Proto = {
+            var self = this;
+            //ok, here, let's preload the asset. If there is an error during parse, the preloader will never hit the callback and 
+            // we won't end up with a broken VWF entity.
+            _assetLoader.loadAssets([{type:type,url:url}],function(){
+            
+                var Proto = {
                 extends: 'asset.vwf',
-                source: url,
-                type: type || 'subDriver/threejs/asset/vnd.collada+xml',
-                properties: {
-                    owner: _UserManager.GetCurrentUserName()
-                }
-            };
+                    source: url,
+                    type: type || 'subDriver/threejs/asset/vnd.collada+xml',
+                    properties: {
+                        owner: _UserManager.GetCurrentUserName()
+                    }
+                };
 
 
-            var newintersectxy = self.GetInsertPoint();
-            Proto.properties.owner = _UserManager.GetCurrentUserName();
-            Proto.properties.translation = newintersectxy;
-            var newname = this.GetUniqueName(url);
-            _UndoManager.recordCreate('index-vwf', newname, Proto);
-            vwf_view.kernel.createChild('index-vwf', newname, Proto);
+                var newintersectxy = self.GetInsertPoint();
+                Proto.properties.owner = _UserManager.GetCurrentUserName();
+                Proto.properties.translation = newintersectxy;
+                var newname = self.GetUniqueName(url);
+                _UndoManager.recordCreate('index-vwf', newname, Proto);
+                vwf_view.kernel.createChild('index-vwf', newname, Proto);
+
+
+            },true)
+           
 
         }
         this.focusSelected = function() {
