@@ -79,7 +79,7 @@
             if (propertyName == 'transform') {
 
                 if (!this.TransformEnabled()) {
-                    debugger;
+                    
                     return propertyValue;
                 };
 
