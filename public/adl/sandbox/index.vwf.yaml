@@ -857,9 +857,9 @@ scripts:
         
         if(this.objectFollowed)
         {  
-        	  var rz = this.objectFollowed.rotZ;
-            rz  = (rz +(this.rel_x*10 || 0)) || 0;
-            vwf_view.kernel.setProperty(this.objectFollowed.id,'rotZ',rz);
+        	  var rz = this.lastRotZ || 0;
+            this.lastRotZ  = (rz +(this.rel_x*5 || 0)) || 0;
+            vwf_view.kernel.setProperty(this.objectFollowed.id,'rotZ',this.lastRotZ);
             
             
         }
