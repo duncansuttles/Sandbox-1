@@ -25,7 +25,6 @@ function sign(x) {
 
 
 
-
 define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(Log, ProgressBar) {
     var originalGizmoPos;
     var Editor = {};
@@ -1015,7 +1014,6 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
 
 
-
                 var t = new THREE.Vector3();
                 t.setFromMatrixPosition(MoveGizmo.parent.matrixWorld);
                 var gizpos = this.mouseDownGizPos;
@@ -1056,8 +1054,6 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 var newrotz;
                 var newroty;
                 var newrotx;
-
-
 
 
 
@@ -3191,7 +3187,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             currentmat.needsUpdate = true;
         }
         this.loadMesh = function(url, type) {
-            debugger;
+
             var Proto = {
                 extends: 'asset.vwf',
                 source: url,

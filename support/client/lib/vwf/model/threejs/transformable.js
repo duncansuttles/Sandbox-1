@@ -44,6 +44,23 @@
                     threeObject.matrix.elements[i] = transform[i];
                 threeObject.updateMatrixWorld(true);
 
+                //walk and find mesh for the bone, update it
+                if(threeObject instanceof THREE.Bone)
+                {
+                    var parent = threeObject.parent;
+                    while(parent)
+                    {
+                        if(parent instanceof THREE.SkinnedMesh)
+                        {
+                           parent.updateMatrixWorld();
+                            //since it makes no sense for a bone to effect the skin farther up the hierarchy
+                           break;
+                        }
+                        parent = parent.parent
+                    }
+
+                }
+
                 //need to set this to update bone handle positions
                 if(this.setAnimationFrameInternal)
                     this.setAnimationFrameInternal(this.gettingProperty('animationFrame'),sceneManagerUpdate);

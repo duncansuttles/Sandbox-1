@@ -1726,6 +1726,10 @@
             // Call deletingNode() on each model. The node is considered deleted after all models
             // have run.
 
+            this.children(nodeID).forEach(function(child){
+                vwf.deleteNode(child);
+            });
+
             this.models.forEach( function( model ) {
                 model.deletingNode && model.deletingNode( nodeID );
             } );
