@@ -1668,10 +1668,15 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options) {
     if (this instanceof THREE.Bone) {
 
         if (!this.debug) {
+            var pos = [0,0,0];
             var dist = Vec3.magnitude([this.matrix.elements[12], this.matrix.elements[13], this.matrix.elements[14]]);
             if (this.children[0]) {
                 var dist2 = Vec3.magnitude([this.children[0].matrix.elements[12], this.children[0].matrix.elements[13], this.children[0].matrix.elements[14]]);
-                dist = Math.min(dist2, dist);
+                var offx = this.children[0].matrix.elements[12]/2;
+                var offy = this.children[0].matrix.elements[13]/2;
+                var offz = this.children[0].matrix.elements[14]/2;
+                pos = [offx,offy,offz];
+                dist = dist2;
             }
 
             this.debugDist = dist;
@@ -1684,7 +1689,9 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options) {
             this.debug.material.color.b = .5;
             this.debug.material.transparent = true;
             this.debug.material.opacity = .5;
-
+            this.debug.position.x = pos[0];
+            this.debug.position.y = pos[1];
+            this.debug.position.z = pos[2];
             this.debug.visible = _SceneManager? _SceneManager.getBonesVisible() : false;
             this.add(this.debug);
         }
