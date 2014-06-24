@@ -95,6 +95,17 @@
 					_SceneManager.setDirty(asset);	
 					
 					this.settingProperty('transform',this.gettingProperty('transform'));
+					if(asset instanceof THREE.Bone)
+					{
+						
+						for(var i in asset.children)
+						{
+							if(asset.children[i].name == 'BoneSelectionHandle')
+							{
+								asset.children[i].material.r = 1;
+							}
+						}
+					}
 				}
 			}
 			this.deletingNode = function()

@@ -44,6 +44,37 @@ SceneManager.prototype.forceBatchAll = function() {
             list[i].setStatic(true);
     }
 }
+SceneManager.prototype.bonesVisible = false;
+
+SceneManager.prototype.getBonesVisible = function() {
+    return this.bonesVisible;
+}
+SceneManager.prototype.showBones = function() {
+    this.bonesVisible = true;
+    this.updateBoneVisiblitiy(true);
+}
+SceneManager.prototype.hideBones = function() {
+    this.bonesVisible = false;
+    this.updateBoneVisiblitiy(false);
+}
+SceneManager.prototype.updateBoneVisiblitiy = function(visible) {
+
+   
+    var walk = function(root) {
+        if (root instanceof THREE.Bone) {
+            for (var i in root.children) {
+                if (root.children[i].name == "BoneSelectionHandle") {
+                    root.children[i].visible = visible;
+                }
+                walk(root.children[i]);
+            }
+        }
+        for (var i in root.children) {
+            walk(root.children[i]);
+        }
+    }
+    walk(this.scene);
+}
 SceneManager.prototype.forceUnbatchAll = function() {
     var list = [];
     GetAllLeafMeshes(this.scene, list);
@@ -212,7 +243,6 @@ SceneManager.prototype.update = function(dt) {
     for (var i = 0; i < this.dirtyObjects.length; i++) {
         this.dirtyObjects[i].sceneManagerUpdate();
     }
-
 
 
 
@@ -839,7 +869,6 @@ SceneManagerRegion.prototype.distributeObject = function(object) {
 
 
 
-
                 this.sceneManagerNode.updateObject(this);
 
             }.bind(object)
@@ -1120,12 +1149,6 @@ _SceneManager = new SceneManager();
 
 
 
-
-
-
-
-
-
 THREE.RenderBatch = function(material, scene) {
     this.objects = [];
     this.material = material;
@@ -1294,7 +1317,6 @@ THREE.RenderBatch.prototype.build = function() {
 
 
 
-
             for (var l = 0; l < totalUVSets; l++) {
                 var uvs2 = tg.faceVertexUvs[l];
 
@@ -1399,8 +1421,6 @@ function compareMaterialsLambert(m1, m2) {
 
 
 
-
-
         if (m1[mapname] && !m2[mapname]) {
             delta += 1000;
         }
@@ -1471,8 +1491,6 @@ function compareMaterialsPhong(m1, m2) {
     var mapnames = ['map', 'bumpMap', 'lightMap', 'normalMap', 'specularMap'];
     for (var i = 0; i < mapnames.length; i++) {
         var mapname = mapnames[i];
-
-
 
 
 

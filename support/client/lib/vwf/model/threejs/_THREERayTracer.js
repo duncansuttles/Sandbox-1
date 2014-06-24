@@ -1297,7 +1297,7 @@ THREE.Geometry.prototype.BuildRayTraceAccelerationStructure = function() {
     var volCm3 = volumeM3 * (100 * 100 * 100);
 
     var denPerCm3 = this.faces.length / volCm3;
-    console.log(denPerCm3);
+    
     if (denPerCm3 > .001 && this.faces.length > OCTMaxFaces) {
         console.warn('Mesh density is greater than one poly per cubic centimeter. This is insane. Bailing out of octree generation');
         this.RayTraceAccelerationStructure = buildFaceListFromBounds(bounds);
@@ -1679,7 +1679,11 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options) {
             var d = this.debugDist;
             this.debug = new THREE.Mesh(new THREE.BoxGeometry(d, d, d, 1, 1, 1));
             this.debug.name = "BoneSelectionHandle";
-            this.debug.visible = false;
+            this.debug.material.color.r = this.initializedFromAsset ? 1 : .5;
+            this.debug.material.color.g = .5;
+            this.debug.material.color.b = .5;
+
+            this.debug.visible = _SceneManager? _SceneManager.getBonesVisible() : false;
             this.add(this.debug);
         }
 
