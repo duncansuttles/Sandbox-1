@@ -504,28 +504,27 @@ scripts:
             }
             if(this.cycleName == 'turnleft')
             {
-                this.rotZ += +.07*updateFreqDivisor;
+                this.rotZ += .07*updateFreqDivisor;
                // this.mesh.setRotZ(this.rotZ);
                backupr = [0,0,1,this.rotZ/0.0174532925];
             }
              if(this.cycleName == 'straferight')
             {
-                 motionvec = MATH.mulMat4Vec3(MATH.angleAxis(backupr[3]*0.0174532925,[backupr[0],backupr[1],backupr[2]]),[-.03*updateFreqDivisor,0,0]);
-                
+                 motionvec = this.transformAPI.localToGlobalRotation([-.03*updateFreqDivisor,0,0]);
             }
             if(this.cycleName == 'strafeleft')
             {
-                 motionvec = MATH.mulMat4Vec3(MATH.angleAxis(backupr[3]*0.0174532925,[backupr[0],backupr[1],backupr[2]]),[.03*updateFreqDivisor,0,0]);
                  
+                 motionvec = this.transformAPI.localToGlobalRotation([.03*updateFreqDivisor,0,0]);
             }
             if(this.cycleName == 'walk')
             {
-                    motionvec = MATH.mulMat4Vec3(MATH.angleAxis(backupr[3]*0.0174532925,[backupr[0],backupr[1],backupr[2]]),[0,-.09*updateFreqDivisor,0]);
-                    
+                   
+                    motionvec = this.transformAPI.localToGlobalRotation([0,-.09*updateFreqDivisor,0]);
             }
             if(this.cycleName == 'walkback')
             {
-                    motionvec = MATH.mulMat4Vec3(MATH.angleAxis(backupr[3]*0.0174532925,[backupr[0],backupr[1],backupr[2]]),[0,+.09*updateFreqDivisor,0]);
+                    motionvec = this.transformAPI.localToGlobalRotation([0,.09*updateFreqDivisor,0]);
                    
             }
             if(this.cycleName == 'run')
