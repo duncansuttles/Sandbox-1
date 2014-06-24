@@ -701,7 +701,9 @@
 			//sometimes when we don't need to. Generation of the decoration is super fast, so not a big problem for now.
 			for(var i in this.children)
 			{
-				this.children[i].update(null,true);
+				//not sure why, as of threejs r67, this is causing issues
+				//unfortunate, not doing this causes visible pop on first update
+				//this.children[i].update(null,true);
 			}
 			
 			
