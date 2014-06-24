@@ -1087,7 +1087,7 @@
 			{
 				
 				if(threeObject.vwfID) return;
-				if(threeObject instanceof THREE.Mesh)
+				if(threeObject instanceof THREE.Mesh && threeObject.name !== 'BoneSelectionHandle')
 				{
 					list.push(threeObject);
 				}
@@ -1104,7 +1104,7 @@
 			{
 				
 				if(threeObject.vwfID) return;
-				if(threeObject instanceof THREE.Mesh)
+				if(threeObject instanceof THREE.Mesh && threeObject.name !== 'BoneSelectionHandle')
 				{
 					list.push(threeObject);
 				}

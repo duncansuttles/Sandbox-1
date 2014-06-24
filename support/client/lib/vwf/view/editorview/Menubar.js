@@ -526,7 +526,13 @@ define({
             }
         });
 
-
+		$('#MenuViewToggleBones').click(function(e) {
+			if(_SceneManager.getBonesVisible())
+				_SceneManager.hideBones();
+			else
+				_SceneManager.showBones();
+        	
+		})
 
         $('#MenuViewToggleAO').click(function(e) {
             if (_Editor.findscene().getFilter2d()) {

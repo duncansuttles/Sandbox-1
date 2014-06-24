@@ -1682,6 +1682,8 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options) {
             this.debug.material.color.r = this.initializedFromAsset ? 1 : .5;
             this.debug.material.color.g = .5;
             this.debug.material.color.b = .5;
+            this.debug.material.transparent = true;
+            this.debug.material.opacity = .5;
 
             this.debug.visible = _SceneManager? _SceneManager.getBonesVisible() : false;
             this.add(this.debug);
