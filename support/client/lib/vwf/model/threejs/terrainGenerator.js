@@ -82,7 +82,7 @@ new (function(){
 		geo.computeBoundingBox();
 				
 	//	geo.normalsNeedUpdate = true;
-	//	geo.dirtyMesh = true;
+		geo.dirtyMesh = true;
 		
 		var time = performance.now() - now;
 		this.totalregentime += time;

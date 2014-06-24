@@ -78,10 +78,14 @@
             return propertyValue;
         }
         this.settingProperty = function(propertyName, propertyValue) {
-            if (!this.TransformEnabled()) {
-                return propertyValue
-            };
+           
             if (propertyName == 'transform') {
+
+                 if (!this.TransformEnabled()) {
+                        debugger;
+                        return propertyValue;
+                 };
+
                 return this.setTransformInternal(propertyValue, true);
             }
 

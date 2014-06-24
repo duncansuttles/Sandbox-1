@@ -65,7 +65,11 @@
 			this.terrainGenerator.init(this.terrainType,this.terrainParams);
 			
 			
+			//the terrain should not have positions set, because the ground clamping assumes that the parentspace 
+			//transform of each tile is world space. disable transform and set to identity.
 			this.DisableTransform();
+			this.getRoot().matrix = new THREE.Matrix4();
+			this.getRoot().updateMatrixWorld(true);
 			
 			this.quadtree = new QuadtreeNode([-worldExtents,-worldExtents],[worldExtents,worldExtents],this.getRoot(),0,-1,minTileSize,maxTileSize);
 			

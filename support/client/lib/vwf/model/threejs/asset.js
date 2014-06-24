@@ -64,7 +64,8 @@
 			if (asset) {
 				this.initializedFromAsset = true;
 				this.backupmats = [];
-				this.backupMatrix = asset.matrix.clone();
+				this.backupMatrix = asset.matrix;
+				asset.matrix = asset.matrix.clone();
 				this.rootnode = asset;
 				this.rootnode = asset;
 				asset.initializedFromAsset = true;
