@@ -420,7 +420,8 @@
         else if (reg.loaded == true && reg.pending == false) {
 
             if (childType === 'subDriver/threejs/asset/vnd.gltf+json') {
-
+            	//here we signal the driver that we going to execute an asynchronous load
+            	asyncCallback(false);
                 var self = this;
 
                 this.loader = new THREE.glTFLoader();
@@ -441,7 +442,10 @@
                     self.cleanTHREEJSnodes(self.getRoot());
                     self.settingProperty('materialDef', self.materialDef);
                     $(document).trigger('EndParse');
+
                     self.getRoot().updateMatrixWorld(true);
+                    //ok, load is complete - ask the kernel to continue the simulation
+                    asyncCallback(true);
                 });
             } else {
                 this.getRoot().add(reg.node.clone());
