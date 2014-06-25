@@ -67,6 +67,7 @@
 			
 			//the terrain should not have positions set, because the ground clamping assumes that the parentspace 
 			//transform of each tile is world space. disable transform and set to identity.
+			this.settingProperty('transform',(new THREE.Matrix4()).elements);
 			this.DisableTransform();
 			this.getRoot().matrix = new THREE.Matrix4();
 			this.getRoot().updateMatrixWorld(true);
