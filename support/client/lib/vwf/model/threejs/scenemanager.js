@@ -1293,7 +1293,7 @@ THREE.RenderBatch.prototype.build = function() {
 
                 }
                 //newface.materialIndex = face.materialIndex;
-                newface.centroid.copy(face.centroid);
+              
                 newface.normal.copy(face.normal);
 
                 newface.normal.applyMatrix3(normalMatrix).normalize();

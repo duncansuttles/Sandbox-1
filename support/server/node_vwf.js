@@ -129,7 +129,9 @@ global.error = function()
         redirectUrl = global.appPath+'/'+req.session.redirectUrl;
         req.session.redirectUrl = null;
     }
-    res.redirect(redirectUrl);
+    //this seems to be pretty  tricky to get to work properly
+    //res.redirect(redirectUrl);
+    res.redirect('/');
 };
 
 //Start the VWF HTTP server
