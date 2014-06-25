@@ -533,6 +533,7 @@ function startVWF(){
 // used to serialize the user for the session
 passport.serializeUser(function (user, done) {
  
+ DAL.getUser(user.id, function (user) {
         xapi.sendStatement(user.id,xapi.verbs.logged_in);
         var userStorage = require('./sessions.js').createSession();
         userStorage.id = user.id;
@@ -540,8 +541,9 @@ passport.serializeUser(function (user, done) {
         userStorage.Username = user.Username || user.id;
         userStorage.PasswordIsTemp = user.isTemp;
 		userStorage.Password = user.Password;
+		
         done(null, userStorage);
-    
+    });
 });
 
 // used to deserialize the user

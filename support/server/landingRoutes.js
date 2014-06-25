@@ -323,7 +323,7 @@ exports.generalHandler = function(req, res, next) {
 					user: user,
 					translate: translate(req)
 				};
-
+				
 				//hook up the buttons to show the social media logins
 				if (req.params.page == 'login') {
 					res.locals.twitterLogin = global.configuration.twitter_consumer_key ? true : false;

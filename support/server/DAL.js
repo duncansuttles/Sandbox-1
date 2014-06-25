@@ -60,6 +60,7 @@ function getUser (id,cb)
 				//make super sure that the object that is returned is a copy of the data in memory, not a reference
 				try{
 				var doc = JSON.parse(JSON.stringify(doc));
+				
                 doc["id"] = id;
                 if(!doc.Username) doc.Username = id;
 				cb(doc);
