@@ -28,18 +28,38 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
         // -- initialize ---------------------------------------------------------------------------
 
         initialize: function() {
-            
-        },  
+            this.nodes = {};
+        },
 
         // == Model API ============================================================================
 
         // -- creatingNode -------------------------------------------------------------------------
 
         creatingNode: function(nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType, childIndex, childName, callback /* ( ready ) */ ) {
+            if (nodeID === vwf.application()) {
+                var collisionConfiguration = new Ammo.btDefaultCollisionConfiguration(); // every single |new| currently leaks...
+                var dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration);
+                var overlappingPairCache = new Ammo.btDbvtBroadphase();
+                var solver = new Ammo.btSequentialImpulseConstraintSolver();
+                var dynamicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+                dynamicsWorld.setGravity(new Ammo.btVector3(0, -10, 0));
 
+                this.nodes[vwf.application()] = {
+                    world: dynamicsWorld
+                }
+            }
 
         },
 
+        ticking: function()
+        {
+            if(this.nodes[vwf.application()])
+            {
+                //step 50ms per tick.
+                //this is dictated by the input from the reflector
+                this.nodes[vwf.application()].world.stepSimulation(1/20, 10);
+            }
+        },
         // -- initializingNode ---------------------------------------------------------------------
 
         initializingNode: function(nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType, childIndex, childName) {
@@ -88,5 +108,13 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
 
         },
     });
+
+    function hasProtoype(nodeID,prototype)
+    {
+        if(!nodeID) return false;
+        if(nodeID == prototype)
+            return true;
+        else return hasPrototype(vwf.prototype(nodeID),prototype);
+    }
 
 });
