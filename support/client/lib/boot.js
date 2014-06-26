@@ -1,64 +1,62 @@
 require.config({
-	   
-	    paths: {
-		"vwf": "../vwf"
-	    },
-		shims: {
-			'vwf/view/xapi/xapiwrapper': {
-				deps: ['vwf/view/editorview/sha256', "vwf/view/editorview/_3DRIntegration"],
-				exports: 'XAPIWrapper'
-			}
-            
-               
-            
-		},
-	    waitSeconds: 15
-	  });		
-define( [
-            
-            "domReady",
-            "vwf/view/editorview/ObjectPools",
-			"/socket.io/socket.io.js",
-            // This is the common model implementation and an example model that connects the
-            // simulation to a WebGL scene manager.
-            "vwf/kernel/model",
-            "vwf/model/javascript",
-            "vwf/model/jiglib",
-            "vwf/model/threejs",
-            "vwf/model/scenejs",
-            "vwf/model/wires",
-            "vwf/model/object",
-            "vwf/model/stage/log",
-            "vwf/kernel/view",
-            "vwf/view/document",
-	        "vwf/view/EditorView",
-            "vwf/view/threejs",
-            "vwf/view/googleEarth",
-            "vwf/utility",
-			"vwf/view/WebRTC",
-			"vwf/view/audio",
-			"messageCompress",
-			"vwf/view/xapi",
-            "polyfills",
-			"assetLoader",
-            "vwf/model/jqueryui",
-            "vwf/view/jqueryui",
-            "SettingsManager"
 
-        ], function( ready ) {
+    paths: {
+        "vwf": "../vwf"
+    },
+    shims: {
+        'vwf/view/xapi/xapiwrapper': {
+            deps: ['vwf/view/editorview/sha256', "vwf/view/editorview/_3DRIntegration"],
+            exports: 'XAPIWrapper'
+        }
 
-            return function(stateData){
-            require("polyfills").setup();
-            require("vwf/view/editorview/ObjectPools").getSingleton();
-            window.alertify = require("vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify");
-            window._SettingsManager = require("SettingsManager").getSingleton();
-            var assetLoader = require("assetLoader").getSingleton();
-            ready( function() {
 
-                // With the scripts loaded, we must initialize the framework. vwf.initialize()
-                // accepts three parameters: a world specification, model configuration parameters,
-                // and view configuration parameters.
-				$(document.body).append('<div id="glyphOverlay" style="display:none"/>');
+
+    },
+    waitSeconds: 15
+});
+define([
+
+    "domReady",
+    "vwf/view/editorview/ObjectPools",
+    "/socket.io/socket.io.js",
+    // This is the common model implementation and an example model that connects the
+    // simulation to a WebGL scene manager.
+    "vwf/kernel/model",
+    "vwf/model/javascript",
+    "vwf/model/jiglib",
+    "vwf/model/threejs",
+    "vwf/model/scenejs",
+    "vwf/model/wires",
+    "vwf/model/object",
+    "vwf/model/stage/log",
+    "vwf/kernel/view",
+    "vwf/view/document",
+    "vwf/view/EditorView",
+    "vwf/view/threejs",
+    "vwf/view/googleEarth",
+    "vwf/utility",
+    "vwf/view/WebRTC",
+    "vwf/view/audio",
+    "messageCompress",
+    "vwf/view/xapi",
+    "assetLoader",
+    "vwf/model/jqueryui",
+    "vwf/view/jqueryui",
+    "SettingsManager"
+
+], function(ready) {
+
+    return function(stateData) {
+        require("vwf/view/editorview/ObjectPools").getSingleton();
+        window.alertify = require("vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify");
+        window._SettingsManager = require("SettingsManager").getSingleton();
+        var assetLoader = require("assetLoader").getSingleton();
+        ready(function() {
+
+            // With the scripts loaded, we must initialize the framework. vwf.initialize()
+            // accepts three parameters: a world specification, model configuration parameters,
+            // and view configuration parameters.
+            $(document.body).append('<div id="glyphOverlay" style="display:none"/>');
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu.css" />');
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu-v.css" />')
             $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/Editorview.css" />')
@@ -67,13 +65,13 @@ define( [
             $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/_THREERayTracer.js"></script>');
             $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/scenemanager.js"></script>');
             $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/GeometryExporter.js"></script>');
-            
-               
-            
+
+
+
             $(document.head).append('<script src="vwf/model/threejs/helvetiker_regular.typeface.js"></script>');
-            
-                assetLoader.load(stateData,function(){
-                 /*   vwf.initialize(
+
+            assetLoader.load(stateData, function() {
+                /*   vwf.initialize(
 
                     // This is the world specification. The world may be specified using a component
                     // literal as shown here, or the specification may be placed in a network-
@@ -122,15 +120,19 @@ define( [
                     ]
 
                     );*/
-                    
-                    vwf.loadConfiguration(null, {model: [],view:[]});
 
+                vwf.loadConfiguration(null, {
+                    model: [],
+                    view: []
                 });
 
-                 
-                 
-                
-            } );
+            });
 
-        }} );
-$('#sidepanel .jspContainer .jspPane').css('left',0)
+
+
+
+        });
+
+    }
+});
+$('#sidepanel .jspContainer .jspPane').css('left', 0)

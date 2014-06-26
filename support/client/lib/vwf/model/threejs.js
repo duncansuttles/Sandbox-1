@@ -891,9 +891,9 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                         if (!ps.maxAcceleration) ps.maxAcceleration = [0, 0, 0];
 
                         for (var i = 0; i < particles.vertices.length; i++) {
-                            particles.vertices[i].acceleration.x = ps.minAcceleration[0] + (ps.maxAcceleration[0] - ps.minAcceleration[0]) * Math.random();
-                            particles.vertices[i].acceleration.y = ps.minAcceleration[1] + (ps.maxAcceleration[1] - ps.minAcceleration[1]) * Math.random();
-                            particles.vertices[i].acceleration.z = ps.minAcceleration[2] + (ps.maxAcceleration[2] - ps.minAcceleration[2]) * Math.random();
+                            particles.vertices[i].acceleration.x = ps.minAcceleration[0] + (ps.maxAcceleration[0] - ps.minAcceleration[0]) * Math.SecureRandom();
+                            particles.vertices[i].acceleration.y = ps.minAcceleration[1] + (ps.maxAcceleration[1] - ps.minAcceleration[1]) * Math.SecureRandom();
+                            particles.vertices[i].acceleration.z = ps.minAcceleration[2] + (ps.maxAcceleration[2] - ps.minAcceleration[2]) * Math.SecureRandom();
                         }
                     }
                     if (propertyName == "minVelocity" || propertyName == "maxVelocity") {
@@ -902,9 +902,9 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
                         for (var i = 0; i < particles.vertices.length; i++) {
 
-                            particles.vertices[i].velocity.x = ps.minVelocity[0] + (ps.maxVelocity[0] - ps.minVelocity[0]) * Math.random();
-                            particles.vertices[i].velocity.y = ps.minVelocity[1] + (ps.maxVelocity[1] - ps.minVelocity[1]) * Math.random();
-                            particles.vertices[i].velocity.z = ps.minVelocity[2] + (ps.maxVelocity[2] - ps.minVelocity[2]) * Math.random();
+                            particles.vertices[i].velocity.x = ps.minVelocity[0] + (ps.maxVelocity[0] - ps.minVelocity[0]) * Math.SecureRandom();
+                            particles.vertices[i].velocity.y = ps.minVelocity[1] + (ps.maxVelocity[1] - ps.minVelocity[1]) * Math.SecureRandom();
+                            particles.vertices[i].velocity.z = ps.minVelocity[2] + (ps.maxVelocity[2] - ps.minVelocity[2]) * Math.SecureRandom();
                         }
                     }
                     if (propertyName == "minLifeTime" || propertyName == "maxLifeTime") {
@@ -912,7 +912,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                         if (ps.maxLifeTime === undefined) ps.maxLifeTime = 1;
 
                         for (var i = 0; i < particles.vertices.length; i++) {
-                            particles.vertices[i].lifespan = ps.minLifeTime + (ps.maxLifeTime - ps.minLifeTime) * Math.random();
+                            particles.vertices[i].lifespan = ps.minLifeTime + (ps.maxLifeTime - ps.minLifeTime) * Math.SecureRandom();
                         }
                     }
                 }
@@ -2406,7 +2406,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 shaderMaterial_analytic.attributes.acceleration.value.push(new THREE.Vector3());
                 shaderMaterial_analytic.attributes.velocity.value.push(new THREE.Vector3());
                 shaderMaterial_analytic.attributes.lifespan.value.push(1);
-                shaderMaterial_analytic.attributes.random.value.push(new THREE.Vector4(Math.random(), Math.random(), Math.random(), Math.random()));
+                shaderMaterial_analytic.attributes.random.value.push(new THREE.Vector4(Math.SecureRandom(), Math.SecureRandom(), Math.SecureRandom(), Math.SecureRandom()));
                 return particle;
             }
 
@@ -2420,19 +2420,19 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 //Generate in a box
                 //assumes centered at 0,0,0
                 if (this.emitterType.toLowerCase() == 'box') {
-                    var x = this.emitterSize[0] * Math.random() - this.emitterSize[0] / 2;
-                    var y = this.emitterSize[1] * Math.random() - this.emitterSize[1] / 2;
-                    var z = this.emitterSize[2] * Math.random() - this.emitterSize[2] / 2;
+                    var x = this.emitterSize[0] * Math.SecureRandom() - this.emitterSize[0] / 2;
+                    var y = this.emitterSize[1] * Math.SecureRandom() - this.emitterSize[1] / 2;
+                    var z = this.emitterSize[2] * Math.SecureRandom() - this.emitterSize[2] / 2;
 
                     return new THREE.Vector3(x, y, z);
                 }
                 //Generate in a sphere
                 //assumes centered at 0,0,0
                 if (this.emitterType.toLowerCase() == 'sphere') {
-                    var u2 = Math.random();
+                    var u2 = Math.SecureRandom();
                     u2 = Math.pow(u2, 1 / 3);
-                    var o = this.emitterSize[0] * Math.random() * Math.PI * 2;
-                    var u = this.emitterSize[1] * Math.random() * 2 - 1;
+                    var o = this.emitterSize[0] * Math.SecureRandom() * Math.PI * 2;
+                    var u = this.emitterSize[1] * Math.SecureRandom() * 2 - 1;
                     var r = this.emitterSize[2] * u2;
                     var x = Math.cos(o) * Math.sqrt(1 - (u * u));
                     var y = Math.sin(o) * Math.sqrt(1 - (u * u));
@@ -2487,26 +2487,26 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 //Generate the initial velocity
                 //In this mode, you specify a min and max x,y,z
                 if (this.velocityMode == 'cartesian') {
-                    particle.velocity.x = this.minVelocity[0] + (this.maxVelocity[0] - this.minVelocity[0]) * Math.random();
-                    particle.velocity.y = this.minVelocity[1] + (this.maxVelocity[1] - this.minVelocity[1]) * Math.random();
-                    particle.velocity.z = this.minVelocity[2] + (this.maxVelocity[2] - this.minVelocity[2]) * Math.random();
+                    particle.velocity.x = this.minVelocity[0] + (this.maxVelocity[0] - this.minVelocity[0]) * Math.SecureRandom();
+                    particle.velocity.y = this.minVelocity[1] + (this.maxVelocity[1] - this.minVelocity[1]) * Math.SecureRandom();
+                    particle.velocity.z = this.minVelocity[2] + (this.maxVelocity[2] - this.minVelocity[2]) * Math.SecureRandom();
                 }
                 //In this mode, you give a pitch and yaw from 0,1, and a min and max length.
                 //This is easier to emit into a circle, or a cone section
                 if (this.velocityMode == 'spherical') {
 
                     //random sphercial points concentrate at poles
-                    /* var r = this.minVelocity[2] + (this.maxVelocity[2] - this.minVelocity[2]) * Math.random();
-                    var t = this.minVelocity[1] + (this.maxVelocity[1] - this.minVelocity[1]) * Math.random() * Math.PI*2;
-                    var w = this.minVelocity[0] + (this.maxVelocity[0] - this.minVelocity[0]) * Math.random() * Math.PI - Math.PI/2;
+                    /* var r = this.minVelocity[2] + (this.maxVelocity[2] - this.minVelocity[2]) * Math.SecureRandom();
+                    var t = this.minVelocity[1] + (this.maxVelocity[1] - this.minVelocity[1]) * Math.SecureRandom() * Math.PI*2;
+                    var w = this.minVelocity[0] + (this.maxVelocity[0] - this.minVelocity[0]) * Math.SecureRandom() * Math.PI - Math.PI/2;
                     particle.velocity.x = r * Math.sin(t)*Math.cos(w);
                     particle.velocity.y = r * Math.sin(t)*Math.sin(w);
                     particle.velocity.z = r * Math.cos(t); */
 
                     //better distribution
-                    var o = this.minVelocity[0] + (this.maxVelocity[0] - this.minVelocity[0]) * Math.random() * Math.PI * 2;
-                    var u = this.minVelocity[1] + (this.maxVelocity[1] - this.minVelocity[1]) * Math.random() * 2 - 1;
-                    var u2 = Math.random();
+                    var o = this.minVelocity[0] + (this.maxVelocity[0] - this.minVelocity[0]) * Math.SecureRandom() * Math.PI * 2;
+                    var u = this.minVelocity[1] + (this.maxVelocity[1] - this.minVelocity[1]) * Math.SecureRandom() * 2 - 1;
+                    var u2 = Math.SecureRandom();
                     u2 = Math.pow(u2, 1 / 3);
                     var r = this.minVelocity[2] + (this.maxVelocity[2] - this.minVelocity[2]) * u2;
                     particle.velocity.x = Math.cos(o) * Math.sqrt(1 - (u * u));
@@ -2525,10 +2525,10 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 particle.velocity.applyMatrix4(mat);
              */
                 //accelerations are always world space, just min and max on each axis
-                particle.acceleration.x = this.minAcceleration[0] + (this.maxAcceleration[0] - this.minAcceleration[0]) * Math.random();
-                particle.acceleration.y = this.minAcceleration[1] + (this.maxAcceleration[1] - this.minAcceleration[1]) * Math.random();
-                particle.acceleration.z = this.minAcceleration[2] + (this.maxAcceleration[2] - this.minAcceleration[2]) * Math.random();
-                particle.setLifespan(this.minLifeTime + (this.maxLifeTime - this.minLifeTime) * Math.random());
+                particle.acceleration.x = this.minAcceleration[0] + (this.maxAcceleration[0] - this.minAcceleration[0]) * Math.SecureRandom();
+                particle.acceleration.y = this.minAcceleration[1] + (this.maxAcceleration[1] - this.minAcceleration[1]) * Math.SecureRandom();
+                particle.acceleration.z = this.minAcceleration[2] + (this.maxAcceleration[2] - this.minAcceleration[2]) * Math.SecureRandom();
+                particle.setLifespan(this.minLifeTime + (this.maxLifeTime - this.minLifeTime) * Math.SecureRandom());
 
                 //color is start color
                 particle.color.x = this.startColor[0];
@@ -2590,7 +2590,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                     //setup with new random values, and move randomly forward in time one step	
                     var particle = this.regenParticles.shift();
                     this.setupParticle(particle, this.matrix, inv);
-                    this.updateParticleAnalytic(particle, this.matrix, inv, Math.random() * 3.33);
+                    this.updateParticleAnalytic(particle, this.matrix, inv, Math.SecureRandom() * 3.33);
                     particle.waitForRegen = false;
                 }
 
@@ -2648,7 +2648,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                         particle.waitForRegen = false;
                         var particle = this.regenParticles.shift();
                         this.setupParticle(particle, this.matrix, inv);
-                        this.updateParticleEuler(particle, this.matrix, inv, Math.random() * 3.33);
+                        this.updateParticleEuler(particle, this.matrix, inv, Math.SecureRandom() * 3.33);
                         this.material.attributes.lifespan.needsUpdate = true;
                     }
 

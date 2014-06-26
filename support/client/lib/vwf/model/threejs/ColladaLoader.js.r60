@@ -2983,7 +2983,7 @@ THREE.ColladaLoader = function () {
 	function ColorOrTexture () {
 
 		this.color = new THREE.Color();
-		this.color.setRGB( Math.random(), Math.random(), Math.random() );
+		this.color.setRGB( Math.SecureRandom(), Math.SecureRandom(), Math.SecureRandom() );
 		this.color.a = 1.0;
 
 		this.texture = null;

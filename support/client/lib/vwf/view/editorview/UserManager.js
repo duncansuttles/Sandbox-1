@@ -426,7 +426,7 @@ define(function() {
         }
         this.CreateNPC = function(filename) {
             this.PlayerProto.source = filename;
-            var name = 'NPC' + Math.floor(Math.random() * 1000);
+            var name = 'NPC' + Math.floor(Math.SecureRandom() * 1000);
             this.PlayerProto.properties.PlayerNumber = name;
             this.PlayerProto.properties.owner = this.currentUsername;
             this.PlayerProto.properties.ownerClientID = null;
