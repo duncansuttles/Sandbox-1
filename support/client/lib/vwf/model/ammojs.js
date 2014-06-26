@@ -36,7 +36,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
         // -- creatingNode -------------------------------------------------------------------------
 
         creatingNode: function(nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType, childIndex, childName, callback /* ( ready ) */ ) {
-            if (nodeID === vwf.application()) {
+            if (childID === vwf.application()) {
                 var collisionConfiguration = new Ammo.btDefaultCollisionConfiguration(); // every single |new| currently leaks...
                 var dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration);
                 var overlappingPairCache = new Ammo.btDbvtBroadphase();
@@ -48,7 +48,10 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                     world: dynamicsWorld
                 }
             }
-
+            if(hasPrototype(childID,'sphere2-vwf'))
+            {
+                
+            }
         },
 
         ticking: function()
@@ -109,7 +112,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
         },
     });
 
-    function hasProtoype(nodeID,prototype)
+    function hasPrototype(nodeID,prototype)
     {
         if(!nodeID) return false;
         if(nodeID == prototype)
