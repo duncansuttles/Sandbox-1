@@ -333,6 +333,7 @@ SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
         //callback to copy data from the compressed texture to the one we retuned synchronously from this function
         var load = function(event) {
 
+
             //image is in closure scope. Copy all relevant data
             temptexture.image = texture.image;
 
