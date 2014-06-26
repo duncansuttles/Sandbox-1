@@ -1,6 +1,6 @@
 function GUID() {
     var S4 = function() {
-        return Math.floor(Math.random() * 0x10000 /* 65536 */ ).toString(16);
+        return Math.floor(Math.SecureRandom() * 0x10000 /* 65536 */ ).toString(16);
     };
     return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
 }
@@ -59,7 +59,7 @@ SceneManager.prototype.hideBones = function() {
 }
 SceneManager.prototype.updateBoneVisiblitiy = function(visible) {
 
-   
+
     var walk = function(root) {
         if (root instanceof THREE.Bone) {
             for (var i in root.children) {
@@ -314,42 +314,124 @@ SceneManager.prototype.getDefaultTexture = function() {
 SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
 
 
-    var image = new Image();
-
-    var texture = new THREE.Texture(this.getDefaultTexture().image, mapping);
-    texture.format = this.getDefaultTexture().format;
-    texture.minFilter = THREE.LinearMipMapLinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-
-    if (window._dRenderer)
-        texture.anisotropy = 1; //_dRenderer.getMaxAnisotropy();
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    var loader = new THREE.ImageLoader();
-
-    var load = function(event) {
+    //test to see if the url ends in .dds
+    if ((/\.dds$/).test(url)) {
 
 
-        texture.image = event;
-        texture.format = THREE.RGBAFormat;
-        texture.needsUpdate = true;
+        //create a new texture. This texture will be returned now, and filled with the compressed dds data
+        //once that data is available
+        var temptexture = new THREE.Texture(this.getDefaultTexture().image, mapping);
+        temptexture.format = this.getDefaultTexture().format;
+        temptexture.minFilter = THREE.LinearMipMapLinearFilter;
+        temptexture.magFilter = THREE.LinearFilter;
 
-        if (onLoad) onLoad(texture);
+        temptexture.sourceFile = url;
 
-    };
+        //a variable to hold the loaded texture
+        var texture;
 
-    var error = function(event) {
+        //callback to copy data from the compressed texture to the one we retuned synchronously from this function
+        var load = function(event) {
 
-        if (onError) onError(event.message);
 
-    };
+            //image is in closure scope. Copy all relevant data
+            temptexture.image = texture.image;
 
-    loader.crossOrigin = 'anonymous';
-    loader.load(url, load, null, error, image);
+            temptexture.anisotropy = texture.anisotropy;
 
-    texture.sourceFile = url;
 
-    return texture;
+            temptexture._needsUpdate = texture._needsUpdate;
+            temptexture.anisotropy = texture.anisotropy;
+            temptexture.flipY = texture.flipY;
+            temptexture.format = texture.format;
+            temptexture.generateMipmaps = texture.generateMipmaps;
+
+            temptexture.image = texture.image;
+            temptexture.magFilter = texture.magFilter;
+            temptexture.mapping = texture.mapping;
+            temptexture.minFilter = texture.minFilter;
+            temptexture.mipmaps = texture.mipmaps;
+
+
+            temptexture.offset = texture.offset;
+
+            temptexture.premultiplyAlpha = texture.premultiplyAlpha;
+            temptexture.repeat = texture.repeat;
+            temptexture.type = texture.type;
+            temptexture.unpackAlignment = texture.unpackAlignment;
+
+            temptexture.wrapS = texture.wrapS;
+            temptexture.wrapT = texture.wrapT;
+
+            temptexture.isActuallyCompressed = true;
+
+            //hit the async callback
+            if (onLoad) onLoad(texture);
+        };
+
+        var error = function(event) {
+
+            if (onError) onError(event.message);
+
+        };
+
+        //create the new texture, and decompress. Copy over with the onload callback above
+        texture = THREE.ImageUtils.loadCompressedTexture(url, mapping, load, error);
+        texture.minFilter = THREE.LinearMipMapLinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.generateMipmaps = false;
+
+        if (window._dRenderer)
+            texture.anisotropy = 1; //_dRenderer.getMaxAnisotropy();
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+
+
+
+        //return the temp one, which will be filled later.
+        return temptexture;
+    } else {
+        var image = new Image();
+
+        var texture = new THREE.Texture(this.getDefaultTexture().image, mapping);
+        texture.format = this.getDefaultTexture().format;
+        texture.minFilter = THREE.LinearMipMapLinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+
+        if (window._dRenderer)
+            texture.anisotropy = 1; //_dRenderer.getMaxAnisotropy();
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        var loader = new THREE.ImageLoader();
+
+        var load = function(event) {
+
+
+            texture.image = event;
+            texture.format = THREE.RGBAFormat;
+            texture.needsUpdate = true;
+
+            if (onLoad) onLoad(texture);
+
+        };
+
+        var error = function(event) {
+
+            if (onError) onError(event.message);
+
+        };
+
+        loader.crossOrigin = 'anonymous';
+        loader.load(url, load, null, error, image);
+
+        texture.sourceFile = url;
+
+        return texture;
+
+    }
+
+
+
 
 }
 SceneManager.prototype.useSimpleMaterials = false;
@@ -425,6 +507,8 @@ SceneManager.prototype.getTexture = function(src, noclone) {
     ret.flipY = this.textureList[src].flipY;
     ret.generateMipmaps = this.textureList[src].generateMipmaps;
     ret.needsUpdate = true;
+    ret.mipmaps = this.textureList[src].mipmaps;
+    ret.isActuallyCompressed = this.textureList[src].isActuallyCompressed;
     this.textureList[src].clones.push(ret);
     return ret;
 }
@@ -1293,7 +1377,7 @@ THREE.RenderBatch.prototype.build = function() {
 
                 }
                 //newface.materialIndex = face.materialIndex;
-              
+
                 newface.normal.copy(face.normal);
 
                 newface.normal.applyMatrix3(normalMatrix).normalize();
