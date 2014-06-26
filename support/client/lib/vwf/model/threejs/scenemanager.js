@@ -59,7 +59,7 @@ SceneManager.prototype.hideBones = function() {
 }
 SceneManager.prototype.updateBoneVisiblitiy = function(visible) {
 
-   
+
     var walk = function(root) {
         if (root instanceof THREE.Bone) {
             for (var i in root.children) {
@@ -314,42 +314,122 @@ SceneManager.prototype.getDefaultTexture = function() {
 SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
 
 
-    var image = new Image();
-
-    var texture = new THREE.Texture(this.getDefaultTexture().image, mapping);
-    texture.format = this.getDefaultTexture().format;
-    texture.minFilter = THREE.LinearMipMapLinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-
-    if (window._dRenderer)
-        texture.anisotropy = 1; //_dRenderer.getMaxAnisotropy();
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    var loader = new THREE.ImageLoader();
-
-    var load = function(event) {
+    //you get the idea
+    if ((/\.dds$/).test(url)) {
 
 
-        texture.image = event;
-        texture.format = THREE.RGBAFormat;
-        texture.needsUpdate = true;
+        var temptexture = new THREE.Texture(this.getDefaultTexture().image, mapping);
+        temptexture.format = this.getDefaultTexture().format;
+        temptexture.minFilter = THREE.LinearMipMapLinearFilter;
+        temptexture.magFilter = THREE.LinearFilter;
 
-        if (onLoad) onLoad(texture);
+        temptexture.sourceFile = url;
 
-    };
+        var texture;
 
-    var error = function(event) {
+        var load = function(event) {
 
-        if (onError) onError(event.message);
+            temptexture.image = texture.image;
 
-    };
+            temptexture.anisotropy = texture.anisotropy;
 
-    loader.crossOrigin = 'anonymous';
-    loader.load(url, load, null, error, image);
 
-    texture.sourceFile = url;
+            temptexture._needsUpdate = texture._needsUpdate;
+            temptexture.anisotropy = texture.anisotropy;
+            temptexture.flipY = texture.flipY;
+            temptexture.format = texture.format;
+            temptexture.generateMipmaps = texture.generateMipmaps;
 
-    return texture;
+            temptexture.image = texture.image;
+            temptexture.magFilter = texture.magFilter;
+            temptexture.mapping = texture.mapping;
+            temptexture.minFilter = texture.minFilter;
+            temptexture.mipmaps = texture.mipmaps;
+
+
+            temptexture.offset = texture.offset;
+
+            temptexture.premultiplyAlpha = texture.premultiplyAlpha;
+            temptexture.repeat = texture.repeat;
+            temptexture.type = texture.type;
+            temptexture.unpackAlignment = texture.unpackAlignment;
+
+            temptexture.wrapS = texture.wrapS;
+            temptexture.wrapT = texture.wrapT;
+
+            temptexture.isActuallyCompressed = true;
+
+            if (onLoad) onLoad(texture);
+        };
+
+        var error = function(event) {
+
+            if (onError) onError(event.message);
+
+        };
+
+        texture = THREE.ImageUtils.loadCompressedTexture(url, mapping, load, error);
+        texture.minFilter = THREE.LinearMipMapLinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.generateMipmaps = false;
+
+        if (window._dRenderer)
+            texture.anisotropy = 1; //_dRenderer.getMaxAnisotropy();
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+
+        var loader = new THREE.ImageLoader();
+
+
+
+        loader.crossOrigin = 'anonymous';
+        loader.load(url, load, null, error, image);
+
+
+
+        return temptexture;
+    } else {
+        var image = new Image();
+
+        var texture = new THREE.Texture(this.getDefaultTexture().image, mapping);
+        texture.format = this.getDefaultTexture().format;
+        texture.minFilter = THREE.LinearMipMapLinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+
+        if (window._dRenderer)
+            texture.anisotropy = 1; //_dRenderer.getMaxAnisotropy();
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        var loader = new THREE.ImageLoader();
+
+        var load = function(event) {
+
+
+            texture.image = event;
+            texture.format = THREE.RGBAFormat;
+            texture.needsUpdate = true;
+
+            if (onLoad) onLoad(texture);
+
+        };
+
+        var error = function(event) {
+
+            if (onError) onError(event.message);
+
+        };
+
+        loader.crossOrigin = 'anonymous';
+        loader.load(url, load, null, error, image);
+
+        texture.sourceFile = url;
+
+        return texture;
+
+    }
+
+
+
 
 }
 SceneManager.prototype.useSimpleMaterials = false;
@@ -1293,7 +1373,7 @@ THREE.RenderBatch.prototype.build = function() {
 
                 }
                 //newface.materialIndex = face.materialIndex;
-              
+
                 newface.normal.copy(face.normal);
 
                 newface.normal.applyMatrix3(normalMatrix).normalize();

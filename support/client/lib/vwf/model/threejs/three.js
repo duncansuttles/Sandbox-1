@@ -27853,7 +27853,9 @@ THREE.WebGLRenderer = function(parameters) {
 
                 }
 
-            } else if (texture instanceof THREE.CompressedTexture) {
+                //note: Sandbox is support an on-the-fly swap of dataTexture to compressesd texture
+                //this flag informs the renderer that the swap occured
+            } else if (texture instanceof THREE.CompressedTexture || texture.isActuallyCompressed === true) {
 
                 for (var i = 0, il = mipmaps.length; i < il; i++) {
 
