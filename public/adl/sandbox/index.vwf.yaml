@@ -1131,7 +1131,7 @@ scripts:
         _viewProjectionMatrix.multiplyMatrices( cam.projectionMatrix, cam.matrixWorldInverse );
 
 
-        return MATH.transposeMat4(_viewProjectionMatrix.flattenToArray([]));
+        return MATH.transposeMat4(_viewProjectionMatrix.toArray());
       }
       function to3Vec(vec,two,three)
       {

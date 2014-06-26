@@ -78,8 +78,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         var oldyrot = 0;
         var oldzrot = 0;
         var SelectionBounds = [];
-        var lastscale = [1, 1, 1];
-        var lastpos = [1, 1, 1];
+        var lastscale = [];
+        var lastpos = [];
         var OldX = 0;
         var OldY = 0;
         var MouseMoved = false;
@@ -142,6 +142,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         var _CopiedNodes = [];
         //	$('#vwf-root').mousedown(function(e){
         this.mousedown_Gizmo = function(e) {
+
 
             this.undoPoint = null; //when the mouse is down, we start over with the record for the undo
             $('#index-vwf').focus();
@@ -976,7 +977,12 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         }
         this.mousemove_Gizmo = function(e) {
 
+            //prevent trying to move objects that have no 3D node
+
             if (SelectedVWFNodes.length > 0 && !this.findviewnode(SelectedVWFNodes[0].id)) return;
+
+            //prevent moving 3D nodes that are not bound to the scene or are the scene itself
+            if (SelectedVWFNodes.length > 0 && !(this.findviewnode(SelectedVWFNodes[0].id)).parent) return;
             if (this.waitingForSet.length > 0) return;
             MouseMoved = true;
             if (!MoveGizmo || MoveGizmo == null) {
@@ -1170,30 +1176,34 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
                 for (var s = 0; s < SelectedVWFNodes.length; s++) {
                     if (SelectedVWFNodes[s]) {
-                        var tempscale = [lastscale[s][0], lastscale[s][1], lastscale[s][2]]; //[s.x,s.y,s.z];
-                        if (document.AxisSelected == 6 || document.AxisSelected == 20) {
-                            wasScaled = true;
-                            tempscale[0] += scalemult * ScaleXY[0];
-                        }
-                        if (document.AxisSelected == 7 || document.AxisSelected == 21) {
-                            wasScaled = true;
-                            tempscale[1] += scalemult * ScaleXY[1];
-                        }
-                        if (document.AxisSelected == 8 || document.AxisSelected == 22) {
-                            wasScaled = true;
-                            tempscale[2] += scalemult * ScaleXZ[2];
-                        }
-                        if (document.AxisSelected == 23) {
-                            wasScaled = true;
-                            tempscale[0] += -scalemult * ScaleXY[0];
-                        }
-                        if (document.AxisSelected == 24) {
-                            wasScaled = true;
-                            tempscale[1] += -scalemult * ScaleXY[1];
-                        }
-                        if (document.AxisSelected == 25) {
-                            wasScaled = true;
-                            tempscale[2] += -scalemult * ScaleXZ[2];
+
+                        var tempscale = null;
+                        if (lastscale[s]) {
+                            tempscale = [lastscale[s][0], lastscale[s][1], lastscale[s][2]]; //[s.x,s.y,s.z];
+                            if (document.AxisSelected == 6 || document.AxisSelected == 20) {
+                                wasScaled = true;
+                                tempscale[0] += scalemult * ScaleXY[0];
+                            }
+                            if (document.AxisSelected == 7 || document.AxisSelected == 21) {
+                                wasScaled = true;
+                                tempscale[1] += scalemult * ScaleXY[1];
+                            }
+                            if (document.AxisSelected == 8 || document.AxisSelected == 22) {
+                                wasScaled = true;
+                                tempscale[2] += scalemult * ScaleXZ[2];
+                            }
+                            if (document.AxisSelected == 23) {
+                                wasScaled = true;
+                                tempscale[0] += -scalemult * ScaleXY[0];
+                            }
+                            if (document.AxisSelected == 24) {
+                                wasScaled = true;
+                                tempscale[1] += -scalemult * ScaleXY[1];
+                            }
+                            if (document.AxisSelected == 25) {
+                                wasScaled = true;
+                                tempscale[2] += -scalemult * ScaleXZ[2];
+                            }
                         }
                         if (document.AxisSelected == 19) // || document.AxisSelected == 10 || document.AxisSelected == 11)
                         {
@@ -3190,10 +3200,13 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             var self = this;
             //ok, here, let's preload the asset. If there is an error during parse, the preloader will never hit the callback and 
             // we won't end up with a broken VWF entity.
-            _assetLoader.loadAssets([{type:type,url:url}],function(){
-            
+            _assetLoader.loadAssets([{
+                type: type,
+                url: url
+            }], function() {
+
                 var Proto = {
-                extends: 'asset.vwf',
+                    extends: 'asset.vwf',
                     source: url,
                     type: type || 'subDriver/threejs/asset/vnd.collada+xml',
                     properties: {
@@ -3210,8 +3223,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 vwf_view.kernel.createChild('index-vwf', newname, Proto);
 
 
-            },true)
-           
+            }, true)
+
 
         }
         this.focusSelected = function() {
