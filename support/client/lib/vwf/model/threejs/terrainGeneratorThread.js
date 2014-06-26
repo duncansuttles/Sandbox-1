@@ -9,8 +9,8 @@ self.init = function(data) {
             else if (self.msCrypto)
                 self.msCrypto.getRandomValues(buf);
             else
-                buf[0] = Math.random() * 255;
-            return (buf[0]) / 255;
+                buf[0] = Math.random() * 256;
+            return (buf[0]) / 256;
         }
 
     };

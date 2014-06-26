@@ -13,15 +13,15 @@ var fills = {
     },
     //try to generate crytographicly secure random numbers
     secureCryptoPRGN: function() {
-        var buf = new Uint8Array(1);
+        var buf = new Uint32Array(1);
         Math.SecureRandom = function() {
             if (window.crypto)
                 window.crypto.getRandomValues(buf);
             else if (window.msCrypto)
                 window.msCrypto.getRandomValues(buf);
             else
-                buf[0] = Math.SecureRandom() * 255;
-            return (buf[0]) / 255;
+                buf[0] = Math.SecureRandom() * 4294967296;
+            return (buf[0]) / 4294967296;
         }
 
     },

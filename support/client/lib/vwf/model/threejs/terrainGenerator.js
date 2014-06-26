@@ -108,7 +108,7 @@ new(function() {
         //	debugger;
         this.currentCB[i] = cb;
         this.currentMesh[i] = mesh;
-        this.currentID[i] = Math.floor(Math.SecureRandom() * 10000000);
+        this.currentID[i] = Math.floor(Math.random() * 10000000);
         this.currentState[i] = RUNNING;
         if (this.supportsTransferables) {
             var request = {
