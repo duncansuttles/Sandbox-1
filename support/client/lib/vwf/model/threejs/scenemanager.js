@@ -314,10 +314,12 @@ SceneManager.prototype.getDefaultTexture = function() {
 SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
 
 
-    //you get the idea
+    //test to see if the url ends in .dds
     if ((/\.dds$/).test(url)) {
 
 
+        //create a new texture. This texture will be returned now, and filled with the compressed dds data
+        //once that data is available
         var temptexture = new THREE.Texture(this.getDefaultTexture().image, mapping);
         temptexture.format = this.getDefaultTexture().format;
         temptexture.minFilter = THREE.LinearMipMapLinearFilter;
@@ -325,10 +327,13 @@ SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
 
         temptexture.sourceFile = url;
 
+        //a variable to hold the loaded texture
         var texture;
 
+        //callback to copy data from the compressed texture to the one we retuned synchronously from this function
         var load = function(event) {
 
+            //image is in closure scope. Copy all relevant data
             temptexture.image = texture.image;
 
             temptexture.anisotropy = texture.anisotropy;
@@ -359,6 +364,7 @@ SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
 
             temptexture.isActuallyCompressed = true;
 
+            //hit the async callback
             if (onLoad) onLoad(texture);
         };
 
@@ -368,6 +374,7 @@ SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
 
         };
 
+        //create the new texture, and decompress. Copy over with the onload callback above
         texture = THREE.ImageUtils.loadCompressedTexture(url, mapping, load, error);
         texture.minFilter = THREE.LinearMipMapLinearFilter;
         texture.magFilter = THREE.LinearFilter;
@@ -378,15 +385,9 @@ SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
 
-        var loader = new THREE.ImageLoader();
 
 
-
-        loader.crossOrigin = 'anonymous';
-        loader.load(url, load, null, error, image);
-
-
-
+        //return the temp one, which will be filled later.
         return temptexture;
     } else {
         var image = new Image();
