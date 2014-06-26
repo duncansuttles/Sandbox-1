@@ -506,6 +506,8 @@ SceneManager.prototype.getTexture = function(src, noclone) {
     ret.flipY = this.textureList[src].flipY;
     ret.generateMipmaps = this.textureList[src].generateMipmaps;
     ret.needsUpdate = true;
+    ret.mipmaps = this.textureList[src].mipmaps;
+    ret.isActuallyCompressed = this.textureList[src].isActuallyCompressed;
     this.textureList[src].clones.push(ret);
     return ret;
 }
