@@ -26,6 +26,19 @@ var CYLINDER = 3;
 var CONE = 3;
 var PLANE = 4;
 
+function collectChildCollisions(node,list)
+{
+    if(!list) list = [];
+    for(var i in node.children)
+    {
+        collectChildCollisions(node.children[i],list);
+    }
+    if(node.enabled === true)
+        list.push({matrix:vwf.getProperty(node.id,'worldTransform'),collision:node.buildCollisionShape(),mass:node.mass});
+    return list;
+}
+
+
 function phyObject(id, world) {
     this.body = null;
     this.ready = false;
@@ -40,7 +53,8 @@ function phyObject(id, world) {
     this.friction = 1;
     this.damping = .01;
     this.world = world;
-
+    this.children = {};
+    this.localOffset = null;
 }
 phyObject.prototype.setMass = function(mass) {
     this.mass = mass;
@@ -55,10 +69,58 @@ phyObject.prototype.setMass = function(mass) {
 phyObject.prototype.initialize = function() {
 
     this.ready = true;
-    if (this.enabled) {
+    //currently, only objects which are children of the world can be bodies
+    if (this.enabled && this.parent.id == vwf.application() && this.initialized === false) {
         this.initialized = true;
 
-        this.collision = this.buildCollisionShape();
+        var childCollisions = collectChildCollisions(this);
+        this.localOffset = null;
+        //this object has no child physics objects, so just use it's normal collision shape
+      //  if(childCollisions.length == 1)
+      //      this.collision = this.buildCollisionShape();
+      //  else
+        {
+            //so, since we have child collision objects, we need to create a compound collision
+            this.collision = new Ammo.btCompoundShape();
+            var x = 0;
+            var y = 0;
+            var z = 0;
+            for(var i =0; i < childCollisions.length; i++)
+            {
+                //note!! at this point, this object must be a child of the scene, so transform === worldtransform
+                var thisworldmatrix = vwf.getProperty(this.id,'transform');
+                var wmi = [];
+                Mat4.invert(thisworldmatrix,wmi);
+                var aslocal = Mat4.multMat(wmi,childCollisions[i].matrix,[]);
+                childCollisions[i].local = aslocal;
+                x += aslocal[12];
+                y += aslocal[13];
+                z += aslocal[14];
+            }
+            x /= childCollisions.length;
+            y /= childCollisions.length;
+            z /= childCollisions.length;
+
+            for(var i =0; i < childCollisions.length; i++)
+            {
+                var aslocal = childCollisions[i].local;
+                var startTransform = new Ammo.btTransform();
+                startTransform.getOrigin().setX(aslocal[12] -x);
+                startTransform.getOrigin().setY(aslocal[13] -y);
+                startTransform.getOrigin().setZ(aslocal[14] -z);
+                
+                var quat = [];
+                Quaternion.fromRotationMatrix4(aslocal, quat);
+                quat = Quaternion.normalize(quat, []);
+                var q = new Ammo.btQuaternion(quat[0], quat[1], quat[2], quat[3]);
+                startTransform.setRotation(q);
+
+                this.collision.addChildShape(startTransform,childCollisions[i].collision);
+
+            }
+            this.localOffset = [x,y,z];
+            
+        }
 
         this.startTransform = new Ammo.btTransform();
         this.startTransform.setIdentity();
@@ -69,7 +131,10 @@ phyObject.prototype.initialize = function() {
         if (isDynamic)
             this.collision.calculateLocalInertia(this.mass, localInertia);
 
-        this.startTransform.setOrigin(new Ammo.btVector3(0, 0, 0));
+        if(this.localOffset)
+            this.startTransform.setOrigin(new Ammo.btVector3(this.localOffset[0], this.localOffset[1], this.localOffset[2]));
+        else
+            this.startTransform.setOrigin(new Ammo.btVector3(0, 0, 0));
 
         var myMotionState = new Ammo.btDefaultMotionState(this.startTransform);
         var rbInfo = new Ammo.btRigidBodyConstructionInfo(this.mass, myMotionState, this.collision, localInertia);
@@ -78,24 +143,58 @@ phyObject.prototype.initialize = function() {
 
         this.body.setDamping(this.damping, this.damping);
         this.body.setFriction(this.friction);
-        this.body.setRestitution(this.restitution * 1000);
+        this.body.setRestitution(this.restitution );
         var mat = vwf.getProperty(this.id, 'transform');
         if (mat)
             this.setTransform(mat);
         //we must return through the kernel here so it knows that this is revelant to all instances of this node
         //not just the proto
-        vwf.setProperty(this.id, '___physics_sleeping', this.isSleeping());
+
+
+
+        vwf.setProperty(this.id, '___physics_sleeping', this.sleeping);
+        vwf.setProperty(this.id, '___physics_linear_velocity', this.linearVelocity);
+        vwf.setProperty(this.id, '___physics_angular_velocity', this.angularVelocity);
     }
 }
 phyObject.prototype.deinitialize = function() {
-    this.initialized = false;
-    this.world.removeRigidBody(this.body);
-    Ammo.destroy(this.body);
-    Ammo.destroy(this.collision);
-    Ammo.destroy(this.startTransform);
-    this.body = null;
-    this.collision = null;
-    this.startTransform = null;
+    if (this.initialized === true) {
+        this.initialized = false;
+        this.world.removeRigidBody(this.body);
+        Ammo.destroy(this.body);
+        Ammo.destroy(this.collision);
+        Ammo.destroy(this.startTransform);
+        this.body = null;
+        this.collision = null;
+        this.startTransform = null;
+    }
+}
+phyObject.prototype.getLinearVelocity = function() {
+    if (this.initialized === true) {
+        var vec = this.body.getLinearVelocity()
+        return [vec.x(), vec.y(), vec.z()];
+    } else
+        return this.linearVelocity;
+}
+phyObject.prototype.setLinearVelocity = function(vel) {
+    this.linearVelocity = vel;
+    if (this.initialized === true) {
+        this.body.setLinearVelocity(new Ammo.btVector3(vel[0], vel[1], vel[2]));
+    }
+}
+phyObject.prototype.setAngularVelocity = function(vel) {
+    this.angularVelocity = vel;
+    if (this.initialized === true) {
+        this.body.setAngularVelocity(new Ammo.btVector3(vel[0], vel[1], vel[2]));
+    }
+}
+phyObject.prototype.getAngularVelocity = function() {
+    //waiting for an ammo build that includes body.getAngularVelocity
+    if (this.initialized === true && this.body.getAngularVelocity) {
+        var vec = this.body.getAngularVelocity()
+        return [vec.x(), vec.y(), vec.z()];
+    } else
+        return this.angularVelocity;
 }
 phyObject.prototype.setRestitution = function(bounce) {
     this.restitution = bounce;
@@ -117,8 +216,13 @@ phyObject.prototype.setFriction = function(friction) {
 }
 phyObject.prototype.enable = function() {
     this.enabled = true;
+    if(this.parent.id !== vwf.application())
+    {
+        this.markRootBodyCollisionDirty();
+    }
+    //must do this on next tick. Does that man initialized is stateful and needs to be in a VWF property?
     if (this.initialized === false) {
-        this.initialize();
+       // this.initialize();
     }
 }
 phyObject.prototype.sleep = function() {
@@ -133,7 +237,7 @@ phyObject.prototype.sleep = function() {
 phyObject.prototype.isSleeping = function() {
 
     if (this.initialized === true) {
-        return this.body.getActivationState();
+        return this.body.getActivationState() != 0;
     } else
         return this.sleeping;
 }
@@ -145,6 +249,10 @@ phyObject.prototype.wake = function() {
 }
 phyObject.prototype.disable = function() {
     this.enabled = false;
+    if(this.parent.id !== vwf.application())
+    {
+        this.markRootBodyCollisionDirty();
+    }
     if (this.initialized === true) {
         this.deinitialize();
     }
@@ -158,9 +266,11 @@ phyObject.prototype.getTransform = function() {
     var quat = [rot.x(), rot.y(), rot.z(), rot.w()];
     quat = Quaternion.normalize(quat, []);
     var mat = goog.vec.Quaternion.toRotationMatrix4(quat, []);
-    mat[12] = pos[0];
-    mat[13] = pos[1];
-    mat[14] = pos[2];
+    var worldoffset = goog.vec.Mat4.multVec3(mat,this.localOffset,[])
+    mat[12] = pos[0] - worldoffset[0];
+    mat[13] = pos[1]- worldoffset[1];
+    mat[14] = pos[2]- worldoffset[2];
+    
     return mat;
 
 }
@@ -172,24 +282,49 @@ phyObject.prototype.setTransform = function(matrix) {
         startTransform.getOrigin().setY(matrix[13]);
         startTransform.getOrigin().setZ(matrix[14]);
 
+       
+
         var quat = [];
         Quaternion.fromRotationMatrix4(matrix, quat);
         quat = Quaternion.normalize(quat, []);
+
+        if(this.localOffset)
+        {
+            var worldoff = Mat4.multVec3(Quaternion.toRotationMatrix4(quat,[]),this.localOffset,[]);
+            startTransform.getOrigin().setX(matrix[12] + worldoff[0]);
+            startTransform.getOrigin().setY(matrix[13] + worldoff[1]);
+            startTransform.getOrigin().setZ(matrix[14] + worldoff[2]);
+        }
+
         var q = new Ammo.btQuaternion(quat[0], quat[1], quat[2], quat[3]);
         startTransform.setRotation(q);
 
         this.body.setCenterOfMassTransform(startTransform);
         this.body.setLinearVelocity(new Ammo.btVector3(0, 0, 0));
         this.body.setAngularVelocity(new Ammo.btVector3(0, 0, 0));
-
-    }
+    }if(this.enabled === true && this.parent.id !== vwf.application())
+        this.markRootBodyCollisionDirty();
 }
 phyObject.delete = function(world) {
     this.deinitialize();
-
+}
+phyObject.prototype.markRootBodyCollisionDirty = function()
+{
+    var parent = this;
+    while(parent && parent.parent instanceof phyObject)
+    {
+        parent = parent.parent;
+    }if(parent && parent instanceof phyObject)
+    {
+        parent.collisionDirty = true;
+    }
 }
 phyObject.prototype.update = function() {
-    if (this.collisionDirty) {
+    
+    if(this.enabled === true && this.initialized === false)
+        this.initialize();
+
+    if (this.collisionDirty && this.initialized === true) {
         var backupTrans = this.getTransform();
         this.deinitialize();
         this.initialize();
@@ -204,6 +339,7 @@ function phySphere(id, world) {
     this.world = world;
     this.id = id;
     this.type = SPHERE;
+    this.children = {};
 }
 phySphere.prototype = new phyObject();
 phySphere.prototype.buildCollisionShape = function() {
@@ -212,8 +348,9 @@ phySphere.prototype.buildCollisionShape = function() {
 
 phySphere.prototype.setRadius = function(radius) {
     this.radius = radius;
-    if (this.initialized === true) {
+    if (this.enabled === true) {
         this.collisionDirty = true;
+        this.markRootBodyCollisionDirty();
     }
 }
 
@@ -225,6 +362,7 @@ function phyBox(id, world) {
     this.world = world;
     this.id = id;
     this.type = BOX;
+    this.children = {};
 }
 phyBox.prototype = new phyObject();
 phyBox.prototype.buildCollisionShape = function() {
@@ -235,6 +373,7 @@ phyBox.prototype.setLength = function(length) {
     this.length = length / 2;
     if (this.initialized === true) {
         this.collisionDirty = true;
+         this.markRootBodyCollisionDirty();
     }
 }
 
@@ -242,6 +381,7 @@ phyBox.prototype.setWidth = function(width) {
     this.width = width / 2;
     if (this.initialized === true) {
         this.collisionDirty = true;
+         this.markRootBodyCollisionDirty();
     }
 }
 
@@ -249,6 +389,7 @@ phyBox.prototype.setHeight = function(height) {
     this.height = height / 2;
     if (this.initialized === true) {
         this.collisionDirty = true;
+         this.markRootBodyCollisionDirty();
     }
 }
 
@@ -259,6 +400,7 @@ function phyCylinder(id, world) {
     this.world = world;
     this.id = id;
     this.type = CYLINDER;
+    this.children = {};
 }
 phyCylinder.prototype = new phyObject();
 phyCylinder.prototype.buildCollisionShape = function() {
@@ -269,6 +411,7 @@ phyCylinder.prototype.setRadius = function(radius) {
     this.radius = radius;
     if (this.initialized === true) {
         this.collisionDirty = true;
+         this.markRootBodyCollisionDirty();
     }
 }
 
@@ -276,6 +419,7 @@ phyCylinder.prototype.setHeight = function(height) {
     this.height = height / 2;
     if (this.initialized === true) {
         this.collisionDirty = true;
+         this.markRootBodyCollisionDirty();
     }
 }
 
@@ -286,6 +430,7 @@ function phyCone(id, world) {
     this.world = world;
     this.id = id;
     this.type = CONE;
+this.children = {};
 }
 phyCone.prototype = new phyObject();
 phyCone.prototype.buildCollisionShape = function() {
@@ -296,6 +441,7 @@ phyCone.prototype.setRadius = function(radius) {
     this.radius = radius;
     if (this.initialized === true) {
         this.collisionDirty = true;
+         this.markRootBodyCollisionDirty();
     }
 }
 
@@ -313,6 +459,7 @@ function phyPlane(id, world) {
     this.world = world;
     this.id = id;
     this.type = PLANE;
+this.children = {};
 }
 phyPlane.prototype = new phyObject();
 phyPlane.prototype.buildCollisionShape = function() {
@@ -323,6 +470,7 @@ phyPlane.prototype.setLength = function(length) {
     this.length = length / 2;
     if (this.initialized === true) {
         this.collisionDirty = true;
+         this.markRootBodyCollisionDirty();
     }
 }
 
@@ -330,6 +478,7 @@ phyPlane.prototype.setWidth = function(width) {
     this.width = width / 2;
     if (this.initialized === true) {
         this.collisionDirty = true;
+         this.markRootBodyCollisionDirty();
     }
 }
 
@@ -370,6 +519,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
 
         creatingNode: function(nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType, childIndex, childName, callback /* ( ready ) */ ) {
             if (childID === vwf.application()) {
+
                 var collisionConfiguration = new Ammo.btDefaultCollisionConfiguration(); // every single |new| currently leaks...
                 var dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration);
                 var overlappingPairCache = new Ammo.btDbvtBroadphase();
@@ -400,38 +550,41 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 var body = new Ammo.btRigidBody(rbInfo);
                 body.setRestitution(1);
                 body.setFriction(.3);
+
+
                 dynamicsWorld.addRigidBody(body);
 
                 this.nodes[vwf.application()] = {
                     world: dynamicsWorld,
                     type: SCENE,
                     initialized: false,
-                    children: [],
+                    children: {},
                     id: childID
                 }
 
                 this.allNodes[vwf.application()] = this.nodes[vwf.application()];
 
             }
+
             //node ID 
             if (nodeID && hasPrototype(childID, 'sphere2-vwf')) {
-                this.nodes[nodeID].children[childID] = new phySphere(childID, this.allNodes[vwf.application()].world);
+                this.allNodes[nodeID].children[childID] = new phySphere(childID, this.allNodes[vwf.application()].world);
             }
             if (nodeID && hasPrototype(childID, 'box2-vwf')) {
-                this.nodes[nodeID].children[childID] = new phyBox(childID, this.allNodes[vwf.application()].world);
+                this.allNodes[nodeID].children[childID] = new phyBox(childID, this.allNodes[vwf.application()].world);
             }
             if (nodeID && hasPrototype(childID, 'cylinder2-vwf')) {
-                this.nodes[nodeID].children[childID] = new phyCylinder(childID, this.allNodes[vwf.application()].world);
+                this.allNodes[nodeID].children[childID] = new phyCylinder(childID, this.allNodes[vwf.application()].world);
             }
             if (nodeID && hasPrototype(childID, 'cone2-vwf')) {
-                this.nodes[nodeID].children[childID] = new phyCone(childID, this.allNodes[vwf.application()].world);
+                this.allNodes[nodeID].children[childID] = new phyCone(childID, this.allNodes[vwf.application()].world);
             }
             if (nodeID && hasPrototype(childID, 'plane2-vwf')) {
-                this.nodes[nodeID].children[childID] = new phyPlane(childID, this.allNodes[vwf.application()].world);
+                this.allNodes[nodeID].children[childID] = new phyPlane(childID, this.allNodes[vwf.application()].world);
             }
             //child was created
-            if (this.nodes[nodeID] && this.nodes[nodeID].children[childID]) {
-                this.allNodes[childID] = this.nodes[nodeID].children[childID];
+            if (this.allNodes[nodeID] && this.allNodes[nodeID].children[childID]) {
+                this.allNodes[childID] = this.allNodes[nodeID].children[childID];
                 this.allNodes[childID].parent = this.allNodes[nodeID];
             }
 
@@ -463,9 +616,9 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
 
         initializingNode: function(nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType, childIndex, childName) {
 
-            if (!this.nodes[nodeID]) return;
+            if (!this.allNodes[nodeID]) return;
 
-            var node = this.nodes[nodeID].children[childID];
+            var node = this.allNodes[nodeID].children[childID];
             if (node)
                 node.ready = true;
             if (node && node.initialized === false) {
@@ -487,7 +640,6 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             if (node) {
                 delete node.parent.children[nodeID];
                 node.parent = null;
-                this.allNodes[vwf.application()].world.removeRigidBody(node.body);
                 node.deinitialize();
                 delete this.allNodes[nodeID];
                 node = null;

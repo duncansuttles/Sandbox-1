@@ -72,12 +72,16 @@ define([], function() {
             });
         }
         this.primPropertyChecked = function(e, ui) {
+
+            if (_PhysicsEditor.inSetup) return; 
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
             if ($(this).attr('checked') == 'checked') _PrimitiveEditor.setProperty(id, prop, true);
             else _PrimitiveEditor.setProperty(id, prop, false);
         }
         this.primPropertyTypein = function(e, ui) {
+
+            if (_PhysicsEditor.inSetup) return; 
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
             var amount = $(this).val();
@@ -86,6 +90,8 @@ define([], function() {
             _PrimitiveEditor.setProperty(id, prop, parseFloat(amount));
         }
         this.primSpinner = function(e, ui) {
+
+            if (_PhysicsEditor.inSetup) return; 
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
             var amount = $(this).val();
@@ -95,6 +101,7 @@ define([], function() {
         }
         this.primPropertySlide = function(e, ui) {
 
+            if (_PhysicsEditor.inSetup) return; 
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
             $('#' + id + prop + 'value').val(ui.value);
@@ -104,6 +111,9 @@ define([], function() {
 
         }
         this.primPropertySlideStart = function(e, ui) {
+
+            if (_PhysicsEditor.inSetup) return; 
+
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
             $('#' + id + prop + 'value').val(ui.value);
@@ -118,6 +128,9 @@ define([], function() {
             _PrimitiveEditor.setProperty(id, prop, parseFloat(amount), true);
         }
         this.primPropertySlideStop = function(e, ui) {
+
+            if (_PhysicsEditor.inSetup) return; 
+            
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
             $('#' + id + prop + 'value').val(ui.value);
@@ -188,6 +201,7 @@ define([], function() {
                 _PhysicsEditor.hide()
             });
 
+            this.inSetup = true;
             this.createCheck($('#PhysicsBasicSettings'), this.selectedID, '___physics_enabled', 'Physics Enabled');
             this.createCheck($('#PhysicsBasicSettings'), this.selectedID, '___physics_sleeping', 'Body Sleeping');
             this.createSlider($('#PhysicsBasicSettings'), this.selectedID, '___physics_mass', 'Mass', .1, 0, 10000);
@@ -195,6 +209,8 @@ define([], function() {
             this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_restitution', 'Bounciness', .1, 0, 1);
             this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_friction', 'Friction', .1, 0, 10);
             this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_damping', 'Damping', .1, 0, 10);
+
+            this.inSetup = false;
 
             $("#physicsaccordion").accordion({
                 fillSpace: true,
