@@ -73,7 +73,7 @@ define([], function() {
         }
         this.primPropertyChecked = function(e, ui) {
 
-            if (_PhysicsEditor.inSetup) return; 
+            if (_PhysicsEditor.inSetup) return;
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
             if ($(this).attr('checked') == 'checked') _PrimitiveEditor.setProperty(id, prop, true);
@@ -81,7 +81,7 @@ define([], function() {
         }
         this.primPropertyTypein = function(e, ui) {
 
-            if (_PhysicsEditor.inSetup) return; 
+            if (_PhysicsEditor.inSetup) return;
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
             var amount = $(this).val();
@@ -91,7 +91,7 @@ define([], function() {
         }
         this.primSpinner = function(e, ui) {
 
-            if (_PhysicsEditor.inSetup) return; 
+            if (_PhysicsEditor.inSetup) return;
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
             var amount = $(this).val();
@@ -101,7 +101,7 @@ define([], function() {
         }
         this.primPropertySlide = function(e, ui) {
 
-            if (_PhysicsEditor.inSetup) return; 
+            if (_PhysicsEditor.inSetup) return;
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
             $('#' + id + prop + 'value').val(ui.value);
@@ -112,7 +112,7 @@ define([], function() {
         }
         this.primPropertySlideStart = function(e, ui) {
 
-            if (_PhysicsEditor.inSetup) return; 
+            if (_PhysicsEditor.inSetup) return;
 
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
@@ -129,8 +129,8 @@ define([], function() {
         }
         this.primPropertySlideStop = function(e, ui) {
 
-            if (_PhysicsEditor.inSetup) return; 
-            
+            if (_PhysicsEditor.inSetup) return;
+
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
             $('#' + id + prop + 'value').val(ui.value);
@@ -154,6 +154,34 @@ define([], function() {
             }
 
             this.addPropertyEditorDialog(nodeid, propertyName, $('#' + propertyName + nodeid), 'check');
+        }
+        this.createVector = function(parentdiv, nodeid, propertyName, displayName) {
+
+            var vecvalchanged = function(e) {
+                 if (_PhysicsEditor.inSetup) return;
+                    var propname = $(this).attr('propname');
+                    var component = $(this).attr('component');
+                    var nodeid = $(this).attr('nodename');
+                    var thisid = $(this).attr('id');
+                    thisid = thisid.substr(0, thisid.length - 1);
+                    var x = $('#' + thisid + 'X').val();
+                    var y = $('#' + thisid + 'Y').val();
+                    var z = $('#' + thisid + 'Z').val();
+                    _PrimitiveEditor.setProperty(nodeid, propname, [parseFloat(x), parseFloat(y), parseFloat(z)]);
+                }
+                //$('#basicSettings'+nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">'+editordata[i].displayname+': </div>');
+            var baseid = 'basicSettings' + nodeid + propertyName + 'min';
+            $(parentdiv).append('<div class="editorSliderLabel"  style="width:100%;text-align: left;margin-top: 4px;" ><div style="display:inline" >' + displayName + ':</div> <div style="display:inline-block;float:right">' + '<input id="' + baseid + 'X' + '" component="X" nodename="' + nodeid + '" propname="' + propertyName + '" type="number" step="' + .01 + '" class="vectorinputfront"/>' + '<input id="' + baseid + 'Y' + '" component="Y" nodename="' + nodeid + '" propname="' + propertyName + '" type="number" step="' + .01 + '" class="vectorinput"/>' + '<input id="' + baseid + 'Z' + '" component="Z" nodename="' + nodeid + '" propname="' + propertyName + '" type="number" step="' + .01 + '" class="vectorinput"/>' + '</div><div style="clear:both"/></div>');
+            var propmin = vwf.getProperty(nodeid, propertyName);
+            if (propmin) {
+                $('#' + baseid + 'X').val(propmin[0]);
+                $('#' + baseid + 'Y').val(propmin[1]);
+                $('#' + baseid + 'Z').val(propmin[2]);
+            }
+            $('#' + baseid + 'X').change(vecvalchanged);
+            $('#' + baseid + 'Y').change(vecvalchanged);
+            $('#' + baseid + 'Z').change(vecvalchanged);
+
         }
         this.createSlider = function(parentdiv, nodeid, propertyName, displayName, step, min, max) {
 
@@ -193,7 +221,7 @@ define([], function() {
 
             var lastTab = $("#physicsaccordion").accordion('option', 'active');
             $("#PhysicsEditor").empty();
-            $("#PhysicsEditor").append("<div id='PhysicsEditortitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span class='ui-dialog-title' id='ui-dialog-title-Players'>Material Editor</span></div>");
+            $("#PhysicsEditor").append("<div id='PhysicsEditortitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span class='ui-dialog-title' id='ui-dialog-title-Players'>Physics Editor</span></div>");
             $('#PhysicsEditortitle').append('<a href="#" id="PhysicsEditorclose" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
             $('#PhysicsEditortitle').prepend('<div class="headericon material" />');
             $("#PhysicsEditor").append('<div id="physicsaccordion" style="height:100%;overflow:hidden"><h3><a href="#">Physics Basics</a>	</h3>	<div id="PhysicsBasicSettings">	</div><h3><a href="#">Physics Material</a>	</h3>	<div id="PhysicsMaterialSettings">	</div></div>');
@@ -210,6 +238,22 @@ define([], function() {
             this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_friction', 'Friction', .1, 0, 10);
             this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_damping', 'Damping', .1, 0, 10);
 
+            var phyNode = findphysicsnode(this.selectedID);
+
+            if (phyNode.type == 7) {
+                $('#physicsaccordion').append('<h3><a href="#">Collision Shape</a>    </h3>   <div id="PhysicsCollisionSettings">  </div>');
+                this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_length', 'Collision Length', .1, 0, 50);
+                this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_width', 'Collision Width', .1, 0, 50);
+                this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_height', 'Collision Height', .1, 0, 50);
+                this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_radius', 'Collision Radius', .1, 0, 50);
+            }
+
+            $('#physicsaccordion').append('<h3><a href="#">Forces</a>    </h3>   <div id="PhysicsForceSettings">  </div>');
+
+            this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_forces_angular', 'Torque');
+            this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_forces_linear', 'Force');
+            this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_velocity_angular', 'Angular Velocity');
+            this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_velocity_linear', 'Linear Velocity');
             this.inSetup = false;
 
             $("#physicsaccordion").accordion({
