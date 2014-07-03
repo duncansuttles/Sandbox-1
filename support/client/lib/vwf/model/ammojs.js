@@ -316,7 +316,7 @@ phyObject.prototype.setTransform = function(matrix) {
 
         this.body.setCenterOfMassTransform(startTransform);
       
-        this.wake();
+        
     }
     //todo: the compound collision of the parent does not need to be rebuild, just transforms updated
     //need new flag for this instead of full rebuild
@@ -782,6 +782,9 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                     var node = this.allNodes[i];
                     if (node.body && node.initialized === true) {
                         vwf.setProperty(node.id, 'transform', node.getTransform());
+                        vwf.setProperty(node.id, '___physics_sleeping', node.isSleeping());
+                        vwf.setProperty(node.id, '___physics_velocity_angular', node.getAngularVelocity());
+                        vwf.setProperty(node.id, '___physics_velocity_linear', node.getLinearVelocity());
                     }
                 }
                 this.reEntry = false;
@@ -967,11 +970,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             var node = this.allNodes[nodeID];
 
             if (node.ready === false) return;
-            if (propertyName === '___physics_sleeping') {
-
-
-                return node.isSleeping();
-            }
+           
 
         },
     });
