@@ -65,8 +65,20 @@ function phyObject(id, world) {
     this.localOffset = null;
     this.collisionBodyOffsetPos = [0, 0, 0];
     this.collisionBodyOffsetRot = [1, 0, 0, 1];
-    this.angularVelocity = [0,0,0];
-    this.linearVelocity = [0,0,0];
+    this.angularVelocity = [0, 0, 0];
+    this.linearVelocity = [0, 0, 0];
+}
+phyObject.prototype.addForce = function(vec) {
+    if (vec.length !== 3) return;
+    if (this.initialized === true) {
+        this.body.applyForce(new Ammo.btVector3(vec[0], vec[1], vec[2]));
+    }
+}
+phyObject.prototype.addTorque = function(vec) {
+    if (vec.length !== 3) return;
+    if (this.initialized === true) {
+        this.body.applyTorque(new Ammo.btVector3(vec[0], vec[1], vec[2]));
+    }
 }
 phyObject.prototype.setMass = function(mass) {
     this.mass = mass;
@@ -160,8 +172,8 @@ phyObject.prototype.initialize = function() {
         this.body.setDamping(this.damping, this.damping);
         this.body.setFriction(this.friction);
         this.body.setRestitution(this.restitution);
-        this.body.setLinearVelocity(new Ammo.btVector3(this.linearVelocity[0],this.linearVelocity[1],this.linearVelocity[2]));
-        this.body.setAngularVelocity(new Ammo.btVector3(this.angularVelocity[0],this.angularVelocity[1],this.angularVelocity[2]));
+        this.body.setLinearVelocity(new Ammo.btVector3(this.linearVelocity[0], this.linearVelocity[1], this.linearVelocity[2]));
+        this.body.setAngularVelocity(new Ammo.btVector3(this.angularVelocity[0], this.angularVelocity[1], this.angularVelocity[2]));
         var mat = vwf.getProperty(this.id, 'transform');
         if (mat)
             this.setTransform(mat);
@@ -315,8 +327,8 @@ phyObject.prototype.setTransform = function(matrix) {
         startTransform.setRotation(q);
 
         this.body.setCenterOfMassTransform(startTransform);
-      
-        
+
+
     }
     //todo: the compound collision of the parent does not need to be rebuild, just transforms updated
     //need new flag for this instead of full rebuild
@@ -509,7 +521,7 @@ function phyAsset(id, world) {
     this.colType = NONE;
     this.world = world;
     this.id = id;
-   
+
     this.children = {};
 }
 phyAsset.prototype = new phyObject();
@@ -731,7 +743,9 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                     type: SCENE,
                     initialized: false,
                     children: {},
-                    id: childID
+                    id: childID,
+                    simulationSteps: 10,
+                    active: true
                 }
 
                 this.allNodes[vwf.application()] = this.nodes[vwf.application()];
@@ -767,7 +781,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
 
 
         ticking: function() {
-            if (this.nodes[vwf.application()]) {
+            if (this.nodes[vwf.application()] && this.nodes[vwf.application()].active === true) {
 
                 for (var i in this.allNodes) {
                     var node = this.allNodes[i];
@@ -776,7 +790,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 }
                 //step 50ms per tick.
                 //this is dictated by the input from the reflector
-                this.nodes[vwf.application()].world.stepSimulation(1 / 20, 10);
+                this.nodes[vwf.application()].world.stepSimulation(1 / 20, this.nodes[vwf.application()].simulationSteps);
                 this.reEntry = true;
                 for (var i in this.allNodes) {
                     var node = this.allNodes[i];
@@ -848,7 +862,21 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
         },
 
         // TODO: deletingProperty
+        callingMethod: function(nodeID, methodName, args) {
+            //dont try to set the parent
+            if (!this.allNodes[nodeID]) return;
 
+            //don't allow reentry since this driver can both get and set transform
+            if (this.reEntry === true) return;
+
+            var node = this.allNodes[nodeID];
+            if (methodName === '___physics_addForce') {
+                node.addForce(args[0]);
+            }
+            if (methodName === '___physics_addTorque') {
+                node.addTorque(args[0]);
+            }
+        },
         settingProperty: function(nodeID, propertyName, propertyValue) {
 
             //dont try to set the parent
@@ -863,6 +891,16 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                     node.delayedProperties = {};
                 node.delayedProperties[propertyName] = propertyValue;
             } else {
+
+                if (propertyName === '___physics_gravity' && node.id === vwf.application()) {
+                    node.world.setGravity(new Ammo.btVector3(propertyValue[0], propertyValue[1], propertyValue[2]));
+                }
+                if (propertyName === '___physics_active' && node.id === vwf.application()) {
+                    node.active = propertyValue;
+                }
+                if (propertyName === '___physics_accuracy' && node.id === vwf.application()) {
+                    node.simulationSteps = propertyValue;
+                }
                 if (propertyName == "transform") {
                     node.setTransform(propertyValue)
                 }
@@ -970,7 +1008,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             var node = this.allNodes[nodeID];
 
             if (node.ready === false) return;
-           
+
 
         },
     });

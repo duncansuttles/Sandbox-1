@@ -60,6 +60,9 @@ properties:
   skyFogBlend: 0  
   skyApexColor: [ 0 , .5 , 1.0 ]
   skyHorizonColor: [ 0 , .5 , 1.0 ]
+  ___physics_gravity: [ 0, 0, -9.8]
+  ___physics_accuracy: 10
+  ___physics_active: true
   vAtmosphereDensity: .0005
   playMode: "paused"
   materialDef:
