@@ -11,93 +11,85 @@
 
 
 var libpath = require('path'),
-http = require("http"),
-fs = require('fs'),
-url = require("url"),
-mime = require('mime'),
+    http = require("http"),
+    fs = require('fs'),
+    url = require("url"),
+    mime = require('mime'),
 
-YAML = require('js-yaml');
+    YAML = require('js-yaml');
 var DAL = require('./DAL').DAL;
 
-function setDAL(dal)
-{
+function setDAL(dal) {
     DAL = dal;
 }
-    //***node, uses REGEX, escape properly!
+//***node, uses REGEX, escape properly!
 function strEndsWith(str, suffix) {
-    return str.match(suffix+"$")==suffix;
+    return str.match(suffix + "$") == suffix;
 }
 
 //302 redirect
-function _302(url,response)
-{
-  response.writeHead(302, {
-    "Location": url 
-  });
-  response.end();
+function _302(url, response) {
+    response.writeHead(302, {
+        "Location": url
+    });
+    response.end();
 }
 
 // pick the application name out of the URL by finding the index.vwf.yaml
 // Cache - this means that adding applications to the server will requrie a restart
-var  appNameCache = [];
-function findAppName(uri)
-{
-        
-    var current = "."+libpath.sep;
+var appNameCache = [];
+
+function findAppName(uri) {
+
+    var current = "." + libpath.sep;
     var testcache = (current + uri);
-    
+
     //cache and avoid some sync directory operations
-    for(var i =0; i < appNameCache.length; i++)
-    {
-        if(testcache.indexOf(appNameCache[i]) ==0)
-        {
-            
+    for (var i = 0; i < appNameCache.length; i++) {
+        if (testcache.indexOf(appNameCache[i]) == 0) {
+
             return appNameCache[i];
         }
     }
-    while(!fs.existsSync(libpath.resolve(__dirname, current+"index.vwf.yaml")))
-    {   
-        
-        var next = uri.substr(0,Math.max(uri.indexOf('/'),uri.indexOf('\\'))+1);
+    while (!fs.existsSync(libpath.resolve(__dirname, current + "index.vwf.yaml"))) {
+
+        var next = uri.substr(0, Math.max(uri.indexOf('/'), uri.indexOf('\\')) + 1);
         current += next;
-        if(!next)
+        if (!next)
             break;
-        
-        
+
+
         uri = uri.substr(next.length);
     }
-    if(fs.existsSync(libpath.resolve(__dirname,current+"index.vwf.yaml")))
-    {
-        
+    if (fs.existsSync(libpath.resolve(__dirname, current + "index.vwf.yaml"))) {
+
         appNameCache.push(current);
         return current;
     }
-    return null;    
+    return null;
 }
 
 //Generate a random ID for a instance
-var ValidIDChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+var ValidIDChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
 
 
 //Serve a JSON object
-function ServeJSON(jsonobject,response,URL)
-{
-            
-            response.writeHead(200, {
-                "Content-Type": "text/json"
-            });
-            response.write(JSON.stringify(jsonobject), "utf8");
-            response.end();
-            
+function ServeJSON(jsonobject, response, URL) {
+
+    response.writeHead(200, {
+        "Content-Type": "text/json"
+    });
+    response.write(JSON.stringify(jsonobject), "utf8");
+    response.end();
+
 }
 
 //amke a random VWF Instance id
-function makeid()
-{
+function makeid() {
     var text = "";
-    
 
-    for( var i=0; i < 16; i++ )
+
+    for (var i = 0; i < 16; i++)
         text += ValidIDChars.charAt(Math.floor(Math.random() * ValidIDChars.length));
 
     return text;
@@ -106,87 +98,79 @@ var WaitingForConnection = 0;
 var Active = 1;
 var Dead = 2;
 
-function instance(inid)
-{
+function instance(inid) {
     this.id = inid;
     this.state = WaitingForConnection;
     this.clients = 0;
 }
 
 //Redirect the user to a new instance
-function RedirectToInstance(request,response,appname,newid)
-{
-    if(newid === undefined)
+function RedirectToInstance(request, response, appname, newid) {
+    if (newid === undefined)
         newid = makeid() + "/";
-    
+
     var query = (url.parse(request.url).query) || "";
-    if(query)
-    {
-        query = '?'+query;
+    if (query) {
+        query = '?' + query;
         newid += query;
     }
-    
-    
+
+
     var path = url.parse(request.url).pathname;
-    if(path[path-1] != '/')
+    if (path[path - 1] != '/')
         newid = path.substr(path.indexOf('/')) + '/' + newid;
-    newid = newid.replace(/\/\//g,'/');
-    newid = newid.replace(/\/\/\//g,'/');
-    
-    
-    redirect(newid,response);           
+    newid = newid.replace(/\/\//g, '/');
+    newid = newid.replace(/\/\/\//g, '/');
+
+
+    redirect(newid, response);
 }
 
 //Redirect, just used on some invalid paths
-function redirect(url,response)
-{
-    url = url.replace(/\\\\/g,'/');
-    url = url.replace(/\\/g,'/');
-    url = url.replace(/\/\//g,'/');
-    
-    url = url.replace(/\/\/\//g,'/');
+function redirect(url, response) {
+    url = url.replace(/\\\\/g, '/');
+    url = url.replace(/\\/g, '/');
+    url = url.replace(/\/\//g, '/');
+
+    url = url.replace(/\/\/\//g, '/');
     //url = url.replace('http://','');
-    url = url.replace(/\/\/\//g,"/");
-    url = url.replace(/\/\/\/\//g,"/");
+    url = url.replace(/\/\/\//g, "/");
+    url = url.replace(/\/\/\/\//g, "/");
     //url = 'http://' + url;
     response.writeHead(200, {
-        "Content-Type": "text/html" 
+        "Content-Type": "text/html"
     });
-    response.write( "<html>" +
-                    "<head>" +
-                    "   <title>Virtual World Framework</title>" +
-                    "   <meta http-equiv=\"REFRESH\" content=\"0;url="+url+"\">" +
-                    "</head>" +
-                    "<body>" +
-                    "</body>" +
-                    "</html>");
+    response.write("<html>" +
+        "<head>" +
+        "   <title>Virtual World Framework</title>" +
+        "   <meta http-equiv=\"REFRESH\" content=\"0;url=" + url + "\">" +
+        "</head>" +
+        "<body>" +
+        "</body>" +
+        "</html>");
     response.end();
     return;
 }
 //Find the instance(instance) ID in a URL
-function Findinstance(uri)
-{
+function Findinstance(uri) {
     //find the application name
     var app = findAppName(uri);
-    
-    if(!app)
+
+    if (!app)
         return null;
     //remove the application name   
-    var minusapp = uri.substr(app.length-2);
+    var minusapp = uri.substr(app.length - 2);
     var parts = minusapp.split(libpath.sep);
     var testapp = parts[0];
-    
+
     //Really, any slash delimited string after the app name should work
     //sticking with 16 characters for now 
-    if(testapp.indexOf('example') == 0 && testapp.indexOf('.') == -1)
-    {
+    if (testapp.indexOf('example') == 0 && testapp.indexOf('.') == -1) {
         return testapp;
     }
-    if(testapp.length == 16)
-    {
-        for(var i = 0; i < 16; i++)
-        {
-            if(ValidIDChars.indexOf(testapp[i]) == -1)
+    if (testapp.length == 16) {
+        for (var i = 0; i < 16; i++) {
+            if (ValidIDChars.indexOf(testapp[i]) == -1)
                 return null;
         }
 
@@ -195,13 +179,11 @@ function Findinstance(uri)
     return null;
 }
 //Remove the instance identifer from the URL
-function filterinstance(uri,instance)
-{
-    return uri.replace(instance+libpath.sep,'').replace(instance,libpath.sep);
+function filterinstance(uri, instance) {
+    return uri.replace(instance + libpath.sep, '').replace(instance, libpath.sep);
 }
 
-function hash(str)
-{
+function hash(str) {
     return require('crypto').createHash('md5').update(str).digest("hex");
 }
 
@@ -209,277 +191,250 @@ function hash(str)
 
 
 //Just serve a simple file
-function ServeFile(request,filename,response,URL)
-{
-    FileCache.ServeFile(request,filename,response,URL)
+function ServeFile(request, filename, response, URL) {
+    FileCache.ServeFile(request, filename, response, URL)
 }
 //Return a 404 not found coude
-function _404(response)
-{
-            response.writeHead(404, {
-                "Content-Type": "text/plain",
-                "Access-Control-Allow-Origin": "*"
-                });
-                response.write("404 Not Found\n");
-                response.end();
+function _404(response) {
+    response.writeHead(404, {
+        "Content-Type": "text/plain",
+        "Access-Control-Allow-Origin": "*"
+    });
+    response.write("404 Not Found\n");
+    response.end();
 }
 //Parse and serve a YAML file
-function ServeYAML(filename,response, URL)
-{
-        var tf = filename;
-        fs.readFile(filename, "utf8", function (err, file) {
-            if (err) {
-                response.writeHead(500, {
-                    "Content-Type": "text/plain"
-                });
-                response.write(err + "\n");
-                response.end();
-                return;
-            }
-            //global.log(tf);
-            try{
-            var deYAML = JSON.stringify(YAML.load(file));
-            }catch(e)
-            {
-                global.log("error parsing YAML " + filename );
-                _404(response);
-                return;
-            }
-            var type = "text/json";
-            
-            var callback = URL.query.callback;
-            
-            if(callback)
-            {
-                deYAML = callback+"(" + deYAML + ")";
-                type = "application/javascript";
-            }
-            response.writeHead(200, {
-                "Content-Type": type
+function ServeYAML(filename, response, URL) {
+    var tf = filename;
+    fs.readFile(filename, "utf8", function(err, file) {
+        if (err) {
+            response.writeHead(500, {
+                "Content-Type": "text/plain"
             });
-            response.write(deYAML, "utf8");
+            response.write(err + "\n");
             response.end();
-            
+            return;
+        }
+        //global.log(tf);
+        try {
+            var deYAML = JSON.stringify(YAML.load(file));
+        } catch (e) {
+            global.log("error parsing YAML " + filename);
+            _404(response);
+            return;
+        }
+        var type = "text/json";
+
+        var callback = URL.query.callback;
+
+        if (callback) {
+            deYAML = callback + "(" + deYAML + ")";
+            type = "application/javascript";
+        }
+        response.writeHead(200, {
+            "Content-Type": type
         });
+        response.write(deYAML, "utf8");
+        response.end();
+
+    });
 
 }
 
 
-    function handleRequest(request, response,next) 
-    {
-    
-        try{
-            var safePathRE = RegExp('/\//'+(libpath.sep=='/' ? '\/' : '\\')+'/g');
-            var path = "../../public".replace(safePathRE);
-            
+function handleRequest(request, response, next) {
+
+    try {
+        var safePathRE = RegExp('/\//' + (libpath.sep == '/' ? '\/' : '\\') + '/g');
+        var path = "../../public".replace(safePathRE);
 
 
-            var URL = url.parse(request.url,true);
-            URL.pathname = decodeURIComponent(URL.pathname);
-            var uri = URL.pathname.replace(safePathRE);
-            //global.log( URL.pathname );
-            
-            //lets try to move this into the main app.get om node_vwf
-            if(URL.pathname.toLowerCase().indexOf('/vwfdatamanager.svc/') != -1)
-            {
-                //Route to DataServer
-                SandboxAPI.serve(request,response);
-                return;
-            }
-            if(URL.pathname == '/' || URL.pathname == '')
-            {
-                redirect(global.appPath+'/',response);
-                return;
-            }
-            
-            var filename = libpath.join(path, uri);
-            var instance = Findinstance(filename);
-            //global.log(instance);
-            //remove the instance identifier from the request
-            filename = filterinstance(filename,instance);
-            
-            
-            //obey some old VWF URL formatting
-            if(uri.indexOf('/admin/'.replace(safePathRE)) != -1)
-            {
-                
-                //gets a list of all active sessions on the server, and all clients
-                if(uri.indexOf('/admin/instances'.replace(safePathRE)) != -1)
-                {   
-                    
-                    var data = {}, tempLoginData;
-                    for(var i in global.instances.instances)
-                    {
-                        data[i] = {clients:{}};
-                        for(var j in global.instances.instances[i].clients)
-                        {
-                            if(global.instances.instances[i].clients[j].loginData)
-                            {
-                                tempLoginData = global.instances.instances[i].clients[j].loginData;
-                                data[i].clients[j] = {UID: tempLoginData.UID, loginTime: tempLoginData.loginTime, lastUpdate: tempLoginData.lastUpdate};
-                            }else
-                            {
-                                data[i].clients[j] = {UID: 'anonymous'};
-                            }
+
+        var URL = url.parse(request.url, true);
+        URL.pathname = decodeURIComponent(URL.pathname);
+        var uri = URL.pathname.replace(safePathRE);
+        //global.log( URL.pathname );
+
+        //lets try to move this into the main app.get om node_vwf
+        if (URL.pathname.toLowerCase().indexOf('/vwfdatamanager.svc/') != -1) {
+            //Route to DataServer
+            SandboxAPI.serve(request, response);
+            return;
+        }
+        if (URL.pathname == '/' || URL.pathname == '') {
+            redirect(global.appPath + '/', response);
+            return;
+        }
+
+        var filename = libpath.join(path, uri);
+        var instance = Findinstance(filename);
+        //global.log(instance);
+        //remove the instance identifier from the request
+        filename = filterinstance(filename, instance);
+
+
+        //obey some old VWF URL formatting
+        if (uri.indexOf('/admin/'.replace(safePathRE)) != -1) {
+
+            //gets a list of all active sessions on the server, and all clients
+            if (uri.indexOf('/admin/instances'.replace(safePathRE)) != -1) {
+
+                var data = {}, tempLoginData;
+                for (var i in global.instances.instances) {
+                    data[i] = {
+                        clients: {}
+                    };
+                    for (var j in global.instances.instances[i].clients) {
+                        if (global.instances.instances[i].clients[j].loginData) {
+                            tempLoginData = global.instances.instances[i].clients[j].loginData;
+                            data[i].clients[j] = {
+                                UID: tempLoginData.UID,
+                                loginTime: tempLoginData.loginTime,
+                                lastUpdate: tempLoginData.lastUpdate
+                            };
+                        } else {
+                            data[i].clients[j] = {
+                                UID: 'anonymous'
+                            };
                         }
                     }
-                    ServeJSON(data,response,URL);
-                    return;
                 }
-                
+                ServeJSON(data, response, URL);
+                return;
             }
-            //file is not found - serve index or map to support files
-            //file is also not a yaml document
-            var c1;
-            var c2;
-            
-            
-            //global.log(filename);
-            libpath.exists(libpath.resolve(__dirname,filename),function(c1){
-                libpath.exists(libpath.resolve(__dirname,filename+".yaml"),function(c2){
-                    if(!c1 && !c2)
-                    {
-                            
-                         //try to find the correct support file 
-                         var appname = findAppName(filename);
-                         if(!appname)
-                         {
-                            
-                                filename = filename.substr(19);
-                                filename = "../".replace(safePathRE) + filename;
-                                filename = filename.replace('vwf.example.com','proxy/vwf.example.com');
-                                
-                         }
-                         else
-                         {
-                                
-                             filename = filename.substr(appname.length-2);
-                             if(appname == "")
-                                filename = '../../support/client/lib/index.html'.replace(safePathRE);
-                             else   
-                                filename = '../../support/client/lib/'.replace(safePathRE) + filename;
-                            
-                         }
+
+        }
+        //file is not found - serve index or map to support files
+        //file is also not a yaml document
+        var c1;
+        var c2;
+
+
+        //global.log(filename);
+        libpath.exists(libpath.resolve(__dirname, filename), function(c1) {
+            libpath.exists(libpath.resolve(__dirname, filename + ".yaml"), function(c2) {
+                if (!c1 && !c2) {
+
+                    //try to find the correct support file 
+                    var appname = findAppName(filename);
+                    if (!appname) {
+
+                        filename = filename.substr(19);
+                        filename = "../".replace(safePathRE) + filename;
+                        filename = filename.replace('vwf.example.com', 'proxy/vwf.example.com');
+
+                    } else {
+
+                        filename = filename.substr(appname.length - 2);
+                        if (appname == "")
+                            filename = '../../support/client/lib/index.html'.replace(safePathRE);
+                        else
+                            filename = '../../support/client/lib/'.replace(safePathRE) + filename;
 
                     }
-                      
-                    //file does exist, serve normally 
-                    libpath.exists( libpath.resolve(__dirname,filename),function(c3){
-                        libpath.exists( libpath.resolve(__dirname,filename +".yaml"),function(c4){
-                            if(c3)
-                            {
-                                //if requesting directory, setup instance
-                                //also, redirect to current instnace name of does not end in slash
-                                fs.stat(libpath.resolve(__dirname,filename),function(err,isDir)
-                                {
-                                    if (isDir.isDirectory()) 
-                                    {
-                                        
-                                        var appname = findAppName(filename);
-                                        if(!appname)
-                                            appname = findAppName(filename+libpath.sep);
-                                        
-                                        //no instance id is given, new instance
-                                        if(appname && instance == null)
-                                        {           
-                                            //GenerateNewInstance(request,response,appname);
-                                            
-                                            
-                                            redirect(URL.pathname+"/index.html",response);
-                                            //global.log('redirect ' + appname+"./index.html");
-                                            return;
-                                        }
-                                        //instance needs to end in a slash, so redirect but keep instance id
-                                        if(appname && strEndsWith(URL.pathname,instance))
-                                        {
-                                            RedirectToInstance(request,response,appname,"");
-                                            return;
-                                        }
-                                        //no app name but is directory. Not listing directories, so try for index.html or 404
-                                        if(!appname)
-                                        {
-                                            if(!strEndsWith(URL.pathname, '/'))
-                                            {
-                                                global.log(filename);
-                                                _302(URL.pathname+'/',response);
-                                            }
-                                            else
-                                            {
-                                                fs.exists(libpath.join(filename , "index.html") ,function(indexexists){
 
-                                                    if(indexexists)
-                                                        ServeFile(request,filename + libpath.sep + "index.html",response,URL);
-                                                    else
-                                                        next();//_404(response);
+                }
 
-                                                });
-                                            }
-                                            
-                                            
-                                            return;
-                                        }
-                                        
-                                        //this is the bootstrap html. Must have instnace and appname
-                                        filename = '../../support/client/lib/index.html'.replace(safePathRE);
-                                        
-                                        //when loading the bootstrap, you must have an instance that exists in the database
-                                        global.log('Appname:', appname);
-                                        var instanceName = appname.substr(14).replace(/\//g,'_').replace(/\\/g,'_') + instance + "_";
-                                        DAL.getInstance(instanceName,function(data)
-                                        {
-                                            if(data)
-                                                ServeFile(request,filename,response,URL);
-                                            else {
-                                                
-                                                require('./examples.js').getExampleData(instanceName,function(data){
-                                                    if(data)
-                                                    {
-                                                        ServeFile(request,filename,response,URL);
-                                                    }else
-                                                    {
-                                                         redirect("/",response);         
-                                                    }
+                //file does exist, serve normally 
+                libpath.exists(libpath.resolve(__dirname, filename), function(c3) {
+                    libpath.exists(libpath.resolve(__dirname, filename + ".yaml"), function(c4) {
+                        if (c3) {
+                            //if requesting directory, setup instance
+                            //also, redirect to current instnace name of does not end in slash
+                            fs.stat(libpath.resolve(__dirname, filename), function(err, isDir) {
+                                if (isDir.isDirectory()) {
+
+                                    var appname = findAppName(filename);
+                                    if (!appname)
+                                        appname = findAppName(filename + libpath.sep);
+
+                                    //no instance id is given, new instance
+                                    if (appname && instance == null) {
+                                        //GenerateNewInstance(request,response,appname);
 
 
-                                                })
-                                               
-                                            }
-                                        });
+                                        redirect(URL.pathname + "/index.html", response);
+                                        //global.log('redirect ' + appname+"./index.html");
                                         return;
                                     }
-                                    //just serve the file
-                                    ServeFile(request,filename,response,URL);
-                                });
-                            }
-                            else if(c4)
-                            {
-                                //was not found, but found if appending .yaml. Serve as yaml
-                                ServeYAML(libpath.resolve(__dirname,filename) +".yaml",response,URL);
+                                    //instance needs to end in a slash, so redirect but keep instance id
+                                    if (appname && strEndsWith(URL.pathname, instance)) {
+                                        RedirectToInstance(request, response, appname, "");
+                                        return;
+                                    }
+                                    //no app name but is directory. Not listing directories, so try for index.html or 404
+                                    if (!appname) {
+                                        if (!strEndsWith(URL.pathname, '/')) {
+                                            global.log(filename);
+                                            _302(URL.pathname + '/', response);
+                                        } else {
+                                            fs.exists(libpath.join(filename, "index.html"), function(indexexists) {
 
-                            }
-                            // is an admin call, currently only serving instances
-                            else
-                            {
-                                global.log("404 : " + filename)
-                                //_404(response);
-                                next();
-                                
-                                return;
-                            }
-                        });
+                                                if (indexexists)
+                                                    ServeFile(request, filename + libpath.sep + "index.html", response, URL);
+                                                else
+                                                    next(); //_404(response);
+
+                                            });
+                                        }
+
+
+                                        return;
+                                    }
+
+                                    //this is the bootstrap html. Must have instnace and appname
+                                    filename = '../../support/client/lib/index.html'.replace(safePathRE);
+
+                                    //when loading the bootstrap, you must have an instance that exists in the database
+                                    global.log('Appname:', appname);
+                                    var instanceName = appname.substr(14).replace(/\//g, '_').replace(/\\/g, '_') + instance + "_";
+                                    DAL.getInstance(instanceName, function(data) {
+                                        if (data)
+                                            ServeFile(request, filename, response, URL);
+                                        else {
+
+                                            require('./examples.js').getExampleData(instanceName, function(data) {
+                                                if (data) {
+                                                    ServeFile(request, filename, response, URL);
+                                                } else {
+                                                    redirect("/", response);
+                                                }
+
+
+                                            })
+
+                                        }
+                                    });
+                                    return;
+                                }
+                                //just serve the file
+                                ServeFile(request, filename, response, URL);
+                            });
+                        } else if (c4) {
+                            //was not found, but found if appending .yaml. Serve as yaml
+                            ServeYAML(libpath.resolve(__dirname, filename) + ".yaml", response, URL);
+
+                        }
+                        // is an admin call, currently only serving instances
+                        else {
+                            global.log("404 : " + filename)
+                            //_404(response);
+                            next();
+
+                            return;
+                        }
                     });
-                }); 
-            });
-        }
-        catch(e)
-        {
-                response.writeHead(500, {
-                    "Content-Type": "text/plain"
                 });
-                response.write(e.toString(), "utf8");
-                response.end();
-        }
-    } // close onRequest
+            });
+        });
+    } catch (e) {
+        response.writeHead(500, {
+            "Content-Type": "text/plain"
+        });
+        response.write(e.toString(), "utf8");
+        response.end();
+    }
+} // close onRequest
 
-exports.handleRequest = handleRequest;    
+exports.handleRequest = handleRequest;
 exports.setDAL = setDAL;

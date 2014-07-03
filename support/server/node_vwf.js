@@ -83,6 +83,10 @@ var option = {
 };
 i18n.init(option);
 
+console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+console.log('Welcome to Sandbox.\nType "create application" to create your first app.');
+console.log('Type "help" for a list of commands.\n');
+
 var errorlog = null;
 global.error = function() {
     var red, brown, reset;

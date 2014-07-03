@@ -50,8 +50,16 @@ function CheckMatch(test, input) {
     return true;
 }
 
+//some constants for coloration
+var red, brown, reset;
+red = '\u001b[31m';
+brown = '\u001b[33m';
+reset = '\u001b[0m';
+
+
 function StartShellInterface() {
     //shell interface defaults
+
     rl = readline.createInterface(process.stdin, process.stdout);
     rl.setPrompt('> ');
 
@@ -394,6 +402,22 @@ function StartShellInterface() {
 
             }
         }, {
+            'command': 'create application',
+            'description': 'Creates a new Sandbox Application',
+            'callback': function(commands) {
+                rl.question('Enter a name for the application: ', function(appname) {
+
+                    rl.question('Enter a description for the application: ', function(appdes) {
+                        appname = appname.substr(0, Math.min(appname.length, 16));
+                        appname = appname.replace(/[^0-9a-zA-Z]/g, '_');
+                        while (appname.length < 16) appname += '0';
+                        console.log(brown + 'Your application ID is ' + red + appname + reset);
+                        console.log(brown + 'Your application URL is ' + red + 'http://localhost:' + global.configuration.port + '/adl/sandbox/' + appname + reset);
+
+                    });
+                });
+            }
+        }, {
             'command': 'delete user <username>',
             'description': 'Deletes the user with the given username',
             'callback': function(commands) {
@@ -584,10 +608,13 @@ function StartShellInterface() {
             console.log('Available commands:');
             console.log('NOTE: State IDs are of the form ' + global.appPath.replace(/\//g, "_") + '_uAId89a1xnE3DJXU_');
             console.log();
-            console.log('help - Show this message');
-            console.log('exit - Shut down the server');
-            for (var i = 0; i < commands.length; i++)
-                console.log(commands[i].command, '-', commands[i].description);
+            console.log(brown + '"help"\n' + reset + 'Show this message');
+            console.log(brown + '"exit"\n' + reset + 'Shut down the server');
+            for (var i = 0; i < commands.length; i++) {
+                console.log(brown + '"' + commands[i].command + '"' + reset);
+                console.log(commands[i].description);
+
+            }
             rl.prompt();
         }
 
