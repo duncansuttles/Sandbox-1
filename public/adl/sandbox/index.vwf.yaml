@@ -334,7 +334,7 @@ scripts:
        ground.PickPriority = -1;
        
        
-       var grassTex = _SceneManager.getTexture('textures/gridnew.png');
+       var grassTex = THREE.ImageUtils.loadTexture('textures/gridnew.png');
        
       
        ground.material.map = grassTex;
@@ -514,7 +514,7 @@ scripts:
     
     }
     //a new client has joined the simulation
-    this.clientConnected = function(id,name)
+    this.clientConnected = function(id,name,UID)
     {
      
     	if(!this.clients)
@@ -522,11 +522,11 @@ scripts:
     		this.clients = {}
     	}
     	if(!this.clients[id])
-    		this.clients.defineProperty(id,{cid:id,name:name});
+    		this.clients.defineProperty(id,{cid:id,name:name,UID:UID});
     	
     }
     // a client other than this one has left
-    this.clientDisconnected = function(id,name)
+    this.clientDisconnected = function(id,name,UID)
     {
     	if(this.clients)
     	{
@@ -791,8 +791,7 @@ scripts:
       if(parms.which == 2) this.middledown = true;
       if(parms.which == 3) this.rightdown = true;
      
-      //if(this.objectFollowed)
-      //  this.oldRotZ = vwf.getProperty(this.objectFollowed.id,'rotZ');
+
      
       if(parms.which == 3 || parms.which == 2 && (this.cameramode == 'Orbit' || this.cameramode == 'Free'))
         {
@@ -861,9 +860,9 @@ scripts:
         
         if(this.objectFollowed)
         {  
-        	var rz = this.objectFollowed.rotZ;
-            rz  = (rz +(this.rel_x*10 || 0)) || 0;
-            vwf_view.kernel.setProperty(this.objectFollowed.id,'rotZ',rz);
+        	  var rz = this.lastRotZ || 0;
+            this.lastRotZ  = (rz +(this.rel_x*5 || 0)) || 0;
+            vwf_view.kernel.setProperty(this.objectFollowed.id,'rotZ',this.lastRotZ);
             
             
         }
@@ -1043,8 +1042,8 @@ scripts:
             try{
             //this.oldRotZ var xmatrix = MATH.angleAxis(this.x_rot*10,[0,0,1]);
             var rotation = this.objectFollowed.rotation;
-            var xmatrix = MATH.angleAxis(this.objectFollowed.rotZ,[0,0,1]);
-            var offset = MATH.mulMat4Vec3(xmatrix,[0,1.5,.5]);
+          
+            var offset = this.objectFollowed.transformAPI.localToGlobalRotation([0,1.5,.5]);
             
             offset = MATH.scaleVec3(offset,1/MATH.lengthVec3(offset));
             var side = MATH.crossVec3([0,0,1],offset);
@@ -1077,8 +1076,8 @@ scripts:
         }else  if(this.cameramode == '3RDPerson')
         {
             try{
-            var xmatrix = MATH.angleAxis(this.objectFollowed.rotZ,[0,0,1]);
-            var offset = MATH.mulMat4Vec3(xmatrix,[0,1.5,.5]);
+            
+            var offset = this.objectFollowed.transformAPI.localToGlobalRotation([0,1.5,.5]);
             
             var finaldist = MATH.lengthVec3(offset);  
             offset = MATH.scaleVec3(offset,1/finaldist);            
@@ -1134,7 +1133,7 @@ scripts:
         _viewProjectionMatrix.multiplyMatrices( cam.projectionMatrix, cam.matrixWorldInverse );
 
 
-        return MATH.transposeMat4(_viewProjectionMatrix.toArray());
+        return MATH.transposeMat4(_viewProjectionMatrix.toArray([]));
       }
       function to3Vec(vec,two,three)
       {
@@ -1313,11 +1312,8 @@ scripts:
     }
     this.setTexture = function(value)
     {
-            
              if(this.groundplane)
-                _MaterialCache.setMaterial(this.groundplane,value)
-             
-             
+              _MaterialCache.setMaterial(this.groundplane,value)       
     }
     this.createNameTag = function()
     {
@@ -1446,7 +1442,7 @@ scripts:
         this.sun.shadowCamera.projectionMatrix.makeOrthographic(camposLS.x - 15,camposLS.x + 15,camposLS.y - 15,camposLS.y+15,-camposLS.z - 15 ,-camposLS.z + 15 );
         }
     }    
-    
+
 
       this.pointerOver = function(){return true;}
     this.pointerOut= function(){return true;}

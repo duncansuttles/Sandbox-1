@@ -14,7 +14,7 @@ YAML = require('js-yaml');
 
 function startup(listen) {
     //create socket server
-    global.log('startup refector');
+    global.log('startup refector',2);
     sio = sio.listen(listen, {
         log: false
     });
@@ -129,7 +129,7 @@ var fixIDs = function(node) {
 function getBlankScene(state, instanceData, cb) {
     var state2 = JSON.parse(JSON.stringify(state));
     fs.readFile("./public" + global.appPath + "/index.vwf.yaml", 'utf8', function(err, blankscene) {
-        console.log(err);
+      
         var err = null;
         try {
             blankscene = YAML.load(blankscene);
@@ -183,7 +183,7 @@ function getBlankScene(state, instanceData, cb) {
 }
 
 function ServeSinglePlayer(socket, namespace, instancedata) {
-    global.log('single player');
+    global.log('single player',2);
     var instance = namespace;
     var state = SandboxAPI.getState(instance, function(state) {
         if (!state) state = [{
@@ -228,7 +228,7 @@ function WebSocketConnection(socket, _namespace) {
 
         if (!namespace) {
             socket.on('setNamespace', function(msg) {
-                global.log(msg.space);
+                global.log(msg.space,2);
                 WebSocketConnection(socket, msg.space);
                 socket.emit('namespaceSet', {});
             });
@@ -365,7 +365,7 @@ function runningInstance(id) {
                     client.emit('message', tickmessage);
                 else {
                     client.pendingList.push(tickmessage);
-                    global.log('pending tick');
+                    global.log('pending tick',2);
                 }
             }
         }
@@ -434,7 +434,7 @@ function ClientConnected(socket, namespace, instancedata) {
     socket.pendingList = [];
     //The client is the first, is can just load the index.vwf, and mark it not pending
     if (!loadClient) {
-        global.log('load from db');
+        global.log('load from db',2);
 
         socket.emit('message', messageCompress.pack(JSON.stringify({
             "action": "status",
@@ -498,7 +498,7 @@ function ClientConnected(socket, namespace, instancedata) {
             //side state.
             thisInstance.state.callMethod = function(id, name, args) {
                 if (id == 'index-vwf' && name == 'restoreState') {
-                    console.log('Restore State from Play Backup');
+                    console.log('Restore State from Play Backup',2);
                     //args[0][0] should be a vwf root node definition
                     if (args[0][0]) {
                         //note we have to JSON parse and stringify here to avoid creating a circular structure that cannot be reserialized 
@@ -550,7 +550,7 @@ function ClientConnected(socket, namespace, instancedata) {
     }
     //this client is not the first, we need to get the state and mark it pending
     else {
-        global.log('load from client');
+        global.log('load from client',2);
         var firstclient = loadClient; //Object.keys(global.instances[namespace].clients)[0];
         //firstclient = global.instances[namespace].clients[firstclient];
         socket.pending = true;
@@ -593,7 +593,7 @@ function ClientConnected(socket, namespace, instancedata) {
                     if (loadClient) {
                         this.count++;
                         if (this.count < 5) {
-                            global.log('did not get state, resending request');
+                            global.log('did not get state, resending request',2);
                             this.namespace.getStateTime = this.namespace.time;
                             loadClient.emit('message', messageCompress.pack(JSON.stringify({
                                 "action": "getState",
@@ -607,13 +607,13 @@ function ClientConnected(socket, namespace, instancedata) {
                             })));
                             this.handle = global.setTimeout(this.time.bind(this), 2000);
                         } else {
-                            global.log('sending default state');
+                            global.log('sending default state',2);
                             var state = this.namespace.cachedState;
                             for (var i in this.namespace.clients) {
                                 var client = this.namespace.clients[i];
-                                global.log(state);
+                                
                                 if (loadClient != client && client.pending === true) {
-                                    global.log('sending default state 2');
+                                    global.log('sending default state 2',2);
                                     client.emit('message', messageCompress.pack(JSON.stringify({
                                         "action": "status",
                                         "parameters": ["State Not Received, Transmitting default"],
@@ -637,7 +637,7 @@ function ClientConnected(socket, namespace, instancedata) {
                         }
 
                     } else {
-                        global.log('need to load from db');
+                        global.log('need to load from db',2);
                     }
                 } catch (e) {}
             }
@@ -785,7 +785,7 @@ function ClientConnected(socket, namespace, instancedata) {
                 if (allowAnonymous || checkOwner(node, sendingclient.loginData.UID)) {
                     //we do need to keep some state data, and note that the node is gone
                     thisInstance.state.deleteNode(message.node)
-                    thisInstance.Log("deleted " + node.id, 1);
+                    thisInstance.Log("deleted " + node.id, 2);
                 } else {
                     thisInstance.Error('permission denied for deleting ' + node.id, 1);
                     return;
@@ -794,7 +794,7 @@ function ClientConnected(socket, namespace, instancedata) {
             //We'll only accept a createChild if the user has ownership of the object
             //Note that you now must share a scene with a user!!!!
             if (message.action == "createChild") {
-                thisInstance.Log(message, 1);
+                thisInstance.Log(message, 2);
                 var node = thisInstance.state.findNode(message.node);
                 if (!node) {
                     thisInstance.Error('server has no record of ' + message.node, 1);
@@ -817,7 +817,7 @@ function ClientConnected(socket, namespace, instancedata) {
                     if (!childComponent.properties)
                         childComponent.properties = {};
                     fixIDs(node.children[childID]);
-                    thisInstance.Log("created " + childID, 1);
+                    thisInstance.Log("created " + childID, 2);
                 } else {
                     thisInstance.Error('permission denied for creating child ' + node.id, 1);
                     return;
@@ -831,7 +831,7 @@ function ClientConnected(socket, namespace, instancedata) {
 
                 //if the message was get state, then fire all the pending messages after firing the setState
                 if (message.action == "getState") {
-                    thisInstance.Log('Got State', 1);
+                    thisInstance.Log('Got State', 2);
                     if (thisInstance.requestTimer)
                         thisInstance.requestTimer.deleteMe();
                     var state = message.result;
@@ -863,7 +863,7 @@ function ClientConnected(socket, namespace, instancedata) {
                     //just a regular message, so push if the client is pending a load, otherwise just send it.
                     if (client.pending == true) {
                         client.pendingList.push(compressedMessage);
-                        global.log('PENDING');
+                        global.log('PENDING',2);
 
                     } else {
                         //simulate latency
@@ -895,7 +895,7 @@ function ClientConnected(socket, namespace, instancedata) {
 
         try {
             var loginData = socket.loginData;
-            global.log(socket.id, loginData)
+            global.log(socket.id, loginData,2)
             thisInstance.clients[socket.id] = null;
             delete thisInstance.clients[socket.id];
             //if it's the last client, delete the data and the timer
@@ -944,7 +944,7 @@ function ClientConnected(socket, namespace, instancedata) {
             if (thisInstance.clientCount() == 0) {
                 clearInterval(thisInstance.timerID);
                 RunningInstances.remove(thisInstance.id);
-                global.log('Shutting down ' + namespace)
+                global.log('Shutting down ' + namespace,2)
             }
         } catch (e) {
             global.error('error in reflector disconnect')
