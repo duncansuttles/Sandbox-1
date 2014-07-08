@@ -40,7 +40,8 @@ function collectChildCollisions(node, list) {
             list.push({
                 matrix: vwf.getProperty(node.id, 'worldTransform'),
                 collision: col,
-                mass: node.mass
+                mass: node.mass,
+                localScale:node.localScale
             });
     }
     return list;
@@ -67,6 +68,7 @@ function phyObject(id, world) {
     this.collisionBodyOffsetRot = [1, 0, 0, 1];
     this.angularVelocity = [0, 0, 0];
     this.linearVelocity = [0, 0, 0];
+    this.localScale = [1,1,1];
 }
 phyObject.prototype.addForce = function(vec) {
     if (vec.length !== 3) return;
@@ -141,6 +143,9 @@ phyObject.prototype.initialize = function() {
                 var q = new Ammo.btQuaternion(quat[0], quat[1], quat[2], quat[3]);
                 startTransform.setRotation(q);
 
+
+                childCollisions[i].collision.setLocalScaling(new Ammo.btVector3(childCollisions[i].localScale[0],childCollisions[i].localScale[1],childCollisions[i].localScale[2]));
+
                 this.collision.addChildShape(startTransform, childCollisions[i].collision);
 
             }
@@ -180,7 +185,7 @@ phyObject.prototype.initialize = function() {
         //we must return through the kernel here so it knows that this is revelant to all instances of this node
         //not just the proto
 
-
+        this.collision.setLocalScaling(new Ammo.btVector3(this.localScale[0],this.localScale[1],this.localScale[2]));
 
         vwf.setProperty(this.id, '___physics_sleeping', this.sleeping);
         vwf.setProperty(this.id, '___physics_linear_velocity', this.linearVelocity);
@@ -327,13 +332,16 @@ phyObject.prototype.setTransform = function(matrix) {
         startTransform.setRotation(q);
 
         this.body.setCenterOfMassTransform(startTransform);
-
+        if(this.collision)
+            this.collision.setLocalScaling(new Ammo.btVector3(this.localScale[0],this.localScale[1],this.localScale[2]));
 
     }
     //todo: the compound collision of the parent does not need to be rebuild, just transforms updated
     //need new flag for this instead of full rebuild
     if (this.enabled === true && this.parent.id !== vwf.application())
         this.markRootBodyCollisionDirty();
+   
+        
 }
 phyObject.delete = function(world) {
     this.deinitialize();
@@ -543,7 +551,7 @@ phyAsset.prototype.buildCollisionShape = function() {
     transform.getOrigin().setZ(this.collisionBodyOffsetPos[2]);
 
     var q = new Ammo.btQuaternion(this.collisionBodyOffsetRot[0], this.collisionBodyOffsetRot[1], this.collisionBodyOffsetRot[2], this.collisionBodyOffsetRot[3]);
-    transform.setRotation(q);
+    //transform.setRotation(q);
 
     var col = this.buildCollisionShapeInner();
     if (col) {
@@ -603,17 +611,17 @@ phyAsset.prototype.buildMeshCollision = function() {
     var threejsNode = _Editor.findviewnode(this.id);
     //so, we are going to find all child meshes, and find the matrix that puts their geometry into the coordspace of this node
     //NOTE: deal here with children? Might not want to collect children that are part of different VWF node?
-    var list = [];
+     var list = [];
     threejsNode.updateMatrixWorld(true)
-    var selfmat = threejsNode.parent.matrixWorld.clone();
+    var selfmat = threejsNode.matrixWorld.clone();
     var selfI = new THREE.Matrix4();
-    selfmat.getInverse(selfI);
+    selfI.getInverse(selfmat);
     var walk = function(tn) {
         for (var i = 0; i < tn.children.length; i++)
             walk(tn.children[i]);
         if (tn instanceof THREE.Mesh) {
             var lmat = tn.matrixWorld.clone();
-            lmat = (new THREE.Matrix4()).multiplyMatrices(lmat, selfI);
+            lmat = (new THREE.Matrix4()).multiplyMatrices(selfI,lmat );
             list.push({
                 mat: lmat,
                 mesh: tn
@@ -847,7 +855,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 this.reEntry = true;
                 for (var i in this.allNodes) {
                     var node = this.allNodes[i];
-                    if (node.body && node.initialized === true) {
+                    if (node.body && node.initialized === true && node.mass > 0) {
                         vwf.setProperty(node.id, 'transform', node.getTransform());
                         vwf.setProperty(node.id, '___physics_sleeping', node.isSleeping());
                         vwf.setProperty(node.id, '___physics_velocity_angular', node.getAngularVelocity());
