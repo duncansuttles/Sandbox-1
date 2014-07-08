@@ -564,7 +564,7 @@ phyAsset.prototype.buildCollisionShapeInner = function() {
     if (this.colType == BOX)
         return new Ammo.btBoxShape(new Ammo.btVector3(this.length, this.width, this.height));
     if (this.colType == MESH) {
-        debugger;
+        return this.buildMeshCollision();
         //here be dragons
     }
 }
@@ -599,6 +599,58 @@ phyAsset.prototype.setRadius = function(radius) {
         this.markRootBodyCollisionDirty();
     }
 }
+phyAsset.prototype.buildMeshCollision = function() {
+    var threejsNode = _Editor.findviewnode(this.id);
+    //so, we are going to find all child meshes, and find the matrix that puts their geometry into the coordspace of this node
+    //NOTE: deal here with children? Might not want to collect children that are part of different VWF node?
+    var list = [];
+    threejsNode.updateMatrixWorld(true)
+    var selfmat = threejsNode.parent.matrixWorld.clone();
+    var selfI = new THREE.Matrix4();
+    selfmat.getInverse(selfI);
+    var walk = function(tn) {
+        for (var i = 0; i < tn.children.length; i++)
+            walk(tn.children[i]);
+        if (tn instanceof THREE.Mesh) {
+            var lmat = tn.matrixWorld.clone();
+            lmat = (new THREE.Matrix4()).multiplyMatrices(lmat, selfI);
+            list.push({
+                mat: lmat,
+                mesh: tn
+            })
+        }
+    }
+    walk(threejsNode);
+    var triangle_mesh = new Ammo.btTriangleMesh();
+    // well, this seems right, but I can't find where the collision body actually ended up
+    for (var i in list) {
+        if (list[i].mesh.geometry && list[i].mesh.geometry instanceof THREE.Geometry) {
+            for (var j = 0; j < list[i].mesh.geometry.faces.length; j++) {
+                var face = list[i].mesh.geometry.faces[j];
+                var v1 = list[i].mesh.geometry.vertices[face.a];
+                var v2 = list[i].mesh.geometry.vertices[face.b];
+                var v3 = list[i].mesh.geometry.vertices[face.c];
+
+                v1 = v1.clone().applyMatrix4(list[i].mat);
+                v2 = v2.clone().applyMatrix4(list[i].mat);
+                v3 = v3.clone().applyMatrix4(list[i].mat);
+                triangle_mesh.addTriangle(new Ammo.btVector3(v1.x, v1.y, v1.z), new Ammo.btVector3(v2.x, v2.y, v2.z), new Ammo.btVector3(v3.x, v3.y, v3.z), false);
+            }
+
+        }
+
+    }
+    var shape = new Ammo.btBvhTriangleMeshShape(
+        triangle_mesh,
+        true,
+        true
+    );
+
+    //Cool, not list contains all the meshes
+    return shape;
+
+
+}
 phyAsset.prototype.setType = function(type) {
     this.colType = type;
     if (this.initialized === true) {
@@ -610,7 +662,8 @@ phyAsset.prototype.setType = function(type) {
     if (this.colType == MESH) {
         //careful not to confuse VWF by modifying internal state but not informing kernel
         this.backup_collisionBodyOffsetPos = this.collisionBodyOffsetPos;
-        this.collisionBodyOffsetPos = [0, 0, 0]
+        this.collisionBodyOffsetPos = [0, 0, 0];
+
     } else {
         if (this.backup_collisionBodyOffsetPos) {
             this.collisionBodyOffsetPos = this.backup_collisionBodyOffsetPos;

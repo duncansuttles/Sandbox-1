@@ -218,6 +218,41 @@ define([], function() {
             this.addPropertyEditorDialog(nodeid, propertyName, $('#' + nodeid + i), 'slider');
             this.addPropertyEditorDialog(nodeid, propertyName, $('#' + nodeid + propertyName + 'value'), 'text');
         }
+        this.createChoice = function(parentdiv, nodeid, propertyName, displayName, labels, values) {
+
+            //  $('#basicSettings' + nodeid).append('<input type="button" style="width: 100%;font-weight: bold;" id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' +  editordata[i].property + '"/>');
+            $(parentdiv).append('<div><div class="editorSliderLabel">' + displayName + ': </div>' + '<select id="' + nodeid + propertyName + '" style="float:right;clear:right" ' + ' nodename="' + nodeid + '" propname="' + propertyName + '"" ></select></div>');
+
+            $('#' + nodeid + propertyName).val(displayName + ": " + labels[vwf.getProperty(nodeid, propertyName)]);
+            $('#' + nodeid + propertyName).attr('index', propertyName);
+
+            for (var k = 0; k < labels.length; k++) {
+                $('#' + nodeid + propertyName).append("<option value='" + values[k] + "'>  " + labels[k] + "  </option>")
+            }
+            //$('#' + nodeid + i).button();
+
+
+            //find and select the current value in the dropdown
+            var selectedindex = values.indexOf(vwf.getProperty(nodeid, propertyName));
+            var selectedLabel = labels[selectedindex];
+            $("select option").filter(function() {
+                //may want to use $.trim in here
+                return $.trim($(this).text()) == $.trim(selectedLabel);
+            }).prop('selected', true);
+
+            $('#' + nodeid + propertyName).change(function() {
+
+                var propname = $(this).attr('propname');
+                var nodename = $(this).attr('nodename');
+
+                var value = $(this).val();
+                var div = this;
+                _PrimitiveEditor.setProperty(nodename, propname, value);
+
+            });
+            this.addPropertyEditorDialog(nodeid, propertyName, $('#' + nodeid + i), 'text');
+
+        }
         this.BuildGUI = function() {
 
             //does this object have it's own body, or is it just a compound collision?
@@ -244,7 +279,7 @@ define([], function() {
                 this.createCheck($('#PhysicsBasicSettings'), this.selectedID, '___physics_sleeping', 'Body Sleeping');
                 this.createSlider($('#PhysicsBasicSettings'), this.selectedID, '___physics_mass', 'Mass', .1, 0, 10000);
 
-                $('#physicsaccordion').append('<h3><a href="#">Collision Shape</a>    </h3>   <div id="PhysicsCollisionSettings">  </div>');
+                $('#physicsaccordion').append('<h3><a href="#">Collision Material</a>    </h3>   <div id="PhysicsMaterialSettings">  </div>');
                 this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_restitution', 'Bounciness', .1, 0, 1);
                 this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_friction', 'Friction', .1, 0, 10);
                 this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_damping', 'Damping', .1, 0, 10);
@@ -257,6 +292,12 @@ define([], function() {
                     this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_width', 'Collision Width', .1, 0, 50);
                     this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_height', 'Collision Height', .1, 0, 50);
                     this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_radius', 'Collision Radius', .1, 0, 50);
+                    this.createChoice($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_type', 'Collision Type', [
+                        "Box", "Sphere", "Cylinder", "Cone", "Mesh"
+                    ], [
+                        "2", "1", "3", "4", "5"
+                    ]);
+
                 }
 
                 $('#physicsaccordion').append('<h3><a href="#">Forces</a>    </h3>   <div id="PhysicsForceSettings">  </div>');
@@ -266,7 +307,9 @@ define([], function() {
                 this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_velocity_angular', 'Angular Velocity');
                 this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_velocity_linear', 'Linear Velocity');
             } else {
+
                 $('#PhysicsBasicSettings').append('This object can have collision but no forces, because it is a child of another object');
+                this.createCheck($('#PhysicsBasicSettings'), this.selectedID, '___physics_enabled', hasOwnBody ? 'Physics Enabled' : 'Collision Enabled');
             }
             this.inSetup = false;
 
