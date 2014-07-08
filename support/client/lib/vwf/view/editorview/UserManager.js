@@ -120,10 +120,10 @@ define(function() {
 
 
                         //only the first client from a given login should create the avatart
-                        if (vwf.models[0].model.nodes['character-vwf-' + username.replace(/ /g, '-')] == undefined)
+                        if (vwf.models[0].model.nodes['character-vwf-' + userID.replace(/ /g, '-')] == undefined)
                             this.Login(username, userID);
                         else {
-                            alertify.alert('You are already logged into this space from another tab.');
+                            alertify.alert('You are already logged into this space from another tab. This session will be an anonymous guest');
                         }
 
 

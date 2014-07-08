@@ -539,7 +539,7 @@ function saveInstanceState(id, data, cb) {
 
 
         if (instance) {
-            global.log('instance ' + id + ' exists');
+            
             async.waterfall([
 
                 function(cb2) {
