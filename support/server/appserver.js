@@ -219,7 +219,7 @@ function ServeYAML(filename, response, URL) {
         try {
             var deYAML = JSON.stringify(YAML.load(file));
         } catch (e) {
-            global.log("error parsing YAML " + filename);
+            global.log("error parsing YAML " + filename,2);
             _404(response);
             return;
         }
@@ -365,7 +365,7 @@ function handleRequest(request, response, next) {
                                     //no app name but is directory. Not listing directories, so try for index.html or 404
                                     if (!appname) {
                                         if (!strEndsWith(URL.pathname, '/')) {
-                                            global.log(filename);
+                                            
                                             _302(URL.pathname + '/', response);
                                         } else {
                                             fs.exists(libpath.join(filename, "index.html"), function(indexexists) {
@@ -386,7 +386,7 @@ function handleRequest(request, response, next) {
                                     filename = '../../support/client/lib/index.html'.replace(safePathRE);
 
                                     //when loading the bootstrap, you must have an instance that exists in the database
-                                    global.log('Appname:', appname);
+                                    
                                     var instanceName = appname.substr(14).replace(/\//g, '_').replace(/\\/g, '_') + instance + "_";
                                     DAL.getInstance(instanceName, function(data) {
                                         if (data)
@@ -417,7 +417,7 @@ function handleRequest(request, response, next) {
                         }
                         // is an admin call, currently only serving instances
                         else {
-                            global.log("404 : " + filename)
+                            global.log("404 : " + filename,2)
                             //_404(response);
                             next();
 

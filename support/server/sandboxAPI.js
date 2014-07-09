@@ -596,7 +596,7 @@ function Publish(URL, SID, publishdata, response) {
         SID = global.appPath.replace(/\//g, "_") + '_' + SID + '_';
     }
 
-    global.log(SID);
+    global.log(SID,2);
     DAL.getInstance(SID, function(state) {
 
         if (!state) {
@@ -616,7 +616,7 @@ function Publish(URL, SID, publishdata, response) {
         var publishSettings = null;
         //The settings  for the published state. 
         //have to handle these in the client side code, with some enforcement at the server
-        global.log(publishdata);
+        global.log(publishdata,2);
         if (publishdata) {
             var singlePlayer = publishdata.SinglePlayer;
             var camera = publishdata.camera;
@@ -1238,7 +1238,7 @@ function serve(request, response) {
                     break;
                 case "statehistory":
                     {
-                        global.log("statehistory");
+                        global.log("statehistory",2);
                         DAL.getHistory(SID, function(statehistory) {
                             if (statehistory)
                                 ServeJSON(statehistory, response, URL);
