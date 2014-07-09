@@ -74,12 +74,36 @@ phyObject.prototype.addForce = function(vec) {
     if (vec.length !== 3) return;
     if (this.initialized === true) {
         this.body.applyForce(new Ammo.btVector3(vec[0], vec[1], vec[2]));
+        this.wake();
     }
 }
 phyObject.prototype.addTorque = function(vec) {
     if (vec.length !== 3) return;
     if (this.initialized === true) {
         this.body.applyTorque(new Ammo.btVector3(vec[0], vec[1], vec[2]));
+        this.wake();
+    }
+}
+phyObject.prototype.addForceImpulse = function(vec) {
+    if (vec.length !== 3) return;
+    if (this.initialized === true) {
+        this.body.applyImpulse(new Ammo.btVector3(vec[0], vec[1], vec[2]));
+        this.wake();
+    }
+}
+phyObject.prototype.addTorqueImpulse = function(vec) {
+    if (vec.length !== 3) return;
+    if (this.initialized === true) {
+        this.body.applyTorqueImpulse(new Ammo.btVector3(vec[0], vec[1], vec[2]));
+        this.wake();
+    }
+}
+phyObject.prototype.addForceOffset = function(vec,pos) {
+    if (vec.length !== 3) return;
+    if (pos.length !== 3) return;
+    if (this.initialized === true) {
+        this.body.applyForce(new Ammo.btVector3(vec[0], vec[1], vec[2]),new Ammo.btVector3(vec[0], vec[1], vec[2]));
+        this.wake();
     }
 }
 phyObject.prototype.setMass = function(mass) {
@@ -839,6 +863,11 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             if (this.allNodes[nodeID] && this.allNodes[nodeID].children[childID]) {
                 this.allNodes[childID] = this.allNodes[nodeID].children[childID];
                 this.allNodes[childID].parent = this.allNodes[nodeID];
+
+                //mark some initial properties
+                vwf.setProperty(childID, '___physics_sleeping', false);
+                vwf.setProperty(childID, '___physics_linear_velocity', [0,0,0]);
+                vwf.setProperty(childID, '___physics_angular_velocity', [0,0,0]);
             }
 
         },
