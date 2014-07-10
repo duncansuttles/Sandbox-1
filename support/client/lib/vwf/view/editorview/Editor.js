@@ -101,9 +101,9 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             $('#statusbar').append('<div id="statusbarinner"></div>');
             $('#statusbarinner').append('<div id="SceneSaved" class="statusbarElement" />');
             $('#SceneSaved').text('Not Saved');
-            $('#statusbarinner').append('<div id="StatusSelectedName" style="color:lightblue" class="statusbarElement" />');
+            $('#statusbarinner').append('<div id="StatusSelectedName" style="color:rgb(175, 209, 253);" class="statusbarElement" />');
             $('#StatusSelectedName').text('No Selection');
-            $('#statusbarinner').append('<div id="StatusMouseOverName" style="color:lightblue" class="statusbarElement" />');
+            $('#statusbarinner').append('<div id="StatusMouseOverName" style="color:rgb(175, 209, 253);" class="statusbarElement" />');
             $('#StatusMouseOverName').text('No Selection');
             $('#statusbarinner').append('<div id="StatusSelectedID" class="statusbarElement" style="display:none" />');
             $('#StatusSelectedID').text('No Selection');

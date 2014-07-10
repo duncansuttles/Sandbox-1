@@ -130,9 +130,9 @@ define([], function() {
                     $('#playButton').css('background-color', 'rgb(153, 153, 255)');
                     $('#pauseButton').css('background-color', '');
                     $('#stopButton').css('background-color', '');
-                    $('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('opacity', .8);
-                    $('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('background-color', 'red');
-                    $('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('pointer-events', 'none');
+                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', .3);
+                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', 'gray');
+                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', 'none');
                     _Editor.SelectObject(null);
                     _Editor.SetSelectMode('none');
                     $('#index-vwf').focus();
@@ -148,9 +148,9 @@ define([], function() {
                     $('#playButton').css('background-color', '');
                     $('#pauseButton').css('background-color', '');
                     $('#stopButton').css('background-color', 'rgb(153, 153, 255)');
-                    $('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('opacity', '');
-                    $('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('pointer-events', '');
-                    $('#toolbar, .sidetab, #smoothmenu1, #statusbarinner, #smoothmenu1 ul li a').css('background-color', '');
+                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', '');
+                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', '');
+                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', '');
                     _Editor.SetSelectMode('Pick');
                 }
             }
