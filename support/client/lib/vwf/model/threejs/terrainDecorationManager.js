@@ -399,7 +399,7 @@
                             oldmesh.parent.add(newmesh);
                             oldmesh.parent.remove(oldmesh);
                             newmesh.position = oldmesh.position;
-                            newmesh.rotation = oldmesh.rotation;
+                            newmesh.rotation.set(oldmesh.rotation.x, oldmesh.rotation.y, oldmesh.rotation.z, oldmesh.rotation.order);
                             newmesh.vwfID = oldmesh.vwfID;
                             newmesh.InvisibleToCPUPick = true;
                             //oldmesh.dispose();
