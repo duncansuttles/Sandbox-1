@@ -55,12 +55,14 @@ function PainterTool()
 			_Editor.addTool('Painter',_PainterTool);
 			_Editor.setActiveTool('Painter');
 			_dScene.add(_PainterTool.display);
+			_Editor.setSelectMode('None');
 		}
 		else
 		{
 			$(this).next().children().css('background-color','');
 			_Editor.setActiveTool('Gizmo');
 			_dScene.remove(_PainterTool.display);
+			_Editor.setSelectMode('Pick');
 		}
 	})
 	
@@ -351,10 +353,11 @@ function PainterTool()
 			this.display.position = pos.clone();
 			this.display.updateMatrixWorld();
 			
-			if(this.mouseisdown == true && this.currentClickCallback)
+			if(false&&this.mouseisdown == true && this.currentClickCallback)
 			{
 				if(pick.object && pick.object.parent && pick.object.parent.parent)
 				{
+
 					if(this.lastNames.indexOf(pick.object.parent.parent.name) == -1)
 						this.currentClickCallback(e);
 				}else

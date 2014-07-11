@@ -203,6 +203,7 @@ define(function() {
         }
         this.Login = function(username, userID) {
 
+            $('#StatusUserName').text(username);
             var needlogin = true;
             var createAvatar = true;
             var statedata = _DataManager.getInstanceData();

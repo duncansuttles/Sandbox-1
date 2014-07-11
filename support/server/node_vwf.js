@@ -532,7 +532,18 @@ function startVWF() {
 // used to serialize the user for the session
 passport.serializeUser(function(user, done) {
 
+    if(!user)
+    {
+        done(null, null);
+        return;
+    }
+
     DAL.getUser(user.id, function(user) {
+        if(!user)
+        {
+            done(null,null)
+            return;;
+        }
         xapi.sendStatement(user.id, xapi.verbs.logged_in);
         var userStorage = require('./sessions.js').createSession();
         userStorage.id = user.id;
@@ -647,14 +658,16 @@ if (global.configuration.google_client_id) {
                             if (results === "ok") {
                                 DAL.getUser(profile.id, function(user) {
                                     done(null, user);
+                                    return;
                                 });
                             } else {
                                 done("Error creating user from google " + results, null);
+                                return;
                             }
                         });
                     }
                 });
-                return done(null, profile);
+                
             });
         }
     ));
