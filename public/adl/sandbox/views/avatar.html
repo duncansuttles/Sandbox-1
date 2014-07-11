@@ -66,7 +66,7 @@ var buf = new Uint32Array(1);
 		vwfPortalModel.saveStatus("Saving...");
 		$.ajax({
 			type: 'POST',
-			url:  root + '/vwfDataManager.svc/Profile?UID='+UID,
+			url:  root + '/vwfDataManager.svc/Profile',
 			data: JSON.stringify(vwfPortalModel.profile),
 			contentType: "application/json; charset=utf-8",
 			success: function(){
@@ -174,7 +174,7 @@ var buf = new Uint32Array(1);
 			var data = jQuery.ajax(
 				{
 					type: 'GET',
-					url:  root + '/vwfDataManager.svc/Profile?UID='+UID,
+					url:  root + '/vwfDataManager.svc/Profile',
 					data: null,
 					success: null,
 					async: false,
