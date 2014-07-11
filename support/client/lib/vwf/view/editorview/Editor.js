@@ -121,6 +121,18 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             $('#StatusGizmoLocation').text('[0,0,0]');
             $('#statusbarinner').append('<div id="StatusCameraLocation" class="statusbarElement" />');
             $('#StatusCameraLocation').text('[0,0,0]');
+
+            var instanceData = _DataManager.getInstanceData()
+            if(instanceData)
+            {
+                $('#statusbarinner').append('<div id="StatusWorldTitle" style="color:rgb(175, 209, 253);" class="statusbarElement" />');
+                $('#StatusWorldTitle').text(instanceData.title);
+                if(instanceData.publishSettings)
+                    $('#statusbarinner').append('<div style="color:rgb(175, 209, 253);" class="statusbarElement" >Published</div>');
+            }
+            $('#statusbarinner').append('<div style="" class="statusbarElement" >Logged in as:');
+            $('#statusbarinner').append('<div id="StatusUserName" style="border: none;color:rgb(175, 209, 253);" class="statusbarElement" />');
+            
         }
 
         $('#playButton').click(function() {

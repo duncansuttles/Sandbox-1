@@ -133,6 +133,7 @@ define([], function() {
                     $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', .3);
                     $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', 'gray');
                     $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', 'none');
+                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', 'not-allowed');
                     _Editor.SelectObject(null);
                     _Editor.SetSelectMode('none');
                     $('#index-vwf').focus();
@@ -150,6 +151,7 @@ define([], function() {
                     $('#stopButton').css('background-color', 'rgb(153, 153, 255)');
                     $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', '');
                     $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', '');
+                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', '');
                     $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', '');
                     _Editor.SetSelectMode('Pick');
                 }
@@ -309,7 +311,7 @@ define([], function() {
             var instanceSettings = _DataManager.getInstanceData();
             var user = _UserManager.GetCurrentUserName();
             if (user != instanceSettings.owner) {
-                alertify('You must be the world owner to complete this action');
+                alertify.alert('You must be the world owner to complete this action');
                 return;
             }
             _DataManager.saveToServer(true);
