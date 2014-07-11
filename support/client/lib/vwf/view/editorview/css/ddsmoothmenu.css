@@ -1,6 +1,6 @@
 .ddsmoothmenu{
 font: bold 12px Verdana;
-background: #414141; /*background of menu bar (default state)*/
+background: #524F4F; /*background of menu bar (default state)*/
 width: 100%;
 
 }
@@ -22,7 +22,7 @@ float: left;
 /*Top level menu link items style*/
 .ddsmoothmenu ul li a{
 display: block;
-background: #414141; /*background of menu items (default state)*/
+background: #524F4F; /*background of menu items (default state)*/
 color: white;
 padding: 8px 10px;
 border-right: 1px solid #778;
@@ -30,6 +30,7 @@ cursor:pointer;
 text-decoration: none;
 padding-bottom: 3px;
 padding-top: 3px;
+text-shadow: 1px 1px 1px black;
 }
 
 * html .ddsmoothmenu ul li a{ /*IE6 hack to get sub menu links to behave correctly*/
@@ -62,6 +63,7 @@ visibility: hidden;
 .ddsmoothmenu ul li ul li{
 display: list-item;
 float: none;
+box-shadow: 3px 3px 5px;
 }
 
 /*All subsequent sub menu levels vertical offset after 1st level sub menu */
