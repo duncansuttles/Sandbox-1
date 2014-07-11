@@ -309,9 +309,9 @@ function getInventoryDisplayData(userID, cb) {
     })
 }
 
-function createUser(id, data, cb) {
+function createUser(id, data, cba) {
     if (!id || id.length == 0 || !data) {
-        cb(false, 'bad data');
+        cba(false, 'bad data');
         return;
     }
 
@@ -319,7 +319,7 @@ function createUser(id, data, cb) {
 
         if (user) {
             global.log('user ' + id + ' already exists');
-            cb(false, 'user ' + id + ' already exists');
+            cba(false, 'user ' + id + ' already exists');
             return;
         } else {
 
@@ -361,7 +361,7 @@ function createUser(id, data, cb) {
                 function(err, results) {
 
                     global.log(err, 0);
-                    cb(true);
+                    cba(true);
                 }
             );
         }
