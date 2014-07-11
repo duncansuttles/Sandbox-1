@@ -533,7 +533,7 @@ function startVWF() {
 passport.serializeUser(function(user, done) {
 
     DAL.getUser(user.id, function(user) {
-        xapi.sendStatement(user.id, xapi.verbs.logged_in);
+        //xapi.sendStatement(user.id, xapi.verbs.logged_in);
         var userStorage = require('./sessions.js').createSession();
         userStorage.id = user.id;
         userStorage.UID = user.id;
