@@ -632,6 +632,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#636363', end
 		.icon
 		{
 			margin-left: 0px;
+			border: 3px inset #444;
 		}
 		#sidepanel
 		{
