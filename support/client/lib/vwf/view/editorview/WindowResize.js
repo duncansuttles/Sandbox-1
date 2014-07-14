@@ -18,12 +18,12 @@ define({
 				$('#toolbar').css('left','0px');
 				$('#statusbar').css('left','0px');
 				
-				$('#index-vwf').css('top', ($('#smoothmenu1').height() + $('#toolbar').height()) + 'px');
+				$('#index-vwf').css('top', ($('#smoothmenu1').height() + $('#toolbar').height()));
 				
 				if($('#sidepanel').offset().left + 5 < window.innerWidth)
-					$('#index-vwf').css('width',window.innerWidth - $('#sidepanel').width() + 'px');
+					$('#index-vwf').css('width',window.innerWidth - $('#sidepanel').width());
 				else
-					$('#index-vwf').css('width',window.innerWidth + 'px');
+					$('#index-vwf').css('width',window.innerWidth);
 				
 				$('#ScriptEditor').css('top',$(window).height() - $('#ScriptEditor').height()-$('#statusbar').height());
 				//$('#ScriptEditor').css('height',	$(window).height() - $('#ScriptEditor').offset().top - $('#statusbar').height() + 'px');
@@ -31,8 +31,8 @@ define({
 				$('#ScriptEditor').css('width',$('#index-vwf').width());	
 				if($('#ScriptEditor').attr('maximized'))
 				{
-					$('#ScriptEditor').css('top',$('#toolbar').offset().top + $('#toolbar').height() +'px');
-					$('#ScriptEditor').css('height',$(window).height() - $('#toolbar').height()- $('#smoothmenu1').height()- $('#statusbar').height()+'px');
+					$('#ScriptEditor').css('top',$('#toolbar').offset().top + $('#toolbar').height());
+					$('#ScriptEditor').css('height',$(window).height() - $('#toolbar').height()- $('#smoothmenu1').height()- $('#statusbar').height());
 				}
 				else
 				{
@@ -44,7 +44,7 @@ define({
 				_ScriptEditor.resize();
 				
 				
-				$('#index-vwf').css('height',window.innerHeight + 'px' - $('#ScriptEditor').offset().top);
+				$('#index-vwf').css('height',window.innerHeight  - $('#ScriptEditor').offset().top);
 				
 				$('#index-vwf').css('top',$('#toolbar').offset().top+$('#toolbar').height());
 				$('#index-vwf').css('position','absolute');
@@ -54,7 +54,7 @@ define({
 				var scripteditorheight = $('#ScriptEditor').offset().top;
 				if(scripteditorheight != 0)
 				   scripteditorheight = $(window).height() - scripteditorheight;
-				$('#index-vwf').css('height',window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - (scripteditorheight-25) + 'px');
+				$('#index-vwf').css('height',window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - (scripteditorheight-25) );
 				
 				if( $('#index-vwf').length)
 					$('#sidepanel').css('left',$('#index-vwf').width() + $('#index-vwf').offset().left);
@@ -64,14 +64,14 @@ define({
 				$('#statusbar').css('top',($(window).height() - 25) + 'px');
 				
 				
-				$('#sidepanel').css('height',$(window).height() - ($('#statusbar').height() + $('#toolbar').height()+$('#smoothmenu1').height()) + 'px');
+				$('#sidepanel').css('height',$(window).height() - ($('#statusbar').height() + $('#toolbar').height()+$('#smoothmenu1').height()));
 			}else
 			{
 				$('#vwf-root').css('overflow','visible');
 				$('#vwf-root').css('left','0px');
 				$('#vwf-root').css('top','0px');
-				$('#index-vwf').css('height',$(window).height() + 'px');
-				$('#index-vwf').css('width',$(window).width() + 'px');
+				$('#index-vwf').css('height',$(window).height() );
+				$('#index-vwf').css('width',$(window).width() );
 				$('#index-vwf').css('top', 0 + 'px');
 				$('#index-vwf').css('left', 0 + 'px');
 			}

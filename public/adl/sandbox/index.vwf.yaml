@@ -324,6 +324,10 @@ scripts:
         }.bind(this));
         $('#index-vwf').mousemove(function(e){this.localpointerMove(e);}.bind(this));
 
+        $('#index-vwf')[0].addEventListener("touchstart", this.localTouchStart.bind(this), true);
+        $('#index-vwf')[0].addEventListener("touchend", this.localTouchEnd.bind(this), true);
+        $('#index-vwf')[0].addEventListener("touchmove", this.localTouchMove.bind(this), true);
+
        this.updateCallbacks = [];
        this.OwnedPrims = [];
       
@@ -783,6 +787,60 @@ scripts:
 
         return dist;
     }
+    this.touchcount = 0;
+    this.lastTouchDist = 0;
+    this.localTouchStart = function(event)
+    { 
+       this.touchcount ++;
+
+       this.rightdown = true;
+       this.last_x = event.touches[0].clientX/window.screen.width;
+       this.last_y = event.touches[0].clientY/window.screen.height;
+
+       if(event.touches.length == 2)
+        {
+             var x = (event.touches[0].clientX - event.touches[1].clientX)/2;
+             var y = (event.touches[0].clientX - event.touches[1].clientX)/2;
+             x *= x;
+             y *= y;
+             this.lastTouchDist = Math.sqrt(x+y);
+        }
+    }
+    this.localTouchEnd = function(event)
+    {
+       this.touchcount --;
+       this.rightdown = false;
+    }
+    this.localTouchMove = function(event)
+    {
+        if(event.touches.length == 1)
+          this.localpointerMove(event.touches[0]);
+        if(event.touches.length == 2)
+        {
+
+             var x = (event.touches[0].clientX - event.touches[1].clientX)/2;
+             var y = (event.touches[0].clientX - event.touches[1].clientX)/2;
+             x *= x;
+             y *= y;
+             var dist = Math.sqrt(x+y);
+             var relDist = this.lastTouchDist - dist;
+             if(Math.abs(relDist) > 3)
+             {
+             this.lastTouchDist = dist;
+             event.touches[0].deltaY = relDist;
+             this.localpointerWheel(event.touches[0]);
+           }
+
+             var x = (event.touches[0].clientX + event.touches[1].clientX)/2;
+             var y = (event.touches[0].clientX + event.touches[1].clientX)/2;
+             this.middledown = true;
+             event.touches[0].clientX = x;
+             event.touches[0].clientY = y;
+             this.localpointerMove(event.touches[0]);
+             this.middledown = false;
+
+        }  
+    }
     this.localpointerDown = function( parms, pickInfo ){
      
       if(!_dView.inDefaultCamera()) return;
@@ -849,7 +907,8 @@ scripts:
       this.rel_x = this.last_x - parms.clientX/window.screen.width;
       this.rel_y = this.last_y - parms.clientY/window.screen.height;
       
-      if((this.rightdown==true || this.middledown==true))
+      //only works with pointer lock
+      if(parms.originalEvent && (this.rightdown==true || this.middledown==true))
       {
         this.rel_x = -(parms.originalEvent.webkitMovementX || parms.originalEvent.mozMovementX || parms.originalEvent.MovementX)/1000 || this.rel_x;
         this.rel_y = -(parms.originalEvent.webkitMovementY || parms.originalEvent.mozMovementY || parms.originalEvent.MovementY)/1000 || this.rel_y;
