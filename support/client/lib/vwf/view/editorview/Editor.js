@@ -123,27 +123,41 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             $('#StatusCameraLocation').text('[0,0,0]');
 
             var instanceData = _DataManager.getInstanceData()
-            if(instanceData)
-            {
+            if (instanceData) {
                 $('#statusbarinner').append('<div id="StatusWorldTitle" style="color:rgb(175, 209, 253);" class="statusbarElement" />');
                 $('#StatusWorldTitle').text(instanceData.title);
-                if(instanceData.publishSettings)
+                if (instanceData.publishSettings)
                     $('#statusbarinner').append('<div style="color:rgb(175, 209, 253);" class="statusbarElement" >Published</div>');
             }
             $('#statusbarinner').append('<div style="" class="statusbarElement" >Logged in as:');
             $('#statusbarinner').append('<div id="StatusUserName" style="border: none;color:rgb(175, 209, 253);" class="statusbarElement" />');
-            
-        }
 
-        $('#playButton').click(function() {
-            _Publisher.playWorld();
-        });
-        $('#pauseButton').click(function() {
-            _Publisher.togglePauseWorld();
-        });
-        $('#stopButton').click(function() {
-            _Publisher.stopWorld();
-        });
+
+
+            $('#playButton').click(function() {
+                _Publisher.playWorld();
+            });
+            $('#pauseButton').click(function() {
+                _Publisher.togglePauseWorld();
+            });
+            $('#stopButton').click(function() {
+                _Publisher.stopWorld();
+            });
+
+            $('#stopButton').tooltip({
+                content: "Click Stop to Edit",
+                items: 'div'
+            })
+            $('#playButton').tooltip({
+                content: "Click Play to Test",
+                items: 'div'
+            })
+
+            $('#stopButton').tooltip('open');
+            window.setTimeout(function() {
+                $('#stopButton').tooltip('close');
+            }, 2000)
+        }
         //create progressbar and the log bar
         ProgressBar.initialize('statusbar');
         window._ProgressBar = ProgressBar;
