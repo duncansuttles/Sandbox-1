@@ -31,10 +31,10 @@ define({
 				'left': $(window).width()
 			});
 			$('#ScriptEditor').animate({
-				'width': $(window).width()
+				'width': $(window).width() - ($('#EntityLibrary').offset().left + $('#EntityLibrary').width())
 			});
 			$('#index-vwf').animate({
-				'width': $(window).width()
+				'width': $(window).width() - ($('#EntityLibrary').offset().left + $('#EntityLibrary').width())
 			}, function() {
 				window.clearInterval(window.sizeTimeoutHandle);
 				sizeWindowTimer();
@@ -62,10 +62,10 @@ define({
 				'left': $(window).width() - $('#sidepanel').width()
 			});
 			$('#ScriptEditor').animate({
-				'width': $(window).width() - $('#sidepanel').width()
+				'width': $(window).width() - $('#sidepanel').width() - ($('#EntityLibrary').offset().left + $('#EntityLibrary').width())
 			});
 			$('#index-vwf').animate({
-				'width': $(window).width() - $('#sidepanel').width()
+				'width': $(window).width() - $('#sidepanel').width() - ($('#EntityLibrary').offset().left + $('#EntityLibrary').width())
 			}, function() {
 				window.clearInterval(window.sizeTimeoutHandle);
 				window.sizeTimeoutHandle = null;
