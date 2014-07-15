@@ -266,8 +266,14 @@ define(["module", "vwf/view"], function(module, view) {
             $('#index-vwf')[0].height = self.height / resolutionScale;
             $('#index-vwf')[0].width = self.width / resolutionScale;
             _dRenderer.setViewport(0, 0, window.innerWidth / resolutionScale, window.innerHeight / resolutionScale)
+            var oldwidth  = $('#index-vwf').width();
+            var oldheight  = $('#index-vwf').height();
+            //note, this changes some renderer internals that need to be set, but also resizes the canvas which we don't want.
+            //much of the resize code is in WindowResize.js
             _dRenderer.setSize($('#index-vwf').width() / resolutionScale, $('#index-vwf').height() / resolutionScale);
             _dView.getCamera().aspect = $('#index-vwf')[0].width / $('#index-vwf')[0].height;
+             $('#index-vwf').css('height',oldheight);
+             $('#index-vwf').css('width',oldwidth);
             _dView.getCamera().updateProjectionMatrix()
 
             //}

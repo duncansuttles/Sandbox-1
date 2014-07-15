@@ -127,32 +127,38 @@ define([], function() {
         this.satProperty = function(id, prop, val) {
             if (id == vwf.application()) {
                 if (prop == 'playMode' && val == 'play') {
-                    $('#playButton').css('background-color', 'rgb(130, 184, 255)');
-                    $('#pauseButton').css('background-color', '');
-                    $('#stopButton').css('background-color', '');
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', .3);
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', 'gray');
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', 'none');
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', 'not-allowed');
+                    $('#playButton').addClass('pulsing');
+                    $('#pauseButton').removeClass('pulsing');
+                    $('#stopButton').removeClass('pulsing');
+
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', .3);
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', 'gray');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', 'none');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', 'not-allowed');
                     _Editor.SelectObject(null);
                     _Editor.SetSelectMode('none');
                     $('#index-vwf').focus();
+
                 }
 
                 if (prop == 'playMode' && val == 'paused') {
-                    $('#playButton').css('background-color', 'rgb(130, 184, 255)');
-                    $('#pauseButton').css('background-color', 'rgb(130, 184, 255)');
-                    $('#stopButton').css('background-color', '');
+
+
+                    $('#playButton').addClass('pulsing');
+                    $('#pauseButton').addClass('pulsing');
+                    $('#stopButton').removeClass('pulsing');
+
                 }
                 if (prop == 'playMode' && val == 'stop') {
 
-                    $('#playButton').css('background-color', '');
-                    $('#pauseButton').css('background-color', '');
-                    $('#stopButton').css('background-color', 'rgb(130, 184, 255)');
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', '');
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', '');
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', '');
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', '');
+
+                    $('#playButton').removeClass('pulsing');
+                    $('#pauseButton').removeClass('pulsing');
+                    $('#stopButton').addClass('pulsing');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', '');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', '');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', '');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', '');
                     _Editor.SetSelectMode('Pick');
                 }
             }
