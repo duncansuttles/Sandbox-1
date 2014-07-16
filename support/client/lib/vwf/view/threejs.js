@@ -177,6 +177,12 @@ define(["module", "vwf/view"], function(module, view) {
             var step = (this.tickTime) / (50);
             if (hit === 1) {
 
+
+                if (_Editor.GetMoveGizmo().parent.matrix) {
+                    this.gizmoLastTickTransform = this.gizmoThisTickTransform;
+                    this.gizmoThisTickTransform = _Editor.GetMoveGizmo().parent.matrix.clone();
+                }
+
                 for (var i in this.nodes) {
                     //don't do interpolation for static objects
                     if (this.nodes[i].isStatic) continue;
@@ -184,6 +190,7 @@ define(["module", "vwf/view"], function(module, view) {
                     if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
                         this.nodes[i].lastTickTransform = this.nodes[i].thisTickTransform;
                         this.nodes[i].thisTickTransform = this.state.nodes[i].gettingProperty('transform');
+                        //make sure it's a clone of the matrix
                         if (this.nodes[i].thisTickTransform) this.nodes[i].thisTickTransform = matCpy(this.nodes[i].thisTickTransform);
 
                         this.nodes[i].lastAnimationFrame = this.nodes[i].thisAnimationFrame;
@@ -200,12 +207,20 @@ define(["module", "vwf/view"], function(module, view) {
                         this.nodes[i].thisTickTransform = null;
                         this.nodes[i].lastAnimationFrame = null;
                         this.nodes[i].thisAnimationFrame = null;
+                        this.gizmoLastTickTransform = null;
+                        this.gizmoThisTickTransform;
 
 
                     }
                 }
             }
 
+
+            if (this.gizmoThisTickTransform && this.gizmoLastTickTransform) {
+                this.currentGizmoTransform = _Editor.GetMoveGizmo().parent.matrix.clone();
+                var interp = this.matrixLerp(matCpy(this.gizmoLastTickTransform.elements), matCpy(this.gizmoThisTickTransform.elements), step);
+                _Editor.GetMoveGizmo().parent.matrix.fromArray(interp);
+            }
 
             for (var i in this.nodes) {
 
@@ -266,19 +281,23 @@ define(["module", "vwf/view"], function(module, view) {
             $('#index-vwf')[0].height = self.height / resolutionScale;
             $('#index-vwf')[0].width = self.width / resolutionScale;
             _dRenderer.setViewport(0, 0, window.innerWidth / resolutionScale, window.innerHeight / resolutionScale)
-            var oldwidth  = $('#index-vwf').width();
-            var oldheight  = $('#index-vwf').height();
+            var oldwidth = $('#index-vwf').width();
+            var oldheight = $('#index-vwf').height();
             //note, this changes some renderer internals that need to be set, but also resizes the canvas which we don't want.
             //much of the resize code is in WindowResize.js
             _dRenderer.setSize($('#index-vwf').width() / resolutionScale, $('#index-vwf').height() / resolutionScale);
             _dView.getCamera().aspect = $('#index-vwf')[0].width / $('#index-vwf')[0].height;
-             $('#index-vwf').css('height',oldheight);
-             $('#index-vwf').css('width',oldwidth);
+            $('#index-vwf').css('height', oldheight);
+            $('#index-vwf').css('width', oldwidth);
             _dView.getCamera().updateProjectionMatrix()
 
             //}
         },
         restoreTransforms: function() {
+
+            if (this.currentGizmoTransform)
+                _Editor.GetMoveGizmo().parent.matrix = this.currentGizmoTransform;
+
             for (var i in this.nodes) {
                 //don't do interpolation for static objects
                 if (this.nodes[i].isStatic) continue;
