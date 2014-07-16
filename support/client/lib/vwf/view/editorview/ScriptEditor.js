@@ -133,9 +133,9 @@ define(function ()
 			_ScriptEditor.methodEditor.resize();
 			_ScriptEditor.eventEditor.resize();
 			_ScriptEditor.propertyEditor.resize();
-			$('#saveMethod').css('top', $('#ScriptEditor').height() - 75);
-			$('#saveEvent').css('top', $('#ScriptEditor').height() - 75);
-			$('#saveProperty').css('top', $('#ScriptEditor').height() - 75);
+			$('#saveMethod').css('top', h);
+			$('#saveEvent').css('top', h);
+			$('#saveProperty').css('top', h);
 			$('.ace_scroller').css('left',40);
 			$('.ace_gutter-layer').css('width',40);
 		}
@@ -159,26 +159,26 @@ define(function ()
 		 '	</ul>'+
 		 '	<div id="methods" style="height: 100%;padding:4px">' +
 		 '		<div style="width: 180px;display: inline-block;vertical-align: top;">'+
-		 '      <div id="methodlist"/><div id="saveMethod"/></div>' +
+		 '      <div id="methodlist"/></div>' +
 		 '      <div id="textinnerm" style="display: inline-block;position:absolute">' +
 		'          <div style="position: absolute;top: 0px;width: 100%;height: 100%;border: 1px black solid;"  id="methodtext" />' +
-		 '         <div id="callMethod"/><div id="deleteMethod"/><div id="newMethod"/><div id="checkSyntaxMethod"/>'+
+		 '         <div id="saveMethod"/><div id="callMethod"/><div id="deleteMethod"/><div id="newMethod"/><div id="checkSyntaxMethod"/>'+
 		 '      </div>' + 
 		 '	</div>' + 
 		 '	<div id="events" style="height: 100%;padding:4px">'+
 		 '		<div style="width: 180px;display: inline-block;vertical-align: top;">'+
-		'       <div id="eventlist"/><div id="saveEvent"/></div>' + 
+		'       <div id="eventlist"/></div>' + 
 		'		<div id="textinnere" style="display: inline-block;position:absolute">' +
 		'          <div style="position: absolute;top: 0px;width: 100%;height: 100%;border: 1px black solid;"  id="eventtext" />'		+
-		'		   <div id="callEvent"/><div id="deleteEvent"/><div id="newEvent"/><div id="checkSyntaxEvent"/>' +
+		'		   <div id="saveEvent"/><div id="callEvent"/><div id="deleteEvent"/><div id="newEvent"/><div id="checkSyntaxEvent"/>' +
 		'		</div>' +
 		'	</div>' +
 		 '	<div id="properties" style="height: 100%;padding:4px">'+
 		 '		<div style="width: 180px;display: inline-block;vertical-align: top;">'+
-		'       <div id="propertylist"/><div id="saveProperty"/></div>' + 
+		'       <div id="propertylist"/></div>' + 
 		'		<div id="textinnerp" style="display: inline-block;position:absolute">' +
 		'          <div style="position: absolute;top: 0px;width: 100%;height: 100%;border: 1px black solid;"  id="propertytext" />'		+
-		'		   <div id="deleteProperty"/><div id="newProperty"/>' +
+		'		   <div id="saveProperty"/><div id="deleteProperty"/><div id="newProperty"/>' +
 		'		</div>' +
 		'	</div>' +
 		'</div>' +
@@ -213,7 +213,7 @@ define(function ()
 				var scripteditorheight = $('#ScriptEditor').offset().top;
 				if (scripteditorheight != 0) scripteditorheight = $(window).height() - scripteditorheight;
 				$('#index-vwf').css('height', window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - (scripteditorheight - 25) + 'px');
-				_Editor.findcamera().aspect = ($('#index-vwf').width() / $('#index-vwf').height());
+				_Editor.findcamera().aspect = (parseInt($('#index-vwf').css('width')) / parseInt($('#index-vwf').css('height')));
 				_Editor.findcamera().updateProjectionMatrix();
 			}
 			_ScriptEditor.resize();
@@ -400,9 +400,9 @@ define(function ()
 		$('#saveProperty').css('width', '175px');
 		
 		
-		$('#saveMethod').css('position', 'absolute');
+		//$('#saveMethod').css('position', 'absolute');
 		//$('#saveMethod').css('bottom','6px');
-		$('#saveMethod').css('width', '175px');
+		//$('#saveMethod').css('width', '175px');
 		
 		$('#saveEvent').button(
 		{
@@ -455,7 +455,8 @@ define(function ()
 		$('#newProperty').css('float', 'right');
 		$('#callMethod').css('margin-top', '3px');
 		$('#deleteMethod').css('margin-top', '3px');
-		$('#deleteProperty').css('margin-top', '3px');
+		$('#deleteProperty').css('margin-top', '0px');
+		$('#deleteProperty').css('float', 'right');
 		$('#newMethod').css('margin-top', '3px');
 		$('#callEvent').button(
 		{
@@ -848,16 +849,16 @@ define(function ()
 						var newheight = window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top - 25) + 'px';
 						//console.log(newheight);
 						$('#index-vwf').css('height', newheight);
-						_Editor.findcamera().aspect = ($('#index-vwf').width() / $('#index-vwf').height());
+						_Editor.findcamera().aspect = (parseInt($('#index-vwf').css('width')) / parseInt($('#index-vwf').css('height')));
 						_Editor.findcamera().updateProjectionMatrix();
 					},
 					complete: function ()
 					{
 						_ScriptEditor.resize();
 						var resolutionScale = _SettingsManager.getKey('resolutionScale');
-						$('#index-vwf')[0].height = $('#index-vwf').height()/ resolutionScale;
-						$('#index-vwf')[0].width = $('#index-vwf').width()/ resolutionScale;
-						_dRenderer.setSize($('#index-vwf').width()/ resolutionScale,$('#index-vwf').height()/ resolutionScale,false)
+						$('#index-vwf')[0].height = parseInt($('#index-vwf').css('height'))/ resolutionScale;
+						$('#index-vwf')[0].width = parseInt($('#index-vwf').css('width'))/ resolutionScale;
+						_dRenderer.setSize(parseInt($('#index-vwf').css('width'))/ resolutionScale,parseInt($('#index-vwf').css('height'))/ resolutionScale,false)
 					}
 				});
 				_ScriptEditor.BuildGUI();
@@ -871,7 +872,7 @@ define(function ()
 			{
 				$('#ScriptEditor').animate(
 				{
-					'top': $(window).height() + 'px'
+					'top': $(window).height() - $('#statusbarinner').height()
 				},
 				{
 					step: function ()
@@ -879,7 +880,7 @@ define(function ()
 						if(!$('#ScriptEditor').is(':visible')) return;
 						$('#ScriptEditorTabs').css('height', $('#ScriptEditor').height() + 'px');
 						$('#index-vwf').css('height', window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top - 25) + 'px');
-						_Editor.findcamera().aspect = ($('#index-vwf').width() / $('#index-vwf').height());
+						_Editor.findcamera().aspect = (parseInt($('#index-vwf').css('width')) / parseInt($('#index-vwf').css('height')));
 						_Editor.findcamera().updateProjectionMatrix();
 					},
 					complete: function ()
@@ -887,9 +888,9 @@ define(function ()
 						
 						$('#ScriptEditor').hide();
 						var resolutionScale = _SettingsManager.getKey('resolutionScale');
-						$('#index-vwf')[0].height = $('#index-vwf').height() / resolutionScale;
+						$('#index-vwf')[0].height = parseInt($('#index-vwf').css('height')) / resolutionScale;
 						$('#index-vwf')[0].width = $(window).width()/ resolutionScale;
-						_dRenderer.setSize($('#index-vwf').width()/ resolutionScale,$('#index-vwf').height()/ resolutionScale,false);
+						_dRenderer.setSize(parseInt($('#index-vwf').css('width'))/ resolutionScale,parseInt($('#index-vwf').css('height'))/ resolutionScale,false);
 					}
 				});
 			}
