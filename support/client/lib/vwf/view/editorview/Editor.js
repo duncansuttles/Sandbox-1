@@ -153,10 +153,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 items: 'div'
             })
 
-            $('#stopButton').tooltip('open');
-            window.setTimeout(function() {
-                $('#stopButton').tooltip('close');
-            }, 2000)
+           
         }
         //create progressbar and the log bar
         ProgressBar.initialize('statusbar');

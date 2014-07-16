@@ -33,25 +33,11 @@ define({
 
             }, 10000)
 
-            //im tired of looking at all these blank thumbs. Lets snapshot every time, instead of just once
-            /*	jQuery.ajax(
-				{
-					type: 'GET',
-					url: './vwfDataManager.svc/thumbnail?SID='+_DataManager.getCurrentSession().replace(/\//g,'_'),
-					
-					success:function(data,status,xhr)
-					{
-						//there is a thumb, don't do anything
-					},
-					error:function(xhr,status,err)
-					{
-						
-						
-						
-					},
-					dataType: "text"
-				});	*/
-
+            //let's warn people that they have to hit stop
+             $('#stopButton').tooltip('open');
+            window.setTimeout(function() {
+                $('#stopButton').tooltip('close');
+            }, 2000)
 
 
         });
