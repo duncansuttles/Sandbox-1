@@ -2271,8 +2271,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             dist = -tgizpos2[2] / 65;
             var oldscale = [MoveGizmo.matrix.elements[0], MoveGizmo.matrix.elements[5], MoveGizmo.matrix.elements[10]];
             MoveGizmo.matrix.scale(new THREE.Vector3(1 / oldscale[0], 1 / oldscale[1], 1 / oldscale[2]));
-            var windowXadj = 1600.0 / $('#index-vwf').width();
-            var windowYadj = 1200.0 / $('#index-vwf').height();
+            var windowXadj = 1600.0 / $(window).width();
+            var windowYadj = 1200.0 / $(window).height();
             var winadj = Math.max(windowXadj, windowYadj);
             MoveGizmo.matrix.scale(new THREE.Vector3(dist * winadj * fovadj, dist * winadj * fovadj, dist * winadj * fovadj));
 

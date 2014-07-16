@@ -7,7 +7,8 @@ define({
 			toolsLoaded = _DataManager.getInstanceData().publishSettings.allowTools;
 		$(window).resize(function() {
 
-
+			var canvasheight;
+			var canvaswidth;
 			if (!toolsHidden && toolsLoaded) {
 				$('#smoothmenu1').css('top', '0px');
 				$('#smoothmenu1').css('left', '0px');
@@ -30,7 +31,7 @@ define({
 
 
 				if ($('#ScriptEditor').attr('maximized')) {
-					$('#ScriptEditor').css('top', $('#toolbar').offset().top + $('#toolbar').height());
+					$('#ScriptEditor').css('top', $('#toolbar').offset().top + $('#toolbar').height() + $('#statusbar').height());
 					$('#ScriptEditor').css('height', $(window).height() - $('#toolbar').height() - $('#smoothmenu1').height() - $('#statusbar').height());
 				} else {
 
@@ -40,7 +41,7 @@ define({
 				}
 
 
-				$('#index-vwf').css('height', window.innerHeight - $('#ScriptEditor').offset().top);
+				//$('#index-vwf').css('height', window.innerHeight - $('#ScriptEditor').offset().top - $('#statusbar').height());
 
 				$('#index-vwf').css('top', $('#toolbar').offset().top + $('#toolbar').height());
 				$('#index-vwf').css('position', 'absolute');
@@ -49,11 +50,21 @@ define({
 				$('#vwf-root').css('top', '0px');
 				var scripteditorheight = $('#ScriptEditor').offset().top;
 				if (scripteditorheight != 0)
-					scripteditorheight = $(window).height() - scripteditorheight;
-				$('#index-vwf').css('height', window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - (scripteditorheight - 25));
+				{
+					$('#index-vwf').css('height', scripteditorheight - $('#index-vwf').offset().top);
+					canvasheight = scripteditorheight - $('#index-vwf').offset().top
+				}else
+				{
+					
+					$('#index-vwf').css('height', window.innerHeight - ( $('#toolbar').offset().top + $('#toolbar').height() + $('#statusbar').height() ) ) ;
+					canvasheight = window.innerHeight - ( $('#toolbar').offset().top + $('#toolbar').height() + $('#statusbar').height() ) ;
+				}
+					
+				
+				
 
 				if ($('#index-vwf').length)
-					$('#sidepanel').css('left', $('#index-vwf').width() + $('#index-vwf').offset().left);
+					$('#sidepanel').css('left', parseInt($('#index-vwf').css('width')) + $('#index-vwf').offset().left);
 				//$('#sidepanel').css('width',320);
 				$('#sidepanel').css('top', $('#toolbar').offset().top + $('#toolbar').height());
 
@@ -83,8 +94,26 @@ define({
 				$('#index-vwf').css('left', 0 + 'px');
 			}
 			if (_Editor.findcamera()) {
-				_Editor.findcamera().aspect = ($('#index-vwf').width() / $('#index-vwf').height());
-				_Editor.findcamera().updateProjectionMatrix();
+			
+				 var resolutionScale = _SettingsManager.getKey('resolutionScale');
+
+
+	            var oldwidth  = parseInt($('#index-vwf').css('width'));
+	            var oldheight  = parseInt($('#index-vwf').css('height'));
+
+	            //if ((origWidth != self.width) || (origHeight != self.height)) {
+	            $('#index-vwf')[0].height = self.height / resolutionScale;
+	            $('#index-vwf')[0].width = self.width / resolutionScale;
+	            _dRenderer.setViewport(0, 0, window.innerWidth / resolutionScale, window.innerHeight / resolutionScale)
+	            
+	            //note, this changes some renderer internals that need to be set, but also resizes the canvas which we don't want.
+	            //much of the resize code is in WindowResize.js
+	            _dRenderer.setSize(parseInt($('#index-vwf').css('width')) / resolutionScale, parseInt($('#index-vwf').css('height')) / resolutionScale);
+	            _dView.getCamera().aspect = $('#index-vwf')[0].width / $('#index-vwf')[0].height;
+	             $('#index-vwf').css('height',canvasheight);
+	             $('#index-vwf').css('width',oldwidth);
+	            _dView.getCamera().updateProjectionMatrix()
+
 			}
 		});
 		$(window).resize();
@@ -106,7 +135,7 @@ define({
 			$('#index-vwf').css('width', $(window).width() + 'px');
 			$('#index-vwf').css('top', 0 + 'px');
 			$('#index-vwf').css('left', 0 + 'px');
-			_Editor.findcamera().aspect = ($('#index-vwf').width() / $('#index-vwf').height());
+			_Editor.findcamera().aspect = (parseInt($('#index-vwf').css('width')) / parseInt($('#index-vwf').css('height')));
 			$('#index-vwf').focus()
 			_Editor.findcamera().updateProjectionMatrix();
 			_Editor.SelectObject(null);
@@ -127,7 +156,7 @@ define({
 			$('#index-vwf').css('top', $('#smoothmenu1').height() + $('#toolbar').height() + 'px');
 			$('#index-vwf').css('height', $(window).height() - ($('#smoothmenu1').height() + $('#toolbar').height() + $('#statusbar').height()) + 'px');
 			$('#index-vwf').css('left', $('#EntityLibrary').offset().left + $('#EntityLibrary').width());
-			_Editor.findcamera().aspect = ($('#index-vwf').width() / $('#index-vwf').height());
+			_Editor.findcamera().aspect = (parseInt($('#index-vwf').css('width')) / parseInt($('#index-vwf').css('height')));
 			_Editor.findcamera().updateProjectionMatrix();
 			_Editor.SetSelectMode('Pick');
 			
