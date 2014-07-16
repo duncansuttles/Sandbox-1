@@ -131,10 +131,10 @@ define([], function() {
                     $('#pauseButton').removeClass('pulsing');
                     $('#stopButton').removeClass('pulsing');
 
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', .3);
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', 'gray');
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', 'none');
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', 'not-allowed');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', .3);
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', 'gray');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', 'none');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', 'not-allowed');
                     _Editor.SelectObject(null);
                     _Editor.SetSelectMode('none');
                     $('#index-vwf').focus();
@@ -155,10 +155,10 @@ define([], function() {
                     $('#playButton').removeClass('pulsing');
                     $('#pauseButton').removeClass('pulsing');
                     $('#stopButton').addClass('pulsing');
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', '');
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', '');
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', '');
-                    $('#toolbar, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', '');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', '');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', '');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', '');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', '');
                     _Editor.SetSelectMode('Pick');
                 }
             }
