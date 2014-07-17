@@ -82,7 +82,7 @@ define({
 				if ($('#index-vwf').offset()) {
 					$('#glyphOverlay').css('position', 'absolute');
 					$('#glyphOverlay').css('left', $('#index-vwf').offset().left);
-					$('#glyphOverlay').css('top', $('#index-vwf').offset().top);
+					$('#glyphOverlay').css('top', parseInt($('#index-vwf').css('top')));
 				}
 			} else {
 				$('#vwf-root').css('overflow', 'visible');
