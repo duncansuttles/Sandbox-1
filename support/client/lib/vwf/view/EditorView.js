@@ -272,6 +272,7 @@ function InitializeEditor() {
 
     $(document.body).css('overflow', 'hidden');
     $(window).resize();
+    debugger;
     //	$('body *').not(':has(input)').not('input').disableSelection();
     //	$('#vwf-root').enableSelection();
     //	$('#vwf-root').parent().enableSelection();
