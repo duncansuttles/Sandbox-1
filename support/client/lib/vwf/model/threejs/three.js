@@ -26390,12 +26390,12 @@ THREE.WebGLRenderer = function(parameters) {
             precision: _precision,
             supportsVertexTextures: _supportsVertexTextures,
 
-            map: !! material.map,
-            envMap: !! material.envMap,
-            lightMap: !! material.lightMap,
-            bumpMap: !! material.bumpMap,
-            normalMap: !! material.normalMap,
-            specularMap: !! material.specularMap,
+            map: !!material.map,
+            envMap: !!material.envMap,
+            lightMap: !!material.lightMap,
+            bumpMap: !!material.bumpMap,
+            normalMap: !!material.normalMap,
+            specularMap: !!material.specularMap,
 
             vertexColors: material.vertexColors,
 
@@ -31665,7 +31665,7 @@ THREE.Path.prototype.getPoints = function(divisions, closedPath) {
                     aRadius = args[2],
                     aStartAngle = args[3],
                     aEndAngle = args[4],
-                    aClockwise = !! args[5];
+                    aClockwise = !!args[5];
 
                 var deltaAngle = aEndAngle - aStartAngle;
                 var angle;
@@ -31704,7 +31704,7 @@ THREE.Path.prototype.getPoints = function(divisions, closedPath) {
                     yRadius = args[3],
                     aStartAngle = args[4],
                     aEndAngle = args[5],
-                    aClockwise = !! args[6];
+                    aClockwise = !!args[6];
 
 
                 var deltaAngle = aEndAngle - aStartAngle;
@@ -33325,7 +33325,13 @@ THREE.Animation.prototype.debug = function(size) {
     this.debugobjects = debugobjects;
     this.debugroot = debugroot;
 }
+var tempMatrix = new THREE.Matrix4();
+var tempMatrix2 = new THREE.Matrix4();
+var tempQuat = new THREE.Quaternion();
+var tempPos = new THREE.Vector3();
+var tempScale = new THREE.Vector3();
 THREE.Animation.prototype.setKey = function(keyf) {
+
     if (!this.data) return;
     var l = keyf - Math.floor(keyf);
     var l2 = 1 - l;
@@ -33335,23 +33341,28 @@ THREE.Animation.prototype.setKey = function(keyf) {
         var key = this.data.hierarchy[h].keys[Math.floor(keyf)];
         var key2 = this.data.hierarchy[h].keys[Math.floor(keyf + 1)];
 
-        //object.matrixAutoUpdate = false;
+        object.matrixAutoUpdate = false;
         //object.matrix.copy(key.matrix);
         //object.updateMatrixWorld();
-        //object.matrixWorldNeedsUpdate = true;
+        object.matrixWorldNeedsUpdate = true;
 
         if (key && key2) {
 
-            object.position.x = key.pos[0] * l2 + key2.pos[0] * l;
-            object.position.y = key.pos[1] * l2 + key2.pos[1] * l;
-            object.position.z = key.pos[2] * l2 + key2.pos[2] * l;
+            tempPos.x = key.pos[0] * l2 + key2.pos[0] * l;
+            tempPos.y = key.pos[1] * l2 + key2.pos[1] * l;
+            tempPos.z = key.pos[2] * l2 + key2.pos[2] * l;
 
-            object.scale.x = key.scl[0] * l2 + key2.scl[0] * l;
-            object.scale.y = key.scl[1] * l2 + key2.scl[1] * l;
-            object.scale.z = key.scl[2] * l2 + key2.scl[2] * l;
+            tempScale.x = key.scl[0] * l2 + key2.scl[0] * l;
+            tempScale.y = key.scl[1] * l2 + key2.scl[1] * l;
+            tempScale.z = key.scl[2] * l2 + key2.scl[2] * l;
 
-            object.quaternion.set(key.rot.x, key.rot.y, key.rot.z, key.rot.w);
-            object.quaternion.slerp(key2.rot, l);
+
+            tempQuat.set(key.rot.x, key.rot.y, key.rot.z, key.rot.w);
+            tempQuat.slerp(key2.rot, l);
+
+            tempMatrix.compose(tempPos, tempQuat, tempScale);
+
+            object.matrix.copy(tempMatrix);
 
             if (object.debugobject) {
                 object.debugobject.matrix.copy(object.matrix);
@@ -33359,17 +33370,19 @@ THREE.Animation.prototype.setKey = function(keyf) {
             }
         } else if (key) {
 
-            object.position.x = key.pos[0]
-            object.position.y = key.pos[1]
-            object.position.z = key.pos[2]
+            tempPos.x = key.pos[0];
+            tempPos.y = key.pos[1];
+            tempPos.z = key.pos[2];
 
-            object.scale.x = key.scl[0]
-            object.scale.y = key.scl[1]
-            object.scale.z = key.scl[2]
-            object.quaternion.w = key.rot.w;
-            object.quaternion.y = key.rot.y;
-            object.quaternion.z = key.rot.z;
-            object.quaternion.x = key.rot.x;
+            tempScale.x = key.scl[0];
+            tempScale.y = key.scl[1];
+            tempScale.z = key.scl[2];
+
+            tempQuat.set(key.rot.x, key.rot.y, key.rot.z, key.rot.w);
+
+            tempMatrix.compose(tempPos, tempQuat, tempScale);
+
+            object.matrix.copy(tempMatrix);
 
             if (object.debugobject) {
                 object.debugobject.matrix.copy(object.matrix);
@@ -35054,7 +35067,7 @@ THREE.ExtrudeGeometry.prototype.addShape = function(shape, options) {
             // scaling factor for v_prev to intersection point
 
             var sf = ((ptNextShift_x - ptPrevShift_x) * v_next_y -
-                (ptNextShift_y - ptPrevShift_y) * v_next_x) /
+                    (ptNextShift_y - ptPrevShift_y) * v_next_x) /
                 (v_prev_x * v_next_y - v_prev_y * v_next_x);
 
             // vector from inPt to intersection point
