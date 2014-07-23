@@ -51,9 +51,9 @@
                     skins[i].updateMatrixWorld();
                     //odd, does not seem to update matrix on first child bone. 
                     //how does the bone relate to the skeleton?
-                    //for (var j in skins[i].children) {
-                    //    skins[i].children[j].updateMatrixWorld(true);
-                    //}
+                    for (var j in skins[i].children) {
+                        skins[i].children[j].updateMatrixWorld(true);
+                    }
                     if (updateSceneManager)
                         _SceneManager.setDirty(skins[i]);
 

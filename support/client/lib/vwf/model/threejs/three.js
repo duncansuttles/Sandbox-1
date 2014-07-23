@@ -33288,7 +33288,7 @@ THREE.Animation = function(root, name) {
     this.weight = 0;
 
     this.interpolationType = THREE.AnimationHandler.LINEAR;
-
+    this.lastKey = 0;
 };
 THREE.Animation.prototype.debug = function(size) {
 
@@ -33325,16 +33325,22 @@ THREE.Animation.prototype.debug = function(size) {
     this.debugobjects = debugobjects;
     this.debugroot = debugroot;
 }
-var tempMatrix = new THREE.Matrix4();
-var tempMatrix2 = new THREE.Matrix4();
-var tempQuat = new THREE.Quaternion();
-var tempPos = new THREE.Vector3();
-var tempScale = new THREE.Vector3();
+
 THREE.Animation.prototype.setKey = function(keyf) {
 
+    if (this.lastKey === keyf) {
+        return;
+    }
+    this.lastKey = keyf;
     if (!this.data) return;
     var l = keyf - Math.floor(keyf);
     var l2 = 1 - l;
+
+
+    var tempMatrix = new THREE.Matrix4();
+    var tempQuat = new THREE.Quaternion();
+    var tempPos = new THREE.Vector3();
+    var tempScale = new THREE.Vector3();
 
     for (var h = 0, hl = this.hierarchy.length; h < hl; h++) {
         var object = this.hierarchy[h];

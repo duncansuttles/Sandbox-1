@@ -134,6 +134,16 @@ SceneManager.prototype.removeFromRoot = function(child) {
         this.specialCaseObjects.splice(this.specialCaseObjects.indexOf(child), 1);
 }
 SceneManager.prototype.defaultPickOptions = new THREE.CPUPickOptions();
+SceneManager.prototype.buildCPUPickOptions = function(opts) {
+    if (!opts) return this.defaultPickOptions();
+    if (!(opts instanceof THREE.CPUPickOptions)) {
+        var newopts = new THREE.CPUPickOptions();
+        for (var i in newopts)
+            newopts[i] = opts[i];
+        return newopts;
+    }
+    return null;
+}
 SceneManager.prototype.CPUPick = function(o, d, opts) {
 
     //let's lazy update only on demand;
@@ -142,7 +152,8 @@ SceneManager.prototype.CPUPick = function(o, d, opts) {
         return null;
     //console.profile("PickProfile");
 
-    opts = opts || this.defaultPickOptions
+    opts = this.buildCPUPickOptions(opts)
+
     if (opts) opts.faceTests = 0;
     if (opts) opts.objectTests = 0;
     if (opts) opts.regionTests = 0;
