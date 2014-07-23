@@ -147,7 +147,7 @@ SceneManager.prototype.removeFromRoot = function(child) {
 }
 SceneManager.prototype.defaultPickOptions = new THREE.CPUPickOptions();
 SceneManager.prototype.buildCPUPickOptions = function(opts) {
-    if (!opts) return this.defaultPickOptions();
+    if (!opts) return this.defaultPickOptions;
     if (!(opts instanceof THREE.CPUPickOptions)) {
         var newopts = new THREE.CPUPickOptions();
         for (var i in newopts)
