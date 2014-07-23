@@ -391,6 +391,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         }
         this.mouseup_Gizmo = function(e) {
             if (e.button == 2 && !MouseMoved && document.AxisSelected == -1) {
+                
                 self.ShowContextMenu(e);
                 this.undoPoint = null;
                 return false;
@@ -1022,6 +1023,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         }
         this.mousemove_Gizmo = function(e) {
 
+            //need to know this in order to show context menu properly
+            MouseMoved = true;
             //prevent trying to move objects that have no 3D node
 
             if (SelectedVWFNodes.length > 0 && !this.findviewnode(SelectedVWFNodes[0].id)) return;
@@ -1029,7 +1032,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             //prevent moving 3D nodes that are not bound to the scene or are the scene itself
             if (SelectedVWFNodes.length > 0 && !(this.findviewnode(SelectedVWFNodes[0].id)).parent) return;
             if (this.waitingForSet.length > 0) return;
-            MouseMoved = true;
+            
             if (!MoveGizmo || MoveGizmo == null) {
                 return;
             }
@@ -3028,7 +3031,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             });
             $('#ContextMenuSelectNone').click(function() {
                 self.SelectObject(null);
-                self.SetSelectMode('None');
+               
                 $('#ContextMenu').hide();
                 $('#ContextMenu').css('z-index', '-1');
                 $(".ddsmoothmenu").find('li').trigger('mouseleave');

@@ -15,9 +15,6 @@
 
 
 
-
-
-
 function matCpy(mat) {
     var ret = [];
     for (var i = 0; i < 16; i++)
@@ -133,7 +130,6 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
             this.delayedProperties = {};
             this.subDriverFactory = new SubDriverFactory();
-
 
 
 
@@ -1030,6 +1026,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                         }
                     }
                 }
+                //note: move scene into subdriver
                 if (threeObject instanceof THREE.Scene) {
                     if (propertyName == 'activeCamera') {
                         if (this.state.scenes[this.state.sceneRootID].camera.threeJScameras[propertyValue]) {
@@ -1039,6 +1036,15 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                     }
                     if (propertyName == 'ambientColor') {
                         //handled in view
+                    }
+                    if (propertyName == 'octreeExtents') {
+                        _SceneManager.setExtents(propertyValue);
+                    }
+                    if (propertyName == 'octreeDepth') {
+                        _SceneManager.setMaxDepth(propertyValue);
+                    }
+                    if (propertyName == 'octreeObjects') {
+                         _SceneManager.setMaxObjects(propertyValue);
                     }
                     if (propertyName == 'backgroundColor') {
                         if (node && node.renderer) {
@@ -1248,7 +1254,6 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
 
                     }
-
 
 
 
@@ -1634,7 +1639,6 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
 
 
-
         mesh.geometry.uvsNeedUpdate = true;
 
 
@@ -1990,7 +1994,6 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
 
 
-
             //default material expects all computation done cpu side, just renders
             // note that since the color, size, spin and orientation are just linear
             // interpolations, they can be done in the shader
@@ -2028,7 +2031,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 THREE.ShaderChunk.lights_phong_pars_fragment + "\n" +
                 THREE.ShaderChunk.fog_pars_fragment + "\n" +
 
-            "void main() {\n" +
+                "void main() {\n" +
                 " vec2 coord = vec2(0.0,0.0);" +
                 " vec2 orig_coord = vec2(gl_PointCoord.s,1.0-gl_PointCoord.t);" +
                 " float spin = mix(maxSpin,minSpin,vRandom.x);" +
@@ -2042,7 +2045,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 " coord += vec2(floor(vRandom.x*textureTiles)/textureTiles,floor(vRandom.y*textureTiles)/textureTiles);\n" +
                 "   vec4 outColor = (vColor * texture2D( texture, coord  )) *useTexture + vColor * (1.0-useTexture);\n" +
 
-            "   gl_FragColor = outColor;\n" +
+                "   gl_FragColor = outColor;\n" +
                 THREE.ShaderChunk.fog_fragment + "\n" +
                 "}\n";
 
@@ -2155,7 +2158,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
             //reuse the frag shader from the normal material	
             var vertShader_interpolate =
 
-            "attribute float age; \n" +
+                "attribute float age; \n" +
                 "attribute float lifespan; \n" +
                 "attribute vec3 previousPosition;\n" +
                 "varying vec4 vColor;\n" +
@@ -2229,19 +2232,19 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 "uniform vec4 colorRange;\n" +
                 "varying vec3 vFogPosition;\n" +
                 "void main() {\n" +
-            //randomly offset in time
-            "   float lifetime = fract(random.x+(time))*lifespan*1.33;" +
-            //solve for position
-            "   vec3 pos2 = position.xyz + velocity*lifetime + (acceleration*lifetime*lifetime)/2.0;" + // ;
-            "   vFogPosition = (modelMatrix * vec4(pos2,1.0)).xyz; \n" +
+                //randomly offset in time
+                "   float lifetime = fract(random.x+(time))*lifespan*1.33;" +
+                //solve for position
+                "   vec3 pos2 = position.xyz + velocity*lifetime + (acceleration*lifetime*lifetime)/2.0;" + // ;
+                "   vFogPosition = (modelMatrix * vec4(pos2,1.0)).xyz; \n" +
                 "   vec4 mvPosition = modelViewMatrix * vec4( pos2.xyz, 1.0 );\n" +
-            //find random size based on randomness, start and end size, and size range
-            "   float psize = mix(startSize,endSize,lifetime/lifespan) + (random.y -0.5) * sizeRange;\n" +
+                //find random size based on randomness, start and end size, and size range
+                "   float psize = mix(startSize,endSize,lifetime/lifespan) + (random.y -0.5) * sizeRange;\n" +
                 "   gl_PointSize = psize * ( 1000.0/ length( mvPosition.xyz ) );\n" +
                 "   gl_Position = projectionMatrix * mvPosition;\n" +
                 " vec4 nR = (random -0.5);\n" +
-            //find random color based on start and endcolor, time and colorRange
-            "   vColor = mix(startColor,endColor,lifetime/lifespan)  +  nR * colorRange;\n" +
+                //find random color based on start and endcolor, time and colorRange
+                "   vColor = mix(startColor,endColor,lifetime/lifespan)  +  nR * colorRange;\n" +
                 "   vRandom = random;" +
                 "}    \n";
 
@@ -2262,9 +2265,9 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 THREE.ShaderChunk.fog_pars_fragment + "\n" +
                 "void main() {\n" +
 
-            //bit of drama for dividing into 4 or 9 'virtual' textures
-            //nice to be able to have different images on particles
-            " vec2 coord = vec2(0.0,0.0);" +
+                //bit of drama for dividing into 4 or 9 'virtual' textures
+                //nice to be able to have different images on particles
+                " vec2 coord = vec2(0.0,0.0);" +
                 " vec2 orig_coord = vec2(gl_PointCoord.s,1.0-gl_PointCoord.t);" +
                 " float spin = mix(maxSpin,minSpin,vRandom.x);" +
                 " float orientation = mix(maxOrientation,minOrientation,vRandom.y);" +
@@ -2276,8 +2279,8 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 " coord.y = clamp(coord.y,0.0,1.0/textureTiles);\n" +
                 " coord += vec2(floor(vRandom.x*textureTiles)/textureTiles,floor(vRandom.y*textureTiles)/textureTiles);\n" +
 
-            //get the color from the texture and blend with the vertexColor.
-            " vec4 outColor = (vColor * texture2D( texture, coord )) *useTexture + vColor * (1.0-useTexture);\n" +
+                //get the color from the texture and blend with the vertexColor.
+                " vec4 outColor = (vColor * texture2D( texture, coord )) *useTexture + vColor * (1.0-useTexture);\n" +
                 " if(outColor.a < alphaTest) discard;\n" +
                 "   gl_FragColor = outColor;\n" +
                 THREE.ShaderChunk.fog_fragment + "\n" +
