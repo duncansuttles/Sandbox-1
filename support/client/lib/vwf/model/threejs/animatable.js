@@ -48,10 +48,10 @@
                 if (skins[i].animationHandle) {
 
                     skins[i].animationHandle.setKey(this.animationFrame);
-                    skins[i].updateMatrixWorld(true);
+                    skins[i].updateMatrixWorld();
                     //odd, does not seem to update matrix on first child bone. 
                     //how does the bone relate to the skeleton?
-                    for (var j in skins[i].children) {
+                    for (var j = 0; j < skins[i].children.length; j++) {
                         skins[i].children[j].updateMatrixWorld(true);
                     }
                     if (updateSceneManager)

@@ -51,7 +51,7 @@ define(function() {
                         cb()
                     })
                 }, function(err) {
-                    debugger;
+
                     EntityLibrary.libraries = libs;
                     for (var i in libs) {
                         var section = '<h3 class="modifiersection" ><a href="#"><div style="font-weight:bold;display:inline">' + i + "</div>" + '</a></h3>' + '<div class="modifiersection" id="library' + ToSafeID(i) + '">' + '</div>';
@@ -100,8 +100,8 @@ define(function() {
                 step: sizeWindowTimer
             });
 
-            $('#EntityLibraryAccordion').css('height',$('#TimeControl').offset().top - $('#EntityLibraryAccordion').offset().top);
-            $('#EntityLibraryAccordion').css('overflow','auto');
+            $('#EntityLibraryAccordion').css('height', $('#TimeControl').offset().top - $('#EntityLibraryAccordion').offset().top);
+            $('#EntityLibraryAccordion').css('overflow', 'auto');
             isOpen = true;
         }
         this.hide = function() {
