@@ -12,6 +12,15 @@ var batchAtLevel = 0;
 var drawSceneManagerRegions = false;
 var maxSize = 640;
 
+
+//hook these up at the prototype so that we are not changing the chrome hidden class
+THREE.Object3D.prototype.sceneManagerNode = null;
+THREE.Object3D.prototype.sceneManagerUpdate = null;
+THREE.Object3D.prototype.sceneManagerDelete  = null;
+THREE.Object3D.prototype.boundsCache  = null;
+THREE.Object3D.prototype.RenderBatchManager = null;
+THREE.Object3D.prototype._static = false;
+THREE.Object3D.prototype._dynamic = false;
 function SceneManager(scene) {
 
 }
@@ -147,7 +156,10 @@ SceneManager.prototype.buildCPUPickOptions = function(opts) {
 SceneManager.prototype.CPUPick = function(o, d, opts) {
 
     //let's lazy update only on demand;
-    this.update();
+    //removed for performance test. Seems like there might be some work that is done on every update, even if nothing is dirty
+    //appears to be in the static batching. 
+    //move to scene render for now.
+    //this.update();
     if (d[0] == 0 && d[1] == 0 && d[2] == 0)
         return null;
     //console.profile("PickProfile");
@@ -232,6 +244,9 @@ SceneManager.prototype.SphereCast = function(center, r, opts) {
 }
 SceneManager.prototype.dirtyObjects = [];
 SceneManager.prototype.setDirty = function(object) {
+
+    object.boundsCache = null;
+
     if (object.children && object.children.length) {
 
         for (var i = 0; i < object.children.length; i++)
@@ -440,7 +455,6 @@ SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
         return texture;
 
     }
-
 
 
 
@@ -653,7 +667,8 @@ SceneManager.prototype.initialize = function(scene) {
         return (this.parent && this.parent.isDynamic());
     }
     THREE.Object3D.prototype.sceneManagerUpdate = function() {
-        this.updateMatrixWorld(true);
+        //this.updateMatrixWorld(true);
+        this.boundsCache = null;
         if (this.isDynamic && this.isDynamic()) return;
         for (var i = 0; i < this.children.length; i++) {
             this.children[i].sceneManagerUpdate();
@@ -888,8 +903,9 @@ SceneManagerRegion.prototype.getLeaves = function(list) {
 SceneManagerRegion.prototype.completelyContains = function(object) {
 
     //changing transforms make this cache not work
-    var box = object.GetBoundingBox(true).transformBy(object.getModelMatrix());
-    return this.completelyContainsBox(box);
+    if (!object.boundsCache)
+        object.boundsCache = object.GetBoundingBox(true).transformBy(object.getModelMatrix());
+    return this.completelyContainsBox(object.boundsCache);
 }
 SceneManagerRegion.prototype.completelyContainsBox = function(box) {
 
@@ -914,6 +930,43 @@ SceneManagerRegion.prototype.addChild = function(child) {
         }
     }
 }
+
+function objectSceneManagerDelete() {
+    for (var i = 0; i < this.children.length; i++) {
+        this.children[i].sceneManagerDelete();
+    }
+    if (this.RenderBatchManager)
+        this.RenderBatchManager.remove(this);
+    _SceneManager.removeChild(this);
+}
+function objectSceneManagerUpdate() {
+    //dynamic objects currently should not belong to the octree
+    //we really should  try to not get here in the first place. Because when we set 
+    delete this.boundsCache;
+    if (this.isDynamic()) return;
+    for (var i = 0; i < this.children.length; i++) {
+        this.children[i].sceneManagerUpdate();
+    }
+    if (this.SceneManagerIgnore)
+        return;
+
+    if (!this.updateCount)
+        this.updateCount = 1;
+    this.updateCount++;
+    if (this.updateCount == 100 && this.isStatic()) {
+        console.log(this.name + ' is not static, debatching');
+        this._static = false;
+        _SceneManager.tempDebatchList.push(this);
+    }
+
+    // this.updateMatrixWorld(true);
+
+
+
+    this.sceneManagerNode.updateObject(this);
+
+}
+
 SceneManagerRegion.prototype.distributeObject = function(object) {
     var added = false;
     if (this.childObjects.length + 1 > maxObjects && this.depth < maxDepth && this.childRegions.length == 0)
@@ -940,41 +993,8 @@ SceneManagerRegion.prototype.distributeObject = function(object) {
             }
 
             object.sceneManagerNode = this;
-
-            object.sceneManagerUpdate = function() {
-                //dynamic objects currently should not belong to the octree
-                //we really should  try to not get here in the first place. Because when we set 
-                if (this.isDynamic()) return;
-                for (var i = 0; i < this.children.length; i++) {
-                    this.children[i].sceneManagerUpdate();
-                }
-                if (this.SceneManagerIgnore)
-                    return;
-
-                if (!this.updateCount)
-                    this.updateCount = 1;
-                this.updateCount++;
-                if (this.updateCount == 100 && this.isStatic()) {
-                    console.log(this.name + ' is not static, debatching');
-                    this._static = false;
-                    _SceneManager.tempDebatchList.push(this);
-                }
-
-                this.updateMatrixWorld(true);
-
-
-
-                this.sceneManagerNode.updateObject(this);
-
-            }.bind(object)
-            object.sceneManagerDelete = function() {
-                for (var i = 0; i < this.children.length; i++) {
-                    this.children[i].sceneManagerDelete();
-                }
-                if (this.RenderBatchManager)
-                    this.RenderBatchManager.remove(this);
-                _SceneManager.removeChild(this);
-            }.bind(object)
+            object.sceneManagerUpdate = objectSceneManagerUpdate;
+            object.sceneManagerDelete = objectSceneManagerDelete;
         }
     }
     return added;

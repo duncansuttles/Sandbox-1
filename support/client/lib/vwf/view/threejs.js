@@ -163,7 +163,6 @@ define(["module", "vwf/view"], function(module, view) {
 
 
 
-
             //deltaTime = Math.min(deltaTime,this.realTickDif)
             this.tickTime += deltaTime || 0;
 
@@ -177,7 +176,10 @@ define(["module", "vwf/view"], function(module, view) {
             var step = (this.tickTime) / (50);
             if (hit === 1) {
 
-                for (var i in this.nodes) {
+                var keys = Object.keys(this.nodes);
+
+                for (var j = 0; j < keys.length; j++) {
+                    var i = keys[j];
                     //don't do interpolation for static objects
                     if (this.nodes[i].isStatic) continue;
 
@@ -194,7 +196,10 @@ define(["module", "vwf/view"], function(module, view) {
             }
             if (hit > 1) {
                 this.tickTime = 0;
-                for (var i in this.nodes) {
+                var keys = Object.keys(this.nodes);
+
+                for (var j = 0; j < keys.length; j++) {
+                    var i = keys[j];
                     if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
                         this.nodes[i].lastTickTransform = null;
                         this.nodes[i].thisTickTransform = null;
@@ -207,7 +212,9 @@ define(["module", "vwf/view"], function(module, view) {
             }
 
 
-            for (var i in this.nodes) {
+            var keys = Object.keys(this.nodes);
+            for (var j = 0; j < keys.length; j++) {
+                var i = keys[j];
 
                 //don't do interpolation for static objects
                 if (this.nodes[i].isStatic) continue;
@@ -255,35 +262,17 @@ define(["module", "vwf/view"], function(module, view) {
         },
         triggerWindowResize: function() {
 
+            //overcome by code in WindowResize.js
             return;
-            var origWidth = self.width;
-            var origHeight = self.height;
-            if (window && window.innerHeight) self.height = window.innerHeight;
-            if (window && window.innerWidth) self.width = window.innerWidth;
-
-            var resolutionScale = _SettingsManager.getKey('resolutionScale');
 
 
-            var oldwidth  = $('#index-vwf').width();
-            var oldheight  = $('#index-vwf').height();
 
-            //if ((origWidth != self.width) || (origHeight != self.height)) {
-            $('#index-vwf')[0].height = self.height / resolutionScale;
-            $('#index-vwf')[0].width = self.width / resolutionScale;
-            _dRenderer.setViewport(0, 0, window.innerWidth / resolutionScale, window.innerHeight / resolutionScale)
-            
-            //note, this changes some renderer internals that need to be set, but also resizes the canvas which we don't want.
-            //much of the resize code is in WindowResize.js
-            _dRenderer.setSize($('#index-vwf').width() / resolutionScale, $('#index-vwf').height() / resolutionScale);
-            _dView.getCamera().aspect = $('#index-vwf')[0].width / $('#index-vwf')[0].height;
-             $('#index-vwf').css('height',oldheight);
-             $('#index-vwf').css('width',oldwidth);
-            _dView.getCamera().updateProjectionMatrix()
-
-            //}
         },
         restoreTransforms: function() {
-            for (var i in this.nodes) {
+            var keys = Object.keys(this.nodes);
+
+            for (var j = 0; j < keys.length; j++) {
+                var i = keys[j];
                 //don't do interpolation for static objects
                 if (this.nodes[i].isStatic) continue;
 
@@ -317,8 +306,10 @@ define(["module", "vwf/view"], function(module, view) {
 
 
 
-
-
+        },
+        ticked: function()
+        {
+           _SceneManager.update();
         },
         deletedNode: function(childID) {
             delete this.nodes[childID];
@@ -382,7 +373,10 @@ define(["module", "vwf/view"], function(module, view) {
             var namelist = ['Editor Camera'];
             var idlist = [''];
 
-            for (var i in this.nodes) {
+            var keys = Object.keys(this.nodes);
+
+            for (var j = 0; j < keys.length; j++) {
+                var i = keys[j];
                 if (this.nodes[i].extends == 'SandboxCamera-vwf') {
                     idlist.push(i);
                     namelist.push(vwf.getProperty(i, 'DisplayName'));
@@ -394,7 +388,10 @@ define(["module", "vwf/view"], function(module, view) {
             var namelist = ['Editor Camera'];
             var idlist = [''];
 
-            for (var i in this.nodes) {
+            var keys = Object.keys(this.nodes);
+
+            for (var j = 0; j < keys.length; j++) {
+                var i = keys[j];
                 if (this.nodes[i].extends == 'SandboxCamera-vwf') {
                     idlist.push(i);
                     namelist.push(vwf.getProperty(i, 'DisplayName'));
@@ -482,7 +479,6 @@ define(["module", "vwf/view"], function(module, view) {
             var value = undefined;
             if (this.nodes[nodeID])
                 this.nodes[nodeID].properties[propertyName] = propertyValue;
-
 
 
 
@@ -853,10 +849,11 @@ define(["module", "vwf/view"], function(module, view) {
             //    _SceneManager.update(timepassed);
 
             pss = GetParticleSystems(sceneNode.threeScene);
-            for (var i in pss) {
-                if (pss[i].update && pss[i].visible === true)
-                    pss[i].update(timepassed || 0);
-            }
+            if (pss)
+                for (var i = 0; i < pss.length; i++) {
+                    if (pss[i].update && pss[i].visible === true)
+                        pss[i].update(timepassed || 0);
+                }
 
             if (self.interpolateTransforms)
                 self.setInterpolatedTransforms(timepassed);
@@ -885,8 +882,9 @@ define(["module", "vwf/view"], function(module, view) {
 
             self.trigger('prerender', vpargs);
 
-
-            for (var i in vwf.models[0].model.nodes) {
+            var keys = Object.keys(vwf.models[0].model.nodes);
+            for (var j = 0; j < keys.length; j++) {
+                var i = keys[j];
                 var node = vwf.models[0].model.nodes[i];
                 if (node.private.bodies.prerender)
                     node.private.bodies.prerender.call(node, [timepassed]);
@@ -953,7 +951,6 @@ define(["module", "vwf/view"], function(module, view) {
 
 
 
-
             //update the render passes - these may be added by render to texture materials, or from the terrain grass engine
             for (var i = 0; i < self.renderTargetPasses.length; i++) {
                 var rttcamID = self.renderTargetPasses[i].camera;
@@ -964,7 +961,6 @@ define(["module", "vwf/view"], function(module, view) {
                 renderer.setRenderTarget();
                 renderer.render(scene, rttcam, rtt);
             }
-
 
 
 
@@ -1040,9 +1036,6 @@ define(["module", "vwf/view"], function(module, view) {
 
 
 
-
-
-
             if (self.selection && vwf.getProperty(self.selection.id, 'type') == 'Camera' && self.cameraID != self.selection.id) {
                 var selnode = _Editor.findviewnode(self.selection.id);
                 if (selnode) {
@@ -1093,18 +1086,11 @@ define(["module", "vwf/view"], function(module, view) {
 
 
 
-
-
             self.trigger('postrender', vpargs);
 
             if ($('#glyphOverlay').css('display') != 'none') {
                 self.trigger('glyphRender', vpargs);
             }
-
-
-
-
-
 
 
 
@@ -1170,7 +1156,6 @@ define(["module", "vwf/view"], function(module, view) {
                 canvas.remove();
                 return false;
             }
-
 
 
 
@@ -1310,9 +1295,6 @@ define(["module", "vwf/view"], function(module, view) {
 
         var container = document.getElementById("container");
         var sceneCanvas = canvas;
-
-
-
 
 
 
@@ -1594,7 +1576,7 @@ define(["module", "vwf/view"], function(module, view) {
                     break;
                 default:
                     key = getKeyValue.call(sceneView, event.keyCode);
-                    keyAlreadyDown = !! sceneView.keyStates.keysDown[key.key];
+                    keyAlreadyDown = !!sceneView.keyStates.keysDown[key.key];
                     sceneView.keyStates.keysDown[key.key] = key;
                     validKey = true;
                     break;
