@@ -453,6 +453,7 @@
                 this.settingProperty('materialDef', this.materialDef);
                 $(document).trigger('EndParse');
                 this.getRoot().updateMatrixWorld(true);
+                 this.getRoot().GetBoundingBox();
             }
         }
         //if it's pending but not done, register a callback so that when it is done, it can be attached.

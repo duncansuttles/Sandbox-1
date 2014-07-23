@@ -27,10 +27,9 @@ function SceneManager(scene) {
 
 function GetAllLeafMeshes(threeObject, list) {
     if (threeObject instanceof THREE.Mesh || threeObject instanceof THREE.Line) {
-        list.push(threeObject);
-        for (var i = 0; i < threeObject.children.length; i++) {
-            GetAllLeafMeshes(threeObject.children[i], list);
-        }
+        if(!(threeObject instanceof THREE.SkinnedMesh))
+                list.push(threeObject);
+        
     }
     if (threeObject.children) {
         for (var i = 0; i < threeObject.children.length; i++) {
@@ -1161,6 +1160,7 @@ SceneManagerRegion.prototype.CPUPick = function(o, d, opts) {
     }
     for (var i = 0; i < this.childObjects.length; i++) {
 
+        if(this.childObjects[i].children.length > 0) debugger;
         var childhits = this.childObjects[i].CPUPick(o, d, opts);
         if (childhits) {
             for (var j = 0; j < childhits.length; j++)
