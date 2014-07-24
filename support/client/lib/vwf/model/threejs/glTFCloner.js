@@ -230,9 +230,9 @@ THREE.Skeleton = function(boneList, useVertexTexture) {
 
             gbone = boneList[b];
 
-            p = gbone.position;
-            q = gbone.rotation;
-            s = gbone.scale;
+            p = gbone.pos || gbone.position;
+            q = gbone.rotation || gbone.rotq;
+            s = gbone.scale || gbone.scl;
 
             bone = this.addBone();
 

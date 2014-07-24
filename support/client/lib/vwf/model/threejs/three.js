@@ -16255,7 +16255,7 @@ THREE.Mesh.prototype.clone = function(object, recursive) {
 
     THREE.Object3D.prototype.clone.call(this, object, recursive);
 
-    if (this.animationHandle && this.animationHandle instanceof Three.Animation) {
+    if (this.animationHandle && this.animationHandle instanceof THREE.Animation) {
         var animation = new THREE.Animation(
             object,
             object.geometry.animation.name,
