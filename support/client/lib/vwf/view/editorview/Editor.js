@@ -153,7 +153,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 items: 'div'
             })
 
-           
+
         }
         //create progressbar and the log bar
         ProgressBar.initialize('statusbar');
@@ -344,10 +344,35 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             }
         }
         this.mouseleave = function(e) {
+
+            //if the mouse is over anythign that is not the context menu, hide the context menu
             var teste = e.toElement || e.relatedTarget;
             if (teste != $('#ContextMenu')[0] && $(teste).parent()[0] != $('#ContextMenu')[0] && !$(teste).hasClass('glyph')) {
                 $('#ContextMenu').hide();
                 $('#ContextMenu').css('z-index', '-1');
+            }
+
+            //if the mouse is over any div that is not a selection glyph or the selection marquee, cancel all actions
+            if (!$(teste).hasClass('glyph') && teste !== this.selectionMarquee[0]) {
+                this.undoPoint = null;
+                this.MouseLeftDown = false;
+                this.mouseDownScreenPoint = null;
+                this.MouseLeftDown = false;
+                this.selectionMarquee.hide();
+                this.selectionMarquee.css('z-index', '-1');
+                this.mouseUpScreenPoint = [e.clientX, e.clientY];
+                if (MoveGizmo) {
+                    for (var i = 0; i < MoveGizmo.allChildren.length; i++) {
+                        if (MoveGizmo.allChildren[i].material) {
+                            var c = MoveGizmo.allChildren[i].material.originalColor;
+                            MoveGizmo.allChildren[i].material.color.setRGB(c.r, c.g, c.b);
+                            MoveGizmo.allChildren[i].material.emissive.setRGB(c.r, c.g, c.b);
+                        }
+                    }
+                    document.AxisSelected = -1;
+                    $('#StatusAxis').text('Axis: -1');
+                    
+                }
             }
         }
         this.restoreTransforms = function() {
@@ -366,6 +391,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         }
         this.mouseup_Gizmo = function(e) {
             if (e.button == 2 && !MouseMoved && document.AxisSelected == -1) {
+                
                 self.ShowContextMenu(e);
                 this.undoPoint = null;
                 return false;
@@ -383,10 +409,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 }, 1000);
                 return false;
             }
-            if (e.mouseleave) {
-                this.undoPoint = null;
-                return;
-            }
+
             this.MouseLeftDown = false;
             this.selectionMarquee.hide();
             this.selectionMarquee.css('z-index', '-1');
@@ -1000,6 +1023,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         }
         this.mousemove_Gizmo = function(e) {
 
+            //need to know this in order to show context menu properly
+            MouseMoved = true;
             //prevent trying to move objects that have no 3D node
 
             if (SelectedVWFNodes.length > 0 && !this.findviewnode(SelectedVWFNodes[0].id)) return;
@@ -1007,7 +1032,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             //prevent moving 3D nodes that are not bound to the scene or are the scene itself
             if (SelectedVWFNodes.length > 0 && !(this.findviewnode(SelectedVWFNodes[0].id)).parent) return;
             if (this.waitingForSet.length > 0) return;
-            MouseMoved = true;
+            
             if (!MoveGizmo || MoveGizmo == null) {
                 return;
             }
@@ -3006,7 +3031,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             });
             $('#ContextMenuSelectNone').click(function() {
                 self.SelectObject(null);
-                self.SetSelectMode('None');
+               
                 $('#ContextMenu').hide();
                 $('#ContextMenu').css('z-index', '-1');
                 $(".ddsmoothmenu").find('li').trigger('mouseleave');

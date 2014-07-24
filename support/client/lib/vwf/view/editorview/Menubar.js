@@ -454,6 +454,11 @@ define({
                 _Notifier.notify('Glyphs displayed');
             }
         });
+
+        
+        $('#MenuViewOctree').click(function(e) {
+            _SceneManager.setShowRegions(!_SceneManager.getShowRegions());
+        });
         $('#MenuViewStats').click(function(e) {
             if (window.stats.domElement.style.display == 'none')
                 window.stats.domElement.style.display = 'block';

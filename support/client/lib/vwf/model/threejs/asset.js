@@ -26,7 +26,7 @@
             };
         }
 
-        this.inherits = ['vwf/model/threejs/transformable.js', 'vwf/model/threejs/materialDef.js', 'vwf/model/threejs/animatable.js', 'vwf/model/threejs/shadowcaster.js', 'vwf/model/threejs/passable.js', 'vwf/model/threejs/visible.js', 'vwf/model/threejs/static.js'];
+        this.inherits = ['vwf/model/threejs/transformable.js', 'vwf/model/threejs/materialDef.js', 'vwf/model/threejs/animatable.js', 'vwf/model/threejs/shadowcaster.js', 'vwf/model/threejs/passable.js', 'vwf/model/threejs/visible.js', 'vwf/model/threejs/static.js', 'vwf/model/threejs/selectable.js'];
         this.initializingNode = function() {
 
         }
@@ -453,6 +453,7 @@
                 this.settingProperty('materialDef', this.materialDef);
                 $(document).trigger('EndParse');
                 this.getRoot().updateMatrixWorld(true);
+                 this.getRoot().GetBoundingBox();
             }
         }
         //if it's pending but not done, register a callback so that when it is done, it can be attached.

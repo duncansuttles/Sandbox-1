@@ -6,7 +6,7 @@ function GUID() {
 }
 
 //values tuned for VTCE
-var maxObjects = 1;
+var maxObjects = 5;
 var maxDepth = 16;
 var batchAtLevel = 0;
 var drawSceneManagerRegions = false;
@@ -27,10 +27,9 @@ function SceneManager(scene) {
 
 function GetAllLeafMeshes(threeObject, list) {
     if (threeObject instanceof THREE.Mesh || threeObject instanceof THREE.Line) {
-        list.push(threeObject);
-        for (var i = 0; i < threeObject.children.length; i++) {
-            GetAllLeafMeshes(threeObject.children[i], list);
-        }
+        if(!(threeObject instanceof THREE.SkinnedMesh))
+                list.push(threeObject);
+        
     }
     if (threeObject.children) {
         for (var i = 0; i < threeObject.children.length; i++) {
@@ -108,6 +107,9 @@ SceneManager.prototype.setShowRegions = function(bool) {
     drawSceneManagerRegions = bool;
     this.rebuild();
 }
+SceneManager.prototype.getShowRegions = function() {
+    return drawSceneManagerRegions;
+}
 SceneManager.prototype.setExtents = function(extents) {
     maxSize = extents;
     this.rebuild();
@@ -144,7 +146,7 @@ SceneManager.prototype.removeFromRoot = function(child) {
 }
 SceneManager.prototype.defaultPickOptions = new THREE.CPUPickOptions();
 SceneManager.prototype.buildCPUPickOptions = function(opts) {
-    if (!opts) return this.defaultPickOptions();
+    if (!opts) return this.defaultPickOptions;
     if (!(opts instanceof THREE.CPUPickOptions)) {
         var newopts = new THREE.CPUPickOptions();
         for (var i in newopts)
@@ -1158,6 +1160,7 @@ SceneManagerRegion.prototype.CPUPick = function(o, d, opts) {
     }
     for (var i = 0; i < this.childObjects.length; i++) {
 
+        if(this.childObjects[i].children.length > 0) debugger;
         var childhits = this.childObjects[i].CPUPick(o, d, opts);
         if (childhits) {
             for (var j = 0; j < childhits.length; j++)

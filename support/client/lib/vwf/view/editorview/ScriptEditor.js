@@ -1548,6 +1548,7 @@ define(function ()
 			{
 				//append the div and create it
 				$(document.body).append("<form id='AutoComplete' tabindex=890483 />");
+
 				$('#AutoComplete').on('blur',function(e,key)
 				{
 					//there is some sort of error here, this prevention is a workaround. 
@@ -1745,6 +1746,8 @@ define(function ()
 			$('#AutoComplete').attr('autocompleteindex',0);
 			$('#AutoComplete').css('overflow','hidden');
 			$('#AutoComplete').scrollTop(0);
+			//this is annoying. Why?
+			$(document.body).scrollTop(0);
 			window.setImmediate(function()
 			{
 				$('#AutoComplete').focus();

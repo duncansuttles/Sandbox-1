@@ -328,6 +328,8 @@ define(["module", "vwf/view"], function(module, view) {
         },
         ticked: function()
         {
+            //so, here's what we'll do. Since the sim state cannot advance until tick, we will update on tick. 
+            //but, ticks aren't fired when the scene in paused. In that case, we'll do it every frame.
            _SceneManager.update();
         },
         deletedNode: function(childID) {
@@ -842,6 +844,12 @@ define(["module", "vwf/view"], function(module, view) {
 
 
             requestAnimFrame(renderScene);
+
+            //so, here's what we'll do. Since the sim state cannot advance until tick, we will update on tick. 
+            //but, ticks aren't fired when the scene in paused. In that case, we'll do it every frame.
+            var currentState = vwf.getProperty(vwf.application(), 'playMode');
+            if (currentState === 'stop') _SceneManager.update();
+           
 
             //get the camera. If a default was specified, but not yet availabe, get the system default.
             cam = self.getCamera();
