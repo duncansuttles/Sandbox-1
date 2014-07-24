@@ -162,7 +162,7 @@
 
             var mesh = this.BuildMesh(mat, cache);
             this.mesh = mesh;
-            this.mesh.name = "TESTSPHERE";
+          
 
             this.rootnode.add(mesh);
 
@@ -171,14 +171,16 @@
             var rec = this.gettingProperty('receiveShadows');
 
             var pass = this.gettingProperty('passable');
+            var sel = this.gettingProperty('isSelectable');
             // reset the shadows flags for the new mesh
             this.settingProperty('castShadows', cast);
             this.settingProperty('visible', this.gettingProperty('visible'));
             this.settingProperty('receiveShadows', rec);
             this.settingProperty('passable', pass);
+            this.settingProperty('isSelectable', sel);
 
         }
-        this.inherits = ['vwf/model/threejs/materialDef.js', 'vwf/model/threejs/shadowcaster.js', 'vwf/model/threejs/transformable.js', 'vwf/model/threejs/passable.js', 'vwf/model/threejs/visible.js', 'vwf/model/threejs/static.js'];
+        this.inherits = ['vwf/model/threejs/materialDef.js', 'vwf/model/threejs/shadowcaster.js', 'vwf/model/threejs/transformable.js', 'vwf/model/threejs/passable.js', 'vwf/model/threejs/visible.js', 'vwf/model/threejs/static.js', 'vwf/model/threejs/selectable.js'];
     }
     //default factory code
     return function(childID, childSource, childName) {
