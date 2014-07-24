@@ -26,7 +26,7 @@
             };
         }
 
-        this.inherits = ['vwf/model/threejs/transformable.js', 'vwf/model/threejs/materialDef.js', 'vwf/model/threejs/animatable.js', 'vwf/model/threejs/shadowcaster.js', 'vwf/model/threejs/passable.js', 'vwf/model/threejs/visible.js', 'vwf/model/threejs/static.js'];
+        this.inherits = ['vwf/model/threejs/transformable.js', 'vwf/model/threejs/materialDef.js', 'vwf/model/threejs/animatable.js', 'vwf/model/threejs/shadowcaster.js', 'vwf/model/threejs/passable.js', 'vwf/model/threejs/visible.js', 'vwf/model/threejs/static.js', 'vwf/model/threejs/selectable.js'];
         this.initializingNode = function() {
 
         }
@@ -119,10 +119,8 @@
                     }
                     //need to update root skin if changed transform of bone
                     var parent = this.rootnode.parent;
-                    while(parent)
-                    {
-                        if(parent instanceof THREE.SkinnedMesh)
-                        {
+                    while (parent) {
+                        if (parent instanceof THREE.SkinnedMesh) {
                             parent.updateMatrixWorld();
                             //since it makes no sense for a bone to effect the skin farther up the hierarchy
                             break;
@@ -271,29 +269,25 @@
             reg.loaded = true;
             //store this asset in the registry
 
-            //somehow the glTF loader creates meshes that do not clone properly
+            //actually, is this necessary? can we just store the raw loaded asset in the cache? 
             if (childType !== 'subDriver/threejs/asset/vnd.gltf+json')
                 reg.node = asset.scene.clone();
             else {
-
-                reg.node = asset.scene;
-                var list = [];
-                this.GetAllLeafMeshes(reg.node, list);
-                for (var i = 0; i < list.length; i++) {
-                    if (list[i] instanceof THREE.SkinnedMesh)
-                        list[i].animationHandle = new AnimationHandleWrapper(asset.animations);
-                }
+                glTFCloner.clone(asset.scene, asset.animations, function(clone) {
+                    reg.node = clone;
+                });
             }
-
-
-
             this.cleanTHREEJSnodes(reg.node);
 
-            //somehow the glTF loader creates meshes that do not clone properly
+            //you may be wondering why we are cloning again - this is so that the object in the scene is 
+            //never the same object as in the cache
             if (childType !== 'subDriver/threejs/asset/vnd.gltf+json')
                 this.getRoot().add(reg.node.clone());
-            else
-                this.getRoot().add(reg.node);
+            else {
+                glTFCloner.clone(asset.scene, asset.animations, function(clone) {
+                    this.getRoot().add(clone);
+                });
+            }
 
             //set some defaults now that the mesh is loaded
             //the VWF should set some defaults as well
@@ -306,7 +300,7 @@
             //nothing should be waiting on callbacks now.
             reg.callbacks = [];
 
-
+            this.getRoot().GetBoundingBox();
             asyncCallback(true);
 
 
@@ -359,6 +353,7 @@
                 this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
             }
             if (childType == 'subDriver/threejs/asset/vnd.gltf+json' && _assetLoader.getglTF(assetSource)) {
+
                 assetRegistry[assetSource].loaded = true;
                 assetRegistry[assetSource].pending = false;
                 assetRegistry[assetSource].node = _assetLoader.getglTF(assetSource).scene;
@@ -421,9 +416,13 @@
         else if (reg.loaded == true && reg.pending == false) {
 
             if (childType === 'subDriver/threejs/asset/vnd.gltf+json') {
+                //here we signal the driver that we going to execute an asynchronous load
 
+                //asyncCallback(false);
                 var self = this;
 
+
+                //self.getRoot().add(reg.node);
                 glTFCloner.clone(reg.node, reg.rawAnimationChannels, function(clone) {
                     // Finally, attach our cloned model
                     self.getRoot().add(clone);
@@ -431,14 +430,22 @@
 
                     self.settingProperty('materialDef', self.materialDef);
                     $(document).trigger('EndParse');
+
                     self.getRoot().updateMatrixWorld(true);
-                })
+                    self.getRoot().GetBoundingBox();
+                    //ok, load is complete - ask the kernel to continue the simulation
+                    window.setImmediate(function() {
+                        //asyncCallback(true);
+                    })
+
+                });
             } else {
                 this.getRoot().add(reg.node.clone());
                 this.cleanTHREEJSnodes(this.getRoot());
                 this.settingProperty('materialDef', this.materialDef);
                 $(document).trigger('EndParse');
                 this.getRoot().updateMatrixWorld(true);
+                this.getRoot().GetBoundingBox();
             }
         }
         //if it's pending but not done, register a callback so that when it is done, it can be attached.
@@ -450,7 +457,7 @@
                 //just clone the node and attach it.
                 //this should not clone the geometry, so much lower memory.
                 //seems to take near nothing to duplicated animated avatar
-                
+
                 if (node) {
 
                     if (childType === 'subDriver/threejs/asset/vnd.gltf+json') {

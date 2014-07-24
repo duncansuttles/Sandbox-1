@@ -159,7 +159,7 @@
 				this.settingProperty('visible',vis);
 				
 			}
-			this.inherits = ['vwf/model/threejs/visible.js','vwf/model/threejs/materialDef.js','vwf/model/threejs/shadowcaster.js','vwf/model/threejs/transformable.js','vwf/model/threejs/passable.js'];
+			this.inherits = ['vwf/model/threejs/visible.js','vwf/model/threejs/materialDef.js','vwf/model/threejs/shadowcaster.js','vwf/model/threejs/transformable.js','vwf/model/threejs/passable.js', 'vwf/model/threejs/selectable.js'];
 		}
 		//default factory code
         return function(childID, childSource, childName) {

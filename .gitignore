@@ -16,5 +16,6 @@ config.json
 *.pfx
 .idea
 /public/contact/local/*
+/public/adl/sandbox/marsgame/*
 *.pem
 *.orig

@@ -52,7 +52,7 @@
 }
 
 .ui-front {
-	z-index: 100;
+	z-index: 9999;
 }
 
 
@@ -818,8 +818,9 @@ body .ui-tooltip {
 .ui-widget-header {
 	border: 1px solid #aaaaaa;
 	background: #73a1d5 url(../../../../images/ui-bg_highlight-soft_75_73a1d5_1x100.png) 50% 50% repeat-x;
-	color: #222222;
+	color: #FFFFFF;
 	font-weight: bold;
+	text-shadow: 1px 1px 1px black;
 }
 .ui-widget-header a {
 	color: #222222;

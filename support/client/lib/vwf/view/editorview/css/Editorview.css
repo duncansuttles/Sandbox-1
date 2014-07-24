@@ -1,4 +1,47 @@
 
+	
+@-webkit-keyframes pulsing {
+  0% {
+    background-color:rgb(32, 85, 155);;
+  }
+  50% {
+    
+    background-color:rgb(102, 155, 225);;
+  }
+  100% {
+    
+    background-color:rgb(132, 185, 255);;
+  }
+}
+
+@keyframes pulsing {
+  0% {
+    background-color:rgb(32, 85, 155);;
+  }
+  50% {
+    
+    background-color:rgb(102, 155, 225);;
+  }
+  100% {
+    
+    background-color:rgb(132, 185, 255);;
+  }
+}
+
+.pulsing {
+  animation-name: pulsing;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-timing-function: ease-in-out;
+  -webkit-animation-name: pulsing;
+  -webkit-animation-duration: 1s;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-direction: alternate;
+  -webkit-animation-timing-function: linear;
+  -webkit-animation-play-state: running;
+}
+
 	#InventoryControls
 	{
 		margin-left: 3px;
@@ -59,7 +102,7 @@ margin-top: -45px;
 background: #444;
 border-radius: 5px;
 border: 1px solid #555;
-padding: 10px 2px 10px 10px;
+padding: 4px 4px 4px 4px;
 }
 #playButton
 {
@@ -88,9 +131,7 @@ background-size: 646px;
 .timeControl {
 
 
-
 text-indent: 0px;
-
 display: inline-block;
 color: #777777;
 font-family: Arial;
@@ -106,10 +147,9 @@ text-shadow: 1px 1px 0px #ffffff;
 vertical-align: bottom;
 margin-bottom: -3px;
 cursor: pointer;
-margin-right: 9px;
-margin-bottom: 4px;
-
-border-radius: 10px;
+margin-right: 2px;
+margin-bottom: -4px;
+border-radius: 6px;
 }
 .timeControl:hover {
 	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) );
@@ -198,8 +238,9 @@ border-radius: 10px;
 	}
 	canvas:focus
 	{
-		border: 2px solid blue;
+		border: 4px ridge  rgb(130, 184, 255);
 		box-sizing: border-box;
+
 	}
 	.playerlabel
 	{
@@ -388,7 +429,7 @@ border-radius: 10px;
 		position: fixed;
 		width: 100%;
 		height: 25px;
-		z-index: 101;
+		z-index: 201;
 		background: #444;
 		white-space: nowrap;
 	}
@@ -396,6 +437,16 @@ border-radius: 10px;
 	{
 		display: inline-block;
 		width: 100%;
+background: #636363; /* Old browsers */
+background: -moz-linear-gradient(top,  #636363 0%, #6f6f6f 12%, #7a7a7a 25%, #5f5f5f 39%, #474747 47%, #212121 55%, #303030 63%, #474747 76%, #3a3a3a 91%, #323232 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#636363), color-stop(12%,#6f6f6f), color-stop(25%,#7a7a7a), color-stop(39%,#5f5f5f), color-stop(47%,#474747), color-stop(55%,#212121), color-stop(63%,#303030), color-stop(76%,#474747), color-stop(91%,#3a3a3a), color-stop(100%,#323232)); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  #636363 0%,#6f6f6f 12%,#7a7a7a 25%,#5f5f5f 39%,#474747 47%,#212121 55%,#303030 63%,#474747 76%,#3a3a3a 91%,#323232 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  #636363 0%,#6f6f6f 12%,#7a7a7a 25%,#5f5f5f 39%,#474747 47%,#212121 55%,#303030 63%,#474747 76%,#3a3a3a 91%,#323232 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  #636363 0%,#6f6f6f 12%,#7a7a7a 25%,#5f5f5f 39%,#474747 47%,#212121 55%,#303030 63%,#474747 76%,#3a3a3a 91%,#323232 100%); /* IE10+ */
+background: linear-gradient(to bottom,  #636363 0%,#6f6f6f 12%,#7a7a7a 25%,#5f5f5f 39%,#474747 47%,#212121 55%,#303030 63%,#474747 76%,#3a3a3a 91%,#323232 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#636363', endColorstr='#323232',GradientType=0 ); /* IE6-9 */
+
+
 	}
 	.usertable
 	{
@@ -409,6 +460,7 @@ border-radius: 10px;
 		height: 30px;
 		display:inline-block;
 		zoom:1.2;
+		padding-right: 5px;
 	}
 	.icon
 	{
@@ -416,7 +468,7 @@ border-radius: 10px;
 		height:25px;
 		vertical-align: middle;
 		margin-top: 3px;
-		border: 1px solid #505050;
+		border: 4px inset #444;
 		margin-left: 3px;
 		border-radius: 6px;
 		background-color: -webkit-linear-gradient(right, white 0%, rgb(217, 238, 239) 100%);
@@ -437,7 +489,9 @@ border-radius: 10px;
 	}
 	.iconselected
 	{
-		background-color:rgb(153, 153, 255);
+		background-color:rgb(130, 184, 255);
+		padding: 3px;
+		border: 4px outset #444;
 	}
 	.icondisabled
 	{
@@ -471,19 +525,20 @@ border-radius: 10px;
 	}
 
 	.statusbarElement{
-		box-shadow: 0px 0px 13px gray inset;
-		display: inline;
-		height: 100%;
-		padding-left: 5px;
-		padding-right: 5px;
-		line-height: 25px;
-		border-radius: 5px;
-		color: gray;
-		margin-left: 3px;
-		margin-right: 3px;
-		font-family: sans-serif;
-		font-size: 1.8em;
-		text-shadow: 1px 1px 3px black;
+display: inline;
+height: 100%;
+padding-left: 5px;
+padding-right: 5px;
+line-height: 25px;
+border-radius: 0px;
+color: gray;
+margin-left: 3px;
+margin-right: 3px;
+font-family: sans-serif;
+font-size: 1.3em;
+text-shadow: 1px 1px 3px black;
+border-left: 1px solid;
+font-weight: bold;
 	}
 	#sidepanel
 	{
@@ -523,6 +578,17 @@ border-radius: 10px;
 		position: fixed;
 		width: 100%;
 		background-color: #414141;
+		background: #4c4c4c; /* Old browsers */
+background: #636363; /* Old browsers */
+background: -moz-linear-gradient(top,  #636363 0%, #6f6f6f 12%, #7a7a7a 25%, #5f5f5f 39%, #474747 47%, #212121 55%, #303030 63%, #474747 76%, #3a3a3a 91%, #323232 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#636363), color-stop(12%,#6f6f6f), color-stop(25%,#7a7a7a), color-stop(39%,#5f5f5f), color-stop(47%,#474747), color-stop(55%,#212121), color-stop(63%,#303030), color-stop(76%,#474747), color-stop(91%,#3a3a3a), color-stop(100%,#323232)); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  #636363 0%,#6f6f6f 12%,#7a7a7a 25%,#5f5f5f 39%,#474747 47%,#212121 55%,#303030 63%,#474747 76%,#3a3a3a 91%,#323232 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  #636363 0%,#6f6f6f 12%,#7a7a7a 25%,#5f5f5f 39%,#474747 47%,#212121 55%,#303030 63%,#474747 76%,#3a3a3a 91%,#323232 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  #636363 0%,#6f6f6f 12%,#7a7a7a 25%,#5f5f5f 39%,#474747 47%,#212121 55%,#303030 63%,#474747 76%,#3a3a3a 91%,#323232 100%); /* IE10+ */
+background: linear-gradient(to bottom,  #636363 0%,#6f6f6f 12%,#7a7a7a 25%,#5f5f5f 39%,#474747 47%,#212121 55%,#303030 63%,#474747 76%,#3a3a3a 91%,#323232 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#636363', endColorstr='#323232',GradientType=0 ); /* IE6-9 */
+
+
 		
 	}
 	.GLGEStat
@@ -610,6 +676,7 @@ border-radius: 10px;
 		.icon
 		{
 			margin-left: 0px;
+			border: 3px inset #444;
 		}
 		#sidepanel
 		{
@@ -687,6 +754,7 @@ border-radius: 10px;
 	z-index: 5;
 	background: #515151 url(../../../../images/ui-bg_diagonals-thick_8_333333_40x40.png) 0% 0% repeat;
 	background-size: 5%;
+	margin-top: 3px;
 }
 
 .jspPane
@@ -740,18 +808,20 @@ border-radius: 10px;
 
 .jspTrack
 {
-	background: lightgray;
+	background: rgba(0,0,0,0);
 	position: relative;
 }
 
 .jspDrag
 {
-	background: gray;
-	position: relative;
-	top: 0;
-	left: 0;
-	cursor: pointer;
-	border-radius: 5px;
+box-shadow: 1px 1px 3px inset black;
+background: rgba(130, 184, 255,.8);
+position: relative;
+top: 0;
+left: 0;
+cursor: pointer;
+box-shadow: 0px 0px 3px black inset;
+border-radius: 5px;
 }
 
 .jspHorizontalBar .jspTrack,
@@ -808,14 +878,14 @@ border-radius: 10px;
 #sidetabs
 {
 position: absolute;
-height: 100%;
+
 left: -40px;
-top: 17px;
+top: 23px;
 }
 
 .sidetab:hover
 {
-	color: lightblue;
+	color: rgb(130, 184, 255);
 }
 .sidetab
 {
@@ -824,18 +894,27 @@ top: 17px;
 -moz-transform: rotate(90deg);
 transform: rotate(-90deg);
 height: auto;
-margin: 0px -39px 30px 0px;
+margin: 0px -39px 32px 3px;
 font-size: 12px;
 font-family: sans-serif;
 background: #414149;
 padding: 3px 7px 24px 8px;
 text-align: center;
 vertical-align: middle;
-border-radius: 8px;
-border: 2px solid lightblue;
+border-radius: 7px;
+border: 2px groove rgb(130, 184, 255);
 color: white;
 text-shadow: 1px 1px 3px black;
 cursor: pointer;
+background: #4c4c4c; /* Old browsers */
+background: -moz-linear-gradient(top,  #4c4c4c 0%, #595959 12%, #666666 25%, #474747 39%, #2c2c2c 50%, #000000 51%, #111111 60%, #2b2b2b 76%, #1c1c1c 91%, #131313 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#4c4c4c), color-stop(12%,#595959), color-stop(25%,#666666), color-stop(39%,#474747), color-stop(50%,#2c2c2c), color-stop(51%,#000000), color-stop(60%,#111111), color-stop(76%,#2b2b2b), color-stop(91%,#1c1c1c), color-stop(100%,#131313)); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  #4c4c4c 0%,#595959 12%,#666666 25%,#474747 39%,#2c2c2c 50%,#000000 51%,#111111 60%,#2b2b2b 76%,#1c1c1c 91%,#131313 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  #4c4c4c 0%,#595959 12%,#666666 25%,#474747 39%,#2c2c2c 50%,#000000 51%,#111111 60%,#2b2b2b 76%,#1c1c1c 91%,#131313 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  #4c4c4c 0%,#595959 12%,#666666 25%,#474747 39%,#2c2c2c 50%,#000000 51%,#111111 60%,#2b2b2b 76%,#1c1c1c 91%,#131313 100%); /* IE10+ */
+background: linear-gradient(to bottom,  #4c4c4c 0%,#595959 12%,#666666 25%,#474747 39%,#2c2c2c 50%,#000000 51%,#111111 60%,#2b2b2b 76%,#1c1c1c 91%,#131313 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4c4c4c', endColorstr='#131313',GradientType=0 ); /* IE6-9 */
+
 }
 
 
@@ -1435,4 +1514,111 @@ box-shadow: 0px 0px 300px #666 inset;
 
 	
 }
+
+#EntityLibrary
+{
+width: 250px;
+position: absolute;
+background: #444;
+height: 100%;
+left: -250px;
+top: 62px;
+
+}
+
+#EntityLibrarySideTab:hover
+{
+	color:rgb(130, 184, 255);
+}
+#EntityLibrarySideTab
+{
+	position: relative;
+left: 209px;
+width: 73px;
+top: 24px;
+height: 45px;
+-webkit-transform: rotate(90deg);
+-moz-transform: rotate(90deg);
+transform: rotate(-90deg);
+font-size: 12px;
+font-family: sans-serif;
+text-align: center;
+border-radius: 7px;
+border: 2px groove rgb(130, 184, 255);
+color: white;
+text-shadow: 1px 1px 3px black;
+cursor: pointer;
+background: #4c4c4c;
+background: -moz-linear-gradient(top, #4c4c4c 0%, #595959 12%, #666666 25%, #474747 39%, #2c2c2c 50%, #000000 51%, #111111 60%, #2b2b2b 76%, #1c1c1c 91%, #131313 100%);
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#4c4c4c), color-stop(12%,#595959), color-stop(25%,#666666), color-stop(39%,#474747), color-stop(50%,#2c2c2c), color-stop(51%,#000000), color-stop(60%,#111111), color-stop(76%,#2b2b2b), color-stop(91%,#1c1c1c), color-stop(100%,#131313));
+background: -webkit-linear-gradient(top, #4c4c4c 0%,#595959 12%,#666666 25%,#474747 39%,#2c2c2c 50%,#000000 51%,#111111 60%,#2b2b2b 76%,#1c1c1c 91%,#131313 100%);
+background: -o-linear-gradient(top, #4c4c4c 0%,#595959 12%,#666666 25%,#474747 39%,#2c2c2c 50%,#000000 51%,#111111 60%,#2b2b2b 76%,#1c1c1c 91%,#131313 100%);
+background: -ms-linear-gradient(top, #4c4c4c 0%,#595959 12%,#666666 25%,#474747 39%,#2c2c2c 50%,#000000 51%,#111111 60%,#2b2b2b 76%,#1c1c1c 91%,#131313 100%);
+background: linear-gradient(to bottom, #4c4c4c 0%,#595959 12%,#666666 25%,#474747 39%,#2c2c2c 50%,#000000 51%,#111111 60%,#2b2b2b 76%,#1c1c1c 91%,#131313 100%);
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4c4c4c', endColorstr='#131313',GradientType=0 );
+padding-left: 0px;
+z-index: 20;
+
+}
+
+#EntityLibraryMain
+{
+width: 247px;
+height: 100%;
+position: absolute;
+top: 0px;
+z-index: 30;
+overflow: hidden;
+background: #515151 url(../../../../images/ui-bg_diagonals-thick_8_333333_40x40.png) 0% 0% repeat;
+background-size: 5%;
+margin-top: 3px;
+padding-right: 3px;
+
+}
+
+.libraryAsset
+{
+text-align: center;
+}
+
+.libraryAsset div
+{
+	font-weight: bold;
+padding-bottom: 9px;
+color: whitesmoke;
+text-shadow: 1px 1px 5px black;
+}
+
+.libraryAsset img
+{
 	
+	width: 200px;
+height: 200px;
+margin-bottom: -19px;
+border-radius: 10px;
+box-shadow: 2px 2px 5px gray;
+}
+
+/* Let's get this party started */
+::-webkit-scrollbar {
+    width: 8px;
+}
+ 
+/* Track */
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    background: rgba(130, 184, 255,1);
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+    width: 8px;
+}
+::-webkit-scrollbar-thumb:window-inactive {
+	background: rgba(130, 184, 255,1);
+}

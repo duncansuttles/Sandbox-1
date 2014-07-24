@@ -1,0 +1,247 @@
+{
+  "children": {
+    "ba0d8cc5-c256-acce-2713-8670b196d01": {
+      "children": {
+        "1772ce17-de43-f664-6146-1f77c56f6546": {
+          "extends": "asset.vwf",
+          "properties": {
+            "DisplayName": "Twig-mesh_material",
+            "castShadows": true,
+            "materialDef": {
+              "color": {
+                "r": 0.8,
+                "g": 0.8,
+                "b": 0.8
+              },
+              "ambient": {
+                "r": 0.8,
+                "g": 0.8,
+                "b": 0.8
+              },
+              "emit": {
+                "r": 0,
+                "g": 0,
+                "b": 0
+              },
+              "specularColor": {
+                "r": 0,
+                "g": 0,
+                "b": 0
+              },
+              "specularLevel": 1,
+              "alpha": 1,
+              "shininess": 0,
+              "side": 0,
+              "reflect": 0,
+              "layers": [
+                {
+                  "mapTo": 1,
+                  "scalex": 1,
+                  "scaley": 1,
+                  "offsetx": 0,
+                  "offsety": 0,
+                  "alpha": 0.91,
+                  "src": "./contentlibraries/entities/assets/branch.png",
+                  "mapInput": 0
+                }
+              ],
+              "type": "phong",
+              "morphTargets": false,
+              "skinning": false
+            },
+            "owner": "Anonymous0",
+            "receiveShadows": true,
+            "transform": [
+              1,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              1
+            ],
+            "translation": [
+              0,
+              0,
+              0
+            ],
+            "type": "3DR Object"
+          },
+          "random": {
+            "c": 1,
+            "s0": 0.839104376733303,
+            "s1": 0.708427720936015,
+            "s2": 0.240246643777937
+          },
+          "sequence": 0,
+          "source": "Twig-mesh_material",
+          "type": "link_existing/threejs"
+        },
+        "3fb6f0-1ca8-83e0-22ff-564bd4613138": {
+          "extends": "asset.vwf",
+          "properties": {
+            "DisplayName": "Trunk-mesh_material",
+            "materialDef": {
+              "color": {
+                "r": 1,
+                "g": 1,
+                "b": 1
+              },
+              "ambient": {
+                "r": 1,
+                "g": 1,
+                "b": 1
+              },
+              "emit": {
+                "r": 0.30196078431372547,
+                "g": 0.29411764705882354,
+                "b": 0.29411764705882354
+              },
+              "specularColor": {
+                "r": 0,
+                "g": 0,
+                "b": 0
+              },
+              "specularLevel": 1,
+              "alpha": 1,
+              "shininess": 0,
+              "side": 0,
+              "reflect": 0,
+              "layers": [
+                {
+                  "mapTo": 1,
+                  "scalex": 1,
+                  "scaley": 1,
+                  "offsetx": 0,
+                  "offsety": 0,
+                  "alpha": 1,
+                  "src": "./contentlibraries/entities/assets/oakbark.jpg",
+                  "mapInput": 0
+                }
+              ],
+              "type": "phong",
+              "morphTargets": false,
+              "skinning": false
+            },
+            "owner": "Anonymous0",
+            "transform": [
+              1,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              1
+            ],
+            "translation": [
+              0,
+              0,
+              0
+            ],
+            "type": "3DR Object"
+          },
+          "random": {
+            "c": 1,
+            "s0": 0.448077041655779,
+            "s1": 0.0976196546107531,
+            "s2": 0.438918341649696
+          },
+          "sequence": 0,
+          "source": "Trunk-mesh_material",
+          "type": "link_existing/threejs"
+        }
+      },
+      "extends": "asset.vwf",
+      "properties": {
+        "DisplayName": "Tree1",
+        "owner": "Anonymous0",
+        "transform": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          -2.2112923048211997E-8,
+          1,
+          0,
+          0,
+          -1,
+          -2.2112923048211997E-8,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "type": "3DR Object"
+      },
+      "random": {
+        "c": 1,
+        "s0": 0.708081600954756,
+        "s1": 0.563793678069487,
+        "s2": 0.107376585481688
+      },
+      "sequence": 0,
+      "source": "./contentlibraries/entities/assets/defaulttree.json",
+      "type": "subDriver/threejs/asset/vnd.osgjs+json+compressed"
+    }
+  },
+  "extends": "sandboxGroup.vwf",
+  "properties": {
+    "owner": "Anonymous0",
+    "transform": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0.4000000059604645,
+      2.5999999046325684,
+      0,
+      1
+    ],
+    "translation": [
+      0.4000000059604645,
+      2.5999999046325684,
+      0
+    ],
+    "type": "Group"
+  },
+  "random": {
+    "c": 1,
+    "s0": 0.162749223643914,
+    "s1": 0.887165644671768,
+    "s2": 0.788178560556844
+  },
+  "sequence": 0
+}

@@ -78,8 +78,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         var oldyrot = 0;
         var oldzrot = 0;
         var SelectionBounds = [];
-        var lastscale = [1, 1, 1];
-        var lastpos = [1, 1, 1];
+        var lastscale = [];
+        var lastpos = [];
         var OldX = 0;
         var OldY = 0;
         var MouseMoved = false;
@@ -101,9 +101,9 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             $('#statusbar').append('<div id="statusbarinner"></div>');
             $('#statusbarinner').append('<div id="SceneSaved" class="statusbarElement" />');
             $('#SceneSaved').text('Not Saved');
-            $('#statusbarinner').append('<div id="StatusSelectedName" style="color:lightblue" class="statusbarElement" />');
+            $('#statusbarinner').append('<div id="StatusSelectedName" style="color:rgb(175, 209, 253);" class="statusbarElement" />');
             $('#StatusSelectedName').text('No Selection');
-            $('#statusbarinner').append('<div id="StatusMouseOverName" style="color:lightblue" class="statusbarElement" />');
+            $('#statusbarinner').append('<div id="StatusMouseOverName" style="color:rgb(175, 209, 253);" class="statusbarElement" />');
             $('#StatusMouseOverName').text('No Selection');
             $('#statusbarinner').append('<div id="StatusSelectedID" class="statusbarElement" style="display:none" />');
             $('#StatusSelectedID').text('No Selection');
@@ -121,17 +121,40 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             $('#StatusGizmoLocation').text('[0,0,0]');
             $('#statusbarinner').append('<div id="StatusCameraLocation" class="statusbarElement" />');
             $('#StatusCameraLocation').text('[0,0,0]');
-        }
 
-        $('#playButton').click(function() {
-            _Publisher.playWorld();
-        });
-        $('#pauseButton').click(function() {
-            _Publisher.togglePauseWorld();
-        });
-        $('#stopButton').click(function() {
-            _Publisher.stopWorld();
-        });
+            var instanceData = _DataManager.getInstanceData()
+            if (instanceData) {
+                $('#statusbarinner').append('<div id="StatusWorldTitle" style="color:rgb(175, 209, 253);" class="statusbarElement" />');
+                $('#StatusWorldTitle').text(instanceData.title);
+                if (instanceData.publishSettings)
+                    $('#statusbarinner').append('<div style="color:rgb(175, 209, 253);" class="statusbarElement" >Published</div>');
+            }
+            $('#statusbarinner').append('<div style="" class="statusbarElement" >Logged in as:');
+            $('#statusbarinner').append('<div id="StatusUserName" style="border: none;color:rgb(175, 209, 253);" class="statusbarElement" />');
+
+
+
+            $('#playButton').click(function() {
+                _Publisher.playWorld();
+            });
+            $('#pauseButton').click(function() {
+                _Publisher.togglePauseWorld();
+            });
+            $('#stopButton').click(function() {
+                _Publisher.stopWorld();
+            });
+
+            $('#stopButton').tooltip({
+                content: "Click Stop to Edit",
+                items: 'div'
+            })
+            $('#playButton').tooltip({
+                content: "Click Play to Test",
+                items: 'div'
+            })
+
+
+        }
         //create progressbar and the log bar
         ProgressBar.initialize('statusbar');
         window._ProgressBar = ProgressBar;
@@ -142,6 +165,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         var _CopiedNodes = [];
         //	$('#vwf-root').mousedown(function(e){
         this.mousedown_Gizmo = function(e) {
+
 
             this.undoPoint = null; //when the mouse is down, we start over with the record for the undo
             $('#index-vwf').focus();
@@ -320,10 +344,35 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             }
         }
         this.mouseleave = function(e) {
+
+            //if the mouse is over anythign that is not the context menu, hide the context menu
             var teste = e.toElement || e.relatedTarget;
             if (teste != $('#ContextMenu')[0] && $(teste).parent()[0] != $('#ContextMenu')[0] && !$(teste).hasClass('glyph')) {
                 $('#ContextMenu').hide();
                 $('#ContextMenu').css('z-index', '-1');
+            }
+
+            //if the mouse is over any div that is not a selection glyph or the selection marquee, cancel all actions
+            if (!$(teste).hasClass('glyph') && teste !== this.selectionMarquee[0]) {
+                this.undoPoint = null;
+                this.MouseLeftDown = false;
+                this.mouseDownScreenPoint = null;
+                this.MouseLeftDown = false;
+                this.selectionMarquee.hide();
+                this.selectionMarquee.css('z-index', '-1');
+                this.mouseUpScreenPoint = [e.clientX, e.clientY];
+                if (MoveGizmo) {
+                    for (var i = 0; i < MoveGizmo.allChildren.length; i++) {
+                        if (MoveGizmo.allChildren[i].material) {
+                            var c = MoveGizmo.allChildren[i].material.originalColor;
+                            MoveGizmo.allChildren[i].material.color.setRGB(c.r, c.g, c.b);
+                            MoveGizmo.allChildren[i].material.emissive.setRGB(c.r, c.g, c.b);
+                        }
+                    }
+                    document.AxisSelected = -1;
+                    $('#StatusAxis').text('Axis: -1');
+                    
+                }
             }
         }
         this.restoreTransforms = function() {
@@ -342,6 +391,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         }
         this.mouseup_Gizmo = function(e) {
             if (e.button == 2 && !MouseMoved && document.AxisSelected == -1) {
+                
                 self.ShowContextMenu(e);
                 this.undoPoint = null;
                 return false;
@@ -359,10 +409,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 }, 1000);
                 return false;
             }
-            if (e.mouseleave) {
-                this.undoPoint = null;
-                return;
-            }
+
             this.MouseLeftDown = false;
             this.selectionMarquee.hide();
             this.selectionMarquee.css('z-index', '-1');
@@ -976,9 +1023,16 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         }
         this.mousemove_Gizmo = function(e) {
 
-            if (SelectedVWFNodes.length > 0 && !this.findviewnode(SelectedVWFNodes[0].id)) return;
-            if (this.waitingForSet.length > 0) return;
+            //need to know this in order to show context menu properly
             MouseMoved = true;
+            //prevent trying to move objects that have no 3D node
+
+            if (SelectedVWFNodes.length > 0 && !this.findviewnode(SelectedVWFNodes[0].id)) return;
+
+            //prevent moving 3D nodes that are not bound to the scene or are the scene itself
+            if (SelectedVWFNodes.length > 0 && !(this.findviewnode(SelectedVWFNodes[0].id)).parent) return;
+            if (this.waitingForSet.length > 0) return;
+            
             if (!MoveGizmo || MoveGizmo == null) {
                 return;
             }
@@ -1170,30 +1224,34 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
                 for (var s = 0; s < SelectedVWFNodes.length; s++) {
                     if (SelectedVWFNodes[s]) {
-                        var tempscale = [lastscale[s][0], lastscale[s][1], lastscale[s][2]]; //[s.x,s.y,s.z];
-                        if (document.AxisSelected == 6 || document.AxisSelected == 20) {
-                            wasScaled = true;
-                            tempscale[0] += scalemult * ScaleXY[0];
-                        }
-                        if (document.AxisSelected == 7 || document.AxisSelected == 21) {
-                            wasScaled = true;
-                            tempscale[1] += scalemult * ScaleXY[1];
-                        }
-                        if (document.AxisSelected == 8 || document.AxisSelected == 22) {
-                            wasScaled = true;
-                            tempscale[2] += scalemult * ScaleXZ[2];
-                        }
-                        if (document.AxisSelected == 23) {
-                            wasScaled = true;
-                            tempscale[0] += -scalemult * ScaleXY[0];
-                        }
-                        if (document.AxisSelected == 24) {
-                            wasScaled = true;
-                            tempscale[1] += -scalemult * ScaleXY[1];
-                        }
-                        if (document.AxisSelected == 25) {
-                            wasScaled = true;
-                            tempscale[2] += -scalemult * ScaleXZ[2];
+
+                        var tempscale = null;
+                        if (lastscale[s]) {
+                            tempscale = [lastscale[s][0], lastscale[s][1], lastscale[s][2]]; //[s.x,s.y,s.z];
+                            if (document.AxisSelected == 6 || document.AxisSelected == 20) {
+                                wasScaled = true;
+                                tempscale[0] += scalemult * ScaleXY[0];
+                            }
+                            if (document.AxisSelected == 7 || document.AxisSelected == 21) {
+                                wasScaled = true;
+                                tempscale[1] += scalemult * ScaleXY[1];
+                            }
+                            if (document.AxisSelected == 8 || document.AxisSelected == 22) {
+                                wasScaled = true;
+                                tempscale[2] += scalemult * ScaleXZ[2];
+                            }
+                            if (document.AxisSelected == 23) {
+                                wasScaled = true;
+                                tempscale[0] += -scalemult * ScaleXY[0];
+                            }
+                            if (document.AxisSelected == 24) {
+                                wasScaled = true;
+                                tempscale[1] += -scalemult * ScaleXY[1];
+                            }
+                            if (document.AxisSelected == 25) {
+                                wasScaled = true;
+                                tempscale[2] += -scalemult * ScaleXZ[2];
+                            }
                         }
                         if (document.AxisSelected == 19) // || document.AxisSelected == 10 || document.AxisSelected == 11)
                         {
@@ -2235,8 +2293,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             dist = -tgizpos2[2] / 65;
             var oldscale = [MoveGizmo.matrix.elements[0], MoveGizmo.matrix.elements[5], MoveGizmo.matrix.elements[10]];
             MoveGizmo.matrix.scale(new THREE.Vector3(1 / oldscale[0], 1 / oldscale[1], 1 / oldscale[2]));
-            var windowXadj = 1600.0 / $('#index-vwf').width();
-            var windowYadj = 1200.0 / $('#index-vwf').height();
+            var windowXadj = 1600.0 / $(window).width();
+            var windowYadj = 1200.0 / $(window).height();
             var winadj = Math.max(windowXadj, windowYadj);
             MoveGizmo.matrix.scale(new THREE.Vector3(dist * winadj * fovadj, dist * winadj * fovadj, dist * winadj * fovadj));
 
@@ -2973,7 +3031,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             });
             $('#ContextMenuSelectNone').click(function() {
                 self.SelectObject(null);
-                self.SetSelectMode('None');
+               
                 $('#ContextMenu').hide();
                 $('#ContextMenu').css('z-index', '-1');
                 $(".ddsmoothmenu").find('li').trigger('mouseleave');
@@ -3190,10 +3248,13 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             var self = this;
             //ok, here, let's preload the asset. If there is an error during parse, the preloader will never hit the callback and 
             // we won't end up with a broken VWF entity.
-            _assetLoader.loadAssets([{type:type,url:url}],function(){
-            
+            _assetLoader.loadAssets([{
+                type: type,
+                url: url
+            }], function() {
+
                 var Proto = {
-                extends: 'asset.vwf',
+                    extends: 'asset.vwf',
                     source: url,
                     type: type || 'subDriver/threejs/asset/vnd.collada+xml',
                     properties: {
@@ -3210,8 +3271,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 vwf_view.kernel.createChild('index-vwf', newname, Proto);
 
 
-            },true)
-           
+            }, true)
+
 
         }
         this.focusSelected = function() {

@@ -34,6 +34,7 @@ define(function ()
 		"<input class='editorCheck' type='checkbox' id='castShadows'>Cast Shadows</input><br/>" +
 		"<input class='editorCheck'type='checkbox' id='receiveShadows'>Receive Shadows</input><br/>" +
 		"<input class='editorCheck' type='checkbox' id='passable'>Passable</input><br/>" +
+		"<input class='editorCheck' type='checkbox' id='isSelectable'>Selectable</input><br/>" +
 		"</div>" +
 		'</div>' +
 		'<h3><a href="#">Transforms</a></h3>' +
@@ -80,6 +81,10 @@ define(function ()
 		$('#castShadows').change(function (e)
 		{
 			_PrimitiveEditor.setProperty('selection', 'castShadows', this.checked)
+		});
+		$('#isSelectable').change(function (e)
+		{
+			_PrimitiveEditor.setProperty('selection', 'isSelectable', this.checked)
 		});
 		$('#receiveShadows').change(function (e)
 		{
@@ -285,6 +290,14 @@ define(function ()
 					else
 					{
 						$('#castShadows').removeAttr('checked');
+					}
+					if (vwf.getProperty(node.id, 'isSelectable'))
+					{
+						$('#isSelectable').attr('checked', 'checked');
+					}
+					else
+					{
+						$('#isSelectable').removeAttr('checked');
 					}
 					if (vwf.getProperty(node.id, 'passable'))
 					{

@@ -167,12 +167,7 @@ exports.UpdatePassword = function (URL,response)
 		//make the password as not temp, so the user can use the site normally.
 		URL.loginData.PasswordIsTemp = false;
 		//store the updated session in the db
-		URL.loginData.updated(function(){
-
-			respond(response,200,'');
-			return;
-
-		})
+		respond(response,200,'');
 		
 	});
 }

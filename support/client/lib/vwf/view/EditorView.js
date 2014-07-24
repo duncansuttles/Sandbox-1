@@ -1,5 +1,5 @@
 "use strict";
-define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify", "vwf/view/editorview/Menubar", "vwf/view/editorview/ObjectPools", "vwf/view/editorview/LocationTools", "vwf/view/editorview/WindowResize", "vwf/view/editorview/_PermissionsManager", "vwf/view/editorview/InputSetup", "vwf/view/editorview/SaveLoadTimer", "vwf/view/editorview/TouchHandler", "vwf/view/editorview/SidePanel", "vwf/view/editorview/Toolbar", "vwf/view/editorview/ChatSystemGUI", "vwf/view/editorview/PrimitiveEditor", "vwf/view/editorview/MaterialEditor", "vwf/view/editorview/Notifier", "vwf/view/editorview/ScriptEditor", "vwf/view/editorview/Editor", "vwf/view/editorview/_3DRIntegration", "vwf/view/editorview/InventoryManager", "vwf/view/editorview/HeirarchyManager", "vwf/view/editorview/DataManager", "vwf/view/editorview/UserManager", "vwf/view/editorview/help", "vwf/view/editorview/SideTabs", "vwf/view/editorview/wireeditor", "vwf/view/editorview/selectionEditor", "vwf/view/editorview/UndoManager", "vwf/view/editorview/Publisher"], function(module, version, view) {
+define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify", "vwf/view/editorview/Menubar", "vwf/view/editorview/ObjectPools", "vwf/view/editorview/LocationTools", "vwf/view/editorview/WindowResize", "vwf/view/editorview/_PermissionsManager", "vwf/view/editorview/InputSetup", "vwf/view/editorview/SaveLoadTimer", "vwf/view/editorview/TouchHandler", "vwf/view/editorview/SidePanel", "vwf/view/editorview/Toolbar", "vwf/view/editorview/ChatSystemGUI", "vwf/view/editorview/PrimitiveEditor", "vwf/view/editorview/MaterialEditor", "vwf/view/editorview/Notifier", "vwf/view/editorview/ScriptEditor", "vwf/view/editorview/Editor", "vwf/view/editorview/_3DRIntegration", "vwf/view/editorview/InventoryManager", "vwf/view/editorview/HeirarchyManager", "vwf/view/editorview/DataManager", "vwf/view/editorview/UserManager", "vwf/view/editorview/help", "vwf/view/editorview/SideTabs", "vwf/view/editorview/wireeditor", "vwf/view/editorview/selectionEditor", "vwf/view/editorview/UndoManager", "vwf/view/editorview/Publisher", "vwf/view/editorview/EntityLibrary"], function(module, version, view) {
     return view.load(module, {
         // == Module Definition ====================================================================
         initialize: function() {
@@ -63,6 +63,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
                     window._WireEditor = require("vwf/view/editorview/wireeditor").getSingleton();
                     window._SelectionEditor = require("vwf/view/editorview/selectionEditor").getSingleton();
                     window._UndoManager = require("vwf/view/editorview/UndoManager").getSingleton();
+                    window._EntityLibrary = require("vwf/view/editorview/EntityLibrary").getSingleton();
                     this.addManager(_ScriptEditor);
                     this.addManager(_UndoManager);
                     this.addManager(_ModelLibrary);
@@ -74,6 +75,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
                     this.addManager(_WireEditor);
                     this.addManager(HierarchyManager);
                     this.addManager(_Publisher);
+                    this.addManager(_EntityLibrary);
                 }
                 window._LocationTools = require("vwf/view/editorview/LocationTools").getSingleton();
                 window._UserManager = require("vwf/view/editorview/UserManager").getSingleton();;
@@ -269,6 +271,7 @@ function InitializeEditor() {
 
     $(document.body).css('overflow', 'hidden');
     $(window).resize();
+    
     //	$('body *').not(':has(input)').not('input').disableSelection();
     //	$('#vwf-root').enableSelection();
     //	$('#vwf-root').parent().enableSelection();
@@ -287,7 +290,7 @@ function PlayerDeleted(e) {
 
 function GUID() {
     var S4 = function() {
-        return Math.floor(Math.random() * 0x10000 /* 65536 */ ).toString(16);
+        return Math.floor(Math.SecureRandom() * 0x10000 /* 65536 */ ).toString(16);
     };
     return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
 }

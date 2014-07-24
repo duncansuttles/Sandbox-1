@@ -1,7 +1,7 @@
 
 
 <div id="toolbar" style=""> </div>		
-<div id="smoothmenu1" class="ddsmoothmenu" style="z-index: 1000;position: fixed;width: 100%;border-bottom: 1px solid #555555;">
+<div id="smoothmenu1" class="ddsmoothmenu" style="z-index: 1000;position: fixed;width: 100%;border-bottom: 1px solid #666666;">
 <ul>
 <li><a  id="MenuFile">File</a>
 <ul>
@@ -56,7 +56,7 @@
 				  
 			  </ul>
               <li style='border-bottom:3px solid gray'></li> 	
-              <li><a  id="ResetTransforms">Reset Transforms</a></li>
+              <li  style="z-index: 100;"><a  id="ResetTransforms">Reset Transforms</a></li>
 			</li>
 		  </ul>
 	  </li>
@@ -159,7 +159,7 @@
 	<li><a id="MenuLights" >Lights</a>
 		<ul>
 		  <li><a  id="MenuCreateLightPoint">Point</a></li>
-		  <li><a  id="MenuCreateLightSpot">Light</a></li>
+		  <li><a  id="MenuCreateLightSpot">Spot</a></li>
 		  <li><a  id="MenuCreateLightDirectional">Directional</a></li>
 		</ul>
 	</li>
@@ -190,8 +190,8 @@
 		  <li><a  id="MenuCreateGUIPanel">Panel</a></li>
 		</ul>
 	</li>
-	<li><a  id="MenuCreateLoadMeshURL">Load Mesh By URL</a></li>
-	<li><a  id="MenuCreateUploadMesh">Upload a 3D Object</a></li>
+	<li style="z-index: 100;"><a  id="MenuCreateLoadMeshURL">Load Mesh By URL</a></li>
+	<li style="z-index: 100;"><a  id="MenuCreateUploadMesh">Upload a 3D Object</a></li>
   </ul>
 </li>
 <li><a  id="MenuTools">Tools</a>
@@ -227,6 +227,7 @@
   <li><a  id="MenuViewFullscreen">Toggle Full Screen</a></li>
   <li><a  id="MenuViewStats">Toggle Stats</a></li>
   <li><a  id="MenuViewInterpolation">Toggle Interpolation</a></li>
+  <li><a  id="MenuViewOctree">Toggle Octree Display</a></li>
   <li><a  id="MenuViewRenderNormal">Normal Rendering</a></li>
   <li><a  id="MenuViewRenderStereo">Stereo Rendering</a></li>
   <li><a  id="MenuViewTabletDemo">Tablet Demo Mode</a></li>

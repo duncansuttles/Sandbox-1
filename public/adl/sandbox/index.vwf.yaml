@@ -62,6 +62,9 @@ properties:
   skyHorizonColor: [ 0 , .5 , 1.0 ]
   vAtmosphereDensity: .0005
   playMode: "paused"
+  octreeObjects: 5
+  octreeDepth: 16
+  octreeExtents: 640
   materialDef:
     set: |  
            this.materialDef = value;
@@ -243,6 +246,30 @@ properties:
       displayname: Sky Horizon Color
       property: skyHorizonColor
       type: color
+    zOctree:
+      displayname: 'Octree Accelerator'
+      type: 'sectionTitle'
+    zOctreeDepth:
+      displayname: 'Octree Max Depth'
+      property: octreeDepth
+      type: slider
+      min: 3
+      max: 24
+      step: 1
+    zOctreeExtents:
+      displayname: 'Octree Size (m)'
+      property: octreeExtents
+      type: slider
+      min: 10
+      max: 10000
+      step: 10
+    zOctreeObjects:
+      displayname: 'Max Objects per Octree Cell'
+      property: octreeObjects
+      type: slider
+      min: 3
+      max: 20
+      step: 1         
 events:
   disconnected:
   avatarCreated:
@@ -320,6 +347,10 @@ scripts:
             
         }.bind(this));
         $('#index-vwf').mousemove(function(e){this.localpointerMove(e);}.bind(this));
+
+        $('#index-vwf')[0].addEventListener("touchstart", this.localTouchStart.bind(this), true);
+        $('#index-vwf')[0].addEventListener("touchend", this.localTouchEnd.bind(this), true);
+        $('#index-vwf')[0].addEventListener("touchmove", this.localTouchMove.bind(this), true);
 
        this.updateCallbacks = [];
        this.OwnedPrims = [];
@@ -780,6 +811,60 @@ scripts:
 
         return dist;
     }
+    this.touchcount = 0;
+    this.lastTouchDist = 0;
+    this.localTouchStart = function(event)
+    { 
+       this.touchcount ++;
+
+       this.rightdown = true;
+       this.last_x = event.touches[0].clientX/window.screen.width;
+       this.last_y = event.touches[0].clientY/window.screen.height;
+
+       if(event.touches.length == 2)
+        {
+             var x = (event.touches[0].clientX - event.touches[1].clientX)/2;
+             var y = (event.touches[0].clientX - event.touches[1].clientX)/2;
+             x *= x;
+             y *= y;
+             this.lastTouchDist = Math.sqrt(x+y);
+        }
+    }
+    this.localTouchEnd = function(event)
+    {
+       this.touchcount --;
+       this.rightdown = false;
+    }
+    this.localTouchMove = function(event)
+    {
+        if(event.touches.length == 1)
+          this.localpointerMove(event.touches[0]);
+        if(event.touches.length == 2)
+        {
+
+             var x = (event.touches[0].clientX - event.touches[1].clientX)/2;
+             var y = (event.touches[0].clientX - event.touches[1].clientX)/2;
+             x *= x;
+             y *= y;
+             var dist = Math.sqrt(x+y);
+             var relDist = this.lastTouchDist - dist;
+             if(Math.abs(relDist) > 3)
+             {
+             this.lastTouchDist = dist;
+             event.touches[0].deltaY = relDist;
+             this.localpointerWheel(event.touches[0]);
+           }
+
+             var x = (event.touches[0].clientX + event.touches[1].clientX)/2;
+             var y = (event.touches[0].clientX + event.touches[1].clientX)/2;
+             this.middledown = true;
+             event.touches[0].clientX = x;
+             event.touches[0].clientY = y;
+             this.localpointerMove(event.touches[0]);
+             this.middledown = false;
+
+        }  
+    }
     this.localpointerDown = function( parms, pickInfo ){
      
       if(!_dView.inDefaultCamera()) return;
@@ -846,7 +931,8 @@ scripts:
       this.rel_x = this.last_x - parms.clientX/window.screen.width;
       this.rel_y = this.last_y - parms.clientY/window.screen.height;
       
-      if((this.rightdown==true || this.middledown==true))
+      //only works with pointer lock
+      if(parms.originalEvent && (this.rightdown==true || this.middledown==true))
       {
         this.rel_x = -(parms.originalEvent.webkitMovementX || parms.originalEvent.mozMovementX || parms.originalEvent.MovementX)/1000 || this.rel_x;
         this.rel_y = -(parms.originalEvent.webkitMovementY || parms.originalEvent.mozMovementY || parms.originalEvent.MovementY)/1000 || this.rel_y;
@@ -1297,8 +1383,8 @@ scripts:
                         blendMode: 0,
                         mapInput: 0,
                         mapTo: 1,
-                        offsetx: 0,
-                        offsety: 0,
+                        offsetx: .11,
+                        offsety: .11,
                         rot: 0,
                         scalex: 250/9,
                         scaley: 250/9,
@@ -1309,10 +1395,8 @@ scripts:
     }
     this.setTexture = function(value)
     {
-            
              if(this.groundplane)
-             this.setMaterialByDef(this.groundplane.material,value);
-             
+              _MaterialCache.setMaterial(this.groundplane,value)       
     }
     this.createNameTag = function()
     {
@@ -1398,7 +1482,7 @@ scripts:
      
       screen[1] = wh - screen[1];
 
-      div.style.top = (screen[1]+35)  +  'px';
+      div.style.top = (screen[1])  +  'px';
       div.style.left = (screen[0]  - 20/2)  +'px';
      
      
@@ -1441,117 +1525,7 @@ scripts:
         this.sun.shadowCamera.projectionMatrix.makeOrthographic(camposLS.x - 15,camposLS.x + 15,camposLS.y - 15,camposLS.y+15,-camposLS.z - 15 ,-camposLS.z + 15 );
         }
     }    
-    this.setMaterialByDef = function(currentmat,value)
-    {
-        
-        currentmat.color.r = value.color.r;
-        currentmat.color.g = value.color.g;
-        currentmat.color.b = value.color.b;
-        
-        currentmat.ambient.r = value.ambient.r;
-        currentmat.ambient.g = value.ambient.g;
-        currentmat.ambient.b = value.ambient.b;
-        
-        currentmat.emissive.r = value.emit.r;
-        currentmat.emissive.g = value.emit.g;
-        currentmat.emissive.b = value.emit.b;
-        
-        currentmat.specular.r = value.specularColor.r * value.specularLevel/10;
-        currentmat.specular.g = value.specularColor.g * value.specularLevel/10;
-        currentmat.specular.b = value.specularColor.b * value.specularLevel/10;
-        
-        currentmat.opacity = value.alpha;
-        if(value.alpha < 1)
-            currentmat.transparent = true;
-        else
-            currentmat.transparent = false;
-            
-        currentmat.shininess = value.shininess * 5 ;
-        
-        var mapnames = ['map','bumpMap','lightMap','normalMap','specularMap','envMap'];
-        currentmat.reflectivity = value.reflect;
-        for(var i =0; i < value.layers.length; i++)
-        {
-                var mapname;
-                if(value.layers[i].mapTo == 1)
-                {
-                    mapname = 'map';
-                    
-                    
-                    currentmat.alphaTest = 1 - value.layers[i].alpha;
-                    
-                }
-                if(value.layers[i].mapTo == 2)
-                {
-                    mapname = 'bumpMap';
-                    currentmat.bumpScale = value.layers[i].alpha;
-                }
-                if(value.layers[i].mapTo == 3)
-                {
-                    mapname = 'lightMap';
-                }	
-                if(value.layers[i].mapTo == 4)
-                {
-                    mapname = 'normalMap';
-                    currentmat.normalScale.x = value.layers[i].alpha;
-                    currentmat.normalScale.y = value.layers[i].alpha;
-                }	
-                if(value.layers[i].mapTo == 5)
-                {
-                    mapname = 'specularMap';
-                }
-                
-                if(value.layers[i].mapTo == 6)
-                {
-                    mapname = 'envMap';
-                }
-                
-                mapnames.splice(mapnames.indexOf(mapname),1);				
-                
-                String.prototype.endsWith = function(suffix) {
-                    return this.indexOf(suffix, this.length - suffix.length) !== -1;
-                };
 
-                if((currentmat[mapname] && currentmat[mapname].image && !currentmat[mapname].image.src.toString().endsWith(value.layers[i].src)) || !currentmat[mapname])
-                {
-                    currentmat[mapname] = THREE.ImageUtils.loadTexture(value.layers[i].src);
-                    
-                }
-                
-                if(value.layers[i].mapInput == 0)
-                {
-                    currentmat[mapname].mapping = new THREE.UVMapping();
-                }
-                if(value.layers[i].mapInput == 1)
-                {
-                    currentmat[mapname].mapping = new THREE.CubeReflectionMapping();
-                }
-                if(value.layers[i].mapInput == 2)
-                {
-                    currentmat[mapname].mapping = new THREE.CubeRefractionMapping();
-                }
-                if(value.layers[i].mapInput == 3)
-                {
-                    currentmat[mapname].mapping = new THREE.SphericalReflectionMapping();
-                }
-                if(value.layers[i].mapInput == 4)
-                {
-                    currentmat[mapname].mapping = new THREE.SphericalRefractionMapping();
-                }
-                currentmat[mapname].wrapS = THREE.RepeatWrapping;
-                currentmat[mapname].wrapT = THREE.RepeatWrapping;
-                currentmat[mapname].repeat.x = value.layers[i].scalex;
-                currentmat[mapname].repeat.y = value.layers[i].scaley;
-                currentmat[mapname].offset.x = value.layers[i].offsetx;
-                currentmat[mapname].offset.y = value.layers[i].offsety;
-            
-        }
-        for(var i in mapnames)
-        {
-            currentmat[mapnames[i]] = null;
-        }
-        currentmat.needsUpdate = true;
-    }      
 
       this.pointerOver = function(){return true;}
     this.pointerOut= function(){return true;}

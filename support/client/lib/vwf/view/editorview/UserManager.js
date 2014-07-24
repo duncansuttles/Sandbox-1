@@ -120,10 +120,10 @@ define(function() {
 
 
                         //only the first client from a given login should create the avatart
-                        if (vwf.models[0].model.nodes['character-vwf-' + username.replace(/ /g, '-')] == undefined)
+                        if (vwf.models[0].model.nodes['character-vwf-' + userID.replace(/ /g, '-')] == undefined)
                             this.Login(username, userID);
                         else {
-                            alertify.alert('You are already logged into this space from another tab.');
+                            alertify.alert('You are already logged into this space from another tab. This session will be an anonymous guest');
                         }
 
 
@@ -203,6 +203,7 @@ define(function() {
         }
         this.Login = function(username, userID) {
 
+            $('#StatusUserName').text(username);
             var needlogin = true;
             var createAvatar = true;
             var statedata = _DataManager.getInstanceData();
@@ -426,7 +427,7 @@ define(function() {
         }
         this.CreateNPC = function(filename) {
             this.PlayerProto.source = filename;
-            var name = 'NPC' + Math.floor(Math.random() * 1000);
+            var name = 'NPC' + Math.floor(Math.SecureRandom() * 1000);
             this.PlayerProto.properties.PlayerNumber = name;
             this.PlayerProto.properties.owner = this.currentUsername;
             this.PlayerProto.properties.ownerClientID = null;

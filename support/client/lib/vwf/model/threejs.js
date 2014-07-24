@@ -15,9 +15,6 @@
 
 
 
-
-
-
 function matCpy(mat) {
     var ret = [];
     for (var i = 0; i < 16; i++)
@@ -43,7 +40,7 @@ function matComploose(m1, m2) {
     return true;
 }
 
-define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/threejs/backgroundLoader", "vwf/model/threejs/glTF-parser","vwf/model/threejs/gltfCloner", "vwf/model/threejs/glTFLoaderUtils", "vwf/model/threejs/glTFLoader", "vwf/model/threejs/glTFAnimation","vwf/model/threejs/glTFAnimation", "vwf/model/threejs/webgl-tf-deprecated"], function(module, model, utility, Color, backgroundLoader) {
+define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/threejs/backgroundLoader", "vwf/model/threejs/gltfCloner", "vwf/model/threejs/glTFLoaderUtils", "vwf/model/threejs/glTFLoader", "vwf/model/threejs/glTFAnimation","vwf/model/threejs/glTFAnimation", "vwf/model/threejs/webgl-tf-deprecated"], function(module, model, utility, Color, backgroundLoader) {
 
 
 
@@ -133,7 +130,6 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
             this.delayedProperties = {};
             this.subDriverFactory = new SubDriverFactory();
-
 
 
 
@@ -891,9 +887,9 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                         if (!ps.maxAcceleration) ps.maxAcceleration = [0, 0, 0];
 
                         for (var i = 0; i < particles.vertices.length; i++) {
-                            particles.vertices[i].acceleration.x = ps.minAcceleration[0] + (ps.maxAcceleration[0] - ps.minAcceleration[0]) * Math.random();
-                            particles.vertices[i].acceleration.y = ps.minAcceleration[1] + (ps.maxAcceleration[1] - ps.minAcceleration[1]) * Math.random();
-                            particles.vertices[i].acceleration.z = ps.minAcceleration[2] + (ps.maxAcceleration[2] - ps.minAcceleration[2]) * Math.random();
+                            particles.vertices[i].acceleration.x = ps.minAcceleration[0] + (ps.maxAcceleration[0] - ps.minAcceleration[0]) * Math.SecureRandom();
+                            particles.vertices[i].acceleration.y = ps.minAcceleration[1] + (ps.maxAcceleration[1] - ps.minAcceleration[1]) * Math.SecureRandom();
+                            particles.vertices[i].acceleration.z = ps.minAcceleration[2] + (ps.maxAcceleration[2] - ps.minAcceleration[2]) * Math.SecureRandom();
                         }
                     }
                     if (propertyName == "minVelocity" || propertyName == "maxVelocity") {
@@ -902,9 +898,9 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
                         for (var i = 0; i < particles.vertices.length; i++) {
 
-                            particles.vertices[i].velocity.x = ps.minVelocity[0] + (ps.maxVelocity[0] - ps.minVelocity[0]) * Math.random();
-                            particles.vertices[i].velocity.y = ps.minVelocity[1] + (ps.maxVelocity[1] - ps.minVelocity[1]) * Math.random();
-                            particles.vertices[i].velocity.z = ps.minVelocity[2] + (ps.maxVelocity[2] - ps.minVelocity[2]) * Math.random();
+                            particles.vertices[i].velocity.x = ps.minVelocity[0] + (ps.maxVelocity[0] - ps.minVelocity[0]) * Math.SecureRandom();
+                            particles.vertices[i].velocity.y = ps.minVelocity[1] + (ps.maxVelocity[1] - ps.minVelocity[1]) * Math.SecureRandom();
+                            particles.vertices[i].velocity.z = ps.minVelocity[2] + (ps.maxVelocity[2] - ps.minVelocity[2]) * Math.SecureRandom();
                         }
                     }
                     if (propertyName == "minLifeTime" || propertyName == "maxLifeTime") {
@@ -912,7 +908,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                         if (ps.maxLifeTime === undefined) ps.maxLifeTime = 1;
 
                         for (var i = 0; i < particles.vertices.length; i++) {
-                            particles.vertices[i].lifespan = ps.minLifeTime + (ps.maxLifeTime - ps.minLifeTime) * Math.random();
+                            particles.vertices[i].lifespan = ps.minLifeTime + (ps.maxLifeTime - ps.minLifeTime) * Math.SecureRandom();
                         }
                     }
                 }
@@ -1030,6 +1026,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                         }
                     }
                 }
+                //note: move scene into subdriver
                 if (threeObject instanceof THREE.Scene) {
                     if (propertyName == 'activeCamera') {
                         if (this.state.scenes[this.state.sceneRootID].camera.threeJScameras[propertyValue]) {
@@ -1039,6 +1036,15 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                     }
                     if (propertyName == 'ambientColor') {
                         //handled in view
+                    }
+                    if (propertyName == 'octreeExtents') {
+                        _SceneManager.setExtents(propertyValue);
+                    }
+                    if (propertyName == 'octreeDepth') {
+                        _SceneManager.setMaxDepth(propertyValue);
+                    }
+                    if (propertyName == 'octreeObjects') {
+                         _SceneManager.setMaxObjects(propertyValue);
                     }
                     if (propertyName == 'backgroundColor') {
                         if (node && node.renderer) {
@@ -1248,7 +1254,6 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
 
                     }
-
 
 
 
@@ -1634,7 +1639,6 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
 
 
-
         mesh.geometry.uvsNeedUpdate = true;
 
 
@@ -1990,7 +1994,6 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
 
 
-
             //default material expects all computation done cpu side, just renders
             // note that since the color, size, spin and orientation are just linear
             // interpolations, they can be done in the shader
@@ -2028,7 +2031,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 THREE.ShaderChunk.lights_phong_pars_fragment + "\n" +
                 THREE.ShaderChunk.fog_pars_fragment + "\n" +
 
-            "void main() {\n" +
+                "void main() {\n" +
                 " vec2 coord = vec2(0.0,0.0);" +
                 " vec2 orig_coord = vec2(gl_PointCoord.s,1.0-gl_PointCoord.t);" +
                 " float spin = mix(maxSpin,minSpin,vRandom.x);" +
@@ -2042,7 +2045,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 " coord += vec2(floor(vRandom.x*textureTiles)/textureTiles,floor(vRandom.y*textureTiles)/textureTiles);\n" +
                 "   vec4 outColor = (vColor * texture2D( texture, coord  )) *useTexture + vColor * (1.0-useTexture);\n" +
 
-            "   gl_FragColor = outColor;\n" +
+                "   gl_FragColor = outColor;\n" +
                 THREE.ShaderChunk.fog_fragment + "\n" +
                 "}\n";
 
@@ -2155,7 +2158,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
             //reuse the frag shader from the normal material	
             var vertShader_interpolate =
 
-            "attribute float age; \n" +
+                "attribute float age; \n" +
                 "attribute float lifespan; \n" +
                 "attribute vec3 previousPosition;\n" +
                 "varying vec4 vColor;\n" +
@@ -2229,19 +2232,19 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 "uniform vec4 colorRange;\n" +
                 "varying vec3 vFogPosition;\n" +
                 "void main() {\n" +
-            //randomly offset in time
-            "   float lifetime = fract(random.x+(time))*lifespan*1.33;" +
-            //solve for position
-            "   vec3 pos2 = position.xyz + velocity*lifetime + (acceleration*lifetime*lifetime)/2.0;" + // ;
-            "   vFogPosition = (modelMatrix * vec4(pos2,1.0)).xyz; \n" +
+                //randomly offset in time
+                "   float lifetime = fract(random.x+(time))*lifespan*1.33;" +
+                //solve for position
+                "   vec3 pos2 = position.xyz + velocity*lifetime + (acceleration*lifetime*lifetime)/2.0;" + // ;
+                "   vFogPosition = (modelMatrix * vec4(pos2,1.0)).xyz; \n" +
                 "   vec4 mvPosition = modelViewMatrix * vec4( pos2.xyz, 1.0 );\n" +
-            //find random size based on randomness, start and end size, and size range
-            "   float psize = mix(startSize,endSize,lifetime/lifespan) + (random.y -0.5) * sizeRange;\n" +
+                //find random size based on randomness, start and end size, and size range
+                "   float psize = mix(startSize,endSize,lifetime/lifespan) + (random.y -0.5) * sizeRange;\n" +
                 "   gl_PointSize = psize * ( 1000.0/ length( mvPosition.xyz ) );\n" +
                 "   gl_Position = projectionMatrix * mvPosition;\n" +
                 " vec4 nR = (random -0.5);\n" +
-            //find random color based on start and endcolor, time and colorRange
-            "   vColor = mix(startColor,endColor,lifetime/lifespan)  +  nR * colorRange;\n" +
+                //find random color based on start and endcolor, time and colorRange
+                "   vColor = mix(startColor,endColor,lifetime/lifespan)  +  nR * colorRange;\n" +
                 "   vRandom = random;" +
                 "}    \n";
 
@@ -2262,9 +2265,9 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 THREE.ShaderChunk.fog_pars_fragment + "\n" +
                 "void main() {\n" +
 
-            //bit of drama for dividing into 4 or 9 'virtual' textures
-            //nice to be able to have different images on particles
-            " vec2 coord = vec2(0.0,0.0);" +
+                //bit of drama for dividing into 4 or 9 'virtual' textures
+                //nice to be able to have different images on particles
+                " vec2 coord = vec2(0.0,0.0);" +
                 " vec2 orig_coord = vec2(gl_PointCoord.s,1.0-gl_PointCoord.t);" +
                 " float spin = mix(maxSpin,minSpin,vRandom.x);" +
                 " float orientation = mix(maxOrientation,minOrientation,vRandom.y);" +
@@ -2276,8 +2279,8 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 " coord.y = clamp(coord.y,0.0,1.0/textureTiles);\n" +
                 " coord += vec2(floor(vRandom.x*textureTiles)/textureTiles,floor(vRandom.y*textureTiles)/textureTiles);\n" +
 
-            //get the color from the texture and blend with the vertexColor.
-            " vec4 outColor = (vColor * texture2D( texture, coord )) *useTexture + vColor * (1.0-useTexture);\n" +
+                //get the color from the texture and blend with the vertexColor.
+                " vec4 outColor = (vColor * texture2D( texture, coord )) *useTexture + vColor * (1.0-useTexture);\n" +
                 " if(outColor.a < alphaTest) discard;\n" +
                 "   gl_FragColor = outColor;\n" +
                 THREE.ShaderChunk.fog_fragment + "\n" +
@@ -2406,7 +2409,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 shaderMaterial_analytic.attributes.acceleration.value.push(new THREE.Vector3());
                 shaderMaterial_analytic.attributes.velocity.value.push(new THREE.Vector3());
                 shaderMaterial_analytic.attributes.lifespan.value.push(1);
-                shaderMaterial_analytic.attributes.random.value.push(new THREE.Vector4(Math.random(), Math.random(), Math.random(), Math.random()));
+                shaderMaterial_analytic.attributes.random.value.push(new THREE.Vector4(Math.SecureRandom(), Math.SecureRandom(), Math.SecureRandom(), Math.SecureRandom()));
                 return particle;
             }
 
@@ -2420,19 +2423,19 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 //Generate in a box
                 //assumes centered at 0,0,0
                 if (this.emitterType.toLowerCase() == 'box') {
-                    var x = this.emitterSize[0] * Math.random() - this.emitterSize[0] / 2;
-                    var y = this.emitterSize[1] * Math.random() - this.emitterSize[1] / 2;
-                    var z = this.emitterSize[2] * Math.random() - this.emitterSize[2] / 2;
+                    var x = this.emitterSize[0] * Math.SecureRandom() - this.emitterSize[0] / 2;
+                    var y = this.emitterSize[1] * Math.SecureRandom() - this.emitterSize[1] / 2;
+                    var z = this.emitterSize[2] * Math.SecureRandom() - this.emitterSize[2] / 2;
 
                     return new THREE.Vector3(x, y, z);
                 }
                 //Generate in a sphere
                 //assumes centered at 0,0,0
                 if (this.emitterType.toLowerCase() == 'sphere') {
-                    var u2 = Math.random();
+                    var u2 = Math.SecureRandom();
                     u2 = Math.pow(u2, 1 / 3);
-                    var o = this.emitterSize[0] * Math.random() * Math.PI * 2;
-                    var u = this.emitterSize[1] * Math.random() * 2 - 1;
+                    var o = this.emitterSize[0] * Math.SecureRandom() * Math.PI * 2;
+                    var u = this.emitterSize[1] * Math.SecureRandom() * 2 - 1;
                     var r = this.emitterSize[2] * u2;
                     var x = Math.cos(o) * Math.sqrt(1 - (u * u));
                     var y = Math.sin(o) * Math.sqrt(1 - (u * u));
@@ -2487,26 +2490,26 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 //Generate the initial velocity
                 //In this mode, you specify a min and max x,y,z
                 if (this.velocityMode == 'cartesian') {
-                    particle.velocity.x = this.minVelocity[0] + (this.maxVelocity[0] - this.minVelocity[0]) * Math.random();
-                    particle.velocity.y = this.minVelocity[1] + (this.maxVelocity[1] - this.minVelocity[1]) * Math.random();
-                    particle.velocity.z = this.minVelocity[2] + (this.maxVelocity[2] - this.minVelocity[2]) * Math.random();
+                    particle.velocity.x = this.minVelocity[0] + (this.maxVelocity[0] - this.minVelocity[0]) * Math.SecureRandom();
+                    particle.velocity.y = this.minVelocity[1] + (this.maxVelocity[1] - this.minVelocity[1]) * Math.SecureRandom();
+                    particle.velocity.z = this.minVelocity[2] + (this.maxVelocity[2] - this.minVelocity[2]) * Math.SecureRandom();
                 }
                 //In this mode, you give a pitch and yaw from 0,1, and a min and max length.
                 //This is easier to emit into a circle, or a cone section
                 if (this.velocityMode == 'spherical') {
 
                     //random sphercial points concentrate at poles
-                    /* var r = this.minVelocity[2] + (this.maxVelocity[2] - this.minVelocity[2]) * Math.random();
-                    var t = this.minVelocity[1] + (this.maxVelocity[1] - this.minVelocity[1]) * Math.random() * Math.PI*2;
-                    var w = this.minVelocity[0] + (this.maxVelocity[0] - this.minVelocity[0]) * Math.random() * Math.PI - Math.PI/2;
+                    /* var r = this.minVelocity[2] + (this.maxVelocity[2] - this.minVelocity[2]) * Math.SecureRandom();
+                    var t = this.minVelocity[1] + (this.maxVelocity[1] - this.minVelocity[1]) * Math.SecureRandom() * Math.PI*2;
+                    var w = this.minVelocity[0] + (this.maxVelocity[0] - this.minVelocity[0]) * Math.SecureRandom() * Math.PI - Math.PI/2;
                     particle.velocity.x = r * Math.sin(t)*Math.cos(w);
                     particle.velocity.y = r * Math.sin(t)*Math.sin(w);
                     particle.velocity.z = r * Math.cos(t); */
 
                     //better distribution
-                    var o = this.minVelocity[0] + (this.maxVelocity[0] - this.minVelocity[0]) * Math.random() * Math.PI * 2;
-                    var u = this.minVelocity[1] + (this.maxVelocity[1] - this.minVelocity[1]) * Math.random() * 2 - 1;
-                    var u2 = Math.random();
+                    var o = this.minVelocity[0] + (this.maxVelocity[0] - this.minVelocity[0]) * Math.SecureRandom() * Math.PI * 2;
+                    var u = this.minVelocity[1] + (this.maxVelocity[1] - this.minVelocity[1]) * Math.SecureRandom() * 2 - 1;
+                    var u2 = Math.SecureRandom();
                     u2 = Math.pow(u2, 1 / 3);
                     var r = this.minVelocity[2] + (this.maxVelocity[2] - this.minVelocity[2]) * u2;
                     particle.velocity.x = Math.cos(o) * Math.sqrt(1 - (u * u));
@@ -2525,10 +2528,10 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 particle.velocity.applyMatrix4(mat);
              */
                 //accelerations are always world space, just min and max on each axis
-                particle.acceleration.x = this.minAcceleration[0] + (this.maxAcceleration[0] - this.minAcceleration[0]) * Math.random();
-                particle.acceleration.y = this.minAcceleration[1] + (this.maxAcceleration[1] - this.minAcceleration[1]) * Math.random();
-                particle.acceleration.z = this.minAcceleration[2] + (this.maxAcceleration[2] - this.minAcceleration[2]) * Math.random();
-                particle.setLifespan(this.minLifeTime + (this.maxLifeTime - this.minLifeTime) * Math.random());
+                particle.acceleration.x = this.minAcceleration[0] + (this.maxAcceleration[0] - this.minAcceleration[0]) * Math.SecureRandom();
+                particle.acceleration.y = this.minAcceleration[1] + (this.maxAcceleration[1] - this.minAcceleration[1]) * Math.SecureRandom();
+                particle.acceleration.z = this.minAcceleration[2] + (this.maxAcceleration[2] - this.minAcceleration[2]) * Math.SecureRandom();
+                particle.setLifespan(this.minLifeTime + (this.maxLifeTime - this.minLifeTime) * Math.SecureRandom());
 
                 //color is start color
                 particle.color.x = this.startColor[0];
@@ -2590,7 +2593,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                     //setup with new random values, and move randomly forward in time one step	
                     var particle = this.regenParticles.shift();
                     this.setupParticle(particle, this.matrix, inv);
-                    this.updateParticleAnalytic(particle, this.matrix, inv, Math.random() * 3.33);
+                    this.updateParticleAnalytic(particle, this.matrix, inv, Math.SecureRandom() * 3.33);
                     particle.waitForRegen = false;
                 }
 
@@ -2648,7 +2651,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                         particle.waitForRegen = false;
                         var particle = this.regenParticles.shift();
                         this.setupParticle(particle, this.matrix, inv);
-                        this.updateParticleEuler(particle, this.matrix, inv, Math.random() * 3.33);
+                        this.updateParticleEuler(particle, this.matrix, inv, Math.SecureRandom() * 3.33);
                         this.material.attributes.lifespan.needsUpdate = true;
                     }
 

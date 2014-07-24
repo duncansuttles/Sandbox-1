@@ -64,6 +64,17 @@ THREE.CPUPickOptions = function() {
     this.UserRenderBatches = false;
     this.ignore = [];
     this.OneHitPerMesh = false;
+    this.faceTests = 0;
+    this.objectTests = 0;
+    this.regionTests = 0;
+    this.regionsRejectedByDist = 0;
+    this.regionsRejectedByBounds = 0;
+    this.objectsRejectedByBounds = 0;
+    this.objectRegionsRejectedByDist = 0;
+    this.objectRegionsRejectedByBounds = 0;
+    this.objectRegionsTested = 0;
+    this.objectsTested = [];
+    this.filter = null;
 }
 // Return the nearsest, highest priority hit 
 THREE.Scene.prototype.CPUPick = function(origin, direction, options) {
@@ -537,10 +548,10 @@ face.prototype.intersectSphere = function(P, r, opts) {
 }
 
 function testSphereTriPerf() {
-    var face1 = new face([Math.random(), Math.random(), Math.random()], [Math.random(), Math.random(), Math.random()], [Math.random(), Math.random(), Math.random()]);
+    var face1 = new face([Math.SecureRandom(), Math.SecureRandom(), Math.SecureRandom()], [Math.SecureRandom(), Math.SecureRandom(), Math.SecureRandom()], [Math.SecureRandom(), Math.SecureRandom(), Math.SecureRandom()]);
     var start = performance.now();
-    var p = [Math.random(), Math.random(), Math.random()];
-    var r = Math.random();
+    var p = [Math.SecureRandom(), Math.SecureRandom(), Math.SecureRandom()];
+    var r = Math.SecureRandom();
     for (var i = 0; i < 100000; i++) {
         face1.intersectSphere(p, r);
     }
@@ -1663,12 +1674,11 @@ THREE.SkinnedMesh.prototype.GetBoundingBox = function(local) {
     return box;
 }
 
-THREE.Bone.prototype.GetBoundingBox = function(local)
-{
-     if (!this.debug) {
-            this.buildSelectionHandles();
-     }
-     return THREE.Object3D.prototype.GetBoundingBox.call(this,local);
+THREE.Bone.prototype.GetBoundingBox = function(local) {
+    if (!this.debug) {
+        this.buildSelectionHandles();
+    }
+    return THREE.Object3D.prototype.GetBoundingBox.call(this, local);
 }
 THREE.Object3D.prototype.getBoundingBox = THREE.Object3D.prototype.GetBoundingBox;
 //Should I ignore this? true for yes
@@ -1690,6 +1700,7 @@ THREE.Object3D.prototype.ignoreTest = function(ignore) {
 //no need to test bounding box here. Can only contain one mesh, and the mesh will check its own
 //boudning box.
 THREE.Object3D.prototype.CPUPick = function(origin, direction, options) {
+
 
     if (options && options.filter && this) {
 
@@ -1811,6 +1822,7 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options) {
         }
 
     }
+
     return ret;
 
 }

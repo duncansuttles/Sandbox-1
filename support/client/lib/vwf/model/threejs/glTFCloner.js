@@ -3,6 +3,10 @@
  *
  */
 
+define(["vwf/model/threejs/glTF-parser"],function(){
+
+
+
 var glTFCloner = glTFCloner || {};
 
 glTFCloner.clone = function(glTFModel, rawAnimationChannels, callback) {
@@ -25,10 +29,14 @@ glTFCloner.clone = function(glTFModel, rawAnimationChannels, callback) {
 
             // Now add AnimationHandler wrapper
             var list = [];
+          
             getAllLeafMeshes(clone, list);
             for (var i = 0; i < list.length; i++) {
                 if (list[i] instanceof THREE.SkinnedMesh)
+                {
+                    
                     list[i].animationHandle = new AnimationHandleWrapper(animations);
+                }
             }
         }
 
@@ -163,13 +171,10 @@ var getBone = function(name, bones) {
 var getAllLeafMeshes = function(threeObject, list) {
     if (threeObject instanceof THREE.Mesh) {
         list.push(threeObject);
-        for (var i = 0; i < threeObject.children.length; i++) {
-            this.GetAllLeafMeshes(threeObject.children[i], list);
-        }
     }
     if (threeObject.children) {
         for (var i = 0; i < threeObject.children.length; i++) {
-            this.GetAllLeafMeshes(threeObject.children[i], list);
+            getAllLeafMeshes(threeObject.children[i], list);
         }
     }
 }
@@ -313,3 +318,5 @@ THREE.Skeleton.prototype.calculateInverses = calculateInverses;
 THREE.Skeleton.prototype.addBone = addBone;
 
 exports = glTFCloner;
+window.glTFCloner = glTFCloner;
+});
