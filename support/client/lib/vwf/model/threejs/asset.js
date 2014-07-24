@@ -300,6 +300,7 @@
             this.settingProperty('materialDef', this.materialDef);
             this.settingProperty('animationFrame', 0);
             //if any callbacks were waiting on the asset, call those callbacks
+
             for (var i = 0; i < reg.callbacks.length; i++)
                 reg.callbacks[i](asset.scene);
             //nothing should be waiting on callbacks now.
@@ -361,6 +362,8 @@
                 assetRegistry[assetSource].loaded = true;
                 assetRegistry[assetSource].pending = false;
                 assetRegistry[assetSource].node = _assetLoader.getglTF(assetSource).scene;
+                assetRegistry[assetSource].animations = _assetLoader.getglTF(assetSource).animations;
+                assetRegistry[assetSource].rawAnimationChannels = _assetLoader.getglTF(assetSource).rawAnimationChannels;
                 this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
             }
         }
@@ -374,8 +377,6 @@
             //thus, it becomes pending
             reg.pending = true;
             asyncCallback(false);
-
-            $(document).trigger('BeginParse', ['Loading...', assetSource]);
 
             if (childType == 'subDriver/threejs/asset/vnd.collada+xml') {
                 this.loader = new THREE.ColladaLoader();
@@ -423,26 +424,15 @@
 
                 var self = this;
 
-                this.loader = new THREE.glTFLoader();
-                this.loader.useBufferGeometry = true;
-
-                this.loader.load(assetSource, function(obj){
-
-                    reg.node = obj.scene;
-                    var list = [];
-
-                    self.GetAllLeafMeshes(reg.node, list);
-                    for (var i = 0; i < list.length; i++) {
-                        if (list[i] instanceof THREE.SkinnedMesh)
-                            list[i].animationHandle = new AnimationHandleWrapper(obj.animations);
-                    }
-
-                    self.getRoot().add(reg.node);
+                glTFCloner.clone(reg.node, reg.rawAnimationChannels, function(clone) {
+                    // Finally, attach our cloned model
+                    self.getRoot().add(clone);
                     self.cleanTHREEJSnodes(self.getRoot());
+
                     self.settingProperty('materialDef', self.materialDef);
                     $(document).trigger('EndParse');
                     self.getRoot().updateMatrixWorld(true);
-                });
+                })
             } else {
                 this.getRoot().add(reg.node.clone());
                 this.cleanTHREEJSnodes(this.getRoot());
@@ -466,29 +456,20 @@
                     if (childType === 'subDriver/threejs/asset/vnd.gltf+json') {
                         var self = this;
 
-                        this.loader = new THREE.glTFLoader();
-                        this.loader.useBufferGeometry = true;
                         var obj = _assetLoader.getglTF(assetSource);
-
                         node = obj.scene;
-                        var list = [];
-                        self.GetAllLeafMeshes(node, list);
 
-                        for (var i = 0; i < list.length; i++) {
-                            if (list[i] instanceof THREE.SkinnedMesh)
-                                list[i].animationHandle = new AnimationHandleWrapper(obj.animations);
-                        }
+                        glTFCloner.clone(node, null, function(clone) {
+                            // Finally, attach our cloned model
+                            self.cleanTHREEJSnodes(self.getRoot());
+                            self.getRoot().add(clone);
 
-                        $(document).trigger('EndParse');
+                            self.settingProperty('materialDef', self.materialDef);
+                            $(document).trigger('EndParse');
+                            self.getRoot().updateMatrixWorld(true);
 
-                        self.cleanTHREEJSnodes(node);
-                    
-                        self.getRoot().add(node);
-                        
-                        self.settingProperty('materialDef', self.materialDef);
-                        self.getRoot().updateMatrixWorld(true);
-
-                        tcal(true);
+                            tcal(true);
+                        })
                     } else {
                         $(document).trigger('EndParse');
                         this.getRoot().add(node.clone());
