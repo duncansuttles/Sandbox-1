@@ -371,7 +371,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     }
                     document.AxisSelected = -1;
                     $('#StatusAxis').text('Axis: -1');
-                    
+
                 }
             }
         }
@@ -391,7 +391,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         }
         this.mouseup_Gizmo = function(e) {
             if (e.button == 2 && !MouseMoved && document.AxisSelected == -1) {
-                
+
                 self.ShowContextMenu(e);
                 this.undoPoint = null;
                 return false;
@@ -803,7 +803,10 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             var tray = MATH.mulMat4Vec3(tmatrix, ray);
             var n = MATH.dotVec3(MATH.subVec3(tplanepoint, traypoint), tplanenormal);
             var d = MATH.dotVec3(tray, tplanenormal);
-            if (d == 0) return null;
+            if (d == 0) {
+                return [0, 0, 0];
+
+            }
             var dist = n / d;
             var tpoint = MATH.addVec3(raypoint, MATH.scaleVec3(tray, dist));
             return tpoint;
@@ -1032,7 +1035,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             //prevent moving 3D nodes that are not bound to the scene or are the scene itself
             if (SelectedVWFNodes.length > 0 && !(this.findviewnode(SelectedVWFNodes[0].id)).parent) return;
             if (this.waitingForSet.length > 0) return;
-            
+
             if (!MoveGizmo || MoveGizmo == null) {
                 return;
             }
@@ -3031,7 +3034,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             });
             $('#ContextMenuSelectNone').click(function() {
                 self.SelectObject(null);
-               
+
                 $('#ContextMenu').hide();
                 $('#ContextMenu').css('z-index', '-1');
                 $(".ddsmoothmenu").find('li').trigger('mouseleave');
