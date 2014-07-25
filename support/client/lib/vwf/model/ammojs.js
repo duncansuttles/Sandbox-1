@@ -249,36 +249,13 @@ phyObject.prototype.setAngularVelocity = function(vel) {
         this.body.setAngularVelocity(new Ammo.btVector3(vel[0], vel[1], vel[2]));
     }
 }
-phyObject.prototype.backupRotation = function()
-{
 
-    if(!this.thisTickRotation) this.thisTickRotation = new THREE.Quaternion();
-    if(!this.lastTickRotation) this.lastTickRotation = new THREE.Quaternion();
-
-    if(this.thisTickRotation)
-        this.lastTickRotation.copy(this.thisTickRotation);
-    
-    var transform = this.body.getWorldTransform();
-    var o = transform.getOrigin();
-    var rot = transform.getRotation();
-    this.thisTickRotation.set(rot.x(), rot.y(), rot.z(), rot.w());
-}
-var tempquat1 = new THREE.Quaternion();
-var tempquat2 = new THREE.Quaternion();
-var temprot =new THREE.Euler();
 
 phyObject.prototype.getAngularVelocity = function() {
     //waiting for an ammo build that includes body.getAngularVelocity
     if (this.initialized === true  ) {
-        //var vec = this.body.getAngularVelocity()
-        if(this.lastTickRotation && this.thisTickRotation)
-        {
-            
-            var difQuat = tempquat1.copy(this.thisTickRotation).multiply(tempquat2.copy(this.lastTickRotation).inverse());
-            var vel = temprot.setFromQuaternion(difQuat);
-            
-            //this.body.setAngularVelocity(new Ammo.btVector3(vel.x*20,vel.y*20,vel.z*20));        
-        }
+        var vec = this.body.getAngularVelocity()
+        return [vec.x(),vec.y(),vec.z()];
     } else
         return this.angularVelocity;
 }
@@ -389,7 +366,10 @@ phyObject.prototype.setTransform = function(matrix) {
         this.body.setCenterOfMassTransform(startTransform);
         if (this.collision)
             this.collision.setLocalScaling(new Ammo.btVector3(this.localScale[0], this.localScale[1], this.localScale[2]));
-
+        if(this.mass == 0)
+        {
+            this.wake();
+        }
     }
     //todo: the compound collision of the parent does not need to be rebuild, just transforms updated
     //need new flag for this instead of full rebuild
@@ -771,14 +751,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
 
             //patch ammo.js to include a get for activation state
 
-            Ammo._emscripten_bind_btRigidBody_getActivationState_1 = function Ih(a) {
-                return Ammo.HEAP32[a + 216 >> 2]
-            };
-            Ammo.btRigidBody.prototype.getActivationState =
-                function() {
-                    var self = this.ptr;
-                    return Ammo._emscripten_bind_btRigidBody_getActivationState_1(self)
-            }
+           
             Ammo.btCompoundShape.prototype.addChildShapeInner = Ammo.btCompoundShape.prototype.addChildShape;
 
             Ammo.btCompoundShape.prototype.addChildShape = function(transform, shape) {
@@ -919,7 +892,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 for (var i in this.allNodes) {
                     var node = this.allNodes[i];
                     if (node.body && node.initialized === true && node.mass > 0) {
-                        node.backupRotation();
+                        
                         vwf.setProperty(node.id, 'transform', node.getTransform());
                         vwf.setProperty(node.id, '___physics_sleeping', node.isSleeping());
                         vwf.setProperty(node.id, '___physics_velocity_angular', node.getAngularVelocity());
