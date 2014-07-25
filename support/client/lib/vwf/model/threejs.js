@@ -40,7 +40,7 @@ function matComploose(m1, m2) {
     return true;
 }
 
-define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/threejs/backgroundLoader", "vwf/model/threejs/glTF-parser", "vwf/model/threejs/glTFLoaderUtils", "vwf/model/threejs/glTFLoader", "vwf/model/threejs/glTFAnimation", "vwf/model/threejs/webgl-tf-deprecated"], function(module, model, utility, Color, backgroundLoader) {
+define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/threejs/backgroundLoader", "vwf/model/threejs/gltfCloner", "vwf/model/threejs/glTFLoaderUtils", "vwf/model/threejs/glTFLoader", "vwf/model/threejs/glTFAnimation","vwf/model/threejs/glTFAnimation", "vwf/model/threejs/webgl-tf-deprecated"], function(module, model, utility, Color, backgroundLoader) {
 
 
 

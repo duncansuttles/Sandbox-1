@@ -100,7 +100,8 @@ define(function() {
                 step: sizeWindowTimer
             });
 
-            $('#EntityLibraryAccordion').css('height', $('#TimeControl').offset().top - $('#EntityLibraryAccordion').offset().top);
+            $('#EntityLibraryAccordion').css('height', $('#index-vwf').css('height') - $('#entitylibrarytitle').height() );
+            $('#EntityLibrary').css('height', $('#index-vwf').css('height'));
             $('#EntityLibraryAccordion').css('overflow', 'auto');
             isOpen = true;
         }

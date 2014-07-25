@@ -878,7 +878,7 @@ border-radius: 5px;
 #sidetabs
 {
 position: absolute;
-height: 100%;
+
 left: -40px;
 top: 23px;
 }
@@ -1523,7 +1523,6 @@ background: #444;
 height: 100%;
 left: -250px;
 top: 62px;
-
 }
 
 #EntityLibrarySideTab:hover

@@ -77,6 +77,8 @@ define({
 
 				$('#sidepanel').css('height', $(window).height() - ($('#statusbar').height() + $('#toolbar').height() + $('#smoothmenu1').height()));
 				$('#ScriptEditor').css('width', $(window).width() - ($(window).width() - $('#sidepanel').offset().left) - ($('#EntityLibrary').offset().left + $('#EntityLibrary').width()));
+				$('#EntityLibrary').css('height', $('#index-vwf').css('height'));
+				$('#EntityLibraryAccordion').css('height', $('#index-vwf').css('height') - $('#entitylibrarytitle').height() );
 				_ScriptEditor.resize();
 
 				if ($('#index-vwf').offset()) {
