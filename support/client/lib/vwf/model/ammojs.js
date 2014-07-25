@@ -252,14 +252,16 @@ phyObject.prototype.setAngularVelocity = function(vel) {
 phyObject.prototype.backupRotation = function()
 {
 
+    if(!this.thisTickRotation) this.thisTickRotation = new THREE.Quaternion();
+    if(!this.lastTickRotation) this.lastTickRotation = new THREE.Quaternion();
+
     if(this.thisTickRotation)
-        this.lastTickRotation = this.thisTickRotation;
+        this.lastTickRotation.copy(this.thisTickRotation);
     
     var transform = this.body.getWorldTransform();
     var o = transform.getOrigin();
     var rot = transform.getRotation();
-    var rot2 = new THREE.Quaternion(rot.x(), rot.y(), rot.z(), rot.w());
-    this.thisTickRotation = rot2;
+    this.thisTickRotation.set(rot.x(), rot.y(), rot.z(), rot.w());
 }
 var tempquat1 = new THREE.Quaternion();
 var tempquat2 = new THREE.Quaternion();
@@ -275,7 +277,7 @@ phyObject.prototype.getAngularVelocity = function() {
             var difQuat = tempquat1.copy(this.thisTickRotation).multiply(tempquat2.copy(this.lastTickRotation).inverse());
             var vel = temprot.setFromQuaternion(difQuat);
             
-            this.body.setAngularVelocity(new Ammo.btVector3(vel.x*20,vel.y*20,vel.z*20));        
+            //this.body.setAngularVelocity(new Ammo.btVector3(vel.x*20,vel.y*20,vel.z*20));        
         }
     } else
         return this.angularVelocity;
