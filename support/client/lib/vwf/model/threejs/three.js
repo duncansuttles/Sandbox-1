@@ -18689,12 +18689,10 @@ THREE.ShaderChunk = {
         // http://hacksoflife.blogspot.ch/2009/11/per-pixel-tangent-space-normal-mapping.html
 
         "	vec3 perturbNormal2Arb( vec3 eye_pos, vec3 surf_norm ) {",
-
         "		vec3 q0 = dFdx( eye_pos.xyz );",
         "		vec3 q1 = dFdy( eye_pos.xyz );",
         "		vec2 st0 = dFdx( vUv.st );",
         "		vec2 st1 = dFdy( vUv.st );",
-
         "		vec3 S = normalize(  q0 * st1.t - q1 * st0.t );",
         "		vec3 T = normalize( -q0 * st1.s + q1 * st0.s );",
         "		vec3 N = normalize( surf_norm );",
@@ -19052,7 +19050,7 @@ THREE.ShaderChunk = {
         "#endif",
         "#ifdef USE_NORMALMAP",
 
-        "tnorm  = perturbNormal2Arb( vWorldPosition.xzy, normalize( tnorm ));",
+        "tnorm  = perturbNormal2Arb( -vViewPosition.xzy, tnorm);",
 
         "#endif",
         "shAmbient =  C1 * L22 * (tnorm.x * tnorm.x - tnorm.y * tnorm.y) +",
@@ -19066,7 +19064,7 @@ THREE.ShaderChunk = {
         "          2.0 * C2 * L1m1 * tnorm.y + ",
         "          2.0 * C2 * L10  * tnorm.z;",
         "shAmbient *= length(ambientLightColor);",
-
+        
     ].join("\n"),
     // LIGHTS PHONG
 

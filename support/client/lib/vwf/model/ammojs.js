@@ -69,6 +69,8 @@ function phyObject(id, world) {
     this.angularVelocity = [0, 0, 0];
     this.linearVelocity = [0, 0, 0];
     this.localScale = [1, 1, 1];
+    this.lastTickRotation = null;
+    this.thisTickRotation = null;
 }
 phyObject.prototype.addForce = function(vec) {
     if (vec.length !== 3) return;
@@ -247,11 +249,34 @@ phyObject.prototype.setAngularVelocity = function(vel) {
         this.body.setAngularVelocity(new Ammo.btVector3(vel[0], vel[1], vel[2]));
     }
 }
+phyObject.prototype.backupRotation = function()
+{
+
+    if(this.thisTickRotation)
+        this.lastTickRotation = this.thisTickRotation;
+    
+    var transform = this.body.getWorldTransform();
+    var o = transform.getOrigin();
+    var rot = transform.getRotation();
+    var rot2 = new THREE.Quaternion(rot.x(), rot.y(), rot.z(), rot.w());
+    this.thisTickRotation = rot2;
+}
+var tempquat1 = new THREE.Quaternion();
+var tempquat2 = new THREE.Quaternion();
+var temprot =new THREE.Euler();
+
 phyObject.prototype.getAngularVelocity = function() {
     //waiting for an ammo build that includes body.getAngularVelocity
-    if (this.initialized === true && this.body.getAngularVelocity) {
-        var vec = this.body.getAngularVelocity()
-        return [vec.x(), vec.y(), vec.z()];
+    if (this.initialized === true  ) {
+        //var vec = this.body.getAngularVelocity()
+        if(this.lastTickRotation && this.thisTickRotation)
+        {
+            
+            var difQuat = tempquat1.copy(this.thisTickRotation).multiply(tempquat2.copy(this.lastTickRotation).inverse());
+            var vel = temprot.setFromQuaternion(difQuat);
+            
+            this.body.setAngularVelocity(new Ammo.btVector3(vel.x*20,vel.y*20,vel.z*20));        
+        }
     } else
         return this.angularVelocity;
 }
@@ -334,6 +359,10 @@ phyObject.prototype.getTransform = function() {
 phyObject.prototype.setTransform = function(matrix) {
     this.transform = matrix
     if (this.initialized === true) {
+
+        this.lastTickRotation = null;
+        this.thisTickRotation = null;
+
         var startTransform = new Ammo.btTransform();
         startTransform.getOrigin().setX(matrix[12]);
         startTransform.getOrigin().setY(matrix[13]);
@@ -888,6 +917,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 for (var i in this.allNodes) {
                     var node = this.allNodes[i];
                     if (node.body && node.initialized === true && node.mass > 0) {
+                        node.backupRotation();
                         vwf.setProperty(node.id, 'transform', node.getTransform());
                         vwf.setProperty(node.id, '___physics_sleeping', node.isSleeping());
                         vwf.setProperty(node.id, '___physics_velocity_angular', node.getAngularVelocity());
