@@ -529,7 +529,7 @@ scripts:
             }
             if(this.cycleName == 'run')
             {
-                    motionvec = MATH.mulMat4Vec3(MATH.angleAxis(backupr[3]*0.0174532925,[backupr[0],backupr[1],backupr[2]]),[0,-.140*updateFreqDivisor,0]);
+                    motionvec = this.transformAPI.localToGlobalRotation([0,-.18*updateFreqDivisor,0]);
                     
             }
             
