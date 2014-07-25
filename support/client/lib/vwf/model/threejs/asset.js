@@ -250,6 +250,18 @@
                             list[i].geometry.faceVertexUvs[0].push([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]);
                     }
                 }
+
+                //lets set all animations to frame 0
+                if(list[i].animationHandle)
+                {
+                    list[i].animationHandle.setKey(this.animationFrame);
+                    list[i].updateMatrixWorld();
+                    //odd, does not seem to update matrix on first child bone. 
+                    //how does the bone relate to the skeleton?
+                    for (var j = 0; j < list[i].children.length; j++) {
+                        list[i].children[j].updateMatrixWorld(true);
+                    }
+                }
             }
         }
         this.loaded = function(asset) {
@@ -373,6 +385,8 @@
 
         //if the asset entry is not loaded and not pending, you'll have to actaully go download and parse it
         if (reg.loaded == false && reg.pending == false) {
+            
+
             //thus, it becomes pending
             reg.pending = true;
             asyncCallback(false);
@@ -436,6 +450,7 @@
                     $(document).trigger('EndParse');
 
                     self.getRoot().updateMatrixWorld(true);
+
                     self.getRoot().GetBoundingBox();
                     //ok, load is complete - ask the kernel to continue the simulation
                     window.setImmediate(function() {
