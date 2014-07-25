@@ -752,6 +752,11 @@ function DeleteState(URL, SID, response) {
         return;
     }
     DAL.getInstance(SID, function(state) {
+        if(!state)
+        {
+        	respond(response, 500, 'instance does not exist');
+            return;
+        }
         if (state.owner != URL.loginData.UID && URL.loginData.UID != global.adminUID) {
             respond(response, 401, 'User does not have permission to delete instance');
             return;
