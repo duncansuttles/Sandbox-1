@@ -56,7 +56,6 @@ function phyObject(id, world) {
     this.enabled = false;
     this.initialized = false;
     this.collisionDirty = false;
-    this.sleeping = false;
     this.id = id;
     this.restitution = 0;
     this.friction = 1;
@@ -69,8 +68,9 @@ function phyObject(id, world) {
     this.angularVelocity = [0, 0, 0];
     this.linearVelocity = [0, 0, 0];
     this.localScale = [1, 1, 1];
-    this.lastTickRotation = null;
-    this.thisTickRotation = null;
+    this.activationState = 1;
+    this.deactivationTime = 0;
+
 }
 phyObject.prototype.addForce = function(vec) {
     if (vec.length !== 3) return;
@@ -100,11 +100,11 @@ phyObject.prototype.addTorqueImpulse = function(vec) {
         this.wake();
     }
 }
-phyObject.prototype.addForceOffset = function(vec,pos) {
+phyObject.prototype.addForceOffset = function(vec, pos) {
     if (vec.length !== 3) return;
     if (pos.length !== 3) return;
     if (this.initialized === true) {
-        this.body.applyForce(new Ammo.btVector3(vec[0], vec[1], vec[2]),new Ammo.btVector3(vec[0], vec[1], vec[2]));
+        this.body.applyForce(new Ammo.btVector3(vec[0], vec[1], vec[2]), new Ammo.btVector3(vec[0], vec[1], vec[2]));
         this.wake();
     }
 }
@@ -213,7 +213,9 @@ phyObject.prototype.initialize = function() {
 
         this.collision.setLocalScaling(new Ammo.btVector3(this.localScale[0], this.localScale[1], this.localScale[2]));
 
-        vwf.setProperty(this.id, '___physics_sleeping', this.sleeping);
+        //so....... is this not handled by the cache and then set of properties that come in before initialize?
+        vwf.setProperty(this.id, '___physics_activation_state', this.activationState);
+        vwf.setProperty(this.id, '___physics_deactivation_time', this.deactivationTime);
         vwf.setProperty(this.id, '___physics_linear_velocity', this.linearVelocity);
         vwf.setProperty(this.id, '___physics_angular_velocity', this.angularVelocity);
     }
@@ -250,12 +252,37 @@ phyObject.prototype.setAngularVelocity = function(vel) {
     }
 }
 
+//note - we don't store up forces when the body is not initialized
+//maybe we should? Not sure that forces are stateful
+phyObject.prototype.getForce = function() {
+    if (this.initialized === true) {
+        var force = this.body.getTotalForce();
+        return [force.x(),force.y(),force.z()];
+    }
+}
+phyObject.prototype.setForce = function(force) {
+    if (this.initialized === true) {
+        this.body.setTotalForce(new btVector3(force[0],force[1],force[2]));
+    }
+}
+phyObject.prototype.getTorque = function() {
+    if (this.initialized === true) {
+        var torque = this.body.getTotalTorque();
+        return [torque.x(),torque.y(),torque.z()];
+    }
+}
+phyObject.prototype.setTorque = function(torque) {
+    if (this.initialized === true) {
+        this.body.setTotalTorque(new btVector3(torque[0],torque[1],torque[2]));
+    }
+}
+
 
 phyObject.prototype.getAngularVelocity = function() {
     //waiting for an ammo build that includes body.getAngularVelocity
-    if (this.initialized === true  ) {
+    if (this.initialized === true) {
         var vec = this.body.getAngularVelocity()
-        return [vec.x(),vec.y(),vec.z()];
+        return [vec.x(), vec.y(), vec.z()];
     } else
         return this.angularVelocity;
 }
@@ -287,28 +314,40 @@ phyObject.prototype.enable = function() {
         // this.initialize();
     }
 }
-phyObject.prototype.sleep = function() {
-    this.sleeping = true;
-    if (this.initialized === true) {
-        this.body.setActivationState(2);
-    }
-}
+
 //must be very careful with data the the physics engine changes during the sim
 //can't return cached values if body is enabled because we'll refelct the data 
 //from the JS engine and not the changed state of the physics
-phyObject.prototype.isSleeping = function() {
+
+phyObject.prototype.getActivationState = function() {
 
     if (this.initialized === true) {
-        return this.body.getActivationState() != 0;
+        return this.body.getActivationState();
     } else
-        return this.sleeping;
+        return this.activationState;
 }
-phyObject.prototype.wake = function() {
-    this.sleeping = false;
+phyObject.prototype.setActivationState = function(state) {
+
     if (this.initialized === true) {
-        this.body.activate();
-    }
+        this.body.setActivationState(state);
+    } else
+        this.activationState = state;
 }
+phyObject.prototype.getDeactivationTime = function() {
+
+    if (this.initialized === true) {
+        return this.body.getDeactivationTime();
+    } else
+        return this.deactivationTime;
+}
+phyObject.prototype.setDeactivationTime = function(time) {
+
+    if (this.initialized === true) {
+        this.body.setDeactivationTime(time);
+    } else
+        this.deactivationTime = time;
+}
+
 phyObject.prototype.disable = function() {
     this.enabled = false;
     if (this.parent.id !== vwf.application()) {
@@ -366,8 +405,7 @@ phyObject.prototype.setTransform = function(matrix) {
         this.body.setCenterOfMassTransform(startTransform);
         if (this.collision)
             this.collision.setLocalScaling(new Ammo.btVector3(this.localScale[0], this.localScale[1], this.localScale[2]));
-        if(this.mass == 0)
-        {
+        if (this.mass == 0) {
             this.wake();
         }
     }
@@ -751,7 +789,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
 
             //patch ammo.js to include a get for activation state
 
-           
+
             Ammo.btCompoundShape.prototype.addChildShapeInner = Ammo.btCompoundShape.prototype.addChildShape;
 
             Ammo.btCompoundShape.prototype.addChildShape = function(transform, shape) {
@@ -869,9 +907,9 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 this.allNodes[childID].parent = this.allNodes[nodeID];
 
                 //mark some initial properties
-                vwf.setProperty(childID, '___physics_sleeping', false);
-                vwf.setProperty(childID, '___physics_linear_velocity', [0,0,0]);
-                vwf.setProperty(childID, '___physics_angular_velocity', [0,0,0]);
+                vwf.setProperty(childID, '___physics_activation_state', 1);
+                vwf.setProperty(childID, '___physics_linear_velocity', [0, 0, 0]);
+                vwf.setProperty(childID, '___physics_angular_velocity', [0, 0, 0]);
             }
 
         },
@@ -892,11 +930,12 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 for (var i in this.allNodes) {
                     var node = this.allNodes[i];
                     if (node.body && node.initialized === true && node.mass > 0) {
-                        
+
                         vwf.setProperty(node.id, 'transform', node.getTransform());
-                        vwf.setProperty(node.id, '___physics_sleeping', node.isSleeping());
+                        vwf.setProperty(node.id, '___physics_activation_state', node.getActivationState());
                         vwf.setProperty(node.id, '___physics_velocity_angular', node.getAngularVelocity());
                         vwf.setProperty(node.id, '___physics_velocity_linear', node.getLinearVelocity());
+                        vwf.setProperty(node.id, '___physics_deactivation_time', node.getDeactivationTime());
                     }
                 }
                 this.reEntry = false;
@@ -1051,13 +1090,6 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 if (propertyName === '___physics_damping') {
                     node.setDamping(parseFloat(propertyValue));
                 }
-                if (propertyName === '___physics_sleeping') {
-                    if (propertyValue === true)
-                        node.sleep();
-                    if (propertyValue === false) {
-                        node.wake();
-                    }
-                }
                 if (propertyName === '___physics_velocity_angular') {
                     node.setAngularVelocity(propertyValue);
                 }
@@ -1069,6 +1101,12 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 }
                 if (propertyName === '___physics_force_linear') {
                     node.setForce(propertyValue);
+                }
+                if (propertyName === '___physics_activation_state') {
+                    node.setActivationState(propertyValue);
+                }
+                if (propertyName === '___physics_deactivation_time') {
+                    node.setDeactivationTime(propertyValue);
                 }
                 if (propertyName === '___physics_collision_width' && node.type == ASSET) {
                     node.setWidth(propertyValue);
