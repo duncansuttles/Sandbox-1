@@ -1491,8 +1491,12 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     }
                 });
                 self.GetMoveGizmo().InvisibleToCPUPick = false;
-                var dxy = pick.distance;
-                newintersectxy = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy * .99));
+                var newintersectxy = [0, 0, 0];
+                if (pick) {
+                    var dxy = pick.distance;
+                    newintersectxy = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy * .99));
+                }
+
                 var dxy2 = this.intersectLinePlane(ray, campos, [0, 0, 0], [0, 0, 1]);
                 var newintersectxy2 = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy2));
                 newintersectxy2[2] += .01;
