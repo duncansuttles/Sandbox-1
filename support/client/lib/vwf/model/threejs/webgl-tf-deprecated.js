@@ -51,70 +51,93 @@
 
 */
 var global = window;
-(function (root, factory) {
+(function(root, factory) {
     if (typeof exports === 'object') {
         // Node. Does not work with strict CommonJS, but
         // only CommonJS-like enviroments that support module.exports,
         // like Node.
-        module.exports = factory(global);
-        module.exports.WebGLTFLoader = module.exports;
+        //  module.exports = factory(global);
+        //  module.exports.WebGLTFLoader = module.exports;
     } else if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
-        define([], function () {
+        define([], function() {
             return factory(root);
         });
     } else {
         // Browser globals
         factory(root);
     }
-}(this, function (root) {
+}(this, function(root) {
     "use strict";
 
     //to be refined as a tree. in that case, asking for nodes or scenes (most common case) will be fine, but asking for light will trigger unexpected callback (that will be no-op on client side, but could be avoided...)
     var categoriesDepsOrder = ["buffers", "bufferViews", "images", "shaders", "techniques", "materials", "meshes", "cameras", "lights", "nodes", "scenes"];
 
     var categoryForType = {
-        "buffer" : "buffers",
-        "bufferView" : "bufferViews",
-        "image" : "images",
-        "shader" : "shaders",
-        "technique" : "techniques",
-        "material" : "materials",
-        "mesh" : "meshes",
-        "camera" : "cameras",
-        "light" : "lights",
-        "node" : "nodes",
-        "scene" : "scenes"
+        "buffer": "buffers",
+        "bufferView": "bufferViews",
+        "image": "images",
+        "shader": "shaders",
+        "technique": "techniques",
+        "material": "materials",
+        "mesh": "meshes",
+        "camera": "cameras",
+        "light": "lights",
+        "node": "nodes",
+        "scene": "scenes"
     };
 
     var typeForCategory = {
-        "buffers" : "buffer",
-        "bufferViews" : "bufferView",
-        "images" : "image",
-        "shaders" : "shader",
-        "techniques" : "technique",
-        "materials" : "material",
-        "meshes" : "mesh",
-        "cameras" : "camera",
-        "lights" : "light",
-        "nodes" : "node",
-        "scenes" : "scene"
+        "buffers": "buffer",
+        "bufferViews": "bufferView",
+        "images": "image",
+        "shaders": "shader",
+        "techniques": "technique",
+        "materials": "material",
+        "meshes": "mesh",
+        "cameras": "camera",
+        "lights": "light",
+        "nodes": "node",
+        "scenes": "scene"
     };
 
     var WebGLTFLoader = Object.create(Object.prototype, {
 
-        MESH: { value: "mesh" },
-        MATERIAL: { value: "material" },
-        TECHNIQUE: { value: "technique" },
-        SHADER: { value: "shader" },
-        SCENE: { value: "scene" },
-        NODE: { value: "node" },
-        CAMERA: { value: "camera" },
-        VERTEX_ATTRIBUTES: { value: "vertexAttributes" },
-        BUFFER : { value: "buffer" },
-        IMAGE : { value: "image" },
+        MESH: {
+            value: "mesh"
+        },
+        MATERIAL: {
+            value: "material"
+        },
+        TECHNIQUE: {
+            value: "technique"
+        },
+        SHADER: {
+            value: "shader"
+        },
+        SCENE: {
+            value: "scene"
+        },
+        NODE: {
+            value: "node"
+        },
+        CAMERA: {
+            value: "camera"
+        },
+        VERTEX_ATTRIBUTES: {
+            value: "vertexAttributes"
+        },
+        BUFFER: {
+            value: "buffer"
+        },
+        IMAGE: {
+            value: "image"
+        },
 
-        _rootDescription: { value: null, writable: true },
+        _rootDescription: {
+            value: null,
+            writable: true
+        },
 
         rootDescription: {
             set: function(value) {
@@ -125,12 +148,15 @@ var global = window;
             }
         },
 
-        baseURL: { value: null, writable: true },
+        baseURL: {
+            value: null,
+            writable: true
+        },
 
         //detect absolute path following the same protocol than window.location
         _isAbsolutePath: {
             value: function(path) {
-                var isAbsolutePathRegExp = new RegExp("^"+window.location.protocol, "i");
+                var isAbsolutePathRegExp = new RegExp("^" + window.location.protocol, "i");
 
                 return path.match(isAbsolutePathRegExp) ? true : false;
             }
@@ -144,17 +170,17 @@ var global = window;
 
                 var pathComponents = path.split("/");
                 var lastPathComponent = pathComponents.pop();
-                return this.baseURL + path;//lastPathComponent;
+                return this.baseURL + path; //lastPathComponent;
             }
         },
 
         _resolvePathsForCategories: {
             value: function(categories) {
-                categories.forEach( function(category) {
+                categories.forEach(function(category) {
                     var descriptions = this.json[category];
                     if (descriptions) {
                         var descriptionKeys = Object.keys(descriptions);
-                        descriptionKeys.forEach( function(descriptionKey) {
+                        descriptionKeys.forEach(function(descriptionKey) {
                             var description = descriptions[descriptionKey];
                             description.path = this.resolvePathIfNeeded(description.path);
                         }, this);
@@ -187,13 +213,13 @@ var global = window;
         },
 
         getEntryDescription: {
-            value: function (entryID, entryType) {
+            value: function(entryID, entryType) {
                 var entries = null;
 
                 var category = categoryForType[entryType];
                 entries = this.rootDescription[category];
                 if (!entries) {
-                    console.log("ERROR:CANNOT find expected category named:"+category);
+                    console.log("ERROR:CANNOT find expected category named:" + category);
                     return null;
                 }
 
@@ -242,17 +268,17 @@ var global = window;
             value: function() {
 
                 var methodForType = {
-                    "buffer" : this.handleBuffer,
-                    "bufferView" : this.handleBufferView,
-                    "shader" : this.handleShader,
-                    "technique" : this.handleTechnique,
-                    "material" : this.handleMaterial,
-                    "mesh" : this.handleMesh,
-                    "camera" : this.handleCamera,
-                    "light" : this.handleLight,
-                    "node" : this.handleNode,
-                    "scene" : this.handleScene,
-                    "image" : this.handleImage
+                    "buffer": this.handleBuffer,
+                    "bufferView": this.handleBufferView,
+                    "shader": this.handleShader,
+                    "technique": this.handleTechnique,
+                    "material": this.handleMaterial,
+                    "mesh": this.handleMesh,
+                    "camera": this.handleCamera,
+                    "light": this.handleLight,
+                    "node": this.handleNode,
+                    "scene": this.handleScene,
+                    "image": this.handleImage
                 };
 
                 var success = true;
@@ -270,7 +296,7 @@ var global = window;
                     var description = this.getEntryDescription(entryID, type);
                     if (!description) {
                         if (this.handleError) {
-                            this.handleError("INCONSISTENCY ERROR: no description found for entry "+entryID);
+                            this.handleError("INCONSISTENCY ERROR: no description found for entry " + entryID);
                             success = false;
                             break;
                         }
@@ -302,7 +328,7 @@ var global = window;
             value: function(callback) {
                 var self = this;
                 //FIXME: handle error
-                if (!this._json)  {
+                if (!this._json) {
                     var jsonPath = this._path;
                     var i = jsonPath.lastIndexOf("/");
                     this.baseURL = (i !== 0) ? jsonPath.substring(0, i + 1) : '';
@@ -319,7 +345,7 @@ var global = window;
                         }
                     };
                     jsonfile.send(null);
-               } else {
+                } else {
                     if (callback) {
                         callback(this.json);
                     }
@@ -331,6 +357,7 @@ var global = window;
         _buildLoader: {
             value: function(callback) {
                 var self = this;
+
                 function JSONReady(json) {
                     self.rootDescription = json;
                     if (callback)
@@ -341,12 +368,15 @@ var global = window;
             }
         },
 
-        _state: { value: null, writable: true },
+        _state: {
+            value: null,
+            writable: true
+        },
 
         _getEntryType: {
             value: function(entryID) {
                 var rootKeys = categoriesDepsOrder;
-                for (var i = 0 ;  i < rootKeys.length ; i++) {
+                for (var i = 0; i < rootKeys.length; i++) {
                     var rootValues = this.rootDescription[rootKeys[i]];
                     if (rootValues) {
                         return rootKeys[i];
@@ -358,7 +388,7 @@ var global = window;
 
         getNextCategoryIndex: {
             value: function(currentIndex) {
-                for (var i = currentIndex ; i < categoriesDepsOrder.length ; i++) {
+                for (var i = currentIndex; i < categoriesDepsOrder.length; i++) {
                     if (this.hasCategory(categoriesDepsOrder[i])) {
                         return i;
                     }
@@ -373,12 +403,16 @@ var global = window;
             value: function(userInfo, options) {
                 var self = this;
                 this._buildLoader(function loaderReady(reader) {
-                    var startCategory = self.getNextCategoryIndex.call(self,0);
+                    var startCategory = self.getNextCategoryIndex.call(self, 0);
                     if (startCategory !== -1) {
-                        self._state = { "userInfo" : userInfo,
-                                        "options" : options,
-                                        "categoryIndex" : startCategory,
-                                        "categoryState" : { "index" : "0" } };
+                        self._state = {
+                            "userInfo": userInfo,
+                            "options": options,
+                            "categoryIndex": startCategory,
+                            "categoryState": {
+                                "index": "0"
+                            }
+                        };
                         self._handleState();
                     }
                 });
@@ -394,7 +428,10 @@ var global = window;
         },
 
         //this is meant to be global and common for all instances
-        _knownURLs: { writable: true, value: {} },
+        _knownURLs: {
+            writable: true,
+            value: {}
+        },
 
         //to be invoked by subclass, so that ids can be ensured to not overlap
         loaderContext: {
@@ -419,7 +456,7 @@ var global = window;
 
     });
 
-    if(root) {
+    if (root) {
         root.WebGLTFLoader = WebGLTFLoader;
     }
 
