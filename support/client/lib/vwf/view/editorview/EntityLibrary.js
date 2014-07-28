@@ -57,15 +57,49 @@ define(function() {
                         var section = '<h3 class="modifiersection" ><a href="#"><div style="font-weight:bold;display:inline">' + i + "</div>" + '</a></h3>' + '<div class="modifiersection" id="library' + ToSafeID(i) + '">' + '</div>';
                         $('#EntityLibraryAccordion').append(section);
                         for (var j in libs[i].library) {
-                            $('#library' + ToSafeID(i)).append('<div class = "libraryAsset">' +
-                                '<img src="' + libs[i].library[j].preview + '"></img>' +
+                            $('#library' + ToSafeID(i)).append('<div  class = "libraryAsset">' +
+                                '<img id = "asset' + ToSafeID(i) + ToSafeID(j) + '" src="' + libs[i].library[j].preview + '"></img>' +
                                 '<div>' + j + '</div>' +
                                 '</div>'
                             );
+                            (function(i1, j1) {
 
+                                $("#asset" + ToSafeID(i1) + ToSafeID(j1)).on('dragstart', function(evt) {
+
+
+                                    var dragIcon = document.createElement('img');
+                                    dragIcon.src = '../vwf/view/editorview/images/icons/up_folder.gif';
+                                    dragIcon.width = 100;
+                                    evt.originalEvent.dataTransfer.setDragImage(dragIcon, 40, 40);
+
+                                    evt.originalEvent.dataTransfer.setData('json', JSON.stringify(libs[i1].library[j1]));
+                                    $(this).css('opacity', .5);
+                                });
+                                $("#asset" + ToSafeID(i1) + ToSafeID(j1)).on('dragend', function() {
+
+                                    $(this).css('opacity', 1);
+
+                                });
+
+                            })(i, j)
 
                         }
                     }
+
+                    $("#index-vwf").live('dragover', function(evt) {
+                        evt.preventDefault();
+
+                    })
+                    $("#index-vwf").live('dragenter', function(evt) {
+
+                    })
+
+                    $("#index-vwf").live('drop', function(evt) {
+                        evt.preventDefault();
+                        data = JSON.parse(evt.originalEvent.dataTransfer.getData('json'));
+                        console.log(data);
+                    })
+
                     $("#EntityLibraryAccordion").accordion({
                         heightStyle: 'fill',
                         activate: function() {
@@ -100,7 +134,7 @@ define(function() {
                 step: sizeWindowTimer
             });
 
-            $('#EntityLibraryAccordion').css('height', $('#index-vwf').css('height') - $('#entitylibrarytitle').height() );
+            $('#EntityLibraryAccordion').css('height', $('#index-vwf').css('height') - $('#entitylibrarytitle').height());
             $('#EntityLibrary').css('height', $('#index-vwf').css('height'));
             $('#EntityLibraryAccordion').css('overflow', 'auto');
             isOpen = true;
