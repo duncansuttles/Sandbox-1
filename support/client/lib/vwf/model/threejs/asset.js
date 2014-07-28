@@ -62,10 +62,11 @@
         //for the subNode case
         this.setAsset = function(asset) {
             if (asset) {
+
                 this.initializedFromAsset = true;
                 this.backupmats = [];
                 this.backupMatrix = asset.matrix;
-                asset.matrix = asset.matrix.clone();
+                //asset.matrix = asset.matrix.clone();
                 this.rootnode = asset;
                 this.rootnode = asset;
                 asset.initializedFromAsset = true;
@@ -252,8 +253,7 @@
                 }
 
                 //lets set all animations to frame 0
-                if(list[i].animationHandle)
-                {
+                if (list[i].animationHandle) {
                     list[i].animationHandle.setKey(this.animationFrame);
                     list[i].updateMatrixWorld();
                     //odd, does not seem to update matrix on first child bone. 
@@ -270,7 +270,7 @@
                 this.loadFailed();
                 return;
             }
-            
+
             $(document).trigger('EndParse', ['Loading...', assetSource]);
 
 
@@ -385,7 +385,7 @@
 
         //if the asset entry is not loaded and not pending, you'll have to actaully go download and parse it
         if (reg.loaded == false && reg.pending == false) {
-            
+
 
             //thus, it becomes pending
             reg.pending = true;
@@ -471,7 +471,7 @@
         else if (reg.loaded == false && reg.pending == true) {
             asyncCallback(false);
             var tcal = asyncCallback;
-            reg.callbacks.push(function(node,rawAnimationChannels) {
+            reg.callbacks.push(function(node, rawAnimationChannels) {
 
                 //just clone the node and attach it.
                 //this should not clone the geometry, so much lower memory.

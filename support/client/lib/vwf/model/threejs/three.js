@@ -3899,7 +3899,7 @@ THREE.Box2.prototype = {
         var result = optionalTarget || new THREE.Vector2();
 
         return result.set(
-                (point.x - this.min.x) / (this.max.x - this.min.x), (point.y - this.min.y) / (this.max.y - this.min.y)
+            (point.x - this.min.x) / (this.max.x - this.min.x), (point.y - this.min.y) / (this.max.y - this.min.y)
         );
 
     },
@@ -4227,7 +4227,7 @@ THREE.Box3.prototype = {
         var result = optionalTarget || new THREE.Vector3();
 
         return result.set(
-                (point.x - this.min.x) / (this.max.x - this.min.x), (point.y - this.min.y) / (this.max.y - this.min.y), (point.z - this.min.z) / (this.max.z - this.min.z)
+            (point.x - this.min.x) / (this.max.x - this.min.x), (point.y - this.min.y) / (this.max.y - this.min.y), (point.z - this.min.z) / (this.max.z - this.min.z)
         );
 
     },
@@ -5287,7 +5287,7 @@ THREE.Matrix4.prototype = {
             n43 * (+n11 * n24 * n32 - n11 * n22 * n34 - n14 * n21 * n32 + n12 * n21 * n34 + n14 * n22 * n31 - n12 * n24 * n31) +
             n44 * (-n13 * n22 * n31 - n11 * n23 * n32 + n11 * n22 * n33 + n13 * n21 * n32 - n12 * n21 * n33 + n12 * n23 * n31)
 
-            );
+        );
 
     },
 
@@ -5591,9 +5591,9 @@ THREE.Matrix4.prototype = {
 
         this.set(
 
-                tx * x + c, tx * y - s * z, tx * z + s * y, 0,
-                tx * y + s * z, ty * y + c, ty * z - s * x, 0,
-                tx * z - s * y, ty * z + s * x, t * z * z + c, 0,
+            tx * x + c, tx * y - s * z, tx * z + s * y, 0,
+            tx * y + s * z, ty * y + c, ty * z - s * x, 0,
+            tx * z - s * y, ty * z + s * x, t * z * z + c, 0,
             0, 0, 0, 1
 
         );
@@ -9398,8 +9398,8 @@ THREE.Projector = function() {
         var alpha1 = 0,
             alpha2 = 1,
 
-        // Calculate the boundary coordinate of each vertex for the near and far clip planes,
-        // Z = -1 and Z = +1, respectively.
+            // Calculate the boundary coordinate of each vertex for the near and far clip planes,
+            // Z = -1 and Z = +1, respectively.
             bc1near = s1.z + s1.w,
             bc2near = s2.z + s2.w,
             bc1far = -s1.z + s1.w,
@@ -10143,11 +10143,11 @@ THREE.BufferGeometry.prototype = {
             r = 1.0 / (s1 * t2 - s2 * t1);
 
             sdir.set(
-                    (t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r
+                (t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r
             );
 
             tdir.set(
-                    (s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r
+                (s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r
             );
 
             tan1[a].add(sdir);
@@ -11500,10 +11500,10 @@ THREE.PerspectiveCamera.prototype.updateProjectionMatrix = function() {
         var height = Math.abs(top - bottom);
 
         this.projectionMatrix.makeFrustum(
-                left + this.x * width / this.fullWidth,
-                left + (this.x + this.width) * width / this.fullWidth,
-                top - (this.y + this.height) * height / this.fullHeight,
-                top - this.y * height / this.fullHeight,
+            left + this.x * width / this.fullWidth,
+            left + (this.x + this.width) * width / this.fullWidth,
+            top - (this.y + this.height) * height / this.fullHeight,
+            top - this.y * height / this.fullHeight,
             this.near,
             this.far
         );
@@ -17341,7 +17341,7 @@ THREE.CanvasRenderer = function(parameters) {
         }
 
         _clipBox.min.set(-_canvasWidthHalf, -_canvasHeightHalf),
-            _clipBox.max.set(_canvasWidthHalf, _canvasHeightHalf);
+        _clipBox.max.set(_canvasWidthHalf, _canvasHeightHalf);
 
         _clearBox.min.set(-_canvasWidthHalf, -_canvasHeightHalf);
         _clearBox.max.set(_canvasWidthHalf, _canvasHeightHalf);
@@ -17407,8 +17407,8 @@ THREE.CanvasRenderer = function(parameters) {
             if (_clearAlpha < 1) {
 
                 _context.clearRect(
-                        _clearBox.min.x | 0,
-                        _clearBox.min.y | 0, (_clearBox.max.x - _clearBox.min.x) | 0, (_clearBox.max.y - _clearBox.min.y) | 0
+                    _clearBox.min.x | 0,
+                    _clearBox.min.y | 0, (_clearBox.max.x - _clearBox.min.x) | 0, (_clearBox.max.y - _clearBox.min.y) | 0
                 );
 
             }
@@ -17421,8 +17421,8 @@ THREE.CanvasRenderer = function(parameters) {
                 setFillStyle('rgba(' + Math.floor(_clearColor.r * 255) + ',' + Math.floor(_clearColor.g * 255) + ',' + Math.floor(_clearColor.b * 255) + ',' + _clearAlpha + ')');
 
                 _context.fillRect(
-                        _clearBox.min.x | 0,
-                        _clearBox.min.y | 0, (_clearBox.max.x - _clearBox.min.x) | 0, (_clearBox.max.y - _clearBox.min.y) | 0
+                    _clearBox.min.x | 0,
+                    _clearBox.min.y | 0, (_clearBox.max.x - _clearBox.min.x) | 0, (_clearBox.max.y - _clearBox.min.y) | 0
                 );
 
             }
@@ -18278,43 +18278,43 @@ THREE.ShaderChunk = {
 
         "#ifdef USE_FOG",
 
-            "uniform vec3 fogColor;\n" +
+        "uniform vec3 fogColor;\n" +
 
-            "	#ifdef FOG_EXP2",
+        "	#ifdef FOG_EXP2",
 
-            "uniform vec3 vAtmosphereColor;\n" + //vec3(0.0, 0.02, 0.04);
-            "uniform vec3 vHorizonColor;\n" + //vec3(0.88, 0.94, 0.999);
-            "uniform vec3 vApexColor;\n" + //vec3(0.78, 0.82, 0.999)
-            "uniform float vAtmosphereDensity;\n" + //.0005
-            "uniform float vFalloff;\n" +
-            "uniform float vFalloffStart;\n" +
-            "		uniform float fogDensity;",
+        "uniform vec3 vAtmosphereColor;\n" + //vec3(0.0, 0.02, 0.04);
+        "uniform vec3 vHorizonColor;\n" + //vec3(0.88, 0.94, 0.999);
+        "uniform vec3 vApexColor;\n" + //vec3(0.78, 0.82, 0.999)
+        "uniform float vAtmosphereDensity;\n" + //.0005
+        "uniform float vFalloff;\n" +
+        "uniform float vFalloffStart;\n" +
+        "		uniform float fogDensity;",
 
-            "#if MAX_DIR_LIGHTS > 0\n" +
-            "vec3 horizonColor = vHorizonColor; \n" +
-            "vec3 zenithColor = vApexColor;\n" +
+        "#if MAX_DIR_LIGHTS > 0\n" +
+        "vec3 horizonColor = vHorizonColor; \n" +
+        "vec3 zenithColor = vApexColor;\n" +
 
-            "vec3 atmosphereColor(vec3 rayDirection){\n" +
-            "    float a = max(0.0, dot(rayDirection, vec3(0.0, 1.0, 0.0)));\n" +
-            "    vec3 skyColor = mix(horizonColor, zenithColor, a);\n" +
-            "    float sunTheta = max( dot(rayDirection, directionalLightDirection[0].xzy), 0.0 );\n" +
-            "    return skyColor+directionalLightColor[0]*4.0*pow(sunTheta, 16.0)*0.5;\n" +
-            "}\n" +
+        "vec3 atmosphereColor(vec3 rayDirection){\n" +
+        "    float a = max(0.0, dot(rayDirection, vec3(0.0, 1.0, 0.0)));\n" +
+        "    vec3 skyColor = mix(horizonColor, zenithColor, a);\n" +
+        "    float sunTheta = max( dot(rayDirection, directionalLightDirection[0].xzy), 0.0 );\n" +
+        "    return skyColor+directionalLightColor[0]*4.0*pow(sunTheta, 16.0)*0.5;\n" +
+        "}\n" +
 
-            "vec3 applyFog(vec3 albedo, float dist, vec3 rayOrigin, vec3 rayDirection){\n" +
-            "    float fogDensityA = fogDensity ;\n" +
-            "    float fog = exp((-rayOrigin.y*vFalloff)*fogDensityA) * (1.0-exp(-dist*rayDirection.y*vFalloff*fogDensityA))/(rayDirection.y*vFalloff);\n" +
-            "    return mix(albedo, fogColor, clamp(fog, 0.0, 1.0));\n" +
-            "}\n" +
+        "vec3 applyFog(vec3 albedo, float dist, vec3 rayOrigin, vec3 rayDirection){\n" +
+        "    float fogDensityA = fogDensity ;\n" +
+        "    float fog = exp((-rayOrigin.y*vFalloff)*fogDensityA) * (1.0-exp(-dist*rayDirection.y*vFalloff*fogDensityA))/(rayDirection.y*vFalloff);\n" +
+        "    return mix(albedo, fogColor, clamp(fog, 0.0, 1.0));\n" +
+        "}\n" +
 
-            "vec3 aerialPerspective(vec3 albedo, float dist, vec3 rayOrigin, vec3 rayDirection){\n" +
-            " rayOrigin.y += vFalloffStart;\n" +
-            "    vec3 atmosphere = atmosphereColor(rayDirection)+vAtmosphereColor; \n" +
-            "    atmosphere = mix( atmosphere, atmosphere*.85, clamp(1.0-exp(-dist*vAtmosphereDensity), 0.0, 1.0));\n" +
-            "    vec3 color = mix( applyFog(albedo, dist, rayOrigin, rayDirection), atmosphere, clamp(1.0-exp(-dist*vAtmosphereDensity), 0.0, 1.0));\n" +
-            "    return color;\n" +
-            "}						\n" +
-            "#endif",
+        "vec3 aerialPerspective(vec3 albedo, float dist, vec3 rayOrigin, vec3 rayDirection){\n" +
+        " rayOrigin.y += vFalloffStart;\n" +
+        "    vec3 atmosphere = atmosphereColor(rayDirection)+vAtmosphereColor; \n" +
+        "    atmosphere = mix( atmosphere, atmosphere*.85, clamp(1.0-exp(-dist*vAtmosphereDensity), 0.0, 1.0));\n" +
+        "    vec3 color = mix( applyFog(albedo, dist, rayOrigin, rayDirection), atmosphere, clamp(1.0-exp(-dist*vAtmosphereDensity), 0.0, 1.0));\n" +
+        "    return color;\n" +
+        "}						\n" +
+        "#endif",
         "	#else",
 
         "		uniform float fogNear;",
@@ -18337,9 +18337,9 @@ THREE.ShaderChunk = {
         "		const float LOG2 = 1.442695;",
         "		float fogFactor = exp2( - fogDensity * fogDensity * depth * depth * LOG2 );",
         "		fogFactor = 1.0 - clamp( fogFactor, 0.0, 1.0 );",
-            "#if MAX_DIR_LIGHTS > 0\n" +
-            "gl_FragColor.xyz = aerialPerspective(gl_FragColor.xyz, distance(vFogPosition.xyz,cameraPosition),cameraPosition.xzy, normalize(vFogPosition.xyz-cameraPosition).xzy);\n" +
-            "#endif",
+        "#if MAX_DIR_LIGHTS > 0\n" +
+        "gl_FragColor.xyz = aerialPerspective(gl_FragColor.xyz, distance(vFogPosition.xyz,cameraPosition),cameraPosition.xzy, normalize(vFogPosition.xyz-cameraPosition).xzy);\n" +
+        "#endif",
         "	#else",
 
         "		float fogFactor = smoothstep( fogNear, fogFar, depth );",
@@ -19064,7 +19064,7 @@ THREE.ShaderChunk = {
         "          2.0 * C2 * L1m1 * tnorm.y + ",
         "          2.0 * C2 * L10  * tnorm.z;",
         "shAmbient *= length(ambientLightColor);",
-        
+
     ].join("\n"),
     // LIGHTS PHONG
 
@@ -20754,7 +20754,7 @@ THREE.ShaderLib = {
             "void main() {\n" +
 
 
-            "float near   = projectionMatrix[3][2]/(projectionMatrix[2][2]-1.0);" +
+        "float near   = projectionMatrix[3][2]/(projectionMatrix[2][2]-1.0);" +
             "float far    = projectionMatrix[3][2]/(projectionMatrix[2][2]+1.0);" +
             "vFar = far * 10.0;" +
             " vec3 nposition = (position * ((near+far)/2.0 + near)) + cameraPosition;\n" +
@@ -20766,10 +20766,10 @@ THREE.ShaderLib = {
 
         fragmentShader:
 
-            THREE.ShaderChunk["lights_phong_pars_fragment"] + "\n" +
+        THREE.ShaderChunk["lights_phong_pars_fragment"] + "\n" +
             THREE.ShaderChunk["fog_pars_fragment"] + "\n" +
 
-            "uniform samplerCube texture;\n" +
+        "uniform samplerCube texture;\n" +
             "varying vec3 pos;" +
             "uniform vec3 HorizonColor;" +
             "uniform vec3 ApexColor;" +
@@ -20779,7 +20779,7 @@ THREE.ShaderLib = {
             "varying float vFar;" +
             "void main() {\n" +
 
-            "   vec4 cubeColor = textureCube(texture,pos);\n" +
+        "   vec4 cubeColor = textureCube(texture,pos);\n" +
             "   vec4 tFogColor = cubeColor;\n" +
             "   float dotZ = abs(dot(normalize(pos),vec3(0.0,0.0,1.0)));\n" +
             "   vec3 skycolor = mix(HorizonColor,ApexColor,dotZ);\n" +
@@ -20791,7 +20791,7 @@ THREE.ShaderLib = {
             "fogFactor = 1.0 - clamp( fogFactor, 0.0, 1.0 );\n" +
             "#if MAX_DIR_LIGHTS > 0\n" +
 
-            "tFogColor.xyz = aerialPerspective(gl_FragColor.xyz, vFar,cameraPosition.xzy, normalize(vFogPosition.xyz).xzy);\n" +
+        "tFogColor.xyz = aerialPerspective(gl_FragColor.xyz, vFar,cameraPosition.xzy, normalize(vFogPosition.xyz).xzy);\n" +
             "#endif\n" +
             "#else\n" +
             "float fogFactor = smoothstep( fogNear, fogFar, depth );\n" +
@@ -21115,8 +21115,8 @@ THREE.ShaderLib = {
 
             "void main() {",
 
-                "vFogPosition = (modelMatrix * vec4(position,1.0)).xyz; \n" +
-                THREE.ShaderChunk["map_vertex"],
+            "vFogPosition = (modelMatrix * vec4(position,1.0)).xyz; \n" +
+            THREE.ShaderChunk["map_vertex"],
             THREE.ShaderChunk["lightmap_vertex"],
             THREE.ShaderChunk["color_vertex"],
 
@@ -22388,7 +22388,7 @@ THREE.WebGLRenderer = function(parameters) {
 
         _programs = [],
 
-    // internal state cache
+        // internal state cache
 
         _currentProgram = null,
         _currentFramebuffer = null,
@@ -22398,7 +22398,7 @@ THREE.WebGLRenderer = function(parameters) {
 
         _usedTextureUnits = 0,
 
-    // GL state cache
+        // GL state cache
 
         _oldDoubleSided = -1,
         _oldFlipSided = -1,
@@ -22428,18 +22428,18 @@ THREE.WebGLRenderer = function(parameters) {
         _newAttributes = new Uint8Array(16),
         _enabledAttributes = new Uint8Array(16),
 
-    // frustum
+        // frustum
 
         _frustum = new THREE.Frustum(),
 
-    // camera matrices cache
+        // camera matrices cache
 
         _projScreenMatrix = new THREE.Matrix4(),
         _projScreenMatrixPS = new THREE.Matrix4(),
 
         _vector3 = new THREE.Vector3(),
 
-    // light arrays cache
+        // light arrays cache
 
         _direction = new THREE.Vector3(),
 
@@ -22633,10 +22633,10 @@ THREE.WebGLRenderer = function(parameters) {
     this.setScissor = function(x, y, width, height) {
 
         _gl.scissor(
-                x * this.devicePixelRatio,
-                y * this.devicePixelRatio,
-                width * this.devicePixelRatio,
-                height * this.devicePixelRatio
+            x * this.devicePixelRatio,
+            y * this.devicePixelRatio,
+            width * this.devicePixelRatio,
+            height * this.devicePixelRatio
         );
 
     };
@@ -26388,12 +26388,12 @@ THREE.WebGLRenderer = function(parameters) {
             precision: _precision,
             supportsVertexTextures: _supportsVertexTextures,
 
-            map: !! material.map,
-            envMap: !! material.envMap,
-            lightMap: !! material.lightMap,
-            bumpMap: !! material.bumpMap,
-            normalMap: !! material.normalMap,
-            specularMap: !! material.specularMap,
+            map: !!material.map,
+            envMap: !!material.envMap,
+            lightMap: !!material.lightMap,
+            bumpMap: !!material.bumpMap,
+            normalMap: !!material.normalMap,
+            specularMap: !!material.specularMap,
 
             vertexColors: material.vertexColors,
 
@@ -28732,8 +28732,8 @@ THREE.WebGLProgram = (function() {
 
             prefix_vertex = [
 
-                    "precision " + parameters.precision + " float;",
-                    "precision " + parameters.precision + " int;",
+                "precision " + parameters.precision + " float;",
+                "precision " + parameters.precision + " int;",
 
                 customDefines,
 
@@ -28742,14 +28742,14 @@ THREE.WebGLProgram = (function() {
                 _this.gammaInput ? "#define GAMMA_INPUT" : "",
                 _this.gammaOutput ? "#define GAMMA_OUTPUT" : "",
 
-                    "#define MAX_DIR_LIGHTS " + parameters.maxDirLights,
-                    "#define MAX_POINT_LIGHTS " + parameters.maxPointLights,
-                    "#define MAX_SPOT_LIGHTS " + parameters.maxSpotLights,
-                    "#define MAX_HEMI_LIGHTS " + parameters.maxHemiLights,
+                "#define MAX_DIR_LIGHTS " + parameters.maxDirLights,
+                "#define MAX_POINT_LIGHTS " + parameters.maxPointLights,
+                "#define MAX_SPOT_LIGHTS " + parameters.maxSpotLights,
+                "#define MAX_HEMI_LIGHTS " + parameters.maxHemiLights,
 
-                    "#define MAX_SHADOWS " + parameters.maxShadows,
+                "#define MAX_SHADOWS " + parameters.maxShadows,
 
-                    "#define MAX_BONES " + parameters.maxBones,
+                "#define MAX_BONES " + parameters.maxBones,
 
                 parameters.map ? "#define USE_MAP" : "",
                 parameters.envMap ? "#define USE_ENVMAP" : "",
@@ -28835,19 +28835,19 @@ THREE.WebGLProgram = (function() {
 
             prefix_fragment = [
 
-                    "precision " + parameters.precision + " float;",
-                    "precision " + parameters.precision + " int;",
+                "precision " + parameters.precision + " float;",
+                "precision " + parameters.precision + " int;",
 
                 (parameters.bumpMap || parameters.normalMap) ? "#extension GL_OES_standard_derivatives : enable" : "",
 
                 customDefines,
 
-                    "#define MAX_DIR_LIGHTS " + parameters.maxDirLights,
-                    "#define MAX_POINT_LIGHTS " + parameters.maxPointLights,
-                    "#define MAX_SPOT_LIGHTS " + parameters.maxSpotLights,
-                    "#define MAX_HEMI_LIGHTS " + parameters.maxHemiLights,
+                "#define MAX_DIR_LIGHTS " + parameters.maxDirLights,
+                "#define MAX_POINT_LIGHTS " + parameters.maxPointLights,
+                "#define MAX_SPOT_LIGHTS " + parameters.maxSpotLights,
+                "#define MAX_HEMI_LIGHTS " + parameters.maxHemiLights,
 
-                    "#define MAX_SHADOWS " + parameters.maxShadows,
+                "#define MAX_SHADOWS " + parameters.maxShadows,
 
                 parameters.alphaTest ? "#define ALPHATEST " + parameters.alphaTest : "",
 
@@ -29739,7 +29739,7 @@ THREE.ImageUtils = {
         function int32ToFourCC(value) {
 
             return String.fromCharCode(
-                    value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, (value >> 24) & 0xff
+                value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, (value >> 24) & 0xff
             );
         }
 
@@ -31399,8 +31399,8 @@ THREE.Path.prototype.quadraticCurveTo = function(aCPx, aCPy, aX, aY) {
 };
 
 THREE.Path.prototype.bezierCurveTo = function(aCP1x, aCP1y,
-                                              aCP2x, aCP2y,
-                                              aX, aY) {
+    aCP2x, aCP2y,
+    aX, aY) {
 
     var args = Array.prototype.slice.call(arguments);
 
@@ -31446,7 +31446,7 @@ THREE.Path.prototype.splineThru = function(pts /*Array of Vector*/ ) {
 // FUTURE: Change the API or follow canvas API?
 
 THREE.Path.prototype.arc = function(aX, aY, aRadius,
-                                    aStartAngle, aEndAngle, aClockwise) {
+    aStartAngle, aEndAngle, aClockwise) {
 
     var lastargs = this.actions[this.actions.length - 1].args;
     var x0 = lastargs[lastargs.length - 2];
@@ -31458,12 +31458,12 @@ THREE.Path.prototype.arc = function(aX, aY, aRadius,
 };
 
 THREE.Path.prototype.absarc = function(aX, aY, aRadius,
-                                       aStartAngle, aEndAngle, aClockwise) {
+    aStartAngle, aEndAngle, aClockwise) {
     this.absellipse(aX, aY, aRadius, aRadius, aStartAngle, aEndAngle, aClockwise);
 };
 
 THREE.Path.prototype.ellipse = function(aX, aY, xRadius, yRadius,
-                                        aStartAngle, aEndAngle, aClockwise) {
+    aStartAngle, aEndAngle, aClockwise) {
 
     var lastargs = this.actions[this.actions.length - 1].args;
     var x0 = lastargs[lastargs.length - 2];
@@ -31476,7 +31476,7 @@ THREE.Path.prototype.ellipse = function(aX, aY, xRadius, yRadius,
 
 
 THREE.Path.prototype.absellipse = function(aX, aY, xRadius, yRadius,
-                                           aStartAngle, aEndAngle, aClockwise) {
+    aStartAngle, aEndAngle, aClockwise) {
 
     var args = Array.prototype.slice.call(arguments);
     var curve = new THREE.EllipseCurve(aX, aY, xRadius, yRadius,
@@ -31663,7 +31663,7 @@ THREE.Path.prototype.getPoints = function(divisions, closedPath) {
                     aRadius = args[2],
                     aStartAngle = args[3],
                     aEndAngle = args[4],
-                    aClockwise = !! args[5];
+                    aClockwise = !!args[5];
 
                 var deltaAngle = aEndAngle - aStartAngle;
                 var angle;
@@ -31702,7 +31702,7 @@ THREE.Path.prototype.getPoints = function(divisions, closedPath) {
                     yRadius = args[3],
                     aStartAngle = args[4],
                     aEndAngle = args[5],
-                    aClockwise = !! args[6];
+                    aClockwise = !!args[6];
 
 
                 var deltaAngle = aEndAngle - aStartAngle;
@@ -33286,7 +33286,7 @@ THREE.Animation = function(root, name) {
     this.weight = 0;
 
     this.interpolationType = THREE.AnimationHandler.LINEAR;
-
+    this.lastKey = null;;
 
 };
 THREE.Animation.prototype.debug = function(size) {
@@ -33328,6 +33328,9 @@ THREE.Animation.prototype.debug = function(size) {
 THREE.Animation.prototype.setKey = function(keyf) {
 
     if (!this.data) return;
+    if (this.lastKey === keyf) return;
+    this.lastKey = keyf;
+
     var l = keyf - Math.floor(keyf);
     var l2 = 1 - l;
 
@@ -33336,7 +33339,7 @@ THREE.Animation.prototype.setKey = function(keyf) {
         var key = this.data.hierarchy[h].keys[Math.floor(keyf)];
         var key2 = this.data.hierarchy[h].keys[Math.floor(keyf + 1)];
 
-        //object.matrixAutoUpdate = false;
+        object.matrixAutoUpdate = true;
         //object.matrix.copy(key.matrix);
         //object.updateMatrixWorld();
         //object.matrixWorldNeedsUpdate = true;
@@ -33353,6 +33356,10 @@ THREE.Animation.prototype.setKey = function(keyf) {
 
             object.quaternion.set(key.rot.x, key.rot.y, key.rot.z, key.rot.w);
             object.quaternion.slerp(key2.rot, l);
+
+
+            object.updateMatrix();
+
 
             if (object.debugobject) {
                 object.debugobject.matrix.copy(object.matrix);
@@ -35056,7 +35063,7 @@ THREE.ExtrudeGeometry.prototype.addShape = function(shape, options) {
             // scaling factor for v_prev to intersection point
 
             var sf = ((ptNextShift_x - ptPrevShift_x) * v_next_y -
-                (ptNextShift_y - ptPrevShift_y) * v_next_x) /
+                    (ptNextShift_y - ptPrevShift_y) * v_next_x) /
                 (v_prev_x * v_next_y - v_prev_y * v_next_x);
 
             // vector from inPt to intersection point
@@ -35487,8 +35494,8 @@ THREE.ExtrudeGeometry.WorldUVGenerator = {
     },
 
     generateSideWallUV: function(geometry, extrudedShape, wallContour, extrudeOptions,
-                                 indexA, indexB, indexC, indexD, stepIndex, stepsLength,
-                                 contourIndex1, contourIndex2) {
+        indexA, indexB, indexC, indexD, stepIndex, stepsLength,
+        contourIndex1, contourIndex2) {
 
         var ax = geometry.vertices[indexA].x,
             ay = geometry.vertices[indexA].y,
@@ -39843,7 +39850,7 @@ THREE.SpritePlugin = function() {
 
         _gl.shaderSource(vertexShader, [
 
-                'precision ' + _renderer.getPrecision() + ' float;',
+            'precision ' + _renderer.getPrecision() + ' float;',
 
             'uniform mat4 modelViewMatrix;',
             'uniform mat4 projectionMatrix;',
@@ -39881,7 +39888,7 @@ THREE.SpritePlugin = function() {
 
         _gl.shaderSource(fragmentShader, [
 
-                'precision ' + _renderer.getPrecision() + ' float;',
+            'precision ' + _renderer.getPrecision() + ' float;',
 
             'uniform vec3 color;',
             'uniform sampler2D map;',
