@@ -47,6 +47,8 @@
 
                 //walk and find mesh for the bone, update it
                 if (threeObject instanceof THREE.Bone) {
+                    threeObject.matrixAutoUpdate = true;
+                    threeObject.matrix.decompose(threeObject.position,threeObject.rotation,threeObject.scale);
                     var parent = threeObject.parent;
                     while (parent) {
                         if (parent instanceof THREE.SkinnedMesh) {
