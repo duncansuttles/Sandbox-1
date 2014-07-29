@@ -16,20 +16,21 @@ var maxSize = 640;
 //hook these up at the prototype so that we are not changing the chrome hidden class
 THREE.Object3D.prototype.sceneManagerNode = null;
 THREE.Object3D.prototype.sceneManagerUpdate = null;
-THREE.Object3D.prototype.sceneManagerDelete  = null;
-THREE.Object3D.prototype.boundsCache  = null;
+THREE.Object3D.prototype.sceneManagerDelete = null;
+THREE.Object3D.prototype.boundsCache = null;
 THREE.Object3D.prototype.RenderBatchManager = null;
 THREE.Object3D.prototype._static = false;
 THREE.Object3D.prototype._dynamic = false;
+
 function SceneManager(scene) {
 
 }
 
 function GetAllLeafMeshes(threeObject, list) {
     if (threeObject instanceof THREE.Mesh || threeObject instanceof THREE.Line) {
-        if(!(threeObject instanceof THREE.SkinnedMesh))
-                list.push(threeObject);
-        
+        if (!(threeObject instanceof THREE.SkinnedMesh))
+            list.push(threeObject);
+
     }
     if (threeObject.children) {
         for (var i = 0; i < threeObject.children.length; i++) {
@@ -941,6 +942,7 @@ function objectSceneManagerDelete() {
         this.RenderBatchManager.remove(this);
     _SceneManager.removeChild(this);
 }
+
 function objectSceneManagerUpdate() {
     //dynamic objects currently should not belong to the octree
     //we really should  try to not get here in the first place. Because when we set 
@@ -1160,7 +1162,7 @@ SceneManagerRegion.prototype.CPUPick = function(o, d, opts) {
     }
     for (var i = 0; i < this.childObjects.length; i++) {
 
-        if(this.childObjects[i].children.length > 0) debugger;
+
         var childhits = this.childObjects[i].CPUPick(o, d, opts);
         if (childhits) {
             for (var j = 0; j < childhits.length; j++)

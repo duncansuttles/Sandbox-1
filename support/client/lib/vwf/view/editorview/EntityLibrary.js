@@ -1,6 +1,7 @@
 define(function() {
     var EntityLibrary = {};
     var isInitialized = false;
+    var currentDrag;
     return {
         getSingleton: function() {
             if (!isInitialized) {
@@ -57,15 +58,81 @@ define(function() {
                         var section = '<h3 class="modifiersection" ><a href="#"><div style="font-weight:bold;display:inline">' + i + "</div>" + '</a></h3>' + '<div class="modifiersection" id="library' + ToSafeID(i) + '">' + '</div>';
                         $('#EntityLibraryAccordion').append(section);
                         for (var j in libs[i].library) {
-                            $('#library' + ToSafeID(i)).append('<div class = "libraryAsset">' +
-                                '<img src="' + libs[i].library[j].preview + '"></img>' +
+                            $('#library' + ToSafeID(i)).append('<div  class = "libraryAsset">' +
+                                '<img id = "asset' + ToSafeID(i) + ToSafeID(j) + '" src="' + libs[i].library[j].preview + '"></img>' +
                                 '<div>' + j + '</div>' +
                                 '</div>'
                             );
+                            (function(i1, j1) {
 
+                                $("#asset" + ToSafeID(i1) + ToSafeID(j1)).on('dragstart', function(evt) {
+
+
+                                    var dragIcon = document.createElement('img');
+                                    dragIcon.src = '../vwf/view/editorview/images/icons/paste.png';
+                                    dragIcon.width = 100;
+                                    evt.originalEvent.dataTransfer.setDragImage(dragIcon, 10, 10);
+
+                                    currentDrag = libs[i1].library[j1];
+                                    evt.originalEvent.dataTransfer.setData('json', JSON.stringify(libs[i1].library[j1]));
+                                    $(this).css('opacity', .5);
+                                });
+                                $("#asset" + ToSafeID(i1) + ToSafeID(j1)).on('dragend', function() {
+
+                                    $(this).css('opacity', 1);
+
+                                });
+
+                            })(i, j)
 
                         }
                     }
+
+                    $("#index-vwf").live('dragover', function(evt) {
+                        evt.preventDefault();
+
+
+                        var pos = _Editor.GetInsertPoint(evt.originalEvent);
+                        EntityLibrary.dropPreview.position = new THREE.Vector3(pos[0], pos[1], pos[2]);
+                        EntityLibrary.dropPreview.updateMatrixWorld();
+
+                    })
+                    $("#index-vwf").live('dragenter', function(evt) {
+
+                        var data = currentDrag;
+                        if (!EntityLibrary.dropPreview) {
+                            EntityLibrary.dropPreview = new THREE.Mesh(new THREE.SphereGeometry(1, 10, 10), new THREE.MeshPhongMaterial());
+                            _dScene.add(EntityLibrary.dropPreview, true);
+
+                            if (data.dropPreview) {
+
+                                _assetLoader.getOrLoadAsset(data.dropPreview.url, data.dropPreview.type, function(asset) {
+                                    if (asset && EntityLibrary.dropPreview) {
+
+                                        EntityLibrary.dropPreview.visible = false;
+                                        EntityLibrary.dropPreview.add(asset.scene, true);
+                                    }
+                                });
+                            }
+                        }
+                    })
+                    $("#index-vwf").live('dragleave', function(evt) {
+                        if (EntityLibrary.dropPreview) {
+                            _dScene.remove(EntityLibrary.dropPreview, true);
+                            delete EntityLibrary.dropPreview;
+                        }
+                    })
+
+                    $("#index-vwf").live('drop', function(evt) {
+                        evt.preventDefault();
+                        data = JSON.parse(evt.originalEvent.dataTransfer.getData('json'));
+                        console.log(data);
+                        if (EntityLibrary.dropPreview) {
+                            _dScene.remove(EntityLibrary.dropPreview, true);
+                            delete EntityLibrary.dropPreview;
+                        }
+                    })
+
                     $("#EntityLibraryAccordion").accordion({
                         heightStyle: 'fill',
                         activate: function() {
@@ -100,7 +167,7 @@ define(function() {
                 step: sizeWindowTimer
             });
 
-            $('#EntityLibraryAccordion').css('height', $('#index-vwf').css('height') - $('#entitylibrarytitle').height() );
+            $('#EntityLibraryAccordion').css('height', $('#index-vwf').css('height') - $('#entitylibrarytitle').height());
             $('#EntityLibrary').css('height', $('#index-vwf').css('height'));
             $('#EntityLibraryAccordion').css('overflow', 'auto');
             isOpen = true;

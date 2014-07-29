@@ -14,6 +14,7 @@
         //in which case, there is no point in dirtying the scenemanager, as you may not 
         //reason over the interpolated values anyway
         this.setTransformInternal = function(propertyValue, sceneManagerUpdate) {
+
             var threeObject = this.getRoot().parent;
             if (this.getRoot().initializedFromAsset)
                 threeObject = this.getRoot();
@@ -79,7 +80,7 @@
             if (propertyName == 'transform') {
 
                 if (!this.TransformEnabled()) {
-                    
+
                     return propertyValue;
                 };
 

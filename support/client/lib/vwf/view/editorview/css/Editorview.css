@@ -1596,6 +1596,9 @@ height: 200px;
 margin-bottom: -19px;
 border-radius: 10px;
 box-shadow: 2px 2px 5px gray;
+-webkit-transition: opactiy 2s; /* For Safari 3.1 to 6.0 */
+-blink-transition: opactiy 2s; /* For Safari 3.1 to 6.0 */
+ transition: opactiy 2s;
 }
 
 /* Let's get this party started */
