@@ -4,7 +4,22 @@
         "preview": "./contentlibraries/entities/thumbs/defaulttree.png",
         "dropPreview": {
             "url": "./contentlibraries/entities/assets/defaulttree.json",
-            "type": "subDriver/threejs/asset/vnd.osgjs+json+compressed"
+            "type": "subDriver/threejs/asset/vnd.osgjs+json+compressed",
+            "transform": [
+                1,
+                0,
+                0,
+                0,
+                0, -2.2112923048211997E-8,
+                1,
+                0,
+                0, -1, -2.2112923048211997E-8,
+                0,
+                0,
+                0,
+                0,
+                1
+            ]
         },
         "type": "asset"
     },

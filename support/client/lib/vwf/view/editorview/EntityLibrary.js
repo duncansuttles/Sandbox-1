@@ -42,6 +42,8 @@ define(function() {
         $('#entitylibrarytitle').append('<a id="entitylibraryclose" href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
         $('#entitylibrarytitle').prepend('<div class="headericon properties" />');
         $('#EntityLibraryMain').append("<div id='EntityLibraryAccordion'></div>");
+
+        //fetch the list if libraries, and fetch the content of each library
         this.setup = function() {
             $.getJSON("./contentlibraries/libraries.json", function(libs) {
                 var keys = Object.keys(libs);
@@ -57,6 +59,8 @@ define(function() {
                     for (var i in libs) {
                         var section = '<h3 class="modifiersection" ><a href="#"><div style="font-weight:bold;display:inline">' + i + "</div>" + '</a></h3>' + '<div class="modifiersection" id="library' + ToSafeID(i) + '">' + '</div>';
                         $('#EntityLibraryAccordion').append(section);
+
+                        //for every asset in every library, setup the gui
                         for (var j in libs[i].library) {
                             $('#library' + ToSafeID(i)).append('<div  class = "libraryAsset">' +
                                 '<img id = "asset' + ToSafeID(i) + ToSafeID(j) + '" src="' + libs[i].library[j].preview + '"></img>' +
@@ -88,41 +92,47 @@ define(function() {
                         }
                     }
 
+                    //when dragging over the 3d view, update the preview positoin    
                     $("#index-vwf").live('dragover', function(evt) {
                         evt.preventDefault();
-
-
                         var pos = _Editor.GetInsertPoint(evt.originalEvent);
+                        console.log(pos);
                         EntityLibrary.dropPreview.position = new THREE.Vector3(pos[0], pos[1], pos[2]);
                         EntityLibrary.dropPreview.updateMatrixWorld();
 
                     })
+                    //when dragging into the 3d view, create a preview sphere, then try to attach the preview model
                     $("#index-vwf").live('dragenter', function(evt) {
 
                         var data = currentDrag;
                         if (!EntityLibrary.dropPreview) {
-                            EntityLibrary.dropPreview = new THREE.Mesh(new THREE.SphereGeometry(1, 10, 10), new THREE.MeshPhongMaterial());
+                            EntityLibrary.dropPreview = new THREE.Mesh(new THREE.SphereGeometry(1, 30, 30), EntityLibrary.createPreviewMaterial());
                             _dScene.add(EntityLibrary.dropPreview, true);
 
                             if (data.dropPreview) {
-
+                                //the asset must have a 'drop preview' key
                                 _assetLoader.getOrLoadAsset(data.dropPreview.url, data.dropPreview.type, function(asset) {
                                     if (asset && EntityLibrary.dropPreview) {
-
+                                        var transformNode = new THREE.Object3D();
+                                        transformNode.matrixAutoUpdate = false;
+                                        if (data.dropPreview.transform)
+                                            transformNode.matrix.fromArray(data.dropPreview.transform)
                                         EntityLibrary.dropPreview.visible = false;
-                                        EntityLibrary.dropPreview.add(asset.scene, true);
+                                        transformNode.add(asset.scene, true);
+                                        EntityLibrary.dropPreview.add(transformNode, true);
                                     }
                                 });
                             }
                         }
                     })
+                    //remove the preview,
                     $("#index-vwf").live('dragleave', function(evt) {
                         if (EntityLibrary.dropPreview) {
                             _dScene.remove(EntityLibrary.dropPreview, true);
                             delete EntityLibrary.dropPreview;
                         }
                     })
-
+                    //remove the preview and do the creation
                     $("#index-vwf").live('drop', function(evt) {
                         evt.preventDefault();
                         data = JSON.parse(evt.originalEvent.dataTransfer.getData('json'));
@@ -130,6 +140,7 @@ define(function() {
                         if (EntityLibrary.dropPreview) {
                             _dScene.remove(EntityLibrary.dropPreview, true);
                             delete EntityLibrary.dropPreview;
+                            EntityLibrary.create(data, evt);
                         }
                     })
 
@@ -192,10 +203,68 @@ define(function() {
             });
             isOpen = false;
         }
+        this.create = function(data, evt) {
+            //if its a 3d file or a node prototype
+            if (data.type == 'asset') {
+                var pos = _Editor.GetInsertPoint(evt.originalEvent);
+                $.getJSON(data.url, function(proto) {
 
+                    //very important to clean the node! Might have accidently left a name or id in the libarary
+                    proto = _DataManager.getCleanNodePrototype(proto);
+                    if (!proto.properties)
+                        proto.properties = {};
+                    proto.properties.owner = _UserManager.GetCurrentUserName()
+                    if (!proto.properties.transform)
+                        proto.properties.transform = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+                    proto.properties.transform[12] = pos[0];
+                    proto.properties.transform[13] = pos[1];
+                    proto.properties.transform[14] = pos[2];
+                    proto.properties.translation = pos;
+                    var newname = GUID();
+                    _Editor.createChild('index-vwf', newname, proto);
+                    _Editor.SelectOnNextCreate([newname]);
+
+                })
+
+            }
+
+        }
+        this.createPreviewMaterial = function() {
+            if (!this.material) {
+                this.material = new THREE.ShaderMaterial({
+                    uniforms: {},
+                    vertexShader: [
+                        "varying vec2 vUv;",
+                        "varying vec3 norm;",
+                        "varying vec3 tocam;",
+                        "void main()",
+                        "{",
+                        "vec4 mvPosition = modelViewMatrix * vec4(position, 1.0 );",
+                        "norm = (viewMatrix * vec4(normal,0.0)).xyz;",
+
+                        "vec3 vecPos = (modelMatrix * vec4(position, 1.0 )).xyz;",
+                        "norm = (modelMatrix * vec4(normal, 0.0)).xyz;",
+                        "tocam = vecPos.xyz - cameraPosition;",
+                        "gl_Position = projectionMatrix * mvPosition;",
+                        "}"
+                    ].join('\n'),
+                    fragmentShader: [
+                        "varying vec3 norm;",
+                        "varying vec3 tocam;",
+                        "void main()",
+                        "{",
+                        "float d = 1.0-dot(normalize(norm),normalize(-tocam));",
+                        "d = pow(d,3.0);",
+                        "gl_FragColor = vec4(0.0,0.0,d,d);",
+                        "}"
+                    ].join('\n'),
+
+                });
+                this.material.transparent = true;
+            }
+            return this.material;
+        }
         $('#EntityLibrarySideTab').click(function() {
-
-
             if (EntityLibrary.isOpen())
                 EntityLibrary.hide();
             else

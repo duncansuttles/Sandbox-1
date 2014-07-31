@@ -446,7 +446,7 @@ define({
             _Editor.AddBlankBehavior();
         });
         $('#MenuViewGlyphs').click(function(e) {
-            if ($('#glyphOverlay').is(':visible')) {
+            if ($('#glyphOverlay').css('display') == 'block') {
                 $('#glyphOverlay').hide();
                 _Notifier.notify('Glyphs hidden');
             } else {
