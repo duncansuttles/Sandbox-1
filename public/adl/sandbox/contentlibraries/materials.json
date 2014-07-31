@@ -1,7 +1,7 @@
 {
 	"Default Tree":{
-		"url":"./contentlibraries/entites/defaulttree.vwf.json",
-		"preview":"./contentlibraries/entites/defaulttree.png",
-		"type":"asset"
+		"url":"./contentlibraries/materials/vwf/white.json",
+		"preview":"./contentlibraries/materials/thumbs/white.jpg",
+		"type":"material"
 	}
 }

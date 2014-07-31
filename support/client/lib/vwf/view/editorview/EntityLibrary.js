@@ -95,36 +95,64 @@ define(function() {
                     //when dragging over the 3d view, update the preview positoin    
                     $("#index-vwf").live('dragover', function(evt) {
                         evt.preventDefault();
-                        var pos = _Editor.GetInsertPoint(evt.originalEvent);
-                        console.log(pos);
-                        EntityLibrary.dropPreview.position = new THREE.Vector3(pos[0], pos[1], pos[2]);
-                        EntityLibrary.dropPreview.updateMatrixWorld();
-
+                        if (currentDrag.type == 'asset') {
+                            var pos = _Editor.GetInsertPoint(evt.originalEvent);
+                            console.log(pos);
+                            EntityLibrary.dropPreview.position = new THREE.Vector3(pos[0], pos[1], pos[2]);
+                            EntityLibrary.dropPreview.updateMatrixWorld();
+                        }
+                        if (currentDrag.type == 'material') {
+                            if (vwf.views[0].lastPick)
+                                if (vwf.views[0].lastPick.object) {
+                                    
+                                    var bound = vwf.views[0].lastPick.object.GetBoundingBox();
+                                    bound = bound.transformBy( vwf.views[0].lastPick.object.matrixWorld.elements);
+                                    var x = ((bound.max[0] - bound.min[0])/2) + bound.min[0] + vwf.views[0].lastPick.object.matrixWorld.elements[12];
+                                    var y = ((bound.max[1] - bound.min[1])/2) + bound.min[1] + vwf.views[0].lastPick.object.matrixWorld.elements[13];
+                                    var z = ((bound.max[2] - bound.min[2])/2) + bound.min[2] + vwf.views[0].lastPick.object.matrixWorld.elements[14];
+                                    var sx = bound.max[0] - bound.min[0];
+                                    var sy = bound.max[1] - bound.min[1];
+                                    var sz = bound.max[2] - bound.min[2];
+                                    var ss = Math.max(sx,sy,sz);
+                                    EntityLibrary.dropPreview.position.set(x,y,z);
+                                    EntityLibrary.dropPreview.scale.set(ss,ss,ss);
+                                    EntityLibrary.dropPreview.updateMatrixWorld();
+                                }
+                        }
                     })
                     //when dragging into the 3d view, create a preview sphere, then try to attach the preview model
                     $("#index-vwf").live('dragenter', function(evt) {
 
                         var data = currentDrag;
-                        if (!EntityLibrary.dropPreview) {
-                            EntityLibrary.dropPreview = new THREE.Mesh(new THREE.SphereGeometry(1, 30, 30), EntityLibrary.createPreviewMaterial());
-                            _dScene.add(EntityLibrary.dropPreview, true);
+                        if (currentDrag.type == 'asset') {
+                            if (!EntityLibrary.dropPreview) {
+                                EntityLibrary.dropPreview = new THREE.Mesh(new THREE.SphereGeometry(1, 30, 30), EntityLibrary.createPreviewMaterial());
+                                _dScene.add(EntityLibrary.dropPreview, true);
 
-                            if (data.dropPreview) {
-                                //the asset must have a 'drop preview' key
-                                _assetLoader.getOrLoadAsset(data.dropPreview.url, data.dropPreview.type, function(asset) {
-                                    if (asset && EntityLibrary.dropPreview) {
-                                        var transformNode = new THREE.Object3D();
-                                        transformNode.matrixAutoUpdate = false;
-                                        if (data.dropPreview.transform)
-                                            transformNode.matrix.fromArray(data.dropPreview.transform)
-                                        EntityLibrary.dropPreview.visible = false;
-                                        transformNode.add(asset.scene, true);
-                                        EntityLibrary.dropPreview.add(transformNode, true);
-                                    }
-                                });
+                                if (data.dropPreview) {
+                                    //the asset must have a 'drop preview' key
+                                    _assetLoader.getOrLoadAsset(data.dropPreview.url, data.dropPreview.type, function(asset) {
+                                        if (asset && EntityLibrary.dropPreview) {
+                                            var transformNode = new THREE.Object3D();
+                                            transformNode.matrixAutoUpdate = false;
+                                            if (data.dropPreview.transform)
+                                                transformNode.matrix.fromArray(data.dropPreview.transform)
+                                            EntityLibrary.dropPreview.visible = false;
+                                            transformNode.add(asset.scene, true);
+                                            EntityLibrary.dropPreview.add(transformNode, true);
+                                        }
+                                    });
+                                }
                             }
                         }
-                    })
+                        if (currentDrag.type == 'material') {
+
+                            if (!EntityLibrary.dropPreview) {
+                                EntityLibrary.dropPreview = new THREE.Mesh(new THREE.SphereGeometry(1, 30, 30), EntityLibrary.createPreviewMaterial());
+                                _dScene.add(EntityLibrary.dropPreview, true);
+                            }
+                        }
+                    });
                     //remove the preview,
                     $("#index-vwf").live('dragleave', function(evt) {
                         if (EntityLibrary.dropPreview) {
@@ -225,9 +253,15 @@ define(function() {
                     _Editor.SelectOnNextCreate([newname]);
 
                 })
+            }
+            if (data.type == 'material') {
+
+                $.getJSON(data.url, function(proto) {
+
+
+                })
 
             }
-
         }
         this.createPreviewMaterial = function() {
             if (!this.material) {
