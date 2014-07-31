@@ -85,7 +85,7 @@
 
                     return propertyValue;
                 };
-
+                
                 return this.setTransformInternal(propertyValue, true);
             }
 

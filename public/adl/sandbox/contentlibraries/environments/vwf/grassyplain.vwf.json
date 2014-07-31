@@ -2,8 +2,8 @@
 	"properties": {
 		
 		"sunColor": [1, 1, 1],
-		"sunDirection": [1.1, 0.4, 1],
-		"sunIntensity": 1,
+		"sunDirection": [0.5, 0.4, 1],
+		"sunIntensity": 0.8,
 		"ambientColor": [0.35, 0.35, 0.35],
 		"fogColor": [1, 1, 1],
 		"fogNear": 0,

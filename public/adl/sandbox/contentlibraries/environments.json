@@ -8,5 +8,10 @@
 		"url":"./contentlibraries/environments/vwf/desertsunset.vwf.json",
 		"preview":"./contentlibraries/environments/thumbs/desertsunset.png",
 		"type":"environment"
+	},
+	"Space":{
+		"url":"./contentlibraries/environments/vwf/space.vwf.json",
+		"preview":"./contentlibraries/environments/thumbs/space.png",
+		"type":"environment"
 	}
 }
