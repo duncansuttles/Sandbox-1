@@ -30,10 +30,12 @@ define({
                     }
                 });
                 $("body").mouseup(function(e) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    down = false;
-                    return false;
+                    if (down) {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                        down = false;
+                        return false;
+                    }
                 });
             };
         })(jQuery);

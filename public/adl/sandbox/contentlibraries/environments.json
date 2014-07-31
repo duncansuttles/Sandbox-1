@@ -1,0 +1,12 @@
+{
+	"Grassy Plain":{
+		"url":"./contentlibraries/environments/vwf/grassyplain.vwf.json",
+		"preview":"./contentlibraries/environments/thumbs/grassyplain.png",
+		"type":"environment"
+	},
+	"Desert Sunset":{
+		"url":"./contentlibraries/environments/vwf/desertsunset.vwf.json",
+		"preview":"./contentlibraries/environments/thumbs/desertsunset.png",
+		"type":"environment"
+	}
+}

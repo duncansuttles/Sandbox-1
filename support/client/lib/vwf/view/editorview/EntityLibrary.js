@@ -13,6 +13,18 @@ define(function() {
     }
     var isOpen = true;
 
+    function matcpy(mat) {
+        var newmat = [];
+        for (var i = 0; i < 16; i++) newmat[i] = mat[i];
+        return newmat;
+    }
+
+    function toGMat(threemat) {
+        var mat = [];
+        mat = matcpy(threemat.elements);
+        mat = (MATH.transposeMat4(mat));
+        return mat;
+    }
 
     function sizeWindowTimer() {
         if (!_Editor.findcamera()) return;
@@ -101,23 +113,27 @@ define(function() {
                             EntityLibrary.dropPreview.position = new THREE.Vector3(pos[0], pos[1], pos[2]);
                             EntityLibrary.dropPreview.updateMatrixWorld();
                         }
-                        if (currentDrag.type == 'material') {
-                            if (vwf.views[0].lastPick)
+                        if (currentDrag.type == 'material' || currentDrag.type == 'child') {
+                            if (vwf.views[0].lastPick && vwf.views[0].lastPickId)
                                 if (vwf.views[0].lastPick.object) {
-                                    
-                                    var bound = vwf.views[0].lastPick.object.GetBoundingBox();
-                                    bound = bound.transformBy( vwf.views[0].lastPick.object.matrixWorld.elements);
-                                    var x = ((bound.max[0] - bound.min[0])/2) + bound.min[0] + vwf.views[0].lastPick.object.matrixWorld.elements[12];
-                                    var y = ((bound.max[1] - bound.min[1])/2) + bound.min[1] + vwf.views[0].lastPick.object.matrixWorld.elements[13];
-                                    var z = ((bound.max[2] - bound.min[2])/2) + bound.min[2] + vwf.views[0].lastPick.object.matrixWorld.elements[14];
-                                    var sx = bound.max[0] - bound.min[0];
-                                    var sy = bound.max[1] - bound.min[1];
-                                    var sz = bound.max[2] - bound.min[2];
-                                    var ss = Math.max(sx,sy,sz);
-                                    EntityLibrary.dropPreview.position.set(x,y,z);
-                                    EntityLibrary.dropPreview.scale.set(ss,ss,ss);
+
+                                    var bound = vwf.views[0].lastPick.object.GetBoundingBox(true);
+                                    bound = bound.transformBy(toGMat(vwf.views[0].lastPick.object.matrixWorld));
+                                    var x = ((bound.max[0] - bound.min[0]) / 2) + bound.min[0];
+                                    var y = ((bound.max[1] - bound.min[1]) / 2) + bound.min[1];
+                                    var z = ((bound.max[2] - bound.min[2]) / 2) + bound.min[2];
+
+                                    var ss = MATH.distanceVec3(bound.max, bound.min) / 1.9;
+                                    EntityLibrary.dropPreview.position.set(x, y, z);
+                                    EntityLibrary.dropPreview.scale.set(ss, ss, ss);
                                     EntityLibrary.dropPreview.updateMatrixWorld();
                                 }
+                        }
+                        if (currentDrag.type == 'environment')
+                        {
+                            EntityLibrary.dropPreview.position.set(0, 0, 0);
+                            EntityLibrary.dropPreview.scale.set(10, 10, 10);
+                            EntityLibrary.dropPreview.updateMatrixWorld();
                         }
                     })
                     //when dragging into the 3d view, create a preview sphere, then try to attach the preview model
@@ -145,7 +161,7 @@ define(function() {
                                 }
                             }
                         }
-                        if (currentDrag.type == 'material') {
+                        if (currentDrag.type == 'material' || currentDrag.type == 'child' || currentDrag.type == 'environment') {
 
                             if (!EntityLibrary.dropPreview) {
                                 EntityLibrary.dropPreview = new THREE.Mesh(new THREE.SphereGeometry(1, 30, 30), EntityLibrary.createPreviewMaterial());
@@ -254,13 +270,46 @@ define(function() {
 
                 })
             }
+            if (data.type == 'child') {
+
+                
+                if (vwf.views[0].lastPick && vwf.views[0].lastPickId) {
+                    var ID = vwf.views[0].lastPickId; {
+                        $.getJSON(data.url, function(proto) {
+                            //very important to clean the node! Might have accidently left a name or id in the libarary
+                            proto = _DataManager.getCleanNodePrototype(proto);
+                            if (!proto.properties)
+                                proto.properties = {};
+                            proto.properties.owner = _UserManager.GetCurrentUserName()
+                            if (!proto.properties.transform)
+                                proto.properties.transform = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+                            var newname = GUID();
+                            _Editor.createChild(ID, newname, proto);
+                            _Editor.SelectOnNextCreate([newname]);
+
+                        })
+                    }
+                }
+            }
             if (data.type == 'material') {
 
-                $.getJSON(data.url, function(proto) {
+                if (vwf.views[0].lastPick && vwf.views[0].lastPickId) {
+                    var ID = vwf.views[0].lastPickId;
+                    $.getJSON(data.url, function(proto) {
+                        _PrimitiveEditor.setProperty(ID, 'materialDef', proto);
+                    })
+                }
 
-
-                })
-
+            }
+            if (data.type == 'environment') {
+                    $.getJSON(data.url, function(proto) {
+                        _UndoManager.startCompoundEvent();
+                        for(var i in proto.properties)
+                            _PrimitiveEditor.setProperty(vwf.application(), i, proto.properties[i]);
+                        for(var i in proto.children)
+                            _Editor.createChild(vwf.application(), GUID(), proto.children[i]);
+                        _UndoManager.stopCompoundEvent();
+                    })
             }
         }
         this.createPreviewMaterial = function() {
