@@ -97,9 +97,15 @@
                         walk(node.children[i], val, false);
                 }
 
-                walk(this.getRoot(), propertyValue, true);
+                //walk(this.getRoot(), propertyValue, true);
+                this.getRoot().inheritScale = propertyValue;
                 this.getRoot().updateMatrixWorld(true);
-
+                if (this.getRoot() instanceof THREE.Bone) {
+                    var skin = this.getRoot();
+                    while (!(skin instanceof THREE.SkinnedMesh))
+                        skin = skin.parent;
+                    skin.updateMatrixWorld(true);
+                }
                 //need to set this to update bone handle positions
                 if (this.setAnimationFrameInternal)
                     this.setAnimationFrameInternal(this.gettingProperty('animationFrame'), true);

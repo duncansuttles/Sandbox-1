@@ -49,9 +49,9 @@ define(function() {
             "</div>" +
             "<div class='EditorLabel'>Scale</div>" +
             "<div id='Scale'>" +
-            "<input type='number' step='5'  class='TransformEditorInput' id='ScaleX'/>" +
-            "<input type='number' step='5' class='TransformEditorInput' id='ScaleY'/>" +
-            "<input type='number' step='5' class='TransformEditorInput' id='ScaleZ'/>" +
+            "<input type='number' min='.0001' step='.05'  class='TransformEditorInput' id='ScaleX'/>" +
+            "<input type='number' min='.0001' step='.05' class='TransformEditorInput' id='ScaleY'/>" +
+            "<input type='number' min='.0001' step='.05' class='TransformEditorInput' id='ScaleZ'/>" +
             "</div>" +
             '</div>' +
             '</div>');

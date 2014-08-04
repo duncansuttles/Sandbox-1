@@ -4779,12 +4779,12 @@ THREE.Matrix4.prototype = {
 
     },
 
-    orthogonalize: function() {
+    orthogonalize: function(p) {
 
         var v1 = new THREE.Vector3();
         var m = new THREE.Matrix4();
 
-        return function() {
+        return function(p) {
 
             m.copy(this)
 
@@ -4795,24 +4795,43 @@ THREE.Matrix4.prototype = {
             var scaleY = 1 / v1.set(me[4], me[5], me[6]).length();
             var scaleZ = 1 / v1.set(me[8], me[9], me[10]).length();
 
-            te[0] = me[0] * scaleX;
-            te[1] = me[1] * scaleX;
-            te[2] = me[2] * scaleX;
+            if (p) {
+                var pe = p.elements;
 
-            te[4] = me[4] * scaleY;
-            te[5] = me[5] * scaleY;
-            te[6] = me[6] * scaleY;
+                var px = v1.set(pe[0], pe[1], pe[2]).length();
+                var py = v1.set(pe[4], pe[5], pe[6]).length();
+                var pz = v1.set(pe[8], pe[9], pe[10]).length();
 
-            te[8] = me[8] * scaleZ;
-            te[9] = me[9] * scaleZ;
-            te[10] = me[10] * scaleZ;
+                te[0] = me[0] * scaleX * px;
+                te[1] = me[1] * scaleX * px;
+                te[2] = me[2] * scaleX * px;
 
+                te[4] = me[4] * scaleY * py;
+                te[5] = me[5] * scaleY * py;
+                te[6] = me[6] * scaleY * py;
+
+                te[8] = me[8] * scaleZ * pz;
+                te[9] = me[9] * scaleZ * pz;
+                te[10] = me[10] * scaleZ * pz;
+            } else {
+                te[0] = me[0] * scaleX;
+                te[1] = me[1] * scaleX;
+                te[2] = me[2] * scaleX;
+
+                te[4] = me[4] * scaleY;
+                te[5] = me[5] * scaleY;
+                te[6] = me[6] * scaleY;
+
+                te[8] = me[8] * scaleZ;
+                te[9] = me[9] * scaleZ;
+                te[10] = me[10] * scaleZ;
+            }
             te[11] = me[11];
             te[12] = me[12];
             te[13] = me[13];
 
             return this;
-        }.call(this);
+        }.call(this, p);
 
     },
 
@@ -8568,7 +8587,15 @@ THREE.Object3D.prototype = {
             }
 
             this.orthoMatrixWorld.copy(this.matrixWorld);
-            this.orthoMatrixWorld.orthogonalize();
+            if (this instanceof THREE.Bone) {
+                var skin = this;
+                while (!(skin instanceof THREE.SkinnedMesh))
+                    skin = skin.parent;
+                this.orthoMatrixWorld.orthogonalize(skin.matrixWorld);
+            } else {
+
+                this.orthoMatrixWorld.orthogonalize();
+            }
 
             this.matrixWorldNeedsUpdate = false;
 
@@ -16376,7 +16403,6 @@ THREE.Bone.prototype.update = function(parentSkinMatrix, forceUpdate, parentOrth
         }
         this.orthoSkinMatrix.copy(this.skinMatrix);
         this.orthoSkinMatrix.orthogonalize();
-
         this.matrixWorldNeedsUpdate = false;
         forceUpdate = true;
 
