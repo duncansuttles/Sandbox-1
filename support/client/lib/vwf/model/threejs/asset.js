@@ -62,10 +62,11 @@
         //for the subNode case
         this.setAsset = function(asset) {
             if (asset) {
+
                 this.initializedFromAsset = true;
                 this.backupmats = [];
                 this.backupMatrix = asset.matrix;
-                asset.matrix = asset.matrix.clone();
+                //asset.matrix = asset.matrix.clone();
                 this.rootnode = asset;
                 this.rootnode = asset;
                 asset.initializedFromAsset = true;
@@ -250,6 +251,17 @@
                             list[i].geometry.faceVertexUvs[0].push([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]);
                     }
                 }
+
+                //lets set all animations to frame 0
+                if (list[i].animationHandle) {
+                    list[i].animationHandle.setKey(this.animationFrame);
+                    list[i].updateMatrixWorld();
+                    //odd, does not seem to update matrix on first child bone. 
+                    //how does the bone relate to the skeleton?
+                    for (var j = 0; j < list[i].children.length; j++) {
+                        list[i].children[j].updateMatrixWorld(true);
+                    }
+                }
             }
         }
         this.loaded = function(asset) {
@@ -267,25 +279,29 @@
             //it's not pending, and it is loaded
             reg.pending = false;
             reg.loaded = true;
+
             //store this asset in the registry
 
             //actually, is this necessary? can we just store the raw loaded asset in the cache? 
             if (childType !== 'subDriver/threejs/asset/vnd.gltf+json')
                 reg.node = asset.scene.clone();
             else {
-                glTFCloner.clone(asset.scene, asset.animations, function(clone) {
+                glTFCloner.clone(asset.scene, asset.rawAnimationChannels, function(clone) {
                     reg.node = clone;
+                    reg.rawAnimationChannels = asset.rawAnimationChannels
                 });
             }
             this.cleanTHREEJSnodes(reg.node);
 
             //you may be wondering why we are cloning again - this is so that the object in the scene is 
             //never the same object as in the cache
+            var self = this;
             if (childType !== 'subDriver/threejs/asset/vnd.gltf+json')
                 this.getRoot().add(reg.node.clone());
             else {
-                glTFCloner.clone(asset.scene, asset.animations, function(clone) {
-                    this.getRoot().add(clone);
+                glTFCloner.clone(asset.scene, asset.rawAnimationChannels, function(clone) {
+                    self.getRoot().add(clone);
+                    self.getRoot().GetBoundingBox();
                 });
             }
 
@@ -296,7 +312,7 @@
             //if any callbacks were waiting on the asset, call those callbacks
 
             for (var i = 0; i < reg.callbacks.length; i++)
-                reg.callbacks[i](asset.scene);
+                reg.callbacks[i](asset.scene, asset.rawAnimationChannels);
             //nothing should be waiting on callbacks now.
             reg.callbacks = [];
 
@@ -369,6 +385,8 @@
 
         //if the asset entry is not loaded and not pending, you'll have to actaully go download and parse it
         if (reg.loaded == false && reg.pending == false) {
+
+
             //thus, it becomes pending
             reg.pending = true;
             asyncCallback(false);
@@ -432,6 +450,7 @@
                     $(document).trigger('EndParse');
 
                     self.getRoot().updateMatrixWorld(true);
+
                     self.getRoot().GetBoundingBox();
                     //ok, load is complete - ask the kernel to continue the simulation
                     window.setImmediate(function() {
@@ -452,7 +471,7 @@
         else if (reg.loaded == false && reg.pending == true) {
             asyncCallback(false);
             var tcal = asyncCallback;
-            reg.callbacks.push(function(node) {
+            reg.callbacks.push(function(node, rawAnimationChannels) {
 
                 //just clone the node and attach it.
                 //this should not clone the geometry, so much lower memory.
@@ -466,7 +485,7 @@
                         var obj = _assetLoader.getglTF(assetSource);
                         node = obj.scene;
 
-                        glTFCloner.clone(node, null, function(clone) {
+                        glTFCloner.clone(node, rawAnimationChannels, function(clone) {
                             // Finally, attach our cloned model
                             self.cleanTHREEJSnodes(self.getRoot());
                             self.getRoot().add(clone);

@@ -371,7 +371,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     }
                     document.AxisSelected = -1;
                     $('#StatusAxis').text('Axis: -1');
-                    
+
                 }
             }
         }
@@ -391,7 +391,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         }
         this.mouseup_Gizmo = function(e) {
             if (e.button == 2 && !MouseMoved && document.AxisSelected == -1) {
-                
+
                 self.ShowContextMenu(e);
                 this.undoPoint = null;
                 return false;
@@ -803,7 +803,10 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             var tray = MATH.mulMat4Vec3(tmatrix, ray);
             var n = MATH.dotVec3(MATH.subVec3(tplanepoint, traypoint), tplanenormal);
             var d = MATH.dotVec3(tray, tplanenormal);
-            if (d == 0) return null;
+            if (d == 0) {
+                return [0, 0, 0];
+
+            }
             var dist = n / d;
             var tpoint = MATH.addVec3(raypoint, MATH.scaleVec3(tray, dist));
             return tpoint;
@@ -986,19 +989,20 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             rmat[3] = 0;
             rmat[7] = 0;
             rmat[11] = 0;
-            rmat = MATH.transposeMat4(rmat)
-            var sx = Math.sqrt(mat[tI(1, 1)] * mat[tI(1, 1)] + mat[tI(1, 2)] * mat[tI(1, 2)] + mat[tI(1, 3)] * mat[tI(1, 3)]);
-            var sy = Math.sqrt(mat[tI(2, 1)] * mat[tI(2, 1)] + mat[tI(2, 2)] * mat[tI(2, 2)] + mat[tI(2, 3)] * mat[tI(2, 3)]);
-            var sz = Math.sqrt(mat[tI(3, 1)] * mat[tI(3, 1)] + mat[tI(3, 2)] * mat[tI(3, 2)] + mat[tI(3, 3)] * mat[tI(3, 3)]);
-            rmat[tI(1, 1)] = mat[tI(1, 1)] / sx;
-            rmat[tI(1, 2)] = mat[tI(1, 2)] / sx;
-            rmat[tI(1, 3)] = mat[tI(1, 3)] / sx;
-            rmat[tI(2, 1)] = mat[tI(2, 1)] / sy;
-            rmat[tI(2, 2)] = mat[tI(2, 2)] / sy;
-            rmat[tI(2, 3)] = mat[tI(2, 3)] / sy;
-            rmat[tI(3, 1)] = mat[tI(3, 1)] / sz;
-            rmat[tI(3, 2)] = mat[tI(3, 2)] / sz;
-            rmat[tI(3, 3)] = mat[tI(3, 3)] / sz;
+            //rmat = MATH.transposeMat4(rmat)
+            var sx = Math.sqrt(rmat[0] * rmat[0] + rmat[4] * rmat[4] + rmat[8] * rmat[8]);
+            var sy = Math.sqrt(rmat[1] * rmat[1] + rmat[5] * rmat[5] + rmat[9] * rmat[9]);
+            var sz = Math.sqrt(rmat[2] * rmat[2] + rmat[6] * rmat[6] + rmat[10] * rmat[10]);
+            rmat[0] = rmat[0] / sx;
+            rmat[4] = rmat[4] / sx;
+            rmat[8] = rmat[8] / sx;
+            rmat[1] = rmat[1] / sy;
+            rmat[5] = rmat[5] / sy;
+            rmat[9] = rmat[9] / sy;
+            rmat[2] = rmat[2] / sz;
+            rmat[6] = rmat[6] / sz;
+            rmat[10] = rmat[10] / sz;
+
             return MATH.transposeMat4(rmat);
         }
         this.waitingForSet = [];
@@ -1032,7 +1036,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             //prevent moving 3D nodes that are not bound to the scene or are the scene itself
             if (SelectedVWFNodes.length > 0 && !(this.findviewnode(SelectedVWFNodes[0].id)).parent) return;
             if (this.waitingForSet.length > 0) return;
-            
+
             if (!MoveGizmo || MoveGizmo == null) {
                 return;
             }
@@ -1488,8 +1492,12 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     }
                 });
                 self.GetMoveGizmo().InvisibleToCPUPick = false;
-                var dxy = pick.distance;
-                newintersectxy = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy * .99));
+                var newintersectxy = [0, 0, 0];
+                if (pick) {
+                    var dxy = pick.distance;
+                    newintersectxy = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy * .99));
+                }
+
                 var dxy2 = this.intersectLinePlane(ray, campos, [0, 0, 0], [0, 0, 1]);
                 var newintersectxy2 = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy2));
                 newintersectxy2[2] += .01;
@@ -3031,7 +3039,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             });
             $('#ContextMenuSelectNone').click(function() {
                 self.SelectObject(null);
-               
+
                 $('#ContextMenu').hide();
                 $('#ContextMenu').css('z-index', '-1');
                 $(".ddsmoothmenu").find('li').trigger('mouseleave');

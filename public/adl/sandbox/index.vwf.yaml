@@ -80,7 +80,8 @@ properties:
             this.CreateSky(value);
             
     get: |
-             return this.skyTexture    
+             return this.skyTexture
+    value: white             
   owner:
   type: scene
   clientAPI:

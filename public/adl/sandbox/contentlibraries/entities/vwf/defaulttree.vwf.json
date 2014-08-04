@@ -50,19 +50,19 @@
               "skinning": false
             },
             "owner": "Anonymous0",
-            "receiveShadows": true,
+            "receiveShadows": false,
             "transform": [
-              1,
+              3,
               0,
               0,
               0,
               0,
-              1,
+              3,
               0,
               0,
               0,
               0,
-              1,
+              3,
               0,
               0,
               0,
@@ -76,6 +76,11 @@
             ],
             "type": "3DR Object"
           },
+          "methods" : {
+          		"initialize": "debugger; vwf.getProperty(this.id,'transform');"
+
+
+          	},
           "random": {
             "c": 1,
             "s0": 0.839104376733303,

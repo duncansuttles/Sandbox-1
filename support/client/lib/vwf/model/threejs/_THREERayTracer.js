@@ -1809,11 +1809,12 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options) {
                 var hitdist = distanceLineSegment(newo, newd, v1, v2, hitdata);
                 if (hitdist < Math.min(MATH.distanceVec3(newo, v1), MATH.distanceVec3(newo, v2)) / 50) {
                     var hit = {};
-                    hit.point = hitdata.point;
+                    hit.rawPoint = hitdata.point;
+                    hit.point = MATH.mulMat4Vec3(mat2, hitdata.point, [0, 0, 0]);;
                     hit.vertindex = hitdata.t < .5 ? i : i + 1;
                     hit.t = hitdata.t;
                     hit.norm = [0, 0, 1];
-                    hit.distance = hitdist;
+                    hit.distance = MATH.distanceVec3(origin, hit.rawPoint);
                     hit.object = this;
                     hit.priority = this.PickPriority !== undefined ? this.PickPriority : 1;
                     ret.push(hit);

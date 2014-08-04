@@ -283,6 +283,7 @@ if ( ! object ) return;  // TODO: patch until full-graph sync is working; driver
         // -- prototype ----------------------------------------------------------------------------
 
         prototype: function( nodeID ) {  // TODO: not for global anchor node 0
+             if(!this.objects[nodeID]) return null;
             var object = this.objects[nodeID];
             return object.prototype && object.prototype.id;
         },
@@ -290,6 +291,7 @@ if ( ! object ) return;  // TODO: patch until full-graph sync is working; driver
         // -- behaviors ----------------------------------------------------------------------------
 
         behaviors: function( nodeID ) {  // TODO: not for global anchor node 0
+            if(!this.objects[nodeID]) return [];
             var behaviors = this.objects[nodeID].behaviors;
             if ( behaviors ) {
                 return behaviors.map( function( behavior ) {

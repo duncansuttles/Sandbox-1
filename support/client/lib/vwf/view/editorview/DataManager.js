@@ -126,7 +126,7 @@ define(function ()
 		}
 		this.fixExtendsAndArrays = function (object)
 		{
-			if (object.extends.patches) object.extends = object.extends.patches;
+			if (object.extends && object.extends.patches) object.extends = object.extends.patches;
 			for (var i in object.properties)
 			{
 				if (object.properties[i] && object.properties[i].constructor == Float32Array)
