@@ -942,7 +942,10 @@ if ( ! node ) return;  // TODO: patch until full-graph sync is working; drivers 
 
             if ( getter && getter !== true ) { // is there is a getter (and not just a guard value)
                 try {
-                    return getter.call( node );
+                    //unwrap watchables
+                    var ret = getter.call( node );
+                    if(ret.internal_val) return ret.internal_val;
+                    return ret;
                 } catch ( e ) {
                     this.logger.warn( "gettingProperty", nodeID, propertyName, propertyValue,
                         "exception in getter:", utility.exceptionMessage( e ) );
