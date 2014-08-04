@@ -4779,6 +4779,43 @@ THREE.Matrix4.prototype = {
 
     },
 
+    orthogonalize: function() {
+
+        var v1 = new THREE.Vector3();
+        var m = new THREE.Matrix4();
+
+        return function() {
+
+            m.copy(this)
+
+            var te = this.elements;
+            var me = m.elements;
+
+            var scaleX = 1 / v1.set(me[0], me[1], me[2]).length();
+            var scaleY = 1 / v1.set(me[4], me[5], me[6]).length();
+            var scaleZ = 1 / v1.set(me[8], me[9], me[10]).length();
+
+            te[0] = me[0] * scaleX;
+            te[1] = me[1] * scaleX;
+            te[2] = me[2] * scaleX;
+
+            te[4] = me[4] * scaleY;
+            te[5] = me[5] * scaleY;
+            te[6] = me[6] * scaleY;
+
+            te[8] = me[8] * scaleZ;
+            te[9] = me[9] * scaleZ;
+            te[10] = me[10] * scaleZ;
+
+            te[11] = me[11];
+            te[12] = me[12];
+            te[13] = me[13];
+
+            return this;
+        }.call(this);
+
+    },
+
     extractRotation: function() {
 
         var v1 = new THREE.Vector3();
@@ -8083,7 +8120,8 @@ THREE.Object3D = function() {
 
     this.matrix = new THREE.Matrix4();
     this.matrixWorld = new THREE.Matrix4();
-
+    this.orthoMatrixWorld = new THREE.Matrix4();
+    this.inheritScale = true;
     this.matrixAutoUpdate = true;
     this.matrixWorldNeedsUpdate = false;
 
@@ -8514,9 +8552,23 @@ THREE.Object3D.prototype = {
 
             } else {
 
-                this.matrixWorld.multiplyMatrices(this.parent.matrixWorld, this.matrix);
-
+                if (this.inheritScale)
+                    this.matrixWorld.multiplyMatrices(this.parent.matrixWorld, this.matrix);
+                else {
+                    this.matrixWorld.multiplyMatrices(this.parent.matrixWorld, this.matrix);
+                    var tx, ty, tz;
+                    tx = this.matrixWorld.elements[12];
+                    ty = this.matrixWorld.elements[13];
+                    tz = this.matrixWorld.elements[14];
+                    this.matrixWorld.multiplyMatrices(this.parent.orthoMatrixWorld, this.matrix);
+                    this.matrixWorld.elements[12] = tx;
+                    this.matrixWorld.elements[13] = ty;
+                    this.matrixWorld.elements[14] = tz;
+                }
             }
+
+            this.orthoMatrixWorld.copy(this.matrixWorld);
+            this.orthoMatrixWorld.orthogonalize();
 
             this.matrixWorldNeedsUpdate = false;
 
@@ -16278,7 +16330,7 @@ THREE.Bone = function(belongsToSkin) {
 
     this.skin = belongsToSkin;
     this.skinMatrix = new THREE.Matrix4();
-
+    this.orthoSkinMatrix = new THREE.Matrix4();
     this.accumulatedRotWeight = 0;
     this.accumulatedPosWeight = 0;
     this.accumulatedSclWeight = 0;
@@ -16287,7 +16339,7 @@ THREE.Bone = function(belongsToSkin) {
 
 THREE.Bone.prototype = Object.create(THREE.Object3D.prototype);
 
-THREE.Bone.prototype.update = function(parentSkinMatrix, forceUpdate) {
+THREE.Bone.prototype.update = function(parentSkinMatrix, forceUpdate, parentOrthoSkinMatrix) {
 
     // update local
 
@@ -16303,13 +16355,27 @@ THREE.Bone.prototype.update = function(parentSkinMatrix, forceUpdate) {
 
         if (parentSkinMatrix) {
 
-            this.skinMatrix.multiplyMatrices(parentSkinMatrix, this.matrix);
+            if (this.inheritScale)
+                this.skinMatrix.multiplyMatrices(parentSkinMatrix, this.matrix);
+            else {
+                var tx, ty, tz;
+                this.skinMatrix.multiplyMatrices(parentSkinMatrix, this.matrix);
+                tx = this.skinMatrix.elements[12];
+                ty = this.skinMatrix.elements[13];
+                tz = this.skinMatrix.elements[14];
+                this.skinMatrix.multiplyMatrices(parentOrthoSkinMatrix, this.matrix);
+                this.skinMatrix.elements[12] = tx;
+                this.skinMatrix.elements[13] = ty;
+                this.skinMatrix.elements[14] = tz;
+            }
 
         } else {
 
             this.skinMatrix.copy(this.matrix);
 
         }
+        this.orthoSkinMatrix.copy(this.skinMatrix);
+        this.orthoSkinMatrix.orthogonalize();
 
         this.matrixWorldNeedsUpdate = false;
         forceUpdate = true;
@@ -16326,7 +16392,7 @@ THREE.Bone.prototype.update = function(parentSkinMatrix, forceUpdate) {
 
     for (var i = 0, l = this.children.length; i < l; i++) {
 
-        this.children[i].update(this.skinMatrix, forceUpdate);
+        this.children[i].update(this.skinMatrix, forceUpdate, this.orthoSkinMatrix);
 
     }
 
@@ -16540,7 +16606,7 @@ THREE.SkinnedMesh.prototype.updateMatrixWorld = function() {
 
             if (child instanceof THREE.Bone) {
 
-                child.update(this.identityMatrix, false);
+                child.update(this.identityMatrix, false, this.identityMatrix);
 
             } else {
 
@@ -40370,8 +40436,8 @@ THREE.ShaderFlares = {
 };
 
 var update = THREE.Bone.prototype.update;
-THREE.Bone.prototype.update = function(parentSkinMatrix, forceUpdate) {
-    update.call(this, parentSkinMatrix, forceUpdate);
+THREE.Bone.prototype.update = function(parentSkinMatrix, forceUpdate, parentOrthoSkinMatrix) {
+    update.call(this, parentSkinMatrix, forceUpdate, parentOrthoSkinMatrix);
 
     //don't do this here - it walks down the graph, so we get a graph traverse within a graph traverse
     //this.updateMatrixWorld(true);
