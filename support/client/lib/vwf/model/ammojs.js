@@ -135,6 +135,7 @@ phyObject.prototype.initialize = function() {
         {
             //so, since we have child collision objects, we need to create a compound collision
             this.collision = new Ammo.btCompoundShape();
+            this.collision.vwfID = this.id;
             var x = 0;
             var y = 0;
             var z = 0;
@@ -257,23 +258,23 @@ phyObject.prototype.setAngularVelocity = function(vel) {
 phyObject.prototype.getForce = function() {
     if (this.initialized === true) {
         var force = this.body.getTotalForce();
-        return [force.x(),force.y(),force.z()];
+        return [force.x(), force.y(), force.z()];
     }
 }
 phyObject.prototype.setForce = function(force) {
     if (this.initialized === true) {
-        this.body.setTotalForce(new btVector3(force[0],force[1],force[2]));
+        this.body.setTotalForce(new btVector3(force[0], force[1], force[2]));
     }
 }
 phyObject.prototype.getTorque = function() {
     if (this.initialized === true) {
         var torque = this.body.getTotalTorque();
-        return [torque.x(),torque.y(),torque.z()];
+        return [torque.x(), torque.y(), torque.z()];
     }
 }
 phyObject.prototype.setTorque = function(torque) {
     if (this.initialized === true) {
-        this.body.setTotalTorque(new btVector3(torque[0],torque[1],torque[2]));
+        this.body.setTotalTorque(new btVector3(torque[0], torque[1], torque[2]));
     }
 }
 
@@ -781,6 +782,8 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
         initialize: function() {
             this.nodes = {};
             this.allNodes = {};
+            this.bodiesToID = {};
+
             var self = this;
             window.findphysicsnode = function(id) {
                 return self.allNodes[id];
@@ -859,6 +862,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
                 var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
                 var body = new Ammo.btRigidBody(rbInfo);
+                this.bodiesToID[body.ptr] = childID;
                 body.setRestitution(1);
                 body.setFriction(.3);
 
@@ -914,7 +918,51 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
 
         },
 
+        triggerCollisions: function() {
+            var i, offset,
+                dp = this.nodes[vwf.application()].world.getDispatcher(),
+                num = dp.getNumManifolds(),
+                manifold, num_contacts, j, pt,
+                _collided = false;
 
+            
+
+            for (i = 0; i < num; i++) {
+                manifold = dp.getManifoldByIndexInternal(i);
+                num_contacts = manifold.getNumContacts();
+                if (num_contacts === 0) {
+                    continue;
+                }
+
+                for (j = 0; j < num_contacts; j++) {
+                    pt = manifold.getContactPoint(j);
+                    //if ( pt.getDistance() < 0 ) {
+                   
+                    var body0 = manifold.getBody0();
+                    var body1 = manifold.getBody1();
+                    var vwfIDA = this.bodiesToID[body0.ptr];
+                    var vwfIDB = this.bodiesToID[body1.ptr];
+
+                    var  _vector0 = pt.get_m_normalWorldOnB();
+                    var pt2a = pt.getPositionWorldOnA();
+                    var pt2b = pt.getPositionWorldOnB();
+                    var collisionPointA = [pt2a.x(),pt2a.y(),pt2a.y()];
+                    var collisionPointB = [pt2b.x(),pt2b.z(),pt2b.z()];
+                    var collisionNormal = [_vector0.x(),_vector0.y(),_vector0.z()]
+                    
+                    var collision = {collisionPointA:collisionPointA,
+                        collisionPointB:collisionPointB,
+                        collisionNormal:collisionNormal
+                    };
+                    vwf.callMethod(vwfIDA,'collision',[vwfIDB,collision]);
+                    vwf.callMethod(vwfIDB,'collision',[vwfIDA,collision]);
+                    break;
+                }
+            }
+
+
+           
+        },
         ticking: function() {
             if (this.nodes[vwf.application()] && this.nodes[vwf.application()].active === true) {
 
@@ -938,6 +986,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                         vwf.setProperty(node.id, '___physics_deactivation_time', node.getDeactivationTime());
                     }
                 }
+                this.triggerCollisions();
                 this.reEntry = false;
             }
         },
@@ -957,7 +1006,8 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                     this.settingProperty(node.id, i, node.delayedProperties[i]);
                 }
                 delete node.delayedProperties;
-
+                if(node.body)
+                    this.bodiesToID[node.body.ptr] = childID;
             }
 
         },
@@ -1028,6 +1078,9 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                     node.delayedProperties = {};
                 node.delayedProperties[propertyName] = propertyValue;
             } else {
+
+                if(node.body)
+                    delete this.bodiesToID[node.body.ptr];
 
                 if (propertyName === '___physics_gravity' && node.id === vwf.application()) {
                     node.world.setGravity(new Ammo.btVector3(propertyValue[0], propertyValue[1], propertyValue[2]));
@@ -1126,7 +1179,10 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 if (propertyName === '___physics_collision_offset' && node.type == ASSET) {
                     node.setCollisionOffset(propertyValue);
                 }
-
+                //this is a hack
+                //find a better way. Maybe delete the old key from the map above
+                if(node.body)
+                    this.bodiesToID[node.body.ptr] = nodeID;
             }
 
         },
