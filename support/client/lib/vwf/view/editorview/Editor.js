@@ -989,19 +989,20 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             rmat[3] = 0;
             rmat[7] = 0;
             rmat[11] = 0;
-            rmat = MATH.transposeMat4(rmat)
-            var sx = Math.sqrt(mat[tI(1, 1)] * mat[tI(1, 1)] + mat[tI(1, 2)] * mat[tI(1, 2)] + mat[tI(1, 3)] * mat[tI(1, 3)]);
-            var sy = Math.sqrt(mat[tI(2, 1)] * mat[tI(2, 1)] + mat[tI(2, 2)] * mat[tI(2, 2)] + mat[tI(2, 3)] * mat[tI(2, 3)]);
-            var sz = Math.sqrt(mat[tI(3, 1)] * mat[tI(3, 1)] + mat[tI(3, 2)] * mat[tI(3, 2)] + mat[tI(3, 3)] * mat[tI(3, 3)]);
-            rmat[tI(1, 1)] = mat[tI(1, 1)] / sx;
-            rmat[tI(1, 2)] = mat[tI(1, 2)] / sx;
-            rmat[tI(1, 3)] = mat[tI(1, 3)] / sx;
-            rmat[tI(2, 1)] = mat[tI(2, 1)] / sy;
-            rmat[tI(2, 2)] = mat[tI(2, 2)] / sy;
-            rmat[tI(2, 3)] = mat[tI(2, 3)] / sy;
-            rmat[tI(3, 1)] = mat[tI(3, 1)] / sz;
-            rmat[tI(3, 2)] = mat[tI(3, 2)] / sz;
-            rmat[tI(3, 3)] = mat[tI(3, 3)] / sz;
+            //rmat = MATH.transposeMat4(rmat)
+            var sx = Math.sqrt(rmat[0] * rmat[0] + rmat[4] * rmat[4] + rmat[8] * rmat[8]);
+            var sy = Math.sqrt(rmat[1] * rmat[1] + rmat[5] * rmat[5] + rmat[9] * rmat[9]);
+            var sz = Math.sqrt(rmat[2] * rmat[2] + rmat[6] * rmat[6] + rmat[10] * rmat[10]);
+            rmat[0] = rmat[0] / sx;
+            rmat[4] = rmat[4] / sx;
+            rmat[8] = rmat[8] / sx;
+            rmat[1] = rmat[1] / sy;
+            rmat[5] = rmat[5] / sy;
+            rmat[9] = rmat[9] / sy;
+            rmat[2] = rmat[2] / sz;
+            rmat[6] = rmat[6] / sz;
+            rmat[10] = rmat[10] / sz;
+
             return MATH.transposeMat4(rmat);
         }
         this.waitingForSet = [];

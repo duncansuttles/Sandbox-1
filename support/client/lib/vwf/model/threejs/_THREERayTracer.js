@@ -1814,7 +1814,7 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options) {
                     hit.vertindex = hitdata.t < .5 ? i : i + 1;
                     hit.t = hitdata.t;
                     hit.norm = [0, 0, 1];
-                    hit.distance = MATH.distanceVec3(origin, hit.point);
+                    hit.distance = MATH.distanceVec3(origin, hit.rawPoint);
                     hit.object = this;
                     hit.priority = this.PickPriority !== undefined ? this.PickPriority : 1;
                     ret.push(hit);

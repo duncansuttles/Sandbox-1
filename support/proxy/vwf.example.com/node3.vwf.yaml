@@ -18,6 +18,7 @@ implements:
 properties:
   lookAxis: 2
   upAxis: [ 0, 0, 1]
+  inheritScale: true
   audioAPI:
     get: |
           if(!this._audioAPI)

@@ -48,7 +48,7 @@
                 //walk and find mesh for the bone, update it
                 if (threeObject instanceof THREE.Bone) {
                     threeObject.matrixAutoUpdate = true;
-                    threeObject.matrix.decompose(threeObject.position,threeObject.rotation,threeObject.scale);
+                    threeObject.matrix.decompose(threeObject.position, threeObject.rotation, threeObject.scale);
                     var parent = threeObject.parent;
                     while (parent) {
                         if (parent instanceof THREE.SkinnedMesh) {
@@ -85,8 +85,38 @@
 
                     return propertyValue;
                 };
-                
+
                 return this.setTransformInternal(propertyValue, true);
+            }
+            if (propertyName == 'inheritScale') {
+                var walk = function(node, val, force) {
+                    if (node.vwfID && !force)
+                        return;
+                    node.inheritScale = val;
+                    for (var i = 0; i < node.children.length; i++)
+                        walk(node.children[i], val, false);
+                }
+
+                //walk(this.getRoot(), propertyValue, true);
+                this.getRoot().inheritScale = propertyValue;
+                this.getRoot().updateMatrixWorld(true);
+                if (this.getRoot() instanceof THREE.Bone) {
+                    var skin = this.getRoot();
+                    while (!(skin instanceof THREE.SkinnedMesh))
+                        skin = skin.parent;
+                    skin.updateMatrixWorld(true);
+                }
+                //need to set this to update bone handle positions
+                if (this.setAnimationFrameInternal)
+                    this.setAnimationFrameInternal(this.gettingProperty('animationFrame'), true);
+
+
+                //removed as of threejs r67
+                //if this transformable is a bone, we need to update the skin
+                //if (threeObject.skin)
+                //    threeObject.skin.updateMatrixWorld(true);
+
+                _SceneManager.setDirty(this.getRoot());
             }
 
         }
