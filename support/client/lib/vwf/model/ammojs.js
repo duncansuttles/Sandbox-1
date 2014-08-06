@@ -841,6 +841,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 var dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration);
                 var overlappingPairCache = new Ammo.btDbvtBroadphase();
                 var solver = new Ammo.btSequentialImpulseConstraintSolver();
+             
                 var dynamicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
                 dynamicsWorld.setGravity(new Ammo.btVector3(0, 0, -10));
 
@@ -1053,62 +1054,25 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
         initializingProperty: function(nodeID, propertyName, propertyValue) {
             return this.settingProperty(nodeID, propertyName, propertyValue);
         },
-        btVec2Array: function(bt) {
-            return [bt.x(), bt.y(), bt.z()];
-        },
-        btQuat2Array: function(bt) {
-            return [bt.x(), bt.y(), bt.z(), bt.w()];
-        },
-        getReport: function() {
-
-            
-            var bodies = [];
-            for (var i in this.allNodes) {
-                    var node = this.allNodes[i];
-                if (node.body) {
-                
-                    var newentry = {};
-                    bodies.push(newentry);
-                    newentry.id = node.id;
-
-                    newentry.deactivationTime = node.body.getDeactivationTime();
-                    newentry.activationState = node.body.getActivationState();
-                    newentry.linearVelocity = this.btVec2Array( node.body.getLinearVelocity());
-                    newentry.angularVelocity = this.btVec2Array( node.body.getAngularVelocity());
-                    newentry.origin = this.btVec2Array( node.body.getWorldTransform().getOrigin())
-                    newentry.rotation = this.btVec2Array( node.body.getWorldTransform().getRotation());
+        resetWorld:function()
+        {
+            var world = this.allNodes[vwf.application()].world;
+            for(var i in this.allNodes)
+            {
+                var node = this.allNodes[i];
+                if(node.body)
+                {
+                    world.removeRigidBody(node.body);
                 }
             }
-            return bodies;
-        },
-        compareReports: function(a, b) {
-            
-            for(var i in a)
+            for(var i in this.allNodes)
             {
-                var node1 = a[i];
-                var node2 = b[i];
-                if(node1.deactivationTime != node2.deactivationTime) debugger;
-                if(node1.activationState != node2.activationState) debugger;
-                if(node1.linearVelocity[0] != node2.linearVelocity[0]) debugger;
-                if(node1.linearVelocity[1] != node2.linearVelocity[1]) debugger;
-                if(node1.linearVelocity[2] != node2.linearVelocity[2]) debugger;
-
-                if(node1.angularVelocity[0] != node2.angularVelocity[0]) debugger;
-                if(node1.angularVelocity[1] != node2.angularVelocity[1]) debugger;
-                if(node1.angularVelocity[2] != node2.angularVelocity[2]) debugger;
-
-                if(node1.origin[0] != node2.origin[0]) debugger;
-                if(node1.origin[1] != node2.origin[1]) debugger;
-                if(node1.origin[2] != node2.origin[2]) debugger;
-
-                if(node1.rotation[0] != node2.rotation[0]) debugger;
-                if(node1.rotation[1] != node2.rotation[1]) debugger;
-                if(node1.rotation[2] != node2.rotation[2]) debugger;
-                if(node1.rotation[3] != node2.rotation[3]) debugger;
-
-                if(node1.id != node2.id) debugger;
+                var node = this.allNodes[i];
+                if(node.body)
+                {
+                    world.addRigidBody(node.body);
+                }
             }
-            console.log("compare complete");
         },
         // TODO: deletingProperty
         callingMethod: function(nodeID, methodName, args) {
@@ -1126,11 +1090,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 node.addTorque(args[0]);
             }
             if (methodName == 'postWorldRestore') {
-                this.previousReport = this.report;
-                this.report = this.getReport();
-                if (this.previousReport && this.report) {
-                    this.compareReports(this.previousReport, this.report);
-                }
+               //this.resetWorld();
             }
         },
         settingProperty: function(nodeID, propertyName, propertyValue) {
