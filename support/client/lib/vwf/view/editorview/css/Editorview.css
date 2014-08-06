@@ -287,7 +287,7 @@ border-radius: 6px;
 	}
 	.inventoryItem
 	{
-		white-space: nowrap;text-overflow: ellipsis;background:#FFFFF8;padding-left: 10px;
+		text-overflow: ellipsis;background:#FFFFF8;padding-left: 10px;
 	}
 	.loadchoice:hover
 	{
@@ -546,6 +546,7 @@ font-weight: bold;
 		position: fixed;
 		width: 320px;
 		background-color: #414141;
+		outline:none;
 	}
 	.EditorDataSectionTitle
 	{
