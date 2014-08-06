@@ -76,28 +76,28 @@ phyObject.prototype.addForce = function(vec) {
     if (vec.length !== 3) return;
     if (this.initialized === true) {
         this.body.applyForce(new Ammo.btVector3(vec[0], vec[1], vec[2]));
-        
+
     }
 }
 phyObject.prototype.addTorque = function(vec) {
     if (vec.length !== 3) return;
     if (this.initialized === true) {
         this.body.applyTorque(new Ammo.btVector3(vec[0], vec[1], vec[2]));
-        
+
     }
 }
 phyObject.prototype.addForceImpulse = function(vec) {
     if (vec.length !== 3) return;
     if (this.initialized === true) {
         this.body.applyImpulse(new Ammo.btVector3(vec[0], vec[1], vec[2]));
-        
+
     }
 }
 phyObject.prototype.addTorqueImpulse = function(vec) {
     if (vec.length !== 3) return;
     if (this.initialized === true) {
         this.body.applyTorqueImpulse(new Ammo.btVector3(vec[0], vec[1], vec[2]));
-        
+
     }
 }
 phyObject.prototype.addForceOffset = function(vec, pos) {
@@ -105,7 +105,7 @@ phyObject.prototype.addForceOffset = function(vec, pos) {
     if (pos.length !== 3) return;
     if (this.initialized === true) {
         this.body.applyForce(new Ammo.btVector3(vec[0], vec[1], vec[2]), new Ammo.btVector3(vec[0], vec[1], vec[2]));
-        
+
     }
 }
 phyObject.prototype.setMass = function(mass) {
@@ -410,7 +410,7 @@ phyObject.prototype.setTransform = function(matrix) {
         if (this.collision)
             this.collision.setLocalScaling(new Ammo.btVector3(this.localScale[0], this.localScale[1], this.localScale[2]));
         if (this.mass == 0) {
-            
+
         }
     }
     //todo: the compound collision of the parent does not need to be rebuild, just transforms updated
@@ -929,7 +929,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 manifold, num_contacts, j, pt,
                 _collided = false;
 
-            
+
 
             for (i = 0; i < num; i++) {
                 manifold = dp.getManifoldByIndexInternal(i);
@@ -941,31 +941,32 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 for (j = 0; j < num_contacts; j++) {
                     pt = manifold.getContactPoint(j);
                     //if ( pt.getDistance() < 0 ) {
-                   
+
                     var body0 = manifold.getBody0();
                     var body1 = manifold.getBody1();
                     var vwfIDA = this.bodiesToID[body0.ptr];
                     var vwfIDB = this.bodiesToID[body1.ptr];
 
-                    var  _vector0 = pt.get_m_normalWorldOnB();
+                    var _vector0 = pt.get_m_normalWorldOnB();
                     var pt2a = pt.getPositionWorldOnA();
                     var pt2b = pt.getPositionWorldOnB();
-                    var collisionPointA = [pt2a.x(),pt2a.y(),pt2a.y()];
-                    var collisionPointB = [pt2b.x(),pt2b.z(),pt2b.z()];
-                    var collisionNormal = [_vector0.x(),_vector0.y(),_vector0.z()]
-                    
-                    var collision = {collisionPointA:collisionPointA,
-                        collisionPointB:collisionPointB,
-                        collisionNormal:collisionNormal
+                    var collisionPointA = [pt2a.x(), pt2a.y(), pt2a.y()];
+                    var collisionPointB = [pt2b.x(), pt2b.z(), pt2b.z()];
+                    var collisionNormal = [_vector0.x(), _vector0.y(), _vector0.z()]
+
+                    var collision = {
+                        collisionPointA: collisionPointA,
+                        collisionPointB: collisionPointB,
+                        collisionNormal: collisionNormal
                     };
-                    vwf.callMethod(vwfIDA,'collision',[vwfIDB,collision]);
-                    vwf.callMethod(vwfIDB,'collision',[vwfIDA,collision]);
+                    vwf.callMethod(vwfIDA, 'collision', [vwfIDB, collision]);
+                    vwf.callMethod(vwfIDB, 'collision', [vwfIDA, collision]);
                     break;
                 }
             }
 
 
-           
+
         },
         ticking: function() {
             if (this.nodes[vwf.application()] && this.nodes[vwf.application()].active === true) {
@@ -988,6 +989,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                         vwf.setProperty(node.id, '___physics_velocity_angular', node.getAngularVelocity());
                         vwf.setProperty(node.id, '___physics_velocity_linear', node.getLinearVelocity());
                         vwf.setProperty(node.id, '___physics_deactivation_time', node.getDeactivationTime());
+
                     }
                 }
                 this.triggerCollisions();
@@ -1010,7 +1012,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                     this.settingProperty(node.id, i, node.delayedProperties[i]);
                 }
                 delete node.delayedProperties;
-                if(node.body)
+                if (node.body)
                     this.bodiesToID[node.body.ptr] = childID;
             }
 
@@ -1051,7 +1053,63 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
         initializingProperty: function(nodeID, propertyName, propertyValue) {
             return this.settingProperty(nodeID, propertyName, propertyValue);
         },
+        btVec2Array: function(bt) {
+            return [bt.x(), bt.y(), bt.z()];
+        },
+        btQuat2Array: function(bt) {
+            return [bt.x(), bt.y(), bt.z(), bt.w()];
+        },
+        getReport: function() {
 
+            
+            var bodies = [];
+            for (var i in this.allNodes) {
+                    var node = this.allNodes[i];
+                if (node.body) {
+                
+                    var newentry = {};
+                    bodies.push(newentry);
+                    newentry.id = node.id;
+
+                    newentry.deactivationTime = node.body.getDeactivationTime();
+                    newentry.activationState = node.body.getActivationState();
+                    newentry.linearVelocity = this.btVec2Array( node.body.getLinearVelocity());
+                    newentry.angularVelocity = this.btVec2Array( node.body.getAngularVelocity());
+                    newentry.origin = this.btVec2Array( node.body.getWorldTransform().getOrigin())
+                    newentry.rotation = this.btVec2Array( node.body.getWorldTransform().getRotation());
+                }
+            }
+            return bodies;
+        },
+        compareReports: function(a, b) {
+            
+            for(var i in a)
+            {
+                var node1 = a[i];
+                var node2 = b[i];
+                if(node1.deactivationTime != node2.deactivationTime) debugger;
+                if(node1.activationState != node2.activationState) debugger;
+                if(node1.linearVelocity[0] != node2.linearVelocity[0]) debugger;
+                if(node1.linearVelocity[1] != node2.linearVelocity[1]) debugger;
+                if(node1.linearVelocity[2] != node2.linearVelocity[2]) debugger;
+
+                if(node1.angularVelocity[0] != node2.angularVelocity[0]) debugger;
+                if(node1.angularVelocity[1] != node2.angularVelocity[1]) debugger;
+                if(node1.angularVelocity[2] != node2.angularVelocity[2]) debugger;
+
+                if(node1.origin[0] != node2.origin[0]) debugger;
+                if(node1.origin[1] != node2.origin[1]) debugger;
+                if(node1.origin[2] != node2.origin[2]) debugger;
+
+                if(node1.rotation[0] != node2.rotation[0]) debugger;
+                if(node1.rotation[1] != node2.rotation[1]) debugger;
+                if(node1.rotation[2] != node2.rotation[2]) debugger;
+                if(node1.rotation[3] != node2.rotation[3]) debugger;
+
+                if(node1.id != node2.id) debugger;
+            }
+            console.log("compare complete");
+        },
         // TODO: deletingProperty
         callingMethod: function(nodeID, methodName, args) {
             //dont try to set the parent
@@ -1066,6 +1124,13 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             }
             if (methodName === '___physics_addTorque') {
                 node.addTorque(args[0]);
+            }
+            if (methodName == 'postWorldRestore') {
+                this.previousReport = this.report;
+                this.report = this.getReport();
+                if (this.previousReport && this.report) {
+                    this.compareReports(this.previousReport, this.report);
+                }
             }
         },
         settingProperty: function(nodeID, propertyName, propertyValue) {
@@ -1083,7 +1148,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 node.delayedProperties[propertyName] = propertyValue;
             } else {
 
-                if(node.body)
+                if (node.body)
                     delete this.bodiesToID[node.body.ptr];
 
                 if (propertyName === '___physics_gravity' && node.id === vwf.application()) {
@@ -1185,7 +1250,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 }
                 //this is a hack
                 //find a better way. Maybe delete the old key from the map above
-                if(node.body)
+                if (node.body)
                     this.bodiesToID[node.body.ptr] = nodeID;
             }
 
@@ -1205,12 +1270,12 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
 
             if (node.ready === false) return;
 
-            
+
             if (propertyName === '___physics_activation_state') {
-                   return node.getActivationState();
+                return node.getActivationState();
             }
             if (propertyName === '___physics_deactivation_time') {
-                   return node.getDeactivationTime();
+                return node.getDeactivationTime();
             }
 
         },

@@ -249,7 +249,9 @@ define([], function() {
                     }
                 }
                 walk2(currentState);
+
                 vwf.models.kernel.enable();
+                vwf.callMethod(vwf.application(), 'postWorldRestore');
                 vwf.private.queue.resume();
 
             });
@@ -278,7 +280,9 @@ define([], function() {
             if (currentState === 'play') return;
             if (currentState === 'stop')
                 this.backupState();
+            vwf_view.kernel.callMethod(vwf.application(), 'preWorldPlay');
             vwf_view.kernel.setProperty(vwf.application(), 'playMode', 'play')
+
 
         }
         this.stopWorld = function() {
@@ -290,6 +294,7 @@ define([], function() {
             if (currentState === 'stop') return;
             this.restoreState();
             this.stateBackup = null;
+            vwf_view.kernel.callMethod(vwf.application(), 'preWorldStop');
             vwf_view.kernel.setProperty(vwf.application(), 'playMode', 'stop')
 
         }
