@@ -331,7 +331,8 @@
              { library: "vwf/view/WebRTC", active: true },
              { library: "vwf/view/audio", active: true },
              { library: "messageCompress", active: true },
-             { library: "vwf/view/xapi", active: true }
+             { library: "vwf/view/xapi", active: true },
+              { library: "vwf/model/edx", active: true }
 
             ];
 
@@ -344,6 +345,7 @@
                     { library: "vwf/model/cesium", active: false },
                     { library: "vwf/model/object", active: true },
                     { library: "vwf/model/wires", active: true },
+                    { library: "vwf/model/edx", active: true },
                     { library: "vwf/model/jqueryui", active: true }
                 ],
                 view: [
@@ -479,7 +481,9 @@
                         "vwf/model/wires",
                         "vwf/model/threejs",
                         "vwf/model/jqueryui",
-                        "vwf/model/object",
+                        "vwf/model/edx",
+                        "vwf/model/object"
+
                     ];
 
                         // These are the view configurations. They use the same format as the model

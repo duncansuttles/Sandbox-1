@@ -301,8 +301,20 @@ methods:
   cameraBroadcastEnd:
   playSound:
   setMusic:
+  getGrade:
 scripts:
 - |
+    this.getGrade = function()
+    {
+      for(var i = 0; i < this.children.length; i++)
+      {
+          var ret = null;
+          if(this.children[i].getGrade)
+            ret = this.children[i].getGrade();
+          if(ret) return ret;
+      }
+      return null;
+    }
     this.initialize = function(){
  
        
