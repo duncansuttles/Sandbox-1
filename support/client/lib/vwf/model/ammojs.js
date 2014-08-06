@@ -125,7 +125,7 @@ phyObject.prototype.initialize = function() {
     //currently, only objects which are children of the world can be bodies
     if (this.enabled && this.parent.id == vwf.application() && this.initialized === false) {
         this.initialized = true;
-
+        console.log('init');
         var childCollisions = collectChildCollisions(this);
         this.localOffset = null;
         //this object has no child physics objects, so just use it's normal collision shape
@@ -331,6 +331,7 @@ phyObject.prototype.setActivationState = function(state) {
 
     if (this.initialized === true) {
         this.body.setActivationState(state);
+        this.activationState = state
     } else
         this.activationState = state;
 }
@@ -345,6 +346,8 @@ phyObject.prototype.setDeactivationTime = function(time) {
 
     if (this.initialized === true) {
         this.body.setDeactivationTime(time);
+        console.log("deactivationTime", time);
+        this.deactivationTime = time;
     } else
         this.deactivationTime = time;
 }
@@ -1202,6 +1205,13 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
 
             if (node.ready === false) return;
 
+            
+            if (propertyName === '___physics_activation_state') {
+                   return node.getActivationState();
+            }
+            if (propertyName === '___physics_deactivation_time') {
+                   return node.getDeactivationTime();
+            }
 
         },
     });
