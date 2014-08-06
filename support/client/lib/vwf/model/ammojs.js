@@ -76,28 +76,28 @@ phyObject.prototype.addForce = function(vec) {
     if (vec.length !== 3) return;
     if (this.initialized === true) {
         this.body.applyForce(new Ammo.btVector3(vec[0], vec[1], vec[2]));
-        this.wake();
+        
     }
 }
 phyObject.prototype.addTorque = function(vec) {
     if (vec.length !== 3) return;
     if (this.initialized === true) {
         this.body.applyTorque(new Ammo.btVector3(vec[0], vec[1], vec[2]));
-        this.wake();
+        
     }
 }
 phyObject.prototype.addForceImpulse = function(vec) {
     if (vec.length !== 3) return;
     if (this.initialized === true) {
         this.body.applyImpulse(new Ammo.btVector3(vec[0], vec[1], vec[2]));
-        this.wake();
+        
     }
 }
 phyObject.prototype.addTorqueImpulse = function(vec) {
     if (vec.length !== 3) return;
     if (this.initialized === true) {
         this.body.applyTorqueImpulse(new Ammo.btVector3(vec[0], vec[1], vec[2]));
-        this.wake();
+        
     }
 }
 phyObject.prototype.addForceOffset = function(vec, pos) {
@@ -105,7 +105,7 @@ phyObject.prototype.addForceOffset = function(vec, pos) {
     if (pos.length !== 3) return;
     if (this.initialized === true) {
         this.body.applyForce(new Ammo.btVector3(vec[0], vec[1], vec[2]), new Ammo.btVector3(vec[0], vec[1], vec[2]));
-        this.wake();
+        
     }
 }
 phyObject.prototype.setMass = function(mass) {
@@ -407,7 +407,7 @@ phyObject.prototype.setTransform = function(matrix) {
         if (this.collision)
             this.collision.setLocalScaling(new Ammo.btVector3(this.localScale[0], this.localScale[1], this.localScale[2]));
         if (this.mass == 0) {
-            this.wake();
+            
         }
     }
     //todo: the compound collision of the parent does not need to be rebuild, just transforms updated
@@ -912,8 +912,9 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
 
                 //mark some initial properties
                 vwf.setProperty(childID, '___physics_activation_state', 1);
-                vwf.setProperty(childID, '___physics_linear_velocity', [0, 0, 0]);
-                vwf.setProperty(childID, '___physics_angular_velocity', [0, 0, 0]);
+                vwf.setProperty(childID, '___physics_deactivation_time', 0);
+                vwf.setProperty(childID, '___physics_velocity_linear', [0, 0, 0]);
+                vwf.setProperty(childID, '___physics_velocity_angular', [0, 0, 0]);
             }
 
         },
