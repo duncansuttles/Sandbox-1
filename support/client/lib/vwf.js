@@ -974,8 +974,10 @@
         {
 
              vwf.logger.infox( "-socket", "disconnected" );
-                    alert('The client has been disconnected from the server, and must be reloaded.');
-                    window.location.reload();
+                    alertify.alert('The client has been disconnected from the server, and must be reloaded.',function(){
+                        window.location.reload();
+                    });
+                    
 
         }
 
