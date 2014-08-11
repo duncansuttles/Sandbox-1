@@ -8,7 +8,7 @@
 				window.location = ret.charAt(0) == '/' ? root + ret : root + '/' + ret;
 			}
 			window.setTimeout(function(){
-			$.ajax(root + '/vwfDataManager.svc/sitelogout',
+			$.ajax(root + '/vwfDataManager.svc/sitelogout?'+"CSRFToken=" + window.CSRFToken,
 				{
 					
 					async:false,

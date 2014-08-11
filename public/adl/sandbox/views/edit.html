@@ -8,7 +8,7 @@
 		
 			alertify.confirm("Are you sure you want to restore this state?", function(e){
 				if(e){
-					$.get(root + '/vwfDataManager.svc/restorebackup?SID=' + sid + '&statename=' + obj.file, function(data){
+					$.get(root + '/vwfDataManager.svc/restorebackup?SID=' + sid + '&statename=' + obj.file +"&CSRFToken=" + window.CSRFToken, function(data){
 						getBackupList(function(){
 							alertify.success("State successfully restored");
 						});
@@ -24,7 +24,7 @@
 		};
 		
 		function getBackupList(cb){
-			$.get(root + '/vwfDataManager.svc/stateslist?SID=' + sid, function(data){
+			$.get(root + '/vwfDataManager.svc/stateslist?SID=' + sid +"&CSRFToken=" + window.CSRFToken, function(data){
 				
 				var tempData = JSON.parse(data);
 				for(var i = tempData.length - 1; i >= 0; i--){
@@ -53,7 +53,7 @@
 		
 		getBackupList();
 		
-		$.ajax(root + '/vwfDataManager.svc/statedata?SID=' + sid,
+		$.ajax(root + '/vwfDataManager.svc/statedata?SID=' + sid +"&CSRFToken=" + window.CSRFToken,
 		{
 			cache:false,
 			success:function(data,status,xhr)
@@ -87,7 +87,7 @@
 		jQuery.ajax(
 		{
 			type: 'POST',
-			url: root + '/vwfDataManager.svc/statedata?SID='+sid,
+			url: root + '/vwfDataManager.svc/statedata?SID='+sid + "&CSRFToken=" + window.CSRFToken,
 			data: JSON.stringify(statedata),
 			contentType: "application/json; charset=utf-8",
 			success:function(data,status,xhr)

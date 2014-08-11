@@ -156,7 +156,6 @@ function startVWF() {
 
 
 
-
     var p = process.argv.indexOf('-p'),
         port = 0,
         datapath = "";
@@ -191,13 +190,13 @@ function startVWF() {
         global.log('server cache disabled');
     }
 
-    FileCache.minify = process.argv.indexOf('-min') >= 0 ? true : !! configSettings.minify;
-    var compile = process.argv.indexOf('-compile') >= 0 ? true : !! configSettings.compile;
+    FileCache.minify = process.argv.indexOf('-min') >= 0 ? true : !!configSettings.minify;
+    var compile = process.argv.indexOf('-compile') >= 0 ? true : !!configSettings.compile;
     if (compile) {
         global.log('Starting compilation process...');
     }
 
-    var versioning = process.argv.indexOf('-cc') >= 0 ? true : !! configSettings.useVersioning;
+    var versioning = process.argv.indexOf('-cc') >= 0 ? true : !!configSettings.useVersioning;
     if (versioning) {
         global.version = configSettings.version ? configSettings.version : global.version;
         global.log(brown + 'Versioning is on. Version is ' + global.version + reset);
@@ -257,7 +256,6 @@ function startVWF() {
 
         DAL.setDataPath(datapath);
         SandboxAPI.setDataPath(datapath);
-
 
 
 
@@ -343,6 +341,7 @@ function startVWF() {
                 app.get(global.appPath + '/stats', Landing.statsHandler);
                 app.get(global.appPath + '/createNew/:page([0-9/]+)', Landing.createNew);
                 app.get(global.appPath + '/createNew2/:template([a-zA-Z0-9/]+)', Landing.createNew2);
+
 
                 app.get(global.appPath + '/vwf.js', Landing.serveVWFcore);
 
@@ -530,29 +529,25 @@ function startVWF() {
 
 }
 
-function MakeNewCRSFKey()
-{
-    //Generate a random ID for a instance
-    var ValidIDChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    var text = "";
-    for (var i = 0; i < 16; i++)
-        text += ValidIDChars.charAt(Math.floor(require('./cryptoRandom.js').random() * ValidIDChars.length));
-    return text;
+function getRoot() {
+    if (!global.version)
+        return root;
+    else
+        return '/' + global.version + global.appPath;
+
 }
 
 // used to serialize the user for the session
 passport.serializeUser(function(user, done) {
 
-    if(!user)
-    {
+    if (!user) {
         done(null, null);
         return;
     }
 
     DAL.getUser(user.id, function(user) {
-        if(!user)
-        {
-            done(null,null)
+        if (!user) {
+            done(null, null)
             return;;
         }
         xapi.sendStatement(user.id, xapi.verbs.logged_in);
@@ -562,7 +557,7 @@ passport.serializeUser(function(user, done) {
         userStorage.Username = user.Username || user.id;
         userStorage.PasswordIsTemp = user.isTemp;
         userStorage.Password = user.Password;
-        userStorage.CSRFKey = GetNewCRSFKey();
+        userStorage.CSRFToken = null;
         done(null, userStorage);
     });
 });
@@ -678,7 +673,7 @@ if (global.configuration.google_client_id) {
                         });
                     }
                 });
-                
+
             });
         }
     ));

@@ -48,7 +48,7 @@
 			profile.Name = name;
 
 			
-			$.ajax(root + "/VWFDataManager.svc/profile",
+			$.ajax(root + "/VWFDataManager.svc/profile?"+"CSRFToken=" + window.CSRFToken,
 			{
 				cache:false,
 				data:JSON.stringify(profile),

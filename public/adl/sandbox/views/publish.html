@@ -53,7 +53,7 @@ color: lightgray;
 		
 			
 		$('#txtCamera').hide();	
-		$.ajax(root + '/vwfDataManager.svc/statedata?SID=' + sid,
+		$.ajax(root + '/vwfDataManager.svc/statedata?SID=' + sid +"&CSRFToken=" + window.CSRFToken,
 		{
 			cache:false,
 			success:function(data,status,xhr)

@@ -123,6 +123,7 @@
 				center();
 				$('#login').attr('href',$('#login').attr('href') + '?return=' + window.location.pathname.substr("{{root}}".length) + window.location.search );
 				$('#logout').attr('href',$('#logout').attr('href') + '?return=' + window.location.pathname.substr("{{root}}".length) + window.location.search );
+				window.CSRFToken = "{{CSRFToken}}";
 		});		
 	</script>
 

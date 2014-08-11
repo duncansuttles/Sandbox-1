@@ -68,7 +68,7 @@ color: lightgray;
 				jQuery.ajax(
 				{
 					type: 'POST',
-					url: root + '/vwfDataManager.svc/createstate',
+					url: root + '/vwfDataManager.svc/createstate?'+"CSRFToken=" + window.CSRFToken,
 					data: JSON.stringify(statedata),
 					contentType: "application/json; charset=utf-8",
 					success:function(data,status,xhr)
@@ -89,7 +89,7 @@ color: lightgray;
 			} else
 			{
 
-				$.get(root + '/vwfDataManager.svc/copyinstance?SID=_adl_sandbox_' + "{{template}}" +'_', function(o){
+				$.get(root + '/vwfDataManager.svc/copyinstance?SID=_adl_sandbox_' + "{{template}}" +'_'+"&CSRFToken=" + window.CSRFToken, function(o){
 			
 							if(o){
 								var newID = o.substr(13,16);

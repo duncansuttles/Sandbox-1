@@ -273,7 +273,7 @@ exports.generalHandler = function(req, res, next) {
                 next();
                 return;
             }
-
+            sessionData.CSRFToken = require('node-uuid').v4();
             var routeIndex = exports.acceptedRoutes.indexOf(req.params.page);
 
             if (routeIndex >= 0) {
@@ -324,7 +324,8 @@ exports.generalHandler = function(req, res, next) {
                     blog: blog,
                     doc: doc,
                     user: user,
-                    translate: translate(req)
+                    translate: translate(req),
+                    CSRFToken: sessionData.CSRFToken
                 };
 
                 //hook up the buttons to show the social media logins
@@ -640,6 +641,7 @@ exports.createNew2 = function(req, res, next) {
         if (!sessionData) {
             res.redirect(root + '/login?return=createNew/0')
         }
+        sessionData.CSRFToken = require('node-uuid').v4();
         var template = req.params.template;
         DAL.getInstance(global.appPath.replace(/\//g, "_") + "_" + template + "_", function(worlddata) {
 
@@ -648,7 +650,8 @@ exports.createNew2 = function(req, res, next) {
                 worlddata: worlddata,
                 template: (template == 'noTemplate' ? false : template),
                 root: getRoot(),
-                translate: translate(req)
+                translate: translate(req),
+                CSRFToken:sessionData.CSRFToken
             };
             res.render('createNew2', {
                 layout: 'plain'
