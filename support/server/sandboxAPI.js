@@ -1003,7 +1003,7 @@ function makeid() {
 
 
 	for (var i = 0; i < 16; i++)
-		text += ValidIDChars.charAt(Math.floor(Math.random() * ValidIDChars.length));
+		text += ValidIDChars.charAt(Math.floor(require('./cryptoRandom.js').random() * ValidIDChars.length));
 
 	return text;
 }

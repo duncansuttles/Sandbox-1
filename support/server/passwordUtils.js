@@ -39,7 +39,7 @@ var GUID = require('node-uuid').v4;
 var GenerateTempPassword = function ()
 {
 	return Math.floor(
-			Math.random() * 0x10000 /* 65536 */
+			require('./cryptoRandom.js').random() * 0x10000 /* 65536 */
 		).toString(16);
 };
 

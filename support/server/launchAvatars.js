@@ -11,10 +11,10 @@ var count;
 function randomtick()
 {
 	return;
-	var rnd = Math.floor(Math.random() * 5);
+	var rnd = Math.floor(require('./cryptoRandom.js').random() * 5);
 	if(rnd == 4)
 	{
-		var rnd = Math.floor(Math.random() * 12);
+		var rnd = Math.floor(require('./cryptoRandom.js').random() * 12);
 		console.log('killing ' + rnd);
 		var p = processes[rnd]
 		p.send('kill');
@@ -85,7 +85,7 @@ function launchAvatars()
 		var tworld = world;
 		if(world == 'random')
 		{
-			tworld = states[Math.floor(Math.random() * states.length)];
+			tworld = states[Math.floor(require('./cryptoRandom.js').random() * states.length)];
 		}
 		var c1 = fork('vwf_client_sim.js',[ '-u', user+i,'-p',password,'-s',server,'-t',port,'-w',tworld]);
 		c1.on('close', function (code) {
