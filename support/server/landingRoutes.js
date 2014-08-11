@@ -217,7 +217,7 @@ exports.redirectPasswordEmail = function(req, res, next) {
                 next();
                 return;
             }
-            //if someone has a temp password, they must reset it
+            //if someone has a temp pass, they must reset it
 
 
             if (currentAcceptedRoute == 'editProfile' || currentAcceptedRoute == 'updatePassword') {
@@ -232,7 +232,7 @@ exports.redirectPasswordEmail = function(req, res, next) {
                 newroute = 'updatePassword';
             }
 
-            //if the user needs to reset the password || they use a temp passwrod
+            //if the user needs to reset the pass|| they use a temp passwrod
             if (newroute) {
                 res.locals = {
                     user: user,

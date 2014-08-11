@@ -37,7 +37,7 @@ global.setTimeout(function(){randomtick()},5000);
 var p = process.argv.indexOf('-u');
 user = p >= 0 ? process.argv[p+1] : "test";
 
-// -p is the password
+// -p is the pass
 p = process.argv.indexOf('-p');
 password = p >= 0 ? process.argv[p+1] : "1111";
 

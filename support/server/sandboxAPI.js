@@ -71,7 +71,7 @@ function ServeFile(filename, response, URL, JSONHeader) {
 	});
 }
 //get a profile for a user
-//url must contain UID for user and password hash
+//url must contain UID for user and pass hash
 function ServeProfile(UID, response, URL) {
 	DAL.getUser(UID, function(user) {
 		if (!user) {
@@ -116,7 +116,7 @@ function GetLoginData(response, URL) {
 
 
 //Take ownership if a client websocket connection
-//must provide a password and name for the user, and the instance and client ids.
+//must provide a pass and name for the user, and the instance and client ids.
 //This will associate a user with a reflector connection
 //The reflector will not accept incomming messages from an anonymous connection
 function InstanceLogin(response, URL) {
@@ -340,7 +340,7 @@ function SaveProfile(URL, data, response) {
 		respond(response, 500, 'parse error');
 		return;
 	}
-	//do not allow update of password in this way.
+	//do not allow update of pass in this way.
 	delete data.Password;
 	delete data.password;
 	delete data.Username;
@@ -380,7 +380,7 @@ function CreateProfile(URL, data, response) {
 		respond(response, 500, 'parse error');
 		return;
 	}
-	//dont check the password - it's a big hash, so complexity rules are meaningless
+	//dont check the pass - it's a big hash, so complexity rules are meaningless
 	data.Password = Hash(URL.query.P);
 	if (validateUsername(data.Username) !== true) {
 		respond(response, 500, 'Bad Username');
@@ -390,7 +390,7 @@ function CreateProfile(URL, data, response) {
 		respond(response, 500, 'Bad Email');
 		return;
 	}
-	//someone could try to hit the api and create a user with a blank password. Don't allow
+	//someone could try to hit the api and create a user with a blank pass. Don't allow
 	if (!data.Password || data.Password.length < 8) {
 		respond(response, 401, 'bad password');
 		return;
@@ -468,13 +468,13 @@ function CheckOwner(UID, stateFilename, callback) {
 	callback(false);
 }
 
-//Save an asset. the POST URL must contain valid name/password and that UID must match the Asset Author
+//Save an asset. the POST URL must contain valid name/pass and that UID must match the Asset Author
 function SaveAsset(URL, filename, data, response) {
 	var UID = URL.query.UID || (URL.loginData && URL.loginData.UID);
 	var P = URL.query.P || (URL.loginData && URL.loginData.Password);
 	CheckPassword(UID, P, function(e) {
 
-		//Did no supply a good name password pair
+		//Did no supply a good name pass pair
 		if (!e) {
 			respond(response, 401, 'Incorrect password when saving Asset ' + filename);
 			return;
@@ -528,7 +528,7 @@ function SaveAsset(URL, filename, data, response) {
 
 
 
-//Save an asset. the POST URL must contain valid name/password and that UID must match the Asset Author
+//Save an asset. the POST URL must contain valid name/pass and that UID must match the Asset Author
 function DeleteProfile(URL, filename, response) {
 	DAL.deleteUser(URL.loginData, function() {
 		respond(response, 200, '');
@@ -800,7 +800,7 @@ function GetCameras(SID, response, URL) {
 	});
 }
 
-//Save an asset. the POST URL must contain valid name/password and that UID must match the Asset Author
+//Save an asset. the POST URL must contain valid name/pass and that UID must match the Asset Author
 function DeleteState(URL, SID, response) {
 	if (!URL.loginData) {
 		respond(response, 401, 'Anonymous users cannot delete instances');
@@ -861,7 +861,7 @@ function CheckHash(filename, data, callback) {
 
 }
 
-//Save an instance. the POST URL must contain valid name/password and that UID must match the Asset Author
+//Save an instance. the POST URL must contain valid name/pass and that UID must match the Asset Author
 function SaveState(URL, id, data, response) {
 	if (!URL.loginData) {
 		respond(response, 401, 'No login data when saving state');
@@ -914,13 +914,13 @@ function SaveState(URL, id, data, response) {
 
 
 
-//Save an asset. the POST URL must contain valid name/password and that UID must match the Asset Author
+//Save an asset. the POST URL must contain valid name/pass and that UID must match the Asset Author
 function DeleteAsset(URL, filename, response) {
 	var UID = URL.query.UID || (URL.loginData && URL.loginData.UID);
 	var P = URL.query.P || (URL.loginData && URL.loginData.Password);
 	CheckPassword(UID, P, function(e) {
 
-		//Did no supply a good name password pair
+		//Did no supply a good name pass pair
 		if (!e) {
 
 			respond(response, 401, 'Incorrect password when deleting Asset ' + filename);

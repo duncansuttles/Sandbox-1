@@ -45,7 +45,7 @@ var GenerateTempPassword = function ()
 
 
 //this is the same algo used on the client side. 
-//Note: the client of course never sends the server the plain text password, instead runs this algo and sends the resutls.
+//Note: the client of course never sends the server the plain text pass, instead runs this algo and sends the resutls.
 //The results are hashed once and stored in the db.		
 exports.EncryptPassword = function (password, username,salt)
 {
@@ -100,7 +100,7 @@ exports.ResetPassword = function(username,response)
 	});
 }
 
-//Read the password from the profile for the UID user, and callback with the match
+//Read the pass from the profile for the UID user, and callback with the match
 exports.CheckPassword = function(UID,Password, callback)
 {
 	DAL.getUser(UID,function(user)
@@ -110,7 +110,7 @@ exports.CheckPassword = function(UID,Password, callback)
 			callback(false);
 			return;
 		}
-		//the users regualar password
+		//the users regualar pass
 		var normalpass = user.Password == Hash(Password);	
 		var temppass = false;
 
@@ -127,7 +127,7 @@ exports.CheckPassword = function(UID,Password, callback)
 	});
 }
 
-//dont check the password - it's a big hash, so complexity rules are meaningless
+//dont check the pass - it's a big hash, so complexity rules are meaningless
 exports.UpdatePassword = function (URL,response)
 {
 	if(!URL.loginData)
@@ -136,7 +136,7 @@ exports.UpdatePassword = function (URL,response)
 		return;
 	}
 	var data = {};
-	//someone could try to hit the api and create a user with a blank password. Don't allow
+	//someone could try to hit the api and create a user with a blank pass. Don't allow
 	if(!URL.query.P || URL.query.P.length < 8)
 	{
 		respond(response,401,'bad password');
@@ -144,11 +144,11 @@ exports.UpdatePassword = function (URL,response)
 	}
 	log(URL.query.P);
 	data.Password = Hash(URL.query.P);
-	//remove the temp password from the database
+	//remove the temp pass from the database
 	data.TempPassword = null;
 	DAL.updateUser(URL.loginData.UID,data,function()
 	{
-		//make the password as not temp, so the user can use the site normally.
+		//make the pass as not temp, so the user can use the site normally.
 		URL.loginData.PasswordIsTemp = false;
 		//store the updated session in the db
 		respond(response,200,'');
