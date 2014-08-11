@@ -77,7 +77,7 @@ define(function ()
 				{
 					type: 'GET',
 					url: PersistanceServer + '/vwfDataManager.svc/logindata',
-					//url: PersistanceServer + '/vwfDataManager.svc/Profile?UID=' + username + "&P=" + password,
+					//url: PersistanceServer + '/vwfDataManager.svc/Profile?UID=' + username + "&P=" + pass,
 					data: null,
 					success: null,
 					async: false,

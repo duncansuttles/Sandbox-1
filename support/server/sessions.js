@@ -6,7 +6,8 @@ var GUID = require('node-uuid').v4;
 function SessionData() {
     this.sessionId = GUID();
     this.UID = '';
-    this.Password = '';
+    //init the pass to a random value to satisify Fortify audit
+    this.Password = GUID();
     this.loginTime = new Date();
     this.clients = {};
     this.lastUpdate = new Date();

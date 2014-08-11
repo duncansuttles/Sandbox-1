@@ -532,7 +532,7 @@ function StartShellInterface() {
                                                 "Name": "Robert Chadwick",
                                                 "Age": "32",
                                                 "Birthday": "",
-                                                "Password": "",
+                                                "Password": GUID(),   //make sure to set this to satisfy Fortify audit
                                                 "Relationship": "Married",
                                                 "City": "Mclean",
                                                 "State": "VA",

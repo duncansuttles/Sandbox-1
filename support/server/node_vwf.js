@@ -529,6 +529,17 @@ function startVWF() {
     }
 
 }
+
+function MakeNewCRSFKey()
+{
+    //Generate a random ID for a instance
+    var ValidIDChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    var text = "";
+    for (var i = 0; i < 16; i++)
+        text += ValidIDChars.charAt(Math.floor(require('./cryptoRandom.js').random() * ValidIDChars.length));
+    return text;
+}
+
 // used to serialize the user for the session
 passport.serializeUser(function(user, done) {
 
@@ -551,7 +562,7 @@ passport.serializeUser(function(user, done) {
         userStorage.Username = user.Username || user.id;
         userStorage.PasswordIsTemp = user.isTemp;
         userStorage.Password = user.Password;
-
+        userStorage.CSRFKey = GetNewCRSFKey();
         done(null, userStorage);
     });
 });
