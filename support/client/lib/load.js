@@ -3,7 +3,7 @@
 //trick the optimizer into concating these files - it seems that it will not detect and concatenate the files from the nested requries below.
 //note: the files in the below array are in a specific order, to deal with depenancies. Since the files are concatenated in this order, it's very imporant
 if (false) {
-    require(["./vwf/view/editorview/lib/jquery-2.0.3.min.js", "closure/base.js", "async.js", "crypto.js", "md5.js", "./vwf/view/editorview/lib/jquery-migrate-1.2.1.min.js", "./vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js", "./vwf/view/editorview/lib/jquery.transit.min.js", "./vwf/view/editorview/lib/jquery-mousewheel.js", "./vwf/view/editorview/lib/jquery-scrollpane.min.js", "./vwf/model/threejs/three.js", "./vwf/model/threejs/ColladaLoader.js", "./vwf/model/threejs/UTF8JSONLoader.js", "./vwf/view/localization/i18next-1.7.2.min.js", "./vwf/view/localization/cookies.js", "compatibility.js", "closure/deps.js",
+    require(["./vwf/view/editorview/lib/jquery-2.0.3.min.js", "closure/base.js", "async.js", "crypto.js", "md5.js", "./vwf/view/editorview/lib/jquery-migrate-1.2.1.min.js", "./vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js", "./vwf/view/editorview/lib/jquery.transit.min.js", "./vwf/view/editorview/lib/jquery-mousewheel.js", "./vwf/view/editorview/lib/jquery-scrollpane.min.js", "./vwf/model/threejs/three.js.r68.js", "./vwf/model/threejs/ColladaLoader.js", "./vwf/model/threejs/UTF8JSONLoader.js", "./vwf/view/localization/i18next-1.7.2.min.js", "./vwf/view/localization/cookies.js", "compatibility.js", "closure/deps.js",
         "closure/vec/float32array.js",
         "closure/vec/float64array.js",
         "closure/vec/vec.js",
@@ -27,9 +27,9 @@ if (!window.jQuery) {
     require(["./vwf/view/editorview/lib/jquery-2.0.3.min.js", "closure/base.js", "async.js", "crypto.js"],
         function() {
 
-            require(["../vwf/view/editorview/lib/jquery-migrate-1.2.1.min.js", "../vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js", "md5.js", "closure/deps.js", "../vwf/view/editorview/lib/jquery.transit.min.js", "../vwf/view/editorview/lib/jquery-mousewheel.js", "../vwf/view/editorview/lib/jquery-scrollpane.min.js", "../vwf/model/threejs/three.js", "closure/vec/float32array.js", "closure/vec/float64array.js"],
+            require(["../vwf/view/editorview/lib/jquery-migrate-1.2.1.min.js", "../vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js", "md5.js", "closure/deps.js", "../vwf/view/editorview/lib/jquery.transit.min.js", "../vwf/view/editorview/lib/jquery-mousewheel.js", "../vwf/view/editorview/lib/jquery-scrollpane.min.js", "../vwf/model/threejs/three.js.r68.js", "closure/vec/float32array.js", "closure/vec/float64array.js"],
                 function() {
-                    require(["../vwf/model/threejs/ColladaLoader.js", "../vwf/model/threejs/UTF8JSONLoader.js", "../vwf/view/localization/i18next-1.7.2.min.js", "../vwf/view/localization/cookies.js", "compatibility.js", "closure/vec/vec.js", "../vwf.js"],
+                    require(["../vwf/model/threejs/DDSLoader.js", "../vwf/model/threejs/ColladaLoader.js", "../vwf/model/threejs/UTF8JSONLoader.js", "../vwf/view/localization/i18next-1.7.2.min.js", "../vwf/view/localization/cookies.js", "compatibility.js", "closure/vec/vec.js", "../vwf.js"],
                         function() {
                             require(["closure/vec/vec3.js", "closure/vec/vec4.js"],
                                 function() {
