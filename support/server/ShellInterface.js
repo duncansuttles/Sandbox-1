@@ -523,7 +523,7 @@ function StartShellInterface() {
                                         "properties": {
                                             "activeCycle": "",
                                             "motionStack": [],
-                                            "rotZ": Math.random() * 180,
+                                            "rotZ": require('./cryptoRandom.js').random() * 180,
                                             "PlayerNumber": GUID(),
                                             "owner": GUID(),
                                             "ownerClientID": GUID(),
@@ -544,7 +544,7 @@ function StartShellInterface() {
                                                 "Nationality": "",
                                                 "Avatar": "usmale.dae"
                                             },
-                                            "translation": [Math.random() * 100 - 50, Math.random() * 100 - 50, 0.01]
+                                            "translation": [require('./cryptoRandom.js').random() * 100 - 50, require('./cryptoRandom.js').random() * 100 - 50, 0.01]
                                         },
                                         "events": {
                                             "ShowProfile": null,

@@ -596,7 +596,7 @@ function ClientConnected(socket, namespace, instancedata) {
                                 loadClients.push(testClient);
                         }
                     }
-                    var loadClient = loadClients[Math.floor((Math.max(0, Math.random() - .001)) * loadClients.length)];
+                    var loadClient = loadClients[Math.floor((Math.max(0, require('./cryptoRandom.js').random() - .001)) * loadClients.length)];
                     if (loadClient) {
                         this.count++;
                         if (this.count < 5) {

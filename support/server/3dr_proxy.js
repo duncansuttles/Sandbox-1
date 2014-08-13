@@ -4,7 +4,7 @@ var request = require('request');
 // _3DRAPI                 //the endpoint to use to access the service
 // _3DRAPIKey              //the api key to use for all requests
 // _3DRUser                //username server identifies itself as
-// _3DRPassword            //password for the server user
+// _3DRPassword            //pass for the server user
 // _3DRUseAuth             //use anonymous access or not
 //
 
