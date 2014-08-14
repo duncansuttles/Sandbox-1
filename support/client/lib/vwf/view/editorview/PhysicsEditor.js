@@ -158,18 +158,18 @@ define([], function() {
         this.createVector = function(parentdiv, nodeid, propertyName, displayName) {
 
             var vecvalchanged = function(e) {
-                if (_PhysicsEditor.inSetup) return;
-                var propname = $(this).attr('propname');
-                var component = $(this).attr('component');
-                var nodeid = $(this).attr('nodename');
-                var thisid = $(this).attr('id');
-                thisid = thisid.substr(0, thisid.length - 1);
-                var x = $('#' + thisid + 'X').val();
-                var y = $('#' + thisid + 'Y').val();
-                var z = $('#' + thisid + 'Z').val();
-                _PrimitiveEditor.setProperty(nodeid, propname, [parseFloat(x), parseFloat(y), parseFloat(z)]);
-            }
-            //$('#basicSettings'+nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">'+editordata[i].displayname+': </div>');
+                    if (_PhysicsEditor.inSetup) return;
+                    var propname = $(this).attr('propname');
+                    var component = $(this).attr('component');
+                    var nodeid = $(this).attr('nodename');
+                    var thisid = $(this).attr('id');
+                    thisid = thisid.substr(0, thisid.length - 1);
+                    var x = $('#' + thisid + 'X').val();
+                    var y = $('#' + thisid + 'Y').val();
+                    var z = $('#' + thisid + 'Z').val();
+                    _PrimitiveEditor.setProperty(nodeid, propname, [parseFloat(x), parseFloat(y), parseFloat(z)]);
+                }
+                //$('#basicSettings'+nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">'+editordata[i].displayname+': </div>');
             var baseid = 'basicSettings' + nodeid + propertyName + 'min';
             $(parentdiv).append('<div class="editorSliderLabel"  style="width:100%;text-align: left;margin-top: 4px;" ><div style="display:inline" >' + displayName + ':</div> <div style="display:inline-block;float:right">' + '<input id="' + baseid + 'X' + '" component="X" nodename="' + nodeid + '" propname="' + propertyName + '" type="number" step="' + .01 + '" class="vectorinputfront"/>' + '<input id="' + baseid + 'Y' + '" component="Y" nodename="' + nodeid + '" propname="' + propertyName + '" type="number" step="' + .01 + '" class="vectorinput"/>' + '<input id="' + baseid + 'Z' + '" component="Z" nodename="' + nodeid + '" propname="' + propertyName + '" type="number" step="' + .01 + '" class="vectorinput"/>' + '</div><div style="clear:both"/></div>');
             var propmin = vwf.getProperty(nodeid, propertyName);
@@ -256,7 +256,7 @@ define([], function() {
         this.BuildGUI = function() {
 
             //does this object have it's own body, or is it just a compound collision?
-            var hasOwnBody = vwf.parent(this.selectedID) == vwf.application();
+            var hasOwnBody = vwf.parent(_Editor.GetSelectedVWFID()) == vwf.application();
             var lastTab = $("#physicsaccordion").accordion('option', 'active');
             $("#PhysicsEditor").empty();
             $("#PhysicsEditor").append("<div id='PhysicsEditortitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span class='ui-dialog-title' id='ui-dialog-title-Players'>Physics Editor</span></div>");
@@ -276,15 +276,19 @@ define([], function() {
                 this.createCheck($('#PhysicsBasicSettings'), this.selectedID, '___physics_active', 'Enable Physics');
             } else if (hasOwnBody) {
                 this.createCheck($('#PhysicsBasicSettings'), this.selectedID, '___physics_enabled', hasOwnBody ? 'Physics Enabled' : 'Collision Enabled');
-                this.createCheck($('#PhysicsBasicSettings'), this.selectedID, '___physics_sleeping', 'Body Sleeping');
                 this.createSlider($('#PhysicsBasicSettings'), this.selectedID, '___physics_mass', 'Mass', .1, 0, 10000);
+                this.createChoice($('#PhysicsBasicSettings'), this.selectedID, '___physics_activation_state', 'Activation State', [
+                    "Awake", "Sleeping", "Wants Sleep", "Stay Awake", "Stay Asleep"
+                ], [
+                    "1", "2", "3", "4", "5"
+                ]);
 
                 $('#physicsaccordion').append('<h3><a href="#">Collision Material</a>    </h3>   <div id="PhysicsMaterialSettings">  </div>');
                 this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_restitution', 'Bounciness', .1, 0, 1);
                 this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_friction', 'Friction', .1, 0, 10);
                 this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_damping', 'Damping', .1, 0, 10);
 
-                var phyNode = findphysicsnode(this.selectedID);
+                var phyNode = findphysicsnode(_Editor.GetSelectedVWFID());
 
                 if (phyNode.type == 7) {
                     $('#physicsaccordion').append('<h3><a href="#">Collision Shape</a>    </h3>   <div id="PhysicsCollisionSettings">  </div>');
@@ -293,19 +297,53 @@ define([], function() {
                     this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_height', 'Collision Height', .1, 0, 50);
                     this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_radius', 'Collision Radius', .1, 0, 50);
                     this.createChoice($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_type', 'Collision Type', [
-                        "Box", "Sphere", "Cylinder", "Cone", "Mesh"
+                        "None", "Box", "Sphere", "Cylinder", "Cone", "Mesh"
                     ], [
-                        "2", "1", "3", "4", "5"
+                        "0", "2", "1", "3", "4", "5"
                     ]);
 
                 }
 
                 $('#physicsaccordion').append('<h3><a href="#">Forces</a>    </h3>   <div id="PhysicsForceSettings">  </div>');
 
+
                 this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_forces_angular', 'Torque');
                 this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_forces_linear', 'Force');
                 this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_velocity_angular', 'Angular Velocity');
                 this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_velocity_linear', 'Linear Velocity');
+
+                $('#physicsaccordion').append('<h3><a href="#">Motion Locks</a>    </h3>   <div id="PhysicsLockSettings">  </div>');
+                $('#PhysicsLockSettings').append('<div><input id="lockXMotion" type="checkbox" />X<input id="lockYMotion" type="checkbox" />Y<input id="lockZMotion" type="checkbox" />Z Motion Enabled</div>')
+                $('#PhysicsLockSettings').append('<div><input id="lockXRotation" type="checkbox" />X<input id="lockYRotation" type="checkbox" />Y<input id="lockZRotation" type="checkbox" />Z Rotation Enabled</div>')
+
+                var linearFactor = vwf.getProperty(this.selectedID, '___physics_factor_linear');
+                var angularFactor = vwf.getProperty(this.selectedID, '___physics_factor_angular');
+                if (linearFactor) {
+                    if (linearFactor[0] == 1) $('#lockXMotion').attr('checked', 'checked');
+                    if (linearFactor[1] == 1) $('#lockYMotion').attr('checked', 'checked');
+                    if (linearFactor[2] == 1) $('#lockZMotion').attr('checked', 'checked');
+
+                    if (angularFactor[0] == 1) $('#lockXRotation').attr('checked', 'checked');
+                    if (angularFactor[1] == 1) $('#lockYRotation').attr('checked', 'checked');
+                    if (angularFactor[2] == 1) $('#lockZRotation').attr('checked', 'checked');
+                }
+                $('#lockXMotion, #lockYMotion, #lockZMotion').click(function() {
+
+                    var linearFactor = [0, 0, 0];
+                    linearFactor[0] = $('#lockXMotion').attr('checked') == 'checked' ? 1 : 0;
+                    linearFactor[1] = $('#lockYMotion').attr('checked') == 'checked' ? 1 : 0;
+                    linearFactor[2] = $('#lockZMotion').attr('checked') == 'checked' ? 1 : 0;
+                    _PrimitiveEditor.setProperty(PhysicsEditor.selectedID, '___physics_factor_linear', linearFactor);
+                });
+                $('#lockXRotation, #lockYRotation, #lockZRotation').click(function() {
+
+                    var angularFactor = [0, 0, 0];
+                    angularFactor[0] = $('#lockXRotation').attr('checked') == 'checked' ? 1 : 0;
+                    angularFactor[1] = $('#lockYRotation').attr('checked') == 'checked' ? 1 : 0;
+                    angularFactor[2] = $('#lockZRotation').attr('checked') == 'checked' ? 1 : 0;
+                    _PrimitiveEditor.setProperty(PhysicsEditor.selectedID, '___physics_factor_angular', angularFactor);
+                });
+
             } else {
 
                 $('#PhysicsBasicSettings').append('This object can have collision but no forces, because it is a child of another object');
@@ -332,7 +370,7 @@ define([], function() {
             try {
                 if (node) {
                     this.propertyEditorDialogs = [];
-                    this.selectedID = node.id;
+                    this.selectedID = _Editor.getSelectionCount() == 1 ? node.id : "selection";
                     this.BuildGUI();
                 } else {
                     this.propertyEditorDialogs = [];

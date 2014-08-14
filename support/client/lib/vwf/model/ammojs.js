@@ -70,6 +70,8 @@ function phyObject(id, world) {
     this.localScale = [1, 1, 1];
     this.activationState = 1;
     this.deactivationTime = 0;
+    this.linearFactor = [1, 1, 1];
+    this.angularFactor = [1, 1, 1];
 
 }
 phyObject.prototype.addForce = function(vec) {
@@ -106,6 +108,26 @@ phyObject.prototype.addForceOffset = function(vec, pos) {
     if (this.initialized === true) {
         this.body.applyForce(new Ammo.btVector3(vec[0], vec[1], vec[2]), new Ammo.btVector3(vec[0], vec[1], vec[2]));
 
+    }
+}
+phyObject.prototype.setLinearFactor = function(vec) {
+    if (vec.length !== 3) return;
+    this.linearFactor = vec;
+    if (this.initialized === true) {
+        this.body.setLinearFactor(new Ammo.btVector3(vec[0], vec[1], vec[2]));
+    }
+}
+phyObject.prototype.getLinearFactor = function(vec) {
+    return this.linearFactor;
+}
+phyObject.prototype.getAngularFactor = function(vec) {
+    return this.linearFactor;
+}
+phyObject.prototype.setAngularFactor = function(vec) {
+    if (vec.length !== 3) return;
+    this.angularFactor = vec;
+    if (this.initialized === true) {
+        this.body.setAngularFactor(new Ammo.btVector3(vec[0], vec[1], vec[2]));
     }
 }
 phyObject.prototype.setMass = function(mass) {
@@ -207,6 +229,8 @@ phyObject.prototype.initialize = function() {
 
         this.body.setLinearVelocity(new Ammo.btVector3(this.linearVelocity[0], this.linearVelocity[1], this.linearVelocity[2]));
         this.body.setAngularVelocity(new Ammo.btVector3(this.angularVelocity[0], this.angularVelocity[1], this.angularVelocity[2]));
+        this.body.setAngularFactor(new Ammo.btVector3(this.angularFactor[0], this.angularFactor[1], this.angularFactor[2]));
+        this.body.setLinearFactor(new Ammo.btVector3(this.linearFactor[0], this.linearFactor[1], this.linearFactor[2]));
         var mat = vwf.getProperty(this.id, 'transform');
         if (mat)
             this.setTransform(mat);
@@ -335,6 +359,7 @@ phyObject.prototype.getActivationState = function() {
 }
 phyObject.prototype.setActivationState = function(state) {
 
+    state = Number(state);
     if (this.initialized === true) {
         this.body.setActivationState(state);
         this.activationState = state
@@ -889,7 +914,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                     id: childID,
                     simulationSteps: 10,
                     active: true,
-                    ground:body
+                    ground: body
                 }
 
                 this.allNodes[vwf.application()] = this.nodes[vwf.application()];
@@ -992,7 +1017,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 this.reEntry = true;
                 for (var i in this.allNodes) {
                     var node = this.allNodes[i];
-                    if (node.body && node.initialized === true && node.mass > 0) {
+                    if (node.body && node.initialized === true && node.mass > 0 && node.getActivationState() != 2) {
 
                         vwf.setProperty(node.id, 'transform', node.getTransform());
                         vwf.setProperty(node.id, '___physics_activation_state', node.getActivationState());
@@ -1092,6 +1117,9 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             this.allNodes[vwf.application()].world = dynamicsWorld;
             world = dynamicsWorld;
 
+            //we need to see if adding the node back to the world is enough, or if we really have to kill and rebuild
+            //research seems to indicate that you could just recreate the world but not all the bodies
+            //but that did not work here, it needs to delay to next tick.
             for (var i in this.allNodes) {
                 var node = this.allNodes[i];
                 if (node.world) {
@@ -1277,6 +1305,12 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 }
                 if (propertyName === '___physics_collision_offset' && node.type == ASSET) {
                     node.setCollisionOffset(propertyValue);
+                }
+                if (propertyName === '___physics_factor_angular') {
+                    node.setAngularFactor(propertyValue);
+                }
+                if (propertyName === '___physics_factor_linear') {
+                    node.setLinearFactor(propertyValue);
                 }
                 //this is a hack
                 //find a better way. Maybe delete the old key from the map above

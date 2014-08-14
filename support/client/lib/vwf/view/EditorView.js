@@ -110,6 +110,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
                 this.addManager(_Editor);
 
 
+
             }
         },
         managers: [], //list of objects that need notification of events
@@ -272,7 +273,7 @@ function InitializeEditor() {
 
     $(document.body).css('overflow', 'hidden');
     $(window).resize();
-    
+
     //	$('body *').not(':has(input)').not('input').disableSelection();
     //	$('#vwf-root').enableSelection();
     //	$('#vwf-root').parent().enableSelection();

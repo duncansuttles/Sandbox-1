@@ -129,8 +129,7 @@ define(function() {
                                     EntityLibrary.dropPreview.updateMatrixWorld();
                                 }
                         }
-                        if (currentDrag.type == 'environment')
-                        {
+                        if (currentDrag.type == 'environment') {
                             EntityLibrary.dropPreview.position.set(0, 0, 0);
                             EntityLibrary.dropPreview.scale.set(10, 10, 10);
                             EntityLibrary.dropPreview.updateMatrixWorld();
@@ -205,6 +204,7 @@ define(function() {
         }
         this.show = function() {
 
+
             $('#EntityLibrary').animate({
                 'left': 0
             });
@@ -228,6 +228,7 @@ define(function() {
             isOpen = true;
         }
         this.hide = function() {
+
 
             $('#EntityLibrary').animate({
                 'left': -$('#EntityLibrary').width()
@@ -272,7 +273,7 @@ define(function() {
             }
             if (data.type == 'child') {
 
-                
+
                 if (vwf.views[0].lastPick && vwf.views[0].lastPickId) {
                     var ID = vwf.views[0].lastPickId; {
                         $.getJSON(data.url, function(proto) {
@@ -302,14 +303,14 @@ define(function() {
 
             }
             if (data.type == 'environment') {
-                    $.getJSON(data.url, function(proto) {
-                        _UndoManager.startCompoundEvent();
-                        for(var i in proto.properties)
-                            _PrimitiveEditor.setProperty(vwf.application(), i, proto.properties[i]);
-                        for(var i in proto.children)
-                            _Editor.createChild(vwf.application(), GUID(), proto.children[i]);
-                        _UndoManager.stopCompoundEvent();
-                    })
+                $.getJSON(data.url, function(proto) {
+                    _UndoManager.startCompoundEvent();
+                    for (var i in proto.properties)
+                        _PrimitiveEditor.setProperty(vwf.application(), i, proto.properties[i]);
+                    for (var i in proto.children)
+                        _Editor.createChild(vwf.application(), GUID(), proto.children[i]);
+                    _UndoManager.stopCompoundEvent();
+                })
             }
         }
         this.createPreviewMaterial = function() {

@@ -155,3 +155,5 @@ properties:
   ___physics_force_angular: [ 0, 0, 0]
   ___physics_deactivation_time: 0
   ___physics_activation_state: 1
+  ___physics_factor_angular: [ 1, 1, 1]
+  ___physics_factor_linear: [ 1, 1, 1]
