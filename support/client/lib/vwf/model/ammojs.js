@@ -1030,7 +1030,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 this.triggerCollisions();
                 this.reEntry = false;
             } else {
-                debugger;
+
             }
         },
         // -- initializingNode ---------------------------------------------------------------------

@@ -1227,8 +1227,9 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     gizposoffset = this.MoveTransformGizmo(MoveAxisY, relintersectyz[1]);
                     gizposoffset = MATH.addVec3(gizposoffset, this.MoveTransformGizmo(MoveAxisZ, relintersectyz[2]));
                 }
-
+                var backupScreeny = relscreeny;
                 for (var s = 0; s < SelectedVWFNodes.length; s++) {
+                    relscreeny = backupScreeny;
                     if (SelectedVWFNodes[s]) {
 
                         var tempscale = null;
@@ -1377,8 +1378,25 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
                             }
                             if (wasScaled && tempscale[0] > 0 && tempscale[1] > 0 && tempscale[2] > 0) {
+                                debugger;
                                 var relScale = MATH.subVec3(tempscale, lastscale[s]);
-                                var success = this.setScaleCallback(SelectedVWFNodes[s].id, [tempscale[0], tempscale[1], tempscale[2]]);
+                                var transform = this.getTransformCallback(SelectedVWFNodes[s].id);
+
+                                var sx = MATH.lengthVec3([transform[0], transform[4], transform[8]]);
+                                var sy = MATH.lengthVec3([transform[1], transform[5], transform[9]]);
+                                var sz = MATH.lengthVec3([transform[2], transform[6], transform[10]]);
+                                transform[0] *= tempscale[0] / sx;
+                                transform[4] *= tempscale[0] / sx;
+                                transform[8] *= tempscale[0] / sx;
+                                transform[1] *= tempscale[1] / sy;
+                                transform[5] *= tempscale[1] / sy;
+                                transform[9] *= tempscale[1] / sy;
+                                transform[2] *= tempscale[2] / sz;
+                                transform[6] *= tempscale[2] / sz;
+                                transform[10] *= tempscale[2] / sz;
+                                //var success = this.setScaleCallback(SelectedVWFNodes[s].id, [tempscale[0], tempscale[1], tempscale[2]]);
+                                if (SelectedVWFNodes.length == 1)
+                                    var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
                                 if (SelectedVWFNodes.length > 1) {
 
                                     var gizoffset = MATH.subVec3(lastpos[s], originalGizmoPos);
@@ -1390,8 +1408,10 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                                     gizoffset[2] *= tempscale[2];
                                     var newloc = MATH.addVec3(originalGizmoPos, gizoffset);
                                     lastpos[s] = newloc;
-
-                                    var success = this.setTranslationCallback(SelectedVWFNodes[s].id, newloc);
+                                    transform[12] = newloc[0];
+                                    transform[13] = newloc[1];
+                                    transform[14] = newloc[2];
+                                    var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
 
                                 }
                                 lastscale[s] = tempscale;
@@ -1410,9 +1430,12 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                                 transform[13] = y;
                                 transform[14] = z;
                                 lastpos[s] = [x, y, z];
-                                var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
-
+                                if (SelectedVWFNodes.length == 1) {
+                                    var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
+                                }
                                 if (SelectedVWFNodes.length > 1) {
+                                    //if more than one object is selected, update the new transform to 
+                                    //rotate around the gizmo
                                     var parentmat = toGMat(self.findviewnode(SelectedVWFNodes[s].id).parent.matrixWorld);
                                     var parentmatinv = MATH.inverseMat4(parentmat);
                                     var parentgizloc = MATH.mulMat4Vec3(parentmatinv, originalGizmoPos);
@@ -1421,7 +1444,10 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                                     gizoffset = MATH.mulMat4Vec3(rotmat, gizoffset);
                                     var newloc = MATH.addVec3(parentgizloc, gizoffset);
                                     lastpos[s] = newloc;
-                                    var success = this.setTranslationCallback(SelectedVWFNodes[s].id, newloc);
+                                    transform[12] = newloc[0];
+                                    transform[13] = newloc[1];
+                                    transform[14] = newloc[2];
+                                    var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
 
 
                                 }
@@ -1539,7 +1565,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 extends: 'SandboxLight.vwf',
                 properties: {
                     rotation: [1, 0, 0, 0],
-                    translation: pos,
+                    transform: MATH.transposeMat4(MATH.translateMatrix(pos)),
                     owner: owner,
                     type: 'Light',
                     lightType: type,
@@ -1555,7 +1581,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 extends: 'SandboxParticleSystem.vwf',
                 properties: {
                     rotation: [1, 0, 0, 0],
-                    translation: pos,
+                    transform: MATH.transposeMat4(MATH.translateMatrix(pos)),
                     owner: owner,
                     type: 'ParticleSystem',
                     DisplayName: self.GetUniqueName('ParticleSystem')
@@ -1573,7 +1599,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             CamProto.type = 'subDriver/threejs';
             CamProto.source = 'vwf/model/threejs/' + 'camera' + '.js';
 
-            CamProto.properties.translation = translation;
+            CamProto.properties.transform = MATH.transposeMat4(MATH.translateMatrix(translation));
             CamProto.properties.scale = [1, 1, 1];
             CamProto.properties.rotation = [0, 0, 1, 0];
             CamProto.properties.owner = owner;
@@ -1639,7 +1665,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
             proto.properties.materialDef = defaultmaterialDef;
             proto.properties.size = size;
-            proto.properties.translation = translation;
+            proto.properties.transform = MATH.transposeMat4(MATH.translateMatrix(translation));
             proto.properties.scale = [1, 1, 1];
             proto.properties.rotation = [0, 0, 1, 0];
             proto.properties.owner = owner;
@@ -3275,7 +3301,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
                 var newintersectxy = self.GetInsertPoint();
                 Proto.properties.owner = _UserManager.GetCurrentUserName();
-                Proto.properties.translation = newintersectxy;
+                Proto.properties.transform = MATH.transposeMat4(MATH.translateMatrix(newintersectxy));
                 var newname = self.GetUniqueName(url);
                 _UndoManager.recordCreate('index-vwf', newname, Proto);
                 vwf_view.kernel.createChild('index-vwf', newname, Proto);

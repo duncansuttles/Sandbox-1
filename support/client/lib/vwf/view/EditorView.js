@@ -195,7 +195,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
             }
         },
         satProperty: function(nodeID, propertyName, propertyValue) {
-            this.viewAPINotify('satProperty', arguments);
+            this.viewAPINotify('satProperty', [nodeID, propertyName, propertyValue]);
             if (window._Editor && propertyName == _Editor.transformPropertyName && _Editor.isSelected(nodeID)) {
                 _Editor.updateBoundsTransform(nodeID);
                 if (vwf.client() == vwf.moniker()) {
