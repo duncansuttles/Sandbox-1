@@ -1035,6 +1035,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
             //prevent moving 3D nodes that are not bound to the scene or are the scene itself
             if (SelectedVWFNodes.length > 0 && !(this.findviewnode(SelectedVWFNodes[0].id)).parent) return;
+
+
             if (this.waitingForSet.length > 0) return;
 
             if (!MoveGizmo || MoveGizmo == null) {

@@ -226,6 +226,7 @@ define(["module", "vwf/view"], function(module, view) {
                 this.currentGizmoTransform = _Editor.GetMoveGizmo().parent.matrix.clone();
                 var interp = this.matrixLerp(matCpy(this.gizmoLastTickTransform.elements), matCpy(this.gizmoThisTickTransform.elements), step);
                 _Editor.GetMoveGizmo().parent.matrix.fromArray(interp);
+                _Editor.GetMoveGizmo().parent.updateMatrixWorld(true);
             }
 
             var keys = Object.keys(this.nodes);
@@ -287,8 +288,10 @@ define(["module", "vwf/view"], function(module, view) {
         },
         restoreTransforms: function() {
 
-            if (this.currentGizmoTransform)
+            if (this.currentGizmoTransform) {
                 _Editor.GetMoveGizmo().parent.matrix = this.currentGizmoTransform;
+                _Editor.GetMoveGizmo().parent.updateMatrixWorld(true);
+            }
 
             var keys = Object.keys(this.nodes);
 
