@@ -61,6 +61,7 @@ define(["module", "vwf/view"], function(module, view) {
                 this.paused = false;
                 $('#index-vwf').fadeIn();
 
+
             }.bind(this));
 
             this.nodes = {};
@@ -176,6 +177,12 @@ define(["module", "vwf/view"], function(module, view) {
             var step = (this.tickTime) / (50);
             if (hit === 1) {
 
+
+                if (_Editor.GetMoveGizmo().parent.matrix) {
+                    this.gizmoLastTickTransform = this.gizmoThisTickTransform;
+                    this.gizmoThisTickTransform = _Editor.GetMoveGizmo().parent.matrix.clone();
+                }
+
                 var keys = Object.keys(this.nodes);
 
                 for (var j = 0; j < keys.length; j++) {
@@ -186,6 +193,7 @@ define(["module", "vwf/view"], function(module, view) {
                     if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
                         this.nodes[i].lastTickTransform = this.nodes[i].thisTickTransform;
                         this.nodes[i].thisTickTransform = this.state.nodes[i].gettingProperty('transform');
+                        //make sure it's a clone of the matrix
                         if (this.nodes[i].thisTickTransform) this.nodes[i].thisTickTransform = matCpy(this.nodes[i].thisTickTransform);
 
                         this.nodes[i].lastAnimationFrame = this.nodes[i].thisAnimationFrame;
@@ -205,12 +213,20 @@ define(["module", "vwf/view"], function(module, view) {
                         this.nodes[i].thisTickTransform = null;
                         this.nodes[i].lastAnimationFrame = null;
                         this.nodes[i].thisAnimationFrame = null;
+                        this.gizmoLastTickTransform = null;
+                        this.gizmoThisTickTransform;
 
 
                     }
                 }
             }
 
+
+            if (this.gizmoThisTickTransform && this.gizmoLastTickTransform) {
+                this.currentGizmoTransform = _Editor.GetMoveGizmo().parent.matrix.clone();
+                var interp = this.matrixLerp(matCpy(this.gizmoLastTickTransform.elements), matCpy(this.gizmoThisTickTransform.elements), step);
+                _Editor.GetMoveGizmo().parent.matrix.fromArray(interp);
+            }
 
             var keys = Object.keys(this.nodes);
             for (var j = 0; j < keys.length; j++) {
@@ -263,12 +279,17 @@ define(["module", "vwf/view"], function(module, view) {
         triggerWindowResize: function() {
 
             //overcome by code in WindowResize.js
+            $(window).resize();
             return;
 
 
 
         },
         restoreTransforms: function() {
+
+            if (this.currentGizmoTransform)
+                _Editor.GetMoveGizmo().parent.matrix = this.currentGizmoTransform;
+
             var keys = Object.keys(this.nodes);
 
             for (var j = 0; j < keys.length; j++) {
@@ -307,11 +328,10 @@ define(["module", "vwf/view"], function(module, view) {
 
 
         },
-        ticked: function()
-        {
+        ticked: function() {
             //so, here's what we'll do. Since the sim state cannot advance until tick, we will update on tick. 
             //but, ticks aren't fired when the scene in paused. In that case, we'll do it every frame.
-           _SceneManager.update();
+            _SceneManager.update();
         },
         deletedNode: function(childID) {
             delete this.nodes[childID];
@@ -830,7 +850,7 @@ define(["module", "vwf/view"], function(module, view) {
             //but, ticks aren't fired when the scene in paused. In that case, we'll do it every frame.
             var currentState = vwf.getProperty(vwf.application(), 'playMode');
             if (currentState === 'stop') _SceneManager.update();
-           
+
 
             //get the camera. If a default was specified, but not yet availabe, get the system default.
             cam = self.getCamera();
@@ -1180,9 +1200,7 @@ define(["module", "vwf/view"], function(module, view) {
             var oldMouseY = 0;
             var hovering = false;
             var view = this;
-            window.onresize = function() {
-                self.triggerWindowResize();
-            }
+
 
             if (detectWebGL() && getURLParameter('disableWebGL') == 'null') {
 

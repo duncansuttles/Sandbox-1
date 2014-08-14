@@ -300,7 +300,7 @@
                 { library: "vwf/configuration", active: true },
                 { library: "vwf/kernel/model", active: true },
                 { library: "vwf/model/javascript", active: true },
-                { library: "vwf/model/jiglib", linkedLibraries: ["vwf/model/jiglib/jiglib"], active: false },
+                { library: "vwf/model/ammojs", linkedLibraries: ["vwf/model/ammo.js/ammo"], active: false },
                 { library: "vwf/model/glge", linkedLibraries: ["vwf/model/glge/glge-compiled"], disabledBy: ["vwf/model/threejs", "vwf/view/threejs"], active: false },
                 { library: "vwf/model/threejs", linkedLibraries: ["vwf/model/threejs/three", "vwf/model/threejs/ColladaLoader"], disabledBy: ["vwf/model/glge", "vwf/view/glge"], active: false },
                 { library: "vwf/model/cesium", linkedLibraries: ["vwf/model/cesium/Cesium"], active: false },
@@ -319,7 +319,7 @@
                 { library: "vwf/model/glge/glge-compiled", active: false },
                 
               
-                { library: "vwf/model/jiglib/jiglib", active: false },
+                { library: "vwf/model/ammo.js/ammo", active: true },
                 { library: "vwf/view/webrtc/adapter", active: false },
                 { library: "vwf/view/google-earth", active: false },
                 { library: "vwf/model/cesium/Cesium", active: false },
@@ -338,7 +338,7 @@
             var initializers = {
                 model: [
                     { library: "vwf/model/javascript", active: true },
-                    { library: "vwf/model/jiglib", active: false },
+                    { library: "vwf/model/ammojs", active: true },
                     { library: "vwf/model/glge", active: false },
                     { library: "vwf/model/threejs", active: true },
                     { library: "vwf/model/cesium", active: false },
@@ -458,6 +458,7 @@
                 // Load default renderer if no other librarys specified
                 if(Object.keys(userLibraries["model"]).length == 0 && Object.keys(userLibraries["view"]).length == 0) {
                     requireArray["vwf/model/threejs"].active = true;
+                    requireArray["vwf/model/ammojs"].active = true;
                     requireArray["vwf/view/threejs"].active = true;
                    
                    
@@ -466,7 +467,7 @@
                 }
                 var requireConfig = {};
                 require( requireConfig, getActiveLibraries(requireArray, false), function( ready ) {
-
+                   
                     ready( function() {
 
                         // With the scripts loaded, we must initialize the framework. vwf.initialize()
@@ -475,7 +476,7 @@
 
                         var models = [
                         "vwf/model/javascript",
-                        "vwf/model/jiglib",
+                        "vwf/model/ammojs",
                         "vwf/model/wires",
                         "vwf/model/threejs",
                         "vwf/model/jqueryui",
@@ -1437,7 +1438,7 @@
             }
     
             this.logger.debugu();
-
+          
             return applicationState;
         };
 

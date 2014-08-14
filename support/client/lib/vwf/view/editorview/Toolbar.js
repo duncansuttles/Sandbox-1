@@ -115,6 +115,7 @@ define({
         createIcon('models', 'MenuModels', 'Show Model Library Window');
         createIcon('inventory', 'MenuInventory', 'Show Inventory Window');
         createIcon('hierarchy', 'MenuHierarchyManager', 'Show Hierarchy Window');
+        createIcon('physics', 'MenuPhysicsEditor', 'Show Hierarchy Window');
         $('#MenuCameraOrbiticon').addClass('iconselected');
         $('#MenuMoveicon').addClass('iconselected');
         $('#MenuWorldicon').addClass('iconselected');

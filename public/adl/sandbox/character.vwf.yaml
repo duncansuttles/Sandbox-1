@@ -22,6 +22,14 @@ properties:
   activeCycle: []
   standingOnID: 
   standingOnOffset: 
+  ___physics_activation_state: 4
+  ___physics_deactivation_time: 0
+  ___physics_velocity_linear: [ 0, 0, 0 ]
+  ___physics_velocity_angular: [ 0, 0, 0 ]
+  ___physics_factor_linear: [ 0, 0, 0 ]
+  ___physics_factor_angular: [ 0, 0, 0 ]
+  ___physics_enabled: true
+  ___physics_mass: 158.5
 methods:
   update:
   tick:
