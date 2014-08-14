@@ -125,7 +125,7 @@ phyObject.prototype.initialize = function() {
     //currently, only objects which are children of the world can be bodies
     if (this.enabled && this.parent.id == vwf.application() && this.initialized === false) {
         this.initialized = true;
-        console.log('init');
+        console.log('init', this.id);
         var childCollisions = collectChildCollisions(this);
         this.localOffset = null;
         //this object has no child physics objects, so just use it's normal collision shape
@@ -204,6 +204,7 @@ phyObject.prototype.initialize = function() {
         this.body.setDamping(this.damping, this.damping);
         this.body.setFriction(this.friction);
         this.body.setRestitution(this.restitution);
+
         this.body.setLinearVelocity(new Ammo.btVector3(this.linearVelocity[0], this.linearVelocity[1], this.linearVelocity[2]));
         this.body.setAngularVelocity(new Ammo.btVector3(this.angularVelocity[0], this.angularVelocity[1], this.angularVelocity[2]));
         var mat = vwf.getProperty(this.id, 'transform');
@@ -236,6 +237,7 @@ phyObject.prototype.deinitialize = function() {
 phyObject.prototype.getLinearVelocity = function() {
     if (this.initialized === true) {
         var vec = this.body.getLinearVelocity()
+        this.linearVelocity = [vec.x(), vec.y(), vec.z()];
         return [vec.x(), vec.y(), vec.z()];
     } else
         return this.linearVelocity;
@@ -283,6 +285,7 @@ phyObject.prototype.getAngularVelocity = function() {
     //waiting for an ammo build that includes body.getAngularVelocity
     if (this.initialized === true) {
         var vec = this.body.getAngularVelocity()
+        this.angularVelocity = [vec.x(), vec.y(), vec.z()];
         return [vec.x(), vec.y(), vec.z()];
     } else
         return this.angularVelocity;
@@ -297,12 +300,14 @@ phyObject.prototype.setDamping = function(damping) {
     this.damping = damping;
     if (this.initialized === true) {
         this.body.setDamping(this.damping, this.damping);
+
     }
 }
 phyObject.prototype.setFriction = function(friction) {
     this.friction = friction;
     if (this.initialized === true) {
         this.body.setFriction(this.friction);
+
     }
 }
 phyObject.prototype.enable = function() {
@@ -323,6 +328,7 @@ phyObject.prototype.enable = function() {
 phyObject.prototype.getActivationState = function() {
 
     if (this.initialized === true) {
+        this.activationState = this.body.getActivationState();
         return this.body.getActivationState();
     } else
         return this.activationState;
@@ -338,6 +344,7 @@ phyObject.prototype.setActivationState = function(state) {
 phyObject.prototype.getDeactivationTime = function() {
 
     if (this.initialized === true) {
+        this.deactivationTime = this.body.getDeactivationTime();
         return this.body.getDeactivationTime();
     } else
         return this.deactivationTime;
@@ -374,7 +381,7 @@ phyObject.prototype.getTransform = function() {
     mat[12] = pos[0] - worldoffset[0];
     mat[13] = pos[1] - worldoffset[1];
     mat[14] = pos[2] - worldoffset[2];
-
+    this.transform = mat;
     return mat;
 
 }
@@ -791,6 +798,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             window.findphysicsnode = function(id) {
                 return self.allNodes[id];
             };
+            window._PhysicsDriver = this;
 
 
             //patch ammo.js to include a get for activation state
@@ -841,9 +849,9 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 var dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration);
                 var overlappingPairCache = new Ammo.btDbvtBroadphase();
                 var solver = new Ammo.btSequentialImpulseConstraintSolver();
-             
+
                 var dynamicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-                dynamicsWorld.setGravity(new Ammo.btVector3(0, 0, -10));
+                dynamicsWorld.setGravity(new Ammo.btVector3(0, 0, -9.8));
 
 
                 var groundShape = new Ammo.btBoxShape(new Ammo.btVector3(500, 500, .1));
@@ -880,7 +888,8 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                     children: {},
                     id: childID,
                     simulationSteps: 10,
-                    active: true
+                    active: true,
+                    ground:body
                 }
 
                 this.allNodes[vwf.application()] = this.nodes[vwf.application()];
@@ -979,7 +988,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 }
                 //step 50ms per tick.
                 //this is dictated by the input from the reflector
-                this.nodes[vwf.application()].world.stepSimulation(1 / 20, this.nodes[vwf.application()].simulationSteps);
+                this.nodes[vwf.application()].world.stepSimulation(1 / 20, 0, this.nodes[vwf.application()].simulationSteps);
                 this.reEntry = true;
                 for (var i in this.allNodes) {
                     var node = this.allNodes[i];
@@ -995,6 +1004,8 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 }
                 this.triggerCollisions();
                 this.reEntry = false;
+            } else {
+                debugger;
             }
         },
         // -- initializingNode ---------------------------------------------------------------------
@@ -1054,25 +1065,55 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
         initializingProperty: function(nodeID, propertyName, propertyValue) {
             return this.settingProperty(nodeID, propertyName, propertyValue);
         },
-        resetWorld:function()
-        {
+        resetWorld: function() {
+            //here, we must reset the world whenever a new client joins. This is because the new client must be aligned. They will be 
+            //initializing the world in a given state. There is stateful information internal to the physics engine that can only be reset on the other clients
+            //by rebuilding the whole sim on each.
             var world = this.allNodes[vwf.application()].world;
-            for(var i in this.allNodes)
-            {
+            for (var i in this.allNodes) {
                 var node = this.allNodes[i];
-                if(node.body)
-                {
+                if (node.body) {
                     world.removeRigidBody(node.body);
                 }
             }
-            for(var i in this.allNodes)
-            {
+            world.removeRigidBody(this.allNodes[vwf.application()].ground);
+            delete this.allNodes[vwf.application()].world;
+
+            Ammo.destroy(world);
+
+            var collisionConfiguration = new Ammo.btDefaultCollisionConfiguration(); // every single |new| currently leaks...
+            var dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration);
+            var overlappingPairCache = new Ammo.btDbvtBroadphase();
+            var solver = new Ammo.btSequentialImpulseConstraintSolver();
+
+            var dynamicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+            dynamicsWorld.setGravity(new Ammo.btVector3(0, 0, -9.8));
+
+            this.allNodes[vwf.application()].world = dynamicsWorld;
+            world = dynamicsWorld;
+
+            for (var i in this.allNodes) {
                 var node = this.allNodes[i];
-                if(node.body)
-                {
-                    world.addRigidBody(node.body);
+                if (node.world) {
+                    node.world = world;
+                    node.initialized = false;
+                    node.ready = false;
+                    //call the getters, because they will cache the values to survive the reset
+                    if (i != vwf.application() && node.body) {
+                        var backupTrans = node.getTransform();
+                        var backupVel = node.getLinearVelocity();
+                        var backupAng = node.getAngularVelocity();
+                        var state = node.getActivationState();
+                        var time = node.getDeactivationTime();
+                    }
                 }
             }
+
+            //this.reinit();
+
+            world.addRigidBody(this.allNodes[vwf.application()].ground);
+
+
         },
         // TODO: deletingProperty
         callingMethod: function(nodeID, methodName, args) {
@@ -1089,11 +1130,40 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             if (methodName === '___physics_addTorque') {
                 node.addTorque(args[0]);
             }
-            if (methodName == 'postWorldRestore') {
-               //this.resetWorld();
+            if (methodName == '___physics_world_reset') {
+                //if a client joins (who is not myself), I need to reset.
+                //note that the timing of this call has been carefully examined. There can be no model changes (especially in the physics)
+                //between the GetState being sent to the load client, and this event occuring. 
+                // if(vwf.moniker() != args[0])
+                {
+
+                    console.log('reset world to sync late joining cleent');
+                    this.resetWorld();
+                }
+            }
+        },
+        reinit: function() {
+
+            for (var i in this.allNodes) {
+                var node = this.allNodes[i];
+                if (!node.body) continue;
+
+                var backupTrans = node.getTransform();
+                var backupVel = node.getLinearVelocity();
+                var backupAng = node.getAngularVelocity();
+                var state = node.getActivationState();
+                var time = node.getDeactivationTime();
+                node.deinitialize();
+                node.initialize();
+                node.setTransform(backupTrans);
+                node.setLinearVelocity(backupVel);
+                node.setAngularVelocity(backupAng);
+                node.setActivationState(state);
+                node.setDeactivationTime(time);
             }
         },
         settingProperty: function(nodeID, propertyName, propertyValue) {
+
 
             //dont try to set the parent
             if (!this.allNodes[nodeID]) return;

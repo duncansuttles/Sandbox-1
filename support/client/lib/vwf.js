@@ -1438,7 +1438,7 @@
             }
     
             this.logger.debugu();
-
+          
             return applicationState;
         };
 

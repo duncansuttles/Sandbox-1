@@ -16,6 +16,7 @@ extends: http://vwf.example.com/navscene.vwf
 properties:
   clients: 
   DisplayName:
+  simTime: 0
   placemarks:
     Origin: [0, 0, 0]
   navmode: none     
@@ -304,6 +305,7 @@ methods:
   cameraBroadcastEnd:
   playSound:
   setMusic:
+  ___physics_world_reset:
 scripts:
 - |
     this.initialize = function(){
@@ -445,7 +447,7 @@ scripts:
         }
         if(this.receivingCameraBroadcast && this.cameramode != 'None')
             this.receivingCameraBroadcast = false;
-        
+        this.simTime = this.simTime +1;
     }
     this.broadcastCameraPosition = function(transform)
     {
@@ -555,7 +557,6 @@ scripts:
     	}
     	if(!this.clients[id])
     		this.clients.defineProperty(id,{cid:id,name:name,UID:UID});
-    	
     }
     // a client other than this one has left
     this.clientDisconnected = function(id,name,UID)
