@@ -114,20 +114,20 @@ define(function() {
                             EntityLibrary.dropPreview.updateMatrixWorld();
                         }
                         if (currentDrag.type == 'material' || currentDrag.type == 'child') {
-                            if (vwf.views[0].lastPick && vwf.views[0].lastPickId)
-                                if (vwf.views[0].lastPick.object) {
+                            var ID = EntityLibrary.GetPick(evt);
+                            if (ID) {
 
-                                    var bound = vwf.views[0].lastPick.object.GetBoundingBox(true);
-                                    bound = bound.transformBy(toGMat(vwf.views[0].lastPick.object.matrixWorld));
-                                    var x = ((bound.max[0] - bound.min[0]) / 2) + bound.min[0];
-                                    var y = ((bound.max[1] - bound.min[1]) / 2) + bound.min[1];
-                                    var z = ((bound.max[2] - bound.min[2]) / 2) + bound.min[2];
+                                var bound = _Editor.findviewnode(ID).GetBoundingBox(true);
+                                bound = bound.transformBy(toGMat(_Editor.findviewnode(ID).matrixWorld));
+                                var x = ((bound.max[0] - bound.min[0]) / 2) + bound.min[0];
+                                var y = ((bound.max[1] - bound.min[1]) / 2) + bound.min[1];
+                                var z = ((bound.max[2] - bound.min[2]) / 2) + bound.min[2];
 
-                                    var ss = MATH.distanceVec3(bound.max, bound.min) / 1.9;
-                                    EntityLibrary.dropPreview.position.set(x, y, z);
-                                    EntityLibrary.dropPreview.scale.set(ss, ss, ss);
-                                    EntityLibrary.dropPreview.updateMatrixWorld();
-                                }
+                                var ss = MATH.distanceVec3(bound.max, bound.min) / 1.9;
+                                EntityLibrary.dropPreview.position.set(x, y, z);
+                                EntityLibrary.dropPreview.scale.set(ss, ss, ss);
+                                EntityLibrary.dropPreview.updateMatrixWorld();
+                            }
                         }
                         if (currentDrag.type == 'environment') {
                             EntityLibrary.dropPreview.position.set(0, 0, 0);
@@ -199,6 +199,20 @@ define(function() {
             })
         }
         this.setup();
+        this.GetPick = function(evt) {
+            var ray = _Editor.GetWorldPickRay(evt.originalEvent);
+            var o = _Editor.getCameraPosition();
+            var hit = _SceneManager.CPUPick(o, ray, {
+                ignore: [_Editor.GetMoveGizmo()]
+            });
+            if (hit) {
+                var object = hit.object;
+                while (!object.vwfID && object.parent)
+                    object = object.parent;
+                return object.vwfID;
+            }
+            return null;
+        }
         this.isOpen = function() {
             return isOpen;
         }
@@ -274,28 +288,29 @@ define(function() {
             if (data.type == 'child') {
 
 
-                if (vwf.views[0].lastPick && vwf.views[0].lastPickId) {
-                    var ID = vwf.views[0].lastPickId; {
-                        $.getJSON(data.url, function(proto) {
-                            //very important to clean the node! Might have accidently left a name or id in the libarary
-                            proto = _DataManager.getCleanNodePrototype(proto);
-                            if (!proto.properties)
-                                proto.properties = {};
-                            proto.properties.owner = _UserManager.GetCurrentUserName()
-                            if (!proto.properties.transform)
-                                proto.properties.transform = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-                            var newname = GUID();
-                            _Editor.createChild(ID, newname, proto);
-                            _Editor.SelectOnNextCreate([newname]);
 
-                        })
-                    }
+                var ID = EntityLibrary.GetPick(evt);
+                if (ID) {
+                    $.getJSON(data.url, function(proto) {
+                        //very important to clean the node! Might have accidently left a name or id in the libarary
+                        proto = _DataManager.getCleanNodePrototype(proto);
+                        if (!proto.properties)
+                            proto.properties = {};
+                        proto.properties.owner = _UserManager.GetCurrentUserName()
+                        if (!proto.properties.transform)
+                            proto.properties.transform = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+                        var newname = GUID();
+                        _Editor.createChild(ID, newname, proto);
+                        _Editor.SelectOnNextCreate([newname]);
+
+                    })
                 }
+
             }
             if (data.type == 'material') {
 
-                if (vwf.views[0].lastPick && vwf.views[0].lastPickId) {
-                    var ID = vwf.views[0].lastPickId;
+                var ID = EntityLibrary.GetPick(evt);
+                if (ID) {
                     $.getJSON(data.url, function(proto) {
                         _PrimitiveEditor.setProperty(ID, 'materialDef', proto);
                     })
