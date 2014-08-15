@@ -763,8 +763,8 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
         },
         __WatchableCache: {},
         setValueByDotNotation: function(root, dot, val) {
-            dot= dot.replace(/\[/g, ".");
-            dot= dot.replace(/\]/g, ".");
+            dot = dot.replace(/\[/g, ".");
+            dot = dot.replace(/\]/g, ".");
             var names = dot.split('.');
             while (names.indexOf('') != -1)
                 names.splice(names.indexOf(''), 1);
@@ -776,8 +776,8 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
             root[names[names.length - 1]] = val;
         },
         getValueByDotNotation: function(root, dot) {
-            dot= dot.replace(/\[/g, ".");
-            dot= dot.replace(/\]/g, ".");
+            dot = dot.replace(/\[/g, ".");
+            dot = dot.replace(/\]/g, ".");
             var names = dot.split('.');
             while (names.indexOf('') != -1)
                 names.splice(names.indexOf(''), 1);
@@ -798,18 +798,18 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                 //the watchablesetting guard value prevents updating the values in the watchable cache.... can this be right?
                 this.setValueByDotNotation(this.__WatchableCache[masterid], "masterval." + dotNotation.substr(masterid.length), value);
                 this.setValueByDotNotation(this.__WatchableCache[masterid], "internal_val." + dotNotation.substr(masterid.length), value);
-               
-               
+
+
                 jsDriverSelf.kernel.setProperty(id, propertyName, this.__WatchableCache[masterid].masterval);
-                
-                
+
+
 
             } else {
-                
-                
+
+
                 jsDriverSelf.kernel.setProperty(id, propertyName, value);
-                
-                
+
+
             }
 
 
@@ -884,15 +884,21 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
 
             var node = this.nodes[nodeID];
 
-
+            //the getter on nodes.properties. create watchable proxy
             Object.defineProperty(node.properties, propertyName, { // "this" is node.properties in get/set
                 get: function() {
 
                     //return a watchable from the cache if it exists. This is way way way too slow. 
                     //trying to be very careful to keep the cache working properly;
-                    if(jsDriverSelf.__WatchableCache[this.node.id + "-" + propertyName])
+                    if (jsDriverSelf.__WatchableCache[this.node.id + "-" + propertyName]) {
+                        //because other drivers might change the value, we have to update the cache on every get.
+                        //this is  too bad, because it's a lot of work, but we shoudl be able to keep the watchable strucures
+                        //even if we have to update the underlying cache.
+
+                        //do we have to do this on set property? Lets not, that should be faster
+                        //  this.updateWatchableCache(this.node.id,propertyName,jsDriverSelf.kernel.getProperty(this.node.id, propertyName));
                         return jsDriverSelf.__WatchableCache[this.node.id + "-" + propertyName];
-                    else
+                    } else
                         return jsDriverSelf.createWatchable(jsDriverSelf.kernel.getProperty(this.node.id, propertyName), propertyName, this.node.id, undefined, this.node.id + "-" + propertyName)
 
                 },
@@ -902,17 +908,34 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                 enumerable: true
             });
 
+            //the getter on node, create watchable proxy
             if (!node.hasOwnProperty(propertyName)) // TODO: recalculate as properties, methods, events and children are created and deleted; properties take precedence over methods over events over children, for example
             {
                 Object.defineProperty(node, propertyName, { // "this" is node in get/set
                     get: function() {
 
-                         //return a watchable from the cache if it exists. This is way way way too slow. 
-                    //trying to be very careful to keep the cache working properly;
-                    if(jsDriverSelf.__WatchableCache[this.id + "-" + propertyName])
-                        return jsDriverSelf.__WatchableCache[this.id + "-" + propertyName];
-                    else
-                        return jsDriverSelf.createWatchable(jsDriverSelf.kernel.getProperty(this.id, propertyName), propertyName, this.id, undefined, this.id + "-" + propertyName)
+                        //return a watchable from the cache if it exists. This is way way way too slow. 
+                        //trying to be very careful to keep the cache working properly;
+                        if (jsDriverSelf.__WatchableCache[this.id + "-" + propertyName]) {
+                            //because other drivers might change the value, we have to update the cache on every get.
+                            //this is  too bad, because it's a lot of work, but we shoudl be able to keep the watchable strucures
+                            //even if we have to update the underlying cache.
+
+                            //do we have to do this on set property? Lets not, that should be faster
+
+                            //this is a godawful mess, but it profiles well....
+
+                            var currentval = jsDriverSelf.kernel.getProperty(this.id, propertyName);
+                            if (!currentval) return currentval;
+                            if (JSON.stringify(currentval) != JSON.stringify(jsDriverSelf.__WatchableCache[this.id + "-" + propertyName].internal_val)) {
+                                //it really seems like we should be reusing the objects in the cache, but it causes god awful problems that I 
+                                //cannot make any sense of. 
+                                // return jsDriverSelf.createWatchable(currentval, propertyName, this.id, undefined, this.id + "-" + propertyName)
+                                jsDriverSelf.updateWatchableCache(this.id, propertyName, currentval)
+                            }
+                            return jsDriverSelf.__WatchableCache[this.id + "-" + propertyName];
+                        } else
+                            return jsDriverSelf.createWatchable(jsDriverSelf.kernel.getProperty(this.id, propertyName), propertyName, this.id, undefined, this.id + "-" + propertyName)
 
                     },
                     set: function(value) {
@@ -935,7 +958,7 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
             try {
                 return setter.call(node, propertyValue);
             } catch (e) {
-                this.logger.warn("settingProperty", nodeID, propertyName, propertyValue,
+                this.logger.warn("settingProperty", node.ID, propertyName, propertyValue,
                     "exception in setter:", utility.exceptionMessage(e));
             }
         },
@@ -963,6 +986,12 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
             }
 
 
+            //we do this on getproperty now.....
+            //this.updateWatchableCache(nodeID,propertyName,propertyValue);
+
+            return undefined;
+        },
+        updateWatchableCache: function(nodeID, propertyName, propertyValue) {
 
             //we are not setting our own watchable. in that case, the internal value is already cached
             if (this.__WatchableSetting === 0) {
@@ -972,32 +1001,34 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                 for (var i = 0; i < keys.length; i++) {
                     //be verycareful here. transform and transformAPI both start with the same dotnotation key, be sure that you check
                     //properly.
-                    if (keys[i].indexOf(nodeID + '-' + propertyName+'-') == 0 || keys[i] === nodeID + '-' + propertyName) {
+                    if (keys[i].indexOf(nodeID + '-' + propertyName + '-') == 0 || keys[i] === nodeID + '-' + propertyName) {
                         var watchable = this.__WatchableCache[keys[i]]
 
                         var new_prop_for_this_watchable;
 
                         //setting the root of the watchable;
-                        if(watchable.dotNotation === nodeID + '-' + propertyName)
+                        if (watchable.dotNotation === nodeID + '-' + propertyName)
                             new_prop_for_this_watchable = propertyValue;
-                        else  //setting some sub watchable       
+                        else //setting some sub watchable       
                         {
                             //the dot notation includes the name of the root prop - but propertyValue is already this. Remove 
                             //from the dot.
-                            var dot = watchable.dotNotation.substr(watchable.dotNotation.indexOf('.')+1);
+                            var dot = watchable.dotNotation.substr(watchable.dotNotation.indexOf('.') + 1);
                             new_prop_for_this_watchable = this.getValueByDotNotation(propertyValue, dot);
                         }
                         var old_prop = watchable.internal_val;
-                        if(!new_prop_for_this_watchable)
-                        {
+                        if (!new_prop_for_this_watchable) {
                             //if the new prop is null, just remove the cached watchable. No point in having a watchable interface for a null.
                             dels.push(keys[i]);
-                        }
-                        else if (Object.keys(new_prop_for_this_watchable).join('') !== Object.keys(old_prop).join('')) {
+                        } else if (Object.keys(new_prop_for_this_watchable).join('') !== Object.keys(old_prop).join('')) {
                             //the structure of the value for this watchable has changed, so we need to recreate.
                             //instead of recreating the watchable now (when it may never be needed)
                             //just delete it an build a new one on demand
                             dels.push(keys[i]);
+                        } else {
+                            //ok, we can save the watchable and just swap in the new underlying value
+                            watchable.internal_val = propertyValue;
+
                         }
                     }
                 }
@@ -1005,13 +1036,12 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                     delete this.__WatchableCache[dels[i]];
             }
 
-            return undefined;
-        },
 
+        },
         // -- gettingProperty ----------------------------------------------------------------------
 
         gettingProperty: function(nodeID, propertyName, propertyValue) {
-
+            if (this.disabled) return;
             var node = this.nodes[nodeID];
             if (!node) return undefined;
             var getter = node.private.getters && node.private.getters[propertyName];
@@ -1291,7 +1321,9 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
 
             if (body) {
                 try {
-                    return body.apply(node, methodParameters);
+                    var ret = body.apply(node, methodParameters);
+                    if (ret && ret.internal_val) return ret.internal_val;
+                    return ret;
                 } catch (e) {
                     console.warn(e.toString() + " Node:'" + (node.properties.DisplayName || nodeID) + "' during: '" + methodName + "' with '" + JSON.stringify(methodParameters) + "'");
                     //            this.logger.warn( "callingMethod", nodeID, methodName, methodParameters, // TODO: limit methodParameters for log

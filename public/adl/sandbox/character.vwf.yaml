@@ -585,7 +585,7 @@ scripts:
                 
                 var tracefrompoint = MATH.addVec3(finalt,[0,0,1]);
 
-                var changed = false;//this.testRay(tracefrompoint,motionvec,0,this.pickoptions);
+                var changed = this.testRay(tracefrompoint,motionvec,0,this.pickoptions);
                 if(changed)
                 {
                   finalt[0] = tracefrompoint[0];
@@ -600,7 +600,7 @@ scripts:
                
                 
                 {
-                var intersect = 0;//_SceneManager.CPUPick(MATH.addVec3(finalt,[0,0,1.7]),[0,0,-1],this.pickoptions);
+                var intersect = _SceneManager.CPUPick(MATH.addVec3(finalt,[0,0,1.7]),[0,0,-1],this.pickoptions);
                 
                 
                
