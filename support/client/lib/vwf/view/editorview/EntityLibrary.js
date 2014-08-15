@@ -75,7 +75,7 @@ define(function() {
                         //for every asset in every library, setup the gui
                         for (var j in libs[i].library) {
                             $('#library' + ToSafeID(i)).append('<div  class = "libraryAsset">' +
-                                '<img id = "asset' + ToSafeID(i) + ToSafeID(j) + '" src="' + libs[i].library[j].preview + '"></img>' +
+                                '<img id = "asset' + ToSafeID(i) + ToSafeID(j) + '" src="' + libs[i].library[j].preview + '" draggable=true></img>' +
                                 '<div>' + j + '</div>' +
                                 '</div>'
                             );

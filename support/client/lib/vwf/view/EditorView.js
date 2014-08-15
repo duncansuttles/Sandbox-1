@@ -173,6 +173,11 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
                 if (window._Editor) {
                     _Editor.initialize();
                     InitializeEditor();
+                    //disable text selection on the entire page, except for input elements and draggables
+                    $('body *').not(':has(input)').not('[draggable]').not('input').disableSelection();
+                    //enable selection on the ancestors of all draggables, to make drag work in FF
+                    $('[draggable]').parentsUntil().enableSelection();
+
                 }
 
             }

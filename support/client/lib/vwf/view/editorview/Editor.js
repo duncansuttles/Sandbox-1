@@ -3380,7 +3380,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 e.stopPropagation();
                 return false;
             });
-            $('body *').not(':has(input)').not('input').disableSelection();
+            
             this.selectionMarquee.hide();
             $('#ContextMenu').hide();
         }
