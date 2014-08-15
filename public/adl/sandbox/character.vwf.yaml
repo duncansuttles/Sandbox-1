@@ -183,7 +183,10 @@ scripts:
       
       $(document.body).append('<div class="nametag" id="'+"Player_" + PlayerNumber + 'label'+'"><div class="nametagname ignoreMouseLeave">'+PlayerNumber+'</div></div>')
       var newdiv = $("#Player_" + PlayerNumber + 'label')[0];
-      
+      var self = this;
+      $("#Player_" + PlayerNumber + 'label').click(function(){
+        setupPmWindow(self.PlayerNumber);
+      })
       
       newdiv.style.left = '0px';
       //newdiv.style.top = '0px';
