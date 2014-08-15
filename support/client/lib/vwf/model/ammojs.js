@@ -231,6 +231,8 @@ phyObject.prototype.initialize = function() {
         this.body.setAngularVelocity(new Ammo.btVector3(this.angularVelocity[0], this.angularVelocity[1], this.angularVelocity[2]));
         this.body.setAngularFactor(new Ammo.btVector3(this.angularFactor[0], this.angularFactor[1], this.angularFactor[2]));
         this.body.setLinearFactor(new Ammo.btVector3(this.linearFactor[0], this.linearFactor[1], this.linearFactor[2]));
+        this.body.forceActivationState(this.activationState);
+        this.body.setDeactivationTime(this.deactivationTime);
         var mat = vwf.getProperty(this.id, 'transform');
         if (mat)
             this.setTransform(mat);
@@ -362,6 +364,7 @@ phyObject.prototype.setActivationState = function(state) {
     state = Number(state);
     if (this.initialized === true) {
         this.body.setActivationState(state);
+        this.body.forceActivationState(state);
         this.activationState = state
     } else
         this.activationState = state;
@@ -969,7 +972,9 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             if (nodeID && hasPrototype(childID, 'plane2-vwf')) {
                 this.allNodes[nodeID].children[childID] = new phyPlane(childID, this.allNodes[vwf.application()].world);
             }
-            if (nodeID && hasPrototype(childID, 'asset-vwf')) {
+
+            
+            if (nodeID && (hasPrototype(childID, 'asset-vwf')||hasPrototype(childID, 'sandboxGroup-vwf'))) {
                 this.allNodes[nodeID].children[childID] = new phyAsset(childID, this.allNodes[vwf.application()].world);
             }
             //child was created
