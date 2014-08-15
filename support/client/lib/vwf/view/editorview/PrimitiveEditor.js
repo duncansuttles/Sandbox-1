@@ -982,9 +982,9 @@ define(function() {
 
                     var mat = vwf.getProperty(node.id, 'transform');
                     var angles = this.rotationMatrix_2_XYZ(mat);
-                    var pos = vwf.getProperty(node.id, 'translation');
+                    var pos = [mat[12],mat[13],mat[14]];
 
-                    var scl = vwf.getProperty(node.id, 'scale');
+                    var scl = [MATH.lengthVec3([mat[0],mat[4],mat[8]]),MATH.lengthVec3([mat[1],mat[5],mat[9]]),MATH.lengthVec3([mat[2],mat[6],mat[10]])]
                     $('#PositionX').val(Math.floor(pos[0] * 1000) / 1000);
                     $('#PositionY').val(Math.floor(pos[1] * 1000) / 1000);
                     $('#PositionZ').val(Math.floor(pos[2] * 1000) / 1000);

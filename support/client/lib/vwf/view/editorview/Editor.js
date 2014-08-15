@@ -1378,7 +1378,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
                             }
                             if (wasScaled && tempscale[0] > 0 && tempscale[1] > 0 && tempscale[2] > 0) {
-                                debugger;
+                                
                                 var relScale = MATH.subVec3(tempscale, lastscale[s]);
                                 var transform = this.getTransformCallback(SelectedVWFNodes[s].id);
 

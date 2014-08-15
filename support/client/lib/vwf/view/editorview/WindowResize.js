@@ -7,6 +7,8 @@ define({
             toolsLoaded = _DataManager.getInstanceData().publishSettings.allowTools;
         $(window).resize(function() {
 
+            
+
             var canvasheight;
             var canvaswidth;
             if (!toolsHidden && toolsLoaded) {
@@ -119,12 +121,7 @@ define({
 
             }
         });
-        $(window).resize();
-
-        window.setTimeout(function() {
-            $(window).resize();
-            if (toolsLoaded) hideSidePanel();
-        }, 500);
+        
         window.hideTools = function() {
             if (!toolsLoaded) return;
             toolsHidden = true;
