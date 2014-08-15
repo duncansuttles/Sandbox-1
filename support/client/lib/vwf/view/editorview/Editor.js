@@ -592,6 +592,10 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     _Notifier.alert('Avatars cannot be deleted');
                     continue;
                 }
+                if (SelectedVWFNodes[s].id = vwf.application()) {
+                    _Notifier.alert('The root scene cannot be deleted');
+                    continue;
+                }
                 if (SelectedVWFNodes[s]) {
 
                     _UndoManager.recordDelete(SelectedVWFNodes[s].id);

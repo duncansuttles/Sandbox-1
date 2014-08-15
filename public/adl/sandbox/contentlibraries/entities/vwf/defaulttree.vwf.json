@@ -77,7 +77,7 @@
             "type": "3DR Object"
           },
           "methods" : {
-          		"initialize": "debugger; vwf.getProperty(this.id,'transform');"
+          		"initialize": " vwf.getProperty(this.id,'transform');"
 
 
           	},

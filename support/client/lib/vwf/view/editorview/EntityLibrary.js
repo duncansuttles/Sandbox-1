@@ -96,7 +96,7 @@ define(function() {
                                 $("#asset" + ToSafeID(i1) + ToSafeID(j1)).on('dragend', function() {
 
                                     $(this).css('opacity', 1);
-
+                                     currentDrag = null;
                                 });
 
                             })(i, j)
@@ -107,9 +107,10 @@ define(function() {
                     //when dragging over the 3d view, update the preview positoin    
                     $("#index-vwf").live('dragover', function(evt) {
                         evt.preventDefault();
+                        if(!currentDrag) return;
                         if (currentDrag.type == 'asset') {
                             var pos = _Editor.GetInsertPoint(evt.originalEvent);
-                            console.log(pos);
+                            
                             EntityLibrary.dropPreview.position = new THREE.Vector3(pos[0], pos[1], pos[2]);
                             EntityLibrary.dropPreview.updateMatrixWorld();
                         }
@@ -138,6 +139,7 @@ define(function() {
                     //when dragging into the 3d view, create a preview sphere, then try to attach the preview model
                     $("#index-vwf").live('dragenter', function(evt) {
 
+                        if(!currentDrag) return;
                         var data = currentDrag;
                         if (currentDrag.type == 'asset') {
                             if (!EntityLibrary.dropPreview) {
@@ -173,17 +175,20 @@ define(function() {
                         if (EntityLibrary.dropPreview) {
                             _dScene.remove(EntityLibrary.dropPreview, true);
                             delete EntityLibrary.dropPreview;
+                            
                         }
                     })
                     //remove the preview and do the creation
                     $("#index-vwf").live('drop', function(evt) {
                         evt.preventDefault();
+                        if(!currentDrag) return;
                         data = JSON.parse(evt.originalEvent.dataTransfer.getData('json'));
-                        console.log(data);
+                        
                         if (EntityLibrary.dropPreview) {
                             _dScene.remove(EntityLibrary.dropPreview, true);
                             delete EntityLibrary.dropPreview;
                             EntityLibrary.create(data, evt);
+                           
                         }
                     })
 
