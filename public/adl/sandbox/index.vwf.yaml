@@ -341,7 +341,7 @@ scripts:
         $('#index-vwf').mouseup(function(e){this.localpointerUp(e);}.bind(this));
         $('#index-vwf').mouseleave(function(e)
         {
-            if($(e.toElement).hasClass('glyph'))
+            if($(e.toElement).hasClass('glyph') || $(e.toElement).hasClass('nametag') || $(e.toElement).hasClass('ignoreMouseLeave'))
             {
             
             }
@@ -701,11 +701,11 @@ scripts:
     {
         if(typeof(obj) == "string")
             obj = vwf_view.kernel.kernel.models[0].model.nodes[obj];
-        if(obj && obj.translation)
+        if(obj && obj.transformAPI.getPosition())
         {
-        this.center = obj.translation;
+        this.center = obj.transformAPI.getPosition();
         if(obj.followOffset != null)
-            this.center = MATH.addVec3(obj.translation,obj.followOffset);
+            this.center = MATH.addVec3(this.center,obj.followOffset);
         }
         
     }

@@ -393,22 +393,51 @@ phyObject.prototype.disable = function() {
         this.deinitialize();
     }
 }
-phyObject.prototype.getTransform = function() {
 
+var tempvec1 = [0,0,0];
+var tempvec2 = [0,0,0];
+var tempvec3 = [0,0,0];
+var tempquat1 = [0,0,0,0];
+var tempquat2 = [0,0,0,0];
+var tempquat3 = [0,0,0,0];
+var tempmat1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+var tempmat2 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+var tempmat3 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+
+function vecset(newv,old)
+{
+    for(var i=0; i < old.length; i++)
+        newv[i] = old[i];
+    return newv;
+}
+
+phyObject.prototype.getTransform = function(outmat) {
+
+    if(!outmat)
+        outmat = [];
     var transform = this.body.getWorldTransform();
     var o = transform.getOrigin();
     var rot = transform.getRotation();
-    var pos = [o.x(), o.y(), o.z()];
-    var quat = [rot.x(), rot.y(), rot.z(), rot.w()];
-    quat = Quaternion.normalize(quat, []);
-    var mat = goog.vec.Quaternion.toRotationMatrix4(quat, []);
-    var worldoffset = goog.vec.Mat4.multVec3(mat, this.localOffset, [])
+    var pos = tempvec1;
+    pos[0] = o.x();
+    pos[1] = o.y();
+    pos[2] = o.z();
+
+    var quat = tempquat1;
+    quat[0] = rot.x();
+    quat[1] = rot.y();
+    quat[2] = rot.z();
+    quat[3] = rot.w();
+    
+    quat = Quaternion.normalize(quat, tempquat2);
+    var mat = goog.vec.Quaternion.toRotationMatrix4(quat, tempmat1);
+    var worldoffset = goog.vec.Mat4.multVec3(mat, this.localOffset, tempmat2)
     mat[12] = pos[0] - worldoffset[0];
     mat[13] = pos[1] - worldoffset[1];
     mat[14] = pos[2] - worldoffset[2];
-    this.transform = mat;
-    return mat;
-
+    this.transform = vecset(this.transform, mat);
+    outmat = vecset(outmat, mat);
+    return outmat;
 }
 phyObject.prototype.setTransform = function(matrix) {
     this.transform = matrix
@@ -1015,15 +1044,18 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 //this is dictated by the input from the reflector
                 this.nodes[vwf.application()].world.stepSimulation(1 / 20, 0, this.nodes[vwf.application()].simulationSteps);
                 this.reEntry = true;
+                var tempmat = [];
                 for (var i in this.allNodes) {
                     var node = this.allNodes[i];
                     if (node.body && node.initialized === true && node.mass > 0 && node.getActivationState() != 2) {
 
-                        vwf.setProperty(node.id, 'transform', node.getTransform());
-                        vwf.setProperty(node.id, '___physics_activation_state', node.getActivationState());
-                        vwf.setProperty(node.id, '___physics_velocity_angular', node.getAngularVelocity());
-                        vwf.setProperty(node.id, '___physics_velocity_linear', node.getLinearVelocity());
-                        vwf.setProperty(node.id, '___physics_deactivation_time', node.getDeactivationTime());
+                        vwf.setProperty(node.id, 'transform', node.getTransform(tempmat));
+                        //so, we were setting these here in order to inform the kernel that the property changed. Can we not do this, and 
+                        //rely on the getter? that would be great....
+                    //    vwf.setProperty(node.id, '___physics_activation_state', node.getActivationState());
+                    //    vwf.setProperty(node.id, '___physics_velocity_angular', node.getAngularVelocity());
+                    //    vwf.setProperty(node.id, '___physics_velocity_linear', node.getLinearVelocity());
+                    //    vwf.setProperty(node.id, '___physics_deactivation_time', node.getDeactivationTime());
 
                     }
                 }
@@ -1068,16 +1100,8 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             }
         },
 
-        // -- settingProperties --------------------------------------------------------------------
-
-        settingProperties: function(nodeID, properties) {},
-
-        // -- gettingProperties --------------------------------------------------------------------
-
-        gettingProperties: function(nodeID, properties) {
-
-
-        },
+        
+        
 
         // -- creatingProperty ---------------------------------------------------------------------
 
@@ -1341,6 +1365,14 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             if (propertyName === '___physics_deactivation_time') {
                 return node.getDeactivationTime();
             }
+            if (propertyName === '___physics_velocity_linear') {
+                return node.getLinearVelocity();
+            }
+            if (propertyName === '___physics_velocity_angular') {
+                return node.getAngularVelocity();
+            }
+
+          
 
         },
     });

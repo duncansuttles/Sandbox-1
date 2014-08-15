@@ -353,7 +353,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             }
 
             //if the mouse is over any div that is not a selection glyph or the selection marquee, cancel all actions
-            if (!$(teste).hasClass('glyph') && teste !== this.selectionMarquee[0]) {
+            if ((!$(teste).hasClass('glyph') && !$(teste).hasClass('nametag') && !$(teste).hasClass('ignoreMouseout')) && teste !== this.selectionMarquee[0]) {
                 this.undoPoint = null;
                 this.MouseLeftDown = false;
                 this.mouseDownScreenPoint = null;
