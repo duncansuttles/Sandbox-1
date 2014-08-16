@@ -1,3 +1,10 @@
+Changes to the Git Repo
+=======================
+
+We've updated this repo! It is no longer a fork of VWF, but its own project. If you had a fork of this project, please rebase your work off this repository. Please note that in the past, this repo was named vwf.git, but more than a year ago was renamed to Sandbox.git. GitHub kept a 301 redirect in place to map vwf.git to Sandbox.git, but now that we have a new fork of vwf, that redirect might cause some drama. Please be sure to directly fork from Sandbox.git. 
+
+Sorry for the confusion. We need a new fork of VWF in order to better manage our integration efforts, and we cannot have two individual forks under the same account. As a full merge of Sandbox into VWF is probably not possible, it made sense to us to break the relationship and start again.
+
 ADL Sandbox
 ===========
 
