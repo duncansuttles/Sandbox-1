@@ -63,7 +63,7 @@ scripts:
 
         
         if(this.id == 'character-vwf') return;
-     
+      
          this.DownKeys= [];
         // this.motionStack= [];
          this.jumpcounter = 0;
@@ -121,16 +121,20 @@ scripts:
 
           }
 
+          //this is a bad idea. The character controller should make no assumptions about the 
+          //structure of the asset that is loaded.
           this.skin = findSkin(this.mesh);
-          if(this.skin.material.ambient)
+          if(this.skin)
           {
-             this.skin.material.ambient.r = 1;
-             this.skin.material.ambient.g = 1;
-             this.skin.material.ambient.b = 1;
-          }
 
-          
+            if(this.skin.material.ambient)
+            {
+               this.skin.material.ambient.r = 1;
+               this.skin.material.ambient.g = 1;
+               this.skin.material.ambient.b = 1;
+            }
           this.skin.isAvatar = true;
+          }
           this.jumpcounter = 0.0;
           //this.stand();
          
@@ -576,8 +580,11 @@ scripts:
             //for intersetions, and prevent penetration through objects
             if((MATH.lengthVec3(this.originalvelocity) > .001 || motionvec || this.jumpcounter > jumpstart || this.inMotion('turnleft') || this.inMotion('turnright')))
             {
-                this.skin.PickPriority = -1;
-                
+                //this is again, a bad idea. If we need to do this, pick priority should be part of the VWF infrastructure
+                if(this.skin)
+                {
+                  this.skin.PickPriority = -1;
+                }
                 
                 motionvec = motionvec ? motionvec : [0,0,0];
                 var testpos = MATH.subVec3(finalt,MATH.scaleVec3(motionvec,-.15));
@@ -669,7 +676,10 @@ scripts:
                 }
                 _DEALLOC(intersect);
               }
-                this.skin.PickPriority = 1;
+              if(this.skin)
+                {
+                  this.skin.PickPriority = 1;
+                }  
                  
             }
            
@@ -694,8 +704,10 @@ scripts:
              this.updatecounter = 0;
           }
           
-        
+        if(this.skin)
+                {
         this.skin.PickPriority = 1;
+      }
         this.tbak = finalt;
         
         this.transformAPI.setPosition(finalt);
