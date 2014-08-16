@@ -1952,11 +1952,15 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             return vwf.getProperty(id, this.transformPropertyName);
         }
         this.getTranslation = function(id) {
-            var mat = vwf.getProperty(id, "worldTransform");
+            var mat = vwf.getProperty(id, this.transformPropertyName);
             return [mat[12], mat[13], mat[14]];
         }
         this.getScale = function(id) {
-            return vwf.getProperty(id, this.scalePropertyName);
+            var transform = vwf.getProperty(id, this.transformPropertyName);
+              var sx = MATH.lengthVec3([transform[0], transform[4], transform[8]]);
+             var sy = MATH.lengthVec3([transform[1], transform[5], transform[9]]);
+            var sz = MATH.lengthVec3([transform[2], transform[6], transform[10]]);
+            return [sx,sy,sz];
         }
         this.setTransform = function(id, val) {
             this.waitingForSet.push(id);
