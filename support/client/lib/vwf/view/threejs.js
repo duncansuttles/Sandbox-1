@@ -109,7 +109,7 @@ define(["module", "vwf/view"], function(module, view) {
             return n;
         },
         matrixLerp: function(a, b, l, n) {
-            if (!n) n = [];
+            if (!n) n = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
 
             var x = [a[0], a[1], a[2]];
@@ -165,9 +165,9 @@ define(["module", "vwf/view"], function(module, view) {
             nqm[13] = n[13];
             nqm[14] = n[14];
 
-            n[12] = this.lerp(a[12], b[12], l);
-            n[13] = this.lerp(a[13], b[13], l);
-            n[14] = this.lerp(a[14], b[14], l);
+            nqm[12] = this.lerp(a[12], b[12], l);
+            nqm[13] = this.lerp(a[13], b[13], l);
+            nqm[14] = this.lerp(a[14], b[14], l);
 
             return nqm;
         },
@@ -235,8 +235,8 @@ define(["module", "vwf/view"], function(module, view) {
 
             if (this.gizmoThisTickTransform && this.gizmoLastTickTransform) {
                 this.currentGizmoTransform = _Editor.GetMoveGizmo().parent.matrix.clone();
-                var interp = this.matrixLerp(matCpy(this.gizmoLastTickTransform.elements), matCpy(this.gizmoThisTickTransform.elements), step);
-                _Editor.GetMoveGizmo().parent.matrix.fromArray(interp);
+                var interpG = this.matrixLerp(matCpy(this.gizmoLastTickTransform.elements), matCpy(this.gizmoThisTickTransform.elements), step);
+                _Editor.GetMoveGizmo().parent.matrix.fromArray(interpG);
                 _Editor.GetMoveGizmo().parent.updateMatrixWorld(true);
             }
 
