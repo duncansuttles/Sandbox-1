@@ -1988,17 +1988,8 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
             findListeners(Object.getPrototypeOf(node), eventName, true) : [];
 
         var nodeListeners = node.private.listeners && node.private.listeners[eventName] || [];
-        //make unique
-        nodeListeners = nodeListeners.filter(function(item) {
 
-            for (var i = 0; i < nodeListeners.length; i++) {
-                if (nodeListeners[i].context == item.context && nodeListeners[i].body == item.body && nodeListeners[i] != item)
-                    return false;
-            }
-            return true;
 
-        });
-        if (nodeListeners[0] && nodeListeners[1] && nodeListeners[0].body == nodeListeners[1].body) debugger;
         if (targetOnly) {
             return prototypeListeners.concat(nodeListeners.filter(function(listener) {
                 return listener.context == node || listener.context == node.private.origin; // in the prototypes, select jsDriverSelf-targeted listeners only
