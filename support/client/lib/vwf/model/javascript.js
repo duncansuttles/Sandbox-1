@@ -1050,7 +1050,7 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                 try {
                     //unwrap watchables
                     var ret = getter.call(node);
-                    if (ret.internal_val) return ret.internal_val;
+                    if (ret && ret.internal_val) return ret.internal_val;
                     return ret;
                 } catch (e) {
                     this.logger.warn("gettingProperty", nodeID, propertyName, propertyValue,
