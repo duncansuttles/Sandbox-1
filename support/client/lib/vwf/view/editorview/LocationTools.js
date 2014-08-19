@@ -72,7 +72,7 @@ define(function ()
 					}					
 					
 				$('#MenuCamera3RDPersonicon').click();		
-				_Editor.vwf_view.kernel(_UserManager.GetCurrentUserID(),'setPosition',[vals]);
+				vwf_view.kernel(_UserManager.GetCurrentUserID(),'setPosition',[vals]);
 				
 				
 				}
@@ -170,7 +170,8 @@ define(function ()
 				{
 					
 					var title = val;
-					var location = vwf.getProperty(_UserManager.GetCurrentUserID(),'translation');
+					var location = vwf.getProperty(_UserManager.GetCurrentUserID(),'transform');
+					location = [location[12],location[13],location[14]];
 					var placemarks = vwf.getProperty('index-vwf','placemarks');
 					placemarks[title] = location;
 					_Editor.setProperty('index-vwf','placemarks',placemarks);
@@ -187,7 +188,8 @@ define(function ()
 					return;
 				}
 			
-			var location = vwf.getProperty(_UserManager.GetCurrentUserID(),'translation');
+			var location = vwf.getProperty(_UserManager.GetCurrentUserID(),'transform');
+			location = [location[12],location[13],location[14]];
 			location[2] = 10000;
 			var hit=_SceneManager.CPUPick(location,[0,0,-1],{ignore:[_Editor.findviewnode(_UserManager.GetCurrentUserID()),_Editor.GetMoveGizmo(),_dSky]});
 			if(hit)
