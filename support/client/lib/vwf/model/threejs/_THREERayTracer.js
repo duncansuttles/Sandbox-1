@@ -77,32 +77,25 @@ THREE.CPUPickOptions = function() {
     this.filter = null;
 }
 // Return the nearsest, highest priority hit 
-THREE.Scene.prototype.CPUPick = function(origin, direction, options) {
+THREE.Scene.prototype.CPUPick = function(origin, direction, options, hitlist) {
     //not currently using the max dist, but could make for some good optimizations	
 
     if (!options) options = new THREE.CPUPickOptions();
 
 
     //concat all hits from children	  
-    var hitlist = [];
+    if(!hitlist)
+        hitlist = [];
     var count = 0;
     for (var i = 0; i < this.children.length; i++) {
         if (this.children[i].CPUPick) {
-            var hit = this.children[i].CPUPick(origin, direction, options);
-            if (hit) {
-                for (var j = 0; j < hit.length; j++)
-                    hitlist.push(hit[j]);
-            }
+            this.children[i].CPUPick(origin, direction, options,hitlist);
         }
     }
     if (options.UserRenderBatches && this.renderBatches) {
         for (var i = 0; i < this.renderBatches.length; i++) {
             if (this.renderBatches[i].renderObject) {
-                var hit = this.renderBatches[i].renderObject.CPUPick(origin, direction, options);
-                if (hit) {
-                    for (var j = 0; j < hit.length; j++)
-                        hitlist.push(hit[j]);
-                }
+                this.renderBatches[i].renderObject.CPUPick(origin, direction, options,hitlist);
             }
         }
     }
@@ -567,10 +560,11 @@ function SimpleFaceListRTAS(faces, verts) {
     }
 }
 //Intersect a ray with a list of faces
-SimpleFaceListRTAS.prototype.intersect = function(origin, direction, opts) {
-    var intersects = [];
-    intersects.length = 0;
-    intersects.length = 0;
+SimpleFaceListRTAS.prototype.intersect = function(origin, direction, opts, intersects) {
+    
+    if(!intersects)
+     intersects = [];
+  
     for (var i = 0; i < this.faces.length; i++) {
         var intersect = this.faces[i].intersect1(origin, direction, opts);
         if (intersect) {
@@ -993,10 +987,10 @@ OctreeRegion.prototype.getFaces = function(list) {
 
 }
 //Test a ray against an octree region
-OctreeRegion.prototype.intersect = function(o, d, opts) {
+OctreeRegion.prototype.intersect = function(o, d, opts, hits) {
 
-    var hits = [];
-    hits.length = 0;
+    if(!hits)
+        hits = [];
     //if no faces, can be no hits. 
     //remember, faces is all faces in this node AND its children
     if (this.faces.length == 0)
@@ -1022,19 +1016,14 @@ OctreeRegion.prototype.intersect = function(o, d, opts) {
     //check either this nodes faces, or the not distributed faces. for a leaf, this will just loop all faces,
     //for a non leaf, this will iterate over the faces that for some reason are not in children, which SHOULD be none
     for (var i = 0; i < facelist.length; i++) {
-
-
         var facehits = facelist[i].intersect1(o, d, opts);
         if (facehits) {
             hits.push(facehits);
             if (opts && opts.OneHitPerMesh) {
-
                 return hits;
             }
         }
     }
-
-
 
     if (opts) opts.objectRegionsTested++;
 
@@ -1045,19 +1034,7 @@ OctreeRegion.prototype.intersect = function(o, d, opts) {
             //reject this node if the ray does not intersect it's bounding box
             if (this.children[i].testBounds(o, d) == true) {
                 //console.log('region rejected');
-                var childhits = this.children[i].intersect(o, d, opts);
-                if (childhits) {
-                    for (var j = 0; j < childhits.length; j++) {
-                        hits.push(childhits[j]);
-                        if (opts && opts.OneHitPerMesh) {
-                            childhits[j] = null;
-
-                            return hits;
-                        }
-                    }
-                    childhits.length = 0;
-
-                }
+                this.children[i].intersect(o, d, opts,hits);
             } else if (opts)
                 opts.objectRegionsRejectedByBounds++;
         }
@@ -1269,9 +1246,9 @@ function OctreeRTAS(faces, verts, min, max) {
         this.root.addFace(this.faces[i]);
 }
 //just intersect with the root octant
-OctreeRTAS.prototype.intersect = function(o, d, opts) {
+OctreeRTAS.prototype.intersect = function(o, d, opts,hits) {
 
-    return this.root.intersect(o, d, opts);
+    return this.root.intersect(o, d, opts,hits);
 }
 OctreeRTAS.prototype.intersectFrustrum = function(frustrum, opts) {
     return this.root.intersectFrustrum(frustrum, opts);
@@ -1285,9 +1262,9 @@ OctreeRTAS.prototype.intersectSphere = function(center, r, opts) {
 function NullRTAS() {
 
 }
-NullRTAS.prototype.intersect = function(o, d, opts) {
+NullRTAS.prototype.intersect = function(o, d, opts,hits) {
 
-    return [];
+    return hits;
 }
 NullRTAS.prototype.intersectFrustrum = function(frustrum, opts) {
     return [];
@@ -1379,22 +1356,24 @@ THREE.Geometry.prototype.setPickGeometry = function(PickGeometry) {
     this.PickGeometry = PickGeometry;
 }
 //Do the actuall intersection with the mesh;
-THREE.Geometry.prototype.CPUPick = function(origin, direction, options, collisionType, meshparent) {
+THREE.Geometry.prototype.CPUPick = function(origin, direction, options, collisionType, meshparent, hits) {
 
+    if(!hits)
+        hits = [];
     //sseems like it's possible that nan can creep into the three.matrix, reject this whole mesh in that case.
     if (isNaN(origin[0]) || isNaN(direction[0]))
-        return [];
+        return hits;
 
     if (!collisionType)
         collisionType = 'mesh';
 
     if (this.InvisibleToCPUPick)
-        return [];
+        return hits;
 
     //allow a picking mesh that differs from the visible mesh
     if (this.PickGeometry) {
 
-        return this.PickGeometry.CPUPick(origin, direction, options, collisionType, meshparent);
+        return this.PickGeometry.CPUPick(origin, direction, options, collisionType, meshparent, hits);
     }
 
     //if for some reason dont have good bounds, generate	 
@@ -1423,6 +1402,7 @@ THREE.Geometry.prototype.CPUPick = function(origin, direction, options, collisio
 
                     this.BuildRayTraceAccelerationStructure();
 
+                    //use this to display the internal geometry octree
                     if (false && this.RayTraceAccelerationStructure.root) {
 
                         var leafBounds = this.RayTraceAccelerationStructure.root.getLeaves();
@@ -1453,7 +1433,7 @@ THREE.Geometry.prototype.CPUPick = function(origin, direction, options, collisio
                     }
                 }
 
-                intersections = this.RayTraceAccelerationStructure.intersect(origin, direction, options);
+                this.RayTraceAccelerationStructure.intersect(origin, direction, options, hits);
                 //do actual mesh intersection
                 if (options) {
                     options.objectTests++;
@@ -1475,7 +1455,7 @@ THREE.Geometry.prototype.CPUPick = function(origin, direction, options, collisio
         }
     }
     this.dirtyMesh = false;
-    return intersections;
+    return hits;
 
 
 }
@@ -1699,7 +1679,7 @@ THREE.Object3D.prototype.ignoreTest = function(ignore) {
 
 //no need to test bounding box here. Can only contain one mesh, and the mesh will check its own
 //boudning box.
-THREE.Object3D.prototype.CPUPick = function(origin, direction, options) {
+THREE.Object3D.prototype.CPUPick = function(origin, direction, options,ret) {
 
 
     if (options && options.filter && this) {
@@ -1724,19 +1704,14 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options) {
 
     }
 
-    var ret = [];
-    ret.length = 0;
+    if(!ret)
+      ret = [];
+    
     //iterate the children and concat all hits
     //note - still in world space here
     for (var i = 0; i < this.children.length; i++) {
         if (this.children[i].CPUPick) {
-            var hit = this.children[i].CPUPick(origin, direction, options);
-            if (hit) {
-                for (var j = 0; j < hit.length; j++)
-                    ret.push(hit[j]);
-                hit.length = 0;
-
-            }
+            this.children[i].CPUPick(origin, direction, options,ret);
         }
     }
 
@@ -1773,31 +1748,30 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options) {
 
         if (this instanceof THREE.Mesh && !(this instanceof THREE.SkinnedMesh)) {
             //collide with the mesh
-            var ret2 = this.geometry.CPUPick(newo, newd, options, null, this);
+            var prevLen = ret.length;
+            this.geometry.CPUPick(newo, newd, options, null, this,ret);
 
-            for (var i = 0; i < ret2.length; i++) {
+            for (var i = prevLen; i < ret.length; i++) {
 
                 //move the normal and hit point into worldspace
 
 
-                var tmp = MATH.mulMat4Vec3(mat2, ret2[i].point, [0, 0, 0]);
+                var tmp = MATH.mulMat4Vec3(mat2, ret[i].point, [0, 0, 0]);
 
-                ret2[i].point = tmp;
+                ret[i].point = tmp;
 
-                tmp = MATH.mulMat4Vec3(mat3, ret2[i].norm, [0, 0, 0]);
+                tmp = MATH.mulMat4Vec3(mat3, ret[i].norm, [0, 0, 0]);
 
-                ret2[i].norm = tmp;
+                ret[i].norm = tmp;
 
-                tmp = Vec3.normalize(ret2[i].norm, [0, 0, 0]);
+                tmp = Vec3.normalize(ret[i].norm, [0, 0, 0]);
 
-                ret2[i].norm = tmp;
-                ret2[i].distance = MATH.distanceVec3(origin, ret2[i].point);
-                ret2[i].object = this;
-                ret2[i].priority = this.PickPriority !== undefined ? this.PickPriority : 1;
+                ret[i].norm = tmp;
+                ret[i].distance = MATH.distanceVec3(origin, ret[i].point);
+                ret[i].object = this;
+                ret[i].priority = this.PickPriority !== undefined ? this.PickPriority : 1;
             }
-            for (var i = 0; i < ret2.length; i++)
-                ret.push(ret2[i]);
-            ret2.length = 0;
+           
 
         }
         if (this instanceof THREE.Line) {

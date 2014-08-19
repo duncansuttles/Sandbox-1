@@ -179,16 +179,12 @@ SceneManager.prototype.CPUPick = function(o, d, opts) {
     if (opts) opts.objectRegionsRejectedByBounds = 0;
     if (opts) opts.objectRegionsTested = 0;
     if (opts) opts.objectsTested = [];
-    var hitlist = this.root.CPUPick(o, d, opts);
+
+    var hitlist = [];
+    this.root.CPUPick(o, d, opts, hitlist);
 
     for (var i = 0; i < this.specialCaseObjects.length; i++) {
-        var childhits = this.specialCaseObjects[i].CPUPick(o, d, opts || this.defaultPickOptions);
-        if (childhits) {
-            for (var j = 0; j < childhits.length; j++)
-                hitlist.push(childhits[j]);
-        }
-
-
+       this.specialCaseObjects[i].CPUPick(o, d, opts || this.defaultPickOptions,hitlist);
     }
 
     //sort the hits by priority and distance
@@ -1137,9 +1133,10 @@ SceneManagerRegion.prototype.contains = function(o) {
 }
 
 //Test a ray against an octree region
-SceneManagerRegion.prototype.CPUPick = function(o, d, opts) {
+SceneManagerRegion.prototype.CPUPick = function(o, d, opts, hits) {
 
-    var hits = [];
+    if(!hits)
+       hits = [];
     //if no faces, can be no hits. 
     //remember, faces is all faces in this node AND its children
     if (this.getChildCount().length == 0)
@@ -1154,7 +1151,7 @@ SceneManagerRegion.prototype.CPUPick = function(o, d, opts) {
     //use the render batch. Note that this will not give a VWFID, only good when you don't care what you hit
     if (this.RenderBatchManager && opts && opts.useRenderBatches) {
         opts.batchesTested++;
-        return this.RenderBatchManager.CPUPick(o, d, opts);
+        return this.RenderBatchManager.CPUPick(o, d, opts,hits);
     }
 
     //the the opts specify a max dist
@@ -1172,25 +1169,10 @@ SceneManagerRegion.prototype.CPUPick = function(o, d, opts) {
     //check either this nodes faces, or the not distributed faces. for a leaf, this will just loop all faces,
     //for a non leaf, this will iterate over the faces that for some reason are not in children, which SHOULD be none
     for (var i = 0; i < this.childRegions.length; i++) {
-        var childhits = this.childRegions[i].CPUPick(o, d, opts);
-        if (childhits) {
-            for (var j = 0; j < childhits.length; j++)
-                hits.push(childhits[j]);
-
-
-        }
-
+        this.childRegions[i].CPUPick(o, d, opts,hits);
     }
     for (var i = 0; i < this.childObjects.length; i++) {
-
-
-        var childhits = this.childObjects[i].CPUPick(o, d, opts);
-        if (childhits) {
-            for (var j = 0; j < childhits.length; j++)
-                hits.push(childhits[j]);
-
-        }
-
+        this.childObjects[i].CPUPick(o, d, opts, hits);
     }
     return hits;
 
@@ -1337,10 +1319,12 @@ THREE.RenderBatch.prototype.deinitialize = function() {
     if (this.mesh)
         this.scene.remove_internal(this.mesh);
 }
-THREE.RenderBatch.prototype.CPUPick = function(o, d, opts) {
+THREE.RenderBatch.prototype.CPUPick = function(o, d, opts,hits) {
+    if(!hits)
+        hits = [];
     if (this.mesh)
-        return this.mesh.CPUPick(o, d, opts);
-    return [];
+        return this.mesh.CPUPick(o, d, opts,hits);
+    return hits;
 }
 THREE.RenderBatch.prototype.testForMirroredMatrix = function(matrix) {
 
@@ -1681,10 +1665,11 @@ THREE.RenderBatchManager = function(scene, name) {
     this.batches = [];
 
 }
-THREE.RenderBatchManager.prototype.CPUPick = function(o, d, opts) {
-    var hits = [];
+THREE.RenderBatchManager.prototype.CPUPick = function(o, d, opts,hits) {
+    if(!hits)
+        hits = [];
     for (var i = 0; i < this.batches.length; i++)
-        hits = hits.concat(this.batches[i].CPUPick(o, d, opts));
+        this.batches[i].CPUPick(o, d, opts,hits);
     return hits;
 
 }
