@@ -257,7 +257,15 @@ define([], function() {
 
             //does this object have it's own body, or is it just a compound collision?
             var hasOwnBody = vwf.parent(_Editor.GetSelectedVWFID()) == vwf.application();
-            var lastTab = $("#physicsaccordion").accordion('option', 'active');
+            var lastTab = 0;
+            
+            //depending on ordering, this might not work
+            try{
+                lastTab = $("#physicsaccordion").accordion('option', 'active');
+            }catch(e)
+            {
+
+            }
             $("#PhysicsEditor").empty();
             $("#PhysicsEditor").append("<div id='PhysicsEditortitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span class='ui-dialog-title' id='ui-dialog-title-Players'>Physics Editor</span></div>");
             $('#PhysicsEditortitle').append('<a href="#" id="PhysicsEditorclose" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
