@@ -40,4 +40,4 @@ properties:
     - 0
 methods:
   initialize: ""
-  tick: " if(!this.owner) return; var axis = MATH.toUnitVec3(this.axis);\n\n    \n         \n    this.counter += this.radialspeed;\n     var q = MATH.quatFromAxisAngle(axis,this.counter);\n     var mat = MATH.mat4FromQuat(q);\n     var offset = MATH.mulMat4Vec3(mat,[this.radius ,0,0]);\n     this.parent.translation = MATH.addVec3(this.center ,offset);"
+  tick: " if(!this.owner) return; var axis = MATH.toUnitVec3(this.axis);\n\n    \n         \n    this.counter += this.radialspeed;\n     var q = MATH.quatFromAxisAngle(axis,this.counter);\n     var mat = MATH.mat4FromQuat(q);\n     var offset = MATH.mulMat4Vec3(mat,[this.radius ,0,0]);\n     this.parent.transformAPI.setPosition(MATH.addVec3(this.center ,offset));"
