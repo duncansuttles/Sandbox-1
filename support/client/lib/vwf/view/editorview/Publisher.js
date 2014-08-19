@@ -227,6 +227,7 @@ define([], function() {
 
                 }, walkCallback);
             }
+
             //walk, and when done, delete anything that was created
             walk(s, function() {
 
@@ -251,12 +252,13 @@ define([], function() {
                 walk2(currentState);
 
                 vwf.models.kernel.enable();
+
                 vwf.callMethod(vwf.application(), 'postWorldRestore');
                 vwf.private.queue.resume();
 
             });
 
-
+         //_PhysicsDriver.resetWorld();
 
         }
         this.restoreState = function() {
