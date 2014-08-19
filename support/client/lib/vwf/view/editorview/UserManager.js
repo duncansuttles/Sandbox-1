@@ -275,6 +275,24 @@ define(function() {
                     ___physics_factor_angular: [0, 0, 0],
                     ___physics_enabled: true,
                     ___physics_mass: 100,
+                     transform: [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1
+                    ],
                 },
                 events: {
                     ShowProfile: null,
@@ -455,7 +473,9 @@ define(function() {
             this.PlayerProto.properties.owner = userID;
             this.PlayerProto.properties.ownerClientID = vwf.moniker();
             this.PlayerProto.properties.profile = profile;
-            this.PlayerProto.properties.translation = newintersectxy;
+            this.PlayerProto.properties.transform[12] = newintersectxy[0];
+            this.PlayerProto.properties.transform[13] = newintersectxy[1];
+            this.PlayerProto.properties.transform[14] = newintersectxy[2];
             this.PlayerProto.properties.scale = [profile.avatarHeight || 1.0, profile.avatarHeight || 1.0, profile.avatarHeight || 1.0];
 
             vwf.models.javascript.nodes['index-vwf'].orbitPoint(newintersectxy);
