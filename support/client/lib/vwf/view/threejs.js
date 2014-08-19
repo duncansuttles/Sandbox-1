@@ -1022,9 +1022,9 @@ define(["module", "vwf/view"], function(module, view) {
             } else if (self.renderMode === STEREORENDER) {
                 var width = $('#index-vwf').attr('width');
                 var height = $('#index-vwf').attr('height');
-                var ww2 = width / 2;
+                var ww2 = width / (2*_dRenderer.devicePixelRatio);
                 var h = ww2 / 1.333;
-                var hdif = (height - h) / 2;
+                var hdif = (height - h) / (2*_dRenderer.devicePixelRatio*_dRenderer.devicePixelRatio*_dRenderer.devicePixelRatio);
                 var centerh = hdif;
 
                 oldaspect = cam.aspect;

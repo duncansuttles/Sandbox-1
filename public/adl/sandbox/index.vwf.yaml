@@ -370,13 +370,13 @@ scripts:
        
        var grassTex = THREE.ImageUtils.loadTexture('textures/gridnew.png');
        
-      
+     
        ground.material.map = grassTex;
         grassTex.wrapS = THREE.RepeatWrapping;
         grassTex.wrapT = THREE.RepeatWrapping;
         grassTex.repeat.x = 64;
         grassTex.repeat.y = 64;
-       grassTex.anisotropy  = _dRenderer.getMaxAnisotropy();
+       grassTex.anisotropy  = 0;
        this.groundplane = ground;
        
        

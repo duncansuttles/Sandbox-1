@@ -351,9 +351,20 @@ SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
         //once that data is available
         var temptexture = new THREE.Texture(this.getDefaultTexture().image, mapping);
         temptexture.format = this.getDefaultTexture().format;
+
+
+        if (_SettingsManager.settings.filtering) {
+            temptexture.minFilter = THREE.LinearMipMapLinearFilter;
+            temptexture.magFilter = THREE.LinearFilter;
+        } else {
+            temptexture.minFilter = THREE.NearestFilter;
+            temptexture.magFilter = THREE.NearestFilter;
+        }
+
+
         temptexture.minFilter = THREE.LinearMipMapLinearFilter;
         temptexture.magFilter = THREE.LinearFilter;
-
+        temptexture.anisotropy = 1;
         temptexture.sourceFile = url;
 
         //a variable to hold the loaded texture
@@ -366,19 +377,18 @@ SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
             //image is in closure scope. Copy all relevant data
             temptexture.image = texture.image;
 
-            temptexture.anisotropy = texture.anisotropy;
 
 
             temptexture._needsUpdate = texture._needsUpdate;
-            temptexture.anisotropy = texture.anisotropy;
+
             temptexture.flipY = texture.flipY;
             temptexture.format = texture.format;
             temptexture.generateMipmaps = texture.generateMipmaps;
 
             temptexture.image = texture.image;
-            temptexture.magFilter = texture.magFilter;
+            //temptexture.magFilter = texture.magFilter;
             temptexture.mapping = texture.mapping;
-            temptexture.minFilter = texture.minFilter;
+            //temptexture.minFilter = texture.minFilter;
             temptexture.mipmaps = texture.mipmaps;
 
 
@@ -406,8 +416,13 @@ SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
 
         //create the new texture, and decompress. Copy over with the onload callback above
         texture = THREE.ImageUtils.loadCompressedTexture(url, mapping, load, error);
-        texture.minFilter = THREE.LinearMipMapLinearFilter;
-        texture.magFilter = THREE.LinearFilter;
+        if (_SettingsManager.settings.filtering) {
+            texture.minFilter = THREE.LinearMipMapLinearFilter;
+            texture.magFilter = THREE.LinearFilter;
+        } else {
+            texture.minFilter = THREE.NearestFilter;
+            texture.magFilter = THREE.NearestFilter;
+        }
         texture.generateMipmaps = false;
 
         if (window._dRenderer)
@@ -424,8 +439,14 @@ SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
 
         var texture = new THREE.Texture(this.getDefaultTexture().image, mapping);
         texture.format = this.getDefaultTexture().format;
-        texture.minFilter = THREE.LinearMipMapLinearFilter;
-        texture.magFilter = THREE.LinearFilter;
+
+        if (_SettingsManager.settings.filtering) {
+            texture.minFilter = THREE.LinearMipMapLinearFilter;
+            texture.magFilter = THREE.LinearFilter;
+        } else {
+            texture.minFilter = THREE.NearestFilter;
+            texture.magFilter = THREE.NearestFilter;
+        }
 
         if (window._dRenderer)
             texture.anisotropy = 1; //_dRenderer.getMaxAnisotropy();
