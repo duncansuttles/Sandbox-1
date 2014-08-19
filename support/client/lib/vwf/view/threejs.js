@@ -12,16 +12,14 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
-function matset(newv,old)
-{
-    if(!old)
-    {
+function matset(newv, old) {
+    if (!old) {
         newv = old;
         return;
     }
-    if(!newv)
-        newv =[];
-    for(var i =0; i < old.length; i++)
+    if (!newv)
+        newv = [];
+    for (var i = 0; i < old.length; i++)
         newv[i] = old[i];
     return newv;
 }
@@ -110,11 +108,9 @@ define(["module", "vwf/view"], function(module, view) {
             n[10] = z[2];
             return n;
         },
-        matrixLerp: function(a, b, l,n) {
-            if(!n) n = a.slice(0);
-            n[12] = this.lerp(a[12], b[12], l);
-            n[13] = this.lerp(a[13], b[13], l);
-            n[14] = this.lerp(a[14], b[14], l);
+        matrixLerp: function(a, b, l, n) {
+            if (!n) n = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
 
             var x = [a[0], a[1], a[2]];
             var xl = Vec3.magnitude(x);
@@ -169,6 +165,10 @@ define(["module", "vwf/view"], function(module, view) {
             nqm[13] = n[13];
             nqm[14] = n[14];
 
+            nqm[12] = this.lerp(a[12], b[12], l);
+            nqm[13] = this.lerp(a[13], b[13], l);
+            nqm[14] = this.lerp(a[14], b[14], l);
+
             return nqm;
         },
 
@@ -203,9 +203,9 @@ define(["module", "vwf/view"], function(module, view) {
                     if (this.nodes[i].isStatic) continue;
 
                     if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
-                        this.nodes[i].lastTickTransform = matset(this.nodes[i].lastTickTransform,this.nodes[i].thisTickTransform);
-                        this.nodes[i].thisTickTransform = matset(this.nodes[i].thisTickTransform,this.state.nodes[i].gettingProperty('transform'));
-                       
+                        this.nodes[i].lastTickTransform = matset(this.nodes[i].lastTickTransform, this.nodes[i].thisTickTransform);
+                        this.nodes[i].thisTickTransform = matset(this.nodes[i].thisTickTransform, this.state.nodes[i].gettingProperty('transform'));
+
 
                         this.nodes[i].lastAnimationFrame = this.nodes[i].thisAnimationFrame;
                         this.nodes[i].thisAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
@@ -235,8 +235,8 @@ define(["module", "vwf/view"], function(module, view) {
 
             if (this.gizmoThisTickTransform && this.gizmoLastTickTransform) {
                 this.currentGizmoTransform = _Editor.GetMoveGizmo().parent.matrix.clone();
-                var interp = this.matrixLerp(matCpy(this.gizmoLastTickTransform.elements), matCpy(this.gizmoThisTickTransform.elements), step);
-                _Editor.GetMoveGizmo().parent.matrix.fromArray(interp);
+                var interpG = this.matrixLerp(matCpy(this.gizmoLastTickTransform.elements), matCpy(this.gizmoThisTickTransform.elements), step);
+                _Editor.GetMoveGizmo().parent.matrix.fromArray(interpG);
                 _Editor.GetMoveGizmo().parent.updateMatrixWorld(true);
             }
 
@@ -252,10 +252,10 @@ define(["module", "vwf/view"], function(module, view) {
                 var now = this.nodes[i].thisTickTransform;
                 if (last && now) {
 
-                    interp = matset(interp,last);
-                    interp = this.matrixLerp(last, now, step,interp);
+                    interp = matset(interp, last);
+                    interp = this.matrixLerp(last, now, step, interp);
 
-                    this.nodes[i].currentTickTransform = matset(this.nodes[i].currentTickTransform,this.state.nodes[i].gettingProperty('transform'));
+                    this.nodes[i].currentTickTransform = matset(this.nodes[i].currentTickTransform, this.state.nodes[i].gettingProperty('transform'));
                     if (this.state.nodes[i].setTransformInternal)
                         this.state.nodes[i].setTransformInternal(interp, false);
 
@@ -267,16 +267,16 @@ define(["module", "vwf/view"], function(module, view) {
                 now = this.nodes[i].thisAnimationFrame;
                 if (last && now && Math.abs(now - last) < 3) {
 
-                    var interp = 0;
+                    var interpA = 0;
 
 
-                    interp = this.lerp(last, now, step);
+                    interpA = this.lerp(last, now, step);
 
 
 
                     this.nodes[i].currentAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
                     if (this.state.nodes[i].setAnimationFrameInternal)
-                        this.state.nodes[i].setAnimationFrameInternal(interp, false);
+                        this.state.nodes[i].setAnimationFrameInternal(interpA, false);
 
 
                 }

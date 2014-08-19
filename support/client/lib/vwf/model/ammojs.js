@@ -397,26 +397,25 @@ phyObject.prototype.disable = function() {
     }
 }
 
-var tempvec1 = [0,0,0];
-var tempvec2 = [0,0,0];
-var tempvec3 = [0,0,0];
-var tempquat1 = [0,0,0,0];
-var tempquat2 = [0,0,0,0];
-var tempquat3 = [0,0,0,0];
-var tempmat1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-var tempmat2 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-var tempmat3 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+var tempvec1 = [0, 0, 0];
+var tempvec2 = [0, 0, 0];
+var tempvec3 = [0, 0, 0];
+var tempquat1 = [0, 0, 0, 0];
+var tempquat2 = [0, 0, 0, 0];
+var tempquat3 = [0, 0, 0, 0];
+var tempmat1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+var tempmat2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+var tempmat3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-function vecset(newv,old)
-{
-    for(var i=0; i < old.length; i++)
+function vecset(newv, old) {
+    for (var i = 0; i < old.length; i++)
         newv[i] = old[i];
     return newv;
 }
 
 phyObject.prototype.getTransform = function(outmat) {
 
-    if(!outmat)
+    if (!outmat)
         outmat = [];
     var transform = this.body.getWorldTransform();
     var o = transform.getOrigin();
@@ -431,7 +430,7 @@ phyObject.prototype.getTransform = function(outmat) {
     quat[1] = rot.y();
     quat[2] = rot.z();
     quat[3] = rot.w();
-    
+
     quat = Quaternion.normalize(quat, tempquat2);
     var mat = goog.vec.Quaternion.toRotationMatrix4(quat, tempmat1);
     var worldoffset = goog.vec.Mat4.multVec3(mat, this.localOffset, tempmat2)
@@ -973,8 +972,8 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 this.allNodes[nodeID].children[childID] = new phyPlane(childID, this.allNodes[vwf.application()].world);
             }
 
-            
-            if (nodeID && (hasPrototype(childID, 'asset-vwf')||hasPrototype(childID, 'sandboxGroup-vwf'))) {
+
+            if (nodeID && (hasPrototype(childID, 'asset-vwf') || hasPrototype(childID, 'sandboxGroup-vwf'))) {
                 this.allNodes[nodeID].children[childID] = new phyAsset(childID, this.allNodes[vwf.application()].world);
             }
             //child was created
@@ -1057,10 +1056,10 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                         vwf.setProperty(node.id, 'transform', node.getTransform(tempmat));
                         //so, we were setting these here in order to inform the kernel that the property changed. Can we not do this, and 
                         //rely on the getter? that would be great....
-                    //    vwf.setProperty(node.id, '___physics_activation_state', node.getActivationState());
-                    //    vwf.setProperty(node.id, '___physics_velocity_angular', node.getAngularVelocity());
-                    //    vwf.setProperty(node.id, '___physics_velocity_linear', node.getLinearVelocity());
-                    //    vwf.setProperty(node.id, '___physics_deactivation_time', node.getDeactivationTime());
+                        //    vwf.setProperty(node.id, '___physics_activation_state', node.getActivationState());
+                        //    vwf.setProperty(node.id, '___physics_velocity_angular', node.getAngularVelocity());
+                        //    vwf.setProperty(node.id, '___physics_velocity_linear', node.getLinearVelocity());
+                        //    vwf.setProperty(node.id, '___physics_deactivation_time', node.getDeactivationTime());
 
                     }
                 }
@@ -1105,8 +1104,8 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             }
         },
 
-        
-        
+
+
 
         // -- creatingProperty ---------------------------------------------------------------------
 
@@ -1131,7 +1130,13 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 }
             }
             world.removeRigidBody(this.allNodes[vwf.application()].ground);
+            for (var i in this.allNodes) {
+                var node = this.allNodes[i];
+                if (this.allNodes[i].deinitialize)
+                    this.allNodes[i].deinitialize()
+            }
             delete this.allNodes[vwf.application()].world;
+
 
             Ammo.destroy(world);
 
@@ -1146,12 +1151,27 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             this.allNodes[vwf.application()].world = dynamicsWorld;
             world = dynamicsWorld;
 
+
+            var groundShape = new Ammo.btBoxShape(new Ammo.btVector3(500, 500, .1));
+            var groundTransform = new Ammo.btTransform();
+            groundTransform.setIdentity();
+            groundTransform.setOrigin(new Ammo.btVector3(0, 0, 0));
+            var mass = 0;
+            var isDynamic = mass !== 0;
+            var localInertia = new Ammo.btVector3(0, 0, 0);
+            var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
+            var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
+            var body = new Ammo.btRigidBody(rbInfo);
+
+            this.allNodes[vwf.application()].ground = body;
+            world.addRigidBody(this.allNodes[vwf.application()].ground);
             //we need to see if adding the node back to the world is enough, or if we really have to kill and rebuild
             //research seems to indicate that you could just recreate the world but not all the bodies
             //but that did not work here, it needs to delay to next tick.
             for (var i in this.allNodes) {
                 var node = this.allNodes[i];
                 if (node.world) {
+
                     node.world = world;
                     node.initialized = false;
                     node.ready = false;
@@ -1168,7 +1188,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
 
             //this.reinit();
 
-            world.addRigidBody(this.allNodes[vwf.application()].ground);
+
 
 
         },
@@ -1377,7 +1397,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 return node.getAngularVelocity();
             }
 
-          
+
 
         },
     });
