@@ -927,13 +927,18 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
 
                             var currentval = jsDriverSelf.kernel.getProperty(this.id, propertyName);
                             if (!currentval) return currentval;
-                            if (JSON.stringify(currentval) != JSON.stringify(jsDriverSelf.__WatchableCache[this.id + "-" + propertyName].internal_val)) {
-                                //it really seems like we should be reusing the objects in the cache, but it causes god awful problems that I 
-                                //cannot make any sense of. 
-                                // return jsDriverSelf.createWatchable(currentval, propertyName, this.id, undefined, this.id + "-" + propertyName)
-                                jsDriverSelf.updateWatchableCache(this.id, propertyName, currentval)
+                            //it's possible to fail to compate on circular json
+                            try {
+                                if (JSON.stringify(currentval) != JSON.stringify(jsDriverSelf.__WatchableCache[this.id + "-" + propertyName].internal_val)) {
+                                    //it really seems like we should be reusing the objects in the cache, but it causes god awful problems that I 
+                                    //cannot make any sense of. 
+                                    // return jsDriverSelf.createWatchable(currentval, propertyName, this.id, undefined, this.id + "-" + propertyName)
+                                    jsDriverSelf.updateWatchableCache(this.id, propertyName, currentval)
+                                }
+                                return jsDriverSelf.__WatchableCache[this.id + "-" + propertyName];
+                            } catch (e) {
+                                return jsDriverSelf.createWatchable(jsDriverSelf.kernel.getProperty(this.id, propertyName), propertyName, this.id, undefined, this.id + "-" + propertyName)
                             }
-                            return jsDriverSelf.__WatchableCache[this.id + "-" + propertyName];
                         } else
                             return jsDriverSelf.createWatchable(jsDriverSelf.kernel.getProperty(this.id, propertyName), propertyName, this.id, undefined, this.id + "-" + propertyName)
 
