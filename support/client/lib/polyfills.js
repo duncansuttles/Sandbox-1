@@ -10,6 +10,12 @@ var fills = {
         this.escapeHTMLStrings();
         this.setImmediate();
 
+        window.ToSafeID = function(value)
+        {
+            return value.replace(/[^A-Za-z0-9]/g, "");
+        }
+
+
     },
     //try to generate crytographicly secure random numbers
     secureCryptoPRGN: function() {
