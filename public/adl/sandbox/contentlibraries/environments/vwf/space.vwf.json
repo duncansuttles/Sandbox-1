@@ -17,7 +17,7 @@
 		"skyApexColor": [0, 0, 0],
 		"skyHorizonColor": [0.058823529411764705, 0.058823529411764705, 0.058823529411764705],
 		"vAtmosphereDensity": 0.0005,
-
+		"sunShadowDarkness": 1,
 		"skyTexture": "night2",
 
 

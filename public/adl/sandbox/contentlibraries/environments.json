@@ -13,5 +13,10 @@
 		"url":"./contentlibraries/environments/vwf/space.vwf.json",
 		"preview":"./contentlibraries/environments/thumbs/space.png",
 		"type":"environment"
+	},
+	"Night":{
+		"url":"./contentlibraries/environments/vwf/night.vwf.json",
+		"preview":"./contentlibraries/environments/thumbs/night.png",
+		"type":"environment"
 	}
 }

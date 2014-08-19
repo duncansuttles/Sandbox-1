@@ -47,7 +47,11 @@ properties:
     set: |
             if(!this.sun) return;
             this.sun.intensity = value;   
-            this.sun.shadowDarkness = value;           
+  shadowDarkness:
+    value: .5
+    set: |
+            if(!this.sun) return;
+            this.sun.shadowDarkness = value;    
   ambientColor: 
     value: [.35, .35 , .35]
   fogColor: [1, 1, 1]
@@ -191,6 +195,13 @@ properties:
       property: sunDirection
       type: vector
       step: .05
+    sunShadowDarkness:
+      displayname: Sun Shadow Density
+      property: shadowDarkness
+      type: slider
+      step: .05
+      min: 0
+      max: 2  
     sky:
       displayname: 'Sky'
       type: 'sectionTitle'  
@@ -407,7 +418,8 @@ scripts:
        this.sun.position.normalize();
        this.sun.position.multiplyScalar(100);
        this.sun.intensity = this.sunIntensity;
-       this.sun.shadowBias = -.005
+       this.sun.shadowBias = -.005;
+       this.sun.shadowDarkness = this.shadowDarkness;
        window._dGround = this.groundplane;
        this.groundplane.name = 'GroundPlane';
        //this.groundplane.visible = false;
