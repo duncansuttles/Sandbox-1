@@ -1,5 +1,5 @@
 {
-	"properties": {
+    "properties": {
         "sunColor": [
             0.8588235294117647,
             0.8941176470588236,
@@ -42,14 +42,13 @@
         ],
         "___physics_gravity": [
             0,
-            0,
-            -9.8
+            0, -9.8
         ],
         "___physics_accuracy": 10,
         "___physics_active": true,
         "vAtmosphereDensity": 0.0005,
         "skyTexture": "night2",
         "skyAtmosphereDensity": 5,
-        "sunShadowDarkness": 0.65
+        "shadowDarkness": 1
     }
 }

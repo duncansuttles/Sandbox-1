@@ -1382,7 +1382,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
                             }
                             if (wasScaled && tempscale[0] > 0 && tempscale[1] > 0 && tempscale[2] > 0) {
-                                
+
                                 var relScale = MATH.subVec3(tempscale, lastscale[s]);
                                 var transform = this.getTransformCallback(SelectedVWFNodes[s].id);
 
@@ -1952,15 +1952,15 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             return vwf.getProperty(id, this.transformPropertyName);
         }
         this.getTranslation = function(id) {
-            var mat = vwf.getProperty(id, this.transformPropertyName);
+            var mat = vwf.getProperty(id, 'worldTransform');
             return [mat[12], mat[13], mat[14]];
         }
         this.getScale = function(id) {
             var transform = vwf.getProperty(id, this.transformPropertyName);
-              var sx = MATH.lengthVec3([transform[0], transform[4], transform[8]]);
-             var sy = MATH.lengthVec3([transform[1], transform[5], transform[9]]);
+            var sx = MATH.lengthVec3([transform[0], transform[4], transform[8]]);
+            var sy = MATH.lengthVec3([transform[1], transform[5], transform[9]]);
             var sz = MATH.lengthVec3([transform[2], transform[6], transform[10]]);
-            return [sx,sy,sz];
+            return [sx, sy, sz];
         }
         this.setTransform = function(id, val) {
             this.waitingForSet.push(id);
@@ -3388,7 +3388,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 e.stopPropagation();
                 return false;
             });
-            
+
             this.selectionMarquee.hide();
             $('#ContextMenu').hide();
         }
