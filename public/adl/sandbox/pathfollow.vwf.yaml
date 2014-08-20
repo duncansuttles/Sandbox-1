@@ -71,7 +71,7 @@ methods:
             percent = percent - Math.floor(percent);
         var point = vwf.callMethod(this.Path, 'pathPercent', [percent]);
         var point2 = vwf.callMethod(this.Path, 'pathPercent', [percent+.001]);
-        this.parent.translation = point;
+        this.parent.transformAPI.setPosition(point);
         if(this.follow)
         this.parent.transformAPI.lookat(point2,'',this.lookatVec,this.lookatUp);
     }

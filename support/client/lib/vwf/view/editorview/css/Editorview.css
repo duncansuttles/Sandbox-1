@@ -396,6 +396,38 @@ border-radius: 6px;
 		font-size: 1.2em;
 		text-shadow: 1px 1px 3px #AAA;
 	}
+	.nametagname {
+border-left: 2px ridge #66F;
+height: 100%;
+border-right: 2px ridge #66F;
+padding-left: 10px;
+padding-right: 10px;
+cursor: pointer;
+	}
+	.nametag {
+/* pointer-events: none; */
+font-weight: bold;
+position: fixed;
+left: 612.7792636991876px;
+top: 350.056008871367px;
+color: white;
+text-shadow: 1px 1px 2px black;
+
+padding: 0px 18px 0px 18px;
+box-sizing: border-box;
+border-radius: 13px;
+
+font-size: 1.5em;
+font-family: sans-serif;
+opacity: .8;
+transition: background 1s, opacity 1s;
+}
+.nametag:hover
+{
+	opacity: 1;
+	background: rgb(130, 184, 255);
+	box-shadow: 3px 3px 3px rgba(52,52,52,.9) , -3px -3px 3px #77C inset;
+}
 	.glyph
 	{
 		position:absolute;

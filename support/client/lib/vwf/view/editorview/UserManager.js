@@ -130,6 +130,7 @@ define(function() {
                     }.bind(this),
                     error: function(xhr, status, err) {
 
+
                         hideTools();
                         //$('#NotifierAlertMessage').dialog('open');
                         //$('#NotifierAlertMessage').html('You are viewing this world as a guest. Please <a style="color:blue" href="'+_DataManager.getCurrentApplication() + "/login?return=" + _DataManager.getCurrentSession().substr(13)+'">sign in</a> to participate');
@@ -265,7 +266,33 @@ define(function() {
                     receiveShadows: true,
                     activeCycle: [],
                     standingOnID: null,
-                    standingOnOffset: null
+                    standingOnOffset: null,
+                    ___physics_activation_state: 4,
+                    ___physics_deactivation_time: 0,
+                    ___physics_velocity_linear: [0, 0, 0],
+                    ___physics_velocity_angular: [0, 0, 0],
+                    ___physics_factor_linear: [0, 0, 0],
+                    ___physics_factor_angular: [0, 0, 0],
+                    ___physics_enabled: true,
+                    ___physics_mass: 100,
+                     transform: [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1
+                    ],
                 },
                 events: {
                     ShowProfile: null,
@@ -273,9 +300,59 @@ define(function() {
                 },
                 scripts: ["this.ShowProfile = function(){if(vwf.client() != vwf.moniker()) return; _UserManager.showProfile(_DataManager.GetProfileForUser(this.PlayerNumber))     }; \n" +
                     "this.Message = function(){if(vwf.client() != vwf.moniker()) return; setupPmWindow(this.PlayerNumber)     }"
-                ]
+                ],
+                children: {
+
+                }
             };
 
+            var collision = {
+                "extends": "box2.vwf",
+                "source": "vwf/model/threejs/box.js",
+                "type": "subDriver/threejs",
+                "properties": {
+                    "___physics_activation_state": 1,
+                    "___physics_deactivation_time": 0,
+                    "___physics_velocity_linear": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "___physics_velocity_angular": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "DisplayName": "CharacterCollision",
+                    "_length": 0.8,
+                    "height": 1.54,
+                    "isSelectable": false,
+                    "owner": userID,
+                    "transform": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0.8009999394416809,
+                        1
+                    ],
+                    "type": "Primitive",
+                    "width": 0.62,
+                    "visible": false,
+                    "___physics_enabled": true
+                }
+            }
+            this.PlayerProto.children[GUID()] = collision;
             //this.PlayerProto.source = 'usmale.dae'; //profile['Avatar'];
 
             if (!profile) profile = {};
@@ -396,7 +473,9 @@ define(function() {
             this.PlayerProto.properties.owner = userID;
             this.PlayerProto.properties.ownerClientID = vwf.moniker();
             this.PlayerProto.properties.profile = profile;
-            this.PlayerProto.properties.translation = newintersectxy;
+            this.PlayerProto.properties.transform[12] = newintersectxy[0];
+            this.PlayerProto.properties.transform[13] = newintersectxy[1];
+            this.PlayerProto.properties.transform[14] = newintersectxy[2];
             this.PlayerProto.properties.scale = [profile.avatarHeight || 1.0, profile.avatarHeight || 1.0, profile.avatarHeight || 1.0];
 
             vwf.models.javascript.nodes['index-vwf'].orbitPoint(newintersectxy);

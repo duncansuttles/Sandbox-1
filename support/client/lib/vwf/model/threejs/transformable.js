@@ -1,4 +1,5 @@
 (function() {
+    var matComploose = window.matComploose;
     function transformable(childID, childSource, childName) {
         this.overrideTransform = false;
         this.DisableTransform = function() {
@@ -20,6 +21,7 @@
                 threeObject = this.getRoot();
             var transform = propertyValue || goog.vec.Mat4.createIdentity();
 
+            //hummm, this is slow for sort of an edge case. I wonder if there is not a better place to do this...
             var det = goog.vec.Mat4.determinant(transform);
             if (det == 0) {
                 console.log('error setting matrix. determinant is 0');

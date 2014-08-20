@@ -276,6 +276,17 @@ define({
 
 
         });
+
+
+
+        $('#MenuPhysicsEditor').click(function(e) {
+
+            if (_PhysicsEditor.isOpen())
+                _PhysicsEditor.hide();
+            else
+                _PhysicsEditor.show();
+        });
+
         $('#MenuObjectProperties').click(function(e) {
 
             if (_PrimitiveEditor.isOpen())
@@ -517,13 +528,13 @@ define({
             }
         });
 
-		$('#MenuViewToggleBones').click(function(e) {
-			if(_SceneManager.getBonesVisible())
-				_SceneManager.hideBones();
-			else
-				_SceneManager.showBones();
-        	
-		})
+        $('#MenuViewToggleBones').click(function(e) {
+            if (_SceneManager.getBonesVisible())
+                _SceneManager.hideBones();
+            else
+                _SceneManager.showBones();
+
+        })
 
         $('#MenuViewToggleAO').click(function(e) {
             if (_Editor.findscene().getFilter2d()) {

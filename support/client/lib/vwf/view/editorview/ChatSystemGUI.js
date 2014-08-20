@@ -44,11 +44,7 @@ define(
 			vwf_view.kernel.callMethod('index-vwf', 'PM', parms);
 		}
 
-		function ToSafeID(value)
-		{
-			return value.replace(/[^A-Za-z0-9]/g, "");
-		}
-
+		
 		function setupPmWindow(e)
 		{
 			if(!e)

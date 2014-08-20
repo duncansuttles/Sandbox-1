@@ -31,7 +31,7 @@
 		<form id='form'>
 			<fieldset>	
 			<legend style="padding-bottom:5px;"></legend>
-			<div> <a id='worldLoad' href='{{root}}/{{id}}'> <img style="background: white;width:100%;width: 100%;border-radius: 5px;box-shadow: 3px 3px 3px #444;" src="./vwfdatamanager.svc/thumbnail?SID={{id}}" onerror = "this.src = '/adl/sandbox/img/thumbnotfound.png';center(); " onload='center()'><img> </div>
+			<div> <a id='worldLoad' href='{{root}}/{{worldid}}'> <img style="background: white;width:100%;width: 100%;border-radius: 5px;box-shadow: 3px 3px 3px #444;" src="./vwfdatamanager.svc/thumbnail?SID={{worldid}}" onerror = "this.src = '/adl/sandbox/img/thumbnotfound.png';center(); " onload='center()'><img> </div>
 			</a>
 			{{#totalusers}}
 			<div style='font-size: .75em;color: lightgray;'> {{#users.length}}{{#users}}{{.}}, {{/users}} {{#translate}}and{{/translate}} {{/users.length}} {{anonymous.length}} {{#translate}}anonymous users are in this world{{/translate}}.</div>
@@ -48,17 +48,17 @@
 			
 		</form>
 		{{#owner}}
-		<a href='{{root}}/publish?id={{id}}' class='' style=""  value="" >{{#translate}}Settings{{/translate}}</a><span style="margin-left:2em" />
-		<a href='{{root}}/edit?id={{id}}' class='' style=""  value="" >{{#translate}}Change Title{{/translate}}</a><span style="margin-left:2em" />
-		<a href='{{root}}/restore?id={{id}}' class='' style=""  value="" >{{#translate}}Restore Backup{{/translate}}</a><span style="margin-left:2em" />
-		<a href='{{root}}/remove?id={{id}}' class='' style=""  value="" >{{#translate}}Delete{{/translate}}</a><span style="margin-left:2em" />
+		<a href='{{root}}/publish?id={{worldid}}' class='' style=""  value="" >{{#translate}}Settings{{/translate}}</a><span style="margin-left:2em" />
+		<a href='{{root}}/edit?id={{worldid}}' class='' style=""  value="" >{{#translate}}Change Title{{/translate}}</a><span style="margin-left:2em" />
+		<a href='{{root}}/restore?id={{worldid}}' class='' style=""  value="" >{{#translate}}Restore Backup{{/translate}}</a><span style="margin-left:2em" />
+		<a href='{{root}}/remove?id={{worldid}}' class='' style=""  value="" >{{#translate}}Delete{{/translate}}</a><span style="margin-left:2em" />
 		<br/>
 		<br/>
 		{{/owner}}
-		<a href='{{root}}/{{id}}' class='' style=""  value="" >{{#translate}}Launch{{/translate}}</a><span style="margin-left:2em" />
-		<a href='{{root}}/history?id={{id}}' style=""  value="" >{{#translate}}View History{{/translate}}</a><span style="margin-left:2em" />
+		<a href='{{root}}/{{worldid}}' class='' style=""  value="" >{{#translate}}Launch{{/translate}}</a><span style="margin-left:2em" />
+		<a href='{{root}}/history?id={{worldid}}' style=""  value="" >{{#translate}}View History{{/translate}}</a><span style="margin-left:2em" />
 
-		{{#sessionData}}<a href='{{root}}/createNew2/{{id}}' class='' style=""  value="" >{{#translate}}Duplicate{{/translate}}</a><span style="margin-left:2em" />{{/sessionData}}
+		{{#sessionData}}<a href='{{root}}/createNew2/{{worldid}}' class='' style=""  value="" >{{#translate}}Duplicate{{/translate}}</a><span style="margin-left:2em" />{{/sessionData}}
 		
 	</div>
 </div>

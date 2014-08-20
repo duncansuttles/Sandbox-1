@@ -10,6 +10,12 @@ var fills = {
         this.escapeHTMLStrings();
         this.setImmediate();
 
+        window.ToSafeID = function(value)
+        {
+            return value.replace(/[^A-Za-z0-9]/g, "");
+        }
+
+
     },
     //try to generate crytographicly secure random numbers
     secureCryptoPRGN: function() {
@@ -20,7 +26,7 @@ var fills = {
             else if (window.msCrypto)
                 window.msCrypto.getRandomValues(buf);
             else
-                buf[0] = Math.SecureRandom() * 4294967296;
+                buf[0] = Math.random() * 4294967296;
             return (buf[0]) / 4294967296;
         }
 

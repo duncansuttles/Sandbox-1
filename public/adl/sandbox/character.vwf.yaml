@@ -22,6 +22,14 @@ properties:
   activeCycle: []
   standingOnID: 
   standingOnOffset: 
+  ___physics_activation_state: 4
+  ___physics_deactivation_time: 0
+  ___physics_velocity_linear: [ 0, 0, 0 ]
+  ___physics_velocity_angular: [ 0, 0, 0 ]
+  ___physics_factor_linear: [ 0, 0, 0 ]
+  ___physics_factor_angular: [ 0, 0, 0 ]
+  ___physics_enabled: true
+  ___physics_mass: 158.5
 methods:
   update:
   tick:
@@ -55,7 +63,7 @@ scripts:
 
         
         if(this.id == 'character-vwf') return;
-     
+      
          this.DownKeys= [];
         // this.motionStack= [];
          this.jumpcounter = 0;
@@ -113,16 +121,20 @@ scripts:
 
           }
 
+          //this is a bad idea. The character controller should make no assumptions about the 
+          //structure of the asset that is loaded.
           this.skin = findSkin(this.mesh);
-          if(this.skin.material.ambient)
+          if(this.skin)
           {
-             this.skin.material.ambient.r = 1;
-             this.skin.material.ambient.g = 1;
-             this.skin.material.ambient.b = 1;
-          }
 
-          
+            if(this.skin.material.ambient)
+            {
+               this.skin.material.ambient.r = 1;
+               this.skin.material.ambient.g = 1;
+               this.skin.material.ambient.b = 1;
+            }
           this.skin.isAvatar = true;
+          }
           this.jumpcounter = 0.0;
           //this.stand();
          
@@ -172,16 +184,18 @@ scripts:
     }
     this.createNameTag = function(PlayerNumber)
     {
-    
-      var newdiv = document.createElement('div');
-      $(newdiv).attr('style',"pointer-events:none;text-transform: uppercase; font-weight: bold; position: fixed; left: 612.7792636991876px; top: 350.056008871367px; color: white; text-shadow: black 0.1em 0.1em 0.4em; ");
-      newdiv.style.position = 'fixed';
-      newdiv.id = "Player " + PlayerNumber + 'label';
-      newdiv.innerHTML = "" + PlayerNumber;
+      
+      $(document.body).append('<div class="nametag" id="'+"Player_" + ToSafeID(PlayerNumber) + 'label'+'"><div class="nametagname ignoreMouseLeave">'+PlayerNumber+'</div></div>')
+      var newdiv = $("#Player_" + ToSafeID(PlayerNumber) + 'label')[0];
+      var self = this;
+      $("#Player_" + PlayerNumber + 'label').click(function(){
+        setupPmWindow(self.PlayerNumber);
+      })
+      
       newdiv.style.left = '0px';
       //newdiv.style.top = '0px';
       
-      $(document.body).append(newdiv);
+    
       newdiv._offsetWidth = newdiv.offsetWidth;
       $(newdiv).disableSelection();
       this.nametag = newdiv;
@@ -206,7 +220,7 @@ scripts:
     
       
       var div = this.nametag;
-      var pos = this.translation;
+      var pos = this.transformAPI.getPosition();;
       if(!pos) return;
       pos = [pos[0],pos[1],pos[2]+1.75,1];
          
@@ -227,7 +241,7 @@ scripts:
       screen[1] = wh - screen[1];
 
       div.style.top = (screen[1]  +   $("#index-vwf").offset().top) + 'px' ;
-      div.style.left = (screen[0] - div._offsetWidth/2)  +'px';
+      div.style.left = (parseInt($('#index-vwf').css('left')) || 0) + (screen[0] - div._offsetWidth/2)  +'px';
      
       
       if((screen[0] < 0 || screen[0] > ww || screen[1] < 0 || screen[1] > wh))
@@ -481,7 +495,7 @@ scripts:
         }
         
         
-        var backupt = [this.translation[0],this.translation[1],this.translation[2]];
+        var backupt = this.transformAPI.getPosition();
         var finalt = backupt.slice(0);
         var originalpos = backupt.slice(0);
         var originalpos2 = backupt.slice(0);
@@ -566,8 +580,11 @@ scripts:
             //for intersetions, and prevent penetration through objects
             if((MATH.lengthVec3(this.originalvelocity) > .001 || motionvec || this.jumpcounter > jumpstart || this.inMotion('turnleft') || this.inMotion('turnright')))
             {
-                this.skin.PickPriority = -1;
-                
+                //this is again, a bad idea. If we need to do this, pick priority should be part of the VWF infrastructure
+                if(this.skin)
+                {
+                  this.skin.PickPriority = -1;
+                }
                 
                 motionvec = motionvec ? motionvec : [0,0,0];
                 var testpos = MATH.subVec3(finalt,MATH.scaleVec3(motionvec,-.15));
@@ -659,7 +676,10 @@ scripts:
                 }
                 _DEALLOC(intersect);
               }
-                this.skin.PickPriority = 1;
+              if(this.skin)
+                {
+                  this.skin.PickPriority = 1;
+                }  
                  
             }
            
@@ -684,11 +704,13 @@ scripts:
              this.updatecounter = 0;
           }
           
-        
+        if(this.skin)
+                {
         this.skin.PickPriority = 1;
+      }
         this.tbak = finalt;
-        this.translation = finalt;
-      
+        
+        this.transformAPI.setPosition(finalt);
       
           
          var turn = (this.oldRotZ||0)-this.rotZ;
@@ -697,7 +719,7 @@ scripts:
             this.transformAPI.rotate(0,0,((this.oldRotZ||0)-this.rotZ)*-57.2957795,this.transformAPI.COORDINATES.PARENT);
            this.oldRotZ = this.rotZ;
 
-        this.updateStandingOn(this.translation.internal_val);
+        this.updateStandingOn(this.transformAPI.getPosition());
 
          for(var i = 0; i < this.updateCallbacks.length; i++)
         {
@@ -915,7 +937,7 @@ scripts:
         this.resetCycle(this.cycles.jump);
         this.removeCycle('jump');
         this.addCycle('jump');
-        this.jumpstart = this.translation[2];
+        this.jumpstart = this.transformAPI.getPosition()[2];
        
     }   
     this.runningjump = function()

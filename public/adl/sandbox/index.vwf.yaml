@@ -16,6 +16,7 @@ extends: http://vwf.example.com/navscene.vwf
 properties:
   clients: 
   DisplayName:
+  simTime: 0
   placemarks:
     Origin: [0, 0, 0]
   navmode: none     
@@ -46,7 +47,11 @@ properties:
     set: |
             if(!this.sun) return;
             this.sun.intensity = value;   
-            this.sun.shadowDarkness = value;           
+  shadowDarkness:
+    value: .5
+    set: |
+            if(!this.sun) return;
+            this.sun.shadowDarkness = value;    
   ambientColor: 
     value: [.35, .35 , .35]
   fogColor: [1, 1, 1]
@@ -60,6 +65,9 @@ properties:
   skyFogBlend: 0  
   skyApexColor: [ 0 , .5 , 1.0 ]
   skyHorizonColor: [ 0 , .5 , 1.0 ]
+  ___physics_gravity: [ 0, 0, -9.8]
+  ___physics_accuracy: 10
+  ___physics_active: true
   vAtmosphereDensity: .0005
   playMode: "paused"
   octreeObjects: 5
@@ -187,6 +195,13 @@ properties:
       property: sunDirection
       type: vector
       step: .05
+    sunShadowDarkness:
+      displayname: Sun Shadow Density
+      property: shadowDarkness
+      type: slider
+      step: .05
+      min: 0
+      max: 2  
     sky:
       displayname: 'Sky'
       type: 'sectionTitle'  
@@ -301,6 +316,7 @@ methods:
   cameraBroadcastEnd:
   playSound:
   setMusic:
+  ___physics_world_reset:
   getGrade:
 scripts:
 - |
@@ -348,7 +364,7 @@ scripts:
         $('#index-vwf').mouseup(function(e){this.localpointerUp(e);}.bind(this));
         $('#index-vwf').mouseleave(function(e)
         {
-            if($(e.toElement).hasClass('glyph'))
+            if($(e.toElement).hasClass('glyph') || $(e.toElement).hasClass('nametag') || $(e.toElement).hasClass('ignoreMouseLeave'))
             {
             
             }
@@ -377,13 +393,13 @@ scripts:
        
        var grassTex = THREE.ImageUtils.loadTexture('textures/gridnew.png');
        
-      
+     
        ground.material.map = grassTex;
         grassTex.wrapS = THREE.RepeatWrapping;
         grassTex.wrapT = THREE.RepeatWrapping;
         grassTex.repeat.x = 64;
         grassTex.repeat.y = 64;
-       grassTex.anisotropy  = _dRenderer.getMaxAnisotropy();
+       grassTex.anisotropy  = 0;
        this.groundplane = ground;
        
        
@@ -414,7 +430,8 @@ scripts:
        this.sun.position.normalize();
        this.sun.position.multiplyScalar(100);
        this.sun.intensity = this.sunIntensity;
-       this.sun.shadowBias = -.005
+       this.sun.shadowBias = -.005;
+       this.sun.shadowDarkness = this.shadowDarkness;
        window._dGround = this.groundplane;
        this.groundplane.name = 'GroundPlane';
        //this.groundplane.visible = false;
@@ -454,7 +471,7 @@ scripts:
         }
         if(this.receivingCameraBroadcast && this.cameramode != 'None')
             this.receivingCameraBroadcast = false;
-        
+        this.simTime = this.simTime +1;
     }
     this.broadcastCameraPosition = function(transform)
     {
@@ -564,7 +581,6 @@ scripts:
     	}
     	if(!this.clients[id])
     		this.clients.defineProperty(id,{cid:id,name:name,UID:UID});
-    	
     }
     // a client other than this one has left
     this.clientDisconnected = function(id,name,UID)
@@ -709,11 +725,11 @@ scripts:
     {
         if(typeof(obj) == "string")
             obj = vwf_view.kernel.kernel.models[0].model.nodes[obj];
-        if(obj && obj.translation)
+        if(obj && obj.transformAPI.getPosition())
         {
-        this.center = obj.translation;
+        this.center = obj.transformAPI.getPosition();
         if(obj.followOffset != null)
-            this.center = MATH.addVec3(obj.translation,obj.followOffset);
+            this.center = MATH.addVec3(this.center,obj.followOffset);
         }
         
     }

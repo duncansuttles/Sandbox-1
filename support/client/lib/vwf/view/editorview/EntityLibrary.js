@@ -75,7 +75,7 @@ define(function() {
                         //for every asset in every library, setup the gui
                         for (var j in libs[i].library) {
                             $('#library' + ToSafeID(i)).append('<div  class = "libraryAsset">' +
-                                '<img id = "asset' + ToSafeID(i) + ToSafeID(j) + '" src="' + libs[i].library[j].preview + '"></img>' +
+                                '<img id = "asset' + ToSafeID(i) + ToSafeID(j) + '" src="' + libs[i].library[j].preview + '" draggable=true></img>' +
                                 '<div>' + j + '</div>' +
                                 '</div>'
                             );
@@ -96,7 +96,7 @@ define(function() {
                                 $("#asset" + ToSafeID(i1) + ToSafeID(j1)).on('dragend', function() {
 
                                     $(this).css('opacity', 1);
-
+                                     currentDrag = null;
                                 });
 
                             })(i, j)
@@ -107,30 +107,30 @@ define(function() {
                     //when dragging over the 3d view, update the preview positoin    
                     $("#index-vwf").live('dragover', function(evt) {
                         evt.preventDefault();
+                        if(!currentDrag) return;
                         if (currentDrag.type == 'asset') {
                             var pos = _Editor.GetInsertPoint(evt.originalEvent);
-                            console.log(pos);
+                            
                             EntityLibrary.dropPreview.position = new THREE.Vector3(pos[0], pos[1], pos[2]);
                             EntityLibrary.dropPreview.updateMatrixWorld();
                         }
                         if (currentDrag.type == 'material' || currentDrag.type == 'child') {
-                            if (vwf.views[0].lastPick && vwf.views[0].lastPickId)
-                                if (vwf.views[0].lastPick.object) {
+                            var ID = EntityLibrary.GetPick(evt);
+                            if (ID) {
 
-                                    var bound = vwf.views[0].lastPick.object.GetBoundingBox(true);
-                                    bound = bound.transformBy(toGMat(vwf.views[0].lastPick.object.matrixWorld));
-                                    var x = ((bound.max[0] - bound.min[0]) / 2) + bound.min[0];
-                                    var y = ((bound.max[1] - bound.min[1]) / 2) + bound.min[1];
-                                    var z = ((bound.max[2] - bound.min[2]) / 2) + bound.min[2];
+                                var bound = _Editor.findviewnode(ID).GetBoundingBox(true);
+                                bound = bound.transformBy(toGMat(_Editor.findviewnode(ID).matrixWorld));
+                                var x = ((bound.max[0] - bound.min[0]) / 2) + bound.min[0];
+                                var y = ((bound.max[1] - bound.min[1]) / 2) + bound.min[1];
+                                var z = ((bound.max[2] - bound.min[2]) / 2) + bound.min[2];
 
-                                    var ss = MATH.distanceVec3(bound.max, bound.min) / 1.9;
-                                    EntityLibrary.dropPreview.position.set(x, y, z);
-                                    EntityLibrary.dropPreview.scale.set(ss, ss, ss);
-                                    EntityLibrary.dropPreview.updateMatrixWorld();
-                                }
+                                var ss = MATH.distanceVec3(bound.max, bound.min) / 1.9;
+                                EntityLibrary.dropPreview.position.set(x, y, z);
+                                EntityLibrary.dropPreview.scale.set(ss, ss, ss);
+                                EntityLibrary.dropPreview.updateMatrixWorld();
+                            }
                         }
-                        if (currentDrag.type == 'environment')
-                        {
+                        if (currentDrag.type == 'environment') {
                             EntityLibrary.dropPreview.position.set(0, 0, 0);
                             EntityLibrary.dropPreview.scale.set(10, 10, 10);
                             EntityLibrary.dropPreview.updateMatrixWorld();
@@ -139,6 +139,7 @@ define(function() {
                     //when dragging into the 3d view, create a preview sphere, then try to attach the preview model
                     $("#index-vwf").live('dragenter', function(evt) {
 
+                        if(!currentDrag) return;
                         var data = currentDrag;
                         if (currentDrag.type == 'asset') {
                             if (!EntityLibrary.dropPreview) {
@@ -174,17 +175,20 @@ define(function() {
                         if (EntityLibrary.dropPreview) {
                             _dScene.remove(EntityLibrary.dropPreview, true);
                             delete EntityLibrary.dropPreview;
+                            
                         }
                     })
                     //remove the preview and do the creation
                     $("#index-vwf").live('drop', function(evt) {
                         evt.preventDefault();
+                        if(!currentDrag) return;
                         data = JSON.parse(evt.originalEvent.dataTransfer.getData('json'));
-                        console.log(data);
+                        
                         if (EntityLibrary.dropPreview) {
                             _dScene.remove(EntityLibrary.dropPreview, true);
                             delete EntityLibrary.dropPreview;
                             EntityLibrary.create(data, evt);
+                           
                         }
                     })
 
@@ -200,10 +204,25 @@ define(function() {
             })
         }
         this.setup();
+        this.GetPick = function(evt) {
+            var ray = _Editor.GetWorldPickRay(evt.originalEvent);
+            var o = _Editor.getCameraPosition();
+            var hit = _SceneManager.CPUPick(o, ray, {
+                ignore: [_Editor.GetMoveGizmo()]
+            });
+            if (hit) {
+                var object = hit.object;
+                while (!object.vwfID && object.parent)
+                    object = object.parent;
+                return object.vwfID;
+            }
+            return null;
+        }
         this.isOpen = function() {
             return isOpen;
         }
         this.show = function() {
+
 
             $('#EntityLibrary').animate({
                 'left': 0
@@ -228,6 +247,7 @@ define(function() {
             isOpen = true;
         }
         this.hide = function() {
+
 
             $('#EntityLibrary').animate({
                 'left': -$('#EntityLibrary').width()
@@ -272,29 +292,30 @@ define(function() {
             }
             if (data.type == 'child') {
 
-                
-                if (vwf.views[0].lastPick && vwf.views[0].lastPickId) {
-                    var ID = vwf.views[0].lastPickId; {
-                        $.getJSON(data.url, function(proto) {
-                            //very important to clean the node! Might have accidently left a name or id in the libarary
-                            proto = _DataManager.getCleanNodePrototype(proto);
-                            if (!proto.properties)
-                                proto.properties = {};
-                            proto.properties.owner = _UserManager.GetCurrentUserName()
-                            if (!proto.properties.transform)
-                                proto.properties.transform = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-                            var newname = GUID();
-                            _Editor.createChild(ID, newname, proto);
-                            _Editor.SelectOnNextCreate([newname]);
 
-                        })
-                    }
+
+                var ID = EntityLibrary.GetPick(evt);
+                if (ID) {
+                    $.getJSON(data.url, function(proto) {
+                        //very important to clean the node! Might have accidently left a name or id in the libarary
+                        proto = _DataManager.getCleanNodePrototype(proto);
+                        if (!proto.properties)
+                            proto.properties = {};
+                        proto.properties.owner = _UserManager.GetCurrentUserName()
+                        if (!proto.properties.transform)
+                            proto.properties.transform = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+                        var newname = GUID();
+                        _Editor.createChild(ID, newname, proto);
+                        _Editor.SelectOnNextCreate([newname]);
+
+                    })
                 }
+
             }
             if (data.type == 'material') {
 
-                if (vwf.views[0].lastPick && vwf.views[0].lastPickId) {
-                    var ID = vwf.views[0].lastPickId;
+                var ID = EntityLibrary.GetPick(evt);
+                if (ID) {
                     $.getJSON(data.url, function(proto) {
                         _PrimitiveEditor.setProperty(ID, 'materialDef', proto);
                     })
@@ -302,14 +323,14 @@ define(function() {
 
             }
             if (data.type == 'environment') {
-                    $.getJSON(data.url, function(proto) {
-                        _UndoManager.startCompoundEvent();
-                        for(var i in proto.properties)
-                            _PrimitiveEditor.setProperty(vwf.application(), i, proto.properties[i]);
-                        for(var i in proto.children)
-                            _Editor.createChild(vwf.application(), GUID(), proto.children[i]);
-                        _UndoManager.stopCompoundEvent();
-                    })
+                $.getJSON(data.url, function(proto) {
+                    _UndoManager.startCompoundEvent();
+                    for (var i in proto.properties)
+                        _PrimitiveEditor.setProperty(vwf.application(), i, proto.properties[i]);
+                    for (var i in proto.children)
+                        _Editor.createChild(vwf.application(), GUID(), proto.children[i]);
+                    _UndoManager.stopCompoundEvent();
+                })
             }
         }
         this.createPreviewMaterial = function() {

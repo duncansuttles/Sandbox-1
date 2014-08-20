@@ -567,6 +567,20 @@ function ClientConnected(socket, namespace, instancedata) {
             "parameters": ["Server requested state. Sending..."],
             "time": thisInstance.getStateTime
         })));
+        //here, we must reset all the physics worlds, right before who ever firstclient is responds to getState. 
+        //important that nothing is between
+        
+       
+
+        var resetMessage = JSON.stringify({
+            "action": "callMethod",
+            "parameters": ["___physics_world_reset", []],
+            node: "index-vwf",
+            "time": thisInstance.time
+        });
+
+        thisInstance.messageClients(resetMessage);
+
         firstclient.emit('message', messageCompress.pack(JSON.stringify({
             "action": "getState",
             "respond": true,
@@ -596,7 +610,7 @@ function ClientConnected(socket, namespace, instancedata) {
                                 loadClients.push(testClient);
                         }
                     }
-                    var loadClient = loadClients[Math.floor((Math.max(0, Math.random() - .001)) * loadClients.length)];
+                    var loadClient = loadClients[Math.floor((Math.max(0, require('./cryptoRandom.js').random() - .001)) * loadClients.length)];
                     if (loadClient) {
                         this.count++;
                         if (this.count < 5) {
