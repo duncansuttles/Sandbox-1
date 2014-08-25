@@ -1236,6 +1236,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
 
             var node = this.allNodes[nodeID];
             if (methodName === '___physics_addForce') {
+                
                 node.addForce(args[0]);
             }
             if (methodName === '___physics_addTorque') {
