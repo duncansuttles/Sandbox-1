@@ -1,0 +1,35 @@
+{
+    "id": "SandboxParticleSystem-vwf-27ddee90-db62-9b20-46c9-dbcfd0a354fd",
+    "extends": "SandboxParticleSystem.vwf",
+    "sequence": 0,
+    "random": {
+        "s0": 0.521776992594823,
+        "s1": 0.385681840591133,
+        "s2": 0.304175828117877,
+        "c": 1
+    },
+    "properties": {
+        "DisplayName": "ParticleSystem7",
+        "emitterSize": [38, 28, 0],
+        "emitterType": "box",
+        "endColor": [0.988235294117647, 0.988235294117647, 0.988235294117647, 1],
+        "image": "./vwfdatamanager.svc/datafile/models/village/grass.png",
+        "owner": "Rob",
+        "quaternion": {
+            "_x": 0,
+            "_y": 0,
+            "_z": 0,
+            "_w": 1
+        },
+        "rotation": {
+            "_x": 0,
+            "_y": 0,
+            "_z": 0,
+            "_order": "XYZ"
+        },
+        "textureTiles": 2,
+        "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 15.357013702392578, 0.8524728417396545, 1.4320557117462158, 1],
+        "translation": [15.3570137023926, 0.852472841739655, 1.43205571174622],
+        "type": "ParticleSystem"
+    }
+}
