@@ -1,0 +1,63 @@
+{
+    "shininess": 1.75,
+    "alpha": 1,
+    "ambient":
+    {
+        "r": 1,
+        "g": 1,
+        "b": 1
+    },
+    "color":
+    {
+        "r": 1,
+        "g": 1,
+        "b": 1,
+        "a": 1
+    },
+    "emit":
+    {
+        "r": 0,
+        "g": 0,
+        "b": 0
+    },
+    "reflect": "12",
+    "shadeless": false,
+    "shadow": true,
+    "specularColor":
+    {
+        "r": 1,
+        "g": 1,
+        "b": 1
+    },
+    "specularLevel": "50",
+    "layers": [
+        {
+            "alpha": 1,
+            "blendMode": 0,
+            "mapInput": 0,
+            "mapTo": 1,
+            "offsetx": 0,
+            "offsety": 0,
+            "rot": 0,
+            "scalex": 1,
+            "scaley": 1,
+            "src": "/adl/sandbox/qsqYIkGe8dCdn3i0//vwfDataManager.svc/texture?UID=temple\\temple\\Tileable2.png"
+        },
+        {
+            "offsetx": 0,
+            "offsety": 0,
+            "scalex": 1,
+            "scaley": 1,
+            "rot": 0,
+            "blendMode": 0,
+            "mapTo": "4",
+            "mapInput": 0,
+            "alpha": 0.18,
+            "src": "/adl/sandbox/qsqYIkGe8dCdn3i0//vwfDataManager.svc/texture?UID=waternormal.jpg"
+        }
+    ],
+    "morphTargets": false,
+    "skinning": false,
+    "type": "phong",
+    "metal": true
+}
