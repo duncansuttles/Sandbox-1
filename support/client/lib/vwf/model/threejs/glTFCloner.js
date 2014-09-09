@@ -1,6 +1,7 @@
 /**
  * Helper for cloning glTF models
  *
+ * @author Yasha Prikhodko / http://gorjuspixels.com/
  */
 
 define(["vwf/model/threejs/glTF-parser"], function() {
@@ -81,11 +82,9 @@ define(["vwf/model/threejs/glTF-parser"], function() {
         if (glTFModel instanceof THREE.SkinnedMesh) {
 
             // Clone SkinnedMesh
+            glTFModel.geometry.bones = glTFModel.skeleton.bones;
+            glTFModel.geometry.boneInverses = glTFModel.skeleton.boneInverses;
             var mesh = glTFModel.clone(new THREE.SkinnedMesh(glTFModel.geometry, glTFModel.material, glTFModel.skeleton.useVertexTexture), true);
-
-            // Create new skeleton with bones
-            mesh.skeleton = new THREE.Skeleton(glTFModel.skeleton.bones, glTFModel.skeleton.useVertexTexture);
-            mesh.skeleton.boneInverses = glTFModel.skeleton.boneInverses;
 
             // Now correct our bones
             mesh.children = [];
@@ -93,7 +92,7 @@ define(["vwf/model/threejs/glTF-parser"], function() {
                 var bone = mesh.skeleton.bones[i];
                 var oldBone = glTFModel.skeleton.bones[i];
 
-                bone.skinMatrix.copy(oldBone.skinMatrix);
+                // bone.skinMatrix.copy(oldBone.skinMatrix);
                 bone.scale.copy(oldBone.scale);
                 bone.position.copy(oldBone.position);
                 bone.rotation.copy(oldBone.rotation);
@@ -134,7 +133,6 @@ define(["vwf/model/threejs/glTF-parser"], function() {
                 copyMesh(glTFModel.children[id], newObj, rawAnimationChannels, callback);
         }
     }
-
 
     // Attaches a mesh to the Object3D whith specified name
     var addClonedMesh = function(mesh, obj, parentName) {
@@ -214,13 +212,6 @@ define(["vwf/model/threejs/glTF-parser"], function() {
     //   this.bones[gbone.parent].add(this.bones[b]);
     // }
 
-    var calculateInverses = THREE.Skeleton.prototype.calculateInverses;
-    var addBone = THREE.Skeleton.prototype.addBone;
-
-    
-
-    THREE.Skeleton.prototype.calculateInverses = calculateInverses;
-    THREE.Skeleton.prototype.addBone = addBone;
 
     exports = glTFCloner;
     window.glTFCloner = glTFCloner;
