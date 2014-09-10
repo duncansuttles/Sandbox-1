@@ -64,7 +64,99 @@ function collectChildCollisions(node, list) {
     return list;
 }
 
+function phyJoint(id,world,driver)
+{
+    this.id = id;
+    this.world = world;
+    this.bID = null;
+    this.aID = null;
+    this.bodyA = null;
+    this.bodyB = null;
+    this.initialized = false;
+    this.ready = false;
+    this.driver = driver;
+}
+phyJoint.prototype.destroy = function()
+{
+    if(this.ready)
+    {
+        this.world.removeConstraint(this.joint)
+        this.joint = null;
+        this.ready = false;    
+    }
+}
+phyJoint.prototype.setBodyAID = function(nodeID)
+{   
+    this.aID = nodeID;
+    this.destroy();
+}
+phyJoint.prototype.setBodyBID = function(nodeID)
+{
+    this.bID = nodeID;
+    this.destroy();
+}
+phyJoint.prototype.setBodyA = function(body)
+{   
+    this.bodyA = body;
+    this.destroy();
+}
+phyJoint.prototype.setBodyB = function(body)
+{
+    this.bodyB = body;
+    this.destroy();
+}
+phyJoint.prototype.update = function()
+{
+    if(!this.ready)
+    {
+        this.initialize();
+    }
+}
+phyJoint.prototype.initialize = function()
+{
+    if(this.driver)
+    {
+        //find your body in the driver
+        if(this.aID)
+        {
+            if(this.driver.allNodes[this.aID] && this.driver.allNodes[this.aID].body)
+            {
+                this.setBodyA(this.driver.allNodes[this.aID].body);
+            }
+        }
+        //find your body in the driver
+        if(this.bID)
+        {
+            if(this.driver.allNodes[this.bID] && this.driver.allNodes[this.bID].body)
+            {
+                this.setBodyB(this.driver.allNodes[this.bID].body);
+            }
+        }
+        if(this.bodyA && this.bodyB)
+        {
+            this.joint = this.buildJoint();
+            this.world.addConstraint(this.joint);
+            this.ready = true;
+        }
+    }
+}
 
+function phyPointToPointJoint(id,world,driver)
+{
+    this.pointA = null;
+    this.pointB = null;
+    phyJoint.call(this,id,world,driver);
+}
+phyPointToPointJoint.prototype = new phyJoint();
+
+phyPointToPointJoint.prototype.buildJoint = function()
+{
+    this.pointA = [0,0,0];
+    this.pointB = [0,0,0];
+    var pa = new Ammo.btVector3(this.pointA[0],this.pointA[1],this.pointA[2]);
+    var pb = new Ammo.btVector3(this.pointB[0],this.pointB[1],this.pointB[2]);
+    return new Ammo.btPoint2PointConstraint(this.bodyA,this.bodyB,pa,pb);
+}
 function phyObject(id, world) {
     this.body = null;
     this.ready = false;
@@ -1020,7 +1112,13 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 return this.childTransforms.length;
             }
         },
+        testConstraint: function(id,id1,id2)
+        {
+            this.allNodes[id] = new phyPointToPointJoint(id,this.allNodes[vwf.application()].world,this);
+            this.allNodes[id].setBodyAID(id1);
+            this.allNodes[id].setBodyBID(id2);
 
+        },
         // == Model API ============================================================================
 
         // -- creatingNode -------------------------------------------------------------------------
