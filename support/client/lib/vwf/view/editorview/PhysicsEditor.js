@@ -270,7 +270,7 @@ define([], function() {
             }
             for (var i in roots)
             {
-                if(roots[i].colType == 1)
+                if(roots[i].type == 1) //sphere
                 {
                     var mesh = new THREE.Mesh(new THREE.SphereGeometry(roots[i].radius * roots[i].getWorldScale()[0]));
                     mesh.InvisibleToCPUPick = true;
