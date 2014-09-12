@@ -52,6 +52,15 @@
 		else
 			$('#simple').removeAttr('checked');
 
+		window.setInterval(function()
+		{
+			settings.shadows = $('#shadows:checked').val()?true:false;
+			settings.useSimpleMaterials = $('#simple:checked').val()?true:false;
+			settings.filtering = $('#filtering:checked').val()?true:false;
+			settings.resolutionScale = 1.0/$('#resolution').slider('value');
+			settings.stereoOffset = $('#stereoOffset').slider('value')/200.0;
+			window.localStorage['sandboxPreferences'] = JSON.stringify(settings);
+		},1000);
 		
 	});	
 	

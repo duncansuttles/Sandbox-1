@@ -1006,7 +1006,7 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                 for (var i = 0; i < keys.length; i++) {
                     //be verycareful here. transform and transformAPI both start with the same dotnotation key, be sure that you check
                     //properly.
-                    if (keys[i].indexOf(nodeID + '-' + propertyName + '-') == 0 || keys[i] === nodeID + '-' + propertyName) {
+                    if (keys[i].indexOf(nodeID + '-' + propertyName + '.') == 0 || keys[i] === nodeID + '-' + propertyName) {
                         var watchable = this.__WatchableCache[keys[i]]
 
                         var new_prop_for_this_watchable;
@@ -1032,8 +1032,8 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                             dels.push(keys[i]);
                         } else {
                             //ok, we can save the watchable and just swap in the new underlying value
-                            watchable.internal_val = propertyValue;
-
+                            watchable.internal_val = new_prop_for_this_watchable;
+                            watchable.masterval = propertyValue;
                         }
                     }
                 }

@@ -22,6 +22,7 @@ methods:
   setupMaterial:
   setTransparent:
 properties:
+  isSelectable: true
   isStatic:
   materialDef:
     get: |

@@ -451,6 +451,7 @@ scripts:
     this.update = function(moniker)
     {
        
+       
         if(!this.cycleInit)
           this.initCycles();
         this.updatecounter++;

@@ -31,7 +31,7 @@ DialogEditor.prototype.init = function(divID,VWFID)
 	$(this.confirmSelector).click(function(){self.ok()});
 	
 	
-	$(this.dialogSelector).append('<svg xmlns="http://www.w3.org/2000/svg" version="1.1"></>');
+	$(this.dialogSelector).append('<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="width:100%;height:100%"></>');
 	this.lineSelector = this.rootSelector + " svg";
 	
 	$(this.dialogSelector).append('<div class="dialogEditCreate"/>');

@@ -17,7 +17,8 @@ define([], function() {
         //$('#PhysicsEditor').dialog({title:'Material Editor',autoOpen:false});
         $('#PhysicsEditor').css('border-bottom', '5px solid #444444')
         $('#PhysicsEditor').css('border-left', '2px solid #444444')
-
+        this.physicsPreviewRoot = new THREE.Object3D();
+      
         this.show = function() {
 
 
@@ -252,6 +253,31 @@ define([], function() {
             });
             this.addPropertyEditorDialog(nodeid, propertyName, $('#' + nodeid + i), 'text');
 
+        }
+        this.BuildPreview = function()
+        {
+              _dScene.add(this.physicsPreviewRoot);
+              for(var i in this.physicsPreviewRoot.children)
+                 this.physicsPreviewRoot.remove(this.physicsPreviewRoot.children[i]);
+
+            var roots = [];
+            for(var i = 0; i < _Editor.getSelectionCount(); i++)
+            {
+                var id = _Editor.GetSelectedVWFID(i);
+                while(vwf.parent(id) !== vwf.application())
+                    id = vwf.parent(id);
+                roots[id] = findphysicsnode(id);
+            }
+            for (var i in roots)
+            {
+                if(roots[i].colType == 1)
+                {
+                    var mesh = new THREE.Mesh(new THREE.SphereGeometry(roots[i].radius * roots[i].getWorldScale()[0]));
+                    mesh.InvisibleToCPUPick = true;
+                    mesh.matrix.elements = roots[i].matrix;
+                    this.physicsPreviewRoot.add(mesh);
+                }
+            }
         }
         this.BuildGUI = function() {
 

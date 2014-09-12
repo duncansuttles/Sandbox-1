@@ -24,6 +24,7 @@ events:
   pointerClick:  
 properties:
   materialDef:
+  isSelectable: true
   ___physics_enabled: false
   ___physics_mass: 1
   ___physics_restitution: 0

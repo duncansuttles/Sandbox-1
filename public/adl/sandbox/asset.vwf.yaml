@@ -36,6 +36,7 @@ properties:
   animationState: 0
   animationSpeed: 1
   materialDef:
+  isSelectable: true
   physicsAPI:
     get: |
         if(!this.___physicsAPI)

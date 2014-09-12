@@ -1,0 +1,88 @@
+{
+    "id": "asset-vwf-3a6a613-cc5b-5e6d-ddc6-645fd0131ef9",
+    "extends": "asset.vwf",
+    "source": "./vwfdatamanager.svc/datafile/models/village/rock1.dae",
+    "type": "subDriver/threejs/asset/vnd.collada+xml",
+    "sequence": 0,
+    "random": {
+        "s0": 0.195248423144221,
+        "s1": 0.682959032477811,
+        "s2": 0.284181134076789,
+        "c": 1
+    },
+    "properties": {
+        "___physics_activation_state": 1,
+        "___physics_deactivation_time": 0,
+        "___physics_velocity_linear": [0, 0, 0],
+        "___physics_velocity_angular": [0, 0, 0],
+        "DisplayName": "Object20",
+        "castShadows": true,
+        "materialDef": {
+            "alpha": 1,
+            "ambient": {
+                "b": 1,
+                "g": 1,
+                "r": 1
+            },
+            "color": {
+                "b": 1,
+                "g": 1,
+                "r": 1
+            },
+            "emit": {
+                "b": 0,
+                "g": 0,
+                "r": 0
+            },
+            "layers": [{
+                "alpha": 1,
+                "mapInput": 0,
+                "mapTo": 1,
+                "offsetx": 0,
+                "offsety": 0,
+                "scalex": 1,
+                "scaley": 1,
+                "src": "./vwfdatamanager.svc/datafile/models/village/rockdiff1.jpg"
+            }, {
+                "alpha": "1.5",
+                "blendMode": 0,
+                "mapInput": 0,
+                "mapTo": "4",
+                "offsetx": 0,
+                "offsety": 0,
+                "rot": 0,
+                "scalex": 1,
+                "scaley": 1,
+                "src": "./vwfdatamanager.svc/datafile/models/village/rocknorm1.jpg"
+            }, {
+                "alpha": 1,
+                "blendMode": 0,
+                "mapInput": 0,
+                "mapTo": "5",
+                "offsetx": 0,
+                "offsety": 0,
+                "rot": 0,
+                "scalex": 1,
+                "scaley": 1,
+                "src": "./vwfdatamanager.svc/datafile/models/village/rockspec1.jpg"
+            }],
+            "morphTargets": false,
+            "reflect": 0,
+            "shininess": 2,
+            "side": 0,
+            "skinning": false,
+            "specularColor": {
+                "b": 0.0666666666666667,
+                "g": 0.0666666666666667,
+                "r": 0.0666666666666667
+            },
+            "specularLevel": 1,
+            "type": "phong",
+            "vertexColors": false
+        },
+        "owner": "Rob",
+        "receiveShadows": true,
+        "transform": [-0.5735765099525452, 0.8191521167755127, 0, 0, -0.8191521167755127, -0.5735765099525452, 0, 0, 0, 0, 1, 0, -1.4422553777694702, -6.560508728027344, 1.6346724033355713, 1],
+        "translation": [-1.44225537776947, -6.56050872802734, 1.63467240333557]
+    }
+}

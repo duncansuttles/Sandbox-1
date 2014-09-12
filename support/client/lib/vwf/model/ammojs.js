@@ -41,7 +41,9 @@ function collectChildCollisions(node, list) {
                 matrix: vwf.getProperty(node.id, 'worldTransform'),
                 collision: col,
                 mass: node.mass,
-                localScale: node.localScale
+                localScale: node.localScale,
+                node:node
+
             });
     }
     return list;
@@ -209,8 +211,10 @@ phyObject.prototype.initialize = function() {
                 var q = new Ammo.btQuaternion(quat[0], quat[1], quat[2], quat[3]);
                 startTransform.setRotation(q);
 
-
-                childCollisions[i].collision.setLocalScaling(new Ammo.btVector3(childCollisions[i].localScale[0], childCollisions[i].localScale[1], childCollisions[i].localScale[2]));
+                //careful not to set the childcollision scale when the child is actually this - otherwise we'd be setting it twice, once on the 
+                //collision body and once on the compound body
+                if(childCollisions[i].node !== this)
+                    childCollisions[i].collision.setLocalScaling(new Ammo.btVector3(childCollisions[i].localScale[0], childCollisions[i].localScale[1], childCollisions[i].localScale[2]));
 
                 this.collision.addChildShape(startTransform, childCollisions[i].collision);
 
@@ -225,6 +229,10 @@ phyObject.prototype.initialize = function() {
 
         var isDynamic = (this.mass != 0);
 
+        var f = new Ammo.btVector3(this.localScale[0], this.localScale[1], this.localScale[2]);
+        this.collision.setLocalScaling(f);
+        Ammo.destroy(f);
+
         var localInertia = new Ammo.btVector3(0, 0, 0);
         if (isDynamic)
             this.collision.calculateLocalInertia(this.mass, localInertia);
@@ -232,7 +240,7 @@ phyObject.prototype.initialize = function() {
         //localoffset is used to offset the center of mass from the pivot point of the parent object
         if (this.localOffset)
         {
-            var f = new Ammo.btVector3(this.localOffset[0], this.localOffset[1], this.localOffset[2]);
+            var f = new Ammo.btVector3(this.localOffset[0] * this.localScale[0], this.localOffset[1] * this.localScale[1], this.localOffset[2] * this.localScale[2]);
             this.startTransform.setOrigin(f);
            // Ammo.destroy(f);
         }
@@ -272,9 +280,7 @@ phyObject.prototype.initialize = function() {
         //we must return through the kernel here so it knows that this is revelant to all instances of this node
         //not just the proto
 
-        var f = new Ammo.btVector3(this.localScale[0], this.localScale[1], this.localScale[2]);
-        this.collision.setLocalScaling(f);
-        Ammo.destroy(f);
+      
 
         this.world.addRigidBody(this.body);
         //so....... is this not handled by the cache and then set of properties that come in before initialize?
@@ -477,20 +483,63 @@ phyObject.prototype.getTransform = function(outmat) {
 
     quat = Quaternion.normalize(quat, tempquat2);
     var mat = goog.vec.Quaternion.toRotationMatrix4(quat, tempmat1);
+
+      mat[0] *= this.localScale[0];
+      mat[1] *= this.localScale[0];
+      mat[2] *= this.localScale[0];
+
+      mat[4] *= this.localScale[1];
+      mat[5] *= this.localScale[1];
+      mat[6] *= this.localScale[1];
+
+      mat[8] *= this.localScale[2];
+      mat[9] *= this.localScale[2];
+      mat[10] *= this.localScale[2];
+
     var worldoffset = goog.vec.Mat4.multVec3(mat, this.localOffset, tempmat2)
-    mat[12] = pos[0] - worldoffset[0];
-    mat[13] = pos[1] - worldoffset[1];
-    mat[14] = pos[2] - worldoffset[2];
+    mat[12] = pos[0] - worldoffset[0] / this.localScale[0];
+    mat[13] = pos[1] - worldoffset[1] / this.localScale[1];
+    mat[14] = pos[2] - worldoffset[2] / this.localScale[2];
+
+   
+    //since the value is orthonormal, scaling is easy.
+    
     this.transform = vecset(this.transform, mat);
     outmat = vecset(outmat, mat);
     return outmat;
 }
+
+function ScaleFromMatrix(mat)
+{
+    var x = [mat[0],mat[1],mat[2]];
+    var y = [mat[4],mat[5],mat[9]];
+    var z = [mat[8],mat[9],mat[10]];
+
+    return [MATH.lengthVec3(x),MATH.lengthVec3(y),MATH.lengthVec3(z)];
+
+}
+
 phyObject.prototype.setTransform = function(matrix) {
-    this.transform = matrix
+    matrix = Mat4.clone(matrix);
+    this.transform = matrix;
+    var oldScale = vecset([],this.localScale);
+    this.localScale = ScaleFromMatrix(matrix);
     if (this.initialized === true) {
 
         this.lastTickRotation = null;
         this.thisTickRotation = null;
+
+        matrix[0] /= this.localScale[0];
+        matrix[1] /= this.localScale[0];
+        matrix[2] /= this.localScale[0];
+
+        matrix[4] /= this.localScale[1];
+        matrix[5] /= this.localScale[1];
+        matrix[6] /= this.localScale[1];
+
+        matrix[8] /= this.localScale[2];
+        matrix[9] /= this.localScale[2];
+        matrix[10] /= this.localScale[2];
 
         var startTransform = new Ammo.btTransform();
         startTransform.getOrigin().setX(matrix[12]);
@@ -517,6 +566,7 @@ phyObject.prototype.setTransform = function(matrix) {
         this.body.setCenterOfMassTransform(startTransform);
         if (this.collision)
         {
+            //update the localscaling
             var f = new Ammo.btVector3(this.localScale[0], this.localScale[1], this.localScale[2]);
             this.collision.setLocalScaling(f);
             Ammo.destroy(f);
@@ -527,8 +577,10 @@ phyObject.prototype.setTransform = function(matrix) {
     }
     //todo: the compound collision of the parent does not need to be rebuild, just transforms updated
     //need new flag for this instead of full rebuild
-    if (this.enabled === true && this.parent.id !== vwf.application())
+    if (this.enabled === true && this.parent.id !== vwf.application() || MATH.distanceVec3(this.localScale, oldScale) > .0001)
+    {
         this.markRootBodyCollisionDirty();
+    }
 
 
 }
@@ -1236,6 +1288,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
 
             var node = this.allNodes[nodeID];
             if (methodName === '___physics_addForce') {
+                
                 node.addForce(args[0]);
             }
             if (methodName === '___physics_addTorque') {
