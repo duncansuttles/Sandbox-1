@@ -637,25 +637,27 @@ function ScaleFromMatrix(mat) {
 
 phyObject.prototype.setTransform = function(matrix) {
     matrix = Mat4.clone(matrix);
-    this.transform = matrix;
+    
     var oldScale = vecset([], this.localScale);
     this.localScale = ScaleFromMatrix(matrix);
+    matrix[0] /= this.localScale[0];
+    matrix[1] /= this.localScale[0];
+    matrix[2] /= this.localScale[0];
+
+    matrix[4] /= this.localScale[1];
+    matrix[5] /= this.localScale[1];
+    matrix[6] /= this.localScale[1];
+
+    matrix[8] /= this.localScale[2];
+    matrix[9] /= this.localScale[2];
+    matrix[10] /= this.localScale[2];
+    this.transform = matrix;
     if (this.initialized === true) {
 
         this.lastTickRotation = null;
         this.thisTickRotation = null;
 
-        matrix[0] /= this.localScale[0];
-        matrix[1] /= this.localScale[0];
-        matrix[2] /= this.localScale[0];
-
-        matrix[4] /= this.localScale[1];
-        matrix[5] /= this.localScale[1];
-        matrix[6] /= this.localScale[1];
-
-        matrix[8] /= this.localScale[2];
-        matrix[9] /= this.localScale[2];
-        matrix[10] /= this.localScale[2];
+       
 
         var startTransform = new Ammo.btTransform();
         startTransform.getOrigin().setX(matrix[12]);

@@ -18,7 +18,7 @@ define([], function() {
         $('#PhysicsEditor').css('border-bottom', '5px solid #444444')
         $('#PhysicsEditor').css('border-left', '2px solid #444444')
         this.physicsPreviewRoot = new THREE.Object3D();
-      
+
         this.show = function() {
 
 
@@ -254,42 +254,53 @@ define([], function() {
             this.addPropertyEditorDialog(nodeid, propertyName, $('#' + nodeid + i), 'text');
 
         }
-        this.BuildPreview = function()
-        {
-              _dScene.add(this.physicsPreviewRoot);
-              for(var i in this.physicsPreviewRoot.children)
-                 this.physicsPreviewRoot.remove(this.physicsPreviewRoot.children[i]);
+        this.BuildPreview = function() {
+            if (!this.physicsPreviewRoot.parent)
+                _dScene.add(this.physicsPreviewRoot);
+            for (var i in this.physicsPreviewRoot.children)
+                this.physicsPreviewRoot.remove(this.physicsPreviewRoot.children[i]);
 
             var roots = [];
-            for(var i = 0; i < _Editor.getSelectionCount(); i++)
-            {
+            for (var i = 0; i < _Editor.getSelectionCount(); i++) {
                 var id = _Editor.GetSelectedVWFID(i);
-                while(vwf.parent(id) !== vwf.application())
+                while (vwf.parent(id) !== vwf.application())
                     id = vwf.parent(id);
                 roots[id] = findphysicsnode(id);
             }
-            for (var i in roots)
-            {
-                if(roots[i].type == 1) //sphere
-                {
-                    var mesh = new THREE.Mesh(new THREE.SphereGeometry(roots[i].radius * roots[i].getWorldScale()[0]));
-                    mesh.InvisibleToCPUPick = true;
-                    mesh.matrix.elements = roots[i].matrix;
-                    this.physicsPreviewRoot.add(mesh);
+            for (var i in roots) {
+                if (roots[i] && roots[i].enabled) {
+                    if (roots[i].type == 1) //sphere
+                    {
+
+                        var mesh = new THREE.Mesh(new THREE.SphereGeometry(roots[i].radius * roots[i].getWorldScale()[0]), new THREE.MeshBasicMaterial());
+                        mesh.material.color.b = 1;
+                        mesh.material.color.g = 0;
+                        mesh.material.color.r = 0;
+                        mesh.material.transparent = true;
+                        mesh.material.depthTest = false;
+                        mesh.material.depthWrite = false;
+                        mesh.material.wireframe = true;
+                        mesh.InvisibleToCPUPick = true;
+                       
+                        mesh.matrix.fromArray(roots[i].transform);
+                        mesh.matrixAutoUpdate = false;
+                        this.physicsPreviewRoot.add(mesh);
+                         mesh.updateMatrixWorld(true);
+                    }
                 }
             }
         }
         this.BuildGUI = function() {
 
+            this.BuildPreview();
             //does this object have it's own body, or is it just a compound collision?
             var hasOwnBody = vwf.parent(_Editor.GetSelectedVWFID()) == vwf.application();
             var lastTab = 0;
-            
+
             //depending on ordering, this might not work
-            try{
+            try {
                 lastTab = $("#physicsaccordion").accordion('option', 'active');
-            }catch(e)
-            {
+            } catch (e) {
 
             }
             $("#PhysicsEditor").empty();
