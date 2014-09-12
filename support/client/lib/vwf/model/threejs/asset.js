@@ -29,6 +29,53 @@
         this.inherits = ['vwf/model/threejs/transformable.js', 'vwf/model/threejs/materialDef.js', 'vwf/model/threejs/animatable.js', 'vwf/model/threejs/shadowcaster.js', 'vwf/model/threejs/passable.js', 'vwf/model/threejs/visible.js', 'vwf/model/threejs/static.js', 'vwf/model/threejs/selectable.js'];
         this.initializingNode = function() {
 
+            //the parent is an asset object
+            if (true) {
+                
+                var parentRoot = null;
+                if(this.parentNode && this.parentNode.getRoot)  //if the parent internal driver object is just the scene, it does not have a getRoot function
+                    parentRoot = this.parentNode.getRoot();
+                var skeleton = null;
+                var parentSkin = null;
+                var thisroot = this.getRoot().parent;  // the asset initializing
+
+                var walk = function(node) {
+                    //dont search skeleton into self
+                    if (node == thisroot) return;
+                    //if (node !== parentRoot) return;
+                    // get skeleton data
+                    if (node.skeleton) {
+                        skeleton = node.skeleton;
+                        parentSkin = node;
+                        return;
+                    }
+                    for (var i = 0; i < node.children.length;i++)
+                        walk(node.children[i])
+                }
+                if(parentRoot)
+                    walk(parentRoot); // this really seems right. 
+
+                var skin = null;
+                var walk = function(node) {
+                    // get skinned mesh from initialing asset
+                    if (node instanceof THREE.SkinnedMesh) {
+                        skin = node;
+                        return;
+                    }
+                    for (var i = 0; i < node.children.length;i++)
+                        walk(node.children[i])
+                }
+                walk(this.getRoot());
+                // bind skinned mesh of init node to parent skeleton
+                if (skeleton && skin)
+                {
+                    thisroot.matrix.copy(new THREE.Matrix4());
+                    skin.bind(skeleton);
+                    debugger;
+                }
+            }
+         
+
         }
         this.gettingProperty = function(propertyName) {
 
