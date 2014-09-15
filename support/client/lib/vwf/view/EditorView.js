@@ -77,6 +77,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
                     this.addManager(HierarchyManager);
                     this.addManager(_Publisher);
                     this.addManager(_EntityLibrary);
+                    this.addManager(_PhysicsEditor);
                 }
                 window._LocationTools = require("vwf/view/editorview/LocationTools").getSingleton();
                 window._UserManager = require("vwf/view/editorview/UserManager").getSingleton();;

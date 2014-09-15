@@ -11,6 +11,33 @@ define([], function() {
         }
     }
 
+    function hasPrototype(nodeID, prototype) {
+        if (!nodeID) return false;
+        if (nodeID == prototype)
+            return true;
+        else return hasPrototype(vwf.prototype(nodeID), prototype);
+    }
+
+    function isSphere(id) {
+        return hasPrototype(id, 'sphere2-vwf');
+    }
+
+    function isBox(id) {
+        return hasPrototype(id, 'box2-vwf');
+    }
+
+    function isCone(id) {
+        return hasPrototype(id, 'cone2-vwf');
+    }
+
+    function isCylinder(id) {
+        return hasPrototype(id, 'cylinder2-vwf');
+    }
+
+    function isPlane(id) {
+        return hasPrototype(id, 'plane2-vwf');
+    }
+
     function initialize() {
 
         $('#sidepanel').append("<div id='PhysicsEditor'>" + "<div id='PhysicsEditortitle' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' >Physics Editor</div>" + "</div>");
@@ -27,14 +54,17 @@ define([], function() {
             $('#PhysicsEditor').show('blind', function() {
                 if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
             });
+            this.selectedID = _Editor.GetSelectedVWFID();
             showSidePanel();
             this.BuildGUI();
             $('#MenuPhysicsEditoricon').addClass('iconselected');
+
 
         }
         this.hide = function() {
             //$('#PhysicsEditor').dialog('close');
             if (this.isOpen()) {
+                this.clearPreview();
                 $('#PhysicsEditor').hide('blind', function() {
                     if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
                     if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
@@ -61,6 +91,11 @@ define([], function() {
                     if (diag.type == 'check')
                         diag.element.attr('checked', propVal);
                 }
+            }
+            //basically, any property change on a selected node might require a redraw
+            //we could be smarter about this, but probably not worth the effort
+            if (this.isOpen() && _Editor.isSelected(nodeID)) {
+                this.BuildPreview();
             }
         }
         this.propertyEditorDialogs = [];
@@ -254,39 +289,95 @@ define([], function() {
             this.addPropertyEditorDialog(nodeid, propertyName, $('#' + nodeid + i), 'text');
 
         }
+        //walk a threejs node and dispose of the geometry and materials
+        this.dispose = function(threeNode) {
+            if (threeNode && threeNode.dispose)
+                threeNode.dispose();
+            if (threeNode && threeNode.geometry)
+                this.dispose(threeNode.geometry)
+            if (threeNode && threeNode.material)
+                this.dispose(threeNode.material)
+            if (threeNode && threeNode.children)
+                for (var i = 0; i < threeNode.children.length; i++)
+                    this.dispose(threeNode.children[i]);
+        }
+        this.clearPreview = function() {
+            //release all held memory
+            this.dispose(this.physicsPreviewRoot);
+            for (var i in this.physicsPreviewRoot.children) {
+                this.physicsPreviewRoot.remove(this.physicsPreviewRoot.children[i]);
+            }
+
+        }
+        this.BuildPreviewInner = function(i, root,scale) {
+            var transform = findphysicsnode(i).transform;
+            var worldScale = findphysicsnode(i).getWorldScale();
+            var geo = null;
+            if(!vwf.getProperty(i,'___physics_enabled')) return;
+
+            if (isSphere(i)) //sphere
+            {
+                geo = new THREE.SphereGeometry(vwf.getProperty(i, 'radius') * worldScale[0], 10, 10);
+            }
+            if (isBox(i)) //sphere
+            {
+                geo = new THREE.BoxGeometry(vwf.getProperty(i, '_length') * worldScale[0], vwf.getProperty(i, 'width') * worldScale[1], vwf.getProperty(i, 'height') * worldScale[2], 5, 5, 5);
+            }
+            if (isCylinder(i)) //sphere
+            {
+                geo = new THREE.CylinderGeometry(vwf.getProperty(i, 'radius') * worldScale[0], vwf.getProperty(i, 'height') * worldScale[1], 10, 5);
+            }
+            if (isCone(i)) //sphere
+            {
+                geo = new THREE.ConeGeometry(vwf.getProperty(i, 'radius') * worldScale[0], vwf.getProperty(i, 'height') * worldScale[1], 10, 5);
+            }
+            if (isPlane(i)) //sphere
+            {
+                geo = new THREE.PlaneGeometry(vwf.getProperty(i, '_length') * worldScale[0], vwf.getProperty(i, 'width') * worldScale[1], 5, 5);
+            }
+            var mesh = null;
+            if (geo) {
+                mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial());
+                mesh.material.color.b = 1;
+                mesh.material.color.g = .3;
+                mesh.material.color.r = 1;
+                mesh.material.transparent = true;
+                mesh.material.depthTest = false;
+                mesh.material.depthWrite = false;
+                mesh.material.wireframe = true;
+                mesh.InvisibleToCPUPick = true;
+                mesh.matrix.fromArray(transform);
+                mesh.matrixAutoUpdate = false;
+                mesh.matrix.elements[12] *= scale[0];
+                mesh.matrix.elements[13] *= scale[1];
+                mesh.matrix.elements[14] *= scale[2];
+                root.add(mesh);
+                mesh.updateMatrixWorld(true);
+            }
+            var children = vwf.children(i);
+            //the current node does not have a mesh, so we use a blank object3
+            if (!mesh) mesh = new THREE.Object3D();
+            for(var ik =0; ik < children.length; ik++)
+            {
+                this.BuildPreviewInner(children[ik],mesh,findphysicsnode(i).localScale);
+            }
+        }
         this.BuildPreview = function() {
             if (!this.physicsPreviewRoot.parent)
                 _dScene.add(this.physicsPreviewRoot);
-            for (var i in this.physicsPreviewRoot.children)
-                this.physicsPreviewRoot.remove(this.physicsPreviewRoot.children[i]);
+
+            this.clearPreview();
 
             var roots = [];
             for (var i = 0; i < _Editor.getSelectionCount(); i++) {
                 var id = _Editor.GetSelectedVWFID(i);
                 while (vwf.parent(id) !== vwf.application())
                     id = vwf.parent(id);
-                roots[id] = findphysicsnode(id);
+                roots[id] = true;
             }
             for (var i in roots) {
-                if (roots[i] && roots[i].enabled) {
-                    if (roots[i].type == 1) //sphere
-                    {
-
-                        var mesh = new THREE.Mesh(new THREE.SphereGeometry(roots[i].radius * roots[i].getWorldScale()[0]), new THREE.MeshBasicMaterial());
-                        mesh.material.color.b = 1;
-                        mesh.material.color.g = 0;
-                        mesh.material.color.r = 0;
-                        mesh.material.transparent = true;
-                        mesh.material.depthTest = false;
-                        mesh.material.depthWrite = false;
-                        mesh.material.wireframe = true;
-                        mesh.InvisibleToCPUPick = true;
-                       
-                        mesh.matrix.fromArray(roots[i].transform);
-                        mesh.matrixAutoUpdate = false;
-                        this.physicsPreviewRoot.add(mesh);
-                         mesh.updateMatrixWorld(true);
-                    }
+                if (roots[i] && vwf.getProperty(i, '___physics_enabled')) {
+                    this.BuildPreviewInner(i, this.physicsPreviewRoot,[1,1,1]);
                 }
             }
         }
@@ -409,18 +500,20 @@ define([], function() {
             $(".ui-accordion-content").css('height', 'auto');
         }
 
-
-
         this.SelectionChanged = function(e, node) {
             try {
-                if (node) {
-                    this.propertyEditorDialogs = [];
-                    this.selectedID = _Editor.getSelectionCount() == 1 ? node.id : "selection";
-                    this.BuildGUI();
+                if (this.isOpen()) {
+                    if (node) {
+                        this.propertyEditorDialogs = [];
+                        this.selectedID = _Editor.getSelectionCount() == 1 ? node.id : "selection";
+                        this.BuildGUI();
+                    } else {
+                        this.propertyEditorDialogs = [];
+                        this.selectedID = null;
+                        this.hide();
+                    }
                 } else {
-                    this.propertyEditorDialogs = [];
-                    this.selectedID = null;
-                    this.hide();
+                    this.clearPreview();
                 }
             } catch (e) {
                 console.log(e);
