@@ -41,15 +41,15 @@ define(["module", "vwf/model", "vwf/model/edx/jschannel.js"], function(module, m
         },
         getGrade:function()
         {
-            return JSON.stringify(vwf.callMethod(vwf.application(),'getGrade'));
+            return JSON.stringify(vwf.callMethod(vwf.application(),'getEdXGrade'));
         },
         getState:function()
         {
-            return JSON.stringify(vwf.callMethod(vwf.application(),'getGrade'));
+            return JSON.stringify(vwf.callMethod(vwf.application(),'getEdXState'));
         },
         setState:function(state)
         {
-            return vwf.callMethod(vwf.application(),'setState',[state]);
+            return vwf.callMethod(vwf.application(),'setEdXState',[JSON.parse(state)]);
         },
         callingMethod: function(nodeID, method, args) {
 

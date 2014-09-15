@@ -317,16 +317,40 @@ methods:
   playSound:
   setMusic:
   ___physics_world_reset:
-  getGrade:
+  getEdXGrade:
+  getEdXState:
+  setEdXState:
 scripts:
 - |
-    this.getGrade = function()
+    this.getEdXGrade = function()
     {
       for(var i = 0; i < this.children.length; i++)
       {
           var ret = null;
-          if(this.children[i].getGrade)
-            ret = this.children[i].getGrade();
+          if(this.children[i].getEdXGrade)
+            ret = this.children[i].getEdXGrade();
+          if(ret) return ret;
+      }
+      return null;
+    }
+    this.getEdXState = function()
+    {
+      for(var i = 0; i < this.children.length; i++)
+      {
+          var ret = null;
+          if(this.children[i].getEdXState)
+            ret = this.children[i].getEdXState();
+          if(ret) return ret;
+      }
+      return null;
+    }
+    this.setEdXState = function()
+    {
+      for(var i = 0; i < this.children.length; i++)
+      {
+          var ret = null;
+          if(this.children[i].setEdXState)
+            ret = this.children[i].setEdXState();
           if(ret) return ret;
       }
       return null;
