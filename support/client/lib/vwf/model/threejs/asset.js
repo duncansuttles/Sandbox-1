@@ -69,9 +69,10 @@
                 // bind skinned mesh of init node to parent skeleton
                 if (skeleton && skin)
                 {
-                    thisroot.matrix.copy(new THREE.Matrix4());
+                 
+                    this.settingProperty('animationFrame',0);
                     skin.bind(skeleton);
-                    debugger;
+                  
                 }
             }
          

@@ -23,6 +23,9 @@ define(["vwf/model/threejs/glTF-parser"], function() {
                 for (var name in rawAnimationChannels) {
                     var nodeAnimationChannels = rawAnimationChannels[name];
 
+                    if (!nodeAnimationChannels[0].target)
+                        return callback(clone);
+
                     var anim = new THREE.glTFAnimation(nodeAnimationChannels);
                     anim.name = "animation_" + name;
                     animations.push(anim);
@@ -109,6 +112,9 @@ define(["vwf/model/threejs/glTF-parser"], function() {
             if (rawAnimationChannels) {
                 for (var name in rawAnimationChannels) {
                     var nodeAnimationChannels = rawAnimationChannels[name];
+
+                    if (!nodeAnimationChannels[0].target)
+                        break;
 
                     // Since we cloned our bones, change to our new bones in animation channels
                     var boneName = nodeAnimationChannels[0].target.name;
