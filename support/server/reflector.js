@@ -198,7 +198,7 @@ var fixIDs = function(node) {
                 });
                 var joinMessage = messageCompress.pack(JSON.stringify({
                     "action": "fireEvent",
-                    "parameters": ["clientConnected", [socket.id, socket.loginData ? socket.loginData.Username : "anonymous", socket.loginData ? socket.loginData.UID : "anonymous"]],
+                    "parameters": ["clientConnected", [socket.id, socket.loginData ? socket.loginData.Username : "Anonymous0", socket.loginData ? socket.loginData.UID : "anonymous"]],
                     node: "index-vwf",
                     "time": 0
                 }));
