@@ -70,8 +70,13 @@
                 if (skeleton && skin)
                 {
                  
+                   
+                    skin.updateMatrixWorld(true);
                     this.settingProperty('animationFrame',0);
-                    skin.bind(skeleton);
+                    skin.bind(skeleton,parentSkin.matrix.clone());
+                    skin.boundingSphere = parentSkin.boundingSphere;
+                    skin.updateMatrixWorld(true);
+                    skin.frustumCulled = false;
                   
                 }
             }
