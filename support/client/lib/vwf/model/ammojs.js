@@ -301,7 +301,7 @@ phyObject.prototype.initialize = function() {
         //      this.collision = this.buildCollisionShape();
         //  else
         {
-            debugger;
+            
             //so, since we have child collision objects, we need to create a compound collision
             this.collision = new Ammo.btCompoundShape();
             this.collision.vwfID = this.id;
@@ -393,16 +393,16 @@ phyObject.prototype.initialize = function() {
 
         var f = new Ammo.btVector3(this.linearVelocity[0], this.linearVelocity[1], this.linearVelocity[2]);
         this.body.setLinearVelocity(f);
-        Ammo.destroy(f);
+       // Ammo.destroy(f);
         var f = new Ammo.btVector3(this.angularVelocity[0], this.angularVelocity[1], this.angularVelocity[2]);
         this.body.setAngularVelocity(f);
-        Ammo.destroy(f);
+       // Ammo.destroy(f);
         var f = new Ammo.btVector3(this.angularFactor[0], this.angularFactor[1], this.angularFactor[2])
         this.body.setAngularFactor(f);
-        Ammo.destroy(f);
+       // Ammo.destroy(f);
         var f = new Ammo.btVector3(this.linearFactor[0], this.linearFactor[1], this.linearFactor[2]);
         this.body.setLinearFactor(f);
-        Ammo.destroy(f);
+       // Ammo.destroy(f);
         this.body.forceActivationState(this.activationState);
         this.body.setDeactivationTime(this.deactivationTime);
         var mat = vwf.getProperty(this.id, 'transform');
@@ -445,8 +445,8 @@ phyObject.prototype.setLinearVelocity = function(vel) {
     this.linearVelocity = vel;
     if (this.initialized === true) {
         var f = new Ammo.btVector3(vel[0], vel[1], vel[2]);
-        this.body.setLinearVelocity();
-        Ammo.destroy(f);
+        this.body.setLinearVelocity(f);
+        //Ammo.destroy(f);
     }
 }
 phyObject.prototype.setAngularVelocity = function(vel) {
@@ -454,7 +454,7 @@ phyObject.prototype.setAngularVelocity = function(vel) {
     if (this.initialized === true) {
         var f = new Ammo.btVector3(vel[0], vel[1], vel[2]);
         this.body.setAngularVelocity(f);
-        Ammo.destroy(f);
+       // Ammo.destroy(f);
     }
 }
 
@@ -470,7 +470,7 @@ phyObject.prototype.setForce = function(force) {
     if (this.initialized === true) {
         var f = new btVector3(force[0], force[1], force[2]);
         this.body.setTotalForce(f);
-        Ammo.destroy(f);
+        //Ammo.destroy(f);
     }
 }
 phyObject.prototype.getTorque = function() {
@@ -483,7 +483,7 @@ phyObject.prototype.setTorque = function(torque) {
     if (this.initialized === true) {
         var f = new btVector3(torque[0], torque[1], torque[2]);
         this.body.setTotalTorque(f);
-        Ammo.destroy(f);
+        //Ammo.destroy(f);
     }
 }
 
@@ -1198,7 +1198,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             }
 
         },
-
+        oldCollisions:{},
         triggerCollisions: function() {
             var i, offset,
                 dp = this.nodes[vwf.application()].world.getDispatcher(),
@@ -1206,7 +1206,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 manifold, num_contacts, j, pt,
                 _collided = false;
 
-
+                var newCollisions = {}
 
             for (i = 0; i < num; i++) {
                 manifold = dp.getManifoldByIndexInternal(i);
@@ -1236,12 +1236,23 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                         collisionPointB: collisionPointB,
                         collisionNormal: collisionNormal
                     };
-                    vwf.callMethod(vwfIDA, 'collision', [vwfIDB, collision]);
-                    vwf.callMethod(vwfIDB, 'collision', [vwfIDA, collision]);
+                    
+                    if(!this.oldCollisions[vwfIDA] || this.oldCollisions[vwfIDA].indexOf(vwfIDB) === -1)
+                        vwf.callMethod(vwfIDA, 'collision', [vwfIDB, collision]);
+                    if(!this.oldCollisions[vwfIDB] || this.oldCollisions[vwfIDB].indexOf(vwfIDA) === -1)
+                        vwf.callMethod(vwfIDB, 'collision', [vwfIDA, collision]);
+
+
+                    if(!newCollisions[vwfIDA]) newCollisions[vwfIDA] = [];
+                    if(!newCollisions[vwfIDB]) newCollisions[vwfIDB] = [];
+
+                    newCollisions[vwfIDA].push(vwfIDB);
+                    newCollisions[vwfIDB].push(vwfIDA);
+
                     break;
                 }
             }
-
+            this.oldCollisions = newCollisions;
 
 
         },
@@ -1390,6 +1401,10 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
             var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
             var body = new Ammo.btRigidBody(rbInfo);
+
+            body.setDamping(1, 1);
+            body.setFriction(.1);
+            body.setRestitution(.4);
 
             this.allNodes[vwf.application()].ground = body;
             world.addRigidBody(this.allNodes[vwf.application()].ground);
