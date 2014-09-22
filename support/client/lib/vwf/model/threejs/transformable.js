@@ -179,6 +179,32 @@
                 }
                 return value;
             }
+            if (propertyName == 'orthoWorldTransform') {
+                var threeObject = this.getRoot().parent;
+                if (this.getRoot().initializedFromAsset)
+                    threeObject = this.getRoot();
+                var value = matCpy(threeObject.orthoMatrixWorld.elements);
+
+                if (threeObject instanceof THREE.Camera) {
+                    var columny = goog.vec.Vec4.create();
+                    goog.vec.Mat4.getColumn(value, 1, columny);
+                    var columnz = goog.vec.Vec4.create();
+                    goog.vec.Mat4.getColumn(value, 2, columnz);
+                    goog.vec.Mat4.setColumn(value, 2, columny);
+                    goog.vec.Mat4.setColumn(value, 1, goog.vec.Vec4.negate(columnz, columnz));
+                }
+                if (threeObject instanceof THREE.Bone) {
+
+
+
+                    threeObject.updateMatrixWorld(true);
+                    var mat = threeObject.orthoMatrixWorld.clone();
+                    //  mat = (new THREE.Matrix4()).multiplyMatrices(skinmat,mat);
+                    return mat.elements;
+
+                }
+                return value;
+            }
         }
     }
     //default factory code

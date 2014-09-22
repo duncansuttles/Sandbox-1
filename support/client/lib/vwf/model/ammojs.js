@@ -38,7 +38,7 @@ function collectChildCollisions(node, list) {
         var col = node.buildCollisionShape();
         if (col) {
             list.push({
-                matrix: vwf.getProperty(node.id, 'worldTransform'),
+                matrix: vwf.getProperty(node.id, 'orthoWorldTransform'),  //don't use normal world transform. In non uniform spaces, the rotations are senseless. 
                 collision: col,
                 mass: node.mass,
                 localScale: node.localScale,

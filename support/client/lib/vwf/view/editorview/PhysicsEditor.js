@@ -357,9 +357,14 @@ define([], function() {
             var children = vwf.children(i);
             //the current node does not have a mesh, so we use a blank object3
             if (!mesh) mesh = new THREE.Object3D();
+
+            var thisWorldScale = [1,1,1];
+            thisWorldScale[0] = scale[0] * findphysicsnode(i).localScale[0];
+            thisWorldScale[1] = scale[1] * findphysicsnode(i).localScale[1];
+            thisWorldScale[2] = scale[2] * findphysicsnode(i).localScale[2];
             for(var ik =0; ik < children.length; ik++)
             {
-                this.BuildPreviewInner(children[ik],mesh,findphysicsnode(i).localScale);
+                this.BuildPreviewInner(children[ik],mesh,thisWorldScale);
             }
         }
         this.BuildPreview = function() {
