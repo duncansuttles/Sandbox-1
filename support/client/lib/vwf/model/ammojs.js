@@ -46,17 +46,25 @@ function collectChildCollisions(node, list) {
 
             });
 
-            list[list.length - 1].matrix[0] /= node.localScale[0];
-            list[list.length - 1].matrix[1] /= node.localScale[0];
-            list[list.length - 1].matrix[2] /= node.localScale[0];
+            //careful to orthonormalize the worldmatrix. Previous divide by localscale would always orthonormilize properly
+            //when world matrix !== localmatrix
+            var xlen = MATH.lengthVec3([list[list.length - 1].matrix[0],list[list.length - 1].matrix[1],list[list.length - 1].matrix[2]]);
+            var ylen = MATH.lengthVec3([list[list.length - 1].matrix[4],list[list.length - 1].matrix[5],list[list.length - 1].matrix[6]]);
+            var zlen = MATH.lengthVec3([list[list.length - 1].matrix[8],list[list.length - 1].matrix[9],list[list.length - 1].matrix[10]]);
+            list[list.length - 1].matrix[0] /= xlen;
+            list[list.length - 1].matrix[1] /= xlen;
+            list[list.length - 1].matrix[2] /= xlen;
+            //list[list.length - 1].matrix[12] /= xlen;
 
-            list[list.length - 1].matrix[4] /= node.localScale[1];
-            list[list.length - 1].matrix[5] /= node.localScale[1];
-            list[list.length - 1].matrix[6] /= node.localScale[1];
+            list[list.length - 1].matrix[4] /= ylen;
+            list[list.length - 1].matrix[5] /= ylen;
+            list[list.length - 1].matrix[6] /= ylen;
+            //list[list.length - 1].matrix[13] /= ylen;
 
-            list[list.length - 1].matrix[8] /= node.localScale[2];
-            list[list.length - 1].matrix[9] /= node.localScale[2];
-            list[list.length - 1].matrix[10] /= node.localScale[2];
+            list[list.length - 1].matrix[8] /= zlen;
+            list[list.length - 1].matrix[9] /= zlen;
+            list[list.length - 1].matrix[10] /= zlen;
+            //list[list.length - 1].matrix[13] /= zlen;
 
           
         }
@@ -293,6 +301,7 @@ phyObject.prototype.initialize = function() {
         //      this.collision = this.buildCollisionShape();
         //  else
         {
+            debugger;
             //so, since we have child collision objects, we need to create a compound collision
             this.collision = new Ammo.btCompoundShape();
             this.collision.vwfID = this.id;
@@ -301,16 +310,21 @@ phyObject.prototype.initialize = function() {
             var z = 0;
             for (var i = 0; i < childCollisions.length; i++) {
                 //note!! at this point, this object must be a child of the scene, so transform === worldtransform
-                var thisworldmatrix = vwf.getProperty(this.id, 'transform');
+                var thisworldmatrix = this.transform;
                 var wmi = [];
                 Mat4.invert(thisworldmatrix, wmi);
                 var aslocal = Mat4.multMat(wmi, childCollisions[i].matrix, []);
                 childCollisions[i].local = aslocal;
                 //take into account that the collision body may be offset from the object center.
                 //this is true with assets, but not with prims
-                aslocal[12] *= this.localScale[0];
-                aslocal[13] *= this.localScale[1];
-                aslocal[14] *= this.localScale[2];
+                
+                //crazy as it may seem, there is no need to take into account here the local scale
+                //this is because we find the worldspace matrix between the child and this, thus flattening
+                //any complex hierarchy of transforms under this node in the graph. This flattening starts with the
+                //worldspace values, which already account for the scale.
+                //aslocal[12] *= childCollisions[i].localScale[0];
+                //aslocal[13] *= childCollisions[i].localScale[1];
+                //aslocal[14] *= childCollisions[i].localScale[2];
                 x += aslocal[12] + this.collisionBodyOffsetPos[0];
                 y += aslocal[13] + this.collisionBodyOffsetPos[1];
                 z += aslocal[14] + this.collisionBodyOffsetPos[2];
@@ -621,7 +635,7 @@ phyObject.prototype.getTransform = function(outmat) {
 
     //since the value is orthonormal, scaling is easy.
 
-    this.transform = vecset(this.transform, mat);
+    //this.transform = vecset(this.transform, mat);
     outmat = vecset(outmat, mat);
     return outmat;
 }
@@ -652,7 +666,12 @@ phyObject.prototype.setTransform = function(matrix) {
     matrix[9] /= this.localScale[2];
     matrix[10] /= this.localScale[2];
     this.transform = matrix;
-    if (this.initialized === true) {
+    //todo: the compound collision of the parent does not need to be rebuild, just transforms updated
+    //need new flag for this instead of full rebuild
+    if (this.enabled === true && this.parent.id !== vwf.application() || MATH.distanceVec3(this.localScale, oldScale) > .0001) {
+        this.markRootBodyCollisionDirty();
+    }
+    else if (this.initialized === true) {
 
         this.lastTickRotation = null;
         this.thisTickRotation = null;
@@ -690,11 +709,7 @@ phyObject.prototype.setTransform = function(matrix) {
 
         }
     }
-    //todo: the compound collision of the parent does not need to be rebuild, just transforms updated
-    //need new flag for this instead of full rebuild
-    if (this.enabled === true && this.parent.id !== vwf.application() || MATH.distanceVec3(this.localScale, oldScale) > .0001) {
-        this.markRootBodyCollisionDirty();
-    }
+    
 
 
 }
