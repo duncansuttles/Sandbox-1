@@ -38,6 +38,8 @@ properties:
   ___physics_activation_state: 1
   ___physics_factor_angular: [ 1, 1, 1]
   ___physics_factor_linear: [ 1, 1, 1]
+  ___physics_constant_force: null
+  ___physics_constant_torque: null
   physicsAPI:
     get: |
         if(!this.___physicsAPI)

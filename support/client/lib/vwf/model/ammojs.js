@@ -119,6 +119,7 @@ phyJoint.prototype.update = function()
     {
         this.initialize();
     }
+    
 }
 phyJoint.prototype.initialize = function()
 {
@@ -189,6 +190,8 @@ function phyObject(id, world) {
     this.deactivationTime = 0;
     this.linearFactor = [1, 1, 1];
     this.angularFactor = [1, 1, 1];
+    this.constantForce = null;
+    this.constantTorque = null;
 
 }
 phyObject.prototype.getWorldScale = function() {
@@ -211,6 +214,21 @@ phyObject.prototype.addForce = function(vec) {
         Ammo.destroy(f);
 
     }
+}
+//this is a global space force that is applied at every tick. Sort of a motor. Could be 
+//used to do custom per object gravity.
+phyObject.prototype.setConstantForce = function(vec) {
+        if(vec)
+            this.constantForce =  new Ammo.btVector3(vec[0], vec[1], vec[2]);
+        else
+            this.constantForce = null;
+}
+//a constant torque applied at every tick
+phyObject.prototype.setConstantTorque = function(vec) {
+        if(vec)
+            this.constantTorque =  new Ammo.btVector3(vec[0], vec[1], vec[2]);
+        else
+            this.constantTorque = null;
 }
 phyObject.prototype.addTorque = function(vec) {
     if (vec.length !== 3) return;
@@ -458,7 +476,7 @@ phyObject.prototype.setAngularVelocity = function(vel) {
     }
 }
 
-//note - we don't store up forces when the body is not initialized
+//note - we don't store up forces when the body is not initialized, so AddTorque called before init does nothing
 //maybe we should? Not sure that forces are stateful
 phyObject.prototype.getForce = function() {
     if (this.initialized === true) {
@@ -466,6 +484,10 @@ phyObject.prototype.getForce = function() {
         return [force.x(), force.y(), force.z()];
     }
 }
+
+//this is probably not what you're looking for. Force is an instantanious value, it
+//only has meaning within a tick cycle. This is only for replication. Use either addForce, addForceLocal
+//or setConstantForce
 phyObject.prototype.setForce = function(force) {
     if (this.initialized === true) {
         var f = new btVector3(force[0], force[1], force[2]);
@@ -479,6 +501,10 @@ phyObject.prototype.getTorque = function() {
         return [torque.x(), torque.y(), torque.z()];
     }
 }
+
+//this is probably not what you're looking for. Torque is an instantanious value, it
+//only has meaning within a tick cycle. This is only for replication. Use either addTorque 
+//or setConstantTorque
 phyObject.prototype.setTorque = function(torque) {
     if (this.initialized === true) {
         var f = new btVector3(torque[0], torque[1], torque[2]);
@@ -732,7 +758,23 @@ phyObject.prototype.update = function() {
         this.initialize();
 
     }
-
+    if(this.initialized === true)
+    {
+        //these are applied in global space. You can cancel gravity for a specify object with a contant force of negative gravity
+        if(this.constantForce)
+        {
+            this.body.activate();
+            this.body.applyForce(this.constantForce);
+           
+        }
+        if(this.constantTorque)
+        {
+            this.body.activate();
+            this.body.applyTorque(this.constantTorque);
+            
+        }
+        
+    }
     if (this.collisionDirty && this.initialized === true) {
         var backupTrans = this.getTransform();
         this.deinitialize();
@@ -1582,6 +1624,12 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 }
                 if (propertyName === '___physics_factor_linear') {
                     node.setLinearFactor(propertyValue);
+                }
+                if (propertyName === '___physics_constant_force') {
+                    node.setConstantForce(propertyValue);
+                }
+                if (propertyName === '___physics_constant_torque') {
+                    node.setConstantTorque(propertyValue);
                 }
                 //this is a hack
                 //find a better way. Maybe delete the old key from the map above

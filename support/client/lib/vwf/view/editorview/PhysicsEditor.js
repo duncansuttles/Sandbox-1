@@ -214,6 +214,12 @@ define([], function() {
                 $('#' + baseid + 'Y').val(propmin[1]);
                 $('#' + baseid + 'Z').val(propmin[2]);
             }
+            else
+            {
+                $('#' + baseid + 'X').val(0);
+                $('#' + baseid + 'Y').val(0);
+                $('#' + baseid + 'Z').val(0);
+            }
             $('#' + baseid + 'X').change(vecvalchanged);
             $('#' + baseid + 'Y').change(vecvalchanged);
             $('#' + baseid + 'Z').change(vecvalchanged);
@@ -448,8 +454,8 @@ define([], function() {
                 $('#physicsaccordion').append('<h3><a href="#">Forces</a>    </h3>   <div id="PhysicsForceSettings">  </div>');
 
 
-                this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_forces_angular', 'Torque');
-                this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_forces_linear', 'Force');
+                this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_constant_torque', 'Constant Torque');
+                this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_constant_force', 'Contant Force');
                 this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_velocity_angular', 'Angular Velocity');
                 this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_velocity_linear', 'Linear Velocity');
 
