@@ -382,7 +382,7 @@ define([], function() {
             var roots = [];
             for (var i = 0; i < _Editor.getSelectionCount(); i++) {
                 var id = _Editor.GetSelectedVWFID(i);
-                while (vwf.parent(id) !== vwf.application())
+                while (id && vwf.parent(id) !== vwf.application())
                     id = vwf.parent(id);
                 roots[id] = true;
             }

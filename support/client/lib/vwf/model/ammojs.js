@@ -175,9 +175,9 @@ function phyObject(id, world) {
     this.initialized = false;
     this.collisionDirty = false;
     this.id = id;
-    this.restitution = 0;
-    this.friction = 1;
-    this.damping = .01;
+    this.restitution = .1;
+    this.friction = .5;
+    this.damping = .05;
     this.world = world;
     this.children = {};
     this.localOffset = null;
