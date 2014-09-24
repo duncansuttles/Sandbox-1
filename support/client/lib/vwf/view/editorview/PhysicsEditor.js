@@ -38,6 +38,10 @@ define([], function() {
         return hasPrototype(id, 'plane2-vwf');
     }
 
+    function isAsset(id) {
+        return hasPrototype(id, 'asset-vwf');
+    }
+
     function initialize() {
 
         $('#sidepanel').append("<div id='PhysicsEditor'>" + "<div id='PhysicsEditortitle' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' >Physics Editor</div>" + "</div>");
@@ -213,9 +217,7 @@ define([], function() {
                 $('#' + baseid + 'X').val(propmin[0]);
                 $('#' + baseid + 'Y').val(propmin[1]);
                 $('#' + baseid + 'Z').val(propmin[2]);
-            }
-            else
-            {
+            } else {
                 $('#' + baseid + 'X').val(0);
                 $('#' + baseid + 'Y').val(0);
                 $('#' + baseid + 'Z').val(0);
@@ -315,11 +317,14 @@ define([], function() {
             }
 
         }
-        this.BuildPreviewInner = function(i, root,scale) {
+        this.BuildPreviewInner = function(i, root, scale) {
             var transform = findphysicsnode(i).transform;
             var worldScale = findphysicsnode(i).getWorldScale();
             var geo = null;
-            if(!vwf.getProperty(i,'___physics_enabled')) return;
+            //we actually create all cylinder and cone prims with the Zaxis as up, but three.js builds them with y up. We need to add a rotation in this case.
+            // This is handled in prim.js for the visual nodes.
+            var needRotate = false;
+            if (!vwf.getProperty(i, '___physics_enabled')) return;
 
             if (isSphere(i)) //sphere
             {
@@ -330,16 +335,67 @@ define([], function() {
                 geo = new THREE.BoxGeometry(vwf.getProperty(i, '_length') * worldScale[0], vwf.getProperty(i, 'width') * worldScale[1], vwf.getProperty(i, 'height') * worldScale[2], 5, 5, 5);
             }
             if (isCylinder(i)) //sphere
-            {
-                geo = new THREE.CylinderGeometry(vwf.getProperty(i, 'radius') * worldScale[0], vwf.getProperty(i, 'height') * worldScale[1], 10, 5);
+            {   
+                needRotate =  true;
+                geo = new THREE.CylinderGeometry(vwf.getProperty(i, 'radius') * worldScale[0],vwf.getProperty(i, 'radius') * worldScale[0], vwf.getProperty(i, 'height') * worldScale[1], 10, 10);
             }
             if (isCone(i)) //sphere
             {
-                geo = new THREE.ConeGeometry(vwf.getProperty(i, 'radius') * worldScale[0], vwf.getProperty(i, 'height') * worldScale[1], 10, 5);
+                needRotate =  true;
+                geo = new THREE.ConeGeometry(vwf.getProperty(i, 'radius') * worldScale[0], vwf.getProperty(i, 'height') * worldScale[1], 10, 10);
             }
             if (isPlane(i)) //sphere
             {
                 geo = new THREE.PlaneGeometry(vwf.getProperty(i, '_length') * worldScale[0], vwf.getProperty(i, 'width') * worldScale[1], 5, 5);
+            }
+            if (isAsset(i)) //asset
+            {
+
+
+                switch (parseInt(vwf.getProperty(i, "___physics_collision_type"))) {
+                    case 1:
+                        {
+                            geo = new THREE.SphereGeometry(vwf.getProperty(i, '___physics_collision_radius') * worldScale[0], 10, 10);
+                        }
+                        break;
+                    case 2:
+                        {
+                            geo = new THREE.BoxGeometry(vwf.getProperty(i, '___physics_collision_length') * worldScale[0], vwf.getProperty(i, '___physics_collision_width') * worldScale[1], vwf.getProperty(i, '___physics_collision_height') * worldScale[2], 5, 5, 5);
+                        }
+                        break;
+                    case 3:
+                        {
+                            needRotate =  true;
+                            geo = new THREE.CylinderGeometry(vwf.getProperty(i, '___physics_collision_radius') * worldScale[0], vwf.getProperty(i, '___physics_collision_radius') * worldScale[0], vwf.getProperty(i, '___physics_collision_height') * worldScale[1], 10, 10,10);
+                        }
+                        break;
+                    case 4:
+                        {
+                            needRotate =  true;
+                            geo = new THREE.ConeGeometry(vwf.getProperty(i, '___physics_collision_radius') * worldScale[0], vwf.getProperty(i, '___physics_collision_height') * worldScale[1], 10, 5);
+                        }
+                        break;
+                    case 5:
+                        {
+                            geo = new THREE.PlaneGeometry(vwf.getProperty(i, '___physics_collision_length') * worldScale[0], vwf.getProperty(i, '___physics_collision_width') * worldScale[1], 5, 5);
+                        }
+                        break;
+                    case 6:
+                        {
+                            //none
+                        }
+                        break;
+                    case 7:
+                        {
+                            //mesh
+                        }
+                        break;
+                    default:
+
+
+
+                }
+
             }
             var mesh = null;
             if (geo) {
@@ -352,25 +408,31 @@ define([], function() {
                 mesh.material.depthWrite = false;
                 mesh.material.wireframe = true;
                 mesh.InvisibleToCPUPick = true;
-                mesh.matrix.fromArray(transform);
-                mesh.matrixAutoUpdate = false;
-                mesh.matrix.elements[12] *= scale[0];
-                mesh.matrix.elements[13] *= scale[1];
-                mesh.matrix.elements[14] *= scale[2];
-                root.add(mesh);
-                mesh.updateMatrixWorld(true);
+
             }
             var children = vwf.children(i);
             //the current node does not have a mesh, so we use a blank object3
             if (!mesh) mesh = new THREE.Object3D();
+            root.add(mesh);
+            mesh.matrix.fromArray(transform);
+            mesh.matrixAutoUpdate = false;
+            //apply a premultiplied rotation matrix
+            if(needRotate)
+            {
+                var flip =(new THREE.Matrix4()).makeRotationX(Math.PI/2);
+                mesh.matrix.multiply(flip);
+            }
+            mesh.matrix.elements[12] *= scale[0];
+            mesh.matrix.elements[13] *= scale[1];
+            mesh.matrix.elements[14] *= scale[2];
 
-            var thisWorldScale = [1,1,1];
+            mesh.updateMatrixWorld(true);
+            var thisWorldScale = [1, 1, 1];
             thisWorldScale[0] = scale[0] * findphysicsnode(i).localScale[0];
             thisWorldScale[1] = scale[1] * findphysicsnode(i).localScale[1];
             thisWorldScale[2] = scale[2] * findphysicsnode(i).localScale[2];
-            for(var ik =0; ik < children.length; ik++)
-            {
-                this.BuildPreviewInner(children[ik],mesh,thisWorldScale);
+            for (var ik = 0; ik < children.length; ik++) {
+                this.BuildPreviewInner(children[ik], mesh, thisWorldScale);
             }
         }
         this.BuildPreview = function() {
@@ -388,7 +450,7 @@ define([], function() {
             }
             for (var i in roots) {
                 if (roots[i] && vwf.getProperty(i, '___physics_enabled')) {
-                    this.BuildPreviewInner(i, this.physicsPreviewRoot,[1,1,1]);
+                    this.BuildPreviewInner(i, this.physicsPreviewRoot, [1, 1, 1]);
                 }
             }
         }
