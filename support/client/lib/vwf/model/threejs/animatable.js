@@ -31,7 +31,7 @@
 
                 if (frame === null) return;
 
-                if (skins[i].morphTargetInfluences) {
+                /*if (skins[i].morphTargetInfluences) {
                     for (var j = 0; j < skins[i].morphTargetInfluences.length; j++) {
 
                         skins[i].morphTargetInfluences[j] = 0;
@@ -46,7 +46,7 @@
                     if (frame < (this.animationEnd || this.gettingProperty('animationLength')) - 1)
                         skins[i].morphTargetInfluences[frame + 1] = mod;
 
-                }
+                }*/
                 if (skins[i].animationHandle) {
 
                     skins[i].animationHandle.setKey(this.animationFrame);

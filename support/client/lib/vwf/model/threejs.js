@@ -431,7 +431,11 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                     node.threeObject = new THREE.Object3D();
                     node.threeObject.add(node.getRoot());
                     threeParent.add(node.threeObject);
-                } else if (childType == "subDriver/threejs/asset/vnd.collada+xml" || childType == "subDriver/threejs/asset/vnd.osgjs+json+compressed" || childType == "subDriver/threejs/asset/vnd.collada+xml+optimized" || childType == "subDriver/threejs/asset/vnd.gltf+json") {
+                } else if (childType == "subDriver/threejs/asset/vnd.collada+xml" || 
+                           childType == "subDriver/threejs/asset/vnd.osgjs+json+compressed" || 
+                           childType == "subDriver/threejs/asset/vnd.collada+xml+optimized" || 
+                           childType == "subDriver/threejs/asset/vnd.gltf+json" ||
+                           childType == "subDriver/threejs/asset/vnd.custom-morphttarget") {
 
                     node = this.state.nodes[childID] = this.subDriverFactory.createNode(childID, 'vwf/model/threejs/asset.js', childName, childType, childSource, callback);
 
@@ -441,7 +445,8 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                     node.sourceType = childType;
                     node.type = childExtendsID;
                     node.sceneID = this.state.sceneRootID;
-
+                    //here, we create a root above the asset root. This allows us to figure out what nodes are added by VWF, and why by
+                    //the loaders. Nodes of the actual asset are one level down.
                     node.threeObject = new THREE.Object3D();
                     node.threeObject.add(node.getRoot());
                     threeParent.add(node.threeObject);

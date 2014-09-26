@@ -23,11 +23,11 @@ var SCENE = 0;
 var SPHERE = 1;
 var BOX = 2;
 var CYLINDER = 3;
-var CONE = 3;
-var PLANE = 4;
-var MESH = 5;
-var NONE = 6;
-var ASSET = 7;
+var CONE = 4;
+var PLANE = 5;
+var MESH = 6;
+var NONE = 7;
+var ASSET = 8;
 
 function collectChildCollisions(node, list) {
     if (!list) list = [];

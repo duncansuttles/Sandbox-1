@@ -1,3 +1,30 @@
+function MorphTargetLoader() {
+
+    this.load = function(url, callback) {
+        $.ajax({
+            url: url,
+            success: function(res) {
+                //replace this with 
+                debugger;
+                var verts = res;
+                var dummyNode = new THREE.Object3D();
+                var mt = [];
+                for (var i = 0; i < verts.length; i++) {
+                    mt.push(new THREE.Vector3(verts[i][0] + Math.random() * 100, verts[i][1] + Math.random() * 100, verts[i][2] + Math.random() * 100));
+                }
+                dummyNode.morphTarget = verts;
+                callback({
+                    scene: dummyNode
+                });
+            },
+            error: function() {
+                callback(null);
+            }
+        });
+    }
+}
+
+
 (function() {
     function asset(childID, childSource, childName, childType, assetSource, asyncCallback, assetRegistry) {
 
@@ -31,13 +58,13 @@
 
             //the parent is an asset object
             if (true) {
-                
+
                 var parentRoot = null;
-                if(this.parentNode && this.parentNode.getRoot)  //if the parent internal driver object is just the scene, it does not have a getRoot function
+                if (this.parentNode && this.parentNode.getRoot) //if the parent internal driver object is just the scene, it does not have a getRoot function
                     parentRoot = this.parentNode.getRoot();
                 var skeleton = null;
                 var parentSkin = null;
-                var thisroot = this.getRoot().parent;  // the asset initializing
+                var thisroot = this.getRoot().parent; // the asset initializing
 
                 var walk = function(node) {
                     //dont search skeleton into self
@@ -49,10 +76,10 @@
                         parentSkin = node;
                         return;
                     }
-                    for (var i = 0; i < node.children.length;i++)
+                    for (var i = 0; i < node.children.length; i++)
                         walk(node.children[i])
                 }
-                if(parentRoot)
+                if (parentRoot)
                     walk(parentRoot); // this really seems right. 
 
                 var skin = null;
@@ -62,25 +89,61 @@
                         skin = node;
                         return;
                     }
-                    for (var i = 0; i < node.children.length;i++)
+                    for (var i = 0; i < node.children.length; i++)
                         walk(node.children[i])
                 }
                 walk(this.getRoot());
                 // bind skinned mesh of init node to parent skeleton
-                if (skeleton && skin)
-                {
-                 
-                   
+                if (skeleton && skin) {
+
+
                     skin.updateMatrixWorld(true);
-                    this.settingProperty('animationFrame',0);
-                    skin.bind(skeleton,parentSkin.matrix.clone());
+                    this.settingProperty('animationFrame', 0);
+                    skin.bind(skeleton, parentSkin.matrix.clone());
                     skin.boundingSphere = parentSkin.boundingSphere;
                     skin.updateMatrixWorld(true);
                     skin.frustumCulled = false;
-                  
+
                 }
             }
-         
+            if (childType === "subDriver/threejs/asset/vnd.custom-morphttarget") {
+
+                var parentRoot = null;
+                if (this.parentNode && this.parentNode.getRoot) //if the parent internal driver object is just the scene, it does not have a getRoot function
+                    parentRoot = this.parentNode.getRoot();
+                var parentSkin = null;
+
+                var walk = function(node) {
+                    if (node.skeleton) {
+                        parentSkin = node;
+                        return;
+                    }
+                    for (var i = 0; i < node.children.length; i++)
+                        walk(node.children[i])
+                }
+                walk(parentRoot);
+                if (parentSkin) {
+                    debugger;
+                    //trick to get the data, since we clone the node
+                    var mt = this.assetRegistry[this.assetSource].node.morphTarget;
+
+
+
+                    parentSkin.geometry.morphTargets.push({
+                        name: this.assetSource,
+                        vertices: mt
+                    });
+
+                    parentSkin.geometry.morphTargetsNeedUpdate = true
+                    parentSkin.updateMorphTargets();
+                    window.parentSkin = parentSkin;
+
+                     parentSkin.material.morphTargets = true;
+                    parentSkin.morphTargetInfluences[0] = 1;
+
+                }
+            }
+
 
         }
         this.gettingProperty = function(propertyName) {
@@ -337,7 +400,7 @@
 
             //actually, is this necessary? can we just store the raw loaded asset in the cache? 
             if (childType !== 'subDriver/threejs/asset/vnd.gltf+json')
-                reg.node = asset.scene.clone();
+                reg.node = asset.scene; //dont clone into the cache, since we clone on the way out
             else {
                 glTFCloner.clone(asset.scene, asset.rawAnimationChannels, function(clone) {
                     reg.node = clone;
@@ -476,7 +539,12 @@
                 this.loader = new THREE.glTFLoader()
                 this.loader.useBufferGeometry = true;
                 this.loader.load(assetSource, this.loaded.bind(this));
-
+                asyncCallback(false);
+            }
+            if (childType == 'subDriver/threejs/asset/vnd.custom-morphttarget') {
+                debugger;
+                this.loader = new MorphTargetLoader()
+                this.loader.load(assetSource, this.loaded.bind(this));
                 asyncCallback(false);
             }
 
