@@ -10,9 +10,9 @@ function MorphTargetLoader() {
                 var dummyNode = new THREE.Object3D();
                 var mt = [];
                 for (var i = 0; i < verts.length; i++) {
-                    mt.push(new THREE.Vector3(verts[i][0] + Math.random() * 100, verts[i][1] + Math.random() * 100, verts[i][2] + Math.random() * 100));
+                    mt.push(new THREE.Vector3(verts[i][0] + Math.random() , verts[i][1] + Math.random() , verts[i][2] + Math.random() ));
                 }
-                dummyNode.morphTarget = verts;
+                dummyNode.morphTarget = mt;
                 callback({
                     scene: dummyNode
                 });
