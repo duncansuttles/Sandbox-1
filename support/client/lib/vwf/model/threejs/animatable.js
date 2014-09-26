@@ -79,6 +79,19 @@
             if (propertyName == 'animationSpeed') {
                 this.animationSpeed = propertyValue;
             }
+            if (propertyName == 'morphTargetInfluences') {
+                var skins = getSkin(this.getRoot());
+                for (var i = 0; i < skins.length; i++) {
+                    if(skins[i].morphTargetInfluences)
+                    {
+                        for(var j =0; j < skins[i].morphTargetInfluences.length; j++)
+                        {
+                            skins[i].morphTargetInfluences[j] = propertyValue[j] || 0;
+                        }
+                    }
+
+                }
+            }
         }
         this.gettingProperty = function(propertyName) {
             if (propertyName == 'animationFrame') {
@@ -103,6 +116,15 @@
             }
             if (propertyName == 'animationSpeed') {
                 return this.animationSpeed;
+            }
+            if (propertyName == 'morphTargetInfluences') {
+                var skins = getSkin(this.getRoot());
+                for (var i = 0; i < skins.length; i++) {
+                    if(skins[i].morphTargetInfluences)
+                    {
+                        return JSON.parse(JSON.stringify(skins[i].morphTargetInfluences));
+                    }
+                }
             }
         }
         this.ticking = function() {

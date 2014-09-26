@@ -29,6 +29,7 @@ methods:
 events:
 properties:
   source:
+  morphTargetInfluences:
   animationFrame: 0
   animationLength:
   animationStart: 0
