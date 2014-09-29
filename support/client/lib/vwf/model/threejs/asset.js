@@ -1,29 +1,46 @@
-function MorphTargetLoader() {
+function GetMorphFromBufferGeometry(geo)
+{
 
-    this.load = function(url, callback) {
-        $.ajax({
-            url: url,
-            success: function(res) {
-                //replace this with 
-                debugger;
-                var verts = res;
-                var dummyNode = new THREE.Object3D();
-                var mt = [];
-                for (var i = 0; i < verts.length; i++) {
-                    mt.push(new THREE.Vector3(verts[i][0] + Math.random() , verts[i][1] + Math.random() , verts[i][2] + Math.random() ));
-                }
-                dummyNode.morphTarget = mt;
-                callback({
-                    scene: dummyNode
-                });
-            },
-            error: function() {
-                callback(null);
-            }
-        });
-    }
+        var verts = [];
+        var pos = geo.attributes ? geo.attributes.position : geo;
+       
+        for(var i = 0; i < pos.length/3; i++)
+        {
+            var x = pos[(i*3)+0] * Math.random();
+            var y = pos[(i*3)+1] * Math.random();
+            var z = pos[(i*3)+2] * Math.random();
+            verts.push(new THREE.Vector3(x,y,z));
+        }
+        return verts;
 }
 
+function MorphGLTFLoader() {
+    this.load = function(url, callback) {
+        this.loader = new THREE.glTFLoader();
+        this.loader.useBufferGeometry = true;
+        this.loader.load(url, function(asset) {
+            var dummyNode = new THREE.Object3D();
+
+            
+            var morph = null;
+            var walk = function(node) {
+                if (node instanceof THREE.Mesh) {
+                    morph = node;
+                    return;
+                }
+                for (var i = 0; i < node.children.length; i++)
+                    walk(node.children[i])
+            }
+            walk(asset.scene);
+            
+            if(morph.geometry instanceof THREE.BufferGeometry)
+                dummyNode.morphTarget = morph.geometry.attributes.position;
+            else
+                dummyNode.morphTarget = morph.geometry.vertices;    
+            callback({scene:dummyNode});
+        });
+    };
+}
 
 (function() {
     function asset(childID, childSource, childName, childType, assetSource, asyncCallback, assetRegistry) {
@@ -106,7 +123,7 @@ function MorphTargetLoader() {
 
                 }
             }
-            if (childType === "subDriver/threejs/asset/vnd.custom-morphttarget") {
+            if (childType === "subDriver/threejs/asset/vnd.gltf-morphttarget") {
 
                 var parentRoot = null;
                 if (this.parentNode && this.parentNode.getRoot) //if the parent internal driver object is just the scene, it does not have a getRoot function
@@ -122,24 +139,28 @@ function MorphTargetLoader() {
                         walk(node.children[i])
                 }
                 walk(parentRoot);
+
                 if (parentSkin) {
-                    debugger;
-                    //trick to get the data, since we clone the node
-                    var mt = this.assetRegistry[this.assetSource].node.morphTarget;
+                    
+                    var morph = this.assetRegistry[assetSource].node.morphTarget;
+                    if (morph) {
+                        //gather the vertices
+                        
+                        
+                        if(!parentSkin.geometry.morphTargets)
+                            parentSkin.geometry.morphTargets = [];
+                        parentSkin.geometry.morphTargets.push({
+                            name: this.assetSource,
+                            vertices: GetMorphFromBufferGeometry(morph)
+                        });
+                       
+                        parentSkin.geometry.morphTargetsNeedUpdate = true;
+                        parentSkin.updateMorphTargets();
+                        window.parentSkin = parentSkin;
 
-
-
-                    parentSkin.geometry.morphTargets.push({
-                        name: this.assetSource,
-                        vertices: mt
-                    });
-
-                    parentSkin.geometry.morphTargetsNeedUpdate = true
-                    parentSkin.updateMorphTargets();
-                    window.parentSkin = parentSkin;
-
-                     parentSkin.material.morphTargets = true;
-                    parentSkin.morphTargetInfluences[0] = 1;
+                        parentSkin.material.morphTargets = true;
+                        parentSkin.morphTargetInfluences[0] = 1;
+                    }
 
                 }
             }
@@ -541,10 +562,11 @@ function MorphTargetLoader() {
                 this.loader.load(assetSource, this.loaded.bind(this));
                 asyncCallback(false);
             }
-            if (childType == 'subDriver/threejs/asset/vnd.custom-morphttarget') {
-                debugger;
-                this.loader = new MorphTargetLoader()
+            //load as a normal gltf file TODO:add this to the preloader, since it should work normally
+            if (childType == 'subDriver/threejs/asset/vnd.gltf-morphttarget') {
+                this.loader = new MorphGLTFLoader();
                 this.loader.load(assetSource, this.loaded.bind(this));
+
                 asyncCallback(false);
             }
 
