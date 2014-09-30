@@ -23,13 +23,27 @@ function matset(newv, old) {
         newv[i] = old[i];
     return newv;
 }
-define(["module", "vwf/view"], function(module, view) {
+define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(module, view) {
     var stats;
     var NORMALRENDER = 0;
     var STEREORENDER = 1;
     return view.load(module, {
 
         renderMode: NORMALRENDER,
+        effects: [],
+        addEffect: function(effect) {
+            this.effects.push(effect);
+        },
+        removeEffect: function(effect) {
+            this.effects.splice(this.effects.indexOf(effect), 1);
+        },
+        activateRiftEffect: function() {
+            var effect = new THREE.OculusRiftEffect(_dRenderer, {
+                worldScale: 1
+            });
+            effect.setSize(parseInt($("#index-vwf").css('width')), parseInt($("#index-vwf").css('height')));
+            this.addEffect(effect);
+        },
         initialize: function(rootSelector) {
 
             rootSelector = {
@@ -287,14 +301,16 @@ define(["module", "vwf/view"], function(module, view) {
 
 
         },
+        windowResized: function() {
+            //called on window resize by windowresize.js
+            for (var i = 0; i < this.effects.length; i++) {
+                this.effects[i].setSize(parseInt($("#index-vwf").css('width')), parseInt($("#index-vwf").css('height')));
+            }
+        },
         triggerWindowResize: function() {
-
             //overcome by code in WindowResize.js
             $(window).resize();
             return;
-
-
-
         },
         restoreTransforms: function() {
 
@@ -856,7 +872,7 @@ define(["module", "vwf/view"], function(module, view) {
         function renderScene(time) {
 
 
-            
+
             requestAnimFrame(renderScene);
 
             //so, here's what we'll do. Since the sim state cannot advance until tick, we will update on tick. 
@@ -1015,16 +1031,26 @@ define(["module", "vwf/view"], function(module, view) {
             //cam.far = far;
             //cam.updateProjectionMatrix();
 
+            //only render effects in normal mode. Should our older stereo support move into a THREE.js effect?
             if (self.renderMode === NORMALRENDER) {
                 cam.setViewOffset(undefined);
                 cam.updateProjectionMatrix();
-                renderer.render(scene, cam);
+                //if there are no effects, we can do a normal render
+                if (self.effects.length == 0)
+                    renderer.render(scene, cam);
+                else //else, the normal render is taken care of by the effect
+                {
+                    for (var i = 0; i < self.effects.length; i++)
+                    {
+                        self.effects[i].render(scene, cam);
+                    }
+                }
             } else if (self.renderMode === STEREORENDER) {
                 var width = $('#index-vwf').attr('width');
                 var height = $('#index-vwf').attr('height');
-                var ww2 = width / (2*_dRenderer.devicePixelRatio);
+                var ww2 = width / (2 * _dRenderer.devicePixelRatio);
                 var h = ww2 / 1.333;
-                var hdif = (height - h) / (2*_dRenderer.devicePixelRatio*_dRenderer.devicePixelRatio*_dRenderer.devicePixelRatio);
+                var hdif = (height - h) / (2 * _dRenderer.devicePixelRatio * _dRenderer.devicePixelRatio * _dRenderer.devicePixelRatio);
                 var centerh = hdif;
 
                 oldaspect = cam.aspect;
@@ -1225,6 +1251,7 @@ define(["module", "vwf/view"], function(module, view) {
                 });
                 sceneNode.renderer.autoUpdateScene = false;
                 sceneNode.renderer.setSize($('#index-vwf').width(), $('#index-vwf').height());
+
 
 
                 if (_SettingsManager.getKey('shadows')) {

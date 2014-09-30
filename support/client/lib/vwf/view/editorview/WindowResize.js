@@ -118,7 +118,7 @@ define({
                 $('#index-vwf').css('height', canvasheight);
                 $('#index-vwf').css('width', oldwidth);
                 _dView.getCamera().updateProjectionMatrix()
-
+                _dView.windowResized();
             }
         });
         
@@ -162,6 +162,7 @@ define({
             _Editor.findcamera().aspect = (parseInt($('#index-vwf').css('width')) / parseInt($('#index-vwf').css('height')));
             _Editor.findcamera().updateProjectionMatrix();
             _Editor.SetSelectMode('Pick');
+            $(window).resize();
 
 
         }
