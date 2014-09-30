@@ -317,6 +317,7 @@ methods:
   playSound:
   setMusic:
   ___physics_world_reset:
+  activteOculusBridge:
 scripts:
 - |
     this.initialize = function(){
@@ -1105,7 +1106,6 @@ scripts:
               this.center = MATH.addVec3(this.center,offset);
 
            }
-
         }
         if(this.cameramode != '3RDPerson' && this.cameramode != 'FirstPerson')
         {
@@ -1207,7 +1207,21 @@ scripts:
         this.callUpdateCallbacks();
         findcamera().updateMatrixWorld();
         findcamera().updateMatrix();
+        if(this.sensorData && this.oculusActive)
+        {
+            var headPos= new THREE.Vector3(this.sensorData[1]*1,this.sensorData[2]*1,this.sensorData[3]*1);
+            headPos.applyMatrix3((new THREE.Matrix4()).extractRotation(findcamera().matrix));
+            var headQuat= new THREE.Quaternion(this.sensorData[4],this.sensorData[5],this.sensorData[6],this.sensorData[7]); 
+            findcamera().position.add(headPos);
+            findcamera().quaternion.multiply(headQuat);    
+        }
+        findcamera().updateMatrixWorld();
+        findcamera().updateMatrix();
        
+      }
+      function connectOculus()
+      {
+        this.ocb = new OculusBridge();
       }
       function findscene()
       {
@@ -1544,14 +1558,47 @@ scripts:
     }    
 
 
-      this.pointerOver = function(){return true;}
+    this.pointerOver = function(){return true;}
     this.pointerOut= function(){return true;}
     this.pointerClick= function(){return true;}
     this.pointerDown= function(){return true;}
     this.pointerUp= function(){return true;}
-     this.pointerMove= function(){return true;}
+    this.pointerMove= function(){return true;}
 
+    this.activteOculusBridge = function()
+    {
+      debugger;
+        var that = this;
+        var ws = new WebSocket("ws://localhost:8888/ws");
+        ws.onopen = function () {
+          console.log("### Connected ####");
+        };
 
+        ws.onmessage = function (evt) {
+          var message = evt.data;
+          try {
+            that.sensorData = JSON.parse(message);
+            
+          } catch (err) {
+            console.log(message);
+          }
+        };
+
+        ws.onclose = function () {
+          console.log("### Closed ####");
+        };
+        this.oculusActive = true;
+        this.getSensorData = function()
+        {
+          if (ws) {
+            if (ws.readyState === 1) {
+              ws.send("get\n");
+            }
+            window.requestAnimationFrame(that.getSensorData);
+          }
+        }
+        window.requestAnimationFrame(this.getSensorData);
+    }
         
     
     

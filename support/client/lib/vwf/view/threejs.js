@@ -43,6 +43,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(mo
             });
             effect.setSize(parseInt($("#index-vwf").css('width')), parseInt($("#index-vwf").css('height')));
             this.addEffect(effect);
+            vwf.callMethod(vwf.application(),'activteOculusBridge')
         },
         initialize: function(rootSelector) {
 
