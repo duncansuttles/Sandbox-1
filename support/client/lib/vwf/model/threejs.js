@@ -435,7 +435,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                            childType == "subDriver/threejs/asset/vnd.osgjs+json+compressed" || 
                            childType == "subDriver/threejs/asset/vnd.collada+xml+optimized" || 
                            childType == "subDriver/threejs/asset/vnd.gltf+json" ||
-                           childType == "subDriver/threejs/asset/vnd.gltf-morphttarget") {
+                           childType == "subDriver/threejs/asset/vnd.raw-morphttarget") {
 
                     node = this.state.nodes[childID] = this.subDriverFactory.createNode(childID, 'vwf/model/threejs/asset.js', childName, childType, childSource, callback);
 

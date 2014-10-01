@@ -859,6 +859,12 @@ define(["module", "vwf/view"], function(module, view) {
             
             requestAnimFrame(renderScene);
 
+            //lets not render when the quere is not ready. This prevents rendering of meshes that must have their children
+            //loaded before they can render
+            if(!vwf.private.queue.ready())
+            {
+                return;
+            }
             //so, here's what we'll do. Since the sim state cannot advance until tick, we will update on tick. 
             //but, ticks aren't fired when the scene in paused. In that case, we'll do it every frame.
             var currentState = vwf.getProperty(vwf.application(), 'playMode');

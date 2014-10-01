@@ -1,47 +1,17 @@
-function GetMorphFromBufferGeometry(geo)
-{
 
-        var verts = [];
-        var pos = geo.attributes ? geo.attributes.position : geo;
-       
-        for(var i = 0; i < pos.length/3; i++)
+
+function MorphRawJSONLoader() {
+    this.load = function(url,callback)
+    {
+        $.get(url,function(data)
         {
-            var x = pos[(i*3)+0] * Math.random();
-            var y = pos[(i*3)+1] * Math.random();
-            var z = pos[(i*3)+2] * Math.random();
-            verts.push(new THREE.Vector3(x,y,z));
-        }
-        return verts;
-}
-
-function MorphGLTFLoader() {
-    this.load = function(url, callback) {
-        this.loader = new THREE.glTFLoader();
-        this.loader.useBufferGeometry = true;
-        this.loader.load(url, function(asset) {
+           
             var dummyNode = new THREE.Object3D();
-
-            
-            var morph = null;
-            var walk = function(node) {
-                if (node instanceof THREE.Mesh) {
-                    morph = node;
-                    return;
-                }
-                for (var i = 0; i < node.children.length; i++)
-                    walk(node.children[i])
-            }
-            walk(asset.scene);
-            
-            if(morph.geometry instanceof THREE.BufferGeometry)
-                dummyNode.morphTarget = morph.geometry.attributes.position;
-            else
-                dummyNode.morphTarget = morph.geometry.vertices;    
+            dummyNode.morphTarget = JSON.parse(data);
             callback({scene:dummyNode});
         });
-    };
+    }
 }
-
 (function() {
     function asset(childID, childSource, childName, childType, assetSource, asyncCallback, assetRegistry) {
 
@@ -123,7 +93,7 @@ function MorphGLTFLoader() {
 
                 }
             }
-            if (childType === "subDriver/threejs/asset/vnd.gltf-morphttarget") {
+            if (childType === "subDriver/threejs/asset/vnd.raw-morphttarget") {
 
                 var parentRoot = null;
                 if (this.parentNode && this.parentNode.getRoot) //if the parent internal driver object is just the scene, it does not have a getRoot function
@@ -143,16 +113,45 @@ function MorphGLTFLoader() {
                 if (parentSkin) {
                     
                     var morph = this.assetRegistry[assetSource].node.morphTarget;
+
+
+
                     if (morph) {
-                        //gather the vertices
+                        
+                        if((morph.length/3) % parentSkin.geometry.vertices.length > 0)
+                        {
+                            console.warn('target is wrong vertex count');
+                            return;
+                        }
                         
                         
                         if(!parentSkin.geometry.morphTargets)
                             parentSkin.geometry.morphTargets = [];
-                        parentSkin.geometry.morphTargets.push({
-                            name: this.assetSource,
-                            vertices: GetMorphFromBufferGeometry(morph)
-                        });
+
+                        var targetCount = (morph.length/3) / parentSkin.geometry.vertices.length;
+                        var pointer = 0;
+                        debugger;
+                        for(var i =0; i < targetCount; i++)
+                        {
+                            var verts = [];
+                            for(var j = 0; j < parentSkin.geometry.vertices.length; j++)
+                            {
+                                var x = morph[pointer];
+                                pointer++;
+                                var y = morph[pointer];
+                                pointer++;
+                                var z = morph[pointer];
+                                pointer++;
+                                verts.push(new THREE.Vector3(x,y,z));
+                            }
+                            parentSkin.geometry.morphTargets.push({
+                                name: this.assetSource + i,
+                                vertices: verts
+                            });
+
+                        }
+
+                       
                        
                         parentSkin.geometry.morphTargetsNeedUpdate = true;
                         parentSkin.updateMorphTargets();
@@ -563,10 +562,9 @@ function MorphGLTFLoader() {
                 asyncCallback(false);
             }
             //load as a normal gltf file TODO:add this to the preloader, since it should work normally
-            if (childType == 'subDriver/threejs/asset/vnd.gltf-morphttarget') {
-                this.loader = new MorphGLTFLoader();
+            if (childType == 'subDriver/threejs/asset/vnd.raw-morphttarget') {
+                this.loader = new MorphRawJSONLoader();
                 this.loader.load(assetSource, this.loaded.bind(this));
-
                 asyncCallback(false);
             }
 
