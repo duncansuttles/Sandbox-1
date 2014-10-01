@@ -80,6 +80,20 @@ define([], function() {
             //$("#PhysicsEditor").dialog( "isOpen" )
             return $('#PhysicsEditor').is(':visible');
         }
+        this.createdProperty = function(nodeID, propertyName, propertyValue) {
+            this.satProperty(nodeID, propertyName, propertyValue);
+        }
+        this.initializedProperty = function(nodeID, propertyName, propertyValue) {
+            this.satProperty(nodeID, propertyName, propertyValue);
+        }
+        this.createdNode = function(nodeID) {
+            //note taht we dont have to upate the physics preive here,  because all the sets on the new node's props will do it
+        }
+        this.deletedNode = function(nodeID) {
+            if (this.worldPreviewRoot) {
+                this.BuildWorldPreview();
+            }
+        }
         this.satProperty = function(nodeID, propName, propVal) {
             for (var i = 0; i < this.propertyEditorDialogs.length; i++) {
 
@@ -99,7 +113,40 @@ define([], function() {
             //basically, any property change on a selected node might require a redraw
             //we could be smarter about this, but probably not worth the effort
             if (this.isOpen() && _Editor.isSelected(nodeID)) {
-                this.BuildPreview();
+                //optimization for only movement of roots
+                if (this.physicsPreviewRoot && this.physicsPreviewRoot[nodeID] && propName == "transform") {
+                    this.physicsPreviewRoot[nodeID].matrix.fromArray(propVal);
+                    this.physicsPreviewRoot[nodeID].updateMatrixWorld(true);
+                } else {
+                    this.BuildPreview();
+                }
+            }
+            //here, if we are displaying all of the physics world, we need to update transforms
+            //note that the above function rebuilds all objects each time a property is set
+            //this is inteneded to show the world in motion, so the above is inefficient
+            //instead, we will set transforms for physics body roots, but not update geometries for now
+            if (this.worldPreviewRoot) {
+                if (this.worldPreviewRoot[nodeID] && propName == 'transform') {
+                    this.worldPreviewRoot[nodeID].matrix.fromArray(propVal);
+                    this.worldPreviewRoot[nodeID].updateMatrixWorld(true);
+                }
+                //here, we pick up some other properties and just rebuild
+                //not that since we sort of expect this to run fairly fast, we need to be a bit more careful then we were above
+                if ([
+                    "___physics_enabled",
+                    "___physics_collision_length",
+                    "___physics_collision_width",
+                    "___physics_collision_height",
+                    "___physics_collision_radius",
+                    "___physics_collision_type",
+                    "___physics_collision_offset",
+                    "_length",
+                    "width",
+                    "height",
+                    "radius"
+                ].indexOf(propName) > -1) {
+                    this.BuildWorldPreview();
+                }
             }
         }
         this.propertyEditorDialogs = [];
@@ -315,7 +362,25 @@ define([], function() {
             for (var i in this.physicsPreviewRoot.children) {
                 this.physicsPreviewRoot.remove(this.physicsPreviewRoot.children[i]);
             }
-
+        }
+        this.clearWorldPreview = function() {
+            //release all held memory
+            this.dispose(this.worldPreviewRoot);
+            for (var i in this.worldPreviewRoot.children) {
+                this.worldPreviewRoot.remove(this.worldPreviewRoot.children[i]);
+            }
+        }
+        this.disableWorldPreview = function() {
+            if (this.worldPreviewRoot) {
+                this.clearWorldPreview();
+                this.worldPreviewRoot.parent.remove(this.worldPreviewRoot);
+                delete this.worldPreviewRoot;
+            }
+        }
+        this.toggleWorldPreview = function()
+        {
+            if (this.worldPreviewRoot) this.disableWorldPreview();
+            else this.BuildWorldPreview();
         }
         this.BuildPreviewInner = function(i, root, scale) {
             var transform = findphysicsnode(i).transform;
@@ -335,14 +400,14 @@ define([], function() {
                 geo = new THREE.BoxGeometry(vwf.getProperty(i, '_length') * worldScale[0], vwf.getProperty(i, 'width') * worldScale[1], vwf.getProperty(i, 'height') * worldScale[2], 5, 5, 5);
             }
             if (isCylinder(i)) //sphere
-            {   
-                needRotate =  true;
-                geo = new THREE.CylinderGeometry(vwf.getProperty(i, 'radius') * worldScale[0],vwf.getProperty(i, 'radius') * worldScale[0], vwf.getProperty(i, 'height') * worldScale[1], 10, 10);
+            {
+                needRotate = true;
+                geo = new THREE.CylinderGeometry(vwf.getProperty(i, 'radius') * worldScale[0], vwf.getProperty(i, 'radius') * worldScale[0], vwf.getProperty(i, 'height') * worldScale[1], 10, 10);
             }
             if (isCone(i)) //sphere
             {
-                needRotate =  true;
-                geo = new THREE.ConeGeometry(vwf.getProperty(i, 'radius') * worldScale[0], vwf.getProperty(i, 'height') * worldScale[1], 10, 10);
+                needRotate = true;
+                geo = new THREE.CylinderGeometry(0, vwf.getProperty(i, 'radius') * worldScale[0], vwf.getProperty(i, 'height') * worldScale[1], 10, 10);
             }
             if (isPlane(i)) //sphere
             {
@@ -365,14 +430,14 @@ define([], function() {
                         break;
                     case 3:
                         {
-                            needRotate =  true;
-                            geo = new THREE.CylinderGeometry(vwf.getProperty(i, '___physics_collision_radius') * worldScale[0], vwf.getProperty(i, '___physics_collision_radius') * worldScale[0], vwf.getProperty(i, '___physics_collision_height') * worldScale[1], 10, 10,10);
+                            needRotate = true;
+                            geo = new THREE.CylinderGeometry(vwf.getProperty(i, '___physics_collision_radius') * worldScale[0], vwf.getProperty(i, '___physics_collision_radius') * worldScale[0], vwf.getProperty(i, '___physics_collision_height') * worldScale[1], 10, 10, 10);
                         }
                         break;
                     case 4:
                         {
-                            needRotate =  true;
-                            geo = new THREE.ConeGeometry(vwf.getProperty(i, '___physics_collision_radius') * worldScale[0], vwf.getProperty(i, '___physics_collision_height') * worldScale[1], 10, 5);
+                            needRotate = true;
+                            geo = new THREE.CylinderGeometry(0, vwf.getProperty(i, '___physics_collision_radius') * worldScale[0], vwf.getProperty(i, '___physics_collision_height') * worldScale[1], 10, 5);
                         }
                         break;
                     case 5:
@@ -413,15 +478,26 @@ define([], function() {
             var children = vwf.children(i);
             //the current node does not have a mesh, so we use a blank object3
             if (!mesh) mesh = new THREE.Object3D();
+
+
+            //apply a premultiplied rotation matrix
+            //hold it in a seperate node, so the rotation will not effect other children
+            if (needRotate) {
+
+
+                mesh.matrix.makeRotationX(Math.PI / 2);
+                mesh.matrixAutoUpdate = false;
+                mesh.updateMatrixWorld(true);
+                var rotNode = new THREE.Object3D();
+                rotNode.add(mesh);
+                mesh = rotNode;
+
+            }
             root.add(mesh);
+            root[i] = mesh;
             mesh.matrix.fromArray(transform);
             mesh.matrixAutoUpdate = false;
-            //apply a premultiplied rotation matrix
-            if(needRotate)
-            {
-                var flip =(new THREE.Matrix4()).makeRotationX(Math.PI/2);
-                mesh.matrix.multiply(flip);
-            }
+
             mesh.matrix.elements[12] *= scale[0];
             mesh.matrix.elements[13] *= scale[1];
             mesh.matrix.elements[14] *= scale[2];
@@ -453,6 +529,24 @@ define([], function() {
                     this.BuildPreviewInner(i, this.physicsPreviewRoot, [1, 1, 1]);
                 }
             }
+        }
+        //this is used not for previewing the selected item, but for displaying all physics bodies
+        //note that it won't update for collision shapes that change during runtime, IE, a compound
+        //collision body is updated during execution. This should not be happening anyway.
+        this.BuildWorldPreview = function() {
+            if (this.worldPreviewRoot) {
+                this.clearWorldPreview();
+                _dScene.remove(this.worldPreviewRoot);
+            }
+
+            this.worldPreviewRoot = new THREE.Object3D();
+            var roots = vwf.children(vwf.application());
+            for (var i in roots) {
+                if (roots[i] && vwf.getProperty(roots[i], '___physics_enabled')) {
+                    this.BuildPreviewInner(roots[i], this.worldPreviewRoot, [1, 1, 1]);
+                }
+            }
+            _dScene.add(this.worldPreviewRoot, true);
         }
         this.BuildGUI = function() {
 
