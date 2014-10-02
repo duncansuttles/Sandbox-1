@@ -757,6 +757,26 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             }
         }
         this.satProperty = function(id, propname, val) {
+            
+
+            //here, we update the selection bounds rect when the selction transforms
+             if (window._Editor && propname == _Editor.transformPropertyName && _Editor.isSelected(id)) {
+                _Editor.updateBoundsTransform(id);
+                if (vwf.client() == vwf.moniker()) {
+                    if (_Editor.waitingForSet.length)
+                        _Editor.waitingForSet.splice(_Editor.waitingForSet.indexOf(id), 1);
+
+                }
+                if (_Editor.waitingForSet.length == 0 || vwf.client() != vwf.moniker()) {
+                    _Editor.updateGizmoLocation();
+                    _Editor.updateGizmoSize();
+                    _Editor.updateGizmoOrientation(false);
+                }
+                $(document).trigger('selectionTransformedLocal', [{
+                    id: id
+                }]);
+            }
+
             //when an object moves, check that it's not hilighted by the peer selection display.
             //if it is, update the matrix of the selection rectangle.
             if (vwf.client() != vwf.moniker() && propname == 'transform') {

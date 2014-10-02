@@ -202,25 +202,6 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
         },
         satProperty: function(nodeID, propertyName, propertyValue) {
             this.viewAPINotify('satProperty', [nodeID, propertyName, propertyValue]);
-            if (window._Editor && propertyName == _Editor.transformPropertyName && _Editor.isSelected(nodeID)) {
-                _Editor.updateBoundsTransform(nodeID);
-                if (vwf.client() == vwf.moniker()) {
-                    if (_Editor.waitingForSet.length)
-                        _Editor.waitingForSet.splice(_Editor.waitingForSet.indexOf(nodeID), 1);
-
-                }
-                if (_Editor.waitingForSet.length == 0 || vwf.client() != vwf.moniker()) {
-                    _Editor.updateGizmoLocation();
-                    _Editor.updateGizmoSize();
-                    _Editor.updateGizmoOrientation(false);
-                }
-                $(document).trigger('selectionTransformedLocal', [{
-                    id: nodeID
-                }]);
-            }
-
-            if (window._PrimitiveEditor)
-                _PrimitiveEditor.NodePropertyUpdate(nodeID, propertyName, propertyValue);
         },
         createdMethod: function(nodeID, methodName, methodParameters, methodBody) {
             this.viewAPINotify('createdMethod', arguments);
