@@ -261,15 +261,17 @@ SceneManager.prototype.setDirty = function(object) {
 }
 SceneManager.prototype.update = function(dt) {
 
+    
     if (!this.initialized) return;
 
 
-
+    //first, we sort all dirty objects into their new regions
     for (var i = 0; i < this.dirtyObjects.length; i++) {
         this.dirtyObjects[i].sceneManagerUpdate();
     }
 
-
+    //now desplit anything that has too few objects
+    this.root.processDesplits();
 
     this.dirtyObjects = [];
 
@@ -310,7 +312,8 @@ SceneManager.prototype.update = function(dt) {
     for (var i = 0; i < this.particleSystemList.length; i++) {
         this.particleSystemList[i].update(dt);
     }
-
+    
+    
 
 }
 SceneManager.prototype.releaseTexture = function(texture) {
@@ -749,6 +752,7 @@ function SceneManagerRegion(min, max, depth, scene, order) {
     this.depth = depth;
     this.scene = scene;
     this.order = order;
+    this.wantsDesplit = false;
     if (drawSceneManagerRegions) {
         this.mesh = this.BuildWireBox([this.max[0] - this.min[0], this.max[0] - this.min[0], this.max[0] - this.min[0]], [0, 0, 0], [(this.depth / maxDepth) * 2, 0, 0]);
 
@@ -767,6 +771,14 @@ function SceneManagerRegion(min, max, depth, scene, order) {
         this.RenderBatchManager = new THREE.RenderBatchManager(scene, GUID());
         _SceneManager.BatchManagers.push(this.RenderBatchManager);
     }
+}
+SceneManagerRegion.prototype.processDesplits = function()
+{
+    if(this.wantsDesplit)
+        this.desplit();
+    for(var i = 0; i < this.childRegions.length; i++)
+        this.childRegions[i].processDesplits();
+
 }
 SceneManagerRegion.prototype.BuildWireBox = function(size, offset, color) {
 
@@ -844,21 +856,33 @@ SceneManagerRegion.prototype.getChildren = function() {
 
 SceneManagerRegion.prototype.getChildCount = function() {
     //can we keep track without the recursive search?
-    //return this.childCount;
+    return this.childCount;
 
-    var count = 0;
+    /*var count = 0;
     for (var i = 0; i < this.childRegions.length; i++) {
         count += this.childRegions[i].getChildCount();
     }
-    return count + this.childObjects.length;
+    return count + this.childObjects.length;*/
+}
+SceneManagerRegion.prototype.childRemoved = function()
+{
+    this.childCount--;
+    if(this.parent)
+        this.parent.childRemoved();
+}
+SceneManagerRegion.prototype.childAdded = function()
+{
+    this.childCount++;
+    if(this.parent)
+        this.parent.childAdded();
 }
 SceneManagerRegion.prototype.removeChild = function(child) {
     var removed = false;
     if (this.childObjects.indexOf(child) != -1) {
         removed = true;
-        this.childCount--;
+        
         this.childObjects.splice(this.childObjects.indexOf(child), 1);
-
+        this.childRemoved();
         if (this.RenderBatchManager) {
 
             this.RenderBatchManager.remove(child);
@@ -868,15 +892,18 @@ SceneManagerRegion.prototype.removeChild = function(child) {
         for (var i = 0; i < this.childRegions.length; i++) {
             removed = this.childRegions[i].removeChild(child);
             if (removed) {
-                this.childCount--;
+               
                 break;
             }
         }
     }
-    if (this.getChildCount() <= maxObjects)
-        this.desplit();
+    if (this.getChildCount() <= maxObjects && this.isSplit)
+    {        
+        this.wantsDesplit = true;
+    }
     return removed;
 }
+
 SceneManagerRegion.prototype.desplit = function() {
     var children = this.getChildren();
     for (var i = 0; i < this.childRegions.length; i++) {
@@ -914,6 +941,7 @@ SceneManagerRegion.prototype.desplit = function() {
     }
 
     this.childRegions = [];
+    this.isSplit = false;
 }
 SceneManagerRegion.prototype.getLeaves = function(list) {
     if (!list)
@@ -924,11 +952,12 @@ SceneManagerRegion.prototype.getLeaves = function(list) {
     if (this.childRegions.length == 0)
         list.push(this);
 }
+var tempmat = [];
 SceneManagerRegion.prototype.completelyContains = function(object) {
 
     //changing transforms make this cache not work
     if (!object.boundsCache)
-        object.boundsCache = object.GetBoundingBox(true).transformBy(object.getModelMatrix());
+        object.boundsCache = object.GetBoundingBox(true).transformBy(object.getModelMatrix(tempmat));
     return this.completelyContainsBox(object.boundsCache);
 }
 SceneManagerRegion.prototype.completelyContainsBox = function(box) {
@@ -966,7 +995,11 @@ function objectSceneManagerDelete() {
 
 function objectSceneManagerUpdate() {
     //dynamic objects currently should not belong to the octree
-    //we really should  try to not get here in the first place. Because when we set 
+    //we really should  try to not get here in the first place. Because when we set
+
+
+
+
     delete this.boundsCache;
     if (this.isDynamic()) return;
     for (var i = 0; i < this.children.length; i++) {
@@ -1002,7 +1035,7 @@ SceneManagerRegion.prototype.distributeObject = function(object) {
                 this.childRegions[i].addChild(object);
                 added = true;
                 //it either goes in me or my children
-                this.childCount++;
+                
                 break;
             }
         }
@@ -1011,7 +1044,9 @@ SceneManagerRegion.prototype.distributeObject = function(object) {
         if (this.childObjects.indexOf(object) == -1) {
             this.childObjects.push(object);
             //it either goes in me or my children
-            this.childCount++;
+            this.childAdded();
+            if(this.getChildCount() > maxObjects && this.wantsDesplit)
+                this.wantsDesplit = false;
             if (this.mesh) {
                 this.mesh.material.color.g = this.childObjects.length / maxObjects;
                 this.mesh.renderDepth = this.depth * 8 + this.order + this.childObjects.length;
@@ -1143,7 +1178,7 @@ SceneManagerRegion.prototype.CPUPick = function(o, d, opts, hits) {
        hits = [];
     //if no faces, can be no hits. 
     //remember, faces is all faces in this node AND its children
-    if (this.getChildCount().length == 0)
+    if (this.getChildCount() == 0)
         return hits;
 
     //reject this node if the ray does not intersect it's bounding box
@@ -1189,7 +1224,7 @@ SceneManagerRegion.prototype.FrustrumCast = function(frustrum, opts) {
 
     //if no faces, can be no hits. 
     //remember, faces is all faces in this node AND its children
-    if (this.getChildCount().length == 0)
+    if (this.getChildCount() == 0)
         return hits;
 
     //reject this node if the ray does not intersect it's bounding box
@@ -1232,7 +1267,7 @@ SceneManagerRegion.prototype.SphereCast = function(center, r, opts) {
 
     //if no faces, can be no hits. 
     //remember, faces is all faces in this node AND its children
-    if (this.getChildCount().length == 0)
+    if (this.getChildCount() == 0)
         return hits;
 
     //reject this node if the ray does not intersect it's bounding box
