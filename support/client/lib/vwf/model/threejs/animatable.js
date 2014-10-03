@@ -21,6 +21,7 @@
         //reason over the interpolated values anyway
         this.setAnimationFrameInternal = function(propertyValue, updateSceneManager) {
 
+            if(this.animationFrame === propertyValue) return;
             this.animationFrame = propertyValue;
             var skins = getSkin(this.getRoot());
             for (var i = 0; i < skins.length; i++) {
@@ -53,9 +54,11 @@
                     skins[i].updateMatrixWorld();
                     //odd, does not seem to update matrix on first child bone. 
                     //how does the bone relate to the skeleton?
-                    for (var j = 0; j < skins[i].children.length; j++) {
-                                 skins[i].children[j].updateMatrixWorld(true);
-                    }
+
+                    //this is no longer necessary in threejs r68
+                    //for (var j = 0; j < skins[i].children.length; j++) {
+                               //  skins[i].children[j].updateMatrixWorld(true);
+                    //}
                     if (updateSceneManager)
                         _SceneManager.setDirty(skins[i]);
 

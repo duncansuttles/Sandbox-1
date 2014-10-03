@@ -202,12 +202,20 @@ THREE.glTFInterpolator.prototype.interp = function(t)
 	}
 	else
 	{
-		for (i = 0; i < this.count - 1; i++)
-		{
-			var key1 = this.keys[i];
-			var key2 = this.keys[i + 1];
-	
-			if (t >= key1 && t <= key2)
+		//linear search for key? I think we can directly compute needed key
+
+		var rate = this.count/this.duration;
+		var key = Math.floor(rate * t);
+		var i = key;
+		var key1 = i;
+		var key2 = i*2;
+
+
+		//for (i = 0; i < this.count - 1; i++)
+		//{
+		//	var key1 = this.keys[i];
+		//	var key2 = this.keys[i + 1];
+	    //if (t >= key1 && t <= key2)
 			{
 				if (this.isRot) {
 					this.quat1.set(this.values[i * 4],
@@ -231,7 +239,7 @@ THREE.glTFInterpolator.prototype.interp = function(t)
 					this.vec3.lerp(this.vec2, (t - key1) / (key2 - key1));
 				}
 			}
-		}
+		//}
 	}
 	
 	if (this.target)

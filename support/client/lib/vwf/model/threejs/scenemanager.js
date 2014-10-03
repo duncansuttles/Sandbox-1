@@ -184,7 +184,7 @@ SceneManager.prototype.CPUPick = function(o, d, opts) {
     this.root.CPUPick(o, d, opts, hitlist);
 
     for (var i = 0; i < this.specialCaseObjects.length; i++) {
-       this.specialCaseObjects[i].CPUPick(o, d, opts || this.defaultPickOptions,hitlist);
+        this.specialCaseObjects[i].CPUPick(o, d, opts || this.defaultPickOptions, hitlist);
     }
 
     //sort the hits by priority and distance
@@ -261,15 +261,17 @@ SceneManager.prototype.setDirty = function(object) {
 }
 SceneManager.prototype.update = function(dt) {
 
+
     if (!this.initialized) return;
 
 
-
+    //first, we sort all dirty objects into their new regions
     for (var i = 0; i < this.dirtyObjects.length; i++) {
         this.dirtyObjects[i].sceneManagerUpdate();
     }
 
-
+    //now desplit anything that has too few objects
+    this.root.processDesplits();
 
     this.dirtyObjects = [];
 
@@ -310,6 +312,7 @@ SceneManager.prototype.update = function(dt) {
     for (var i = 0; i < this.particleSystemList.length; i++) {
         this.particleSystemList[i].update(dt);
     }
+
 
 
 }
@@ -413,8 +416,8 @@ SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
         //create the new texture, and decompress. Copy over with the onload callback above
         //texture = THREE.ImageUtils.loadCompressedTexture(url, mapping, load, error);
 
-var loader = new THREE.DDSLoader();
-        texture = loader.load( url, load, error );
+        var loader = new THREE.DDSLoader();
+        texture = loader.load(url, load, error);
 
         if (_SettingsManager.settings.filtering) {
             texture.minFilter = THREE.LinearMipMapLinearFilter;
@@ -749,6 +752,7 @@ function SceneManagerRegion(min, max, depth, scene, order) {
     this.depth = depth;
     this.scene = scene;
     this.order = order;
+    this.wantsDesplit = false;
     if (drawSceneManagerRegions) {
         this.mesh = this.BuildWireBox([this.max[0] - this.min[0], this.max[0] - this.min[0], this.max[0] - this.min[0]], [0, 0, 0], [(this.depth / maxDepth) * 2, 0, 0]);
 
@@ -767,6 +771,13 @@ function SceneManagerRegion(min, max, depth, scene, order) {
         this.RenderBatchManager = new THREE.RenderBatchManager(scene, GUID());
         _SceneManager.BatchManagers.push(this.RenderBatchManager);
     }
+}
+SceneManagerRegion.prototype.processDesplits = function() {
+    if (this.wantsDesplit)
+        this.desplit();
+    for (var i = 0; i < this.childRegions.length; i++)
+        this.childRegions[i].processDesplits();
+
 }
 SceneManagerRegion.prototype.BuildWireBox = function(size, offset, color) {
 
@@ -844,21 +855,32 @@ SceneManagerRegion.prototype.getChildren = function() {
 
 SceneManagerRegion.prototype.getChildCount = function() {
     //can we keep track without the recursive search?
-    //return this.childCount;
+    return this.childCount;
 
-    var count = 0;
+    /*var count = 0;
     for (var i = 0; i < this.childRegions.length; i++) {
         count += this.childRegions[i].getChildCount();
     }
-    return count + this.childObjects.length;
+    return count + this.childObjects.length;*/
+}
+SceneManagerRegion.prototype.childRemoved = function() {
+    this.childCount--;
+    if (this.parent)
+        this.parent.childRemoved();
+}
+SceneManagerRegion.prototype.childAdded = function() {
+    this.childCount++;
+    if (this.parent)
+        this.parent.childAdded();
 }
 SceneManagerRegion.prototype.removeChild = function(child) {
     var removed = false;
     if (this.childObjects.indexOf(child) != -1) {
         removed = true;
-        this.childCount--;
-        this.childObjects.splice(this.childObjects.indexOf(child), 1);
+        child.sceneManagerNode = null;
 
+        this.childObjects.splice(this.childObjects.indexOf(child), 1);
+        this.childRemoved();
         if (this.RenderBatchManager) {
 
             this.RenderBatchManager.remove(child);
@@ -868,15 +890,17 @@ SceneManagerRegion.prototype.removeChild = function(child) {
         for (var i = 0; i < this.childRegions.length; i++) {
             removed = this.childRegions[i].removeChild(child);
             if (removed) {
-                this.childCount--;
+
                 break;
             }
         }
     }
-    if (this.getChildCount() <= maxObjects)
-        this.desplit();
+    if (this.getChildCount() <= maxObjects && this.isSplit) {
+        this.wantsDesplit = true;
+    }
     return removed;
 }
+
 SceneManagerRegion.prototype.desplit = function() {
     var children = this.getChildren();
     for (var i = 0; i < this.childRegions.length; i++) {
@@ -914,6 +938,7 @@ SceneManagerRegion.prototype.desplit = function() {
     }
 
     this.childRegions = [];
+    this.isSplit = false;
 }
 SceneManagerRegion.prototype.getLeaves = function(list) {
     if (!list)
@@ -924,11 +949,12 @@ SceneManagerRegion.prototype.getLeaves = function(list) {
     if (this.childRegions.length == 0)
         list.push(this);
 }
+var tempmat = [];
 SceneManagerRegion.prototype.completelyContains = function(object) {
 
     //changing transforms make this cache not work
     if (!object.boundsCache)
-        object.boundsCache = object.GetBoundingBox(true).transformBy(object.getModelMatrix());
+        object.boundsCache = object.GetBoundingBox(true).transformBy(object.getModelMatrix(tempmat));
     return this.completelyContainsBox(object.boundsCache);
 }
 SceneManagerRegion.prototype.completelyContainsBox = function(box) {
@@ -966,7 +992,10 @@ function objectSceneManagerDelete() {
 
 function objectSceneManagerUpdate() {
     //dynamic objects currently should not belong to the octree
-    //we really should  try to not get here in the first place. Because when we set 
+    //we really should  try to not get here in the first place. Because when we set
+
+
+
     delete this.boundsCache;
     if (this.isDynamic()) return;
     for (var i = 0; i < this.children.length; i++) {
@@ -987,8 +1016,16 @@ function objectSceneManagerUpdate() {
     // this.updateMatrixWorld(true);
 
 
-
+    var oldnode = this.sceneManagerNode;
     this.sceneManagerNode.updateObject(this);
+    if(!this.sceneManagerNode)
+    {
+        debugger;
+       
+        this.sceneManagerNode = oldnode;
+        this.sceneManagerNode.updateObject(this);
+        
+    }
 
 }
 
@@ -1002,7 +1039,7 @@ SceneManagerRegion.prototype.distributeObject = function(object) {
                 this.childRegions[i].addChild(object);
                 added = true;
                 //it either goes in me or my children
-                this.childCount++;
+
                 break;
             }
         }
@@ -1011,7 +1048,9 @@ SceneManagerRegion.prototype.distributeObject = function(object) {
         if (this.childObjects.indexOf(object) == -1) {
             this.childObjects.push(object);
             //it either goes in me or my children
-            this.childCount++;
+            this.childAdded();
+            if (this.getChildCount() > maxObjects && this.wantsDesplit)
+                this.wantsDesplit = false;
             if (this.mesh) {
                 this.mesh.material.color.g = this.childObjects.length / maxObjects;
                 this.mesh.renderDepth = this.depth * 8 + this.order + this.childObjects.length;
@@ -1027,12 +1066,21 @@ SceneManagerRegion.prototype.distributeObject = function(object) {
 SceneManagerRegion.prototype.updateObject = function(object) {
     //the object has not crossed  into a new region, so no need to search up
     if (this.completelyContains(object)) {
-        if (this.childObjects.indexOf(object) != -1)
+
+
+        //if I contain the object, and I'm split, and the object has moved
+        //then we need to redistribute it. it may end up back in this node, but
+        //we won't know that until we try. If I contain the object, and I'm not split
+        //then there is no point in doing all that work - the object is still in its region 
+        if (this.childObjects.indexOf(object) != -1 && this.isSplit) {
             this.removeChild(object)
+            this.addChild(object);
+        }
+        else if(this.childObjects.indexOf(object) == -1){
+            this.addChild(object);
+        }
 
-
-        this.addChild(object);
-
+        //even if the object is still in its region, it may need updating in teh render batch, since its dirty.
         if (!this.RenderBatchManager) {
             //search up for the lowest level batch manager I fit in
             var p = this;
@@ -1059,8 +1107,16 @@ SceneManagerRegion.prototype.updateObject = function(object) {
     else {
         //if dont have parent, then at top level and cannot toss up
         if (this.parent) {
-            this.removeChild(object);
+            //so, removechild causes a walk down, but we are already walking up!
+            //each step up causes a whole recurse down! check that the child actually belongs to someone
+            //if it does not, no need to keep walking down to remove from children
+            if(object.sceneManagerNode)
+                this.removeChild(object);
             this.parent.updateObject(object);
+        }else
+        {
+            this.addChild(object);
+
         }
     }
 }
@@ -1139,11 +1195,11 @@ SceneManagerRegion.prototype.contains = function(o) {
 //Test a ray against an octree region
 SceneManagerRegion.prototype.CPUPick = function(o, d, opts, hits) {
 
-    if(!hits)
-       hits = [];
+    if (!hits)
+        hits = [];
     //if no faces, can be no hits. 
     //remember, faces is all faces in this node AND its children
-    if (this.getChildCount().length == 0)
+    if (this.getChildCount() == 0)
         return hits;
 
     //reject this node if the ray does not intersect it's bounding box
@@ -1155,7 +1211,7 @@ SceneManagerRegion.prototype.CPUPick = function(o, d, opts, hits) {
     //use the render batch. Note that this will not give a VWFID, only good when you don't care what you hit
     if (this.RenderBatchManager && opts && opts.useRenderBatches) {
         opts.batchesTested++;
-        return this.RenderBatchManager.CPUPick(o, d, opts,hits);
+        return this.RenderBatchManager.CPUPick(o, d, opts, hits);
     }
 
     //the the opts specify a max dist
@@ -1173,7 +1229,7 @@ SceneManagerRegion.prototype.CPUPick = function(o, d, opts, hits) {
     //check either this nodes faces, or the not distributed faces. for a leaf, this will just loop all faces,
     //for a non leaf, this will iterate over the faces that for some reason are not in children, which SHOULD be none
     for (var i = 0; i < this.childRegions.length; i++) {
-        this.childRegions[i].CPUPick(o, d, opts,hits);
+        this.childRegions[i].CPUPick(o, d, opts, hits);
     }
     for (var i = 0; i < this.childObjects.length; i++) {
         this.childObjects[i].CPUPick(o, d, opts, hits);
@@ -1189,7 +1245,7 @@ SceneManagerRegion.prototype.FrustrumCast = function(frustrum, opts) {
 
     //if no faces, can be no hits. 
     //remember, faces is all faces in this node AND its children
-    if (this.getChildCount().length == 0)
+    if (this.getChildCount() == 0)
         return hits;
 
     //reject this node if the ray does not intersect it's bounding box
@@ -1232,7 +1288,7 @@ SceneManagerRegion.prototype.SphereCast = function(center, r, opts) {
 
     //if no faces, can be no hits. 
     //remember, faces is all faces in this node AND its children
-    if (this.getChildCount().length == 0)
+    if (this.getChildCount() == 0)
         return hits;
 
     //reject this node if the ray does not intersect it's bounding box
@@ -1323,11 +1379,11 @@ THREE.RenderBatch.prototype.deinitialize = function() {
     if (this.mesh)
         this.scene.remove_internal(this.mesh);
 }
-THREE.RenderBatch.prototype.CPUPick = function(o, d, opts,hits) {
-    if(!hits)
+THREE.RenderBatch.prototype.CPUPick = function(o, d, opts, hits) {
+    if (!hits)
         hits = [];
     if (this.mesh)
-        return this.mesh.CPUPick(o, d, opts,hits);
+        return this.mesh.CPUPick(o, d, opts, hits);
     return hits;
 }
 THREE.RenderBatch.prototype.testForMirroredMatrix = function(matrix) {
@@ -1669,11 +1725,11 @@ THREE.RenderBatchManager = function(scene, name) {
     this.batches = [];
 
 }
-THREE.RenderBatchManager.prototype.CPUPick = function(o, d, opts,hits) {
-    if(!hits)
+THREE.RenderBatchManager.prototype.CPUPick = function(o, d, opts, hits) {
+    if (!hits)
         hits = [];
     for (var i = 0; i < this.batches.length; i++)
-        this.batches[i].CPUPick(o, d, opts,hits);
+        this.batches[i].CPUPick(o, d, opts, hits);
     return hits;
 
 }
