@@ -132,7 +132,8 @@ define([], function() {
                 }
                 //here, we pick up some other properties and just rebuild
                 //not that since we sort of expect this to run fairly fast, we need to be a bit more careful then we were above
-                if ([
+                else if ([
+                    "transform",
                     "___physics_enabled",
                     "___physics_collision_length",
                     "___physics_collision_width",
@@ -465,9 +466,17 @@ define([], function() {
             var mesh = null;
             if (geo) {
                 mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial());
+
                 mesh.material.color.b = 1;
                 mesh.material.color.g = .3;
                 mesh.material.color.r = 1;
+
+                if(vwf.parent(i) != vwf.application())
+                {
+                    mesh.material.color.g = .0;
+                    mesh.material.color.r = .5;
+                }
+                
                 mesh.material.transparent = true;
                 mesh.material.depthTest = false;
                 mesh.material.depthWrite = false;
@@ -495,7 +504,8 @@ define([], function() {
             }
             root.add(mesh);
             root[i] = mesh;
-            mesh.matrix.fromArray(transform);
+            if(transform)
+                mesh.matrix.fromArray(transform);
             mesh.matrixAutoUpdate = false;
 
             mesh.matrix.elements[12] *= scale[0];
