@@ -1,3 +1,53 @@
+
+window.parseandupload = function()
+{
+    var loader = new THREE.ColladaLoader();
+    loader.load('./Female_Head_Morphtargets.DAE',function(data)
+    {
+        var meshes = [];
+        var walk = function(node)
+        {
+            if(node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh)
+            {
+                meshes.push(node);
+            }
+            for(var i=0; i < node.children.length; i++)
+                walk(node.children[i]);
+
+        }
+        walk(data.scene);
+        var verts = [];
+        for(var i=0; i < meshes.length; i++)
+        {
+            console.log(meshes[i].name);
+         /*   for(var j = 0; j < meshes[i].vertices.length; j++)
+            {
+                verts.push(meshes[i].vertices[j].x);
+                verts.push(meshes[i].vertices[j].y);
+                verts.push(meshes[i].vertices[j].z);
+            }
+*/
+        }
+    
+    return;
+            $.ajax({
+    type: "POST",
+    url: './vwfDataManager.svc/uploadtemp',
+    processData: false,
+    contentType: 'application/json',
+    data: JSON.stringify(verts),
+    success: function(r) {
+       console.log(r);
+    }
+});
+
+
+
+    })
+
+
+}
+
 function GUID() {
     var S4 = function() {
         return Math.floor(Math.SecureRandom() * 0x10000 /* 65536 */ ).toString(16);
@@ -857,11 +907,11 @@ SceneManagerRegion.prototype.getChildCount = function() {
     //can we keep track without the recursive search?
     return this.childCount;
 
-    /*var count = 0;
+    var count = 0;
     for (var i = 0; i < this.childRegions.length; i++) {
         count += this.childRegions[i].getChildCount();
     }
-    return count + this.childObjects.length;*/
+    return count + this.childObjects.length;
 }
 SceneManagerRegion.prototype.childRemoved = function() {
     this.childCount--;
@@ -872,6 +922,8 @@ SceneManagerRegion.prototype.childAdded = function() {
     this.childCount++;
     if (this.parent)
         this.parent.childAdded();
+   
+
 }
 SceneManagerRegion.prototype.removeChild = function(child) {
     var removed = false;
@@ -902,6 +954,13 @@ SceneManagerRegion.prototype.removeChild = function(child) {
 }
 
 SceneManagerRegion.prototype.desplit = function() {
+
+
+    //were going to be moving objects around alot, unlink the parent so the add/remove notifications don't bubble to parent
+    //this is because the actual number of objects in this node does not change with split/desplit operation
+    var pback = this.parent;
+    this.parent = null;
+
     var children = this.getChildren();
     for (var i = 0; i < this.childRegions.length; i++) {
         this.childRegions[i].deinitialize();
@@ -936,9 +995,11 @@ SceneManagerRegion.prototype.desplit = function() {
         }
 
     }
-
+    this.childCount = this.childObjects.length;
     this.childRegions = [];
     this.isSplit = false;
+    this.wantsDesplit = false;
+    this.parent = pback;
 }
 SceneManagerRegion.prototype.getLeaves = function(list) {
     if (!list)
@@ -1072,13 +1133,11 @@ SceneManagerRegion.prototype.updateObject = function(object) {
         //then we need to redistribute it. it may end up back in this node, but
         //we won't know that until we try. If I contain the object, and I'm not split
         //then there is no point in doing all that work - the object is still in its region 
-        if (this.childObjects.indexOf(object) != -1 && this.isSplit) {
+        
             this.removeChild(object)
             this.addChild(object);
-        }
-        else if(this.childObjects.indexOf(object) == -1){
-            this.addChild(object);
-        }
+        
+       
 
         //even if the object is still in its region, it may need updating in teh render batch, since its dirty.
         if (!this.RenderBatchManager) {
@@ -1167,8 +1226,14 @@ SceneManagerRegion.prototype.split = function() {
     this.childRegions[6].parent = this;
     this.childRegions[7].parent = this;
 
+
+    //were going to be moving objects around alot, unlink the parent so the add/remove notifications don't bubble to parent
+    //this is because the actual number of objects in this node does not change with split/desplit operation
+    var pback = this.parent;
+    this.parent = null;
     //if I have faces, but I split, I need to distribute my faces to my children
     var objectsBack = this.childObjects;
+    
     this.childObjects = [];
     for (var i = 0; i < objectsBack.length; i++) {
         if (this.RenderBatchManager)
@@ -1180,7 +1245,8 @@ SceneManagerRegion.prototype.split = function() {
                     this.RenderBatchManager.add(objectsBack[i]);
         }
     }
-
+    this.childCount = objectsBack.length;
+    this.parent = pback;
     this.isSplit = true;
 }
 
