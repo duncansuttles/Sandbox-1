@@ -1,3 +1,4 @@
+"use strict";
 //Adapeted from GLGE
 
 /*
@@ -33,11 +34,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @name MATH_math.js
  */
 
- if(typeof(MATH) == "undefined"){
+ if(typeof(window.MATH) == "undefined"){
     /**
     * @namespace Holds the functionality of the library
     */
-    MATH = {};
+    window.MATH = {};
 }
 
 (function(MATH){
@@ -321,7 +322,7 @@ MATH.angleVec4=function(a,b){
     return Math.acos(d);
 };
 
-MATH_math_use_webgl_float=false;
+window.MATH_math_use_webgl_float=false;
 
 /**
 * The Mat class creates a matrix from an array
@@ -1403,7 +1404,7 @@ MATH_mathUnitTest() ;
 
 
 
-})(MATH);
+})(window.MATH);
 
 
 

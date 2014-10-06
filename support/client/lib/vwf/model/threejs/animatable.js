@@ -1,3 +1,4 @@
+"use strict";
 (function() {
 
 
@@ -13,6 +14,22 @@
         return list;
     }
 
+    function getAllDrawables(threeObject, list) {
+
+        if (!threeObject) return;
+        if (!list) list = [];
+        if (threeObject instanceof THREE.Mesh || threeObject instanceof THREE.Line)
+            list.push(threeObject);
+        if (threeObject.children) {
+            for (var i = 0; i < threeObject.children.length; i++) {
+                findAllMeshes(threeObject.children[i], list);
+            }
+        }
+        return list;
+
+
+    }
+
     function animatable(childID, childSource, childName) {
         this.animationFrame = 0;
         this.animationSpeed = 1;
@@ -21,7 +38,7 @@
         //reason over the interpolated values anyway
         this.setAnimationFrameInternal = function(propertyValue, updateSceneManager) {
 
-            if(this.animationFrame === propertyValue) return;
+            if (this.animationFrame === propertyValue) return;
             this.animationFrame = propertyValue;
             var skins = getSkin(this.getRoot());
             for (var i = 0; i < skins.length; i++) {
@@ -57,10 +74,14 @@
 
                     //this is no longer necessary in threejs r68
                     //for (var j = 0; j < skins[i].children.length; j++) {
-                               //  skins[i].children[j].updateMatrixWorld(true);
+                    //  skins[i].children[j].updateMatrixWorld(true);
                     //}
-                    if (updateSceneManager)
-                        _SceneManager.setDirty(skins[i]);
+                   
+                    if (updateSceneManager) {
+                        var allMeshes = getAllDrawables(skins[i]);
+                        for (var k = 0; k < allMeshes.length; k++)
+                            _SceneManager.setDirty(allMeshes[k]);
+                    }
 
                 }
             }

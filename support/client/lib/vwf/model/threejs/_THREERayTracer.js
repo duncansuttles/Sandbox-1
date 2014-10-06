@@ -1,5 +1,5 @@
 //define( ["vwf/model/threejs/three","vwf/model/threejs/MATH"], function(three, MATH ) {
-
+"use strict";
 var Mat4 = goog.vec.Mat4;
 var Vec3 = goog.vec.Vec3;
 ///////////////////////////////////////////////////////////////////////////////
@@ -401,7 +401,7 @@ face.prototype.intersect1 = function(p, d, opts) {
 
     // at this stage we can compute t to find out where
     // the intersection point is on the line
-    t = f * innerProduct(this.e2, q);
+    var t = f * innerProduct(this.e2, q);
 
     if (t > 0.00001) // ray intersection
     {
@@ -637,6 +637,22 @@ BoundingBoxRTAS.prototype.expandBy = function(bb) {
     if (bb.max[1] > this.max[1]) this.max[1] = bb.max[1];
     if (bb.max[2] > this.max[2]) this.max[2] = bb.max[2];
 }
+//10-5-14 working on optimization here. Seems to be a big bottleneck
+
+var tempmap_TransformBy = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+var tempPoints_TransformBy = [
+[0,0,0],
+[0,0,0],
+[0,0,0],
+[0,0,0],
+[0,0,0],
+[0,0,0],
+[0,0,0],
+[0,0,0]
+];
+
+var allpoints = [];
+
 //transform the boundging box by a matrix, then re-axis align.
 BoundingBoxRTAS.prototype.transformBy = function(matrix) {
 
@@ -644,27 +660,30 @@ BoundingBoxRTAS.prototype.transformBy = function(matrix) {
     if (this.min[0] == Infinity || this.max[0] == -Infinity)
         return this;
 
-    var mat = [];
-    for (var i = 0; i < matrix.length; i++)
-        mat.push(matrix[i]);
+    
+    for (var i = 0; i < 16; i++)
+        tempmap_TransformBy[i] = matrix[i];
     //mat = MATH.inverseMat4(mat); 
 
-    var points = [];
-    var allpoints = [];
+    
     var min = this.min;
     var max = this.max;
     //list of all corners
-    points.push([min[0], min[1], min[2]]);
-    points.push([min[0], min[1], max[2]]);
-    points.push([min[0], max[1], min[2]]);
-    points.push([min[0], max[1], max[2]]);
-    points.push([max[0], min[1], min[2]]);
-    points.push([max[0], min[1], max[2]]);
-    points.push([max[0], max[1], min[2]]);
-    points.push([max[0], max[1], max[2]]);
-    for (var i = 0; i < points.length; i++) {
+    tempPoints_TransformBy[0][0] = min[0]; tempPoints_TransformBy[0][1] = min[1];  tempPoints_TransformBy[0][2] = min[2];
+    tempPoints_TransformBy[1][0] = min[0]; tempPoints_TransformBy[1][1] = min[1];  tempPoints_TransformBy[1][2] = max[2];
+    tempPoints_TransformBy[2][0] = min[0]; tempPoints_TransformBy[2][1] = max[1];  tempPoints_TransformBy[2][2] = min[2];
+    tempPoints_TransformBy[3][0] = min[0]; tempPoints_TransformBy[3][1] = max[1];  tempPoints_TransformBy[3][2] = max[2];
+    tempPoints_TransformBy[4][0] = max[0]; tempPoints_TransformBy[4][1] = min[1];  tempPoints_TransformBy[4][2] = min[2];
+    tempPoints_TransformBy[5][0] = max[0]; tempPoints_TransformBy[5][1] = min[1];  tempPoints_TransformBy[5][2] = max[2];
+    tempPoints_TransformBy[6][0] = max[0]; tempPoints_TransformBy[6][1] = max[1];  tempPoints_TransformBy[6][2] = min[2];
+    tempPoints_TransformBy[7][0] = max[0]; tempPoints_TransformBy[7][1] = max[1];  tempPoints_TransformBy[7][2] = max[2];
+
+    for (var i = 0; i < 8; i++) {
         //transform all points
-        allpoints = allpoints.concat(MATH.mulMat4Vec3(mat, points[i]));
+        var vert = (MATH.mulMat4Vec3(tempmap_TransformBy, tempPoints_TransformBy[i]));
+        allpoints[i*3] = vert[0];
+        allpoints[(i*3)+1] = vert[1];
+        allpoints[(i*3)+2] = vert[2]; 
     }
     //find new axis aligned bounds
     var bounds = FindMaxMin(allpoints);
@@ -2240,7 +2259,7 @@ THREE.Scene.prototype.FrustrumCast = function(frustrum) {
 }
 
 
-
+window.BoundingBoxRTAS = BoundingBoxRTAS;
 //window.Frustrum = Frustrum;
 //return {
 //	BoundingBoxRTAS:BoundingBoxRTAS

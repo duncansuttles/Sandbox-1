@@ -1,26 +1,22 @@
+"use strict";
 
-window.parseandupload = function()
-{
+window.parseandupload = function() {
     var loader = new THREE.ColladaLoader();
-    loader.load('./Female_Head_Morphtargets.DAE',function(data)
-    {
+    loader.load('./Female_Head_Morphtargets.DAE', function(data) {
         var meshes = [];
-        var walk = function(node)
-        {
-            if(node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh)
-            {
+        var walk = function(node) {
+            if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
                 meshes.push(node);
             }
-            for(var i=0; i < node.children.length; i++)
+            for (var i = 0; i < node.children.length; i++)
                 walk(node.children[i]);
 
         }
         walk(data.scene);
         var verts = [];
-        for(var i=0; i < meshes.length; i++)
-        {
+        for (var i = 0; i < meshes.length; i++) {
             console.log(meshes[i].name);
-         /*   for(var j = 0; j < meshes[i].vertices.length; j++)
+            /*   for(var j = 0; j < meshes[i].vertices.length; j++)
             {
                 verts.push(meshes[i].vertices[j].x);
                 verts.push(meshes[i].vertices[j].y);
@@ -28,18 +24,18 @@ window.parseandupload = function()
             }
 */
         }
-    
-    return;
-            $.ajax({
-    type: "POST",
-    url: './vwfDataManager.svc/uploadtemp',
-    processData: false,
-    contentType: 'application/json',
-    data: JSON.stringify(verts),
-    success: function(r) {
-       console.log(r);
-    }
-});
+
+        return;
+        $.ajax({
+            type: "POST",
+            url: './vwfDataManager.svc/uploadtemp',
+            processData: false,
+            contentType: 'application/json',
+            data: JSON.stringify(verts),
+            success: function(r) {
+                console.log(r);
+            }
+        });
 
 
 
@@ -296,18 +292,15 @@ SceneManager.prototype.setDirty = function(object) {
 
     object.boundsCache = null;
 
-    if (object.children && object.children.length) {
+   
+       //object has no children, and it's a mesh or a line  but not a skinned mesh
+        //we create boxes for all the skinned meshes to stand in for bone collision
+        if ( (object instanceof THREE.Mesh || object instanceof THREE.Line) && !(object instanceof THREE.SkinnedMesh)) {
+            this.dirtyObjects.push(object);
+        }
+        
 
-        for (var i = 0; i < object.children.length; i++)
-            this.setDirty(object.children[i]);
-        return;
-    }
 
-    //object has no children, and it's a mesh or a line  but not a skinned mesh
-    //we create boxes for all the skinned meshes to stand in for bone collision
-    if (this.dirtyObjects.indexOf(object) == -1 && (object instanceof THREE.Mesh || object instanceof THREE.Line) && !(object instanceof THREE.SkinnedMesh)) {
-        this.dirtyObjects.push(object);
-    }
 }
 SceneManager.prototype.update = function(dt) {
 
@@ -922,7 +915,7 @@ SceneManagerRegion.prototype.childAdded = function() {
     this.childCount++;
     if (this.parent)
         this.parent.childAdded();
-   
+
 
 }
 SceneManagerRegion.prototype.removeChild = function(child) {
@@ -1078,14 +1071,15 @@ function objectSceneManagerUpdate() {
 
 
     var oldnode = this.sceneManagerNode;
-    this.sceneManagerNode.updateObject(this);
-    if(!this.sceneManagerNode)
-    {
-        debugger;
-       
-        this.sceneManagerNode = oldnode;
+    if (this.sceneManagerNode) 
         this.sceneManagerNode.updateObject(this);
-        
+    if (!this.sceneManagerNode) {
+
+
+        this.sceneManagerNode = oldnode;
+        if (this.sceneManagerNode) 
+            this.sceneManagerNode.updateObject(this);
+
     }
 
 }
@@ -1133,11 +1127,11 @@ SceneManagerRegion.prototype.updateObject = function(object) {
         //then we need to redistribute it. it may end up back in this node, but
         //we won't know that until we try. If I contain the object, and I'm not split
         //then there is no point in doing all that work - the object is still in its region 
-        
-            this.removeChild(object)
-            this.addChild(object);
-        
-       
+
+        this.removeChild(object)
+        this.addChild(object);
+
+
 
         //even if the object is still in its region, it may need updating in teh render batch, since its dirty.
         if (!this.RenderBatchManager) {
@@ -1169,11 +1163,10 @@ SceneManagerRegion.prototype.updateObject = function(object) {
             //so, removechild causes a walk down, but we are already walking up!
             //each step up causes a whole recurse down! check that the child actually belongs to someone
             //if it does not, no need to keep walking down to remove from children
-            if(object.sceneManagerNode)
+            if (object.sceneManagerNode)
                 this.removeChild(object);
             this.parent.updateObject(object);
-        }else
-        {
+        } else {
             this.addChild(object);
 
         }
@@ -1233,7 +1226,7 @@ SceneManagerRegion.prototype.split = function() {
     this.parent = null;
     //if I have faces, but I split, I need to distribute my faces to my children
     var objectsBack = this.childObjects;
-    
+
     this.childObjects = [];
     for (var i = 0; i < objectsBack.length; i++) {
         if (this.RenderBatchManager)
@@ -1394,7 +1387,7 @@ SceneManagerRegion.prototype.testBoundsSphere = BoundingBoxRTAS.prototype.inters
 SceneManagerRegion.prototype.intersect = BoundingBoxRTAS.prototype.intersect;
 SceneManagerRegion.prototype.testBoundsFrustrum = BoundingBoxRTAS.prototype.intersectFrustrum;
 
-_SceneManager = new SceneManager();
+window._SceneManager = new SceneManager();
 
 
 

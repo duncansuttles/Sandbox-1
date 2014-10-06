@@ -1,7 +1,7 @@
 /**
  * @author Tony Parisi / http://www.tonyparisi.com/
  */
-
+"use strict";
 THREE.glTFAnimator = ( function () {
 
 	var animators = [];

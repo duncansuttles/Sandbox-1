@@ -1,5 +1,26 @@
+"use strict";
+
+function getAllDrawables(threeObject, list) {
+
+    if (!threeObject) return;
+    if (!list) list = [];
+    if (threeObject instanceof THREE.Mesh || threeObject instanceof THREE.Line)
+        list.push(threeObject);
+    if (threeObject.children) {
+        for (var i = 0; i < threeObject.children.length; i++) {
+            findAllMeshes(threeObject.children[i], list);
+        }
+    }
+    return list;
+
+
+}
+
 (function() {
     var matComploose = window.matComploose;
+
+
+
     function transformable(childID, childSource, childName) {
         this.overrideTransform = false;
         this.DisableTransform = function() {
@@ -72,8 +93,14 @@
                 //if this transformable is a bone, we need to update the skin
                 //if (threeObject.skin)
                 //    threeObject.skin.updateMatrixWorld(true);
-                if (sceneManagerUpdate)
-                    _SceneManager.setDirty(threeObject);
+
+                if (sceneManagerUpdate) {
+                    var allMeshes = getAllDrawables(threeObject);
+                    for (var k = 0; k < allMeshes.length; k++)
+                        _SceneManager.setDirty(allMeshes[k]);
+                }
+
+
             }
 
             //signals the driver that we don't have to process further, this prop was handled

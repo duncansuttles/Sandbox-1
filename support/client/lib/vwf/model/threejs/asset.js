@@ -1,3 +1,4 @@
+"use strict";
 (function() {
     function asset(childID, childSource, childName, childType, assetSource, asyncCallback, assetRegistry) {
 

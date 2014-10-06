@@ -265,7 +265,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(mo
 
                 var last = this.nodes[i].lastTickTransform;
                 var now = this.nodes[i].thisTickTransform;
-                if (last && now && !matComp(last,now)) {
+                if (last && now ) {
 
                     interp = matset(interp, last);
                     interp = this.matrixLerp(last, now, step, interp);
