@@ -5754,7 +5754,7 @@ var queue = this.private.queue = {
         // To prevent actions from executing out of order, callers should immediately return
         // to the host after invoking insert with chronic set.
 
-        if ( chronic ) {
+        if ( true ) {
             vwf.dispatch();
         }
 
