@@ -1,3 +1,4 @@
+			"use strict";
 			var tileres = 32;
 			var SW = 0;
 			var SE = 1;

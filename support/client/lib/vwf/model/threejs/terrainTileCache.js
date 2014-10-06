@@ -1,3 +1,4 @@
+"use strict";
 function TileCache()
 			{
 				this.tiles = {};

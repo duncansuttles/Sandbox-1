@@ -1,3 +1,4 @@
+"use strict";
 (function() {
     function terrain(childID, childSource, childName) {
         window._dTerrain = this;
