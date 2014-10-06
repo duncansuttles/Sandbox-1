@@ -84,18 +84,18 @@ THREE.Scene.prototype.CPUPick = function(origin, direction, options, hitlist) {
 
 
     //concat all hits from children	  
-    if(!hitlist)
+    if (!hitlist)
         hitlist = [];
     var count = 0;
     for (var i = 0; i < this.children.length; i++) {
         if (this.children[i].CPUPick) {
-            this.children[i].CPUPick(origin, direction, options,hitlist);
+            this.children[i].CPUPick(origin, direction, options, hitlist);
         }
     }
     if (options.UserRenderBatches && this.renderBatches) {
         for (var i = 0; i < this.renderBatches.length; i++) {
             if (this.renderBatches[i].renderObject) {
-                this.renderBatches[i].renderObject.CPUPick(origin, direction, options,hitlist);
+                this.renderBatches[i].renderObject.CPUPick(origin, direction, options, hitlist);
             }
         }
     }
@@ -561,10 +561,10 @@ function SimpleFaceListRTAS(faces, verts) {
 }
 //Intersect a ray with a list of faces
 SimpleFaceListRTAS.prototype.intersect = function(origin, direction, opts, intersects) {
-    
-    if(!intersects)
-     intersects = [];
-  
+
+    if (!intersects)
+        intersects = [];
+
     for (var i = 0; i < this.faces.length; i++) {
         var intersect = this.faces[i].intersect1(origin, direction, opts);
         if (intersect) {
@@ -639,16 +639,16 @@ BoundingBoxRTAS.prototype.expandBy = function(bb) {
 }
 //10-5-14 working on optimization here. Seems to be a big bottleneck
 
-var tempmap_TransformBy = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+var tempmap_TransformBy = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 var tempPoints_TransformBy = [
-[0,0,0],
-[0,0,0],
-[0,0,0],
-[0,0,0],
-[0,0,0],
-[0,0,0],
-[0,0,0],
-[0,0,0]
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0]
 ];
 
 var allpoints = [];
@@ -660,30 +660,46 @@ BoundingBoxRTAS.prototype.transformBy = function(matrix) {
     if (this.min[0] == Infinity || this.max[0] == -Infinity)
         return this;
 
-    
+
     for (var i = 0; i < 16; i++)
         tempmap_TransformBy[i] = matrix[i];
     //mat = MATH.inverseMat4(mat); 
 
-    
+
     var min = this.min;
     var max = this.max;
     //list of all corners
-    tempPoints_TransformBy[0][0] = min[0]; tempPoints_TransformBy[0][1] = min[1];  tempPoints_TransformBy[0][2] = min[2];
-    tempPoints_TransformBy[1][0] = min[0]; tempPoints_TransformBy[1][1] = min[1];  tempPoints_TransformBy[1][2] = max[2];
-    tempPoints_TransformBy[2][0] = min[0]; tempPoints_TransformBy[2][1] = max[1];  tempPoints_TransformBy[2][2] = min[2];
-    tempPoints_TransformBy[3][0] = min[0]; tempPoints_TransformBy[3][1] = max[1];  tempPoints_TransformBy[3][2] = max[2];
-    tempPoints_TransformBy[4][0] = max[0]; tempPoints_TransformBy[4][1] = min[1];  tempPoints_TransformBy[4][2] = min[2];
-    tempPoints_TransformBy[5][0] = max[0]; tempPoints_TransformBy[5][1] = min[1];  tempPoints_TransformBy[5][2] = max[2];
-    tempPoints_TransformBy[6][0] = max[0]; tempPoints_TransformBy[6][1] = max[1];  tempPoints_TransformBy[6][2] = min[2];
-    tempPoints_TransformBy[7][0] = max[0]; tempPoints_TransformBy[7][1] = max[1];  tempPoints_TransformBy[7][2] = max[2];
+    tempPoints_TransformBy[0][0] = min[0];
+    tempPoints_TransformBy[0][1] = min[1];
+    tempPoints_TransformBy[0][2] = min[2];
+    tempPoints_TransformBy[1][0] = min[0];
+    tempPoints_TransformBy[1][1] = min[1];
+    tempPoints_TransformBy[1][2] = max[2];
+    tempPoints_TransformBy[2][0] = min[0];
+    tempPoints_TransformBy[2][1] = max[1];
+    tempPoints_TransformBy[2][2] = min[2];
+    tempPoints_TransformBy[3][0] = min[0];
+    tempPoints_TransformBy[3][1] = max[1];
+    tempPoints_TransformBy[3][2] = max[2];
+    tempPoints_TransformBy[4][0] = max[0];
+    tempPoints_TransformBy[4][1] = min[1];
+    tempPoints_TransformBy[4][2] = min[2];
+    tempPoints_TransformBy[5][0] = max[0];
+    tempPoints_TransformBy[5][1] = min[1];
+    tempPoints_TransformBy[5][2] = max[2];
+    tempPoints_TransformBy[6][0] = max[0];
+    tempPoints_TransformBy[6][1] = max[1];
+    tempPoints_TransformBy[6][2] = min[2];
+    tempPoints_TransformBy[7][0] = max[0];
+    tempPoints_TransformBy[7][1] = max[1];
+    tempPoints_TransformBy[7][2] = max[2];
 
     for (var i = 0; i < 8; i++) {
         //transform all points
         var vert = (MATH.mulMat4Vec3(tempmap_TransformBy, tempPoints_TransformBy[i]));
-        allpoints[i*3] = vert[0];
-        allpoints[(i*3)+1] = vert[1];
-        allpoints[(i*3)+2] = vert[2]; 
+        allpoints[i * 3] = vert[0];
+        allpoints[(i * 3) + 1] = vert[1];
+        allpoints[(i * 3) + 2] = vert[2];
     }
     //find new axis aligned bounds
     var bounds = FindMaxMin(allpoints);
@@ -1008,7 +1024,7 @@ OctreeRegion.prototype.getFaces = function(list) {
 //Test a ray against an octree region
 OctreeRegion.prototype.intersect = function(o, d, opts, hits) {
 
-    if(!hits)
+    if (!hits)
         hits = [];
     //if no faces, can be no hits. 
     //remember, faces is all faces in this node AND its children
@@ -1053,7 +1069,7 @@ OctreeRegion.prototype.intersect = function(o, d, opts, hits) {
             //reject this node if the ray does not intersect it's bounding box
             if (this.children[i].testBounds(o, d) == true) {
                 //console.log('region rejected');
-                this.children[i].intersect(o, d, opts,hits);
+                this.children[i].intersect(o, d, opts, hits);
             } else if (opts)
                 opts.objectRegionsRejectedByBounds++;
         }
@@ -1265,9 +1281,9 @@ function OctreeRTAS(faces, verts, min, max) {
         this.root.addFace(this.faces[i]);
 }
 //just intersect with the root octant
-OctreeRTAS.prototype.intersect = function(o, d, opts,hits) {
+OctreeRTAS.prototype.intersect = function(o, d, opts, hits) {
 
-    return this.root.intersect(o, d, opts,hits);
+    return this.root.intersect(o, d, opts, hits);
 }
 OctreeRTAS.prototype.intersectFrustrum = function(frustrum, opts) {
     return this.root.intersectFrustrum(frustrum, opts);
@@ -1281,7 +1297,7 @@ OctreeRTAS.prototype.intersectSphere = function(center, r, opts) {
 function NullRTAS() {
 
 }
-NullRTAS.prototype.intersect = function(o, d, opts,hits) {
+NullRTAS.prototype.intersect = function(o, d, opts, hits) {
 
     return hits;
 }
@@ -1377,7 +1393,7 @@ THREE.Geometry.prototype.setPickGeometry = function(PickGeometry) {
 //Do the actuall intersection with the mesh;
 THREE.Geometry.prototype.CPUPick = function(origin, direction, options, collisionType, meshparent, hits) {
 
-    if(!hits)
+    if (!hits)
         hits = [];
     //sseems like it's possible that nan can creep into the three.matrix, reject this whole mesh in that case.
     if (isNaN(origin[0]) || isNaN(direction[0]))
@@ -1698,7 +1714,7 @@ THREE.Object3D.prototype.ignoreTest = function(ignore) {
 
 //no need to test bounding box here. Can only contain one mesh, and the mesh will check its own
 //boudning box.
-THREE.Object3D.prototype.CPUPick = function(origin, direction, options,ret) {
+THREE.Object3D.prototype.CPUPick = function(origin, direction, options, ret) {
 
 
     if (options && options.filter && this) {
@@ -1723,14 +1739,16 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options,ret) {
 
     }
 
-    if(!ret)
-      ret = [];
-    
+    if (!ret)
+        ret = [];
+
     //iterate the children and concat all hits
     //note - still in world space here
-    for (var i = 0; i < this.children.length; i++) {
-        if (this.children[i].CPUPick) {
-            this.children[i].CPUPick(origin, direction, options,ret);
+    if (!options.noTraverse) {
+        for (var i = 0; i < this.children.length; i++) {
+            if (this.children[i].CPUPick) {
+                this.children[i].CPUPick(origin, direction, options, ret);
+            }
         }
     }
 
@@ -1768,7 +1786,7 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options,ret) {
         if (this instanceof THREE.Mesh && !(this instanceof THREE.SkinnedMesh)) {
             //collide with the mesh
             var prevLen = ret.length;
-            this.geometry.CPUPick(newo, newd, options, null, this,ret);
+            this.geometry.CPUPick(newo, newd, options, null, this, ret);
 
             for (var i = prevLen; i < ret.length; i++) {
 
@@ -1790,7 +1808,7 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options,ret) {
                 ret[i].object = this;
                 ret[i].priority = this.PickPriority !== undefined ? this.PickPriority : 1;
             }
-           
+
 
         }
         if (this instanceof THREE.Line) {
@@ -2260,7 +2278,7 @@ THREE.Scene.prototype.FrustrumCast = function(frustrum) {
 
 
 window.BoundingBoxRTAS = BoundingBoxRTAS;
-//window.Frustrum = Frustrum;
+window.Frustrum = Frustrum;
 //return {
 //	BoundingBoxRTAS:BoundingBoxRTAS
 //

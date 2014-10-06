@@ -214,7 +214,7 @@ SceneManager.prototype.CPUPick = function(o, d, opts) {
     //console.profile("PickProfile");
 
     opts = this.buildCPUPickOptions(opts)
-
+    opts.noTraverse = true;
     if (opts) opts.faceTests = 0;
     if (opts) opts.objectTests = 0;
     if (opts) opts.regionTests = 0;

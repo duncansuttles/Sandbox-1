@@ -112,7 +112,7 @@ define([], function() {
             }
             //basically, any property change on a selected node might require a redraw
             //we could be smarter about this, but probably not worth the effort
-            if (this.isOpen() && _Editor.isSelected(nodeID)) {
+            if (_Editor.isSelected(nodeID) && this.isOpen()) {
                 //optimization for only movement of roots
                 if (this.physicsPreviewRoot && this.physicsPreviewRoot[nodeID] && propName == "transform") {
                     this.physicsPreviewRoot[nodeID].matrix.fromArray(propVal);
