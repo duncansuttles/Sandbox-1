@@ -66,9 +66,10 @@
 
                 }
                 if (skins[i].animationHandle) {
-
+                   
                     skins[i].animationHandle.setKey(this.animationFrame);
-                    skins[i].updateMatrixWorld();
+                    skins[i].updateMatrixWorld(true);
+                    
                     //odd, does not seem to update matrix on first child bone. 
                     //how does the bone relate to the skeleton?
 

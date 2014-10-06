@@ -216,7 +216,11 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(mo
                     var i = keys[j];
                     //don't do interpolation for static objects
                     if (this.nodes[i].isStatic) continue;
-
+                    if(!this.neededTransfromInterp[i]) 
+                        {
+                            this.nodes[i].lastTickTransform = null;
+                            continue;
+                        }
                     if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
                         this.nodes[i].lastTickTransform = matset(this.nodes[i].lastTickTransform, this.nodes[i].thisTickTransform);
                         this.nodes[i].thisTickTransform = matset(this.nodes[i].thisTickTransform, this.state.nodes[i].gettingProperty('transform'));
@@ -227,6 +231,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(mo
 
                     }
                 }
+                this.neededTransfromInterp = {};
             }
             if (hit > 1) {
                 this.tickTime = 0;
@@ -517,6 +522,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(mo
         createdProperty: function(nodeID, propertyName, propertyValue) {
             this.satProperty(nodeID, propertyName, propertyValue);
         },
+        neededTransfromInterp:{},
         satProperty: function(nodeID, propertyName, propertyValue) {
 
             //console.log([nodeID,propertyName,propertyValue]);
@@ -532,7 +538,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(mo
             if (this.nodes[nodeID])
                 this.nodes[nodeID].properties[propertyName] = propertyValue;
 
-
+            if(propertyName == 'transform')
+                this.neededTransfromInterp[nodeID] = true;
 
             node[propertyName] = propertyValue;
 

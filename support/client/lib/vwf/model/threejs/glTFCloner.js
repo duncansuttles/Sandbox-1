@@ -193,7 +193,7 @@ define(["vwf/model/threejs/glTF-parser"], function() {
                 for (i = 0; i < len; i++) {
 
                     this.glTFAnimations[j].interps[i].interp(key / 30);
-                    if(!(this.glTFAnimations[j].interps[i].targetNode instanceof THREE.Bone))
+                    //if(!(this.glTFAnimations[j].interps[i].targetNode instanceof THREE.Bone))
                         this.glTFAnimations[j].interps[i].targetNode.updateMatrix();
                 }
             }
