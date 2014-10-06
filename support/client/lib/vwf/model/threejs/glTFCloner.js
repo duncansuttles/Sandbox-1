@@ -188,7 +188,7 @@ define(["vwf/model/threejs/glTF-parser"], function() {
             if (this.lastKey == key) return;
             this.lastKey = key;
 
-            for (var j in this.glTFAnimations) {
+            for (var j =0 ; j <  this.glTFAnimations.length; j++) {
                 var i, len = this.glTFAnimations[j].interps.length;
                 for (i = 0; i < len; i++) {
 

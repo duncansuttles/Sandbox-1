@@ -1,49 +1,67 @@
 "use strict";
 
-window.parseandupload = function() {
-    var loader = new THREE.ColladaLoader();
-    loader.load('./Female_Head_Morphtargets.DAE', function(data) {
-        var meshes = [];
-        var walk = function(node) {
-            if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
-                meshes.push(node);
-            }
-            for (var i = 0; i < node.children.length; i++)
-                walk(node.children[i]);
 
-        }
-        walk(data.scene);
-        var verts = [];
-        for (var i = 0; i < meshes.length; i++) {
-            console.log(meshes[i].name);
-            /*   for(var j = 0; j < meshes[i].vertices.length; j++)
-            {
-                verts.push(meshes[i].vertices[j].x);
-                verts.push(meshes[i].vertices[j].y);
-                verts.push(meshes[i].vertices[j].z);
-            }
-*/
-        }
-
-        return;
-        $.ajax({
-            type: "POST",
-            url: './vwfDataManager.svc/uploadtemp',
-            processData: false,
-            contentType: 'application/json',
-            data: JSON.stringify(verts),
-            success: function(r) {
-                console.log(r);
-            }
-        });
-
-
-
-    })
-
-
+var sceneManagerRegionRecycleList = [];
+function releaseSceneManagerNode(node)
+{
+    sceneManagerRegionRecycleList.push(node);
 }
+function cleanRecycledSceneManagerRegion(min, max, depth, scene, order)
+{
+    this.min[0] = min[0];this.min[1] = min[1];this.min[2] = min[2];
+    this.max[0] = max[0];this.max[1] = max[1];this.max[2] = max[2];
+    this.r = Vec3.distance(min, max) / 2;
+    this.childCount = 0;
+    this.c[0] = (this.max[0] + this.min[0]) / 2;
+    this.c[1] = (this.max[1] + this.min[1]) / 2;
+    this.c[2] =  (this.max[2] + this.min[2]) / 2;
+    this.childRegions.length = 0;
+    this.childObjects.length = 0;
+    this.depth = depth;
+    this.scene = scene;
+    this.order = order;
+    this.wantsDesplit = false;
+    if (drawSceneManagerRegions) {
+        this.mesh.dispose();
+        this.mesh = this.BuildWireBox([this.max[0] - this.min[0], this.max[0] - this.min[0], this.max[0] - this.min[0]], [0, 0, 0], [(this.depth / maxDepth) * 2, 0, 0]);
+        this.mesh.material.depthTest = false;
+        this.mesh.material.depthWrite = false;
+        this.mesh.material.transparent = true;
+        this.mesh.position.x = this.c[0];
+        this.mesh.position.y = this.c[1];
+        this.mesh.position.z = this.c[2];
+        this.mesh.InvisibleToCPUPick = true;
+        this.mesh.renderDepth = this.depth * 8 + this.order;
+        this.scene.add(this.mesh, true);
+        this.mesh.updateMatrixWorld(true);
+    }
 
+/*
+    if (this.RenderBatchManager) {
+        _SceneManager.BatchManagers.splice(_SceneManager.BatchManagers.indexOf(this.RenderBatchManager), 1);
+        this.RenderBatchManager.deinitialize();
+    }
+
+    //TODO: clean and reuse batchmanager;
+    if (this.depth <= batchAtLevel) {
+        this.RenderBatchManager = new THREE.RenderBatchManager(scene, GUID());
+        _SceneManager.BatchManagers.push(this.RenderBatchManager);
+    }*/
+}
+function allocateSceneManagerRegion(min, max, depth, scene, order)
+{
+    if(sceneManagerRegionRecycleList.length > 0)
+    {
+        
+        var newRegion = sceneManagerRegionRecycleList.pop();
+        cleanRecycledSceneManagerRegion.call(newRegion,min, max, depth, scene, order);
+        return newRegion;
+    }
+    else
+    {
+        return new SceneManagerRegion(min, max, depth, scene, order);
+    }
+}
 function GUID() {
     var S4 = function() {
         return Math.floor(Math.SecureRandom() * 0x10000 /* 65536 */ ).toString(16);
@@ -167,7 +185,7 @@ SceneManager.prototype.rebuild = function() {
     this.root.deinitialize();
     this.min = [-maxSize, -maxSize, -maxSize];
     this.max = [maxSize, maxSize, maxSize];
-    this.root = new SceneManagerRegion(this.min, this.max, 0, this.scene, 0);
+    this.root = allocateSceneManagerRegion(this.min, this.max, 0, this.scene, 0);
     for (var i = 0; i < children.length; i++) {
         if (!children[i].isDynamic())
             this.root.addChild(children[i]);
@@ -765,7 +783,7 @@ SceneManager.prototype.initialize = function(scene) {
         _SceneManager.removeChild(this);
         this.SceneManagerIgnore = true;
     }
-    this.root = new SceneManagerRegion(this.min, this.max, 0, scene, 0);
+    this.root = allocateSceneManagerRegion(this.min, this.max, 0, scene, 0);
     this.scene = scene;
 }
 SceneManager.prototype.addChild = function(c) {
@@ -993,10 +1011,22 @@ SceneManagerRegion.prototype.desplit = function() {
 
     }
     this.childCount = this.childObjects.length;
-    this.childRegions = [];
+    for(var i =0; i < this.childRegions.length; i++)
+    {
+        this.childRegions[i].release();
+    }
+    this.childRegions.length = 0;
     this.isSplit = false;
     this.wantsDesplit = false;
     this.parent = pback;
+}
+SceneManagerRegion.prototype.release = function()
+{
+    for(var i =0; i < this.childRegions.length; i++)
+    {
+        this.childRegions[i].release();
+    }
+    releaseSceneManagerNode(this);
 }
 SceneManagerRegion.prototype.getLeaves = function(list) {
     if (!list)
@@ -1205,14 +1235,14 @@ SceneManagerRegion.prototype.split = function() {
     var m11 = [this.min[0], this.c[1], this.c[2]];
     var m12 = [this.c[0], this.max[1], this.max[2]];
 
-    this.childRegions[0] = new SceneManagerRegion(v0, this.c, this.depth + 1, this.scene, 0);
-    this.childRegions[1] = new SceneManagerRegion(m1, m2, this.depth + 1, this.scene, 1);
-    this.childRegions[2] = new SceneManagerRegion(m3, m4, this.depth + 1, this.scene, 2);
-    this.childRegions[3] = new SceneManagerRegion(m5, m6, this.depth + 1, this.scene, 3);
-    this.childRegions[4] = new SceneManagerRegion(m7, m8, this.depth + 1, this.scene, 4);
-    this.childRegions[5] = new SceneManagerRegion(m9, m10, this.depth + 1, this.scene, 5);
-    this.childRegions[6] = new SceneManagerRegion(m11, m12, this.depth + 1, this.scene, 6);
-    this.childRegions[7] = new SceneManagerRegion(this.c, v7, this.depth + 1, this.scene, 7);
+    this.childRegions[0] = allocateSceneManagerRegion(v0, this.c, this.depth + 1, this.scene, 0);
+    this.childRegions[1] = allocateSceneManagerRegion(m1, m2, this.depth + 1, this.scene, 1);
+    this.childRegions[2] = allocateSceneManagerRegion(m3, m4, this.depth + 1, this.scene, 2);
+    this.childRegions[3] = allocateSceneManagerRegion(m5, m6, this.depth + 1, this.scene, 3);
+    this.childRegions[4] = allocateSceneManagerRegion(m7, m8, this.depth + 1, this.scene, 4);
+    this.childRegions[5] = allocateSceneManagerRegion(m9, m10, this.depth + 1, this.scene, 5);
+    this.childRegions[6] = allocateSceneManagerRegion(m11, m12, this.depth + 1, this.scene, 6);
+    this.childRegions[7] = allocateSceneManagerRegion(this.c, v7, this.depth + 1, this.scene, 7);
 
     this.childRegions[0].parent = this;
     this.childRegions[1].parent = this;
