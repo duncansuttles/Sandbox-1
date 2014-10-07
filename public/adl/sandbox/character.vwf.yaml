@@ -345,6 +345,7 @@ scripts:
                 avatarPos[1] = newpos[1];
                 avatarPos[2] = newpos[2];
                }
+               intersectfront.release();
             }else
             {
               //no collision, you are free to move this distance with no slide along walls
@@ -677,7 +678,7 @@ scripts:
                 {
                   this.recordStandingOn(intersect);
                 }
-                _DEALLOC(intersect);
+                intersect.release();
               }
               if(this.skin)
                 {

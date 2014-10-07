@@ -271,13 +271,13 @@ SceneManager.prototype.CPUPick = function(o, d, opts) {
     });
     // Enter name of script here
     //console.profileEnd();
-    var ret = hitlist[0];
-    hitlist[0] = null;
+    var ret = hitlist.shift();
+    
 
 
     //var intersect = new FaceIntersect();
-    //for(var i in ret)
-    //	intersect[i] = ret[i];
+    for(var i =0; i < hitlist.length; i++)
+      hitlist[i].release();
 
     //_DEALLOC(ret);
     return ret;

@@ -311,37 +311,64 @@ face.prototype.intersectFrustrum = function(frustrum, opts) {
     if (pointInFrustrum(this.v0, frustrum) || pointInFrustrum(this.v0, frustrum) || pointInFrustrum(this.v0, frustrum)) {
         var point = this.c;
         var norm = this.norm;
-        return {
-            point: point,
-            norm: norm,
-            face: this
-        };
+        return allocate_FaceIntersect( point,norm,this);
     }
     for (var i = 0; i < 4; i++) {
 
         if (this.intersect1(frustrum.cornerRays[i].o, frustrum.cornerRays[i].d, opts)) {
             var point = this.c;
             var norm = this.norm;
-            return {
-                point: point,
-                norm: norm,
-                face: this
-            };
+            return allocate_FaceIntersect( point,norm,this);
+               
         }
     }
     return null;
 }
 
-
-
-function FaceIntersect() {
-
-    this.point = null;
-    this.face = null;
-    this.norm = null;
-
+window.cache_FaceIntersect = [];
+function deallocate_FaceIntersect(FI)
+{
+    cache_FaceIntersect.push(FI);
 }
+function clean_FaceIntersect(FI,point,norm,face)
+{
+    FI.point[0] = point[0];
+    FI.point[1] = point[1];
+    FI.point[2] = point[2];
 
+    FI.norm[0] = norm[0];
+    FI.norm[1] = norm[1];
+    FI.norm[2] = norm[2];
+
+
+    FI.face = face;
+    
+}
+function allocate_FaceIntersect(point,norm,face)
+{
+    if(cache_FaceIntersect.length > 0)
+    {
+        var ret = cache_FaceIntersect.shift();
+        clean_FaceIntersect(ret,point,norm,face);
+        return ret;
+    }else
+    {
+        return new FaceIntersect(point,norm,face)
+    }
+}
+function FaceIntersect(point,norm,face) {
+    this.point = [point[0],point[1],point[2]];
+    this.face = face;
+    this.norm =  [norm[0],norm[1],norm[2]];;
+}
+function release_FaceIntersect(FT)
+{
+    cache_FaceIntersect.push(FT);
+}
+FaceIntersect.prototype.release = function()
+{
+    release_FaceIntersect(this);
+}
 
 var temparray = [];
 //intersect a ray with a face
@@ -410,10 +437,8 @@ face.prototype.intersect1 = function(p, d, opts) {
         if (MATH.dotVec3(d, norm) > 0)
             norm = Vec3.scale(norm, -1, []);
 
-        var ret = new FaceIntersect();
-        ret.point = point;
-        ret.norm = norm;
-        ret.face = this;
+        var ret = allocate_FaceIntersect(point,norm,face);
+      
 
 
         return ret;
