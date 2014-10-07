@@ -2131,6 +2131,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             // boundingbox.setPickable(false);
             // boundingbox.RenderPriority = 999;
             boundingbox.vwfid = id;
+            box.release();
             return boundingbox;
         }
         this.updateBoundsTransform = function(id) {
@@ -3362,6 +3363,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 vwf.models[0].model.nodes['index-vwf'].orbitPoint(gizpos);
                 vwf.models[0].model.nodes['index-vwf'].zoom = dist;
                 vwf.models[0].model.nodes['index-vwf'].updateCamera();
+                box.release();
 
             }
         }

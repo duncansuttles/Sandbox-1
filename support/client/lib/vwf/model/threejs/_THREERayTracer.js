@@ -152,7 +152,7 @@ THREE.Geometry.prototype.GenerateBounds = function() {
     var max = bounds[1];
 
     this.BoundingSphere = new BoundingSphereRTAS(min, max);
-    this.BoundingBox = new BoundingBoxRTAS(min, max);
+    this.BoundingBox = allocate_BoundingBoxRTAS(min, max);
 }
 var n4;
 var d4;
@@ -622,14 +622,15 @@ BoundingSphereRTAS.prototype.intersect = function(origin, direction) {
 function BoundingBoxRTAS(min, max) {
     this.max = [-Infinity, -Infinity, -Infinity];
     this.min = [Infinity, Infinity, Infinity];
+    this.faces = [];
     if (min)
-        this.min = min;
+        this.min = [min[0],min[1],min[2]];
     if (max)
-        this.max = max;
+        this.max = [max[0],max[1],max[2]];;
 }
 
-BoundingBoxRTAS.prototype.objectCache = [];
-BoundingBoxRTAS.prototype.clean = function(box)
+var cache_BoundingBoxRTAS = [];
+function clean_BoundingBoxRTAS (box,min,max)
 {
     box.min[0] = Infinity;
     box.min[1] = Infinity;
@@ -637,25 +638,46 @@ BoundingBoxRTAS.prototype.clean = function(box)
     box.max[0] = -Infinity;
     box.max[1] = -Infinity;
     box.max[2] = -Infinity;
+    if(min){
+        box.min[0] = min[0];
+        box.min[1] = min[1];
+        box.min[2] = min[2];}
+    if (max) {
+        box.max[0] = max[0];
+        box.max[1] = max[1];
+        box.max[2] = max[2];
+    }
+    box.faces.length = 0;
 }
-BoundingBoxRTAS.prototype.allocate = function(min,max)
+
+function allocate_BoundingBoxRTAS (min,max)
 {
-    if(this.objectCache.length == 0)
+   
+
+    if(cache_BoundingBoxRTAS.length == 0)
         return new BoundingBoxRTAS(min,max);
     else
     {
-        var reuse = this.objectCache.pop();
-        this.clean(reuse);
+        var reuse = cache_BoundingBoxRTAS.shift();
+        clean_BoundingBoxRTAS(reuse,min,max);
         return reuse;
-    }
+    }  
 }
+function deallocate_BoundingBoxRTAS (box)
+{
+    
+    cache_BoundingBoxRTAS.push(box);
+}
+
+
 BoundingBoxRTAS.prototype.release = function()
 {
-    this.objectCache.push(this);
+    
+    deallocate_BoundingBoxRTAS(this);
 }
 // copy
 BoundingBoxRTAS.prototype.clone = function() {
-    return new BoundingBoxRTAS([this.min[0], this.min[1], this.min[2]], [this.max[0], this.max[1], this.max[2]]);
+    return allocate_BoundingBoxRTAS([this.min[0], this.min[1], this.min[2]], [this.max[0], this.max[1], this.max[2]]);
 }
 //sort of like add for two boxes. expand this box to include the new one was well as itself
 BoundingBoxRTAS.prototype.expandBy = function(bb) {
@@ -687,7 +709,7 @@ BoundingBoxRTAS.prototype.transformBy = function(matrix) {
 
     //avoid flipping min and max when they are infinity
     if (this.min[0] == Infinity || this.max[0] == -Infinity)
-        return this;
+        return this.clone();
 
 
     for (var i = 0; i < 16; i++)
@@ -734,7 +756,7 @@ BoundingBoxRTAS.prototype.transformBy = function(matrix) {
     var bounds = FindMaxMin(allpoints);
     var min2 = bounds[0];
     var max2 = bounds[1];
-    return new BoundingBoxRTAS(min2, max2);
+    return allocate_BoundingBoxRTAS(min2, max2);
 }
 
 BoundingBoxRTAS.prototype.intersectFrustrum = function(frustrum, opts) {
@@ -1032,7 +1054,7 @@ OctreeRegion.prototype.distributeFace = function(face) {
     // no it doesn't. There can be no faces that are in this region but intersect no child regions
     if (added == 0) {
 
-        this.distributeFace(face);
+        //this.distributeFace(face);
         this.facesNotDistributed.push(face);
     }
 }
@@ -1413,7 +1435,7 @@ THREE.Geometry.prototype.GetBoundingBox = function() {
     if (!this.BoundingSphere || !this.BoundingBox || this.dirtyMesh) {
         this.GenerateBounds();
     }
-    return this.BoundingBox;
+    return this.BoundingBox.clone();
 }
 //Get the bounds for an object
 THREE.Geometry.prototype.setPickGeometry = function(PickGeometry) {
@@ -1603,7 +1625,7 @@ THREE.BufferGeometry.prototype.GenerateBounds = function() {
     var max = bounds[1];
 
     this.BoundingSphere = new BoundingSphereRTAS(min, max);
-    this.BoundingBox = new BoundingBoxRTAS(min, max);
+    this.BoundingBox = allocate_BoundingBoxRTAS(min, max);
 }
 
 THREE.BufferGeometry.prototype.BuildRayTraceAccelerationStructure = function() {
@@ -1654,13 +1676,19 @@ THREE.BufferGeometry.prototype.BuildRayTraceAccelerationStructure = function() {
 //Get the bounding box for a group
 THREE.Object3D.prototype.GetBoundingBox = function(local) {
     //make blank box and expand by children's bounds
-    var box = new BoundingBoxRTAS();
+    var box = allocate_BoundingBoxRTAS();
     for (var i = 0; i < this.children.length; i++) {
         if (this.children[i].GetBoundingBox)
-            box.expandBy(this.children[i].GetBoundingBox());
+        {   
+            var tb = this.children[i].GetBoundingBox();
+            box.expandBy(tb);
+            tb.release()
+        }
     }
     if (this.geometry) {
-        box.expandBy(this.geometry.GetBoundingBox());
+        var tb = this.geometry.GetBoundingBox()
+        box.expandBy(tb);
+        tb.release();
     }
 
     //Transform by the local matrix.
@@ -1704,10 +1732,14 @@ THREE.Bone.prototype.buildSelectionHandles = function() {
 THREE.SkinnedMesh.prototype.GetBoundingBox = function(local) {
     //make blank box and expand by children's bounds
 
-    var box = new BoundingBoxRTAS();
+    var box = allocate_BoundingBoxRTAS();
     for (var i = 0; i < this.children.length; i++) {
         if (this.children[i].GetBoundingBox)
-            box.expandBy(this.children[i].GetBoundingBox());
+        {
+            var tb = this.children[i].GetBoundingBox();
+            box.expandBy(tb);
+            tb.release();
+        }
     }
 
     //Transform by the local matrix.
@@ -2233,14 +2265,16 @@ function findscene(node) {
 THREE.Light.prototype.GetBoundingBox = function() {
     var bound = 1;
 
-    return new BoundingBoxRTAS([-bound, -bound, -bound], [bound, bound, bound]);
+    return allocate_BoundingBoxRTAS([-bound, -bound, -bound], [bound, bound, bound]);
 
 }
 THREE.ParticleSystem.prototype.GetBoundingBox = THREE.Light.prototype.GetBoundingBox;
 THREE.Scene.prototype.GetBoundingBox = function() {
-    var box = new BoundingBoxRTAS([-.0001, -.0001, -.0001], [.0001, .0001, .0001]);
+    var box =  allocate_BoundingBoxRTAS([-.0001, -.0001, -.0001], [.0001, .0001, .0001]);
     for (var i = 0; i < this.children.length; i++) {
-        box.expandBy(this.children[i].GetBoundingBox());
+        var tb = this.children[i].GetBoundingBox();
+        box.expandBy(tb);
+        tb.release;
     }
     return box;
 }
