@@ -340,6 +340,9 @@ function clean_FaceIntersect(FI,point,norm,face)
     FI.norm[1] = norm[1];
     FI.norm[2] = norm[2];
 
+    FI.distance = -1;
+    FI.object =  null;
+    FI.priority = -1;
 
     FI.face = face;
     
@@ -360,6 +363,9 @@ function FaceIntersect(point,norm,face) {
     this.point = [point[0],point[1],point[2]];
     this.face = face;
     this.norm =  [norm[0],norm[1],norm[2]];;
+    this.distance = -1;
+    this.object =  null;
+    this.priority = -1;
 }
 function release_FaceIntersect(FT)
 {
@@ -2366,6 +2372,7 @@ THREE.Scene.prototype.FrustrumCast = function(frustrum) {
 
 
 window.BoundingBoxRTAS = BoundingBoxRTAS;
+window.FaceIntersect = FaceIntersect;
 window.Frustrum = Frustrum;
 //return {
 //	BoundingBoxRTAS:BoundingBoxRTAS
