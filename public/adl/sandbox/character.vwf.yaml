@@ -152,6 +152,8 @@ scripts:
           this.pickoptions = {
             filter:function(o){
                 if(o instanceof THREE.Line) return false;
+                 if(o instanceof THREE.SkinnedMesh) return false;
+                  if(o instanceof THREE.Bone) return false;
                 return !(o.isAvatar === true || o.passable===true)
               },maxDist: 2,
               ignore:[this.mesh,_Editor.GetMoveGizmo()]
@@ -298,7 +300,7 @@ scripts:
           //really no point going much deeper
           if(depth == 3) return false;
 
-            var intersectfront = _SceneManager.CPUPick([avatarPos[0],avatarPos[1],avatarPos[2]],trans,opts);
+          var intersectfront = _SceneManager.CPUPick([avatarPos[0],avatarPos[1],avatarPos[2]],trans,opts);
           var avatarPosChanged = true;
           if(intersectfront)
           {
