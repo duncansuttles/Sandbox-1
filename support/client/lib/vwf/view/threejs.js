@@ -27,6 +27,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(mo
     var stats;
     var NORMALRENDER = 0;
     var STEREORENDER = 1;
+    var everyOtherFrame = false;
     return view.load(module, {
 
         renderMode: NORMALRENDER,
@@ -231,7 +232,12 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(mo
 
                     }
                 }
-                this.neededTransfromInterp = {};
+                everyOtherFrame = !everyOtherFrame;
+                if(everyOtherFrame)
+                {
+                    this.neededTransfromInterp = {};
+                }
+                    
             }
             if (hit > 1) {
                 this.tickTime = 0;
