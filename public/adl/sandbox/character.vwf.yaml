@@ -30,6 +30,7 @@ properties:
   ___physics_factor_angular: [ 0, 0, 0 ]
   ___physics_enabled: true
   ___physics_mass: 158.5
+  animationPaused: false
 methods:
   update:
   tick:
@@ -487,7 +488,8 @@ scripts:
                //     this.skin.morphTargetInfluences[i] = 0;
                
                //this.skin.morphTargetInfluences[parseInt(newframe)] = 1;     
-               this.animationFrame = newframe;
+               if(!this.animationPaused)
+                  this.animationFrame = newframe;
               
             }
             this.prevframe = this.currentframe;
