@@ -134,7 +134,7 @@ THREE.glTFInterpolator = function(param)
 			this.isRot = true;
 			break;
 		case "scale" :
-			this.target = node.scale;
+			this.target = new THREE.Vector3(0,0,0) // fix this so that the scale animation is not supported
 			this.originalValue = node.scale.clone();
 			break;
 	}
