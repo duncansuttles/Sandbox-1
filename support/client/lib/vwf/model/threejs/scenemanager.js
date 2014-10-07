@@ -4,6 +4,8 @@
 var sceneManagerRegionRecycleList = [];
 function releaseSceneManagerNode(node)
 {
+   
+
     sceneManagerRegionRecycleList.push(node);
 }
 function cleanRecycledSceneManagerRegion(min, max, depth, scene, order)
@@ -21,8 +23,9 @@ function cleanRecycledSceneManagerRegion(min, max, depth, scene, order)
     this.scene = scene;
     this.order = order;
     this.wantsDesplit = false;
+    this.isSplit = false;
+    this.parent = null;
     if (drawSceneManagerRegions) {
-        this.mesh.dispose();
         this.mesh = this.BuildWireBox([this.max[0] - this.min[0], this.max[0] - this.min[0], this.max[0] - this.min[0]], [0, 0, 0], [(this.depth / maxDepth) * 2, 0, 0]);
         this.mesh.material.depthTest = false;
         this.mesh.material.depthWrite = false;
@@ -50,11 +53,14 @@ function cleanRecycledSceneManagerRegion(min, max, depth, scene, order)
 }
 function allocateSceneManagerRegion(min, max, depth, scene, order)
 {
-    if(sceneManagerRegionRecycleList.length > 0)
+    //avoid assinging new node that was just deallocated 
+    if(sceneManagerRegionRecycleList.length > 16)
     {
-        
-        var newRegion = sceneManagerRegionRecycleList.pop();
+      
+        var newRegion = sceneManagerRegionRecycleList.shift();
+
         cleanRecycledSceneManagerRegion.call(newRegion,min, max, depth, scene, order);
+
         return newRegion;
     }
     else
@@ -807,8 +813,8 @@ SceneManager.prototype.removeChild = function(c) {
 
 function SceneManagerRegion(min, max, depth, scene, order) {
 
-    this.min = min;
-    this.max = max;
+    this.min = [min[0],min[1],min[2]];
+    this.max = [max[0],max[1],max[2]];;
     this.r = Vec3.distance(min, max) / 2;
     this.childCount = 0;
     this.c = [(this.max[0] + this.min[0]) / 2, (this.max[1] + this.min[1]) / 2, (this.max[2] + this.min[2]) / 2];
@@ -818,6 +824,8 @@ function SceneManagerRegion(min, max, depth, scene, order) {
     this.scene = scene;
     this.order = order;
     this.wantsDesplit = false;
+    this.isSplit = false;
+    this.parent = null;
     if (drawSceneManagerRegions) {
         this.mesh = this.BuildWireBox([this.max[0] - this.min[0], this.max[0] - this.min[0], this.max[0] - this.min[0]], [0, 0, 0], [(this.depth / maxDepth) * 2, 0, 0]);
 
@@ -899,7 +907,11 @@ SceneManagerRegion.prototype.BuildWireBox = function(size, offset, color) {
 }
 SceneManagerRegion.prototype.deinitialize = function() {
     if (this.mesh)
+    {
         this.mesh.parent.remove(this.mesh, true);
+        this.mesh.geometry.dispose();
+        this.mesh = null;
+    }
     for (var i = 0; i < this.childRegions.length; i++) {
         this.childRegions[i].deinitialize();
     }
@@ -979,6 +991,7 @@ SceneManagerRegion.prototype.desplit = function() {
     var children = this.getChildren();
     for (var i = 0; i < this.childRegions.length; i++) {
         this.childRegions[i].deinitialize();
+        this.childRegions[i].release();
     }
     this.childObjects = children;
     for (var j = 0; j < children.length; j++) {
@@ -1011,10 +1024,7 @@ SceneManagerRegion.prototype.desplit = function() {
 
     }
     this.childCount = this.childObjects.length;
-    for(var i =0; i < this.childRegions.length; i++)
-    {
-        this.childRegions[i].release();
-    }
+   
     this.childRegions.length = 0;
     this.isSplit = false;
     this.wantsDesplit = false;
@@ -1470,7 +1480,13 @@ THREE.RenderBatch.prototype.checkSuitability = function(object) {
 }
 THREE.RenderBatch.prototype.deinitialize = function() {
     if (this.mesh)
+    {
         this.scene.remove_internal(this.mesh);
+        this.mesh.geometry.dispose();
+        this.mesh = null;
+    }
+    for(var i =0; i < this.childRegions.length; i++)
+        this.childRegions[i].deinitialize();
 }
 THREE.RenderBatch.prototype.CPUPick = function(o, d, opts, hits) {
     if (!hits)

@@ -615,6 +615,9 @@ function BoundingSphereRTAS(min, max) {
 BoundingSphereRTAS.prototype.intersect = function(origin, direction) {
     return intersectRaySphere(origin, direction, this.center, this.radius);
 }
+
+
+
 // a quick structure to test bounding boxes
 function BoundingBoxRTAS(min, max) {
     this.max = [-Infinity, -Infinity, -Infinity];
@@ -623,6 +626,32 @@ function BoundingBoxRTAS(min, max) {
         this.min = min;
     if (max)
         this.max = max;
+}
+
+BoundingBoxRTAS.prototype.objectCache = [];
+BoundingBoxRTAS.prototype.clean = function(box)
+{
+    box.min[0] = Infinity;
+    box.min[1] = Infinity;
+    box.min[2] = Infinity;
+    box.max[0] = -Infinity;
+    box.max[1] = -Infinity;
+    box.max[2] = -Infinity;
+}
+BoundingBoxRTAS.prototype.allocate = function(min,max)
+{
+    if(this.objectCache.length == 0)
+        return new BoundingBoxRTAS(min,max);
+    else
+    {
+        var reuse = this.objectCache.pop();
+        this.clean(reuse);
+        return reuse;
+    }
+}
+BoundingBoxRTAS.prototype.release = function()
+{
+    this.objectCache.push(this);
 }
 // copy
 BoundingBoxRTAS.prototype.clone = function() {
