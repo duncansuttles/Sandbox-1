@@ -345,6 +345,10 @@ function clean_FaceIntersect(FI,point,norm,face)
     FI.priority = -1;
 
     FI.face = face;
+
+    FI.rawPoint = null;
+    FI.t = 0;
+    FI.vertindex =0;
     
 }
 function allocate_FaceIntersect(point,norm,face)
@@ -366,6 +370,9 @@ function FaceIntersect(point,norm,face) {
     this.distance = -1;
     this.object =  null;
     this.priority = -1;
+    this.rawPoint = null;
+    this.t = 0;
+    this.vertindex =0;
 }
 function release_FaceIntersect(FT)
 {
@@ -1911,7 +1918,7 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options, ret) {
                 var v2 = [this.geometry.vertices[i + 1].x, this.geometry.vertices[i + 1].y, this.geometry.vertices[i + 1].z];
                 var hitdist = distanceLineSegment(newo, newd, v1, v2, hitdata);
                 if (hitdist < Math.min(MATH.distanceVec3(newo, v1), MATH.distanceVec3(newo, v2)) / 50) {
-                    var hit = {};
+                    var hit = allocate_FaceIntersect();
                     hit.rawPoint = hitdata.point;
                     hit.point = MATH.mulMat4Vec3(mat2, hitdata.point, [0, 0, 0]);;
                     hit.vertindex = hitdata.t < .5 ? i : i + 1;
