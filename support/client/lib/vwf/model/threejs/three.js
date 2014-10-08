@@ -15495,7 +15495,9 @@ THREE.SkinnedMesh = function ( geometry, material, useVertexTexture ) {
 	this.normalizeSkinWeights();
 
 	this.updateMatrixWorld( true );
-	this.bind( new THREE.Skeleton( bones, undefined, useVertexTexture ) );
+	//TODO: remember to merge this fix  back into threejs
+	//this.bind( new THREE.Skeleton( bones, undefined, useVertexTexture ) );
+	this.bind( new THREE.Skeleton( bones, this.geometry.boneInverses || undefined, useVertexTexture ) );
 
 };
 
