@@ -14,6 +14,7 @@ define([], function() {
     function initialize() {
         this.setup = function() {
             $(document.body).append('<div id="publishSettings"></div>');
+
             $('#publishSettings').dialog({
                 title: "Test Publish",
                 buttons: {
@@ -51,6 +52,16 @@ define([], function() {
                     $('#chooseCamera').button('option', 'label', val);
                     $('#chooseCamera').attr('cameraID', idList[camList.indexOf(val)]);
                 }, camList)
+            })
+            $(window).on('setstatecomplete',function()
+            {
+                debugger;
+                var statebackup = vwf.getProperty(vwf.application(),'statebackup');
+                if(!statebackup)
+                {
+                    _Publisher.backupState();
+                }
+
             })
         }
 
@@ -147,6 +158,11 @@ define([], function() {
                     $('#playButton').addClass('pulsing');
                     $('#pauseButton').addClass('pulsing');
                     $('#stopButton').removeClass('pulsing');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', '');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', '');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', '');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', '');
+                    _Editor.SetSelectMode('Pick');
 
                 }
                 if (prop == 'playMode' && val == 'stop') {
@@ -201,7 +217,9 @@ define([], function() {
                     } catch (e) {
                         //create it and when done, do the next child of the current node
                         if (node.children[i].extends != 'character.vwf')
-                            vwf.createChild(node.id, i, node.children[i], null, null, eachSeriesCallback);
+                            vwf.createChild(node.id, i, node.children[i], null,  function(childID){
+                                eachSeriesCallback();
+                            });
                         else
                             eachSeriesCallback();
                         return;
@@ -220,7 +238,9 @@ define([], function() {
                     } else {
                         //create it and when done, do the next child of the current node
                         if (node.children[i].extends != 'character.vwf')
-                            vwf.createChild(node.id, i, node.children[i], null, null, eachSeriesCallback);
+                            vwf.createChild(node.id, i, node.children[i], null,   function(childID){
+                                eachSeriesCallback();
+                            });
                         else
                             eachSeriesCallback();
                     }
@@ -274,6 +294,7 @@ define([], function() {
 
         }
         this.playWorld = function() {
+           
             if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(), vwf.application()) == 0) {
                 alertify.log('You do not have permission to modify this world');
                 return;
