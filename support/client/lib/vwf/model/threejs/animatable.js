@@ -107,12 +107,21 @@
             if (propertyName == 'morphTargetInfluences') {
                 var skins = getSkin(this.getRoot());
                 for (var i = 0; i < skins.length; i++) {
-                    if(skins[i].morphTargetInfluences)
+                    //if(skins[i].morphTargetInfluences)
                     {
-                        for(var j =0; j < skins[i].morphTargetInfluences.length; j++)
+                        //reset to target 0
+                        for(var j = 0; j < skins[i].geometry.vertices.length; j++)
                         {
-                            skins[i].morphTargetInfluences[j] = propertyValue[j] || 0;
+                            skins[i].geometry.vertices[j].copy(skins[i].geometry.morphTargets[0].vertices[j]);
                         }
+                        for(var j =1; j < skins[i].geometry.morphTargets.length; j++)
+                        {
+                            for(var k = 0; k < skins[i].geometry.vertices.length; k++)
+                            {
+                                skins[i].geometry.vertices[k].add(skins[i].geometry.morphTargets[0].vertices[k].clone().sub(skins[i].geometry.morphTargets[j].vertices[k].clone()).multiplyScalar(propertyValue[j-1] || 0));
+                            }
+                        }
+                        skins[i].geometry.verticesNeedUpdate = true;
                     }
 
                 }
@@ -141,15 +150,6 @@
             }
             if (propertyName == 'animationSpeed') {
                 return this.animationSpeed;
-            }
-            if (propertyName == 'morphTargetInfluences') {
-                var skins = getSkin(this.getRoot());
-                for (var i = 0; i < skins.length; i++) {
-                    if(skins[i].morphTargetInfluences)
-                    {
-                        return JSON.parse(JSON.stringify(skins[i].morphTargetInfluences));
-                    }
-                }
             }
         }
         this.ticking = function() {

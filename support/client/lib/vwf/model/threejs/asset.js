@@ -124,13 +124,19 @@ function MorphRawJSONLoader() {
                             return;
                         }
                         
+
                         
                         if(!parentSkin.geometry.morphTargets)
                             parentSkin.geometry.morphTargets = [];
 
+                        parentSkin.geometry.morphTargets.push({
+                                name: 'base',
+                                vertices: parentSkin.geometry.vertices.map(function(vert){return vert.clone()})
+                            });
+
                         var targetCount = (morph.length/3) / parentSkin.geometry.vertices.length;
                         var pointer = 0;
-                        debugger;
+                        
                         for(var i =0; i < targetCount; i++)
                         {
                             var verts = [];
@@ -153,12 +159,12 @@ function MorphRawJSONLoader() {
 
                        
                        
-                        parentSkin.geometry.morphTargetsNeedUpdate = true;
-                        parentSkin.updateMorphTargets();
-                        window.parentSkin = parentSkin;
+                      //  parentSkin.geometry.morphTargetsNeedUpdate = true;
+                      //  parentSkin.updateMorphTargets();
+                      //  window.parentSkin = parentSkin;
 
-                        parentSkin.material.morphTargets = true;
-                        parentSkin.morphTargetInfluences[0] = 1;
+                      //  parentSkin.material.morphTargets = true;
+                      //  parentSkin.morphTargetInfluences[0] = 1;
                     }
 
                 }
@@ -335,7 +341,7 @@ function MorphRawJSONLoader() {
             this.removeLights(node);
             this.GetAllLeafMeshes(node, list);
             for (var i = 0; i < list.length; i++) {
-                list[i].geometry.dynamic = false;
+                list[i].geometry.dynamic = true;
                 list[i].castShadow = _SettingsManager.getKey('shadows');
                 list[i].receiveShadow = _SettingsManager.getKey('shadows');
                 if (list[i].geometry instanceof THREE.BufferGeometry) continue;
@@ -492,7 +498,7 @@ function MorphRawJSONLoader() {
                 assetRegistry[assetSource].node = _assetLoader.getUtf8JsonOptimized(assetSource).scene;
                 this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
             }
-            if (childType == 'subDriver/threejs/asset/vnd.collada+xml' && _assetLoader.getCollada(assetSource)) {
+      /*      if (childType == 'subDriver/threejs/asset/vnd.collada+xml' && _assetLoader.getCollada(assetSource)) {
                 assetRegistry[assetSource].loaded = true;
                 assetRegistry[assetSource].pending = false;
                 assetRegistry[assetSource].node = _assetLoader.getCollada(assetSource).scene;
@@ -503,7 +509,7 @@ function MorphRawJSONLoader() {
                 assetRegistry[assetSource].pending = false;
                 assetRegistry[assetSource].node = _assetLoader.getColladaOptimized(assetSource).scene;
                 this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
-            }
+            }*/
             if (childType == 'subDriver/threejs/asset/vnd.gltf+json' && _assetLoader.getglTF(assetSource)) {
 
                 assetRegistry[assetSource].loaded = true;
@@ -520,7 +526,8 @@ function MorphRawJSONLoader() {
         var reg = assetRegistry[assetSource];
 
         //if the asset entry is not loaded and not pending, you'll have to actaully go download and parse it
-        if (reg.loaded == false && reg.pending == false) {
+        if (true ) 
+        {
 
 
             //thus, it becomes pending
