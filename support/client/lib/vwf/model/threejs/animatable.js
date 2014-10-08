@@ -107,7 +107,7 @@
             if (propertyName == 'morphTargetInfluences') {
                 var skins = getSkin(this.getRoot());
                 for (var i = 0; i < skins.length; i++) {
-                    //if(skins[i].morphTargetInfluences)
+                    if(skins[i].geometry.morphTargets && skins[i].geometry.morphTargets.length > 0)
                     {
                         //reset to target 0
                         for(var j = 0; j < skins[i].geometry.vertices.length; j++)
