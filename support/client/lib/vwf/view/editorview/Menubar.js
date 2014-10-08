@@ -527,6 +527,9 @@ define({
                 _Editor.findscene().overrideMaterial.fog = false;
             }
         });
+        $('#MenuViewTogglePhysics').click(function(e) {
+           _PhysicsEditor.toggleWorldPreview()
+        });
 
         $('#MenuViewToggleBones').click(function(e) {
             if (_SceneManager.getBonesVisible())

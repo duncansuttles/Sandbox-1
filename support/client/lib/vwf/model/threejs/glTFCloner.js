@@ -188,12 +188,13 @@ define(["vwf/model/threejs/glTF-parser"], function() {
             if (this.lastKey == key) return;
             this.lastKey = key;
 
-            for (var j in this.glTFAnimations) {
+            for (var j =0 ; j <  this.glTFAnimations.length; j++) {
                 var i, len = this.glTFAnimations[j].interps.length;
                 for (i = 0; i < len; i++) {
 
                     this.glTFAnimations[j].interps[i].interp(key / 30);
-                    this.glTFAnimations[j].interps[i].targetNode.updateMatrix();
+                    //if(!(this.glTFAnimations[j].interps[i].targetNode instanceof THREE.Bone))
+                        this.glTFAnimations[j].interps[i].targetNode.updateMatrix();
                 }
             }
 

@@ -23,13 +23,33 @@ function matset(newv, old) {
         newv[i] = old[i];
     return newv;
 }
-define(["module", "vwf/view"], function(module, view) {
+define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(module, view) {
     var stats;
     var NORMALRENDER = 0;
     var STEREORENDER = 1;
+    var everyOtherFrame = false;
     return view.load(module, {
 
         renderMode: NORMALRENDER,
+        effects: [],
+        topCamera:new THREE.OrthographicCamera(1,-1,1,-1,0,10000),
+        leftCamera:new THREE.OrthographicCamera(1,-1,1,-1,0,10000),
+        frontCamera:new THREE.OrthographicCamera(1,-1,1,-1,0,10000),
+        
+        addEffect: function(effect) {
+            this.effects.push(effect);
+        },
+        removeEffect: function(effect) {
+            this.effects.splice(this.effects.indexOf(effect), 1);
+        },
+        activateRiftEffect: function() {
+            var effect = new THREE.OculusRiftEffect(_dRenderer, {
+                worldScale: 1
+            });
+            effect.setSize(parseInt($("#index-vwf").css('width')), parseInt($("#index-vwf").css('height')));
+            this.addEffect(effect);
+            vwf.callMethod(vwf.application(),'activteOculusBridge')
+        },
         initialize: function(rootSelector) {
 
             rootSelector = {
@@ -201,7 +221,11 @@ define(["module", "vwf/view"], function(module, view) {
                     var i = keys[j];
                     //don't do interpolation for static objects
                     if (this.nodes[i].isStatic) continue;
-
+                    if(!this.neededTransfromInterp[i]) 
+                        {
+                            this.nodes[i].lastTickTransform = null;
+                            continue;
+                        }
                     if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
                         this.nodes[i].lastTickTransform = matset(this.nodes[i].lastTickTransform, this.nodes[i].thisTickTransform);
                         this.nodes[i].thisTickTransform = matset(this.nodes[i].thisTickTransform, this.state.nodes[i].gettingProperty('transform'));
@@ -212,6 +236,12 @@ define(["module", "vwf/view"], function(module, view) {
 
                     }
                 }
+                everyOtherFrame = !everyOtherFrame;
+                if(everyOtherFrame)
+                {
+                    this.neededTransfromInterp = {};
+                }
+                    
             }
             if (hit > 1) {
                 this.tickTime = 0;
@@ -250,7 +280,7 @@ define(["module", "vwf/view"], function(module, view) {
 
                 var last = this.nodes[i].lastTickTransform;
                 var now = this.nodes[i].thisTickTransform;
-                if (last && now) {
+                if (last && now ) {
 
                     interp = matset(interp, last);
                     interp = this.matrixLerp(last, now, step, interp);
@@ -265,7 +295,7 @@ define(["module", "vwf/view"], function(module, view) {
 
                 last = this.nodes[i].lastAnimationFrame;
                 now = this.nodes[i].thisAnimationFrame;
-                if (last && now && Math.abs(now - last) < 3) {
+                if (last && now && Math.abs(now - last) < 3 ) {
 
                     var interpA = 0;
 
@@ -287,14 +317,16 @@ define(["module", "vwf/view"], function(module, view) {
 
 
         },
+        windowResized: function() {
+            //called on window resize by windowresize.js
+            for (var i = 0; i < this.effects.length; i++) {
+                this.effects[i].setSize(parseInt($("#index-vwf").css('width')), parseInt($("#index-vwf").css('height')));
+            }
+        },
         triggerWindowResize: function() {
-
             //overcome by code in WindowResize.js
             $(window).resize();
             return;
-
-
-
         },
         restoreTransforms: function() {
 
@@ -474,6 +506,8 @@ define(["module", "vwf/view"], function(module, view) {
 
             var cam = this.state.scenes['index-vwf'].camera.threeJScameras[this.state.scenes['index-vwf'].camera.ID];
 
+            if(camID === 'top')
+                cam = this.topCamera;
             if (this.cameraID) {
                 clearCameraModeIcons();
                 cam = null;
@@ -482,6 +516,12 @@ define(["module", "vwf/view"], function(module, view) {
                         cam = this.state.nodes[this.cameraID].getRoot();
                     }
             }
+            if(camID === 'top')
+                cam = this.topCamera;
+            if(camID === 'left')
+                cam = this.leftCamera;
+            if(camID === 'front')
+                cam = this.frontCamera;
 
             if (cam) {
                 var aspect = $('#index-vwf').width() / $('#index-vwf').height();
@@ -500,6 +540,7 @@ define(["module", "vwf/view"], function(module, view) {
         createdProperty: function(nodeID, propertyName, propertyValue) {
             this.satProperty(nodeID, propertyName, propertyValue);
         },
+        neededTransfromInterp:{},
         satProperty: function(nodeID, propertyName, propertyValue) {
 
             //console.log([nodeID,propertyName,propertyValue]);
@@ -515,7 +556,8 @@ define(["module", "vwf/view"], function(module, view) {
             if (this.nodes[nodeID])
                 this.nodes[nodeID].properties[propertyName] = propertyValue;
 
-
+            if(propertyName == 'transform')
+                this.neededTransfromInterp[nodeID] = true;
 
             node[propertyName] = propertyValue;
 
@@ -856,7 +898,7 @@ define(["module", "vwf/view"], function(module, view) {
         function renderScene(time) {
 
 
-            
+
             requestAnimFrame(renderScene);
 
             //lets not render when the quere is not ready. This prevents rendering of meshes that must have their children
@@ -1021,16 +1063,27 @@ define(["module", "vwf/view"], function(module, view) {
             //cam.far = far;
             //cam.updateProjectionMatrix();
 
+            //only render effects in normal mode. Should our older stereo support move into a THREE.js effect?
             if (self.renderMode === NORMALRENDER) {
-                cam.setViewOffset(undefined);
+                if(cam.setViewOffset)
+                    cam.setViewOffset(undefined);
                 cam.updateProjectionMatrix();
-                renderer.render(scene, cam);
+                //if there are no effects, we can do a normal render
+                if (self.effects.length == 0)
+                    renderer.render(scene, cam);
+                else //else, the normal render is taken care of by the effect
+                {
+                    for (var i = 0; i < self.effects.length; i++)
+                    {
+                        self.effects[i].render(scene, cam);
+                    }
+                }
             } else if (self.renderMode === STEREORENDER) {
                 var width = $('#index-vwf').attr('width');
                 var height = $('#index-vwf').attr('height');
-                var ww2 = width / (2*_dRenderer.devicePixelRatio);
+                var ww2 = width / (2 * _dRenderer.devicePixelRatio);
                 var h = ww2 / 1.333;
-                var hdif = (height - h) / (2*_dRenderer.devicePixelRatio*_dRenderer.devicePixelRatio*_dRenderer.devicePixelRatio);
+                var hdif = (height - h) / (2 * _dRenderer.devicePixelRatio * _dRenderer.devicePixelRatio * _dRenderer.devicePixelRatio);
                 var centerh = hdif;
 
                 oldaspect = cam.aspect;
@@ -1050,10 +1103,13 @@ define(["module", "vwf/view"], function(module, view) {
 
                 renderer.setViewport(0, centerh, ww2, h);
                 _dRenderer.setScissor(0, centerh, ww2, h);
-                cam.setViewOffset(ww2, h, -100, 0, ww2, h);
+                
+                if(cam.setViewOffset)
+                    cam.setViewOffset(ww2, h, -100, 0, ww2, h);
                 cam.updateProjectionMatrix();
 
-                cam.setViewOffset(ww2, h, -_SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
+                if(cam.setViewOffset)
+                    cam.setViewOffset(ww2, h, -_SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
                 cam.updateProjectionMatrix();
                 renderer.render(scene, cam);
 
@@ -1065,7 +1121,8 @@ define(["module", "vwf/view"], function(module, view) {
                 renderer.setViewport(ww2, centerh, ww2, h);
                 _dRenderer.setScissor(ww2, centerh, ww2, h);
 
-                cam.setViewOffset(ww2, h, _SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
+                if(cam.setViewOffset)
+                    cam.setViewOffset(ww2, h, _SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
                 cam.updateProjectionMatrix();
 
                 renderer.render(scene, cam);
@@ -1231,6 +1288,7 @@ define(["module", "vwf/view"], function(module, view) {
                 });
                 sceneNode.renderer.autoUpdateScene = false;
                 sceneNode.renderer.setSize($('#index-vwf').width(), $('#index-vwf').height());
+
 
 
                 if (_SettingsManager.getKey('shadows')) {

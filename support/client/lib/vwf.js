@@ -1056,7 +1056,11 @@ this.send = function( nodeID, actionName, memberName, parameters, when, callback
         //data in the params can be a structure that changes after the send, which would not be possible if 
         //the data traveled over the reflector
         fields = JSON.parse(JSON.stringify(fields));
-        queue.insert( fields );
+        //must be careful that we do this actually async, or logic that expects async operation will fail
+        window.setImmediate(function(){
+            queue.insert( fields );;    
+        })
+        
 
     }
 
@@ -5754,7 +5758,7 @@ var queue = this.private.queue = {
         // To prevent actions from executing out of order, callers should immediately return
         // to the host after invoking insert with chronic set.
 
-        if ( chronic ) {
+        if ( true ) {
             vwf.dispatch();
         }
 

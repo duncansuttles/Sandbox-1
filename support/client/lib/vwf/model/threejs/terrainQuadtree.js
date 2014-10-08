@@ -1,3 +1,4 @@
+			"use strict";
 			var tileres = 32;
 			var SW = 0;
 			var SE = 1;
@@ -510,6 +511,7 @@
 			                        this.mesh.geometry.BoundingSphere = null;
 			                        this.mesh.geometry.BoundingBox = null;
 			                        this.mesh.geometry.RayTraceAccelerationStructure = null;
+			                       
 			                        //go head and callback into the rebuild look to deal with fadein/out stuff, and dispatch the next tile update
 			                        cb(this, force);
 			                    } else {

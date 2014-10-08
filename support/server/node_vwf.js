@@ -303,11 +303,12 @@ function startVWF() {
                 //find pretty world URL's, and redirect to the non-pretty url for the world
                 app.use(ServerFeatures.prettyWorldURL);
 
+                app.use(express.limit('500mb'));
                 app.use(express.methodOverride());
 
                 //Wait until all data is loaded before continuing
                 //app.use (ServerFeatures.waitForAllBody);
-                app.use(express.bodyParser());
+                app.use(express.bodyParser( {maxFieldsSize:2 * 1024 * 1024 * 1024 }));
                 //CORS support
                 app.use(ServerFeatures.CORSSupport);
 

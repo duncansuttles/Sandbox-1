@@ -1475,6 +1475,11 @@ function serve(request, response) {
 				return;
 			}
 
+			if(command == 'uploadtemp')
+			{
+				
+				fs.writeFileSync('./tempupload',JSON.stringify(body));
+			}
 			//Have to do this here! throw does not work quite as you would think 
 			//with all the async stuff. Do error checking first.
 			if (command != 'thumbnail' && command != '3drupload') //excpetion for the base64 encoded thumbnails

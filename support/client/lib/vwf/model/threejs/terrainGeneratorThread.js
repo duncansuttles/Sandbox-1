@@ -1,3 +1,4 @@
+"use strict";
 self.init = function(data) {
 
 
@@ -84,7 +85,7 @@ this.generateTerrainSimWorker = function(datain, buffers) {
 
 
     var vertoffset = 4 * datain.matrix[0];
-    vertoffset2 = vertoffset * 2;
+    var vertoffset2 = vertoffset * 2;
     var invmat = new THREE.Matrix4();
 
     invmat = invmat.getInverse(matrix.clone().setPosition(new THREE.Vector3()));

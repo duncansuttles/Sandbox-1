@@ -30,6 +30,7 @@ properties:
   ___physics_factor_angular: [ 0, 0, 0 ]
   ___physics_enabled: true
   ___physics_mass: 158.5
+  animationPaused: false
 methods:
   update:
   tick:
@@ -152,6 +153,8 @@ scripts:
           this.pickoptions = {
             filter:function(o){
                 if(o instanceof THREE.Line) return false;
+                 if(o instanceof THREE.SkinnedMesh) return false;
+                  if(o instanceof THREE.Bone) return false;
                 return !(o.isAvatar === true || o.passable===true)
               },maxDist: 2,
               ignore:[this.mesh,_Editor.GetMoveGizmo()]
@@ -298,7 +301,7 @@ scripts:
           //really no point going much deeper
           if(depth == 3) return false;
 
-            var intersectfront = _SceneManager.CPUPick([avatarPos[0],avatarPos[1],avatarPos[2]],trans,opts);
+          var intersectfront = _SceneManager.CPUPick([avatarPos[0],avatarPos[1],avatarPos[2]],trans,opts);
           var avatarPosChanged = true;
           if(intersectfront)
           {
@@ -343,6 +346,7 @@ scripts:
                 avatarPos[1] = newpos[1];
                 avatarPos[2] = newpos[2];
                }
+               intersectfront.release();
             }else
             {
               //no collision, you are free to move this distance with no slide along walls
@@ -484,7 +488,8 @@ scripts:
                //     this.skin.morphTargetInfluences[i] = 0;
                
                //this.skin.morphTargetInfluences[parseInt(newframe)] = 1;     
-               this.animationFrame = newframe;
+               if(!this.animationPaused)
+                  this.animationFrame = newframe;
               
             }
             this.prevframe = this.currentframe;
@@ -675,7 +680,7 @@ scripts:
                 {
                   this.recordStandingOn(intersect);
                 }
-                _DEALLOC(intersect);
+                intersect.release();
               }
               if(this.skin)
                 {

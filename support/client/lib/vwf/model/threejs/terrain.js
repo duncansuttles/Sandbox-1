@@ -1,3 +1,4 @@
+"use strict";
 (function() {
     function terrain(childID, childSource, childName) {
         window._dTerrain = this;
@@ -98,15 +99,11 @@
                     //  if(z > o[2]) return [];
                     point.z = z;
 
-                    hits.push({
-                        distance: Math.abs(o[2] - point.z),
-                        face: null,
-                        normal: [0, 0, 1],
-                        object: self.getRoot(),
-                        point: [point.x, point.y, point.z],
-                        priority: 1
-
-                    });
+                    var hit = new FaceIntersect([point.x, point.y, point.z],[0, 0, 1],null);
+                    hit.distance= Math.abs(o[2] - point.z);
+                    hit.object= self.getRoot();
+                    hit.priority = 1
+                    hits.push(hit);
                     return hits;
 
                 } else {
