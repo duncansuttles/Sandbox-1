@@ -1930,12 +1930,12 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options, ret) {
                 var v2 = [this.geometry.vertices[i + 1].x, this.geometry.vertices[i + 1].y, this.geometry.vertices[i + 1].z];
                 var hitdist = distanceLineSegment(newo, newd, v1, v2, hitdata);
                 if (hitdist < Math.min(MATH.distanceVec3(newo, v1), MATH.distanceVec3(newo, v2)) / 50) {
-                    var hit = allocate_FaceIntersect();
+                    var point = MATH.mulMat4Vec3(mat2, hitdata.point, [0, 0, 0]);
+                    var norm = [0, 0, 1];
+                    var hit = allocate_FaceIntersect(point, norm, null);
                     hit.rawPoint = hitdata.point;
-                    hit.point = MATH.mulMat4Vec3(mat2, hitdata.point, [0, 0, 0]);;
                     hit.vertindex = hitdata.t < .5 ? i : i + 1;
                     hit.t = hitdata.t;
-                    hit.norm = [0, 0, 1];
                     hit.distance = MATH.distanceVec3(origin, hit.rawPoint);
                     hit.object = this;
                     hit.priority = this.PickPriority !== undefined ? this.PickPriority : 1;
