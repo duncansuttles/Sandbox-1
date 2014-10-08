@@ -311,27 +311,27 @@ face.prototype.intersectFrustrum = function(frustrum, opts) {
     if (pointInFrustrum(this.v0, frustrum) || pointInFrustrum(this.v0, frustrum) || pointInFrustrum(this.v0, frustrum)) {
         var point = this.c;
         var norm = this.norm;
-        return allocate_FaceIntersect( point,norm,this);
+        return allocate_FaceIntersect(point, norm, this);
     }
     for (var i = 0; i < 4; i++) {
 
         if (this.intersect1(frustrum.cornerRays[i].o, frustrum.cornerRays[i].d, opts)) {
             var point = this.c;
             var norm = this.norm;
-            return allocate_FaceIntersect( point,norm,this);
-               
+            return allocate_FaceIntersect(point, norm, this);
+
         }
     }
     return null;
 }
 
 window.cache_FaceIntersect = [];
-function deallocate_FaceIntersect(FI)
-{
+
+function deallocate_FaceIntersect(FI) {
     cache_FaceIntersect.push(FI);
 }
-function clean_FaceIntersect(FI,point,norm,face)
-{
+
+function clean_FaceIntersect(FI, point, norm, face) {
     FI.point[0] = point[0];
     FI.point[1] = point[1];
     FI.point[2] = point[2];
@@ -341,45 +341,49 @@ function clean_FaceIntersect(FI,point,norm,face)
     FI.norm[2] = norm[2];
 
     FI.distance = -1;
-    FI.object =  null;
+    FI.object = null;
     FI.priority = -1;
 
     FI.face = face;
 
     FI.rawPoint = null;
     FI.t = 0;
-    FI.vertindex =0;
-    
+    FI.vertindex = 0;
+
 }
-function allocate_FaceIntersect(point,norm,face)
-{
-    if(cache_FaceIntersect.length > 0)
-    {
+
+function allocate_FaceIntersect(point, norm, face) {
+    if (cache_FaceIntersect.length > 0) {
         var ret = cache_FaceIntersect.shift();
-        clean_FaceIntersect(ret,point,norm,face);
+        clean_FaceIntersect(ret, point, norm, face);
         return ret;
-    }else
-    {
-        return new FaceIntersect(point,norm,face)
+    } else {
+        return new FaceIntersect(point, norm, face)
     }
 }
-function FaceIntersect(point,norm,face) {
-    this.point = [point[0],point[1],point[2]];
+
+function FaceIntersect(point, norm, face) {
+    if (point)
+        this.point = [point[0], point[1], point[2]];
+    else
+        this.point = [0, 0, 0];
     this.face = face;
-    this.norm =  [norm[0],norm[1],norm[2]];;
+    if (norm)
+        this.norm = [norm[0], norm[1], norm[2]];;
+    else
+        this.norm = [0, 0, 0];
     this.distance = -1;
-    this.object =  null;
+    this.object = null;
     this.priority = -1;
     this.rawPoint = null;
     this.t = 0;
-    this.vertindex =0;
+    this.vertindex = 0;
 }
-function release_FaceIntersect(FT)
-{
+
+function release_FaceIntersect(FT) {
     cache_FaceIntersect.push(FT);
 }
-FaceIntersect.prototype.release = function()
-{
+FaceIntersect.prototype.release = function() {
     release_FaceIntersect(this);
 }
 
@@ -450,8 +454,8 @@ face.prototype.intersect1 = function(p, d, opts) {
         if (MATH.dotVec3(d, norm) > 0)
             norm = Vec3.scale(norm, -1, []);
 
-        var ret = allocate_FaceIntersect(point,norm,face);
-      
+        var ret = allocate_FaceIntersect(point, norm, face);
+
 
 
         return ret;
@@ -662,24 +666,25 @@ function BoundingBoxRTAS(min, max) {
     this.min = [Infinity, Infinity, Infinity];
     this.faces = [];
     if (min)
-        this.min = [min[0],min[1],min[2]];
+        this.min = [min[0], min[1], min[2]];
     if (max)
-        this.max = [max[0],max[1],max[2]];;
+        this.max = [max[0], max[1], max[2]];;
 }
 
 var cache_BoundingBoxRTAS = [];
-function clean_BoundingBoxRTAS (box,min,max)
-{
+
+function clean_BoundingBoxRTAS(box, min, max) {
     box.min[0] = Infinity;
     box.min[1] = Infinity;
     box.min[2] = Infinity;
     box.max[0] = -Infinity;
     box.max[1] = -Infinity;
     box.max[2] = -Infinity;
-    if(min){
+    if (min) {
         box.min[0] = min[0];
         box.min[1] = min[1];
-        box.min[2] = min[2];}
+        box.min[2] = min[2];
+    }
     if (max) {
         box.max[0] = max[0];
         box.max[1] = max[1];
@@ -688,29 +693,26 @@ function clean_BoundingBoxRTAS (box,min,max)
     box.faces.length = 0;
 }
 
-function allocate_BoundingBoxRTAS (min,max)
-{
-   
+function allocate_BoundingBoxRTAS(min, max) {
 
-    if(cache_BoundingBoxRTAS.length == 0)
-        return new BoundingBoxRTAS(min,max);
-    else
-    {
+
+    if (cache_BoundingBoxRTAS.length == 0)
+        return new BoundingBoxRTAS(min, max);
+    else {
         var reuse = cache_BoundingBoxRTAS.shift();
-        clean_BoundingBoxRTAS(reuse,min,max);
+        clean_BoundingBoxRTAS(reuse, min, max);
         return reuse;
-    }  
+    }
 }
-function deallocate_BoundingBoxRTAS (box)
-{
-    
+
+function deallocate_BoundingBoxRTAS(box) {
+
     cache_BoundingBoxRTAS.push(box);
 }
 
 
-BoundingBoxRTAS.prototype.release = function()
-{
-    
+BoundingBoxRTAS.prototype.release = function() {
+
     deallocate_BoundingBoxRTAS(this);
 }
 // copy
@@ -749,7 +751,7 @@ var temppoints_vert5 = tempPoints_TransformBy[5];
 var temppoints_vert6 = tempPoints_TransformBy[6];
 var temppoints_vert7 = tempPoints_TransformBy[7];
 var allpoints = new Float32Array(24);
-var tempvert = [0,0,0];
+var tempvert = [0, 0, 0];
 //transform the boundging box by a matrix, then re-axis align.
 BoundingBoxRTAS.prototype.transformBy = function(matrix) {
 
@@ -758,7 +760,7 @@ BoundingBoxRTAS.prototype.transformBy = function(matrix) {
         return this.clone();
 
 
-  
+
     //mat = MATH.inverseMat4(mat); 
 
 
@@ -792,7 +794,7 @@ BoundingBoxRTAS.prototype.transformBy = function(matrix) {
 
     for (var i = 0; i < 8; i++) {
         //transform all points
-        MATH.mulMat4Vec3(matrix, tempPoints_TransformBy[i],tempvert);
+        MATH.mulMat4Vec3(matrix, tempPoints_TransformBy[i], tempvert);
         allpoints[i * 3] = tempvert[0];
         allpoints[(i * 3) + 1] = tempvert[1];
         allpoints[(i * 3) + 2] = tempvert[2];
@@ -1723,8 +1725,7 @@ THREE.Object3D.prototype.GetBoundingBox = function(local) {
     //make blank box and expand by children's bounds
     var box = allocate_BoundingBoxRTAS();
     for (var i = 0; i < this.children.length; i++) {
-        if (this.children[i].GetBoundingBox)
-        {   
+        if (this.children[i].GetBoundingBox) {
             var tb = this.children[i].GetBoundingBox();
             box.expandBy(tb);
             tb.release()
@@ -1773,7 +1774,7 @@ THREE.Bone.prototype.buildSelectionHandles = function() {
     this.debug.scale.x = d;
     this.debug.scale.z = d;
     this.debug.scale.y = d;
-    
+
     this.updateMatrix();
     this.add(this.debug);
 }
@@ -1784,8 +1785,7 @@ THREE.SkinnedMesh.prototype.GetBoundingBox = function(local) {
 
     var box = allocate_BoundingBoxRTAS();
     for (var i = 0; i < this.children.length; i++) {
-        if (this.children[i].GetBoundingBox)
-        {
+        if (this.children[i].GetBoundingBox) {
             var tb = this.children[i].GetBoundingBox();
             box.expandBy(tb);
             tb.release();
@@ -2320,7 +2320,7 @@ THREE.Light.prototype.GetBoundingBox = function() {
 }
 THREE.ParticleSystem.prototype.GetBoundingBox = THREE.Light.prototype.GetBoundingBox;
 THREE.Scene.prototype.GetBoundingBox = function() {
-    var box =  allocate_BoundingBoxRTAS([-.0001, -.0001, -.0001], [.0001, .0001, .0001]);
+    var box = allocate_BoundingBoxRTAS([-.0001, -.0001, -.0001], [.0001, .0001, .0001]);
     for (var i = 0; i < this.children.length; i++) {
         var tb = this.children[i].GetBoundingBox();
         box.expandBy(tb);
