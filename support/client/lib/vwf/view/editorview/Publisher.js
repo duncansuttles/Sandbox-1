@@ -55,7 +55,7 @@ define([], function() {
             })
             $(window).on('setstatecomplete',function()
             {
-                debugger;
+                
                 var statebackup = vwf.getProperty(vwf.application(),'statebackup');
                 if(!statebackup)
                 {

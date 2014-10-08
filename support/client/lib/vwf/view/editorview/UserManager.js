@@ -147,7 +147,7 @@ define(function() {
                 });
             } else {
                 //this is a published world, and you do not need to be logged in
-                 $.ajax('/vwfDataManager.svc/logindata', {
+                $.ajax('/vwfDataManager.svc/logindata', {
                     cache: false,
                     async: false,
                     success: function(data, status, xhr) {
@@ -220,11 +220,15 @@ define(function() {
 
                 if ((statedata && statedata.publishSettings && !statedata.publishSettings.camera) || !statedata || !statedata.publishSettings) {
 
-                    _dView.setCameraDefault();
-                    clearCameraModeIcons();
-                    $('#MenuCamera3RDPersonicon').addClass('iconselected');
-                    vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
-                    vwf.models[0].model.nodes['index-vwf'].setCameraMode('3RDPerson');
+                    //set cameramode to avatar if an avatar is created
+                    //but only if the world is playing
+                    if (vwf.getProperty(vwf.application(), 'playMode') === 'play') {
+                        _dView.setCameraDefault();
+                        clearCameraModeIcons();
+                        $('#MenuCamera3RDPersonicon').addClass('iconselected');
+                        vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
+                        vwf.models[0].model.nodes['index-vwf'].setCameraMode('3RDPerson');
+                    }
                 }
 
 
@@ -304,7 +308,7 @@ define(function() {
                     ___physics_factor_angular: [0, 0, 0],
                     ___physics_enabled: true,
                     ___physics_mass: 100,
-                     transform: [
+                    transform: [
                         1,
                         0,
                         0,
@@ -686,8 +690,8 @@ define(function() {
         //these three functions should be deprecated and replaced by the ClientAPI on the Scene object for access
         //from within the model.
         this.GetPlayernameForClientID = function(id) {
-            var clients = vwf.getProperty(vwf.application(),'clients')
-            if(clients && clients[id])
+            var clients = vwf.getProperty(vwf.application(), 'clients')
+            if (clients && clients[id])
                 return clients[id].UID;
         }
         this.GetAvatarForClientID = function(id) {
@@ -698,10 +702,9 @@ define(function() {
             }
         }
         this.GetClientIDForPlayername = function(id) {
-            var clients = vwf.getProperty(vwf.application(),'clients')
-            for(var i in clients)
-            {
-                if(clients[i].UID == id) return clietns[i].cid;
+            var clients = vwf.getProperty(vwf.application(), 'clients')
+            for (var i in clients) {
+                if (clients[i].UID == id) return clietns[i].cid;
             }
         }
 

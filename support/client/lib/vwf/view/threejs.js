@@ -32,6 +32,10 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(mo
 
         renderMode: NORMALRENDER,
         effects: [],
+        topCamera:new THREE.OrthographicCamera(1,-1,1,-1,0,10000),
+        leftCamera:new THREE.OrthographicCamera(1,-1,1,-1,0,10000),
+        frontCamera:new THREE.OrthographicCamera(1,-1,1,-1,0,10000),
+        
         addEffect: function(effect) {
             this.effects.push(effect);
         },
@@ -502,6 +506,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(mo
 
             var cam = this.state.scenes['index-vwf'].camera.threeJScameras[this.state.scenes['index-vwf'].camera.ID];
 
+            if(camID === 'top')
+                cam = this.topCamera;
             if (this.cameraID) {
                 clearCameraModeIcons();
                 cam = null;
@@ -510,6 +516,12 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(mo
                         cam = this.state.nodes[this.cameraID].getRoot();
                     }
             }
+            if(camID === 'top')
+                cam = this.topCamera;
+            if(camID === 'left')
+                cam = this.leftCamera;
+            if(camID === 'front')
+                cam = this.frontCamera;
 
             if (cam) {
                 var aspect = $('#index-vwf').width() / $('#index-vwf').height();
@@ -1047,7 +1059,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(mo
 
             //only render effects in normal mode. Should our older stereo support move into a THREE.js effect?
             if (self.renderMode === NORMALRENDER) {
-                cam.setViewOffset(undefined);
+                if(cam.setViewOffset)
+                    cam.setViewOffset(undefined);
                 cam.updateProjectionMatrix();
                 //if there are no effects, we can do a normal render
                 if (self.effects.length == 0)
@@ -1084,10 +1097,13 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(mo
 
                 renderer.setViewport(0, centerh, ww2, h);
                 _dRenderer.setScissor(0, centerh, ww2, h);
-                cam.setViewOffset(ww2, h, -100, 0, ww2, h);
+                
+                if(cam.setViewOffset)
+                    cam.setViewOffset(ww2, h, -100, 0, ww2, h);
                 cam.updateProjectionMatrix();
 
-                cam.setViewOffset(ww2, h, -_SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
+                if(cam.setViewOffset)
+                    cam.setViewOffset(ww2, h, -_SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
                 cam.updateProjectionMatrix();
                 renderer.render(scene, cam);
 
@@ -1099,7 +1115,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect"], function(mo
                 renderer.setViewport(ww2, centerh, ww2, h);
                 _dRenderer.setScissor(ww2, centerh, ww2, h);
 
-                cam.setViewOffset(ww2, h, _SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
+                if(cam.setViewOffset)
+                    cam.setViewOffset(ww2, h, _SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
                 cam.updateProjectionMatrix();
 
                 renderer.render(scene, cam);
