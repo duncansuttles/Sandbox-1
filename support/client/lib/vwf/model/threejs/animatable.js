@@ -116,9 +116,10 @@
                         }
                         for(var j =1; j < skins[i].geometry.morphTargets.length; j++)
                         {
-                            for(var k = 0; k < skins[i].geometry.vertices.length; k++)
-                            {
-                                skins[i].geometry.vertices[k].add(skins[i].geometry.morphTargets[0].vertices[k].clone().sub(skins[i].geometry.morphTargets[j].vertices[k].clone()).multiplyScalar(propertyValue[j-1] || 0));
+                            if (propertyValue[j - 1]) {
+                                for (var k = 0; k < skins[i].geometry.vertices.length; k++) {
+                                    skins[i].geometry.vertices[k].add(skins[i].geometry.morphTargets[0].vertices[k].clone().sub(skins[i].geometry.morphTargets[j].vertices[k].clone()).multiplyScalar(propertyValue[j - 1] || 0));
+                                }
                             }
                         }
                         skins[i].geometry.verticesNeedUpdate = true;
