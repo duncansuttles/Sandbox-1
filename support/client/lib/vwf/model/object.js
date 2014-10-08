@@ -300,6 +300,7 @@ if ( ! object ) return;  // TODO: patch until full-graph sync is working; driver
             } else {
                 this.logger.warnx( "Node '" + nodeID + "' does not have a valid behaviors array" );
             }
+            return [];
         },
 
         // -- parent -------------------------------------------------------------------------------

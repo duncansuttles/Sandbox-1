@@ -1085,7 +1085,7 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
 
             var node = this.nodes[nodeID];
             var methods = {};
-
+            if(!node) return methods;
 
             for (var i in node.methods) {
                 if (node.methods.hasOwnProperty(i)) {
@@ -1116,7 +1116,7 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
 
             var node = this.nodes[nodeID];
             var events = {};
-
+            if(!node) return events;
 
 
             if (node.events)
