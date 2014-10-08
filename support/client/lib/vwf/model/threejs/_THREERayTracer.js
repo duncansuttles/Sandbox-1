@@ -369,7 +369,7 @@ function FaceIntersect(point, norm, face) {
         this.point = [0, 0, 0];
     this.face = face;
     if (norm)
-        this.norm = [norm[0], norm[1], norm[2]];;
+        this.norm = [norm[0], norm[1], norm[2]];
     else
         this.norm = [0, 0, 0];
     this.distance = -1;
