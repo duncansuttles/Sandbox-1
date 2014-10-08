@@ -740,8 +740,16 @@ var tempPoints_TransformBy = [
     [0, 0, 0]
 ];
 
-var allpoints = [];
-
+var temppoints_vert0 = tempPoints_TransformBy[0];
+var temppoints_vert1 = tempPoints_TransformBy[1];
+var temppoints_vert2 = tempPoints_TransformBy[2];
+var temppoints_vert3 = tempPoints_TransformBy[3];
+var temppoints_vert4 = tempPoints_TransformBy[4];
+var temppoints_vert5 = tempPoints_TransformBy[5];
+var temppoints_vert6 = tempPoints_TransformBy[6];
+var temppoints_vert7 = tempPoints_TransformBy[7];
+var allpoints = new Float32Array(24);
+var tempvert = [0,0,0];
 //transform the boundging box by a matrix, then re-axis align.
 BoundingBoxRTAS.prototype.transformBy = function(matrix) {
 
@@ -750,45 +758,44 @@ BoundingBoxRTAS.prototype.transformBy = function(matrix) {
         return this.clone();
 
 
-    for (var i = 0; i < 16; i++)
-        tempmap_TransformBy[i] = matrix[i];
+  
     //mat = MATH.inverseMat4(mat); 
 
 
     var min = this.min;
     var max = this.max;
     //list of all corners
-    tempPoints_TransformBy[0][0] = min[0];
-    tempPoints_TransformBy[0][1] = min[1];
-    tempPoints_TransformBy[0][2] = min[2];
-    tempPoints_TransformBy[1][0] = min[0];
-    tempPoints_TransformBy[1][1] = min[1];
-    tempPoints_TransformBy[1][2] = max[2];
-    tempPoints_TransformBy[2][0] = min[0];
-    tempPoints_TransformBy[2][1] = max[1];
-    tempPoints_TransformBy[2][2] = min[2];
-    tempPoints_TransformBy[3][0] = min[0];
-    tempPoints_TransformBy[3][1] = max[1];
-    tempPoints_TransformBy[3][2] = max[2];
-    tempPoints_TransformBy[4][0] = max[0];
-    tempPoints_TransformBy[4][1] = min[1];
-    tempPoints_TransformBy[4][2] = min[2];
-    tempPoints_TransformBy[5][0] = max[0];
-    tempPoints_TransformBy[5][1] = min[1];
-    tempPoints_TransformBy[5][2] = max[2];
-    tempPoints_TransformBy[6][0] = max[0];
-    tempPoints_TransformBy[6][1] = max[1];
-    tempPoints_TransformBy[6][2] = min[2];
-    tempPoints_TransformBy[7][0] = max[0];
-    tempPoints_TransformBy[7][1] = max[1];
-    tempPoints_TransformBy[7][2] = max[2];
+    temppoints_vert0[0] = min[0];
+    temppoints_vert0[1] = min[1];
+    temppoints_vert0[2] = min[2];
+    temppoints_vert1[0] = min[0];
+    temppoints_vert1[1] = min[1];
+    temppoints_vert1[2] = max[2];
+    temppoints_vert2[0] = min[0];
+    temppoints_vert2[1] = max[1];
+    temppoints_vert2[2] = min[2];
+    temppoints_vert3[0] = min[0];
+    temppoints_vert3[1] = max[1];
+    temppoints_vert3[2] = max[2];
+    temppoints_vert4[0] = max[0];
+    temppoints_vert4[1] = min[1];
+    temppoints_vert4[2] = min[2];
+    temppoints_vert5[0] = max[0];
+    temppoints_vert5[1] = min[1];
+    temppoints_vert5[2] = max[2];
+    temppoints_vert6[0] = max[0];
+    temppoints_vert6[1] = max[1];
+    temppoints_vert6[2] = min[2];
+    temppoints_vert7[0] = max[0];
+    temppoints_vert7[1] = max[1];
+    temppoints_vert7[2] = max[2];
 
     for (var i = 0; i < 8; i++) {
         //transform all points
-        var vert = (MATH.mulMat4Vec3(tempmap_TransformBy, tempPoints_TransformBy[i]));
-        allpoints[i * 3] = vert[0];
-        allpoints[(i * 3) + 1] = vert[1];
-        allpoints[(i * 3) + 2] = vert[2];
+        MATH.mulMat4Vec3(matrix, tempPoints_TransformBy[i],tempvert);
+        allpoints[i * 3] = tempvert[0];
+        allpoints[(i * 3) + 1] = tempvert[1];
+        allpoints[(i * 3) + 2] = tempvert[2];
     }
     //find new axis aligned bounds
     var bounds = FindMaxMin(allpoints);
@@ -1736,7 +1743,7 @@ THREE.Object3D.prototype.GetBoundingBox = function(local) {
         box = box.transformBy(this.getLocalMatrix());
     return box;
 }
-
+var BoneHandle = new THREE.BoxGeometry(1, 1, 1, 1, 1, 1);
 THREE.Bone.prototype.buildSelectionHandles = function() {
     var pos = [0, 0, 0];
     var dist = Vec3.magnitude([this.matrix.elements[12], this.matrix.elements[13], this.matrix.elements[14]]);
@@ -1752,7 +1759,7 @@ THREE.Bone.prototype.buildSelectionHandles = function() {
     this.debugDist = dist;
 
     var d = this.debugDist;
-    this.debug = new THREE.Mesh(new THREE.BoxGeometry(d, d, d, 1, 1, 1));
+    this.debug = new THREE.Mesh(BoneHandle);
     this.debug.name = "BoneSelectionHandle";
     this.debug.material.color.r = this.initializedFromAsset ? 1 : .5;
     this.debug.material.color.g = .5;
@@ -1763,6 +1770,11 @@ THREE.Bone.prototype.buildSelectionHandles = function() {
     this.debug.position.y = pos[1];
     this.debug.position.z = pos[2];
     this.debug.visible = _SceneManager ? _SceneManager.getBonesVisible() : false;
+    this.debug.scale.x = d;
+    this.debug.scale.z = d;
+    this.debug.scale.y = d;
+    
+    this.updateMatrix();
     this.add(this.debug);
 }
 //dont take the mesh into account for the skinned meshes

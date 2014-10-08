@@ -7796,7 +7796,7 @@ THREE.Object3D.prototype = {
 
             this.orthoMatrixWorld.copy(this.matrixWorld);
             if (this instanceof THREE.Bone) {
-                var skin = this;
+                var skin = this.skin || this;
                 while (!(skin instanceof THREE.SkinnedMesh))
                     skin = skin.parent;
                 this.orthoMatrixWorld.orthogonalize(skin.matrixWorld);

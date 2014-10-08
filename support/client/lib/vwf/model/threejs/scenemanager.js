@@ -335,7 +335,10 @@ SceneManager.prototype.update = function(dt) {
 
     if (!this.initialized) return;
 
+   
 
+
+   
     //first, we sort all dirty objects into their new regions
     for (var i = 0; i < this.dirtyObjects.length; i++) {
         this.dirtyObjects[i].sceneManagerUpdate();
@@ -344,7 +347,7 @@ SceneManager.prototype.update = function(dt) {
     //now desplit anything that has too few objects
     this.root.processDesplits();
 
-    this.dirtyObjects = [];
+    this.dirtyObjects.length = 0;
 
     var dirtybatchcount = 0;
     for (var i = 0; i < this.BatchManagers.length; i++) {
@@ -1094,7 +1097,7 @@ function objectSceneManagerUpdate() {
 
 
 
-    delete this.boundsCache;
+    this.boundsCache = this.GetBoundingBox(true).transformBy(this.getModelMatrix(tempmat));
     if (this.isDynamic()) return;
     for (var i = 0; i < this.children.length; i++) {
         this.children[i].sceneManagerUpdate();
