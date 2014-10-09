@@ -1072,17 +1072,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 }
                 if (threeObject instanceof THREE.PointLight || threeObject instanceof THREE.DirectionalLight || threeObject instanceof THREE.SpotLight) {
 
-                    if (propertyName == 'transform') {
-                        if (threeObject.target) {
-                            var offset = new THREE.Vector3(0, 0, -1);
-                            offset.applyMatrix4(threeObject.matrixWorld);
-                            threeObject.target.position.x = offset.x;
-                            threeObject.target.position.y = offset.y;
-                            threeObject.target.position.z = offset.z;
-                            threeObject.target.updateMatrixWorld(true);
-                        }
-
-                    }
+                    
 
 
 
@@ -1137,8 +1127,11 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                             rebuildAllMaterials.call(this);
                         }
                         node.threeObject.updateMatrixWorld(true);
-                        if (node.threeObject.target)
-                            node.threeObject.target.updateMatrixWorld(true);
+                        if (node.threeObject.target){
+                             node.threeObject.add(node.threeObject.target);
+                             node.threeObject.target.position.z = -1;
+                             node.threeObject.target.updateMatrixWorld(true);
+                        }
                     }
                     //if(propertyName == 'diffuse')
                     //{
