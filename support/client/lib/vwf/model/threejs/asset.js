@@ -137,6 +137,13 @@ function MorphRawJSONLoader() {
                         var targetCount = (morph.length/3) / parentSkin.geometry.vertices.length;
                         var pointer = 0;
                         
+                        var defaultInfluences = [];
+                        for(var i =0; i < targetCount; i++)
+                            defaultInfluences.push(0);
+                        
+                        //notify the kernel of the state of the property so the default value is not null
+                        vwf.setProperty(this.parentNode.ID,'morphTargetInfluences',defaultInfluences)
+
                         for(var i =0; i < targetCount; i++)
                         {
                             var verts = [];
