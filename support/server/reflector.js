@@ -739,6 +739,7 @@ function ClientConnected(socket, namespace, instancedata) {
             if (message.action == "saveStateResponse") {
                 console.log(message.data);
                 SaveInstanceState(namespace, message.data, socket);
+                return;
             }
 
             //Log all message if level is high enough
