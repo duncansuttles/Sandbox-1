@@ -126,145 +126,189 @@ var fixIDs = function(node) {
     }
 }
 
-    function getBlankScene(state, instanceData, cb) {
-        var state2 = JSON.parse(JSON.stringify(state));
-        fs.readFile("./public" + global.appPath + "/index.vwf.yaml", 'utf8', function(err, blankscene) {
+function getBlankScene(state, instanceData, cb) {
+    var state2 = JSON.parse(JSON.stringify(state));
+    fs.readFile("./public" + global.appPath + "/index.vwf.yaml", 'utf8', function(err, blankscene) {
 
-            var err = null;
-            try {
-                blankscene = YAML.load(blankscene);
+        var err = null;
+        try {
+            blankscene = YAML.load(blankscene);
 
-                blankscene.id = 'index-vwf';
-                blankscene.patches = "index.vwf";
-                if (!blankscene.children)
-                    blankscene.children = {};
-                //only really doing this to keep track of the ownership
-                for (var i = 0; i < state.length - 1; i++) {
+            blankscene.id = 'index-vwf';
+            blankscene.patches = "index.vwf";
+            if (!blankscene.children)
+                blankscene.children = {};
+            //only really doing this to keep track of the ownership
+            for (var i = 0; i < state.length - 1; i++) {
 
-                    var childComponent = state[i];
-                    var childName = (state[i].name || state[i].properties.DisplayName) || i;
-                    var childID = childComponent.id || childComponent.uri || (childComponent["extends"]) + "." + childName.replace(/ /g, '-');
-                    childID = childID.replace(/[^0-9A-Za-z_]+/g, "-");
-                    //state[i].id = childID;
-                    //state2[i].id = childID;
-                    blankscene.children[childName] = state2[i];
-                    state[i].id = childID;
+                var childComponent = state[i];
+                var childName = (state[i].name || state[i].properties.DisplayName) || i;
+                var childID = childComponent.id || childComponent.uri || (childComponent["extends"]) + "." + childName.replace(/ /g, '-');
+                childID = childID.replace(/[^0-9A-Za-z_]+/g, "-");
+                //state[i].id = childID;
+                //state2[i].id = childID;
+                blankscene.children[childName] = state2[i];
+                state[i].id = childID;
 
-                    fixIDs(state[i]);
-                }
-                var props = state[state.length - 1];
-                if (props) {
-                    if (!blankscene.properties)
-                        blankscene.properties = {};
-                    for (var i in props) {
-                        blankscene.properties[i] = props[i];
-                    }
-                    for (var i in blankscene.properties) {
-                        if (blankscene.properties[i] && blankscene.properties[i].value)
-                            blankscene.properties[i] = blankscene.properties[i].value;
-                        else if (blankscene.properties[i] && (blankscene.properties[i].get || blankscene.properties[i].set))
-                            delete blankscene.properties[i];
-                    }
-                    //don't allow the clients to persist between a save/load cycle
-                    blankscene.properties['clients'] = null;
-                    if (instanceData && instanceData.publishSettings) {
-                        blankscene.properties['playMode'] = 'play';
-                    } else
-                        blankscene.properties['playMode'] = 'stop';
-                }
-            } catch (e) {
-                err = e;
+                fixIDs(state[i]);
             }
-            if (err)
-                cb(null);
-            else
-                cb(blankscene);
-        });
-    }
+            var props = state[state.length - 1];
+            if (props) {
+                if (!blankscene.properties)
+                    blankscene.properties = {};
+                for (var i in props) {
+                    blankscene.properties[i] = props[i];
+                }
+                for (var i in blankscene.properties) {
+                    if (blankscene.properties[i] && blankscene.properties[i].value)
+                        blankscene.properties[i] = blankscene.properties[i].value;
+                    else if (blankscene.properties[i] && (blankscene.properties[i].get || blankscene.properties[i].set))
+                        delete blankscene.properties[i];
+                }
+                //don't allow the clients to persist between a save/load cycle
+                blankscene.properties['clients'] = null;
+                if (instanceData && instanceData.publishSettings) {
+                    blankscene.properties['playMode'] = 'play';
+                } else
+                    blankscene.properties['playMode'] = 'stop';
+            }
+        } catch (e) {
+            err = e;
+        }
+        if (err)
+            cb(null);
+        else
+            cb(blankscene);
+    });
+}
 
-    function ServeSinglePlayer(socket, namespace, instancedata) {
-        global.log('single player', 2);
-        var instance = namespace;
-        var state = SandboxAPI.getState(instance, function(state) {
-            if (!state) state = [{
-                owner: undefined
-            }];
+function ServeSinglePlayer(socket, namespace, instancedata) {
+    global.log('single player', 2);
+    var instance = namespace;
+    var state = SandboxAPI.getState(instance, function(state) {
+        if (!state) state = [{
+            owner: undefined
+        }];
 
-            getBlankScene(state, instancedata, function(blankscene) {
-                socket.emit('message', {
-                    "action": "createNode",
-                    "parameters": [blankscene],
-                    "time": 0
-                });
-                var joinMessage = messageCompress.pack(JSON.stringify({
-                    "action": "fireEvent",
-                    "parameters": ["clientConnected", [socket.id, socket.loginData ? socket.loginData.Username : "Anonymous0", socket.loginData ? socket.loginData.UID : "Anonymous0"]],
-                    node: "index-vwf",
-                    "time": 0
-                }));
-                socket.emit('message', joinMessage);
-
-                socket.emit('message', {
-                    "action": "goOffline",
-                    "parameters": [blankscene],
-                    "time": 0
-                });
-                socket.pending = false;
+        getBlankScene(state, instancedata, function(blankscene) {
+            socket.emit('message', {
+                "action": "createNode",
+                "parameters": [blankscene],
+                "time": 0
             });
+            var joinMessage = messageCompress.pack(JSON.stringify({
+                "action": "fireEvent",
+                "parameters": ["clientConnected", [socket.id, socket.loginData ? socket.loginData.Username : "Anonymous0", socket.loginData ? socket.loginData.UID : "Anonymous0"]],
+                node: "index-vwf",
+                "time": 0
+            }));
+            socket.emit('message', joinMessage);
+
+            socket.emit('message', {
+                "action": "goOffline",
+                "parameters": [blankscene],
+                "time": 0
+            });
+            socket.pending = false;
         });
-    }
+    });
+}
 
 
-    function WebSocketConnection(socket, _namespace) {
+function SaveInstanceState(namespace, data, socket) {
 
-        //get the session information for the socket
-        sessions.GetSessionData(socket.handshake, function(loginData) {
+    if(!socket.loginData) return;
+
+    var id = namespace.replace(/\\/g, '_');
+    DAL.getInstance(id, function(state) {
+
+        //state not found
+        if (!state) {
+            require('./examples.js').getExampleMetadata(id, function(metadata) {
+
+                if (!metadata) {
+                    
+                    return;
+                } else {
+                    if (socket.loginData.UID == global.adminUID) {
+                        require('./examples.js').saveExampleData(URL, id, data, function() {
+                            
+                        })
+
+                    } else {
+                        
+                        return;
+                    }
+
+                }
+
+            });
+            return;
+        }
+
+        //not allowed to update a published world
+        if (state.publishSettings) {
+            return;
+        }
+
+        //not currently checking who saves the state, so long as they are logged in
+        DAL.saveInstanceState(id, data, function() {
+            return;
+        });
+
+    });
+}
+
+function WebSocketConnection(socket, _namespace) {
+
+    //get the session information for the socket
+    sessions.GetSessionData(socket.handshake, function(loginData) {
 
 
 
-            socket.loginData = loginData;
+        socket.loginData = loginData;
 
-            var namespace = _namespace || getNamespace(socket);
+        var namespace = _namespace || getNamespace(socket);
 
-            if (!namespace) {
-                socket.on('setNamespace', function(msg) {
-                    global.log(msg.space, 2);
-                    WebSocketConnection(socket, msg.space);
-                    socket.emit('namespaceSet', {});
+        if (!namespace) {
+            socket.on('setNamespace', function(msg) {
+                global.log(msg.space, 2);
+                WebSocketConnection(socket, msg.space);
+                socket.emit('namespaceSet', {});
+            });
+            socket.on('connectionTest', function(msg) {
+                socket.emit('connectionTest', msg);
+            })
+            return;
+        }
+
+
+        DAL.getInstance(namespace.replace(/\//g, "_"), function(instancedata) {
+
+            if (!instancedata) {
+                require('./examples.js').getExampleMetadata(namespace.replace(/\//g, "_"), function(instancedata) {
+                    if (instancedata) {
+                        //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
+                        if (instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer) {
+                            ServeSinglePlayer(socket, namespace, instancedata)
+                        } else
+                            ClientConnected(socket, namespace, instancedata);
+
+                    } else {
+                        socket.disconnect();
+                        return;
+                    }
                 });
-                socket.on('connectionTest', function(msg) {
-                    socket.emit('connectionTest', msg);
-                })
                 return;
             }
-
-
-            DAL.getInstance(namespace.replace(/\//g, "_"), function(instancedata) {
-
-                if (!instancedata) {
-                    require('./examples.js').getExampleMetadata(namespace.replace(/\//g, "_"), function(instancedata) {
-                        if (instancedata) {
-                            //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
-                            if (instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer) {
-                                ServeSinglePlayer(socket, namespace, instancedata)
-                            } else
-                                ClientConnected(socket, namespace, instancedata);
-
-                        } else {
-                            socket.disconnect();
-                            return;
-                        }
-                    });
-                    return;
-                }
-                //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
-                if (instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer) {
-                    ServeSinglePlayer(socket, namespace, instancedata)
-                } else
-                    ClientConnected(socket, namespace, instancedata);
-            });
+            //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
+            if (instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer) {
+                ServeSinglePlayer(socket, namespace, instancedata)
+            } else
+                ClientConnected(socket, namespace, instancedata);
         });
-    };
+    });
+};
 
 function runningInstance(id) {
     this.id = id;
@@ -569,8 +613,8 @@ function ClientConnected(socket, namespace, instancedata) {
         })));
         //here, we must reset all the physics worlds, right before who ever firstclient is responds to getState. 
         //important that nothing is between
-        
-       
+
+
 
         var resetMessage = JSON.stringify({
             "action": "callMethod",
@@ -689,6 +733,11 @@ function ClientConnected(socket, namespace, instancedata) {
             message.client = socket.id;
 
 
+            if (message.action == "saveStateResponse") {
+                console.log(message.data);
+                SaveInstanceState(namespace, message.data, socket);
+            }
+
             //Log all message if level is high enough
             if (isPointerEvent(message)) {
                 thisInstance.Log(JSON.stringify(message), 4);
@@ -699,6 +748,7 @@ function ClientConnected(socket, namespace, instancedata) {
 
 
             var sendingclient = thisInstance.clients[socket.id];
+
 
             //do not accept messages from clients that have not been claimed by a user
             //currently, allow getstate from anonymous clients
@@ -846,7 +896,7 @@ function ClientConnected(socket, namespace, instancedata) {
             }
 
             var compressedMessage = messageCompress.pack(JSON.stringify(message))
-            //distribute message to all clients on given instance
+                //distribute message to all clients on given instance
             for (var i in thisInstance.clients) {
                 var client = thisInstance.clients[i];
 
