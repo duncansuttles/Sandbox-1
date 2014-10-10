@@ -91,7 +91,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
         var instanceData = _DataManager.getInstanceData() || {};
 
-        var needTools = instanceData && instanceData.publishSettings ? instanceData.publishSettings.allowTools : true;
+        var needTools = _EditorView.needTools();
 
         if (needTools) {
             $(document.body).append('<div id="statusbar" class="statusbar" />');

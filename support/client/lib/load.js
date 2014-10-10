@@ -37,6 +37,7 @@ if (!window.jQuery) {
                                         function() {
                                             require(["boot"], function(boot) {
                                                 //ok, the loading stage is complete - fire up some initial gui logic
+                                               
                                                 startup(boot);
                                             })
                                         })
@@ -98,7 +99,7 @@ function startup(boot) {
     //start when document is ready
     $(window).ready(function() {
 
-
+        
         //hide the compatibility check
         $('#loadstatus').fadeOut();
 
