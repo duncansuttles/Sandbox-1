@@ -16190,21 +16190,21 @@ THREE.FogExp2 = function ( color, density ) {
     this.vAtmosphereColor = new THREE.Color(0x000000);
 
     this.vAtmosphereColor.r = 0.0;
-    this.vAtmosphereColor.r = 0.02;
-    this.vAtmosphereColor.r = 0.04;
+    this.vAtmosphereColor.g = 0.02;
+    this.vAtmosphereColor.b = 0.04;
 
     this.vAtmosphereDensity = .0005;
 
     this.vHorizonColor = new THREE.Color(0x000000);
     this.vHorizonColor.r = 0.88;
-    this.vHorizonColor.r = 0.94;
-    this.vHorizonColor.r = 0.999;
+    this.vHorizonColor.g = 0.94;
+    this.vHorizonColor.b = 0.999;
 
 
     this.vApexColor = new THREE.Color(0x000000);
     this.vApexColor.r = 0.78;
-    this.vApexColor.r = 0.82;
-    this.vApexColor.r = 0.999;
+    this.vApexColor.g = 0.82;
+    this.vApexColor.b = 0.999;
 
 };
 

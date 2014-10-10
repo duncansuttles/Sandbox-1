@@ -37,7 +37,7 @@ if (!window.jQuery) {
                                         function() {
                                             require(["boot"], function(boot) {
                                                 //ok, the loading stage is complete - fire up some initial gui logic
-                                               
+
                                                 startup(boot);
                                             })
                                         })
@@ -99,7 +99,7 @@ function startup(boot) {
     //start when document is ready
     $(window).ready(function() {
 
-        
+
         //hide the compatibility check
         $('#loadstatus').fadeOut();
 
@@ -116,16 +116,19 @@ function startup(boot) {
             stateData = null;
         }
 
-        //check if the user is logged in
-        $.ajax({
-            url: '/vwfdatamanager.svc/profile',
-            success: function(data2, status2, xhr2) {
-                //if they are, fire up the boot module
-                boot(stateData);
-            },
-            error: function() {
-                //if they are not, warn them by loading alertify and alerting
-                require(['vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify'], function(alertify) {
+        if ($.parseQuerystring().nologin) {
+            boot(stateData);
+        } else {
+            //check if the user is logged in
+            $.ajax({
+                url: '/vwfdatamanager.svc/profile',
+                success: function(data2, status2, xhr2) {
+                    //if they are, fire up the boot module
+                    boot(stateData);
+                },
+                error: function() {
+                    //if they are not, warn them by loading alertify and alerting
+                    require(['vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify'], function(alertify) {
 
 
 
@@ -133,44 +136,45 @@ function startup(boot) {
 
 
 
-                    //if the world is set to allow anonymous, don't pop up the login warning
-                    if (stateData && stateData.publishSettings && (stateData.publishSettings.isPublished !== false) && stateData.publishSettings.allowAnonymous) {
-                        boot(stateData);
-                    } else {
+                        //if the world is set to allow anonymous, don't pop up the login warning
+                        if (stateData && stateData.publishSettings && (stateData.publishSettings.isPublished !== false) && stateData.publishSettings.allowAnonymous) {
+                            boot(stateData);
+                        } else {
 
-                        alertify.set({
-                            labels: {
-                                ok: i18n.t("Login"),
-                                cancel: i18n.t("Continue as Guest")
-                            }
-                        });
-
-                        alertify.confirm(i18n.t("You are viewing this world as a guest") + "." + i18n.t("You will be able to view the world, but not interact with it") + "." + i18n.t("Would you like to go back and log in") + "?",
-                            function(e) {
-
-
-                                //if they choose to go back and log in
-                                if (e)
-                                    window.location = "../login?return=" + window.location.pathname.substring(window.location.pathname.indexOf(window.appPath) + window.appPath.length) + window.location.hash + window.location.search;
-                                else {
-
-                                    alertify.set({
-                                        labels: {
-                                            ok: i18n.t("Ok"),
-                                            cancel: i18n.t("Cancel")
-                                        }
-                                    });
-
-                                    //continue as guest, fire up the boot.js
-                                    boot(stateData);
+                            alertify.set({
+                                labels: {
+                                    ok: i18n.t("Login"),
+                                    cancel: i18n.t("Continue as Guest")
                                 }
-                            }
-                        );
-                    }
+                            });
+
+                            alertify.confirm(i18n.t("You are viewing this world as a guest") + "." + i18n.t("You will be able to view the world, but not interact with it") + "." + i18n.t("Would you like to go back and log in") + "?",
+                                function(e) {
 
 
-                });
-            }
-        });
+                                    //if they choose to go back and log in
+                                    if (e)
+                                        window.location = "../login?return=" + window.location.pathname.substring(window.location.pathname.indexOf(window.appPath) + window.appPath.length) + window.location.hash + window.location.search;
+                                    else {
+
+                                        alertify.set({
+                                            labels: {
+                                                ok: i18n.t("Ok"),
+                                                cancel: i18n.t("Cancel")
+                                            }
+                                        });
+
+                                        //continue as guest, fire up the boot.js
+                                        boot(stateData);
+                                    }
+                                }
+                            );
+                        }
+
+
+                    });
+                }
+            });
+        }
     });
 }

@@ -1207,21 +1207,44 @@ scripts:
         this.callUpdateCallbacks();
         findcamera().updateMatrixWorld();
         findcamera().updateMatrix();
-        if(this.sensorData && this.oculusActive)
+        //this really belongs in the view 
+        if(this.oculusActive &&  _dView.vrHMDSensor)
         {
-            var headPos= new THREE.Vector3(this.sensorData[1]*1,this.sensorData[2]*1,this.sensorData[3]*1);
+            var state = _dView.vrHMDSensor.getState();
+            //console.log(state.timeStamp);
+            var headPos= new THREE.Vector3(state.position.x,state.position.y,state.position.z);
+        
+            
+
+            var headPosVel= new THREE.Vector3(state.linearVelocity.x,state.linearVelocity.y,state.linearVelocity.z);
+            var headQuatVel= new THREE.Vector3(state.angularVelocity.x,state.angularVelocity.y,state.angularVelocity.z);
+            var headQuatAcc= new THREE.Vector3(state.angularAcceleration.x,state.angularAcceleration.y,state.angularAcceleration.z);
+            var headQuatEuler = new THREE.Euler(0,0,0,'XYZ');
+            var headQuat= new THREE.Quaternion(state.orientation.x,state.orientation.y,state.orientation.z,state.orientation.w); 
+            headQuatEuler.setFromQuaternion(headQuat);
+
+            var t = window.fpt || .2; //20ms
+            var x = headQuatEuler.x + headQuatVel.x * t + .5 * headQuatAcc.x *t*t;
+            var y = headQuatEuler.y + headQuatVel.y * t + .5 * headQuatAcc.y *t*t;
+            var z = headQuatEuler.z + headQuatVel.z * t + .5 * headQuatAcc.z *t*t;
+            headQuatEuler.x = x;
+            headQuatEuler.y = y;
+            headQuatEuler.z = z;
+            if(window.fpt > 0)
+              headQuat.setFromEuler(headQuatEuler);
+
             headPos.applyMatrix3((new THREE.Matrix4()).extractRotation(findcamera().matrix));
-            var headQuat= new THREE.Quaternion(this.sensorData[4],this.sensorData[5],this.sensorData[6],this.sensorData[7]); 
-            findcamera().position.add(headPos);
+           
+
+            //forward predict rotation 10ms
+           
+            
+            //findcamera().position.add(headPos);
             findcamera().quaternion.multiply(headQuat);    
         }
         findcamera().updateMatrixWorld();
         findcamera().updateMatrix();
        
-      }
-      function connectOculus()
-      {
-        this.ocb = new OculusBridge();
       }
       function findscene()
       {
@@ -1476,7 +1499,7 @@ scripts:
             
             center.add(offset);
             this.center = [center.x,center.y,center.z];
-            findcamera().position = center;
+            findcamera().position.copy(center);
             
             
             
@@ -1565,39 +1588,10 @@ scripts:
     this.pointerUp= function(){return true;}
     this.pointerMove= function(){return true;}
 
+    //this really belongs in the view 
     this.activteOculusBridge = function()
     {
-      debugger;
-        var that = this;
-        var ws = new WebSocket("ws://localhost:8888/ws");
-        ws.onopen = function () {
-          console.log("### Connected ####");
-        };
-
-        ws.onmessage = function (evt) {
-          var message = evt.data;
-          try {
-            that.sensorData = JSON.parse(message);
-            
-          } catch (err) {
-            console.log(message);
-          }
-        };
-
-        ws.onclose = function () {
-          console.log("### Closed ####");
-        };
         this.oculusActive = true;
-        this.getSensorData = function()
-        {
-          if (ws) {
-            if (ws.readyState === 1) {
-              ws.send("get\n");
-            }
-            window.requestAnimationFrame(that.getSensorData);
-          }
-        }
-        window.requestAnimationFrame(this.getSensorData);
     }
         
     
