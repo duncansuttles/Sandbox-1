@@ -217,9 +217,11 @@ function ServeSinglePlayer(socket, namespace, instancedata) {
 
 function SaveInstanceState(namespace, data, socket) {
 
+
     if(!socket.loginData) return;
 
-    var id = namespace.replace(/\\/g, '_');
+    var id = namespace.replace(/[\\\/]/g, '_');
+    console.log(id);
     DAL.getInstance(id, function(state) {
 
         //state not found
@@ -257,6 +259,7 @@ function SaveInstanceState(namespace, data, socket) {
         });
 
     });
+    console.log('saved');
 }
 
 function WebSocketConnection(socket, _namespace) {
