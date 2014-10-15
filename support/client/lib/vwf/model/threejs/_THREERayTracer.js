@@ -332,13 +332,26 @@ function deallocate_FaceIntersect(FI) {
 }
 
 function clean_FaceIntersect(FI, point, norm, face) {
-    FI.point[0] = point[0];
-    FI.point[1] = point[1];
-    FI.point[2] = point[2];
 
-    FI.norm[0] = norm[0];
-    FI.norm[1] = norm[1];
-    FI.norm[2] = norm[2];
+    if (point) {
+        FI.point[0] = point[0];
+        FI.point[1] = point[1];
+        FI.point[2] = point[2];
+    } else {
+        FI.point[0] = 0;
+        FI.point[1] = 0;
+        FI.point[2] = 0;
+    }
+
+    if (norm) {
+        FI.norm[0] = norm[0];
+        FI.norm[1] = norm[1];
+        FI.norm[2] = norm[2];
+    } else {
+        FI.norm[0] = 0;
+        FI.norm[1] = 0;
+        FI.norm[2] = 0;
+    }
 
     FI.distance = -1;
     FI.object = null;
