@@ -71,6 +71,7 @@ methods:
   dirtyStack:
   GetMesh:
   dostretch:
+  ready:
 events:
   childAdded:
 scripts:
@@ -81,6 +82,10 @@ scripts:
         var y = vwf.getProperty(this.id,'bulge');
         var z = vwf.getProperty(this.id,'effectaxis');
         this.dostretch(x,y,z);
+    }
+    this.ready = function()
+    {
+      this.dirtyStack();
     }
     this.dostretch = function(stretch,bulge,axis)
     {

@@ -185,6 +185,7 @@ scripts:
     }
     this.updateStack = function()
     {
+        debugger;
         if(this.amount == undefined) return;
         this.updateSelf();
         for(var i in this.children)
@@ -208,6 +209,7 @@ scripts:
     }
     this.dirtyStack = function()
     {
+        debugger;
         if(this.amount == undefined) return;
         
         return vwf.callMethod(vwf.parent(this.id),'dirtyStack');

@@ -145,6 +145,7 @@ methods:
   dirtyStack:
   GetMesh:
   noise:
+  ready:
 events:
   childAdded:
 scripts:
@@ -304,6 +305,10 @@ scripts:
               z += z1;
             }
             return z;
+    }
+    this.ready = function()
+    {
+      this.dirtyStack();
     }
     this.noise = function(scale,iterations,seed,effectX,effectY,effectZ,useWorldSpace,phase)
     {   
