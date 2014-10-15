@@ -426,7 +426,7 @@ SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
         temptexture.format = this.getDefaultTexture().format;
 
 
-        if (_SettingsManager.settings.filtering) {
+        if (_SettingsManager.getKey('filtering')) {
             temptexture.minFilter = THREE.LinearMipMapLinearFilter;
             temptexture.magFilter = THREE.LinearFilter;
         } else {
@@ -493,7 +493,7 @@ SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
         var loader = new THREE.DDSLoader();
         texture = loader.load(url, load, error);
 
-        if (_SettingsManager.settings.filtering) {
+        if (_SettingsManager.getKey('filtering')) {
             texture.minFilter = THREE.LinearMipMapLinearFilter;
             texture.magFilter = THREE.LinearFilter;
         } else {
@@ -517,7 +517,7 @@ SceneManager.prototype.loadTexture = function(url, mapping, onLoad, onError) {
         var texture = new THREE.Texture(this.getDefaultTexture().image, mapping);
         texture.format = this.getDefaultTexture().format;
 
-        if (_SettingsManager.settings.filtering) {
+        if (_SettingsManager.getKey('filtering')) {
             texture.minFilter = THREE.LinearMipMapLinearFilter;
             texture.magFilter = THREE.LinearFilter;
         } else {
