@@ -58,9 +58,10 @@
         }
         this.hasModifiers = function() {
             var has = false;
-            if (this.children)
-                for (var i = 0; i < this.children.length; i++) {
-                    if (vwf.getProperty(this.children[i].ID, 'type') == 'modifier')
+            var children = vwf.children(this.ID);
+            if (children)
+                for (var i = 0; i < children.length; i++) {
+                    if (vwf.getProperty(children[i], 'type') == 'modifier')
                         has = true;
 
                 }
@@ -68,6 +69,7 @@
         }
         this.updateStack = function(rebuild, cache) {
 
+          
             this.updateSelf(rebuild, cache && !this.hasModifiers());
 
             var children = vwf.children(this.ID);
