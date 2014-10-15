@@ -575,7 +575,11 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
 
 
         },
-        setCamera: function(camID) {
+        setCamera:function(camID)
+        {
+            vwf_view.kernel.callMethod(vwf.application(),'setClientCamera',[vwf.moniker(),camID]);
+        },
+        setCamera_internal: function(camID) {
             var defaultCameraID;
             var instanceData = _DataManager.getInstanceData();
             var publishSettings = instanceData.publishSettings;
@@ -616,6 +620,16 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
         },
         setCameraDefault: function() {
             this.setCamera();
+        },
+        calledMethod: function(id,method,args)
+        {
+            if(id == vwf.application() && method == 'setClientCamera')
+            {
+                if(vwf.moniker() == args[0])
+                {
+                    this.setCamera_internal(args[1]);
+                }
+            }
         },
         createdProperty: function(nodeID, propertyName, propertyValue) {
             this.satProperty(nodeID, propertyName, propertyValue);
