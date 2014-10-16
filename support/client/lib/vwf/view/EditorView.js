@@ -263,6 +263,9 @@ function InitializeEditor() {
         translateMenu();
         //default to select mode
         _Editor.SetSelectMode('Pick');
+    }else
+    {
+        $('#index-vwf').css('border','none');
     }
     require("vwf/view/editorview/SaveLoadTimer").initialize();
 
