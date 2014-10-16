@@ -293,7 +293,7 @@ function runningInstance(id) {
         var loadClient = null;
         for (var i in this.clients) {
             var testClient = this.clients[i];
-            if (!testClient.pending && testClient.loginData) {
+            if (!testClient.pending ) {  //&& testClient.loginData remove check - better to get untrusted data than a sync error
                 loadClient = testClient;
                 break;
             }
