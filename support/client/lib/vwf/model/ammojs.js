@@ -235,7 +235,7 @@ phyObject.prototype.addTorque = function(vec) {
     if (this.initialized === true) {
         var f = new Ammo.btVector3(vec[0], vec[1], vec[2]);
         this.body.applyTorque(f);
-        Ammo.destroy(f);
+        //Ammo.destroy(f);
 
     }
 }

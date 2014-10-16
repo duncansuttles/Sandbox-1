@@ -81,6 +81,19 @@ properties:
                var force = [x,y,z];
                this.___physics_addTorqueImpulse(force);
             }.bind(this);
+            this.___physicsAPI.addTorque = function(x,y,z,coords)
+            {
+               if(!coords)
+                  coords = 0;
+               if(x.length)
+               {
+                  y = x[1];
+                  z = x[2];
+                  x = x[0];
+               }
+               var force = [x,y,z];
+               this.___physics_addTorque(force);
+            }.bind(this);
             this.___physicsAPI.addForceOffset = function(x,y,z,x1,y1,z1,coords)
             {
                if(!coords)

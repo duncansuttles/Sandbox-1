@@ -383,6 +383,8 @@ define([], function() {
             else this.BuildWorldPreview();
         }
         this.BuildPreviewInner = function(i, root, scale) {
+            
+            if(!findphysicsnode(i)) return;
             var transform = findphysicsnode(i).transform;
             var worldScale = findphysicsnode(i).getWorldScale();
             var geo = null;

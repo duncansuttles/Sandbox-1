@@ -1,26 +1,37 @@
 "use strict";
+
+jQuery.extend({
+    parseQuerystring: function() {
+        var nvpair = {};
+        var qs = window.location.search.replace('?', '');
+        var pairs = qs.split('&');
+        $.each(pairs, function(i, v) {
+            var pair = v.split('=');
+            nvpair[pair[0]] = pair[1];
+        });
+        return nvpair;
+    }
+});
+
 define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify", "vwf/view/editorview/Menubar", "vwf/view/editorview/ObjectPools", "vwf/view/editorview/LocationTools", "vwf/view/editorview/WindowResize", "vwf/view/editorview/_PermissionsManager", "vwf/view/editorview/InputSetup", "vwf/view/editorview/SaveLoadTimer", "vwf/view/editorview/TouchHandler", "vwf/view/editorview/SidePanel", "vwf/view/editorview/Toolbar", "vwf/view/editorview/ChatSystemGUI", "vwf/view/editorview/PrimitiveEditor", "vwf/view/editorview/MaterialEditor", "vwf/view/editorview/Notifier", "vwf/view/editorview/ScriptEditor", "vwf/view/editorview/Editor", "vwf/view/editorview/_3DRIntegration", "vwf/view/editorview/InventoryManager", "vwf/view/editorview/HeirarchyManager", "vwf/view/editorview/DataManager", "vwf/view/editorview/UserManager", "vwf/view/editorview/help", "vwf/view/editorview/SideTabs", "vwf/view/editorview/wireeditor", "vwf/view/editorview/selectionEditor", "vwf/view/editorview/UndoManager", "vwf/view/editorview/Publisher", "vwf/view/editorview/EntityLibrary", "vwf/view/editorview/PhysicsEditor"], function(module, version, view) {
     return view.load(module, {
         // == Module Definition ====================================================================
+
+        needTools : function() {
+
+            var instanceData = _DataManager.getInstanceData() || {};
+            var needTools = instanceData && instanceData.publishSettings ? instanceData.publishSettings.allowTools : true;
+            if ($.parseQuerystring().notools) needTools = false;
+            return needTools;
+        },
         initialize: function() {
 
 
 
 
-
+            window._EditorView = this; 
             if (!window._EditorInitialized) {
-                jQuery.extend({
-                    parseQuerystring: function() {
-                        var nvpair = {};
-                        var qs = window.location.search.replace('?', '');
-                        var pairs = qs.split('&');
-                        $.each(pairs, function(i, v) {
-                            var pair = v.split('=');
-                            nvpair[pair[0]] = pair[1];
-                        });
-                        return nvpair;
-                    }
-                });
+
 
 
                 console.log('initialize Index-vwf');
@@ -28,14 +39,13 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
                 window._DataManager = require("vwf/view/editorview/DataManager").getSingleton();;
 
 
-                var instanceData = _DataManager.getInstanceData() || {};
 
-                var needTools = instanceData && instanceData.publishSettings ? instanceData.publishSettings.allowTools : true;
                 //set the title of the window to the title of the world.
-                document.title = instanceData.title;
+                if(_DataManager.getInstanceData())
+                document.title = _DataManager.getInstanceData().title;
 
                 window._Editor = require("vwf/view/editorview/Editor").getSingleton();
-                if (needTools) {
+                if (this.needTools()) {
 
                     var data = $.ajax('vwf/view/editorview/menus.html', {
                         async: false,
@@ -83,7 +93,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
                 window._UserManager = require("vwf/view/editorview/UserManager").getSingleton();;
 
 
-                if (needTools) {
+                if (this.needTools()) {
                     require("vwf/view/editorview/help").getSingleton();
 
                     $(document.head).append('<script type="text/javascript" src="vwf/view/editorview/PainterTool.js"></script>');
@@ -224,7 +234,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
 function InitializeEditor() {
 
     var instanceData = _DataManager.getInstanceData() || {};
-    var needTools = instanceData && instanceData.publishSettings ? instanceData.publishSettings.allowTools : true;
+    
 
     document._UserManager = _UserManager;
     $('#vwf-root').css('overflow', 'hidden');
@@ -241,7 +251,7 @@ function InitializeEditor() {
 
     require("vwf/view/editorview/InputSetup").initialize();
 
-    if (needTools) {
+    if (_EditorView.needTools()) {
         $('#sidepanel').css('height', $(window).height() - ($('#statusbar').height() + $('#toolbar').height() + $('#smoothmenu1').height()) + 'px')
         $('#sidepanel').jScrollPane();
         require("vwf/view/editorview/Toolbar").initialize();

@@ -3,8 +3,7 @@ define({
     initialize: function() {
         var toolsHidden = false;
         var toolsLoaded = true;
-        if (_DataManager.getInstanceData().publishSettings)
-            toolsLoaded = _DataManager.getInstanceData().publishSettings.allowTools;
+        toolsLoaded = _EditorView.needTools();
         $(window).resize(function() {
 
             
@@ -109,11 +108,13 @@ define({
                 //if ((origWidth != self.width) || (origHeight != self.height)) {
                 $('#index-vwf')[0].height = self.height / resolutionScale;
                 $('#index-vwf')[0].width = self.width / resolutionScale;
-                _dRenderer.setViewport(0, 0, window.innerWidth / resolutionScale, window.innerHeight / resolutionScale)
+                if(window._dRenderer)
+                    _dRenderer.setViewport(0, 0, window.innerWidth / resolutionScale, window.innerHeight / resolutionScale)
 
                 //note, this changes some renderer internals that need to be set, but also resizes the canvas which we don't want.
                 //much of the resize code is in WindowResize.js
-                _dRenderer.setSize(parseInt($('#index-vwf').css('width')) / resolutionScale, parseInt($('#index-vwf').css('height')) / resolutionScale);
+                if(window._dRenderer)
+                    _dRenderer.setSize(parseInt($('#index-vwf').css('width')) / resolutionScale, parseInt($('#index-vwf').css('height')) / resolutionScale);
                 _dView.getCamera().aspect = $('#index-vwf')[0].width / $('#index-vwf')[0].height;
                 $('#index-vwf').css('height', canvasheight);
                 $('#index-vwf').css('width', oldwidth);

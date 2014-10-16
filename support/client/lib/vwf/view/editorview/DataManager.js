@@ -221,6 +221,8 @@ define(function ()
 			var sceneprops = vwf.getProperties('index-vwf');
 			//also just a design choice here, so that wehn we update the scene properties, old states will show the updates
 			delete sceneprops.EditorData;
+			delete sceneprops.playBackup;
+			delete sceneprops.clients;
 			nodes.push(sceneprops);
 			var SID = this.getCurrentSession();
 			var UID = _UserManager.GetCurrentUserName();

@@ -116,6 +116,16 @@ properties:
            {
            	  return this.findNodeByID('character-vwf-' + name);
            }.bind(this);
+           this.___clientAPI.getCameraIDForClient = function(id)
+           {
+             if(!this.clients || !this.clients[id]) return null;
+                  return this.clients[id].cameraID;
+           }.bind(this);
+           this.___clientAPI.getCameraForClient = function(id)
+           {
+             if(!this.clients || !this.clients[id]) return null;
+                  return this.findNodeByID(this.clients[id].cameraID);
+           }.bind(this);
            return this.___clientAPI;
   EditorData:
     fog:
@@ -299,6 +309,7 @@ events:
   pointerMove:
   keyDown:
   keyUp:
+  clientCameraChanged:
 methods:  
   AmLocal:
   newplayer:
@@ -318,6 +329,7 @@ methods:
   setMusic:
   ___physics_world_reset:
   activteOculusBridge:
+  setClientCamera:
 scripts:
 - |
     this.initialize = function(){
@@ -474,6 +486,7 @@ scripts:
     {
         return this.broadcastingCamera;
     }
+
     this.cameraBroadcastStart = function()
     {
         if(this.client == this.moniker)
@@ -569,7 +582,7 @@ scripts:
     		this.clients = {}
     	}
     	if(!this.clients[id])
-    		this.clients.defineProperty(id,{cid:id,name:name,UID:UID});
+    		this.clients.defineProperty(id,{cid:id,name:name,UID:UID,cameraID:null});
     }
     // a client other than this one has left
     this.clientDisconnected = function(id,name,UID)
@@ -579,6 +592,18 @@ scripts:
     		delete this.clients.internal_val[id];
     		this.clients = this.clients.internal_val;		
     	}
+    }
+    this.setClientCamera = function(id,cameraID)
+    {
+        if(!this.clients)
+        {
+          this.clients = {}
+        }
+        if(this.clients[id])
+        {
+          this.clients[id].cameraID = cameraID;
+          this.clientCameraChanged(id,cameraID);
+        }
     }
     this.CreatePlane = function(width,height)
     {
@@ -1581,12 +1606,12 @@ scripts:
     }    
 
 
-    this.pointerOver = function(){return true;}
-    this.pointerOut= function(){return true;}
-    this.pointerClick= function(){return true;}
-    this.pointerDown= function(){return true;}
-    this.pointerUp= function(){return true;}
-    this.pointerMove= function(){return true;}
+    this.pointerOver = function(){return false;}
+    this.pointerOut= function(){return false;}
+    this.pointerClick= function(){return false;}
+    this.pointerDown= function(){return false;}
+    this.pointerUp= function(){return false;}
+    this.pointerMove= function(){return false;}
 
     //this really belongs in the view 
     this.activteOculusBridge = function()

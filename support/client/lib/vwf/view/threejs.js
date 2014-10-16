@@ -53,15 +53,15 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
 
         renderMode: NORMALRENDER,
         effects: [],
-        topCamera: new THREE.OrthographicCamera(1, -1, 1, -1, 0, 10000),
-        leftCamera: new THREE.OrthographicCamera(1, -1, 1, -1, 0, 10000),
-        frontCamera: new THREE.OrthographicCamera(1, -1, 1, -1, 0, 10000),
+        topCamera:new THREE.OrthographicCamera(1,-1,1,-1,0,10000),
+        leftCamera:new THREE.OrthographicCamera(1,-1,1,-1,0,10000),
+        frontCamera:new THREE.OrthographicCamera(1,-1,1,-1,0,10000),
         vrHMDSensor: null,
         vrHMD:null,
         vrRenderer: null,
         toggleFullScreen:function()
         {
-            
+        
             if (RunPrefixMethod(document, "FullScreen") || RunPrefixMethod(document, "IsFullScreen")) {
                 RunPrefixMethod(document, "CancelFullScreen");
             } else {
@@ -122,7 +122,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
             });
             effect.setSize(parseInt($("#index-vwf").css('width')), parseInt($("#index-vwf").css('height')));
             this.addEffect(effect);
-            vwf.callMethod(vwf.application(), 'activteOculusBridge')
+            vwf.callMethod(vwf.application(),'activteOculusBridge')
         },
         initialize: function(rootSelector) {
 
@@ -297,9 +297,9 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
                     //don't do interpolation for static objects
                     if (this.nodes[i].isStatic) continue;
                     if (!this.neededTransfromInterp[i]) {
-                        this.nodes[i].lastTickTransform = null;
-                        continue;
-                    }
+                            this.nodes[i].lastTickTransform = null;
+                            continue;
+                        }
                     if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
                         this.nodes[i].lastTickTransform = matset(this.nodes[i].lastTickTransform, this.nodes[i].thisTickTransform);
                         this.nodes[i].thisTickTransform = matset(this.nodes[i].thisTickTransform, this.state.nodes[i].gettingProperty('transform'));
@@ -314,7 +314,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
                 if (everyOtherFrame) {
                     this.neededTransfromInterp = {};
                 }
-
+                    
             }
             if (hit > 1) {
                 this.tickTime = 0;
@@ -353,7 +353,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
 
                 var last = this.nodes[i].lastTickTransform;
                 var now = this.nodes[i].thisTickTransform;
-                if (last && now) {
+                if (last && now ) {
 
                     interp = matset(interp, last);
                     interp = this.matrixLerp(last, now, step, interp);
@@ -368,7 +368,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
 
                 last = this.nodes[i].lastAnimationFrame;
                 now = this.nodes[i].thisAnimationFrame;
-                if (last && now && Math.abs(now - last) < 3) {
+                if (last && now && Math.abs(now - last) < 3 ) {
 
                     var interpA = 0;
 
@@ -575,7 +575,11 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
 
 
         },
-        setCamera: function(camID) {
+        setCamera:function(camID)
+        {
+            vwf_view.kernel.callMethod(vwf.application(),'setClientCamera',[vwf.moniker(),camID]);
+        },
+        setCamera_internal: function(camID) {
             var defaultCameraID;
             var instanceData = _DataManager.getInstanceData();
             var publishSettings = instanceData.publishSettings;
@@ -586,7 +590,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
 
             var cam = this.state.scenes['index-vwf'].camera.threeJScameras[this.state.scenes['index-vwf'].camera.ID];
 
-            if (camID === 'top')
+            if(camID === 'top')
                 cam = this.topCamera;
             if (this.cameraID) {
                 clearCameraModeIcons();
@@ -596,11 +600,11 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
                         cam = this.state.nodes[this.cameraID].getRoot();
                     }
             }
-            if (camID === 'top')
+            if(camID === 'top')
                 cam = this.topCamera;
-            if (camID === 'left')
+            if(camID === 'left')
                 cam = this.leftCamera;
-            if (camID === 'front')
+            if(camID === 'front')
                 cam = this.frontCamera;
 
             if (cam) {
@@ -617,10 +621,20 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
         setCameraDefault: function() {
             this.setCamera();
         },
+        calledMethod: function(id,method,args)
+        {
+            if(id == vwf.application() && method == 'setClientCamera')
+            {
+                if(vwf.moniker() == args[0])
+                {
+                    this.setCamera_internal(args[1]);
+                }
+            }
+        },
         createdProperty: function(nodeID, propertyName, propertyValue) {
             this.satProperty(nodeID, propertyName, propertyValue);
         },
-        neededTransfromInterp: {},
+        neededTransfromInterp:{},
         satProperty: function(nodeID, propertyName, propertyValue) {
 
             //console.log([nodeID,propertyName,propertyValue]);
@@ -636,7 +650,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
             if (this.nodes[nodeID])
                 this.nodes[nodeID].properties[propertyName] = propertyValue;
 
-            if (propertyName == 'transform')
+            if(propertyName == 'transform')
                 this.neededTransfromInterp[nodeID] = true;
 
             node[propertyName] = propertyValue;
@@ -981,6 +995,11 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
 
             requestAnimFrame(renderScene);
 
+            //lets not render when the quere is not ready. This prevents rendering of meshes that must have their children
+            //loaded before they can render
+            if (!vwf.private.queue.ready() || !window._dRenderer) {
+                return;
+            }
             //so, here's what we'll do. Since the sim state cannot advance until tick, we will update on tick. 
             //but, ticks aren't fired when the scene in paused. In that case, we'll do it every frame.
             var currentState = vwf.getProperty(vwf.application(), 'playMode');
@@ -1139,7 +1158,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
 
             //only render effects in normal mode. Should our older stereo support move into a THREE.js effect?
             if (self.renderMode === NORMALRENDER) {
-                if (cam.setViewOffset)
+                if(cam.setViewOffset)
                     cam.setViewOffset(undefined);
                 cam.updateProjectionMatrix();
                 //if there are no effects, we can do a normal render
@@ -1193,12 +1212,12 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
 
                 renderer.setViewport(0, centerh, ww2, h);
                 _dRenderer.setScissor(0, centerh, ww2, h);
-
-                if (cam.setViewOffset)
+                
+                if(cam.setViewOffset)
                     cam.setViewOffset(ww2, h, -100, 0, ww2, h);
                 cam.updateProjectionMatrix();
 
-                if (cam.setViewOffset)
+                if(cam.setViewOffset)
                     cam.setViewOffset(ww2, h, -_SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
                 cam.updateProjectionMatrix();
                 renderer.render(scene, cam);
@@ -1211,7 +1230,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
                 renderer.setViewport(ww2, centerh, ww2, h);
                 _dRenderer.setScissor(ww2, centerh, ww2, h);
 
-                if (cam.setViewOffset)
+                if(cam.setViewOffset)
                     cam.setViewOffset(ww2, h, _SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
                 cam.updateProjectionMatrix();
 
@@ -1367,7 +1386,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
             var hovering = false;
             var view = this;
 
-
+            if (!$.parseQuerystring().norender) {
             if (detectWebGL() && getURLParameter('disableWebGL') == 'null') {
 
                 sceneNode.renderer = new THREE.WebGLRenderer({
@@ -1400,11 +1419,13 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
                 });
                 sceneNode.renderer.setSize(window.innerWidth, window.innerHeight);
             }
+                if (sceneNode.renderer.setFaceCulling)
+                    sceneNode.renderer.setFaceCulling(false);
+            }
 
 
             rebuildAllMaterials.call(this);
-            if (sceneNode.renderer.setFaceCulling)
-                sceneNode.renderer.setFaceCulling(false);
+
             this.state.cameraInUse = sceneNode.camera.threeJScameras[sceneNode.camera.ID];
 
 

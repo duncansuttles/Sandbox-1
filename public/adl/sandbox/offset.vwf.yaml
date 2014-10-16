@@ -66,6 +66,7 @@ methods:
   dirtyStack:
   GetMesh:
   offset:
+  ready:
 events:
   childAdded:
 scripts:
@@ -76,6 +77,10 @@ scripts:
         var y = vwf.getProperty(this.id,'yamount');
         var z = vwf.getProperty(this.id,'zamount');
         this.offset(x,y,z);
+    }
+    this.ready = function()
+    {
+      this.dirtyStack();
     }
     this.offset = function(x,y,z)
     {

@@ -155,13 +155,11 @@ properties:
                         x = x[0];
                     }
                     var vec = [x,y,z];
-
                     vec[0] /= 57.2957795;
                     vec[1] /= 57.2957795;
                     vec[2] /= 57.2957795;
 
                     var targetTransform = self.worldTransform.internal_val;
-                    
                     var mat = Mat4.makeEulerZXZ([],x,y,z);
 
                     var invTransform = Mat4.create();
@@ -197,7 +195,7 @@ properties:
                         z = x[2];
                         x = x[0];
                     }
-
+                    
                     self.transformAPI.rotateX(x,coordinateSystem);
                     self.transformAPI.rotateY(y,coordinateSystem);
                     self.transformAPI.rotateZ(z,coordinateSystem);
@@ -217,15 +215,13 @@ properties:
                 COORDINATES:{LOCAL:'local','GLOBAL':'global',PARENT:'parent'},
                 rotateAroundAxis: function(angle,axis,coordinateSystem)
                 {
-                    
                     axis = Vec3.normalize(axis,[]);
                     if(!coordinateSystem)
                      coordinateSystem = 'parent';
-                     
                     if( coordinateSystem== 'local')
-                    {                       
+                    {
                        var axis = Mat4.multVec3NoTranslate(self.transform,axis,[]);
-                    } 
+                    }
                     angle /=  57.2957795;
                     var rotmat = Mat4.makeRotate([],angle,axis[0],axis[1],axis[2]);
                     var position = self.transformAPI.getPosition();
@@ -240,13 +236,16 @@ properties:
                     transform[14] = position[2];
                     transform = self.transformAPI.scaleMatrix(scale,transform);
                     self.transform = transform;
-                    
                 },
                 getRotation: function()
                 {
-                    var euler = []
-                    Mat4.toEulerZXZ(self.transform.internal_val,euler);
+                    var m = self.transform.internal_val;
+                    var x = Math.atan2(m[9], m[10]);
+                    var y = Math.atan2(-m[8], Math.sqrt(m[9] * m[9] + m[10] * m[10]));
+                    var z = Math.atan2(m[4], m[0]);
                     
+                    var euler = [x,y,z];
+
                     euler[0] *= 57.2957795;
                     euler[1] *= 57.2957795;
                     euler[2] *= 57.2957795;
@@ -268,7 +267,31 @@ properties:
                     y /= 57.2957795;
                     z /= 57.2957795;
                     
-                    var mat = Mat4.makeEulerZXZ([],x,y,z);
+                    var xm = [
+
+                    1, 0, 0, 0,
+                    0, Math.cos(x), -Math.sin(x), 0,
+                    0, Math.sin(x), Math.cos(x), 0,
+                    0, 0, 0, 1
+
+                    ];
+
+                    var ym = [
+
+                        Math.cos(y), 0, Math.sin(y), 0,
+                        0, 1, 0, 0, -Math.sin(y), 0, Math.cos(y), 0,
+                        0, 0, 0, 1
+                    ];
+
+                    var zm = [
+
+                        Math.cos(z), -Math.sin(z), 0, 0,
+                        Math.sin(z), Math.cos(z), 0, 0,
+                        0, 0, 1, 0,
+                        0, 0, 0, 1
+
+                    ];
+                    var mat = goog.vec.Mat4.multMat(xm, goog.vec.Mat4.multMat(ym, zm, []), []);
                     var pos = self.transformAPI.getPosition();
                     
                     var scale = self.transformAPI.getScale();
