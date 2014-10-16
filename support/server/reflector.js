@@ -356,7 +356,7 @@ function runningInstance(id) {
         var _int = 0;
         if (!clients)
             return "Anonymous" + _int;
-        
+
         while (true) {
             var test = "Anonymous" + _int;
             var found = false;
@@ -781,16 +781,17 @@ function ClientConnected(socket, namespace, instancedata) {
                 if (rtcMessages.slice(0, 2).indexOf(message.member) != -1)
                     return;
 
+                console.log('socketid',socket.id);
+                console.log('sender',params.sender);
+                console.log('target',params.target);
                 // route messages by the 'target' param, verifying 'sender' param
                 if (rtcMessages.slice(2).indexOf(message.member) != -1 &&
-                    sendingclient.loginData &&
-                    params.sender == sendingclient.loginData.UID
+                    params.sender == socket.id
                 ) {
-                    for (var i in thisInstance.clients) {
-                        var client = thisInstance.clients[i];
-                        if (client && client.loginData && client.loginData.UID == params.target)
-                            client.emit('message', messageCompress.pack(JSON.stringify(message)));
-                    }
+                    var client = thisInstance.clients[params.target];
+                    if (client)
+                        client.emit('message', messageCompress.pack(JSON.stringify(message)));
+
                 }
                 return;
             }

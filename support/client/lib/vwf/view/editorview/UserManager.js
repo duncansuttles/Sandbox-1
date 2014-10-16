@@ -81,8 +81,9 @@ define(function() {
             label: 'Voice Call'
         });
         $("#CallUser").click(function() {
+           
             vwf.callMethod('index-vwf', 'rtcCall', {
-                target: _UserManager.SelectedProfile.Username
+                target: _UserManager.SelectedProfile.clientID
             });
         });
 
@@ -91,7 +92,7 @@ define(function() {
         });
         $("#VideoCallUser").click(function() {
             vwf.callMethod('index-vwf', 'rtcVideoCall', {
-                target: _UserManager.SelectedProfile.Username
+                target: _UserManager.SelectedProfile.clientID
             });
         });
 
