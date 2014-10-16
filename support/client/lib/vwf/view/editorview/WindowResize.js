@@ -138,6 +138,7 @@ define({
             $('#index-vwf').attr('width', $(window).width());
             $('#index-vwf').css('top', 0 + 'px');
             $('#index-vwf').css('left', 0 + 'px');
+             $('#index-vwf').css('border','none');
             _Editor.findcamera().aspect = (parseInt($('#index-vwf').css('width')) / parseInt($('#index-vwf').css('height')));
             $('#index-vwf').focus()
             _Editor.findcamera().updateProjectionMatrix();
@@ -163,6 +164,7 @@ define({
             _Editor.findcamera().aspect = (parseInt($('#index-vwf').css('width')) / parseInt($('#index-vwf').css('height')));
             _Editor.findcamera().updateProjectionMatrix();
             _Editor.SetSelectMode('Pick');
+            $('#index-vwf').css('border','');
             $(window).resize();
 
 
