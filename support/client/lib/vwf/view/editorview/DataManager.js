@@ -114,12 +114,12 @@ define(function ()
 					}
 					catch (e)
 					{
-						return data.responseText;
+						return null;
 					}
 				}
 				else
 				{
-					return data.responseText;
+					return null;
 				}
 			}
 			return profile;

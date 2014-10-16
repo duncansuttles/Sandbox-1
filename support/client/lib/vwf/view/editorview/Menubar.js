@@ -234,9 +234,7 @@ define({
             $('#ChatWindow').dialog('open');
         });
         $('#MenuUsers').click(function(e) {
-            $('#Players').prependTo($('#Players').parent());
-            $('#Players').show('blind', function() {});
-            showSidePanel();
+           _UserManager.showPlayers();
         });
         $('#MenuModels').click(function(e) {
             _ModelLibrary.show();

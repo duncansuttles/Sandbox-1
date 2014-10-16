@@ -82,7 +82,7 @@ scripts:
         {
             //this.parent.players.push(PlayerNumber); 
             document[PlayerNumber +'link'] = this;
-            _UserManager.PlayerCreated(PlayerNumber,this.id);
+            
         }
         
        
@@ -208,7 +208,7 @@ scripts:
     {
        //findVWFscene().removeUpdateCallback(this.callbacknum);
        _dView.unbind('postprerender',this.prerendercallback);
-        _UserManager.PlayerDeleted(this.PlayerNumber);
+        
        //this.deleteMe = true;            
        $(this.nametag).remove();
        this.Scene.unbind('keyDown', this.kd);
