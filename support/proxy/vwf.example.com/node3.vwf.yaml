@@ -18,6 +18,7 @@ implements:
 properties:
   lookAxis: 2
   upAxis: [ 0, 0, 1]
+  inheritScale: true
   audioAPI:
     get: |
           if(!this._audioAPI)
@@ -114,6 +115,20 @@ properties:
                     vec = Mat4.multVec3(targetTransform,vec,[]);
                     return vec;
                 },
+                localToGlobalRotation: function(x,y,z)
+                {
+                    if(x.length)
+                    {
+                        y = x[1];
+                        z = x[2];
+                        x = x[0];
+                    }
+                    var vec = [x,y,z];
+                    var targetTransform = self.worldTransform.internal_val;
+                   
+                    vec = Mat4.multVec3NoTranslate(targetTransform,vec,[]);
+                    return vec;
+                },
                 globalToLocal: function(x,y,z)
                 {
                     if(x.length)
@@ -128,6 +143,34 @@ properties:
                     var invTransform = Mat4.create();
                     Mat4.invert(targetTransform,invTransform);
                     vec = Mat4.multVec3(invTransform,vec,[]);
+                    return vec;
+                },
+                globalToLocalRotation: function(x,y,z)
+                {
+                  
+                    if(x.length)
+                    {
+                        y = x[1];
+                        z = x[2];
+                        x = x[0];
+                    }
+                    var vec = [x,y,z];
+                    vec[0] /= 57.2957795;
+                    vec[1] /= 57.2957795;
+                    vec[2] /= 57.2957795;
+
+                    var targetTransform = self.worldTransform.internal_val;
+                    var mat = Mat4.makeEulerZXZ([],x,y,z);
+
+                    var invTransform = Mat4.create();
+                    Mat4.invert(targetTransform,invTransform);
+                    var mat = Mat4.multMat(mat,invTransform,[]);
+                    Mat4.toEulerZXZ(mat,vec);
+
+                    vec[0] *= 57.2957795;
+                    vec[1] *= 57.2957795;
+                    vec[2] *= 57.2957795;
+
                     return vec;
                 },
                 setPosition: function(x,y,z)
@@ -152,7 +195,7 @@ properties:
                         z = x[2];
                         x = x[0];
                     }
-
+                    
                     self.transformAPI.rotateX(x,coordinateSystem);
                     self.transformAPI.rotateY(y,coordinateSystem);
                     self.transformAPI.rotateZ(z,coordinateSystem);
@@ -172,15 +215,13 @@ properties:
                 COORDINATES:{LOCAL:'local','GLOBAL':'global',PARENT:'parent'},
                 rotateAroundAxis: function(angle,axis,coordinateSystem)
                 {
-                    
                     axis = Vec3.normalize(axis,[]);
                     if(!coordinateSystem)
                      coordinateSystem = 'parent';
-                     
                     if( coordinateSystem== 'local')
-                    {                       
+                    {
                        var axis = Mat4.multVec3NoTranslate(self.transform,axis,[]);
-                    } 
+                    }
                     angle /=  57.2957795;
                     var rotmat = Mat4.makeRotate([],angle,axis[0],axis[1],axis[2]);
                     var position = self.transformAPI.getPosition();
@@ -195,13 +236,16 @@ properties:
                     transform[14] = position[2];
                     transform = self.transformAPI.scaleMatrix(scale,transform);
                     self.transform = transform;
-                    
                 },
                 getRotation: function()
                 {
-                    var euler = []
-                    Mat4.toEulerZXZ(self.transform.internal_val,euler);
+                    var m = self.transform.internal_val;
+                    var x = Math.atan2(m[9], m[10]);
+                    var y = Math.atan2(-m[8], Math.sqrt(m[9] * m[9] + m[10] * m[10]));
+                    var z = Math.atan2(m[4], m[0]);
                     
+                    var euler = [x,y,z];
+
                     euler[0] *= 57.2957795;
                     euler[1] *= 57.2957795;
                     euler[2] *= 57.2957795;
@@ -223,7 +267,31 @@ properties:
                     y /= 57.2957795;
                     z /= 57.2957795;
                     
-                    var mat = Mat4.makeEulerZXZ([],x,y,z);
+                    var xm = [
+
+                    1, 0, 0, 0,
+                    0, Math.cos(x), -Math.sin(x), 0,
+                    0, Math.sin(x), Math.cos(x), 0,
+                    0, 0, 0, 1
+
+                    ];
+
+                    var ym = [
+
+                        Math.cos(y), 0, Math.sin(y), 0,
+                        0, 1, 0, 0, -Math.sin(y), 0, Math.cos(y), 0,
+                        0, 0, 0, 1
+                    ];
+
+                    var zm = [
+
+                        Math.cos(z), -Math.sin(z), 0, 0,
+                        Math.sin(z), Math.cos(z), 0, 0,
+                        0, 0, 1, 0,
+                        0, 0, 0, 1
+
+                    ];
+                    var mat = goog.vec.Mat4.multMat(xm, goog.vec.Mat4.multMat(ym, zm, []), []);
                     var pos = self.transformAPI.getPosition();
                     
                     var scale = self.transformAPI.getScale();
@@ -374,95 +442,10 @@ properties:
       this.transform = transform;
   transform:
   translation:
-    # node.translation <= [ x, y, z ]
-    set: |
-      
-      var translation = this.translationFromValue( value ); // parse incoming value
-      var thisTransform = this.transform;
-      var transform = (thisTransform && thisTransform.internal_val) || thisTransform || goog.vec.Mat4.createIdentity();
-      goog.vec.Mat4.setColumnValues( transform, 3, translation[0], translation[1], translation[2], 1 );
-      this.transform = transform; //@ sourceURL=node3.translation.set.vwf
-    # node.translation => [ x, y, z ]
-    get: |
-      var translation = goog.vec.Vec3.create();
-      var thisTransform = this.transform;
-      goog.vec.Mat4.getColumn( (thisTransform && thisTransform.internal_val) || thisTransform || goog.vec.Mat4.createIdentity(), 3, translation );
-      return translation;
   rotation:
-    # node.rotation <= [ x, y, z, angle ]
-    set: |
-      var rotation = this.rotationFromValue( value ); // parse incoming value
-      this.quaternion =
-        goog.vec.Quaternion.fromAngleAxis(
-          rotation[3] * Math.PI / 180,
-          goog.vec.Vec3.createFromValues( rotation[0], rotation[1], rotation[2] ),
-          goog.vec.Quaternion.create()
-        );
-    # node.rotation => [ x, y, z, angle ]
-    get: |
-      var rotation = goog.vec.Vec4.create();
-      rotation[3] = goog.vec.Quaternion.toAngleAxis(
-        this.quaternion.internal_val || goog.vec.Quaternion.createFromValues( 0, 0, 0, 1 ),
-        rotation
-      ) * 180 / Math.PI;
-      return rotation;
   rotationMatrix:
-    get: |
-      var thisTransform = this.transform;
-      return this.unscaledTransform(
-       (thisTransform && thisTransform.internal_val) || thisTransform || goog.vec.Mat4.createIdentity(),
-        goog.vec.Vec3.create(),
-        goog.vec.Mat4.create()
-      );
   quaternion: 
-    # node.quaternion <= [ x, y, z, w ]
-    set: |
-      var thisTransform = this.transform;
-      var transform = (thisTransform && thisTransform.internal_val) || thisTransform || goog.vec.Mat4.createIdentity();
-      var translation = goog.vec.Vec4.create(); goog.vec.Mat4.getColumn( transform, 3, translation );
-      var scale = this.transformScale( transform, goog.vec.Vec3.create() );
-      var quaternion = this.quaternionFromValue( value ); // parse incoming value
-      goog.vec.Quaternion.toRotationMatrix4(
-        quaternion,
-        transform
-      );
-      this.scaledTransform( transform, scale, transform );
-      goog.vec.Mat4.setColumn( transform, 3, translation );
-      //this.transform = transform;
-    # node.quaternion => [ x, y, z, w ]
-    get: |
-      var thisTransform = this.transform;
-      return goog.vec.Quaternion.fromRotationMatrix4(
-        this.unscaledTransform(
-          (thisTransform && this.transform.internal_val) || thisTransform || goog.vec.Mat4.createIdentity(),
-          goog.vec.Vec3.create(),
-          goog.vec.Mat4.create()
-        ),
-        goog.vec.Quaternion.create()
-      );
   scale:
-    # node.scale <= [ x, y, z ], node.scale <= s
-    set: |
-      var thisTransform = this.transform;
-      var scale = this.scaleFromValue( value ); // parse incoming value
-      var transform = (thisTransform && thisTransform.internal_val) || thisTransform || goog.vec.Mat4.createIdentity();
-      this.scaledTransform(
-        this.unscaledTransform(
-          transform,
-          goog.vec.Vec3.create(),
-          transform
-        ),
-        scale,
-        transform
-      );
-      this.transform = transform;
-    # node.scale => [ x, y, z ]
-    get: |
-      var thisTransform = this.transform;
-      return this.transformScale(
-        (thisTransform && thisTransform.internal_val) || thisTransform || goog.vec.Mat4.createIdentity(),
-        goog.vec.Vec3.create()
-      );
   enabled: true
   boundingbox: 
     set: |

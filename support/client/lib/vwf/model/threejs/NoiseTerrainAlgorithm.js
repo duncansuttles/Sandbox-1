@@ -58,6 +58,7 @@ function NoiseTerrainAlgorithm()
 		"uniform sampler2D dirtSampler;\n"+
 		"uniform sampler2D snowSampler;\n"+
 		"uniform sampler2D noiseSampler;\n"+
+		"vec4 getGrassDensity(vec3 o, vec3 n, vec2 p) {return vec4(1.0,1.0,1.0,1.0);}" +
 		"vec4 getMix(vec3 norm)" +
 		"{"+
 		"float side = min(1.0,pow(1.0-abs(dot(norm,(viewMatrix * vec4(0.0,0.0,1.0,0.0)).xyz)),3.0) * 10.0);\n"+

@@ -319,6 +319,7 @@ var getCapabilities = function(){
 		  		mouseRight = true;
 		  		$('#mouseRight').text(mouseRight);
 		  		
+		  		window.addEventListener('DOMMouseScroll', onMouseWheel, false);
 		  		window.addEventListener('mousewheel', onMouseWheel, false);
 		  		alertify.confirm('{{#translate}}Roll the mouse wheel{{/translate}}',function(ok){if(!ok){alertify.alert('{{#translate}}Shoot! You need a three button mouse to use the Sandbox{{/translate}}.',function(){window.location = '/';})}});
 		  		$('#alertify-ok')[0].style.display = 'none'
@@ -347,7 +348,7 @@ var getCapabilities = function(){
 		window.addEventListener('mousedown', onMouseClick, false);
 
 		
-		var socket = io.connect("ws://"+window.location.host);
+		var socket = io.connect( window.location.protocol + "//"+window.location.host);
 		socket.on( "connect", function() {
                   $('#socketconnection').text("Successful");
                   updateColors();

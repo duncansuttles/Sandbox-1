@@ -1,3 +1,4 @@
+"use strict";
 function TileCache()
 			{
 				this.tiles = {};
@@ -172,6 +173,7 @@ function TileCache()
 						
 						"void main() {\n"+
 						
+						
 						" if(renderMode == 1){ gl_FragColor = packFloatVec4(vFogPosition.z/1000.0); return; }\n"+
 						"   vec3 vLightDir = normalize(viewMatrix * vec4(directionalLightDirection[0],0.0)).xyz;\n"+
 						"	vec3 nn = (viewMatrix * normalize(vec4(wN,0.0))).xyz;\n"+
@@ -246,6 +248,7 @@ function TileCache()
 						
 						
 						
+
 						var algorithmShaderStringDiffuse = this.terrainGenerator.getDiffuseFragmentShader?this.terrainGenerator.getDiffuseFragmentShader():'';
 						var algorithmShaderStringNormal = this.terrainGenerator.getNormalFragmentShader? this.terrainGenerator.getNormalFragmentShader() : '';
 						var algorithmUniforms = this.terrainGenerator.getMaterialUniforms();
@@ -523,7 +526,7 @@ function TileCache()
 							}
 						}
 					}
-					geo.computeCentroids();
+					
 					return geo;
 				}				
 				this.returnMesh = function(mesh)	

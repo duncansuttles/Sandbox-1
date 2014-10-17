@@ -34,34 +34,18 @@ function respond(response,status,message)
 	response.end();
 }
 
-function GUID()
-{
-	var S4 = function ()
-	{
-		return Math.floor(
-				Math.random() * 0x10000 /* 65536 */
-			).toString(16);
-	};
-
-	return (
-			S4() + S4() + "-" +
-			S4() + "-" +
-			S4() + "-" +
-			S4() + "-" +
-			S4() + S4() + S4()
-		);
-}
+var GUID = require('node-uuid').v4;
 
 var GenerateTempPassword = function ()
 {
 	return Math.floor(
-			Math.random() * 0x10000 /* 65536 */
+			require('./cryptoRandom.js').random() * 0x10000 /* 65536 */
 		).toString(16);
 };
 
 
 //this is the same algo used on the client side. 
-//Note: the client of course never sends the server the plain text password, instead runs this algo and sends the resutls.
+//Note: the client of course never sends the server the plain text pass, instead runs this algo and sends the resutls.
 //The results are hashed once and stored in the db.		
 exports.EncryptPassword = function (password, username,salt)
 {
@@ -116,7 +100,7 @@ exports.ResetPassword = function(username,response)
 	});
 }
 
-//Read the password from the profile for the UID user, and callback with the match
+//Read the pass from the profile for the UID user, and callback with the match
 exports.CheckPassword = function(UID,Password, callback)
 {
 	DAL.getUser(UID,function(user)
@@ -126,7 +110,7 @@ exports.CheckPassword = function(UID,Password, callback)
 			callback(false);
 			return;
 		}
-		//the users regualar password
+		//the users regualar pass
 		var normalpass = user.Password == Hash(Password);	
 		var temppass = false;
 
@@ -143,7 +127,7 @@ exports.CheckPassword = function(UID,Password, callback)
 	});
 }
 
-//dont check the password - it's a big hash, so complexity rules are meaningless
+//dont check the pass - it's a big hash, so complexity rules are meaningless
 exports.UpdatePassword = function (URL,response)
 {
 	if(!URL.loginData)
@@ -152,7 +136,7 @@ exports.UpdatePassword = function (URL,response)
 		return;
 	}
 	var data = {};
-	//someone could try to hit the api and create a user with a blank password. Don't allow
+	//someone could try to hit the api and create a user with a blank pass. Don't allow
 	if(!URL.query.P || URL.query.P.length < 8)
 	{
 		respond(response,401,'bad password');
@@ -160,19 +144,14 @@ exports.UpdatePassword = function (URL,response)
 	}
 	log(URL.query.P);
 	data.Password = Hash(URL.query.P);
-	//remove the temp password from the database
+	//remove the temp pass from the database
 	data.TempPassword = null;
 	DAL.updateUser(URL.loginData.UID,data,function()
 	{
-		//make the password as not temp, so the user can use the site normally.
+		//make the pass as not temp, so the user can use the site normally.
 		URL.loginData.PasswordIsTemp = false;
 		//store the updated session in the db
-		URL.loginData.updated(function(){
-
-			respond(response,200,'');
-			return;
-
-		})
+		respond(response,200,'');
 		
 	});
 }
@@ -202,7 +181,7 @@ exports.SiteLogin = function (response,URL)
 				global.log("Login "+ ok,2);
 				if(ok)
 				{
-					sessions.createSession(UID,password,isTemp,function(session){
+					sessions.createSession(UID,UID,password,isTemp,function(session){
 
 
 					xapi.sendStatement(UID,xapi.verbs.logged_in); 
@@ -228,25 +207,36 @@ exports.SiteLogin = function (response,URL)
 }
 
 //login to the site
-exports.SiteLogout = function (response,URL)
+exports.SiteLogout = function (req,response,URL)
 {
 	if(!URL.loginData)
 	{
-		respond(response,401,"Client Not Logged In");
+		if(req.logout)
+			req.logout();
+		
+		response.writeHead(200, {
+						"Content-Type":  "text/plain",
+						"Set-Cookie": "session=; Path=/; HttpOnly;, connect.sid=; Path=/; HttpOnly;"
+				});
+		response.end();	
 		return;
 	}
 	else
 	{
+		if(req.logout)
+			req.logout();
 		var username = URL.loginData.UID;
 		sessions.deleteSession(URL.loginData,function(){
 
 			xapi.sendStatement(username,xapi.verbs.logged_out);
 			response.writeHead(200, {
 						"Content-Type":  "text/plain",
-						"Set-Cookie": "session=; Path=/; HttpOnly;"
+						"Set-Cookie": "session=; Path=/; HttpOnly;, connect.sid=; Path=/; HttpOnly;"
 				});
 			response.end();	
 		});
 	}
 	return;
 }
+
+

@@ -13,38 +13,43 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-define( [ "module", "logger", "vwf/api/kernel", "vwf/api/view" ], function( module, logger, kernel_api, view_api ) {
+/// vwf/view.js is the common implementation of all Virtual World Framework views. Views
+/// interpret information from the simulation, present it to the user, and accept user input
+/// influencing the simulation.
+///
+/// Views are outside of the simulation. Unlike models, they may accept external input--such as
+/// pointer and key events from a user--but may only affect the simulation indirectly through the
+/// synchronization server.
+/// 
+/// vwf/view and all deriving views are loaded as RequireJS (http://requirejs.org) modules.
+/// 
+/// @module vwf/view
+/// @requires logger
+/// @requires vwf/api/kernel
+/// @requires vwf/api/view
 
-    // vwf/view.js is the common implementation of all Virtual World Framework views. Views
-    // interpret information from the simulation, present it to the user, and accept user input
-    // influencing the simulation.
-    //
-    // Views are outside of the simulation. Unlike models, they may accept external input--such as
-    // pointer and key events from a user--but may only affect the simulation indirectly through the
-    // synchronization server.
-    // 
-    // vwf/view and all deriving views are loaded as RequireJS (http://requirejs.org) modules.
+define( [ "module", "logger", "vwf/api/kernel", "vwf/api/view" ], function( module, logger, kernel_api, view_api ) {
 
     // TODO: most of this is the same between vwf/model.js and vwf/view.js. Find a way to share.
 
-    var context = module.id.replace( /\//g, "." );
+    var label = module.id.replace( /\//g, "." );
 
-    logger.for( context ).infoc( "load" );
+    logger.for( label ).debug( "loading" );
 
-    return {
+    var exports = {
 
         module: module,
 
-        logger: logger.for( context ),
+        logger: logger.for( label ),
 
-        load: function( module, initializer, kernelGenerator, viewGenerator ) {
+        load: function( module, initializer, viewGenerator, kernelGenerator ) {
 
             var instance = Object.create( this );
 
             instance.module = module;
-            instance.logger = logger.for( instance.module.id.replace( /\//g, "." ) );
+            instance.logger = logger.for( instance.module.id.replace( /\//g, "." ), instance );
             
-            instance.logger.infoc( "load" );
+            instance.logger.debug( "loading" );
 
             if ( typeof initializer == "function" || initializer instanceof Function ) {
                 initializer = initializer();
@@ -54,20 +59,26 @@ define( [ "module", "logger", "vwf/api/kernel", "vwf/api/view" ], function( modu
                 instance[key] = initializer[key]; 
             }
 
-            kernelGenerator && Object.keys( kernel_api ).forEach( function( kernelFunctionName ) {
-                instance[kernelFunctionName] = kernelGenerator.call( instance, kernelFunctionName ); // TODO: ignore if undefined
+            viewGenerator && Object.keys( view_api ).forEach( function( viewFunctionName ) {
+                if ( ! instance.hasOwnProperty( viewFunctionName ) ) {
+                    instance[viewFunctionName] = viewGenerator.call( instance, viewFunctionName );
+                    instance[viewFunctionName] || delete instance[viewFunctionName];
+                }
             } );
 
-            viewGenerator && Object.keys( view_api ).forEach( function( viewFunctionName ) {
-                instance[viewFunctionName] = viewGenerator.call( instance, viewFunctionName ); // TODO: ignore if undefined
+            kernelGenerator && Object.keys( kernel_api ).forEach( function( kernelFunctionName ) {
+                if ( ! instance.hasOwnProperty( kernelFunctionName ) ) {
+                    instance[kernelFunctionName] = kernelGenerator.call( instance, kernelFunctionName );
+                    instance[kernelFunctionName] || delete instance[kernelFunctionName];
+                }
             } );
-                
+
             return instance;
         },
 
         create: function( kernel, view, stages, state, parameters ) {
 
-            this.logger.infoc( "create" );
+            this.logger.debug( "creating" );
 
             // Interpret create( kernel, stages, ... ) as create( kernel, undefined, stages, ... )
 
@@ -151,5 +162,7 @@ define( [ "module", "logger", "vwf/api/kernel", "vwf/api/view" ], function( modu
         },
         
     };
+
+    return exports;
 
 } );

@@ -77,7 +77,7 @@ define(function ()
 		this.undo = function()
 		{
 			
-			var id = findid(vwf.getNode('index-vwf'),this.name);
+			var id = findid(_Editor.getNode('index-vwf'),this.name);
 			vwf_view.kernel.deleteNode(id);
 		}
 		this.redo = function()
@@ -103,7 +103,7 @@ define(function ()
 	{
 
 		this.id = id;
-		this.name = vwf.getNode(id).name;
+		this.name = _Editor.getNode(id).name;
 		this.proto = _DataManager.getCleanNodePrototype(id);
 		this.parent = vwf.parent(id);
 		this.undo = function()

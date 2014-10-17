@@ -1,6 +1,7 @@
 function PainterTool()
 {
 		
+
 	$('#sidepanel').append("<div id='PainterToolGUI' class='ui-accordion-content ui-helper-reset ui-widget-content ui-corner-bottom ui-accordion-content-active' style='padding-bottom:5px;overflow:hidden;height:auto'></div>");
 	
 	$('#PainterToolGUI').append("<div id='PainterToolGUItitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span class='ui-dialog-title' id='ui-dialog-title-Players'>Painter Tool</span></div>");
@@ -54,12 +55,14 @@ function PainterTool()
 			_Editor.addTool('Painter',_PainterTool);
 			_Editor.setActiveTool('Painter');
 			_dScene.add(_PainterTool.display);
+			_Editor.setSelectMode('None');
 		}
 		else
 		{
 			$(this).next().children().css('background-color','');
 			_Editor.setActiveTool('Gizmo');
 			_dScene.remove(_PainterTool.display);
+			_Editor.setSelectMode('Pick');
 		}
 	})
 	
@@ -350,10 +353,11 @@ function PainterTool()
 			this.display.position = pos.clone();
 			this.display.updateMatrixWorld();
 			
-			if(this.mouseisdown == true && this.currentClickCallback)
+			if(false&&this.mouseisdown == true && this.currentClickCallback)
 			{
 				if(pick.object && pick.object.parent && pick.object.parent.parent)
 				{
+
 					if(this.lastNames.indexOf(pick.object.parent.parent.name) == -1)
 						this.currentClickCallback(e);
 				}else
@@ -426,5 +430,6 @@ function PainterTool()
 		return $('#PainterToolGUI').is(':visible');
 	}
 }
+
 _PainterTool = new PainterTool();
 _PainterTool.hide();

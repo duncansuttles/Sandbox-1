@@ -8,9 +8,7 @@
 			this.fov = 45;
 			this.initializingNode = function()
 			{
-				this.near = 1;
-				this.far = 1000;
-				this.fov = 45;
+				
 			}
 			this.gettingProperty = function(propertyName)
 			{
@@ -30,7 +28,7 @@
 					this.near = propertyValue;
 					this.rootnode.near = this.near;
 					this.rootnode.updateProjectionMatrix();
-					this.rootnode.position.y = -(this.near +1);
+					
 				}
 				if(propertyName == 'far')
 				{
@@ -52,7 +50,7 @@
 			}
 			this.rootnode = new THREE.PerspectiveCamera();
 			this.rootnode.rotation.x = Math.PI/2;
-			this.rootnode.position.y = -this.near -1;
+			
 			this.rootnode.fov = 45;
 			this.rootnode.far = 1000;
 			this.rootnode.near = 1;

@@ -1,3 +1,15 @@
+<script type="text/javascript">
+var buf = new Uint32Array(1);
+        Math.SecureRandom = function() {
+            if (window.crypto)
+                window.crypto.getRandomValues(buf);
+            else if (window.msCrypto)
+                window.msCrypto.getRandomValues(buf);
+            else
+                buf[0] = Math.random() * 4294967296;
+            return (buf[0]) / 4294967296;
+        }
+ </script>   
 <div class="row">
 	<div class="col-md-7" data-bind="foreach:avatarInfo">
 		<!-- ko foreach: $root.makeAvatarArr($data) -->
@@ -23,8 +35,10 @@
 	
 
 </div>
+    
 <script type="text/javascript" src="{{root}}/vwf/model/threejs/three.js"></script>
-<script type="text/javascript" src="{{root}}/vwf/model/threejs/ColladaLoader.js.r60"></script>
+<script type="text/javascript" src="{{root}}/vwf/model/threejs/ColladaLoader.js"></script>
+<script type="text/javascript" src="{{root}}/async.js"></script>
 <script type="text/javascript" src="{{root}}/js/avatarPreview.js"></script>
 <script type="text/javascript">
 	//model and texture are self explanatory, but the format of texturesArr is as follows:
@@ -33,6 +47,8 @@
 	//For example: There exist VWS_Business_Female1.DAE and VWS_Business_Female2.DAE (so the length of texturesArr is 2)
 	//VWS_Business_Female1.DAE has 3 different textures (texturesArr[0]) while VWS_Business_Female2.DAE only has 1 (texturesArr[1])
 	
+	   
+
 	init();
 	spinner.spin($("#avatarSpinner")[0]);
 	vwfPortalModel.usersPage = true;
@@ -50,8 +66,9 @@
 		vwfPortalModel.saveStatus("Saving...");
 		$.ajax({
 			type: 'POST',
-			url:  root + '/vwfDataManager.svc/Profile?UID='+UID,
+			url:  root + '/vwfDataManager.svc/Profile',
 			data: JSON.stringify(vwfPortalModel.profile),
+			contentType: "application/json; charset=utf-8",
 			success: function(){
 				$(".avatarchoice").css('border-color', "#ccc");	
 				$("#"+vwfPortalModel.currentAvatar().parent.model+'_'+vwfPortalModel.currentAvatar().data.join('-')).css('border-color', "blue");	
@@ -157,7 +174,7 @@
 			var data = jQuery.ajax(
 				{
 					type: 'GET',
-					url:  root + '/vwfDataManager.svc/Profile?UID='+UID,
+					url:  root + '/vwfDataManager.svc/Profile',
 					data: null,
 					success: null,
 					async: false,

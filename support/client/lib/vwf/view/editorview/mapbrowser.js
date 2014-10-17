@@ -78,7 +78,7 @@ define(function ()
 			var data = jQuery.ajax(
 			{
 				type: 'GET',
-				url: PersistanceServer + '/vwfDataManager.svc/textures',
+				url:  '../vwfDataManager.svc/textures',
 				data: null,
 				success: null,
 				async: false,
@@ -132,7 +132,7 @@ define(function ()
 				{
 					$('#MapBrowser').append('<img id="MapChoice' + i + '" class="textureChoice" />');
 					
-					$('#MapChoice' + i).attr('texture', PersistanceServer + '/vwfDataManager.svc/texture?UID=' + _TextureList[i]);
+					$('#MapChoice' + i).attr('texture', '../vwfDataManager.svc/texture?UID=' + _TextureList[i]);
 					$('#MapChoice' + i).attr('rawtexture',  _TextureList[i]);
 					$('#MapChoice' + i).click(this.texturePicked);
 					$('#MapChoice' + i).error(function(){
@@ -169,7 +169,7 @@ define(function ()
 
 
 					});
-					$('#MapChoice' + i).attr('src', PersistanceServer + '/vwfDataManager.svc/texturethumbnail?UID=' + _TextureList[i]);
+					$('#MapChoice' + i).attr('src',  '../vwfDataManager.svc/texturethumbnail?UID=' + _TextureList[i]);
 				}
 				else
 				{
@@ -181,7 +181,7 @@ define(function ()
 					$('#MapChoice' + i).click(this.dirpicked);
 				}
 			}
-			$('#MapBrowser').append('<img id="MapChoiceadd" class="textureChoice" src="images/plus.png" />');
+			$('#MapBrowser').append('<img id="MapChoiceadd" class="textureChoice" src="./vwf/view/editorview/images/plus.png" />');
 			$('#MapChoiceadd').css('background','white');
 			$('#MapChoiceadd').click(self.manualEntry);
 		}

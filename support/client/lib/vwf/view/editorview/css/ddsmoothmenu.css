@@ -1,6 +1,6 @@
 .ddsmoothmenu{
 font: bold 12px Verdana;
-background: #414141; /*background of menu bar (default state)*/
+background: #666666; /*background of menu bar (default state)*/
 width: 100%;
 
 }
@@ -22,14 +22,15 @@ float: left;
 /*Top level menu link items style*/
 .ddsmoothmenu ul li a{
 display: block;
-background: #414141; /*background of menu items (default state)*/
+background: #666666; /*background of menu items (default state)*/
 color: white;
 padding: 8px 10px;
 border-right: 1px solid #778;
-color: #2d2b2b;
+cursor:pointer;
 text-decoration: none;
 padding-bottom: 3px;
 padding-top: 3px;
+text-shadow: 2px 2px 2px black;
 }
 
 * html .ddsmoothmenu ul li a{ /*IE6 hack to get sub menu links to behave correctly*/
@@ -41,12 +42,12 @@ color: white;
 }
 
 .ddsmoothmenu ul li a.selected{ /*CSS class that's dynamically added to the currently active menu items' LI A element*/
-background: black; 
+background: rgb(113, 157, 221); 
 color: white;
 }
 
 .ddsmoothmenu ul li a:hover{
-background: black; /*background of menu items during onmouseover (hover state)*/
+background: rgb(113, 157, 221); /*background of menu items during onmouseover (hover state)*/
 color: white;
 }
 	
@@ -62,6 +63,7 @@ visibility: hidden;
 .ddsmoothmenu ul li ul li{
 display: list-item;
 float: none;
+box-shadow: 3px 3px 5px;
 }
 
 /*All subsequent sub menu levels vertical offset after 1st level sub menu */
@@ -73,10 +75,11 @@ top: 0;
 .ddsmoothmenu ul li ul li a{
 font: normal 13px Verdana;
 width: 160px; /*width of sub menus*/
-padding: 2px 5px 2px 5px;
+padding: 5px 5px 2px 9px;
 margin: 0;
 border-top-width: 0;
 border-bottom: 1px solid gray;
+background-color: rgba(63, 62, 62, 0.88);
 }
 
 /* Holly Hack for IE \*/

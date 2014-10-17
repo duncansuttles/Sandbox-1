@@ -5398,11 +5398,11 @@ THREE.Math = {
 	},
 
 	// Random float from <0, 1> with 16 bits of randomness
-	// (standard Math.random() creates repetitive patterns when applied over larger space)
+	// (standard Math.SecureRandom() creates repetitive patterns when applied over larger space)
 
 	random16: function () {
 
-		return ( 65280 * Math.random() + 255 * Math.random() ) / 65535;
+		return ( 65280 * Math.SecureRandom() + 255 * Math.SecureRandom() ) / 65535;
 
 	},
 
@@ -5410,7 +5410,7 @@ THREE.Math = {
 
 	randInt: function ( low, high ) {
 
-		return low + Math.floor( Math.random() * ( high - low + 1 ) );
+		return low + Math.floor( Math.SecureRandom() * ( high - low + 1 ) );
 
 	},
 
@@ -5418,7 +5418,7 @@ THREE.Math = {
 
 	randFloat: function ( low, high ) {
 
-		return low + Math.random() * ( high - low );
+		return low + Math.SecureRandom() * ( high - low );
 
 	},
 
@@ -5426,7 +5426,7 @@ THREE.Math = {
 
 	randFloatSpread: function ( range ) {
 
-		return range * ( 0.5 - Math.random() );
+		return range * ( 0.5 - Math.SecureRandom() );
 
 	},
 
@@ -12421,7 +12421,7 @@ THREE.ParticleSystem = function ( geometry, material ) {
 	THREE.Object3D.call( this );
 
 	this.geometry = geometry;
-	this.material = ( material !== undefined ) ? material : new THREE.ParticleBasicMaterial( { color: Math.random() * 0xffffff } );
+	this.material = ( material !== undefined ) ? material : new THREE.ParticleBasicMaterial( { color: Math.SecureRandom() * 0xffffff } );
 
 	this.sortParticles = false;
 
@@ -12462,7 +12462,7 @@ THREE.Line = function ( geometry, material, type ) {
 	THREE.Object3D.call( this );
 
 	this.geometry = geometry;
-	this.material = ( material !== undefined ) ? material : new THREE.LineBasicMaterial( { color: Math.random() * 0xffffff } );
+	this.material = ( material !== undefined ) ? material : new THREE.LineBasicMaterial( { color: Math.SecureRandom() * 0xffffff } );
 	this.type = ( type !== undefined ) ? type : THREE.LineStrip;
 
 	if ( this.geometry ) {
@@ -12503,7 +12503,7 @@ THREE.Mesh = function ( geometry, material ) {
 	THREE.Object3D.call( this );
 
 	this.geometry = geometry;
-	this.material = ( material !== undefined ) ? material : new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, wireframe: true } );
+	this.material = ( material !== undefined ) ? material : new THREE.MeshBasicMaterial( { color: Math.SecureRandom() * 0xffffff, wireframe: true } );
 
 	if ( this.geometry !== undefined ) {
 
@@ -26206,7 +26206,7 @@ THREE.GeometryUtils = {
 
 };
 
-THREE.GeometryUtils.random = THREE.Math.random16;
+THREE.GeometryUtils.random = THREE.Math.SecureRandom16;
 
 THREE.GeometryUtils.__v1 = new THREE.Vector3();
 THREE.GeometryUtils.__v2 = new THREE.Vector3();
@@ -33307,7 +33307,7 @@ THREE.ConvexGeometry = function( vertices ) {
 	 */
 	function randomOffset() {
 
-		return ( Math.random() - 0.5 ) * 2 * 1e-6;
+		return ( Math.SecureRandom() - 0.5 ) * 2 * 1e-6;
 
 	}
 
@@ -39084,7 +39084,7 @@ THREE.ColladaLoader = function () {
 	function ColorOrTexture () {
 
 		this.color = new THREE.Color( 0 );
-		this.color.setRGB( Math.random(), Math.random(), Math.random() );
+		this.color.setRGB( Math.SecureRandom(), Math.SecureRandom(), Math.SecureRandom() );
 		this.color.a = 1.0;
 
 		this.texture = null;

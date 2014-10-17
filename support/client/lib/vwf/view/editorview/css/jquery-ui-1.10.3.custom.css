@@ -52,7 +52,7 @@
 }
 
 .ui-front {
-	z-index: 100;
+	z-index: 9999;
 }
 
 
@@ -183,7 +183,7 @@
 	margin-top: -8px;
 }
 .ui-accordion .ui-accordion-content {
-	padding: 1em 2.2em;
+	padding: .5em 1em;
 	border-top: 0;
 	overflow: auto;
 }
@@ -603,7 +603,7 @@ button.ui-button::-moz-focus-inner {
 	height: 100%;
 }
 .ui-progressbar .ui-progressbar-overlay {
-	background: url("../../../../images/animated-overlay.gif");
+	background: url("images/animated-overlay.gif");
 	height: 100%;
 	filter: alpha(opacity=25);
 	opacity: 0.25;
@@ -618,9 +618,11 @@ button.ui-button::-moz-focus-inner {
 .ui-slider .ui-slider-handle {
 	position: absolute;
 	z-index: 2;
-	width: 1.2em;
+	width: 2em;
 	height: 1.2em;
 	cursor: default;
+	background: #BBB !important;
+	border: none !important;
 }
 .ui-slider .ui-slider-range {
 	position: absolute;
@@ -629,6 +631,7 @@ button.ui-button::-moz-focus-inner {
 	display: block;
 	border: 0;
 	background-position: 0 0;
+
 }
 
 /* For IE8 - See #6727 */
@@ -638,10 +641,14 @@ button.ui-button::-moz-focus-inner {
 }
 
 .ui-slider-horizontal {
-	height: .8em;
+	height: 1.2em;
+background: #EEF !important;
+border: none !important;
+box-shadow: 1px 1px 6px lightgray inset;
+width: 95%;
 }
 .ui-slider-horizontal .ui-slider-handle {
-	top: -.3em;
+	
 	margin-left: -.6em;
 }
 .ui-slider-horizontal .ui-slider-range {
@@ -680,6 +687,7 @@ button.ui-button::-moz-focus-inner {
 	overflow: hidden;
 	padding: 0;
 	vertical-align: middle;
+	box-shadow: 1px 1px 4px lightgrey inset;
 }
 .ui-spinner-input {
 	border: none;
@@ -809,9 +817,10 @@ body .ui-tooltip {
 }
 .ui-widget-header {
 	border: 1px solid #aaaaaa;
-	background: #73a1d5 url(images/ui-bg_highlight-soft_75_73a1d5_1x100.png) 50% 50% repeat-x;
-	color: #222222;
+	background: #73a1d5 url(../../../../images/ui-bg_highlight-soft_75_73a1d5_1x100.png) 50% 50% repeat-x;
+	color: #FFFFFF;
 	font-weight: bold;
+	text-shadow: 1px 1px 1px black;
 }
 .ui-widget-header a {
 	color: #222222;

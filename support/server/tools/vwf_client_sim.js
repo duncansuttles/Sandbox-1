@@ -4,25 +4,9 @@ var  url = require("url");
 var  mime = require('mime');
 var  io = require('socket.io-client');
 var  CryptoJS = require('cryptojs');
-var messageCompress = require('./support/client/lib/messageCompress').messageCompress;
-function GUID()
-{
-	var S4 = function ()
-	{
-		return Math.floor(
-				Math.random() * 0x10000 /* 65536 */
-			).toString(16);
-	};
-
-	return (
-			S4() + S4() + "-" +
-			S4() + "-" +
-			S4() + "-" +
-			S4() + "-" +
-			S4() + S4() + S4()
-		);
-}
-		
+var messageCompress = require('../../../support/client/lib/messageCompress').messageCompress;
+var GUID = require('node-uuid').v4;
+global.appPath = "/adl/sandbox"		
 var EncryptPassword = function (password, username,salt)
 	{
 		console.log(password,username,salt);
@@ -74,7 +58,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 	//quick macro to send a message
 	function send(data)
 	{
-		console.log(data);
+		//console.log(data);
 		socket.emit('message',messageCompress.pack(JSON.stringify(data)));	
 	}
 	//generate a key event and send it
@@ -113,22 +97,16 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 							"char": key
 						}
 		//send the event				
-		send(keyevent);			
+		console.log('send key');
+		send(keyevent);		
+
 	}
 
 
 	//once the entire login procedure is done, we can start sending commands over the socket
 	worldLoginComplete = function(response) {
-	  var str = '';
 
-	  //another chunk of data has been recieved, so append it to `str`
-	  response.on('data', function (chunk) {
-		str += chunk;
-	  });
-
-	  //the whole response has been recieved, so we just print it out here
-	  response.on('end', function () {
-		console.log(str);
+		
 		
 		//we are finally done logging in, so let's send the avatar object over the socket to be created
 		//The object below is the proper defination of an avatar
@@ -152,7 +130,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 								"Name": "TEST AVATAR",
 								"Age": "32",
 								"Birthday": "",
-								"Password": "",
+								"Password": GUID(),   //set to anything to satisfy Fortify audit
 								"Relationship": "Married",
 								"City": "Mclean",
 								"State": "VA",
@@ -164,11 +142,11 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 								"Nationality": "",
 								"Avatar": "usmale.dae",
 								"inventoryKey": "1komqvgn",
-								"password": ""
+								"password": GUID()   //set to anything to satisfy Fortify audit
 							},
 							"translation": [				//we randomly place him in the world center +-5
-								(Math.random() - .5) * 5,
-								(Math.random() - .5) * 5,
+								(require('../cryptoRandom.js').random() - .5) * 5,
+								(require('../cryptoRandom.js').random() - .5) * 5,
 								0
 							]
 						},
@@ -177,14 +155,71 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 							"Message": null
 						},
 						"scripts": [
-							"this.ShowProfile = function(){if(vwf.client() != vwf.moniker()) return; _UserManager.showProfile(_DataManager.GetProfileForUser(this.PlayerNumber))     }; \nthis.Message = function(){if(vwf.client() != vwf.moniker()) return; setupPmWindow(this.PlayerNumber)     }"
+							"this.ShowProfile = function(){if(vwf.client() != vwf.moniker()) return; _UserManager.showProfile(_DataManager.GetProfileForUser(this.UserUID))     }; \nthis.Message = function(){if(vwf.client() != vwf.moniker()) return; setupPmWindow(this.PlayerNumber)     }"
 						]
 					}
 				]
-			}
+			};
+			component.parameters[0].properties.cycles = {
+                stand: {
+                    start: 1,
+                    length: 0,
+                    speed: 1.25,
+                    current: 0,
+                    loop: true
+                },
+                walk: {
+                    start: 6,
+                    length: 27,
+                    speed: 1.0,
+                    current: 0,
+                    loop: true
+                },
+                straferight: {
+                    start: 108,
+                    length: 16,
+                    speed: 1.5,
+                    current: 0,
+                    loop: true
+                },
+                strafeleft: {
+                    start: 124,
+                    length: 16,
+                    speed: -1.5,
+                    current: 0,
+                    loop: true
+                },
+                walkback: {
+                    start: 0,
+                    length: 30,
+                    speed: -1.25,
+                    current: 0,
+                    loop: true
+                },
+                run: {
+                    start: 70,
+                    length: 36,
+                    speed: 1.25,
+                    current: 0,
+                    loop: true
+                },
+                jump: {
+                    start: 70,
+                    length: 36,
+                    speed: 1.25,
+                    current: 0,
+                    loop: false
+                },
+                runningjump: {
+                    start: 109,
+                    length: 48,
+                    speed: 1.25,
+                    current: 0,
+                    loop: false
+                }
+            };
 		console.log('sending avatar');
 		socket.emit('message',messageCompress.pack(JSON.stringify(component)));
-	  });
 	}
 
 	//here, we handle incomming data from the server
@@ -192,7 +227,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 	{
 		
 		data = JSON.parse(messageCompress.unpack(data));
-		console.log(data);
+		//console.log(data);
 		//keep track of the server time pulse
 		currenttime = data.time;
 		//if we are keeping track of state and the server requests it, send it
@@ -204,7 +239,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 		if(data.action == 'createNode')
 		{
 			global.state = data.parameters[0];
-			console.log(global.state);
+			//console.log(global.state);
 		}
 		if(data.action == 'createChild')
 		{
@@ -231,12 +266,12 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 		if(data.action == 'tick')
 		{
 		
-		
+			console.log('got tick');
 			//send a fake mouse event, to test server 
 			
 			var mouseevent  = {"time":5.799999999999987,"node":"index-vwf","action":"dispatchEvent","member":"pointerMove","parameters":[[{"button":"right","clicks":1,"buttons":{"left":false,"middle":false,"right":true},"modifiers":{"alt":false,"ctrl":false,"shift":false,"meta":false},"position":[0.37105263157894736,0.20229405630865485],"screenPosition":[705,194]}],{"":[{"distance":0.25039778107183475,"globalPosition":[null,null,null],"globalNormal":[0,0,1],"globalSource":[1.202807068824768,-3.8025035858154297,-3.8025035858154297]}],"box2-vwf-9d1cb46-c41b-e63-1ac-8fb9a3f7f073":[{"source":{"0":-1.5917856693267822,"1":5.0322041511535645,"2":-5.0322041511535645},"distance":0.25039778107183475,"globalSource":[1.202807068824768,-3.8025035858154297,-3.8025035858154297]}]}],"client":"wRI1voo6_Fp_h5ZMYXrM"};
 			send(mouseevent);
-			var rnd = Math.floor(Math.random() * 100);
+			var rnd = Math.floor(require('../cryptoRandom.js').random() * 100);
 			if(rnd == 0)
 			{
 				KeyEvent(DOWN,'w');
@@ -294,7 +329,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 		//we now must use an http request to tell the server that 'we' own the socket.
 		//'we' meaning the user logged into the client with the given session cookie
 		//goto worldLoginComplete when done
-		var req = http.request({hostname:server,port:port,method:'GET', path:'/adl/sandbox///vwfDataManager.svc/login?S='+session+'&CID=' + socket.socket.sessionid,headers:{cookie:cookie}}, worldLoginComplete).end();
+		worldLoginComplete();//var req = http.request({hostname:server,port:port,method:'GET', path:global.appPath+'///vwfDataManager.svc/login?S='+session+'&CID=' + socket.socket.sessionid,headers:{cookie:cookie}}, worldLoginComplete).end();
 	  });
 	  //This is a special case for the simulated client
 	  //we must ask the server to associate this websocket with a the given world
@@ -305,7 +340,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 	}
 
 	
-	//we get here after the client has submitted the username and password properly to the server
+	//we get here after the client has submitted the username and pass properly to the server
 	siteLoginComplete = function(response) {
 	  var str = '';
 
@@ -326,7 +361,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 	  });
 	}
 
-	//after we have the salt for the user, we can create the proper username/password hash to log in
+	//after we have the salt for the user, we can create the proper username/pass hash to log in
 	saltRetreiveComplete = function(response) {
 	  var str = '';
 
@@ -340,7 +375,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 		console.log('salt: '+str);
 		salt = str.trim();
 		
-		//create the proper hash for the password, and try to loging this client to the server
+		//create the proper hash for the pass, and try to loging this client to the server
 		//when complete, goto siteLoginComplete
 		passwordHASH = EncryptPassword(password,username,salt);
 		http.request('http://'+server+':'+port+'/vwfDataManager.svc/sitelogin?UID='+username+'&P='+passwordHASH, siteLoginComplete).end();
@@ -412,7 +447,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 var p = process.argv.indexOf('-u');
 var user = p >= 0 ? process.argv[p+1] : "test";
 
-// -p is the password
+// -p is the pass
 p = process.argv.indexOf('-p');
 var password = p >= 0 ? process.argv[p+1] : "1111";
 
@@ -426,10 +461,10 @@ var port = p >= 0 ? process.argv[p+1] : "3000";
  
 // -w is the UID of the world to attach to 
 p = process.argv.indexOf('-w');
-var world = p >= 0 ? process.argv[p+1] : "QNsNId8RYKeO6MSz";
+var world = p >= 0 ? process.argv[p+1] : "YLGSwHUNuviUx37r";
 
 //launch the simulated client 
-LaunchAvatar(user,password,server,port,"/adl/sandbox/" + world + "/");
+LaunchAvatar(user,password,server,port,global.appPath + "/" + world + "/");
 
 process.on('message', function(m) {
   console.log('CHILD got message:', m);

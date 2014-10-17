@@ -25,12 +25,13 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 		$(document.head).append('<script type="text/javascript" src="js/colorpicker.js"></script>');
 		this.show = function ()
 		{
+
 			if(!this.currentMaterial)
 			{
 				alertify.alert('This object does not expose a material interface');
 				return;
 			}
-			//$('#materialeditor').dialog('open');
+			
 			$('#materialeditor').prependTo($('#materialeditor').parent());
 			$('#materialeditor').show('blind', function ()
 			{
@@ -38,11 +39,8 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			});
 			showSidePanel();
 			this.BuildGUI();
-			//if(_PrimitiveEditor.isOpen())
-			//$('#materialeditor').dialog('option','position',[1282,456]);
-			//else
-			//$('#materialeditor').dialog('option','position',[1282,40]);
-			//this.open =true;
+			$('#MenuMaterialEditoricon').addClass('iconselected');
+			
 		}
 		this.hide = function ()
 		{
@@ -54,6 +52,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 					if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 				});
+				$('#MenuMaterialEditoricon').removeClass('iconselected');
 			}
 		}
 		this.isOpen = function ()
@@ -236,6 +235,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 		this.BuildGUI = function ()
 		{
 		
+			var lastTab = $("#materialaccordion").accordion('option','active');
 			$("#materialeditor").empty();
 			$("#materialeditor").append("<div id='materialeditortitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span class='ui-dialog-title' id='ui-dialog-title-Players'>Material Editor</span></div>");
 			$('#materialeditortitle').append('<a href="#" id="materialeditorclose" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
@@ -283,6 +283,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 					if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 				}
 			});
+			$("#materialaccordion").accordion({'active':lastTab});
 			$(".ui-accordion-content").css('height', 'auto');	
 		}
 		
@@ -672,7 +673,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				$('#materialaccordion').append('	<h3>' + '		<a href="#">Texture Layer ' + i + '</a>' + '	</h3>' + '	<div id="Layer' + i + 'Settings">' + '	</div>');
 				var layer = this.currentMaterial.layers[i];
 				var rootid = 'Layer' + i + 'Settings';
-				$('#' + rootid).append('<img id="' + rootid + 'thumb" class="BigTextureThumb"/>');
+				$('#' + rootid).append('<img crossOrigin="Anonymous" id="' + rootid + 'thumb" class="BigTextureThumb"/>');
 				$('#' + rootid + 'thumb').attr('src', this.currentMaterial.layers[i].src);
 				$('#' + rootid).append('<div id="' + rootid + 'thumbsrc" class="BigTextureThumbSrc" style="overflow:hidden; text-overflow:ellipsis; text-align: center;font-weight: bold;border: none;"/>');
 				$('#' + rootid + 'thumbsrc').text(this.currentMaterial.layers[i].src);
@@ -744,7 +745,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				}
 				$('#' + rootid).append('<div style="clear:right" id="' + rootid + 'mapToDiv" />');
 				$('#' + rootid + 'mapToDiv').append('<div  style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Map To Property: </div>');
-				$('#' + rootid + 'mapToDiv').append('<select id="' + rootid + 'mapTo" style="float:right;clear:right">' + '<option value="1">Diffuse Color</option>' + '<option value="2">Bump Map</option>' + '<option value="3">Light Map</option>' + '<option value="4">Normal Map</option>' + '<option value="5">Specular Map</option>' + '<option value="6">Environment Map</option>' + '</select>');
+				$('#' + rootid + 'mapToDiv').append('<select id="' + rootid + 'mapTo" style="float:right;clear:right">' + '<option value="1">Diffuse Color</option>' + '<option value="2">Bump Map</option>' + '<option value="3">Light Map</option>' + '<option value="4">Normal Map</option>' + '<option value="5">Specular Map</option>' + '<option value="6">Environment Map</option>' +  '<option value="7">Alpha Map</option>'+ '</select>');
 				$('#' + rootid + 'mapTo').val(this.currentMaterial.layers[i].mapTo + "");
 				$('#' + rootid + 'mapTo').attr('layer', i);
 				$('#' + rootid + 'mapTo').change(function ()
@@ -849,8 +850,11 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 			{
 				if (node)
 				{
+					var mat = vwf.getProperty(node.id, 'materialDef');
+					if(!mat)
+						return;
 					
-					this.currentMaterial = JSON.parse(JSON.stringify(vwf.getProperty(node.id, 'materialDef')));
+					this.currentMaterial = JSON.parse(JSON.stringify(mat));
 					if (!this.currentMaterial){
 					if(this.isOpen()) this.hide();
 					return;
@@ -859,6 +863,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				}
 				else
 				{
+					this.currentMaterial = null;
 					this.hide();
 				}
 			}

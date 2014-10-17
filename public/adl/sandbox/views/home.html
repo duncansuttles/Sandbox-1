@@ -171,9 +171,16 @@ function center()
 		<div>			
 		<div class="" style="">
 		
+		{{#sessionData}}
 		<div class="buttonContainer">
 		<a class="ActionButton" style="" href="./createNew/0"><div class="ActionButtonlabel">Create</div><div class="ActionButtonsmalllabel">Build a world</div></a>
 		</div>
+		{{/sessionData}}
+		{{^sessionData}}
+		<div class="buttonContainer">
+		<a class="ActionButton" style="" href="./createNotLoggedIn"><div class="ActionButtonlabel">Create</div><div class="ActionButtonsmalllabel">Build a world</div></a>
+		</div>
+		{{/sessionData}}
 		<div class="buttonContainer">
 		<a class="ActionButton" style="" href="./featuredWorlds/0"><div class="ActionButtonlabel">Explore</div><div class="ActionButtonsmalllabel">Browse all public worlds</div></a>
 		</div>
@@ -223,7 +230,7 @@ function center()
 		{{/sessionData}}
 		{{#sessionData}}
 		<a class='thinheaderlink' href='{{root}}/user'>
-			{{sessionData.UID}}
+			{{sessionData.Username}}
 		</a>
 		{{/sessionData}}
 	</div>				

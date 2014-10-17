@@ -6084,7 +6084,7 @@ THREE.Math = {
 			
 				} else {
 			
-					if (rnd <= 0x02) rnd = 0x2000000 + (Math.random()*0x1000000)|0;
+					if (rnd <= 0x02) rnd = 0x2000000 + (Math.SecureRandom()*0x1000000)|0;
 					r = rnd & 0xf;
 					rnd = rnd >> 4;
 					uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r];
@@ -6147,11 +6147,11 @@ THREE.Math = {
 	},
 
 	// Random float from <0, 1> with 16 bits of randomness
-	// (standard Math.random() creates repetitive patterns when applied over larger space)
+	// (standard Math.SecureRandom() creates repetitive patterns when applied over larger space)
 
 	random16: function () {
 
-		return ( 65280 * Math.random() + 255 * Math.random() ) / 65535;
+		return ( 65280 * Math.SecureRandom() + 255 * Math.SecureRandom() ) / 65535;
 
 	},
 
@@ -6159,7 +6159,7 @@ THREE.Math = {
 
 	randInt: function ( low, high ) {
 
-		return low + Math.floor( Math.random() * ( high - low + 1 ) );
+		return low + Math.floor( Math.SecureRandom() * ( high - low + 1 ) );
 
 	},
 
@@ -6167,7 +6167,7 @@ THREE.Math = {
 
 	randFloat: function ( low, high ) {
 
-		return low + Math.random() * ( high - low );
+		return low + Math.SecureRandom() * ( high - low );
 
 	},
 
@@ -6175,7 +6175,7 @@ THREE.Math = {
 
 	randFloatSpread: function ( range ) {
 
-		return range * ( 0.5 - Math.random() );
+		return range * ( 0.5 - Math.SecureRandom() );
 
 	},
 
@@ -14231,7 +14231,7 @@ THREE.ParticleSystem = function ( geometry, material ) {
 	THREE.Object3D.call( this );
 
 	this.geometry = geometry !== undefined ? geometry : new THREE.Geometry();
-	this.material = material !== undefined ? material : new THREE.ParticleBasicMaterial( { color: Math.random() * 0xffffff } );
+	this.material = material !== undefined ? material : new THREE.ParticleBasicMaterial( { color: Math.SecureRandom() * 0xffffff } );
 
 	this.sortParticles = false;
 	this.frustumCulled = false;
@@ -14261,7 +14261,7 @@ THREE.Line = function ( geometry, material, type ) {
 	THREE.Object3D.call( this );
 
 	this.geometry = geometry !== undefined ? geometry : new THREE.Geometry();
-	this.material = material !== undefined ? material : new THREE.LineBasicMaterial( { color: Math.random() * 0xffffff } );
+	this.material = material !== undefined ? material : new THREE.LineBasicMaterial( { color: Math.SecureRandom() * 0xffffff } );
 
 	this.type = ( type !== undefined ) ? type : THREE.LineStrip;
 
@@ -14294,7 +14294,7 @@ THREE.Mesh = function ( geometry, material ) {
 	THREE.Object3D.call( this );
 
 	this.geometry = geometry !== undefined ? geometry : new THREE.Geometry();
-	this.material = material !== undefined ? material : new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff } );
+	this.material = material !== undefined ? material : new THREE.MeshBasicMaterial( { color: Math.SecureRandom() * 0xffffff } );
 
 	this.updateMorphTargets();
 
@@ -26647,8 +26647,8 @@ THREE.GeometryUtils = {
 
 			var point = new THREE.Vector3();
 
-			var a = THREE.Math.random16();
-			var b = THREE.Math.random16();
+			var a = THREE.Math.SecureRandom16();
+			var b = THREE.Math.SecureRandom16();
 
 			if ( ( a + b ) > 1 ) {
 
@@ -26771,7 +26771,7 @@ THREE.GeometryUtils = {
 
 		for ( i = 0; i < n; i ++ ) {
 
-			r = THREE.Math.random16() * totalArea;
+			r = THREE.Math.SecureRandom16() * totalArea;
 
 			index = binarySearchIndices( r );
 

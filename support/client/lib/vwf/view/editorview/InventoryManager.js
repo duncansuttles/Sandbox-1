@@ -112,20 +112,31 @@ define(function ()
 				{
 					var t = item;
 					var newintersectxy = _Editor.GetInsertPoint()
+					//account for the fact that some proto might have the transform stripped out
+					if(!t.properties.transform)
+					{
+						t.properties.transform = 
+						[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
+
+
+					}
 					if (t.properties.type != 'modifier' && t.properties.type != 'behavior')
 					{
 						t.properties.transform[12] = newintersectxy[0];
 						t.properties.transform[13] = newintersectxy[1];
 						t.properties.transform[14] = newintersectxy[2];
-						//t.properties.translation[0] = newintersectxy[0];
-						//t.properties.translation[1] = newintersectxy[1];
-						//t.properties.translation[2] = newintersectxy[2];
+
+						t.properties.translation = [];
+						t.properties.translation[0] = newintersectxy[0];
+						t.properties.translation[1] = newintersectxy[1];
+						t.properties.translation[2] = newintersectxy[2];
 						t.properties.DisplayName = _Editor.GetUniqueName(t.properties.DisplayName);
 						t = _DataManager.getCleanNodePrototype(t);
 						_InventoryManager.setOwner(t, _UserManager.GetCurrentUserName());
-						_Editor.SelectOnNextCreate();
-					
-						_InventoryManager.createChild('index-vwf', GUID(), t, null, null);
+						
+						var newname = GUID()
+						_InventoryManager.createChild('index-vwf',newname , t, null, null);
+						_Editor.SelectOnNextCreate([newname]);
 					}
 					else
 					{
@@ -321,6 +332,7 @@ define(function ()
 			$.ajax('./vwfDataManager.svc/inventoryitem?title=' + title +'&type=' + type,{
 				
 				type:'POST',
+				contentType: "application/json; charset=utf-8",
 				success:function(err,d,xhr)
 				{
 					cb($.trim(xhr.responseText));
@@ -335,6 +347,7 @@ define(function ()
 			$.ajax('./vwfDataManager.svc/globalasset?title=' + title +'&type=' + type,{
 				
 				type:'POST',
+				contentType: "application/json; charset=utf-8",
 				success:function(err,d,xhr)
 				{
 					cb($.trim(xhr.responseText));
@@ -343,6 +356,18 @@ define(function ()
 				dateType:'text'
 			});
 		
+		}
+		//given a prototype, add to the personal inventory
+		this.addProto = function(proto,title,type)
+		{
+			this.addInventoryItem(proto, title, type,function(key)
+			{
+				_InventoryManager.global = false;
+				_InventoryManager.NoAnimateRedraw(function()
+				{
+					_InventoryManager.selectKey(key);
+				});
+			});
 		}
 		this.Take = function (id)
 		{
@@ -362,14 +387,8 @@ define(function ()
 			var type = 'object';
 			if(t.properties && t.properties.type)
 			type = t.properties.type
-			this.addInventoryItem(t, title, type,function(key)
-			{
-				_InventoryManager.global = false;
-				_InventoryManager.NoAnimateRedraw(function()
-				{
-					_InventoryManager.selectKey(key);
-				});
-			});
+
+			this.addProto(t,title,type);
 		}
 		this.Publish = function (id)
 		{
@@ -427,7 +446,8 @@ define(function ()
 				return;
 			}
 			this.getInventory(function(inventory)
-			{
+			{		
+				$('#MenuInventoryicon').addClass('iconselected');
 				//$('#InventoryManager').dialog('open');
 				$('#InventoryManager').prependTo($('#InventoryManager').parent());
 				$('#InventoryManager').show('blind', function ()
@@ -486,6 +506,7 @@ define(function ()
 				if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 				if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 			});
+			$('#MenuInventoryicon').removeClass('iconselected');
 		}
 		this.isOpen = function ()
 		{
@@ -498,6 +519,7 @@ define(function ()
 			$.ajax('./vwfDataManager.svc/inventoryitemmetadata?AID=' + id,{
 				
 				type:'POST',
+				contentType: "application/json; charset=utf-8",
 				success:function(err,d,xhr)
 				{
 					cb();

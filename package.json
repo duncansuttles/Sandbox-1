@@ -31,6 +31,13 @@
     "i18next": "~1.7.1",
     "nedb": "~0.10.2",
     "node-uuid": "1.4.x"
+    "passport": "0.2.x",
+    "passport-facebook": "1.0.3",
+    "passport-twitter": "1.0.2",
+    "passport-google-oauth": "0.1.5",
+    "connect": "2.19.2",
+    "passport-local": "~1.0.0",
+    "spdy": "~1.26.5"
   },
   "devDependencies": {},
   "scripts": {
@@ -38,7 +45,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/adlnet/Sandbox.git"
   },
   "keywords": [
     "virtual",

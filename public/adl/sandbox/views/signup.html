@@ -119,29 +119,49 @@
 				cache:false,
 				data:JSON.stringify(profile),
 				type:'POST',
+				contentType: "application/json; charset=utf-8",
 				success:function(data,status,xhr)
 				{
 
 					$('#txtusername').val('');
 					$('#txtpassword').val('');
 					
-					$.ajax(root + '/vwfDataManager.svc/sitelogin?UID=' + username +"&P=" + password,
+
+					var formData = new FormData();
+					formData.append('username', username);
+					formData.append('password', password);
+
+					var xhr = new XMLHttpRequest();
+					xhr.open("POST", "../../auth/local");
+					xhr.addEventListener("load",function(xhr)
 					{
-						cache:false,
-						success:function(data,status,xhr)
+						if(xhr.target.status === 301 || xhr.target.status === 302 || xhr.target.status === 200)
 						{
-							
+							$('#txtusername').val('');
+							$('#txtpassword').val('');
 							redirect();
-						},
-						error:function(xhr,status,err)
+						}else
 						{
-							
 							vwfPortalModel.errorText("Error: Please ensure that all required account information is entered correctly: " + xhr.responseText);
 							window.setTimeout(function(){
 								vwfPortalModel.errorText("");				
 							}, 6000);
 						}
+						
 					});
+					xhr.addEventListener("error",function()
+					{
+						vwfPortalModel.errorText("Error: Please ensure that all required account information is entered correctly: " + xhr.responseText);
+							window.setTimeout(function(){
+								vwfPortalModel.errorText("");				
+							}, 6000);
+
+					},false);
+
+					xhr.send(formData);
+
+
+					
 			
 				},
 				error:function(xhr,status,err)

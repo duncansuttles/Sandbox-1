@@ -233,7 +233,7 @@
     }
     UTF8JsonLoader.prototype.jsonLoaded = function(e)
     {
-            var test = 1+1;
+    
             var self = this;
             //async decompress UTF8 data in webworker
             backgroundLoader.decompress(e,function(e){self.decompressed(e)});          
@@ -243,6 +243,11 @@
     { 
 //              var jsonData = JSON.parse(decompress(e));
 //              decompressArrays(jsonData)
+        if(!jsonData)
+        {
+            this.error();
+            return;
+        }
         var self = this;
         this.scene = this.ParseSceneGraph(jsonData,function(e){return self.texture_load_callback(e)});
         if(this.callback)
@@ -253,6 +258,7 @@
         
 
         
+        //for assets loaded from the 3DR server, or the federation server 
         var src = "";
         if(this.url.toLowerCase().indexOf('3dr_federation') != -1)
             src = this.url.substr(0,this.url.indexOf("Model/")) + "textures/NoRedirect/" + encodeURIComponent(texturename) +"?ID=00-00-00";
@@ -261,10 +267,19 @@
         
         src = src.replace("AnonymousUser:@","");
         
+        //for assets loaded from the data directory
         if(this.url.toLowerCase().indexOf('vwfdatamanager') != -1)
             src = './vwfdatamanager.svc/3drtexture?pid=' +  this.url.substr(this.url.indexOf("pid=")+4) + "&file=" + encodeURIComponent(texturename)
-        var tex = _SceneManager.getTexture(src);
+            
+        //for assets loaded from the content library
+
         
+        if(this.url.toLowerCase().indexOf('contentlibraries') != -1)
+        {
+            src = this.url.substr(0,this.url.lastIndexOf("/")+1) + texturename;
+
+        }
+        var tex = _SceneManager.getTexture(src);
         return tex;
     }
     
@@ -426,7 +441,7 @@
         
         var newnode;
         //its geometry
-        if (node.primitives) 
+        if (node.primitives && node.primitives.length > 0) 
         {
             newnode = this.parseMesh(node);
             

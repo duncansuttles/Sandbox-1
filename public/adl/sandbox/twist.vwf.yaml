@@ -40,6 +40,7 @@ methods:
   uvmap:
   bend:
   twist:
+  ready:
 events:
   childAdded:
 scripts:
@@ -169,7 +170,11 @@ scripts:
     }
     this.initialize = function()
     {
-         
+         this.dirtyStack();
+    }
+    this.ready = function()
+    {
+         this.dirtyStack();
     }
     this.GetMesh = function()
     {

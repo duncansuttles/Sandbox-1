@@ -20,8 +20,17 @@ properties:
   test:  
   motionStack: []
   activeCycle: []
-  standingOnID:
-  standingOnOffset:
+  standingOnID: 
+  standingOnOffset: 
+  ___physics_activation_state: 4
+  ___physics_deactivation_time: 0
+  ___physics_velocity_linear: [ 0, 0, 0 ]
+  ___physics_velocity_angular: [ 0, 0, 0 ]
+  ___physics_factor_linear: [ 0, 0, 0 ]
+  ___physics_factor_angular: [ 0, 0, 0 ]
+  ___physics_enabled: true
+  ___physics_mass: 158.5
+  animationPaused: false
 methods:
   update:
   tick:
@@ -29,23 +38,33 @@ methods:
   satProperty:
   deletingNode:
   setPosition:  
+  keyUp:
+  keyDown:
+  ready:  
 events:
   pointerOver:
   pointerOut:
-  keyUp:
-  keyDown:
 scripts:
 - |
     this.attached = function()
     {
         //called when added to the scene, after initialize is called and parent is set.
-        this.parent.newClient(this.PlayerNumber);
+        //this.parent.avatarCreated(this.PlayerNumber);
+    }
+    this.ready = function()
+    {
+        var self = this;
+        this.kd = function(e,d){ return self.keyDown(e,d)};
+        this.ku = function(e,d){ return self.keyUp(e,d)};
+        this.Scene.bind('keyDown', this.kd);
+        this.Scene.bind('keyUp' , this.ku);
+        this.Scene.avatarCreated(this);
     }
     this.initialize = function(){
 
         
         if(this.id == 'character-vwf') return;
-     
+      
          this.DownKeys= [];
         // this.motionStack= [];
          this.jumpcounter = 0;
@@ -63,7 +82,7 @@ scripts:
         {
             //this.parent.players.push(PlayerNumber); 
             document[PlayerNumber +'link'] = this;
-            _UserManager.PlayerCreated(PlayerNumber,this.id);
+            
         }
         
        
@@ -103,16 +122,20 @@ scripts:
 
           }
 
+          //this is a bad idea. The character controller should make no assumptions about the 
+          //structure of the asset that is loaded.
           this.skin = findSkin(this.mesh);
-          if(this.skin.material.ambient)
+          if(this.skin)
           {
-             this.skin.material.ambient.r = 1;
-             this.skin.material.ambient.g = 1;
-             this.skin.material.ambient.b = 1;
-          }
 
-          
+            if(this.skin.material.ambient)
+            {
+               this.skin.material.ambient.r = 1;
+               this.skin.material.ambient.g = 1;
+               this.skin.material.ambient.b = 1;
+            }
           this.skin.isAvatar = true;
+          }
           this.jumpcounter = 0.0;
           //this.stand();
          
@@ -130,6 +153,8 @@ scripts:
           this.pickoptions = {
             filter:function(o){
                 if(o instanceof THREE.Line) return false;
+                 if(o instanceof THREE.SkinnedMesh) return false;
+                  if(o instanceof THREE.Bone) return false;
                 return !(o.isAvatar === true || o.passable===true)
               },maxDist: 2,
               ignore:[this.mesh,_Editor.GetMoveGizmo()]
@@ -143,41 +168,37 @@ scripts:
     {
         
     }
+    this.increment = function(cycle,steps)
+    {
+      cycle.current+=cycle.speed * steps;
+      if(cycle.current >= cycle.length && cycle.loop == true)
+          cycle.current = 0;
+      if(cycle.current < 0 && cycle.loop == true)
+          cycle.current = cycle.length;    
+      if(cycle.current >= cycle.length && cycle.loop == false)
+          cycle.current = cycle.length-1;
+       
+      return cycle.current + cycle.start;
+    }
     this.initCycles = function()
     {
-        var cycles = this.cycles.internal_val;
-        for(var i in cycles)
-        {
-            cycles[i].getFrame = function() { 
-                    return this.current + this.start;
-                }.bind(cycles[i]);
-            cycles[i].increment = function(steps) { 
-                    this.current+=this.speed * steps;
-                    if(this.current >= this.length && this.loop == true)
-                        this.current = 0;
-                    if(this.current < 0 && this.loop == true)
-                        this.current = this.length;    
-                    if(this.current >= this.length && this.loop == false)
-                        this.current = this.length-1;
-                    return this.getFrame();
-                }.bind(cycles[i]);
-            cycles[i].reset = function() {
-                    this.current=0;
-            }.bind(cycles[i]);
-        }
+        
+        this.cycleInit = true;
     }
     this.createNameTag = function(PlayerNumber)
     {
-    
-      var newdiv = document.createElement('div');
-      $(newdiv).attr('style',"pointer-events:none;text-transform: uppercase; font-weight: bold; position: fixed; left: 612.7792636991876px; top: 350.056008871367px; color: white; text-shadow: black 0.1em 0.1em 0.4em; ");
-      newdiv.style.position = 'fixed';
-      newdiv.id = "Player " + PlayerNumber + 'label';
-      newdiv.innerHTML = "" + PlayerNumber;
+      
+      $(document.body).append('<div class="nametag" id="'+"Player_" + ToSafeID(PlayerNumber) + 'label'+'"><div class="nametagname ignoreMouseLeave">'+PlayerNumber+'</div></div>')
+      var newdiv = $("#Player_" + ToSafeID(PlayerNumber) + 'label')[0];
+      var self = this;
+      $("#Player_" + PlayerNumber + 'label').click(function(){
+        setupPmWindow(self.PlayerNumber);
+      })
+      
       newdiv.style.left = '0px';
       //newdiv.style.top = '0px';
       
-      $(document.body).append(newdiv);
+    
       newdiv._offsetWidth = newdiv.offsetWidth;
       $(newdiv).disableSelection();
       this.nametag = newdiv;
@@ -187,9 +208,11 @@ scripts:
     {
        //findVWFscene().removeUpdateCallback(this.callbacknum);
        _dView.unbind('postprerender',this.prerendercallback);
-        _UserManager.PlayerDeleted(this.PlayerNumber);
+        
        //this.deleteMe = true;            
-       $(this.nametag).remove()
+       $(this.nametag).remove();
+       this.Scene.unbind('keyDown', this.kd);
+       this.Scene.unbind('keyUp' , this.ku);
        
     }
     this.placeNameTag = function(e,viewprojection,wh, ww)
@@ -200,7 +223,7 @@ scripts:
     
       
       var div = this.nametag;
-      var pos = this.translation;
+      var pos = this.transformAPI.getPosition();;
       if(!pos) return;
       pos = [pos[0],pos[1],pos[2]+1.75,1];
          
@@ -221,7 +244,7 @@ scripts:
       screen[1] = wh - screen[1];
 
       div.style.top = (screen[1]  +   $("#index-vwf").offset().top) + 'px' ;
-      div.style.left = (screen[0] - div._offsetWidth/2)  +'px';
+      div.style.left = (parseInt($('#index-vwf').css('left')) || 0) + (screen[0] - div._offsetWidth/2)  +'px';
      
       
       if((screen[0] < 0 || screen[0] > ww || screen[1] < 0 || screen[1] > wh))
@@ -278,7 +301,7 @@ scripts:
           //really no point going much deeper
           if(depth == 3) return false;
 
-            var intersectfront = _SceneManager.CPUPick([avatarPos[0],avatarPos[1],avatarPos[2]],trans,opts);
+          var intersectfront = _SceneManager.CPUPick([avatarPos[0],avatarPos[1],avatarPos[2]],trans,opts);
           var avatarPosChanged = true;
           if(intersectfront)
           {
@@ -323,6 +346,7 @@ scripts:
                 avatarPos[1] = newpos[1];
                 avatarPos[2] = newpos[2];
                }
+               intersectfront.release();
             }else
             {
               //no collision, you are free to move this distance with no slide along walls
@@ -375,6 +399,7 @@ scripts:
         }
 
     }
+
     this.recordStandingOn = function(intersect)
     {
        
@@ -430,14 +455,16 @@ scripts:
     this.update = function(moniker)
     {
        
-      
+       
+        if(!this.cycleInit)
+          this.initCycles();
         this.updatecounter++;
         var updateFreqDivisor = 1;
         
         if(this.id == 'character-vwf') return;
        
        this.standingUpdate();
-        
+      
         
         
           var backupr = this.rotation;
@@ -448,7 +475,8 @@ scripts:
         if(this.activeCycle[this.activeCycle.length-1])
         {
 
-            var newframe = this.cycles[this.activeCycle[this.activeCycle.length-1]].increment(updateFreqDivisor);
+
+            var newframe = this.increment(this.cycles[this.activeCycle[this.activeCycle.length-1]],updateFreqDivisor);
             newframe = Math.max(newframe,0);
            
             if(this.currentframe != newframe)
@@ -460,7 +488,8 @@ scripts:
                //     this.skin.morphTargetInfluences[i] = 0;
                
                //this.skin.morphTargetInfluences[parseInt(newframe)] = 1;     
-               this.animationFrame = newframe;
+               if(!this.animationPaused)
+                  this.animationFrame = newframe;
               
             }
             this.prevframe = this.currentframe;
@@ -472,7 +501,7 @@ scripts:
         }
         
         
-        var backupt = [this.translation[0],this.translation[1],this.translation[2]];
+        var backupt = this.transformAPI.getPosition();
         var finalt = backupt.slice(0);
         var originalpos = backupt.slice(0);
         var originalpos2 = backupt.slice(0);
@@ -482,10 +511,7 @@ scripts:
         
         var motionvec;
         
-        if(this.motionStack.length)
-            this.playSound('./vwfDataManager.svc/datafile/sounds/footsteps.mp3',true,.1);
-        else
-            this.pauseSound('./vwfDataManager.svc/datafile/sounds/footsteps.mp3');
+
         
         for(var i=0; i < this.motionStack.length; i++)
         {
@@ -498,33 +524,32 @@ scripts:
             }
             if(this.cycleName == 'turnleft')
             {
-                this.rotZ += +.07*updateFreqDivisor;
+                this.rotZ += .07*updateFreqDivisor;
                // this.mesh.setRotZ(this.rotZ);
                backupr = [0,0,1,this.rotZ/0.0174532925];
             }
              if(this.cycleName == 'straferight')
             {
-                 motionvec = MATH.mulMat4Vec3(MATH.angleAxis(backupr[3]*0.0174532925,[backupr[0],backupr[1],backupr[2]]),[-.03*updateFreqDivisor,0,0]);
-                
+                 motionvec = this.transformAPI.localToGlobalRotation([-.03*updateFreqDivisor,0,0]);
             }
             if(this.cycleName == 'strafeleft')
             {
-                 motionvec = MATH.mulMat4Vec3(MATH.angleAxis(backupr[3]*0.0174532925,[backupr[0],backupr[1],backupr[2]]),[.03*updateFreqDivisor,0,0]);
                  
+                 motionvec = this.transformAPI.localToGlobalRotation([.03*updateFreqDivisor,0,0]);
             }
             if(this.cycleName == 'walk')
             {
-                    motionvec = MATH.mulMat4Vec3(MATH.angleAxis(backupr[3]*0.0174532925,[backupr[0],backupr[1],backupr[2]]),[0,-.09*updateFreqDivisor,0]);
-                    
+                   
+                    motionvec = this.transformAPI.localToGlobalRotation([0,-.09*updateFreqDivisor,0]);
             }
             if(this.cycleName == 'walkback')
             {
-                    motionvec = MATH.mulMat4Vec3(MATH.angleAxis(backupr[3]*0.0174532925,[backupr[0],backupr[1],backupr[2]]),[0,+.09*updateFreqDivisor,0]);
+                    motionvec = this.transformAPI.localToGlobalRotation([0,.09*updateFreqDivisor,0]);
                    
             }
             if(this.cycleName == 'run')
             {
-                    motionvec = MATH.mulMat4Vec3(MATH.angleAxis(backupr[3]*0.0174532925,[backupr[0],backupr[1],backupr[2]]),[0,-.140*updateFreqDivisor,0]);
+                    motionvec = this.transformAPI.localToGlobalRotation([0,-.18*updateFreqDivisor,0]);
                     
             }
             
@@ -561,8 +586,11 @@ scripts:
             //for intersetions, and prevent penetration through objects
             if((MATH.lengthVec3(this.originalvelocity) > .001 || motionvec || this.jumpcounter > jumpstart || this.inMotion('turnleft') || this.inMotion('turnright')))
             {
-                this.skin.PickPriority = -1;
-                
+                //this is again, a bad idea. If we need to do this, pick priority should be part of the VWF infrastructure
+                if(this.skin)
+                {
+                  this.skin.PickPriority = -1;
+                }
                 
                 motionvec = motionvec ? motionvec : [0,0,0];
                 var testpos = MATH.subVec3(finalt,MATH.scaleVec3(motionvec,-.15));
@@ -652,9 +680,12 @@ scripts:
                 {
                   this.recordStandingOn(intersect);
                 }
-                _DEALLOC(intersect);
+                intersect.release();
               }
-                this.skin.PickPriority = 1;
+              if(this.skin)
+                {
+                  this.skin.PickPriority = 1;
+                }  
                  
             }
            
@@ -673,16 +704,19 @@ scripts:
         if(this.updatecounter > 180 && document["PlayerNumber"] == this.PlayerNumber)
           {
             
-            vwf_view.kernel.setProperty(this.id,'transform',this.transform.internal_val,0,null);
-            vwf_view.kernel.setProperty(this.id,'rotZ',this.rotZ,0,null);
+            //if the system works properly, this is really a no-no
+            //vwf_view.kernel.setProperty(this.id,'transform',this.transform.internal_val,0,null);
+            //vwf_view.kernel.setProperty(this.id,'rotZ',this.rotZ,0,null);
              this.updatecounter = 0;
           }
           
-        
+        if(this.skin)
+                {
         this.skin.PickPriority = 1;
+      }
         this.tbak = finalt;
-        this.translation = finalt;
-      
+        
+        this.transformAPI.setPosition(finalt);
       
           
          var turn = (this.oldRotZ||0)-this.rotZ;
@@ -691,7 +725,7 @@ scripts:
             this.transformAPI.rotate(0,0,((this.oldRotZ||0)-this.rotZ)*-57.2957795,this.transformAPI.COORDINATES.PARENT);
            this.oldRotZ = this.rotZ;
 
-        this.updateStandingOn(this.translation.internal_val);
+        this.updateStandingOn(this.transformAPI.getPosition());
 
          for(var i = 0; i < this.updateCallbacks.length; i++)
         {
@@ -896,16 +930,20 @@ scripts:
         this.removeCycle('stand');
         this.addCycle('stand');
     }
+    this.resetCycle = function(cycle)
+    {
+      cycle.current = 0;
+    }
     this.jump = function()
     {
         if(this.inMotion('walkback'))return;
         if(this.inMotion('jump'))return;
         this.addMotion('jump');
         this.jumpcounter = 0;
-        this.cycles.jump.reset();
+        this.resetCycle(this.cycles.jump);
         this.removeCycle('jump');
         this.addCycle('jump');
-        this.jumpstart = this.translation[2];
+        this.jumpstart = this.transformAPI.getPosition()[2];
        
     }   
     this.runningjump = function()
@@ -914,7 +952,7 @@ scripts:
         if(this.inMotion('jump'))return;
         this.addMotion('jump');
         this.jumpcounter = 0;
-        this.cycles.runningjump.reset();
+        this.resetCycle(this.cycles.runningjump);
         this.removeCycle('runningjump');
         this.addCycle('runningjump');
        
@@ -939,6 +977,11 @@ scripts:
                 {this.removeMotion('turnleft'); this.removeMotion('turnright'); this.removeCycle('turnleft'); this.removeCycle('turnright');}        
             if(!e.keysDown.W  && !e.keysDown.uparrow && this.inMotion('run'))
                 this.cancelRun(); 
+
+                
+            this.pauseSound('./vwfDataManager.svc/datafile/sounds/footsteps.mp3');
+
+
             return false;          
             
          }
@@ -988,6 +1031,10 @@ scripts:
                { this.addMotion('turnright');    }
             if(e.mods.shift && e.keysDown.W)
                 this.run();  
+
+          
+            this.playSound('./vwfDataManager.svc/datafile/sounds/footsteps.mp3',true,5);
+            
             return false;
          }
     

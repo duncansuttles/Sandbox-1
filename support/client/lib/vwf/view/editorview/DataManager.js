@@ -114,19 +114,19 @@ define(function ()
 					}
 					catch (e)
 					{
-						return data.responseText;
+						return null;
 					}
 				}
 				else
 				{
-					return data.responseText;
+					return null;
 				}
 			}
 			return profile;
 		}
 		this.fixExtendsAndArrays = function (object)
 		{
-			if (object.extends.patches) object.extends = object.extends.patches;
+			if (object.extends && object.extends.patches) object.extends = object.extends.patches;
 			for (var i in object.properties)
 			{
 				if (object.properties[i] && object.properties[i].constructor == Float32Array)
@@ -151,7 +151,8 @@ define(function ()
 		}
 		this.GetNode = function (id)
 		{
-			var node = vwf.getNode(id);
+
+			var node = _Editor.getNode(id);
 			if (node.properties)
 			{
 				for (var i in node.properties)
@@ -183,6 +184,7 @@ define(function ()
 		}
 		this.saveToServer = function (sync)
 		{
+
 			if(!sync) sync = false;
 			if (!_UserManager.GetCurrentUserName())
 			{
@@ -197,7 +199,15 @@ define(function ()
 				return;
 			}
 			
-			var scene = vwf.getNode('index-vwf');
+			var scene = _Editor.getNode('index-vwf');
+
+			//if the editor is playing the scene, save the backup from before play was hit
+			if(vwf.getProperty(vwf.application(),'playMode') == 'play')
+			{
+				console.log('Skipping save because scene is playing.');
+				return;
+			}
+			
 			var nodes = [];
 			for (var i in scene.children)
 			{
@@ -211,16 +221,20 @@ define(function ()
 			var sceneprops = vwf.getProperties('index-vwf');
 			//also just a design choice here, so that wehn we update the scene properties, old states will show the updates
 			delete sceneprops.EditorData;
+			delete sceneprops.playBackup;
+			delete sceneprops.clients;
 			nodes.push(sceneprops);
 			var SID = this.getCurrentSession();
 			var UID = _UserManager.GetCurrentUserName();
 			if (!UID) return;
-			var P = _DataManager.GetProfileForUser(_UserManager.GetCurrentUserName()).Password;
+			
 			if (nodes.length > 0) var ret = jQuery.ajax(
 				{
 					type: 'POST',
 					url:  './vwfDataManager.svc/state?SID=' + _DataManager.getCurrentSession(),
 					data: JSON.stringify(nodes),
+					dataType: 'json',
+					contentType: "application/json; charset=utf-8",
 					success: function(err,data,xhr)
 					{
 					
@@ -278,12 +292,13 @@ define(function ()
 		//get the Id of the current world from the url
 		this.getCurrentSession = function ()
 		{
-			return (/\/adl\/sandbox\/.*\//).exec(window.location.toString()).toString();
+            var regExp = new RegExp(window.appPath+".*\/");
+			return regExp.exec(window.location.pathname.toString()).toString();
 		}
 		//at this point, this server pretty much only supports the sandbox. This will return the sandbox root url
 		this.getCurrentApplication = function ()
 		{
-			return location.protocol +'//'+  location.host + '/adl/sandbox';
+			return location.protocol +'//'+  location.host + window.appPath;
 		}
 		//Get the number of users in this space. NOTE: Counts anonymous
 		this.getClientCount = function ()

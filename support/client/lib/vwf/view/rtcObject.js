@@ -180,7 +180,7 @@ MyRTC.prototype.disconnect = function()
 	this.readyForIce = false;
 	
 	console.log('Peer connection disconnected');
-	$('#vidFrame').dialog('close');
+	
 }
 
 

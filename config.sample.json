@@ -1,33 +1,50 @@
 //REMEMBER: Delete the comments when deploying. Comments are not valid JSON
 
 {
-    "port": 3000,             //the port to serve on
+    "port": 3000, //the port to serve on
     "datapath": "c:/vwfData", //the database location
-	"admin": "admin",         //the username of the administrator
-    "logLevel": 1,            //the vebosity of the console output
-    "build": false,           //build the require js modules
-    "minify": false,          //minify javascript on serve
-    "compile": false,         //compile with the closure conpiler
-    "version": 1,             //the version number to use for URL versioning. Must be an integer!
-    "useVersioning": false,   //when true, the server will use a url prefix to identify the software version
+    "admin": "admin", //the username of the administrator
+    "logLevel": 1, //the vebosity of the console output
+    "build": false, //build the require js modules
+    "minify": false, //minify javascript on serve
+    "compile": false, //compile with the closure conpiler
+    "version": 1, //the version number to use for URL versioning. Must be an integer!
+    "useVersioning": false, //when true, the server will use a url prefix to identify the software version
 
-    "_3DRAPI": null,          //the endpoint to use to access the service. Null defaults to the public 3DR instance
-    "_3DRAPIKey": null,       //the api key to use for all requests. Null defaults to the public API key
-    "_3DRUser": null,         //username server identifies itself as. Null defaults to Anonymous
-    "_3DRPassword": null,     //password for the server user. Null defaults to Anonymous
-    "_3DRUseAuth": false,     //use anonymous access or not. Null defaults to anonymous.
+    "_3DRAPI": null, //the endpoint to use to access the service. Null defaults to the public 3DR instance
+    "_3DRAPIKey": null, //the api key to use for all requests. Null defaults to the public API key
+    "_3DRUser": null, //username server identifies itself as. Null defaults to Anonymous
+    "_3DRPassword": null, //password for the server user. Null defaults to Anonymous
+    "_3DRUseAuth": false, //use anonymous access or not. Null defaults to anonymous.
 
-    "sendEmails" : false,     //send emails to new users and on password reset (note, password reset is really not useful without this!) 
-    "emailFrom" : "",         //the sender as it will appear in the emails to users
-    "emailService" : "",      //the service provider for outgoing emails. See the nodemailer docs
-    "emailPassword" : "",     //the service password for outgoing emails. See the nodemailer docs
-    "emailUsername" : "",     //the service username for outgoing emails. See the nodemailer docs
+    "sendEmails": false, //send emails to new users and on password reset (note, password reset is really not useful without this!) 
+    "emailFrom": "", //the sender as it will appear in the emails to users
+    "emailService": "", //the service provider for outgoing emails. See the nodemailer docs
+    "emailPassword": "", //the service password for outgoing emails. See the nodemailer docs
+    "emailUsername": "", //the service username for outgoing emails. See the nodemailer docs
 
-	"lrsEndpoint": null,
-	"lrsUsername": "",
-	"lrsPassword": "",
+    "lrsEndpoint": null,
+    "lrsUsername": "",
+    "lrsPassword": "",
+
+    "pfx": null, //the path and name of the PFX credential file. If not null, server will use HTTPS and WSS
+    "pfxPassphrase": null, //the passphrase to open the pfx file
+    "sslPort": 443, //the port to use for the secure server. Requests to the nonSSL port will redirect here
+
+    "sslCA": ["./ca1.pem", "./ca2.pem"], //intermediate certificate authority
+
+    "sessionKey": "virtual", //enter a good random string here for security of sessions
+    "sessionSecret": "unsecure cookie secret", //enter a good random string here for security of sessions
+
+    //use the the following settings to enable social media logins
+    "facebook_app_id": null,
+    "facebook_app_secret": null,
+    "facebook_callback_url": "http://localhost:3000/adl/sandbox/auth/facebook/callback",
+    "twitter_consumer_key": null,
+    "twitter_consumer_secret": null,
+    "twitter_callback_url": "http://localhost:3000/adl/sandbox/auth/twitter/callback",
+    "google_client_id": null,
+    "google_client_secret": null,
+    "google_callback_url": "http://localhost:3000/adl/sandbox/auth/google/callback"
+
 }
-
-
-
- 

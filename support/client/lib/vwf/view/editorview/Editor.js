@@ -1,15 +1,12 @@
-function to3Vec(vec, two, three)
-{
+function to3Vec(vec, two, three) {
 	if (vec.length) return new THREE.Vector3(vec[0], vec[1], vec[2]);
 	else return new THREE.Vector3(vec, two, three);
 }
 
-function FindMaxMin(positions)
-{
+function FindMaxMin(positions) {
 	var min = [Infinity, Infinity, Infinity];
 	var max = [-Infinity, -Infinity, -Infinity];
-	for (var i = 0; i < positions.length - 2; i += 3)
-	{
+    for (var i = 0; i < positions.length - 2; i += 3) {
 		var vert = [positions[i], positions[i + 1], positions[i + 2]];
 		if (vert[0] > max[0]) max[0] = vert[0];
 		if (vert[1] > max[1]) max[1] = vert[1];
@@ -21,25 +18,20 @@ function FindMaxMin(positions)
 	return [min, max];
 }
 
-function sign(x)
-{
+function sign(x) {
 	if(x >= 0) return 1;
 	else return -1;
 }
 
 
 
-
-define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (Log,ProgressBar)
-{
+define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(Log, ProgressBar) {
 	var originalGizmoPos;
 	var Editor = {};
 	var isInitialized = false;
 	return {
-		getSingleton: function ()
-		{
-			if (!isInitialized)
-			{
+        getSingleton: function() {
+            if (!isInitialized) {
 				initialize.call(Editor);
 				isInitialized = true;
 			}
@@ -47,8 +39,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 	}
 
-	function initialize()
-	{
+    function initialize() {
 		var self = this;
 		
 		var SelectedVWFNodes = [];
@@ -87,8 +78,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		var oldyrot = 0;
 		var oldzrot = 0;
 		var SelectionBounds = [];
-		var lastscale = [1, 1, 1];
-		var lastpos = [1, 1, 1];
+        var lastscale = [];
+        var lastpos = [];
 		var OldX = 0;
 		var OldY = 0;
 		var MouseMoved = false;
@@ -100,33 +91,70 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 
 		var instanceData = _DataManager.getInstanceData() || {};
 					
-		var needTools = instanceData && instanceData.publishSettings? instanceData.publishSettings.allowTools : true;
+        var needTools = _EditorView.needTools();
 
-		if(needTools)
-		{
+        if (needTools) {
 			$(document.body).append('<div id="statusbar" class="statusbar" />');
 			$('#statusbar').css('top', (document.height - 25) + 'px');
-			$('#statusbar').append('<div id="SceneSaved" class="statusbarElement" />');
+
+            $('#statusbar').append('<div id="TimeControl" style="height: 59px;display: inline-block;margin-top: -42px;background: #444;border-radius: 5px;border: 1px solid #555;"><div class="timeControl" id="playButton"></div><div id="pauseButton" class="timeControl"></div><div id="stopButton" class="timeControl"></div></div>');
+            $('#statusbar').append('<div id="statusbarinner"></div>');
+            $('#statusbarinner').append('<div id="SceneSaved" class="statusbarElement" />');
 			$('#SceneSaved').text('Not Saved');
-			$('#statusbar').append('<div id="StatusSelectedName" style="color:lightblue" class="statusbarElement" />');
+            $('#statusbarinner').append('<div id="StatusSelectedName" style="color:rgb(175, 209, 253);" class="statusbarElement" />');
 			$('#StatusSelectedName').text('No Selection');
-			$('#statusbar').append('<div id="StatusSelectedID" class="statusbarElement" />');
+            $('#statusbarinner').append('<div id="StatusMouseOverName" style="color:rgb(175, 209, 253);" class="statusbarElement" />');
+            $('#StatusMouseOverName').text('No Selection');
+            $('#statusbarinner').append('<div id="StatusSelectedID" class="statusbarElement" style="display:none" />');
 			$('#StatusSelectedID').text('No Selection');
-			$('#statusbar').append('<div id="StatusPickMode" class="statusbarElement" />');
+            $('#statusbarinner').append('<div id="StatusPickMode" class="statusbarElement" />');
 			$('#StatusPickMode').text('Pick: None');
-			$('#statusbar').append('<div id="StatusSnaps" class="statusbarElement" />');
+            $('#statusbarinner').append('<div id="StatusSnaps" class="statusbarElement" />');
 			$('#StatusSnaps').text('Snaps: 15deg, .5m, .1%');
-			$('#statusbar').append('<div id="StatusAxis" class="statusbarElement" />');
+            $('#statusbarinner').append('<div id="StatusAxis" class="statusbarElement" />');
 			$('#StatusAxis').text('Axis: -1');
-			$('#statusbar').append('<div id="StatusCoords" class="statusbarElement" />');
+            $('#statusbarinner').append('<div id="StatusCoords" class="statusbarElement" />');
 			$('#StatusCoords').text('World Coords');
-			$('#statusbar').append('<div id="StatusTransform" class="statusbarElement" />');
+            $('#statusbarinner').append('<div id="StatusTransform" class="statusbarElement" />');
 			$('#StatusTransform').text('Move');
-			$('#statusbar').append('<div id="StatusGizmoLocation" class="statusbarElement" />');
+            $('#statusbarinner').append('<div id="StatusGizmoLocation" class="statusbarElement" />');
 			$('#StatusGizmoLocation').text('[0,0,0]');
-			$('#statusbar').append('<div id="StatusCameraLocation" class="statusbarElement" />');
+            $('#statusbarinner').append('<div id="StatusCameraLocation" class="statusbarElement" />');
 			$('#StatusCameraLocation').text('[0,0,0]');
+
+            var instanceData = _DataManager.getInstanceData()
+            if (instanceData) {
+                $('#statusbarinner').append('<div id="StatusWorldTitle" style="color:rgb(175, 209, 253);" class="statusbarElement" />');
+                $('#StatusWorldTitle').text(instanceData.title);
+                if (instanceData.publishSettings)
+                    $('#statusbarinner').append('<div style="color:rgb(175, 209, 253);" class="statusbarElement" >Published</div>');
 		}
+            $('#statusbarinner').append('<div style="" class="statusbarElement" >Logged in as:');
+            $('#statusbarinner').append('<div id="StatusUserName" style="border: none;color:rgb(175, 209, 253);" class="statusbarElement" />');
+
+
+
+            $('#playButton').click(function() {
+                _Publisher.playWorld();
+            });
+            $('#pauseButton').click(function() {
+                _Publisher.togglePauseWorld();
+            });
+            $('#stopButton').click(function() {
+                _Publisher.stopWorld();
+            });
+
+            $('#stopButton').tooltip({
+                content: "Click Stop to Edit",
+                items: 'div'
+            })
+            $('#playButton').tooltip({
+                content: "Click Play to Test",
+                items: 'div'
+            })
+
+
+        }
 		//create progressbar and the log bar
 		ProgressBar.initialize('statusbar');
 		window._ProgressBar = ProgressBar;
@@ -136,22 +164,22 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 
 		var _CopiedNodes = [];
 		//	$('#vwf-root').mousedown(function(e){
-		this.mousedown_Gizmo = function (e)
-		{
+        this.mousedown_Gizmo = function(e) {
 			
+
 			this.undoPoint = null;    //when the mouse is down, we start over with the record for the undo
 			$('#index-vwf').focus();
 			$('#ContextMenu').hide();
 			$('#ContextMenu').css('z-index', '-1');
 			MouseMoved = false;
-			if (MoveGizmo && e.button == 0)
-			{
+            if (MoveGizmo && e.button == 0) {
 
 				////console.log(vwf.views[0].lastPick.object.uid);
 				var axis = -1;
-				for (var i = 0; i < MoveGizmo.children.length; i++)
-				{
-					if (vwf.views[0].lastPick) if (vwf.views[0].lastPick.object) if (vwf.views[0].lastPick.object == MoveGizmo.children[i]) axis = MoveGizmo.allChildren.indexOf(MoveGizmo.children[i]);
+                for (var i = 0; i < MoveGizmo.children.length; i++) {
+                    if (vwf.views[0].lastPick)
+                        if (vwf.views[0].lastPick.object)
+                            if (vwf.views[0].lastPick.object == MoveGizmo.children[i]) axis = MoveGizmo.allChildren.indexOf(MoveGizmo.children[i]);
 				}
 				document.AxisSelected = axis;
 				OldX = e.clientX;
@@ -179,8 +207,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				oldintersectxz = dxz; //MATH.addVec3(campos,MATH.scaleVec3(ray,dxz));
 				var dyz = this.intersectLinePlaneTEST(ray, campos, gizpos, WorldX);
 				oldintersectyz = dyz; //MATH.addVec3(campos,MATH.scaleVec3(ray,dyz));
-				if (document.AxisSelected == 3 || document.AxisSelected == 16 || document.AxisSelected == 4 || document.AxisSelected == 17 || document.AxisSelected == 5 || document.AxisSelected == 18)
-				{
+                if (document.AxisSelected == 3 || document.AxisSelected == 16 || document.AxisSelected == 4 || document.AxisSelected == 17 || document.AxisSelected == 5 || document.AxisSelected == 18) {
 					dxy = this.intersectLinePlane(ray, campos, gizpos, CurrentZ);
 					oldintersectxy = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy));
 					dxz = this.intersectLinePlane(ray, campos, gizpos, CurrentY);
@@ -203,8 +230,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				if (MATH.dotVec3(CurrentY, relgizyz) > -.01) oldxrot *= -1;
 				this.mouseDownScreenPoint = [e.clientX, e.clientY];
 				this.lastScalePoint = e.clientY;
-				if (document.AxisSelected == -1 && SelectMode == 'Pick')
-				{
+                if (document.AxisSelected == -1 && SelectMode == 'Pick') {
 					this.MouseLeftDown = true;
 					
 					this.selectionMarquee.css('left', this.mouseDownScreenPoint[0]);
@@ -215,43 +241,36 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					this.selectionMarquee.css('z-index', '100');
 				}
 				$('#StatusAxis').text('Axis: ' + axis);
-				for (var i = 0; i < MoveGizmo.allChildren.length; i++)
-				{
-					if (MoveGizmo.allChildren[i].material)
-					{
+                for (var i = 0; i < MoveGizmo.allChildren.length; i++) {
+                    if (MoveGizmo.allChildren[i].material) {
 						var c = MoveGizmo.allChildren[i].material.originalColor;
 						MoveGizmo.allChildren[i].material.color.setRGB(c.r, c.g, c.b);
 						MoveGizmo.allChildren[i].material.emissive.setRGB(c.r, c.g, c.b);
 					}
 				}
-				if (axis >= 0)
-				{
+                if (axis >= 0) {
 					this.saveTransforms();
-					if (MoveGizmo.allChildren[axis].material)
-					{
+                    if (MoveGizmo.allChildren[axis].material) {
 						MoveGizmo.allChildren[axis].material.color.setRGB(.5, .5, .5);
 						MoveGizmo.allChildren[axis].material.emissive.setRGB(.5, .5, .5);
 					}
 				}
 			}
 		}.bind(this);
-		this.GetUniqueName = function (newname)
-		{
-			
+        this.GetUniqueName = function(newname, addcount) {
+            if (!addcount) addcount = 0;
 			if (!newname) newname = 'Object';
 			newname = newname.replace(/[0-9]*$/g, "");
 			var nodes = vwf.models.object.objects;
-			var count = 1;
-			for (var i in nodes)
-			{
+            var count = 1 + addcount;
+            for (var i in nodes) {
 				var thisname = vwf.getProperty(nodes[i].id,'DisplayName') || '';
 				thisname = thisname.replace(/[0-9]*$/g, "");
 				if (thisname == newname) count++;
 			}
 			return newname + count;
 		}
-		this.ThreeJSPick = function (campos, ray, options)
-		{
+        this.ThreeJSPick = function(campos, ray, options) {
 			//	var now = performance.now();
 			var ret1 = _SceneManager.CPUPick(campos, ray, options);
 			//	var time1 = performance.now() - now;
@@ -263,8 +282,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			//	console.log("New Time: " + time1,"Old Time: " + time2);
 			return ret1;
 		}
-		this.ShowContextMenu = function (e)
-		{
+        this.ShowContextMenu = function(e) {
 			
 			e.preventDefault();
 			e.stopPropagation();
@@ -273,29 +291,27 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var pickopts = new THREE.CPUPickOptions();
 			pickopts.OneHitPerMesh = true;
 			MoveGizmo.InvisibleToCPUPick = true;
-			var pick = this.ThreeJSPick(campos, ray,{OneHitPerMesh:false});
+            var pick = this.ThreeJSPick(campos, ray, {
+                OneHitPerMesh: false
+            });
 			MoveGizmo.InvisibleToCPUPick = false;
 			var vwfnode;
 			while (pick && pick.object && !pick.object.vwfID) pick.object = pick.object.parent;
 			if (pick && pick.object) vwfnode = pick.object.vwfID;
-			if (self.isSelected(vwfnode))
-			{
+            if (self.isSelected(vwfnode)) {
 				$('#ContextMenuCopy').show();
 				$('#ContextMenuDelete').show();
 				$('#ContextMenuFocus').show();
 				$('#ContextMenuDuplicate').show();
 				$('#ContextMenuSelect').hide();
 				$('#ContextMenuSelectNone').show();
-			}
-			else
-			{
+            } else {
 				$('#ContextMenuCopy').hide();
 				$('#ContextMenuDelete').hide();
 				$('#ContextMenuFocus').hide();
 				$('#ContextMenuDuplicate').hide();
 				$('#ContextMenuSelectNone').hide();
-				if (vwfnode)
-				{
+                if (vwfnode) {
 					$('#ContextMenuSelect').show();
 				}
 			}
@@ -310,17 +326,13 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			$('#ContextMenu').css('top', e.clientY + 'px');
 			this.ContextShowEvent = e;
 			$('#ContextMenuActions').empty();
-			if (vwfnode)
-			{
+            if (vwfnode) {
 				var actions = vwf.getEvents(vwfnode);
-				for (var i in actions)
-				{
-					if (actions[i].parameters.length == 1 && $.trim(actions[i].parameters[0]) == '')
-					{
+                for (var i in actions) {
+                    if (actions[i].parameters.length == 1 && $.trim(actions[i].parameters[0]) == '') {
 						$('#ContextMenuActions').append('<div id="Action' + i + '" class="ContextMenuAction">' + i + '</div>');
 						$('#Action' + i).attr('EventName', i);
-						$('#Action' + i).click(function ()
-						{
+                        $('#Action' + i).click(function() {
 							$('#ContextMenu').hide();
 							$('#ContextMenu').css('z-index', '-1');
 							$(".ddsmoothmenu").find('li').trigger('mouseleave');
@@ -331,44 +343,60 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 			}
 		}
-		this.mouseleave = function (e)
-		{
+        this.mouseleave = function(e) {
+
+            //if the mouse is over anythign that is not the context menu, hide the context menu
 			var teste = e.toElement || e.relatedTarget;
-			if (teste != $('#ContextMenu')[0] && $(teste).parent()[0] != $('#ContextMenu')[0] && !$(teste).hasClass('glyph'))
-			{
+            if (teste != $('#ContextMenu')[0] && $(teste).parent()[0] != $('#ContextMenu')[0] && !$(teste).hasClass('glyph')) {
 				$('#ContextMenu').hide();
 				$('#ContextMenu').css('z-index', '-1');
 			}
+
+            //if the mouse is over any div that is not a selection glyph or the selection marquee, cancel all actions
+            if ((!$(teste).hasClass('glyph') && !$(teste).hasClass('nametag') && !$(teste).hasClass('ignoreMouseout')) && teste !== this.selectionMarquee[0]) {
+                this.undoPoint = null;
+                this.MouseLeftDown = false;
+                this.mouseDownScreenPoint = null;
+                this.MouseLeftDown = false;
+                this.selectionMarquee.hide();
+                this.selectionMarquee.css('z-index', '-1');
+                this.mouseUpScreenPoint = [e.clientX, e.clientY];
+                if (MoveGizmo) {
+                    for (var i = 0; i < MoveGizmo.allChildren.length; i++) {
+                        if (MoveGizmo.allChildren[i].material) {
+                            var c = MoveGizmo.allChildren[i].material.originalColor;
+                            MoveGizmo.allChildren[i].material.color.setRGB(c.r, c.g, c.b);
+                            MoveGizmo.allChildren[i].material.emissive.setRGB(c.r, c.g, c.b);
 		}
-		this.restoreTransforms = function()
-		{
+                    }
+                    document.AxisSelected = -1;
+                    $('#StatusAxis').text('Axis: -1');
 		
-			for (var s = 0; s < SelectedVWFNodes.length; s++)
-			{
+                }
+            }
+        }
+        this.restoreTransforms = function() {
+
+            for (var s = 0; s < SelectedVWFNodes.length; s++) {
 					 this.setProperty(SelectedVWFNodes[s].id,'transform',this.backupTransfroms[s]);
 			}
 					
 		}
-		this.saveTransforms = function()
-		{
+        this.saveTransforms = function() {
 		
-			for (var s = 0; s < SelectedVWFNodes.length; s++)
-			{
+            for (var s = 0; s < SelectedVWFNodes.length; s++) {
 					 this.backupTransfroms[s] = vwf.getProperty(SelectedVWFNodes[s].id,'transform');
 			}
 					
 		}
-		this.mouseup_Gizmo = function (e)
-		{
-			if (e.button == 2 && !MouseMoved && document.AxisSelected == -1)
-			{
+        this.mouseup_Gizmo = function(e) {
+            if (e.button == 2 && !MouseMoved && document.AxisSelected == -1) {
 				
 				self.ShowContextMenu(e);
 				this.undoPoint = null;
 				return false;
 			}
-			if (e.button == 2 && document.AxisSelected != -1)
-			{
+            if (e.button == 2 && document.AxisSelected != -1) {
 				this.undoPoint = null;
 				this.restoreTransforms();
 				document.AxisSelected = -1;
@@ -377,38 +405,28 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						ids.push(SelectedVWFNodes[s].id);
 				this.SelectObject(null);
 				window.setTimeout(function(){
-				_Editor.SelectObject(ids);},1000);
+                    _Editor.SelectObject(ids);
+                }, 1000);
 				return false;
 			}
-			if (e.mouseleave)
-			{
-				this.undoPoint = null;
-				return;
-			}
+
 			this.MouseLeftDown = false;
 			this.selectionMarquee.hide();
 			this.selectionMarquee.css('z-index', '-1');
 			this.mouseUpScreenPoint = [e.clientX, e.clientY];
 			
-			if (document.AxisSelected == -1 && e.button == 0)
-			{
-				if (SelectMode == 'Pick' && this.mouseDownScreenPoint)
-				{
+            if (document.AxisSelected == -1 && e.button == 0) {
+                if (SelectMode == 'Pick' && this.mouseDownScreenPoint) {
 					var w = this.mouseUpScreenPoint[0] - this.mouseDownScreenPoint[0];
 					var h = this.mouseUpScreenPoint[1] - this.mouseDownScreenPoint[1];
 					var picksize = Math.sqrt(w * w + h * h);
-						if (picksize < 10)
-						{
-							if (vwf.views[0].lastPickId && vwf.views[0].lastPickId != 'index-vwf')
-							{
-								this.SelectObject(vwf.getNode(vwf.views[0].lastPickId), this.PickMod);
-							}else
-							{
+                    if (picksize < 10) {
+                        if (vwf.views[0].lastPickId && vwf.views[0].lastPickId != 'index-vwf') {
+                            this.SelectObject(_Editor.getNode(vwf.views[0].lastPickId), this.PickMod);
+                        } else {
 								this.SelectObject(null);
 							}
-						}
-						else
-						{
+                    } else {
 						//use this to filter out mouse ups that happen when dragging a slider over into the scene
 						
 							
@@ -417,33 +435,27 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 							var left = this.mouseDownScreenPoint[0]
 							var bottom = this.mouseUpScreenPoint[1];
 							var right = this.mouseUpScreenPoint[0];
-							if (h < 0)
-							{
+                        if (h < 0) {
 								top = top + h;
 								bottom = top + -h;
 							}
-							if (w < 0)
-							{
+                        if (w < 0) {
 								left = left + w;
 								right = left + -w;
 							}
-							var TopLeftRay = this.GetWorldPickRay(
-							{
+                        var TopLeftRay = this.GetWorldPickRay({
 								clientX: left,
 								clientY: top
 							});
-							var TopRightRay = this.GetWorldPickRay(
-							{
+                        var TopRightRay = this.GetWorldPickRay({
 								clientX: right,
 								clientY: top
 							});
-							var BottomLeftRay = this.GetWorldPickRay(
-							{
+                        var BottomLeftRay = this.GetWorldPickRay({
 								clientX: left,
 								clientY: bottom
 							});
-							var BottomRighttRay = this.GetWorldPickRay(
-							{
+                        var BottomRighttRay = this.GetWorldPickRay({
 								clientX: right,
 								clientY: bottom
 							});
@@ -459,13 +471,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 							var frustrum = new Frustrum(ntl, ntr, nbl, nbr, ftl, ftr, fbl, fbr);
 							
 							
-							var hits = _SceneManager.FrustrumCast(frustrum,
-							{
+                        var hits = _SceneManager.FrustrumCast(frustrum, {
 								OneHitPerMesh: true
 							});
 							var vwfhits = [];
-							for (var i = 0; i < hits.length; i++)
-							{
+                        for (var i = 0; i < hits.length; i++) {
 								var vwfnode;
 								while (hits[i] && hits[i].object && !hits[i].object.vwfID) hits[i].object = hits[i].object.parent;
 								if (hits[i] && hits[i].object) vwfnode = hits[i].object.vwfID;
@@ -477,20 +487,21 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					
 					e.stopPropagation();
 				}
-				if (SelectMode == 'TempPick')
-				{
-					if (this.TempPickCallback) this.TempPickCallback(vwf.getNode(vwf.views[0].lastPickId));
+                if (SelectMode == 'TempPick') {
+                    if (this.TempPickCallback) this.TempPickCallback(_Editor.getNode(vwf.views[0].lastPickId));
 					e.stopPropagation();
 				}
-				if (SelectMode == 'PointPick')
-				{
-					if (this.TempPickCallback)
-					{
+                if (SelectMode == 'PointPick') {
+                    if (this.TempPickCallback) {
 						var ray;
 						var campos = this.getCameraPosition();
 						ray = this.GetWorldPickRay(e);
 						self.GetMoveGizmo().InvisibleToCPUPick = true;
-						var pick = this.ThreeJSPick(campos, ray,{filter:function(o){return !(o.isAvatar === true)}});
+                        var pick = this.ThreeJSPick(campos, ray, {
+                            filter: function(o) {
+                                return !(o.isAvatar === true)
+                            }
+                        });
 						self.GetMoveGizmo().InvisibleToCPUPick = false;
 						var dxy = pick.distance;
 						newintersectxy = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy * .99));
@@ -509,25 +520,20 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				
 			}
 			
-			if (document.AxisSelected != -1 && this.undoPoint)
-			{
+            if (document.AxisSelected != -1 && this.undoPoint) {
 				for(var i = 0; i < SelectedVWFNodes.length; i++)
 					this.undoPoint.list[i].val = vwf.getProperty(SelectedVWFNodes[i].id,'transform');
 				_UndoManager.pushEvent(this.undoPoint);
 				this.undoPoint = null;
 			}
 
-			if (document.AxisSelected == 15)
-			{
+            if (document.AxisSelected == 15) {
 				SetCoordSystem(CoordSystem == WorldCoords ? LocalCoords : WorldCoords);
 				this.updateGizmoOrientation(true);
 			}
-			if (MoveGizmo)
-			{
-				for (var i = 0; i < MoveGizmo.allChildren.length; i++)
-				{
-					if (MoveGizmo.allChildren[i].material)
-					{
+            if (MoveGizmo) {
+                for (var i = 0; i < MoveGizmo.allChildren.length; i++) {
+                    if (MoveGizmo.allChildren[i].material) {
 						var c = MoveGizmo.allChildren[i].material.originalColor;
 						MoveGizmo.allChildren[i].material.color.setRGB(c.r, c.g, c.b);
 						MoveGizmo.allChildren[i].material.emissive.setRGB(c.r, c.g, c.b);
@@ -539,28 +545,22 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			}
 			this.mouseDownScreenPoint = null;
 		}.bind(this);
-		this.GetAllLeafMeshes = function (threeObject, list)
-		{
-			if (threeObject instanceof THREE.Mesh)
-			{
+        this.GetAllLeafMeshes = function(threeObject, list) {
+            if (threeObject instanceof THREE.Mesh) {
 				list.push(threeObject);
 			}
-			if (threeObject.children)
-			{
-				for (var i = 0; i < threeObject.children.length; i++)
-				{
+            if (threeObject.children) {
+                for (var i = 0; i < threeObject.children.length; i++) {
 					this.GetAllLeafMeshes(threeObject.children[i], list);
 				}
 			}
 		}
-		this.PickPoint = function(func)
-		{
+        this.PickPoint = function(func) {
 
 				SelectMode = 'PointPick';
 				this.TempPickCallback = func;
 		}
-		this.FrustrumCast = function (frustrum)
-		{
+        this.FrustrumCast = function(frustrum) {
 			var scene = this.findscene();
 			return scene.FrustrumCast(frustrum);
 			// var meshes = [];
@@ -575,30 +575,28 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			// }
 			// return hits;
 		}
-		this.DeleteSelection = function ()
-		{
-			if(document.PlayerNumber == null)
-			{
+        this.DeleteSelection = function() {
+            if (document.PlayerNumber == null) {
 				_Notifier.notify('You must log in to participate');
 				return;
 			}
 			_UndoManager.startCompoundEvent();
-			for (var s = 0; s < SelectedVWFNodes.length; s++)
-			{
+            for (var s = 0; s < SelectedVWFNodes.length; s++) {
 				
 				var owner = vwf.getProperty(SelectedVWFNodes[s].id,'owner');
-				if(_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),SelectedVWFNodes[s].id) == 0)
-				{
+                if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(), SelectedVWFNodes[s].id) == 0) {
 					_Notifier.notify('You do not have permission to delete this object');
 					 continue;
 				}
-				if(vwf.prototype(SelectedVWFNodes[s].id) == 'character-vwf')
-				{
+                if (vwf.prototype(SelectedVWFNodes[s].id) == 'character-vwf') {
 					_Notifier.alert('Avatars cannot be deleted');
 					continue;
 				}
-				if (SelectedVWFNodes[s])
-				{
+                if (SelectedVWFNodes[s].id == vwf.application()) {
+                    _Notifier.alert('The root scene cannot be deleted');
+                    continue;
+                }
+                if (SelectedVWFNodes[s]) {
 					
 					 _UndoManager.recordDelete(SelectedVWFNodes[s].id);
 					vwf_view.kernel.deleteNode(SelectedVWFNodes[s].id);
@@ -615,92 +613,83 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			this.SelectObject(null);
 		}.bind(this);
 		//	$('#vwf-root').keyup(function(e){
-		this.keyup_Gizmo = function (e)
-		{
-			if (e.keyCode == 17)
-			{
+        this.keyup_Gizmo = function(e) {
+            if (vwf.getProperty(vwf.application(), 'playMode') == 'play') return;
+            if (e.keyCode == 17) {
 				this.PickMod = NewSelect;
 				$('#index-vwf').css('cursor', 'default');
 			}
-			if (e.keyCode == 18)
-			{
+            if (e.keyCode == 18) {
 				this.PickMod = NewSelect;
 				$('#index-vwf').css('cursor', 'default');
 			}
 		}.bind(this);
-		this.blur = function()
-		{
+        this.blur = function() {
 			this.PickMod = NewSelect;
 			$('#index-vwf').css('cursor', 'default');
 		}
-		this.keydown_Gizmo = function (e)
-		{
-			////console.log(e);
-			if (e.keyCode == 17)
-			{
+        this.keydown_Gizmo = function(e) {
+            if (vwf.getProperty(vwf.application(), 'playMode') == 'play') return;
+            if (e.keyCode == 17) {
 				this.PickMod = Add;
 				$('#index-vwf').css('cursor', 'all-scroll');
 			}
-			if (e.keyCode == 18)
-			{
+            if (e.keyCode == 18) {
 				this.PickMod = Subtract;
 				$('#index-vwf').css('cursor', 'not-allowed');
 			}
-			if (e.keyCode == 87 && SelectMode == 'Pick')
-			{
+            if (e.keyCode == 87 && SelectMode == 'Pick') {
 				
 				this.SetGizmoMode(Move);
 			}
-			if (e.keyCode == 69&& SelectMode == 'Pick')
-			{
+            if (e.keyCode == 69 && SelectMode == 'Pick') {
 				
 				this.SetGizmoMode(Rotate );
 			}
-			if (e.keyCode == 82&& SelectMode == 'Pick')
-			{
+            if (e.keyCode == 82 && SelectMode == 'Pick') {
 				
 				this.SetGizmoMode(Scale );
 			}
-			if (e.keyCode == 84&& SelectMode == 'Pick')
-			{
+            if (e.keyCode == 84 && SelectMode == 'Pick') {
 				this.SetGizmoMode(Multi );
 			}
-			if (e.keyCode == 81)
-			{
+            if (e.keyCode == 81) {
 				this.SetSelectMode('Pick');
 			}
-			if (e.keyCode == 46)
-			{
+            if (e.keyCode == 46) {
 				this.DeleteSelection();
 			}
-			if (e.keyCode == 68 && e.shiftKey)
-			{
+            if (e.keyCode == 68 && e.shiftKey) {
 				this.Duplicate();
 			}
-			if (e.keyCode == 67 && e.ctrlKey)
-			{
+            if (e.keyCode == 67 && e.ctrlKey) {
 				this.Copy();
 			}
-			if (e.keyCode == 86 && e.ctrlKey)
-			{
+            if (e.keyCode == 86 && e.ctrlKey) {
 				this.Paste();
 			}
-			if (e.keyCode == 90 && e.ctrlKey)
-			{
+            if (e.keyCode == 90 && e.ctrlKey) {
 				_UndoManager.undo();
 			}
-			if (e.keyCode == 89 && e.ctrlKey)
-			{
+            if (e.keyCode == 89 && e.ctrlKey) {
 				_UndoManager.redo();
 			}
-			if (e.keyCode == 83 && e.ctrlKey)
-			{
+            if (e.keyCode == 83 && e.ctrlKey) {
 				_DataManager.saveToServer();
 				e.preventDefault();
 			}
+            if (e.keyCode == 48 && e.ctrlKey) {
+                _Publisher.testPublish();
+                e.preventDefault();
+                return false;
+            }
+            if (e.keyCode == 57 && e.ctrlKey) {
+                _Publisher.show();
+                e.preventDefault();
+                return false;
+            }
 		}.bind(this);
-		this.NotifyPeersOfSelection = function()
-		{
+        this.NotifyPeersOfSelection = function() {
 
 			var ids = [];
 			for(var i = 0; i < SelectedVWFNodes.length; i++)
@@ -710,16 +699,12 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 
 		}
 		//remove all the peer selection gizmos
-		this.hidePeerSelections = function()
-		{
-			for(var i in this.peerSelections)
-			{
+        this.hidePeerSelections = function() {
+            for (var i in this.peerSelections) {
 				var peerselection = this.peerSelections[i];
-				for(var i = 0; i < peerselection.bounds.length;i++)
-				{
+                for (var i = 0; i < peerselection.bounds.length; i++) {
 					var bound = peerselection.bounds[i];
-					if(bound)
-					{
+                    if (bound) {
 						bound.parent.remove(bound);
 						bound.dispose();
 						bound.children[0].geometry.dispose();
@@ -728,26 +713,28 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			}
 			this.peerSelections = {};
 		}
-		this.calledMethod = function(id,method,args)
-		{
+        this.calledMethod = function(id, method, args) {
 			//we're being notified that a peer has selected an object
-			if(method == 'PeerSelection')
-			{
-				if(vwf.client() != vwf.moniker())
-				{
+            if (method == 'PeerSelection') {
+                if (vwf.client() != vwf.moniker()) {
 					var ids = args[0];
+                    //why does this happen? 
+                    if (!ids) {
+                        return;
+                    }
 					if(!this.peerSelections)
 						this.peerSelections = {};
-					if(!this.peerSelections[vwf.client()])
-					{
-						this.peerSelections[vwf.client()] = {color:new THREE.Color(),nodes:[],bounds:[]};
+                    if (!this.peerSelections[vwf.client()]) {
+                        this.peerSelections[vwf.client()] = {
+                            color: new THREE.Color(),
+                            nodes: [],
+                            bounds: []
+                        };
 					}
 					var peerselection = this.peerSelections[vwf.client()];
-					for(var i = 0; i < peerselection.bounds.length;i++)
-					{
+                    for (var i = 0; i < peerselection.bounds.length; i++) {
 						var bound = peerselection.bounds[i];
-						if(bound)
-						{
+                        if (bound) {
 							bound.parent.remove(bound);
 							bound.children[0].geometry.dispose();
 						}
@@ -755,11 +742,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					peerselection.bounds = [];
 					peerselection.nodes = [];
 					peerselection.nodes = ids;
-					for(var i = 0; i < peerselection.nodes.length;i++)
-					{
+                    for (var i = 0; i < peerselection.nodes.length; i++) {
 						var boundingbox = this.createBoundingBox(peerselection.nodes[i]);
-						if(boundingbox)
-						{
+                        if (boundingbox) {
 						//hard coded color for now. TODO: randomly assign colors
 						boundingbox.children[0].material.color.r = 1;
 						boundingbox.children[0].material.color.g = .75;
@@ -771,26 +756,41 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 			}
 		}
-		this.satProperty = function(id,propname,val)
-		{
+        this.satProperty = function(id, propname, val) {
+            
+
+            //here, we update the selection bounds rect when the selction transforms
+             if (window._Editor && propname == _Editor.transformPropertyName && _Editor.isSelected(id)) {
+                _Editor.updateBoundsTransform(id);
+                if (vwf.client() == vwf.moniker()) {
+                    if (_Editor.waitingForSet.length)
+                        _Editor.waitingForSet.splice(_Editor.waitingForSet.indexOf(id), 1);
+
+                }
+                if (_Editor.waitingForSet.length == 0 || vwf.client() != vwf.moniker()) {
+                    _Editor.updateGizmoLocation();
+                    _Editor.updateGizmoSize();
+                    _Editor.updateGizmoOrientation(false);
+                }
+                $(document).trigger('selectionTransformedLocal', [{
+                    id: id
+                }]);
+            }
+
 				//when an object moves, check that it's not hilighted by the peer selection display.
 				//if it is, update the matrix of the selection rectangle.
-				if(vwf.client() != vwf.moniker() && propname == 'transform')
-				{
+            if (vwf.client() != vwf.moniker() && propname == 'transform') {
 					
 					if(!this.peerSelections)
 						this.peerSelections = {};
-					if(this.peerSelections[vwf.client()])
-					{
+                if (this.peerSelections[vwf.client()]) {
 						
 						
 						var peerselection = this.peerSelections[vwf.client()];
 						
-						for(var i = 0; i < peerselection.nodes.length;i++)
-						{
+                    for (var i = 0; i < peerselection.nodes.length; i++) {
 							var boundingbox = peerselection.bounds[i];
-							if(boundingbox && boundingbox.vwfid == id)
-							{
+                        if (boundingbox && boundingbox.vwfid == id) {
 								
 								boundingbox.matrix = self.findviewnode(id).matrixWorld.clone();
 								boundingbox.updateMatrixWorld(true);
@@ -801,12 +801,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 
 		}
-		this.SelectParent = function ()
-		{
+        this.SelectParent = function() {
 			if (self.GetSelectedVWFNode()) self.SelectObject(vwf.parent(self.GetSelectedVWFID()));
 		}
-		this.intersectLinePlane = function (ray, raypoint, planepoint, planenormal)
-		{
+        this.intersectLinePlane = function(ray, raypoint, planepoint, planenormal) {
 			var n = MATH.dotVec3(MATH.subVec3(planepoint, raypoint), planenormal);
 			var d = MATH.dotVec3(ray, planenormal);
 			if (d == 0) return null;
@@ -816,12 +814,12 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			//var intersect = MATH.addVec3(alongray,	raypoint);
 			//return intersect;
 		}.bind(this);
-		this.intersectLinePlaneTEST = function (ray, raypoint, planepoint, planenormal)
-		{
+        this.intersectLinePlaneTEST = function(ray, raypoint, planepoint, planenormal) {
 			var tmatrix = [CurrentX[0], CurrentY[0], CurrentZ[0], 0,
 						   CurrentX[1], CurrentY[1], CurrentZ[1], 0,
 						   CurrentX[2], CurrentY[2], CurrentZ[2], 0,
-						   0, 0, 0, 1];
+                0, 0, 0, 1
+            ];
 			tmatrix = MATH.transposeMat4(tmatrix);
 			var tplanepoint = MATH.mulMat4Vec3(tmatrix, planepoint);
 			var tplanenormal = MATH.mulMat4Vec3(tmatrix, planenormal);
@@ -829,7 +827,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var tray = MATH.mulMat4Vec3(tmatrix, ray);
 			var n = MATH.dotVec3(MATH.subVec3(tplanepoint, traypoint), tplanenormal);
 			var d = MATH.dotVec3(tray, tplanenormal);
-			if (d == 0) return null;
+            if (d == 0) {
+                return [0, 0, 0];
+
+            }
 			var dist = n / d;
 			var tpoint = MATH.addVec3(raypoint, MATH.scaleVec3(tray, dist));
 			return tpoint;
@@ -837,8 +838,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			//var intersect = MATH.addVec3(alongray,	raypoint);
 			//return intersect;
 		}.bind(this);
-		this.GetCameraCenterRay = function (e)
-		{
+        this.GetCameraCenterRay = function(e) {
 			screenmousepos = [0, 0, 0, 1];
 			var worldmousepos = MATH.mulMat4Vec4(MATH.inverseMat4(self.getViewProjection()), screenmousepos);
 			worldmousepos[0] /= worldmousepos[3];
@@ -850,8 +850,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			ray = MATH.scaleVec3(ray, 1.0 / MATH.lengthVec3(ray));
 			return ray;
 		}.bind(this);
-		this.GetWorldPickRay = function (e)
-		{
+        this.GetWorldPickRay = function(e) {
 			var OldX = e.clientX - $('#index-vwf').offset().left;
 			var OldY = e.clientY - $('#index-vwf').offset().top;
 			var screenmousepos = [OldX / document.getElementById('index-vwf').clientWidth, OldY / document.getElementById('index-vwf').clientHeight, 0, 1];
@@ -871,36 +870,29 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			return ray;
 		}.bind(this);
 		//quick function to initialize a blank matrix array
-		this.Matrix = function ()
-		{
+        this.Matrix = function() {
 			var mat = [];
-			for (var i = 0; i < 16; i++)
-			{
+            for (var i = 0; i < 16; i++) {
 				mat.push(0);
 			}
 			return mat;
 		}.bind(this);
 		//quick function to initialize a blank vector array
-		this.Vec3 = function ()
-		{
+        this.Vec3 = function() {
 			var vec = [];
-			for (var i = 0; i < 3; i++)
-			{
+            for (var i = 0; i < 3; i++) {
 				vec.push(0);
 			}
 			return vec;
 		}.bind(this);
-		this.Quat = function ()
-		{
+        this.Quat = function() {
 			var quat = [];
-			for (var i = 0; i < 4; i++)
-			{
+            for (var i = 0; i < 4; i++) {
 				quat.push(0);
 			}
 			return quat;
 		}.bind(this);
-		this.SnapTo = function (value, nearist)
-		{
+        this.SnapTo = function(value, nearist) {
 			value = value / nearist;
 			if (value > 0) value = Math.floor(value);
 			else value = Math.ceil(value);
@@ -908,16 +900,13 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			return value;
 		}.bind(this);
 		//input rotation matrix, axis, angle in radians, return rotation matrix
-		this.RotateAroundAxis = function (RotationMatrix, Axis, Radians, rotationMatrix)
-		{
-			if (CoordSystem == WorldCoords)
-			{
+        this.RotateAroundAxis = function(RotationMatrix, Axis, Radians, rotationMatrix) {
+            if (CoordSystem == WorldCoords) {
 				var childmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GetSelectedVWFID()).matrixWorld));
 				var parentmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GGetSelectedVWFID()).parent.matrixWorld));
 				Axis = MATH.mulMat4Vec3(MATH.inverseMat4(parentmat), Axis);
 			}
-			if (CoordSystem == LocalCoords)
-			{
+            if (CoordSystem == LocalCoords) {
 				var childmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GetSelectedVWFID()).matrixWorld));
 				Axis = MATH.mulMat4Vec3(MATH.inverseMat4(childmat), Axis);
 			}
@@ -928,8 +917,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var NewMatrix = goog.vec.Quaternion.toRotationMatrix4(RotatedQuat, this.Matrix());
 			return NewMatrix;
 		}.bind(this);
-		this.TransformOffset = function (gizoffset, id)
-		{
+        this.TransformOffset = function(gizoffset, id) {
 			//self.findviewnode(id).parent.updatethis.Matrix();
 			var parentmat = toGMat(self.findviewnode(id).parent.matrixWorld);
 			parentmat = MATH.inverseMat4(parentmat);
@@ -939,16 +927,13 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			//return gizoffset;
 			return MATH.mulMat4Vec3(parentmat, gizoffset);
 		}.bind(this)
-		this.GetRotationTransform = function (Axis, Radians)
-		{
-			if (CoordSystem == WorldCoords)
-			{
+        this.GetRotationTransform = function(Axis, Radians) {
+            if (CoordSystem == WorldCoords) {
 				//self.findviewnode(self.GetSelectedVWFID()).parent.updatethis.Matrix();
 				var parentmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GetSelectedVWFID()).parent.matrixWorld));
 				Axis = MATH.mulMat4Vec3(parentmat, Axis);
 			}
-			if (CoordSystem == LocalCoords)
-			{
+            if (CoordSystem == LocalCoords) {
 				//self.findviewnode(self.GetSelectedVWFID()).updatethis.Matrix();
 				var childmat = this.GetRotationMatrix(toGMat(self.findviewnode(self.GetSelectedVWFID()).matrix));
 				Axis = MATH.mulMat4Vec3(MATH.inverseMat4(childmat), Axis);
@@ -960,8 +945,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}.bind(this);
 		//takes a normal 4x4 rotation matrix and returns a VWF style angle axis
 		//in the format {angle:0,axis:[0,1,0]} with the angle in degrees
-		this.RotationToVWFAngleAxis = function (RotationMatrix)
-		{
+        this.RotationToVWFAngleAxis = function(RotationMatrix) {
 			var OriginalQuat = goog.vec.Quaternion.fromRotationMatrix4(RotationMatrix, this.Quat());
 			//convert to angle axis with angle in Radians
 			var NewAxis = [0, 0, 0];
@@ -971,55 +955,46 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				axis: NewAxis
 			};
 		}.bind(this);
-		this.isMove = function (axis)
-		{
+        this.isMove = function(axis) {
 			if (axis == 0 || axis == 1 || axis == 2 || axis == 12 || axis == 13 || axis == 14) return true;
 			return false;
 		}.bind(this);
-		this.isRotate = function (axis)
-		{
+        this.isRotate = function(axis) {
 			if (axis == 3 || axis == 4 || axis == 5 || axis == 16 || axis == 17 || axis == 18) return true;
 			return false;
 		}.bind(this);
-		this.SetLocation = function (object, vector)
-		{
+        this.SetLocation = function(object, vector) {
 			object.position.x = vector[0];
 			object.position.y = vector[1];
 			object.position.z = vector[2];
 		}.bind(this);
-		this.MoveTransformGizmo = function (axis, amount)
-		{
+        this.MoveTransformGizmo = function(axis, amount) {
 			return MATH.scaleVec3(axis, amount);
 			var pos = GetLocation(MoveGizmo);
 			pos = MATH.addVec3(pos, MATH.scaleVec3(axis, amount));
 			this.SetLocation(MoveGizmo, pos);
 		}
-		this.GetLocation = function (object)
-		{
+        this.GetLocation = function(object) {
 			var vector = [0, 0, 0];
 			vector[0] = object.position.x;
 			vector[1] = object.position.y;
 			vector[2] = object.position.z;
 			return vector;
 		}.bind(this);
-		this.isScale = function (axis)
-		{
+        this.isScale = function(axis) {
 			if (axis == 6 || axis == 7 || axis == 8 || axis == 9 || axis == 10 || axis == 11 || (axis >= 19 && axis <= 25)) return true;
 			return false;
 		}.bind(this);
 		//input rotation matrix, axis, angle in radians, return rotation matrix
-		this.RotateVecAroundAxis = function (Vector, Axis, Radians)
-		{
+        this.RotateVecAroundAxis = function(Vector, Axis, Radians) {
 			//Get a quaternion for the input matrix
 			var RotationQuat = goog.vec.Quaternion.fromAngleAxis(Radians, Axis, this.Quat());
 			var NewMatrix = goog.vec.Quaternion.toRotationMatrix4(RotationQuat, this.Matrix());
 			return MATH.mulMat4Vec3(NewMatrix, Vector);
 		}.bind(this);
 		//$('#vwf-root').mousemove(function(e){
-		this.displayVec = function (e)
-		{
-			for (var i = 0; i < e.length; i++)
-			{
+        this.displayVec = function(e) {
+            for (var i = 0; i < e.length; i++) {
 				e[i] *= 100;
 				e[i] = Math.floor(e[i]);
 				e[i] /= 100;
@@ -1027,44 +1002,43 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			return JSON.stringify(e);
 		}
 
-		function tI(x, y)
-		{
+        function tI(x, y) {
 			x = x - 1;
 			y = y - 1;
 			return x * 4 + y;
 		}
-		this.GetRotationMatrix = function (mat)
-		{
+        this.GetRotationMatrix = function(mat) {
 			var rmat = this.Matrix();
 			for (var i = 0; i < mat.length; i++) rmat[i] = mat[i];
 			rmat[3] = 0;
 			rmat[7] = 0;
 			rmat[11] = 0;
-			rmat = MATH.transposeMat4(rmat)
-			var sx = Math.sqrt(mat[tI(1, 1)] * mat[tI(1, 1)] + mat[tI(1, 2)] * mat[tI(1, 2)] + mat[tI(1, 3)] * mat[tI(1, 3)]);
-			var sy = Math.sqrt(mat[tI(2, 1)] * mat[tI(2, 1)] + mat[tI(2, 2)] * mat[tI(2, 2)] + mat[tI(2, 3)] * mat[tI(2, 3)]);
-			var sz = Math.sqrt(mat[tI(3, 1)] * mat[tI(3, 1)] + mat[tI(3, 2)] * mat[tI(3, 2)] + mat[tI(3, 3)] * mat[tI(3, 3)]);
-			rmat[tI(1, 1)] = mat[tI(1, 1)] / sx;
-			rmat[tI(1, 2)] = mat[tI(1, 2)] / sx;
-			rmat[tI(1, 3)] = mat[tI(1, 3)] / sx;
-			rmat[tI(2, 1)] = mat[tI(2, 1)] / sy;
-			rmat[tI(2, 2)] = mat[tI(2, 2)] / sy;
-			rmat[tI(2, 3)] = mat[tI(2, 3)] / sy;
-			rmat[tI(3, 1)] = mat[tI(3, 1)] / sz;
-			rmat[tI(3, 2)] = mat[tI(3, 2)] / sz;
-			rmat[tI(3, 3)] = mat[tI(3, 3)] / sz;
+            //rmat = MATH.transposeMat4(rmat)
+            var sx = Math.sqrt(rmat[0] * rmat[0] + rmat[4] * rmat[4] + rmat[8] * rmat[8]);
+            var sy = Math.sqrt(rmat[1] * rmat[1] + rmat[5] * rmat[5] + rmat[9] * rmat[9]);
+            var sz = Math.sqrt(rmat[2] * rmat[2] + rmat[6] * rmat[6] + rmat[10] * rmat[10]);
+            rmat[0] = rmat[0] / sx;
+            rmat[4] = rmat[4] / sx;
+            rmat[8] = rmat[8] / sx;
+            rmat[1] = rmat[1] / sy;
+            rmat[5] = rmat[5] / sy;
+            rmat[9] = rmat[9] / sy;
+            rmat[2] = rmat[2] / sz;
+            rmat[6] = rmat[6] / sz;
+            rmat[10] = rmat[10] / sz;
+
 			return MATH.transposeMat4(rmat);
 		}
 		this.waitingForSet = [];
-		this.getPlaneDots= function(ray)
-		{
+        this.getPlaneDots = function(ray) {
 			var xDot = Math.abs(MATH.dotVec3(ray,CurrentX));
 			var yDot = Math.abs(MATH.dotVec3(ray,CurrentY));
 			var zDot = Math.abs(MATH.dotVec3(ray,CurrentZ));
 			var  best = [xDot,yDot,zDot];
-			best = best.sort(function(a,b){return b-a});
-			for(var i = 0; i < 3; i++)
-			{
+            best = best.sort(function(a, b) {
+                return b - a
+            });
+            for (var i = 0; i < 3; i++) {
 				if(best[i] == xDot)
 					best[i] = 'X';
 				if(best[i] == yDot)
@@ -1075,14 +1049,21 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			return best;
 			
 		}
-		this.mousemove_Gizmo = function (e)
-		{
+        this.mousemove_Gizmo = function(e) {
 			
+            //need to know this in order to show context menu properly
+            MouseMoved = true;
+            //prevent trying to move objects that have no 3D node
+
 			if(SelectedVWFNodes.length > 0  && !this.findviewnode(SelectedVWFNodes[0].id)) return;
+
+            //prevent moving 3D nodes that are not bound to the scene or are the scene itself
+            if (SelectedVWFNodes.length > 0 && !(this.findviewnode(SelectedVWFNodes[0].id)).parent) return;
+
+
 			if (this.waitingForSet.length > 0) return;
-			MouseMoved = true;
-			if (!MoveGizmo || MoveGizmo == null)
-			{
+
+            if (!MoveGizmo || MoveGizmo == null) {
 				return;
 			}
 			var tpos = new THREE.Vector3();
@@ -1090,20 +1071,17 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			originalGizmoPos = [tpos.x, tpos.y, tpos.z];
 			//updateGizmoSize();
 			this.updateGizmoOrientation(false);
-			if (this.MouseLeftDown)
-			{
+            if (this.MouseLeftDown) {
 				this.mouseLastScreenPoint = [e.clientX, e.clientY];
 				var w = this.mouseLastScreenPoint[0] - this.mouseDownScreenPoint[0];
 				var h = this.mouseLastScreenPoint[1] - this.mouseDownScreenPoint[1];
 				if (w > 0) this.selectionMarquee.css('width', w);
-				else
-				{
+                else {
 					this.selectionMarquee.css('width', -w);
 					this.selectionMarquee.css('left', this.mouseLastScreenPoint[0]);
 				}
 				if (h > 0) this.selectionMarquee.css('height', h);
-				else
-				{
+                else {
 					this.selectionMarquee.css('height', -h);
 					this.selectionMarquee.css('top', this.mouseLastScreenPoint[1]);
 				}
@@ -1117,16 +1095,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						this.undoPoint.push(new _UndoManager.SetPropertyEvent(SelectedVWFNodes[i].id,'transform',null)) // we are going to track this as it changes, and only record the new value on mouseup
 				}
 				var relscreeny = this.lastScalePoint - e.clientY;
-				if(relscreeny > 30 * this.ScaleSnap )
-				{
-					this.lastScalePoint = e.clientY;
 				
-				}
-				if(relscreeny < -30 * this.ScaleSnap)
-				{
-					this.lastScalePoint = e.clientY;
 					
-				}
 							
 				var t = new THREE.Vector3();
 				t.setFromMatrixPosition(MoveGizmo.parent.matrixWorld);
@@ -1149,8 +1119,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				var newintersectxz = dxz; //MATH.addVec3(campos,MATH.scaleVec3(ray,dxz));
 				var dyz = this.intersectLinePlaneTEST(ray, campos, gizpos, CurrentX);
 				var newintersectyz = dyz; //MATH.addVec3(campos,MATH.scaleVec3(ray,dyz));
-				if (document.AxisSelected == 3 || document.AxisSelected == 16 || document.AxisSelected == 4 || document.AxisSelected == 17 || document.AxisSelected == 5 || document.AxisSelected == 18)
-				{
+                if (document.AxisSelected == 3 || document.AxisSelected == 16 || document.AxisSelected == 4 || document.AxisSelected == 17 || document.AxisSelected == 5 || document.AxisSelected == 18) {
 					dxy = this.intersectLinePlane(ray, campos, gizpos, CurrentZ);
 					newintersectxy = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy));
 					dxz = this.intersectLinePlane(ray, campos, gizpos, CurrentY);
@@ -1169,8 +1138,6 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				var newrotz;
 				var newroty;
 				var newrotx;
-
-				
 
 				
 
@@ -1200,8 +1167,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				var SnapType = null;
 				if (this.isMove(document.AxisSelected)) SnapType = MoveSnap;
 				if (this.isScale(document.AxisSelected)) SnapType = ScaleSnap;
-				if (SnapType != null)
-				{
+                if (SnapType != null) {
 					relintersectxy[0] = this.SnapTo(relintersectxy[0], SnapType);
 					relintersectxy[1] = this.SnapTo(relintersectxy[1], SnapType);
 					relintersectxy[2] = this.SnapTo(relintersectxy[2], SnapType);
@@ -1242,8 +1208,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				var gizposoffset = null;
 				//this is a list of the plane normals sorted by dot to the ray
 				var  planeDots = this.getPlaneDots(ray);
-				if (document.AxisSelected == 0)
-				{
+                if (document.AxisSelected == 0) {
 					wasMoved = true;
 					
 					//if the best plane to use is X, use the second best plane
@@ -1255,8 +1220,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 
 
 				}
-				if (document.AxisSelected == 1)
-				{
+                if (document.AxisSelected == 1) {
 					wasMoved = true;
 					var plane = planeDots[0] == 'Y' ? planeDots[1] : planeDots[0]
 					if(plane == 'X')
@@ -1264,8 +1228,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					else if(plane == 'Z')
 						gizposoffset = this.MoveTransformGizmo(CurrentY, relintersectxy[1]);
 				}
-				if (document.AxisSelected == 2)
-				{
+                if (document.AxisSelected == 2) {
 					wasMoved = true;
 					var plane = planeDots[0] == 'Z' ? planeDots[1] : planeDots[0]
 					if(plane == 'X')
@@ -1273,81 +1236,81 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					else if(plane == 'Y')
 						gizposoffset = this.MoveTransformGizmo(CurrentZ, relintersectxz[2]);
 				}
-				if (document.AxisSelected == 12)
-				{
+                if (document.AxisSelected == 12) {
 					wasMoved = true;
 					gizposoffset = this.MoveTransformGizmo(MoveAxisX, relintersectxy[0]);
 					gizposoffset = MATH.addVec3(gizposoffset, this.MoveTransformGizmo(MoveAxisY, relintersectxy[1]));
 				}
-				if (document.AxisSelected == 13)
-				{
+                if (document.AxisSelected == 13) {
 					wasMoved = true;
 					gizposoffset = this.MoveTransformGizmo(MoveAxisX, relintersectxz[0]);
 					gizposoffset = MATH.addVec3(gizposoffset, this.MoveTransformGizmo(MoveAxisZ, relintersectxz[2]));
 				}
-				if (document.AxisSelected == 14)
-				{
+                if (document.AxisSelected == 14) {
 					wasMoved = true;
 					gizposoffset = this.MoveTransformGizmo(MoveAxisY, relintersectyz[1]);
 					gizposoffset = MATH.addVec3(gizposoffset, this.MoveTransformGizmo(MoveAxisZ, relintersectyz[2]));
 				}
+                var backupScreeny = relscreeny;
+                for (var s = 0; s < SelectedVWFNodes.length; s++) {
+                    relscreeny = backupScreeny;
+                    if (SelectedVWFNodes[s]) {
 				
-				for (var s = 0; s < SelectedVWFNodes.length; s++)
-				{
-					if (SelectedVWFNodes[s])
-					{
-						var tempscale = [lastscale[s][0], lastscale[s][1], lastscale[s][2]]; //[s.x,s.y,s.z];
-						if (document.AxisSelected == 6 || document.AxisSelected == 20)
-						{
+                        var tempscale = null;
+                        if (lastscale[s]) {
+                            tempscale = [lastscale[s][0], lastscale[s][1], lastscale[s][2]]; //[s.x,s.y,s.z];
+                            if (document.AxisSelected == 6 || document.AxisSelected == 20) {
 							wasScaled = true;
 							tempscale[0] += scalemult * ScaleXY[0];
 						}
-						if (document.AxisSelected == 7 || document.AxisSelected == 21)
-						{
+                            if (document.AxisSelected == 7 || document.AxisSelected == 21) {
 							wasScaled = true;
 							tempscale[1] += scalemult * ScaleXY[1];
 						}
-						if (document.AxisSelected == 8 || document.AxisSelected == 22)
-						{
+                            if (document.AxisSelected == 8 || document.AxisSelected == 22) {
 							wasScaled = true;
 							tempscale[2] += scalemult * ScaleXZ[2];
 						}
-						if (document.AxisSelected == 23)
-						{
+                            if (document.AxisSelected == 23) {
 							wasScaled = true;
 							tempscale[0] += -scalemult * ScaleXY[0];
 						}
-						if (document.AxisSelected == 24)
-						{
+                            if (document.AxisSelected == 24) {
 							wasScaled = true;
 							tempscale[1] += -scalemult * ScaleXY[1];
 						}
-						if (document.AxisSelected == 25)
-						{
+                            if (document.AxisSelected == 25) {
 							wasScaled = true;
 							tempscale[2] += -scalemult * ScaleXZ[2];
 						}
+                        }
 						if (document.AxisSelected == 19) // || document.AxisSelected == 10 || document.AxisSelected == 11)
 						{
 							
 							
-							if(relscreeny > 30 * this.ScaleSnap )
-							{
-								
+                            if (relscreeny > 10) {
+                                while (relscreeny > 10) {
 								wasScaled = true;
-								tempscale[2] +=  this.ScaleSnap;
-								tempscale[1] += this.ScaleSnap;
-								tempscale[0] += this.ScaleSnap;
+                                    tempscale[2] *= 1.0 + this.ScaleSnap;
+                                    tempscale[1] *= 1.0 + this.ScaleSnap;
+                                    tempscale[0] *= 1.0 + this.ScaleSnap;
+                                    this.lastScalePoint -= 10;
+                                    relscreeny -= 10;
 							}
-							if(relscreeny < -30 * this.ScaleSnap)
-							{
+                            }
+                            if (relscreeny < -10) {
 								
+                                while (relscreeny < -10) {
 								wasScaled = true;
-								tempscale[2] -=  this.ScaleSnap;
-								tempscale[1] -= this.ScaleSnap;
-								tempscale[0] -= this.ScaleSnap;
+                                    tempscale[2] *= 1.0 - this.ScaleSnap;
+                                    tempscale[1] *= 1.0 - this.ScaleSnap;
+                                    tempscale[0] *= 1.0 - this.ScaleSnap;
+                                    this.lastScalePoint += 10;
+                                    relscreeny += 10;
 							}
 						}
+
+                        }
 						if (document.AxisSelected == 9) // || document.AxisSelected == 10 || document.AxisSelected == 11)
 						{
 							wasScaled = true;
@@ -1370,14 +1333,12 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 							tempscale[0] += scalemult * ScaleXZ[2];
 						}
 						var rotationTransform;
-						if (document.AxisSelected == 3 || document.AxisSelected == 16)
-						{
+                        if (document.AxisSelected == 3 || document.AxisSelected == 16) {
 							wasRotated = true;
 							var amountToRotate = relrotx;
 							//if the Z plane is at too hard an angle, the rel rotate around the Z axis is sort of crazy
 							//instead, use the motion on the X or Y, as found by the intersection with either the xz or yz plane
-							if(Math.abs(MATH.dotVec3(ray,CurrentX)) < .3)
-							{
+                            if (Math.abs(MATH.dotVec3(ray, CurrentX)) < .3) {
 								var plane = planeDots[0] == 'X' ? planeDots[1] : planeDots[0]
 								if(plane == 'Z')
 									amountToRotate = sign(MATH.dotVec3(ray,CurrentZ)) * relintersectxy[1];
@@ -1387,14 +1348,12 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 							//note we use the world Z here - local / global / parent is handled in GetRotationTransform
 							rotationTransform = this.GetRotationTransform(WorldX, amountToRotate);
 						}
-						if (document.AxisSelected == 4 || document.AxisSelected == 17)
-						{
+                        if (document.AxisSelected == 4 || document.AxisSelected == 17) {
 							wasRotated = true;
 							var amountToRotate = relroty;
 							//if the Z plane is at too hard an angle, the rel rotate around the Z axis is sort of crazy
 							//instead, use the motion on the X or Y, as found by the intersection with either the xz or yz plane
-							if(Math.abs(MATH.dotVec3(ray,CurrentY)) < .3)
-							{
+                            if (Math.abs(MATH.dotVec3(ray, CurrentY)) < .3) {
 								var plane = planeDots[0] == 'Y' ? planeDots[1] : planeDots[0]
 								if(plane == 'Z')
 									amountToRotate = -sign(MATH.dotVec3(ray,CurrentZ)) * relintersectxy[0];
@@ -1404,14 +1363,12 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 							//note we use the world Z here - local / global / parent is handled in GetRotationTransform
 							rotationTransform = this.GetRotationTransform(WorldY, amountToRotate);
 						}
-						if (document.AxisSelected == 5 || document.AxisSelected == 18)
-						{
+                        if (document.AxisSelected == 5 || document.AxisSelected == 18) {
 							wasRotated = true;
 							var amountToRotate = relrotz;
 							//if the Z plane is at too hard an angle, the rel rotate around the Z axis is sort of crazy
 							//instead, use the motion on the X or Y, as found by the intersection with either the xz or yz plane
-							if(Math.abs(MATH.dotVec3(ray,CurrentZ)) < .3)
-							{
+                            if (Math.abs(MATH.dotVec3(ray, CurrentZ)) < .3) {
 								var plane = planeDots[0] == 'Z' ? planeDots[1] : planeDots[0]
 								if(plane == 'X')
 									amountToRotate = -sign(MATH.dotVec3(ray,CurrentX)) * relintersectyz[1];
@@ -1427,8 +1384,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 						//makes sense and is sort of correct, but not what the user is expecting;
 						var parentSelected = false;
 						var nodeid = SelectedVWFNodes[s].id;
-						while(vwf.parent(nodeid))
-						{
+                        while (vwf.parent(nodeid)) {
 							nodeid = vwf.parent(nodeid);
 							parentSelected = parentSelected || this.isSelected(nodeid);
 						}
@@ -1448,13 +1404,28 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 								var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
 
 							}
-							if (wasScaled && tempscale[0] > 0 && tempscale[1] > 0 && tempscale[2] > 0)
-							{
+                            if (wasScaled && tempscale[0] > 0 && tempscale[1] > 0 && tempscale[2] > 0) {
+
 								var relScale = MATH.subVec3(tempscale, lastscale[s]);
-								var success = this.setScaleCallback(SelectedVWFNodes[s].id, [tempscale[0], tempscale[1], tempscale[2]]);
-								if (SelectedVWFNodes.length > 1)
-								{
+                                var transform = this.getTransformCallback(SelectedVWFNodes[s].id);
 									
+                                var sx = MATH.lengthVec3([transform[0], transform[4], transform[8]]);
+                                var sy = MATH.lengthVec3([transform[1], transform[5], transform[9]]);
+                                var sz = MATH.lengthVec3([transform[2], transform[6], transform[10]]);
+                                transform[0] *= tempscale[0] / sx;
+                                transform[4] *= tempscale[0] / sx;
+                                transform[8] *= tempscale[0] / sx;
+                                transform[1] *= tempscale[1] / sy;
+                                transform[5] *= tempscale[1] / sy;
+                                transform[9] *= tempscale[1] / sy;
+                                transform[2] *= tempscale[2] / sz;
+                                transform[6] *= tempscale[2] / sz;
+                                transform[10] *= tempscale[2] / sz;
+                                //var success = this.setScaleCallback(SelectedVWFNodes[s].id, [tempscale[0], tempscale[1], tempscale[2]]);
+                                if (SelectedVWFNodes.length == 1)
+                                    var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
+                                if (SelectedVWFNodes.length > 1) {
+
 									var gizoffset = MATH.subVec3(lastpos[s], originalGizmoPos);
 									gizoffset[0] /= lastscale[s][0];
 									gizoffset[1] /= lastscale[s][1];
@@ -1464,14 +1435,15 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 									gizoffset[2] *= tempscale[2];
 									var newloc = MATH.addVec3(originalGizmoPos, gizoffset);
 									lastpos[s] = newloc;
-									
-									var success = this.setTranslationCallback(SelectedVWFNodes[s].id, newloc);
+                                    transform[12] = newloc[0];
+                                    transform[13] = newloc[1];
+                                    transform[14] = newloc[2];
+                                    var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
 									
 								}
 								lastscale[s] = tempscale;
 							}
-							if (wasRotated)
-							{
+                            if (wasRotated) {
 								var transform = this.getTransformCallback(SelectedVWFNodes[s].id);
 								var x = transform[12];
 								var y = transform[13];
@@ -1485,10 +1457,12 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 								transform[13] = y;
 								transform[14] = z;
 								lastpos[s] = [x, y, z];
+                                if (SelectedVWFNodes.length == 1) {
 								var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
-								
-								if (SelectedVWFNodes.length > 1)
-								{
+                                }
+                                if (SelectedVWFNodes.length > 1) {
+                                    //if more than one object is selected, update the new transform to 
+                                    //rotate around the gizmo
 									var parentmat = toGMat(self.findviewnode(SelectedVWFNodes[s].id).parent.matrixWorld);
 									var parentmatinv = MATH.inverseMat4(parentmat);
 									var parentgizloc = MATH.mulMat4Vec3(parentmatinv, originalGizmoPos);
@@ -1497,7 +1471,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 									gizoffset = MATH.mulMat4Vec3(rotmat, gizoffset);
 									var newloc = MATH.addVec3(parentgizloc, gizoffset);
 									lastpos[s] = newloc;
-									var success = this.setTranslationCallback(SelectedVWFNodes[s].id, newloc);
+                                    transform[12] = newloc[0];
+                                    transform[13] = newloc[1];
+                                    transform[14] = newloc[2];
+                                    var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
 									
 									
 								}
@@ -1508,46 +1485,48 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					}
 				}
 				
-			}
-			else    //there is no axis handle selected
+            } else //there is no axis handle selected
 			{
 				
 				var axis = -1;
-				for (var i = 0; i < MoveGizmo.children.length; i++)
-				{
+                for (var i = 0; i < MoveGizmo.children.length; i++) {
 					if (vwf.views[0].lastPick && vwf.views[0].lastPick.object && vwf.views[0].lastPick.object == MoveGizmo.children[i]) axis = i;
 				}
-				for (var i = 0; i < MoveGizmo.children.length; i++)
-				{
-					if (i != document.AxisSelected) if (MoveGizmo.children[i].material)
-						{
+                //display the name of the objject under the mouse
+                if (vwf.views[0].lastPickId) {
+                    var mouseovernode = vwf.getProperty(vwf.views[0].lastPickId, 'DisplayName');
+                    $('#StatusMouseOverName').text(mouseovernode || vwf.views[0].lastPickId);
+                } else {
+                    $('#StatusMouseOverName').text('Scene');
+                }
+
+
+                for (var i = 0; i < MoveGizmo.children.length; i++) {
+                    if (i != document.AxisSelected)
+                        if (MoveGizmo.children[i].material) {
 							var c = MoveGizmo.children[i].material.originalColor;
 							MoveGizmo.children[i].material.color.setRGB(c.r, c.g, c.b);
 							MoveGizmo.children[i].material.emissive.setRGB(c.r, c.g, c.b);
 						}
 				}
-				if (axis >= 0) if (MoveGizmo.children[axis].material)
-					{
+                if (axis >= 0)
+                    if (MoveGizmo.children[axis].material) {
 						MoveGizmo.children[axis].material.color.setRGB(1, 1, 1);
 						MoveGizmo.children[axis].material.emissive.setRGB(1, 1, 1);
 					}
 			}
 		}.bind(this);
-		this.isOwner = function (id, player)
-		{
+        this.isOwner = function(id, player) {
 			var owner = vwf.getProperty(id, 'owner');
-			if (typeof owner === 'string' && owner == player)
-			{
+            if (typeof owner === 'string' && owner == player) {
 				return true;
 			}
-			if (typeof owner === 'object' && owner.indexOf && owner.indexOf(player) != -1)
-			{
+            if (typeof owner === 'object' && owner.indexOf && owner.indexOf(player) != -1) {
 				return true;
 			}
 			return false;
 		}
-		this.setProperty = function (id, prop, val)
-		{
+        this.setProperty = function(id, prop, val) {
 			var ret = _PermissionsManager.setProperty(id, prop, val);
 			if(!ret)
 			  _Notifier.notify('You do not have permission to modify this object');	
@@ -1556,29 +1535,37 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}
 		
 		
-		this.GetInsertPoint = function (e)
-		{
+        this.GetInsertPoint = function(e) {
 			var campos = this.getCameraPosition();
-			if(e)
-			{
+            if (e) {
 				var ray;
 				ray = this.GetWorldPickRay(e);
 				self.GetMoveGizmo().InvisibleToCPUPick = true;
-				var pick = this.ThreeJSPick(campos, ray,{filter:function(o){return !(o.isAvatar === true)}});
+                var pick = this.ThreeJSPick(campos, ray, {
+                    filter: function(o) {
+                        return !(o.isAvatar === true)
+                    }
+                });
 				self.GetMoveGizmo().InvisibleToCPUPick = false;
+                var newintersectxy = [0, 0, 0];
+                if (pick) {
 				var dxy = pick.distance;
 				newintersectxy = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy * .99));
+                }
+
 				var dxy2 = this.intersectLinePlane(ray, campos, [0, 0, 0], [0, 0, 1]);
 				var newintersectxy2 = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy2));
 				newintersectxy2[2] += .01;
 				if (newintersectxy2[2] > newintersectxy[2]) newintersectxy = newintersectxy2;
 				return newintersectxy;
-			}
-			else
-			{
+            } else {
 				
 				var ray = self.GetCameraCenterRay();
-				var pick = this.ThreeJSPick(campos, ray,{filter:function(o){return !(o.isAvatar === true)}});
+                var pick = this.ThreeJSPick(campos, ray, {
+                    filter: function(o) {
+                        return !(o.isAvatar === true)
+                    }
+                });
 				var dxy = pick?pick.distance:Infinity;
 				var newintersectxy = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy));
 				newintersectxy[2] += .01;
@@ -1588,52 +1575,50 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				return newintersectxy[2] > newintersectxy2[2] ? newintersectxy : newintersectxy2;
 			}
 		}
-		this.createChild = function (parent, name, proto, uri, callback)
-		{
-			if(document.PlayerNumber == null)
-			{
+        this.createChild = function(parent, name, proto, uri, callback) {
+            if (document.PlayerNumber == null) {
 				_Notifier.notify('You must log in to participate');
 				return;
 			}
-			if(_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),parent) == 0)
-			{
+            if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(), parent) == 0) {
 				_Notifier.alert('You must have permissions on the parent object to create a child');
 				return;
 			}
 			_UndoManager.recordCreate(parent, name, proto, uri);
 			vwf_view.kernel.createChild(parent, name, proto, uri, callback);
 		}
-		this.createLight = function (type, pos, owner)
-		{
+        this.createLight = function(type, pos, owner) {
 			var proto = {
 				extends: 'SandboxLight.vwf',
 				properties: {
 					rotation: [1, 0, 0, 0],
-					translation: pos,
+                    transform: MATH.transposeMat4(MATH.translateMatrix(pos)),
 					owner: owner,
 					type: 'Light',
 					lightType: type,
 					DisplayName: self.GetUniqueName('Light')
 				}
 			};
-			this.createChild('index-vwf', GUID(), proto, null, null);
+            var newname = GUID();
+            this.createChild('index-vwf', newname, proto, null, null);
+            this.SelectOnNextCreate([newname]);
 		}
-		this.createParticleSystem = function (type, pos, owner)
-		{
+        this.createParticleSystem = function(type, pos, owner) {
 			var proto = {
 				extends: 'SandboxParticleSystem.vwf',
 				properties: {
 					rotation: [1, 0, 0, 0],
-					translation: pos,
+                    transform: MATH.transposeMat4(MATH.translateMatrix(pos)),
 					owner: owner,
 					type: 'ParticleSystem',
 					DisplayName: self.GetUniqueName('ParticleSystem')
 				}
 			};
-			this.createChild('index-vwf', GUID(), proto, null, null);
+            var newname = GUID();
+            this.createChild('index-vwf', newname, proto, null, null);
+            this.SelectOnNextCreate([newname]);
 		}
-		this.CreateCamera = function(translation, owner, id)
-		{
+        this.CreateCamera = function(translation, owner, id) {
 			var CamProto = {
 				extends: 'SandboxCamera' + '.vwf',
 				properties: {}
@@ -1641,15 +1626,16 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			CamProto.type = 'subDriver/threejs';
 			CamProto.source = 'vwf/model/threejs/' + 'camera' + '.js';
 		
-			CamProto.properties.translation = translation;
+            CamProto.properties.transform = MATH.transposeMat4(MATH.translateMatrix(translation));
 			CamProto.properties.scale = [1, 1, 1];
 			CamProto.properties.rotation = [0, 0, 1, 0];
 			CamProto.properties.owner = owner;
 			CamProto.properties.DisplayName = self.GetUniqueName('Camera');
-			this.createChild('index-vwf', GUID(), CamProto, null, null);
+            var newname = GUID();
+            this.createChild('index-vwf', newname, CamProto, null, null);
+            this.SelectOnNextCreate([newname]);
 		};
-		this.CreatePrim = function (type, translation, size, texture, owner, id)
-		{
+        this.CreatePrim = function(type, translation, size, texture, owner, id) {
 			translation[0] = this.SnapTo(translation[0], MoveSnap);
 			translation[1] = this.SnapTo(translation[1], MoveSnap);
 			translation[2] = this.SnapTo(translation[2], MoveSnap);
@@ -1665,16 +1651,33 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var defaultmaterialDef = {
 			    shininess:15,
 			    alpha:1,
-			    ambient:{r:1,g:1,b:1},
-			    color:{r:1,g:1,b:1,a:1},
-			    emit:{r:0,g:0,b:0},
+                ambient: {
+                    r: 1,
+                    g: 1,
+                    b: 1
+                },
+                color: {
+                    r: 1,
+                    g: 1,
+                    b: 1,
+                    a: 1
+                },
+                emit: {
+                    r: 0,
+                    g: 0,
+                    b: 0
+                },
 			    reflect:0.8,
 			    shadeless:false,
 			    shadow:true,
-			    specularColor:{r:0.5773502691896258,g:0.5773502691896258,b:0.5773502691896258},
+                specularColor: {
+                    r: 0.5773502691896258,
+                    g: 0.5773502691896258,
+                    b: 0.5773502691896258
+                },
 			    specularLevel:1,
-			    layers:[
-			      {  alpha: 1,
+                layers: [{
+                    alpha: 1,
 				blendMode: 0,
 				mapInput: 0,
 				mapTo: 1,
@@ -1683,13 +1686,13 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				rot: 0,
 				scalex: 1,
 				scaley: 1,
-				src: "checker.jpg"}
-			    ]
+                    src: "checker.jpg"
+                }]
 			}
 			
 			proto.properties.materialDef = defaultmaterialDef;
 			proto.properties.size = size;
-			proto.properties.translation = translation;
+            proto.properties.transform = MATH.transposeMat4(MATH.translateMatrix(translation));
 			proto.properties.scale = [1, 1, 1];
 			proto.properties.rotation = [0, 0, 1, 0];
 			proto.properties.owner = owner;
@@ -1697,12 +1700,12 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			proto.properties.type = 'primitive';
 			proto.properties.tempid = id;
 			proto.properties.DisplayName = self.GetUniqueName(type);
-			this.createChild('index-vwf', GUID(), proto, null, null);
+            var newname = GUID();
+            this.createChild('index-vwf', newname, proto, null, null);
+            this.SelectOnNextCreate([newname])
 		}.bind(this);
-		this.AddBlankBehavior = function ()
-		{
-			if (this.GetSelectedVWFNode() == null)
-			{
+        this.AddBlankBehavior = function() {
+            if (this.GetSelectedVWFNode() == null) {
 				_Notifier.notify('no object selected');
 				return;
 			}
@@ -1718,25 +1721,23 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			proto.properties.owner = document.PlayerNumber;
 			var id = this.GetSelectedVWFID();
 			var owner = vwf.getProperty(id, 'owner');
-			if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),id) == 0)
-			{
+            if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(), id) == 0) {
 				_Notifier.notify('You do not have permission to edit this object');
 				return;
 			}
-			this.createChild(id, GUID(), proto, null, null);
+            var newname = GUID();
+            this.createChild(id, newname, proto, null, null);
+
 		}
-		this.CreateBehavior = function(type,owner)
-		{
+        this.CreateBehavior = function(type, owner) {
 			
-			if (this.GetSelectedVWFNode() == null)
-			{
+            if (this.GetSelectedVWFNode() == null) {
 				_Notifier.notify('no object selected');
 				return;
 			}
 			var ModProto = {
 				extends: type + '.vwf',
-				properties: {
-				}
+                properties: {}
 			};
 			var proto = ModProto;
 			proto.properties.owner = owner;
@@ -1744,22 +1745,20 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			proto.properties.DisplayName = self.GetUniqueName(type);
 			var id = this.GetSelectedVWFID();
 			var owner = vwf.getProperty(id, 'owner');
-			if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),id) == 0)
-			{
+            if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(), id) == 0) {
 				_Notifier.notify('You do not have permission to edit this object');
 				return;
 			}
-			this.createChild(id, GUID(), proto, null, null);
-			window.setTimeout(function ()
-			{
+            var newname = GUID();
+            this.createChild(id, newname, proto, null, null);
+
+            window.setTimeout(function() {
 				$(document).trigger('modifierCreated', self.GetSelectedVWFNode());
 			}, 500);
 		
 		}
-		this.CreateModifier = function (type, owner, subDriver)
-		{
-			if (this.GetSelectedVWFNode() == null)
-			{
+        this.CreateModifier = function(type, owner, subDriver) {
+            if (this.GetSelectedVWFNode() == null) {
 				_Notifier.notify('no object selected');
 				return;
 			}
@@ -1770,8 +1769,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 			};
 			var proto = ModProto;
-			if (subDriver)
-			{
+            if (subDriver) {
 				ModProto.type = 'subDriver/threejs';
 				ModProto.source = 'vwf/model/threejs/' + type + '.js';
 			}
@@ -1785,21 +1783,17 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			proto.properties.DisplayName = self.GetUniqueName(type);
 			var id = this.GetFirstChildLeaf(this.GetSelectedVWFNode()).id;
 			var owner = vwf.getProperty(id, 'owner');
-			if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),id) == 0)
-			{
+            if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(), id) == 0) {
 				_Notifier.notify('You do not have permission to edit this object');
 				return;
 			}
 			this.createChild(id, GUID(), proto, null, null);
-			window.setTimeout(function ()
-			{
+            window.setTimeout(function() {
 				$(document).trigger('modifierCreated', self.GetSelectedVWFNode());
 			}, 500);
 		}.bind(this);
-		this.CreateModifierSubDriver = function (type, owner)
-		{
-			if (this.GetSelectedVWFNode() == null)
-			{
+        this.CreateModifierSubDriver = function(type, owner) {
+            if (this.GetSelectedVWFNode() == null) {
 				_Notifier.notify('no object selected');
 				return;
 			}
@@ -1822,25 +1816,19 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			proto.properties.DisplayName = self.GetUniqueName(type);
 			var id = this.GetFirstChildLeaf(this.GetSelectedVWFNode()).id;
 			var owner = vwf.getProperty(id, 'owner');
-			if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(),id) == 0)
-			{
+            if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(), id) == 0) {
 				_Notifier.notify('You do not have permission to edit this object');
 				return;
 			}
 			this.createChild(id, GUID(), proto, null, null);
-			window.setTimeout(function ()
-			{
+            window.setTimeout(function() {
 				$(document).trigger('modifierCreated', this.GetSelectedVWFNode());
 			}, 500);
 		}.bind(this);
-		this.GetFirstChildLeaf = function (object)
-		{
-			if (object)
-			{
-				if (object.children)
-				{
-					for (var i in object.children)
-					{
+        this.GetFirstChildLeaf = function(object) {
+            if (object) {
+                if (object.children) {
+                    for (var i in object.children) {
 						if (vwf.getProperty(object.children[i].id, 'isModifier') == true) return this.GetFirstChildLeaf(object.children[i]);
 					}
 				}
@@ -1848,67 +1836,57 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			}
 			return null;
 		}
-		this.Duplicate = function ()
-		{
+        this.Duplicate = function() {
 			for(var i =0; i < SelectedVWFNodes.length; i++)
-			if(vwf.prototype(SelectedVWFNodes[i].id) == 'character-vwf')
-			{
+                if (vwf.prototype(SelectedVWFNodes[i].id) == 'character-vwf') {
 					_Notifier.alert('Avatars cannot be copied');
 					return
 			}
-			
-			for (var i = 0; i < SelectedVWFNodes.length; i++)
-			{
+            var newnames = [];
+            for (var i = 0; i < SelectedVWFNodes.length; i++) {
 				var proto = _DataManager.getCleanNodePrototype(SelectedVWFNodes[i].id);
 				proto.properties.DisplayName = self.GetUniqueName(proto.properties.DisplayName);
 				var parent = vwf.parent(self.GetSelectedVWFID());
-				self.createChild(parent, GUID(), proto, null, null, function ()
-				{
+                var newname = GUID();
+                newnames.push(newname);
+                self.createChild(parent, newname, proto, null, null, function() {
 					alert();
 				});
 			}
-			self.SelectOnNextCreate(SelectedVWFNodes.length);
-			self.SelectObject(null);
+            self.SelectOnNextCreate(newnames);
+
 		}.bind(this);
-		this.DeleteIDs = function (t)
-		{
+        this.DeleteIDs = function(t) {
 			if (t.id != undefined) delete t.id;
-			if (t.children)
-			{
+            if (t.children) {
 				var children = []
-				for (var i in t.children)
-				{
+                for (var i in t.children) {
 					DeleteIDs(t.children[i]);
 					children.push(t.children[i]);
 					delete t.children[i];
 				}
-				for (var i = 0; i < children.length; i++)
-				{
+                for (var i = 0; i < children.length; i++) {
 					t.children[GUID()] = children[i];
 				}
 			}
 		}
-		this.Copy = function (nodes)
-		{
+        this.Copy = function(nodes) {
 			
 			_CopiedNodes = [];
 			
 			for(var i =0; i < SelectedVWFNodes.length; i++)
-			if(vwf.prototype(SelectedVWFNodes[i].id) == 'character-vwf')
-			{
+                if (vwf.prototype(SelectedVWFNodes[i].id) == 'character-vwf') {
 					_Notifier.alert('Avatars cannot be copied');
 					return
 			}
 			
 			var tocopy = SelectedVWFNodes;
 			if (nodes) tocopy = nodes;
-			for (var i = 0; i < tocopy.length; i++)
-			{
+            for (var i = 0; i < tocopy.length; i++) {
 				var t = _DataManager.getCleanNodePrototype(tocopy[i].id);
 				// if the node has a transform property, we need to find the offset from the gizmo to the object.
 				//this is so we can paste a group in a way that makes sense
-				if(t.properties && t.properties.transform)
-				{
+                if (t.properties && t.properties.transform) {
 					var tpos = new THREE.Vector3();
 					tpos.setFromMatrixPosition(MoveGizmo.parent.matrixWorld);
 					originalGizmoPos = [tpos.x, tpos.y, tpos.z];
@@ -1924,35 +1902,34 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				_CopiedNodes.push(t);
 			}
 		}.bind(this);
-		this.getCameraPosition = function()
-		{
+        this.getCameraPosition = function() {
 			var cam = this.findcamera();
 			cam.updateMatrixWorld(true);
 			return [cam.matrixWorld.elements[12],cam.matrixWorld.elements[13],cam.matrixWorld.elements[14]];
 			
 		}
-		this.Paste = function (useMousePoint)
-		{
+        this.Paste = function(useMousePoint) {
 			
-			
-			for (var i = 0; i < _CopiedNodes.length; i++)
-			{
+            var newnames = [];
+            for (var i = 0; i < _CopiedNodes.length; i++) {
 				var t = _CopiedNodes[i];
 				t = _DataManager.getCleanNodePrototype(t);
 				
 				//if the object is the type which can have transforms, update them to be relative to the current paste point, or the center of the screen
-				if(t.properties && t.properties.transform)
-				{
+                if (t.properties && t.properties.transform) {
 					var campos = this.getCameraPosition();
 					var newintersectxy;
 
 					if (!useMousePoint) newintersectxy = self.GetInsertPoint();
-					else
-					{
+                    else {
 						var ray;
 						ray = this.GetWorldPickRay(this.ContextShowEvent);
 						self.GetMoveGizmo().InvisibleToCPUPick = true;
-						var pick = this.ThreeJSPick(campos, ray,{filter:function(o){return !(o.isAvatar === true)}});
+                        var pick = this.ThreeJSPick(campos, ray, {
+                            filter: function(o) {
+                                return !(o.isAvatar === true)
+                            }
+                        });
 						self.GetMoveGizmo().InvisibleToCPUPick = false;
 						var dxy = pick.distance;
 						newintersectxy = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy * .99));
@@ -1965,40 +1942,36 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 					t.properties.transform[12] += newintersectxy[0];
 					t.properties.transform[13] += newintersectxy[1];
 					t.properties.transform[14] += newintersectxy[2];
-					t.properties.DisplayName = self.GetUniqueName(t.properties.DisplayName);
+                    t.properties.DisplayName = self.GetUniqueName(t.properties.DisplayName, i);
 				}
 
 				
 
-				if(t.properties.type == 'behavior')
-				{
+                if (t.properties.type == 'behavior') {
 
-					if(self.GetSelectedVWFID())
-					{
+                    if (self.GetSelectedVWFID()) {
 						self.createChild(this.GetSelectedVWFID(), GUID(), t, null, null);
-					}else
-					{
+                    } else {
 						alertify.alert('When pasting a behavior, select the node to paste onto')
 					}
-				}
-				else	
-				{
-					self.SelectObject(null);
-					self.SelectOnNextCreate();
-					self.createChild('index-vwf', GUID(), t, null, null);
+                } else {
+
+                    var newname = GUID();
+                    newnames.push(newname);
+
+                    self.createChild('index-vwf', newname, t, null, null);
 				}
 				
 				//reset in c ase we paste again
-				if(t.properties && t.properties.transform)
-				{
+                if (t.properties && t.properties.transform) {
 					t.properties.transform[12] -= newintersectxy[0];
 					t.properties.transform[13] -= newintersectxy[1];
 					t.properties.transform[14] -= newintersectxy[2];
 				}
 			}
+            self.SelectOnNextCreate(newnames);
 		}
-		this.getTransform = function(id)
-		{
+        this.getTransform = function(id) {
 			return vwf.views['vwf/view/prediction'].getProperty(id,'transform');
 			return vwf.getProperty(id,this.transformPropertyName);
 		}
@@ -2008,13 +1981,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			 mat = mat || vwf.getProperty(id,"worldTransform");
 			return [mat[12],mat[13],mat[14]];
 		}
-		this.getScale = function(id)
-		{
-			return vwf.views['vwf/view/prediction'].getProperty(id,this.scalePropertyName);
-			return vwf.getProperty(id,this.scalePropertyName);
+        this.getScale = function(id) {
+            var transform = vwf.getProperty(id, this.transformPropertyName);
+            var sx = MATH.lengthVec3([transform[0], transform[4], transform[8]]);
+            var sy = MATH.lengthVec3([transform[1], transform[5], transform[9]]);
+            var sz = MATH.lengthVec3([transform[2], transform[6], transform[10]]);
+            return [sx, sy, sz];
 		}
-		this.setTransform = function(id,val)
-		{
+        this.setTransform = function(id, val) {
 			//this.waitingForSet.push(id);
 
 			//don't bother bouncing off the socket if it's the same
@@ -2025,8 +1999,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			if (!success) this.SetLocation(MoveGizmo, originalGizmoPos);
 			return success;
 		}
-		this.setTranslation = function(id,val)
-		{
+        this.setTranslation = function(id, val) {
 			//don't bother bouncing off the socket if it's the same
 			if(matComp(val,vwf.getProperty(id,this.translationPropertyName))) return true;
 
@@ -2035,8 +2008,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			if (!success) this.SetLocation(MoveGizmo, originalGizmoPos);
 			return success;
 		}
-		this.setScale = function(id,val)
-		{
+        this.setScale = function(id, val) {
 			return this.setProperty(id,this.scalePropertyName,val);
 		}
 		this.setScaleCallback = this.setScale;
@@ -2047,32 +2019,29 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		this.getTransformCallback = this.getTransform;
 		this.getTranslationCallback = this.getTranslation;
 		
-		this.updateGizmoOrientation = function (updateBasisVectors)
-		{
-			if (CoordSystem == LocalCoords && SelectedVWFNodes[0])
-			{
+        this.updateGizmoOrientation = function(updateBasisVectors) {
+            if (CoordSystem == LocalCoords && SelectedVWFNodes[0]) {
 				var aa = vwf.getProperty(SelectedVWFNodes[0].id, 'rotation');
 				var rotmat = this.GetRotationMatrix(MATH.transposeMat4(vwf.getProperty(this.GetSelectedVWFID(),'worldTransform'))); //MATH.angleAxis(aa[3] * 0.0174532925,[aa[0],aa[1],aa[2]]);
 				var invRot = MATH.inverseMat4(rotmat);
 				var invRotT = MATH.transposeMat4(invRot);
 				MoveGizmo.parent.matrixAutoUpdate = false;
-				for (var i = 0; i < 16; i++) if (i != 12 && i != 13 && i != 14) MoveGizmo.parent.matrix.elements[i] = invRotT[i];
+                for (var i = 0; i < 16; i++)
+                    if (i != 12 && i != 13 && i != 14) MoveGizmo.parent.matrix.elements[i] = invRotT[i];
 					//MoveGizmo.matrix.setRotationFromQuaternion(q);
 				MoveGizmo.parent.updateMatrixWorld(true);
-				if (updateBasisVectors)
-				{
+                if (updateBasisVectors) {
 					CurrentZ = MATH.mulMat4Vec3(invRot, WorldZ);
 					CurrentX = MATH.mulMat4Vec3(invRot, WorldX);
 					CurrentY = MATH.mulMat4Vec3(invRot, WorldY);
 				}
-			}
-			else
-			{
+            } else {
 				//var rotmat = this.GetRotationMatrix(this.findviewnode(SelectedVWFNode.id).parent.getModelthis.Matrix());//MATH.angleAxis(aa[3] * 0.0174532925,[aa[0],aa[1],aa[2]]);
 				var q = new THREE.Quaternion();
 				var rotmat = new THREE.Matrix4();
 				rotmat.elements = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-				for (var i = 0; i < 16; i++) if (i != 12 && i != 13 && i != 14) MoveGizmo.parent.matrix.elements[i] = rotmat.elements[i];
+                for (var i = 0; i < 16; i++)
+                    if (i != 12 && i != 13 && i != 14) MoveGizmo.parent.matrix.elements[i] = rotmat.elements[i];
 				MoveGizmo.parent.updateMatrixWorld(true);
 				//var invRot = MATH.inverseMat4(rotmat);
 				CurrentZ = WorldZ; //MATH.mulMat4Vec3(invRot,WorldZ);
@@ -2080,18 +2049,15 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				CurrentY = WorldY; //MATH.mulMat4Vec3(invRot,WorldY);
 			}
 		}.bind(this);
-		this.triggerSelectionChanged = function (VWFNode)
-		{
+        this.triggerSelectionChanged = function(VWFNode) {
 			
 			$(document).trigger('selectionChanged', [VWFNode]);
 		}.bind(this);
-		this.triggerSelectionTransformed = function (VWFNode)
-		{
+        this.triggerSelectionTransformed = function(VWFNode) {
 			//this is no longer needed, since we set the GUI from reflector messages
 			//$(document).trigger('selectionTransformedLocal', [VWFNode]);
 		}.bind(this);
-		this.updateGizmoLocation = function ()
-		{
+        this.updateGizmoLocation = function() {
 			if(!this.GetSelectedVWFID()) return;
 			var viewnode = this.findviewnode(this.GetSelectedVWFID());
 			if(!viewnode)
@@ -2108,8 +2074,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			
 			
 			
-			for (var s = 1; s < SelectedVWFNodes.length; s++)
-			{
+            for (var s = 1; s < SelectedVWFNodes.length; s++) {
 				
 				//this.findviewnode(SelectedVWFNodes[s].id).updatethis.Matrix();
 				var nextchildmat = vwf.getProperty(SelectedVWFNodes[s].id,"worldTransform");
@@ -2126,16 +2091,13 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			MoveGizmo.parent.matrix.setPosition(new THREE.Vector3(gizpos[0], gizpos[1], gizpos[2]));
 			MoveGizmo.parent.updateMatrixWorld(true);
 		}
-		this.updateBounds = function ()
-		{
-			for (var i = 0; i < SelectionBounds.length; i++)
-			{
+        this.updateBounds = function() {
+            for (var i = 0; i < SelectionBounds.length; i++) {
 				SelectionBounds[i].parent.remove(SelectionBounds[i], true);
 				SelectionBounds[i].children[0].geometry.dispose()
 			}
 			SelectionBounds = [];
-			for (var i = 0; i < SelectedVWFNodes.length; i++)
-			{
+            for (var i = 0; i < SelectedVWFNodes.length; i++) {
 				//for nodes that have no 3D viewnode
 				if(!self.findviewnode(SelectedVWFNodes[i].id))
 					continue;
@@ -2145,8 +2107,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				this.SelectionBoundsContainer.add(SelectionBounds[i], true);
 			}
 		}
-		this.createBoundingBox = function(id)
-		{
+        this.createBoundingBox = function(id) {
 				if(!self.findviewnode(id)) return null;
 				var box;
 				var mat;
@@ -2183,61 +2144,66 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				// boundingbox.setPickable(false);
 				// boundingbox.RenderPriority = 999;
 				boundingbox.vwfid = id;
+            box.release();
 				return boundingbox;
 		}
-		this.updateBoundsTransform = function (id)
-		{
-			for (var i = 0; i < SelectionBounds.length; i++)
-			{
-				if (SelectionBounds[i].vwfid == id)
-				{
+        this.updateBoundsTransform = function(id) {
+            for (var i = 0; i < SelectionBounds.length; i++) {
+                if (SelectionBounds[i].vwfid == id) {
 					var mat = toGMat(self.findviewnode(id).matrixWorld).slice(0);
 					SelectionBounds[i].matrix.elements = MATH.transposeMat4(mat);
 					SelectionBounds[i].updateMatrixWorld(true);
 				}
 			}
 		}
-		this.getSelectionCount = function ()
-		{
+        this.getSelectionCount = function() {
 			return SelectedVWFNodes.length;
 		}.bind(this);
-		this.isSelected = function (id)
-		{
+        this.isSelected = function(id) {
 			var index = -1;
-			for (var i = 0; i < SelectedVWFNodes.length; i++) if (SelectedVWFNodes[i] && SelectedVWFNodes[i].id == id) index = i;
+            for (var i = 0; i < SelectedVWFNodes.length; i++)
+                if (SelectedVWFNodes[i] && SelectedVWFNodes[i].id == id) index = i;
 			if (index == -1) return false;
 			return true;
 		}.bind(this);
-		this.OpenGroup = function ()
-		{
-			for (var i = 0; i < this.getSelectionCount(); i++)
-			{
-				if (vwf.getProperty(SelectedVWFNodes[i].id, 'type') == 'Group')
-				{
+        this.OpenGroup = function() {
+            for (var i = 0; i < this.getSelectionCount(); i++) {
+                if (vwf.getProperty(SelectedVWFNodes[i].id, 'type') == 'Group') {
 					this.setProperty(SelectedVWFNodes[i].id, 'open', true);
 				}
 			}
 			this.updateBounds();
 		}
-		this.CloseGroup = function ()
-		{
-			for (var i = 0; i < this.getSelectionCount(); i++)
-			{
-				if (vwf.getProperty(SelectedVWFNodes[i].id, 'type') == 'Group')
-				{
+        this.CloseGroup = function() {
+            for (var i = 0; i < this.getSelectionCount(); i++) {
+                if (vwf.getProperty(SelectedVWFNodes[i].id, 'type') == 'Group') {
 					this.setProperty(SelectedVWFNodes[i].id, 'open', false);
 				}
 			}
 			this.updateBounds();
 		}
-		this.SelectObjectPublic = function (VWFNodeid)
-		{
-			if (SelectMode == 'TempPick')
-			{
-				if (this.TempPickCallback) this.TempPickCallback(vwf.getNode(VWFNodeid));
+        //new vwf kernel does not add the ID to the get node, but all our old code expects it. Add it and return the node.
+        this.getNode = function(id) {
+            if (!id) return null;
+            var node = vwf.getNode(id, true, true);
+            node.id = id;
+
+            var walk = function(parent) {
+                for (var i in parent.children) {
+                    parent.children[i].name = i;
+                    walk(parent.children[i]);
 			}
-			else
-			{
+
+            }
+            walk(node);
+            node.name = vwf.name(id);
+
+            return node;
+        }
+        this.SelectObjectPublic = function(VWFNodeid) {
+            if (SelectMode == 'TempPick') {
+                if (this.TempPickCallback) this.TempPickCallback(_Editor.getNode(VWFNodeid));
+            } else {
 				this.SelectObject(VWFNodeid, this.PickMod);
 			}
 		}
@@ -2247,63 +2213,49 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			//stop the GUI drag function
 			
 			this.guiNodeDragEnd();
-			if (VWFNode && VWFNode.constructor == Array)
-			{
-				for (var i = 0; i < VWFNode.length; i++) VWFNode[i] = vwf.getNode(VWFNode[i]);
-			}
-			else if (typeof (VWFNode) == 'object') VWFNode = [VWFNode];
-			else if (typeof (VWFNode) == 'string') VWFNode = [vwf.getNode(VWFNode)];
+            if (VWFNode && VWFNode.constructor == Array) {
+                for (var i = 0; i < VWFNode.length; i++) VWFNode[i] = _Editor.getNode(VWFNode[i]);
+            } else if (typeof(VWFNode) == 'object') VWFNode = [VWFNode];
+            else if (typeof(VWFNode) == 'string') VWFNode = [_Editor.getNode(VWFNode)];
 		
 		//this causes too much drama. look into solution in future	
 		//	if(!skipUndo)
 		//		_UndoManager.recordSelection(VWFNode);
 
-			if (!selectmod)
-			{
+            if (!selectmod) {
 				SelectedVWFNodes = [];
 			}
-			if (VWFNode && VWFNode[0] != null) for (var i = 0; i < VWFNode.length; i++)
-				{
+            if (VWFNode && VWFNode[0] != null)
+                for (var i = 0; i < VWFNode.length; i++) {
 					//if you've selected a node that is grouped, but not selected a group directly, select the nearest open group head.
-					try
-					{
-						if (vwf.getProperty(VWFNode[i].id, 'type') != 'Group')
-						{
+                    try {
+                        if (vwf.getProperty(VWFNode[i].id, 'type') != 'Group') {
 							var testnode = VWFNode[i];
 							//'index-vwf can never be a group, skip getting it to check'
-							while (testnode && (vwf.getProperty(testnode.id, 'type') != 'Group' || ( vwf.getProperty(testnode.id, 'type') == 'Group' && vwf.getProperty(testnode.id, 'open') == true)))
-							{
-								if(vwf.parent(testnode.id) == 'index-vwf')
-								{
+                            while (testnode && (vwf.getProperty(testnode.id, 'type') != 'Group' || (vwf.getProperty(testnode.id, 'type') == 'Group' && vwf.getProperty(testnode.id, 'open') == true))) {
+                                if (vwf.parent(testnode.id) == 'index-vwf') {
 									testnode = null;
 									break;
+                                } else {
+                                    testnode = _Editor.getNode(vwf.parent(testnode.id));
 								}
-								else
-								{
-									testnode = vwf.getNode(vwf.parent(testnode.id));
 								}
-							}
 							if(testnode)
 								VWFNode[i] = testnode;
 						}
-					}
-					catch (e)
-					{}
-					if (!selectmod)
-					{
-						if (VWFNode[i])
-						{
+                    } catch (e) {}
+                    if (!selectmod) {
+                        if (VWFNode[i]) {
 							if (!this.isSelected(VWFNode[i].id)) SelectedVWFNodes.push(VWFNode[i]);
 						}
 					}
-					if (selectmod == Add)
-					{
+                    if (selectmod == Add) {
 						if (!this.isSelected(VWFNode[i].id)) SelectedVWFNodes.push(VWFNode[i]);
 					}
-					if (selectmod == Subtract)
-					{
+                    if (selectmod == Subtract) {
 						var index = -1;
-						for (var j = 0; j < SelectedVWFNodes.length; j++) if (SelectedVWFNodes[j] && SelectedVWFNodes[j].id == VWFNode[i].id) index = j;
+                        for (var j = 0; j < SelectedVWFNodes.length; j++)
+                            if (SelectedVWFNodes[j] && SelectedVWFNodes[j].id == VWFNode[i].id) index = j;
 						SelectedVWFNodes.splice(index, 1);
 					}
 					
@@ -2312,22 +2264,18 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			if (SelectedVWFNodes[0]) this.SelectedVWFID = SelectedVWFNodes[0].id;
 			else this.SelectedVWFID = null;
 			this.triggerSelectionChanged(SelectedVWFNodes[0]);
-			if (MoveGizmo == null)
-			{
+            if (MoveGizmo == null) {
 				BuildMoveGizmo();
 			}
 			MoveGizmo.InvisibleToCPUPick = false;
 			this.backupTransfroms = [];
-			if (SelectedVWFNodes[0])
-			{
+            if (SelectedVWFNodes[0]) {
 				
-				for (var s = 0; s < SelectedVWFNodes.length; s++)
-				{
+                for (var s = 0; s < SelectedVWFNodes.length; s++) {
 					lastscale[s] = this.getScaleCallback(SelectedVWFNodes[s].id);
 					
 					this.showMoveGizmo();
-					if (this.findviewnode(SelectedVWFNodes[s].id))
-					{
+                    if (this.findviewnode(SelectedVWFNodes[s].id)) {
 						//this.findviewnode(SelectedVWFNodes[s].id).setTransformMode(MATH.P_MATRIX);
 						//this.findviewnode(SelectedVWFNodes[s].id).setRotMatrix(this.GetRotationMatrix(this.findviewnode(SelectedVWFNodes[s].id).getLocalthis.Matrix()));
 						//this.findviewnode(SelectedVWFNodes[s].id).updateMatrix
@@ -2336,15 +2284,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 
 				this.updateBoundsAndGizmoLoc();
 				this.updateGizmoOrientation(true);
-			}
-			else
-			{
+            } else {
 				this.hideMoveGizmo();
 				MoveGizmo.InvisibleToCPUPick = true;
-				if (SelectionBounds.length > 0)
-				{
-					for (var i = 0; i < SelectionBounds.length; i++)
-					{
+                if (SelectionBounds.length > 0) {
+                    for (var i = 0; i < SelectionBounds.length; i++) {
 						SelectionBounds[i].parent.remove(SelectionBounds[i], true);
 						SelectionBounds[i].children[0].geometry.dispose()
 					}
@@ -2355,8 +2299,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			
 			$('#StatusSelectedID').text('No Selection');
 					$('#StatusSelectedName').text('No Selection');
-					if(SelectedVWFNodes.length > 0)
-					{
+            if (SelectedVWFNodes.length > 0) {
 						if(SelectedVWFNodes.length == 1)
 							$('#StatusSelectedID').text(SelectedVWFNodes[0].id);
 						else
@@ -2371,8 +2314,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			$('.guiselected').off('dblclick',this.guiNodeDragEnd);
 			
 			$('.guiselected').removeClass('guiselected');
-			for(var i =0; i < SelectedVWFNodes.length; i++)
-			{
+            for (var i = 0; i < SelectedVWFNodes.length; i++) {
 				var id = SelectedVWFNodes[i].id;
 				$('#guioverlay_' + id).addClass('guiselected');
 
@@ -2384,30 +2326,24 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			//send a signal over the reflector to let others know that I have selected something.
 			this.NotifyPeersOfSelection();
 		}.bind(this);
-		this.ResetTransforms = function()
-		{
-			for(var i =0; i < SelectedVWFNodes.length; i++)
-			{
+        this.ResetTransforms = function() {
+            for (var i = 0; i < SelectedVWFNodes.length; i++) {
 				this.setProperty(SelectedVWFNodes[i].id,'transform', [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1], "You do not have permission to reset the transforms for this object");
 			}
 		}
-		this.hideMoveGizmo = function ()
-		{
+        this.hideMoveGizmo = function() {
 			
 			
-			while (MoveGizmo.children.length)
-			{
+            while (MoveGizmo.children.length) {
 				MoveGizmo.remove(MoveGizmo.children[MoveGizmo.children.length - 1])
 			}
 		}
-		this.showMoveGizmo = function ()
-		{
+        this.showMoveGizmo = function() {
 			
 			
 			this.SetGizmoMode(this.GizmoMode);
 		}
-		this.updateBoundsAndGizmoLoc = function ()
-		{
+        this.updateBoundsAndGizmoLoc = function() {
 			self.updateGizmoLocation();
 			self.updateGizmoSize();
 			self.updateGizmoOrientation(false);
@@ -2420,8 +2356,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		var tgizpos= [0,0,0];
 		var tempvec1 = [0,0,0];
 		var transposeTemp = [];
-		this.updateGizmoSize = function ()
-		{
+        this.updateGizmoSize = function() {
 			
 			tgizpos[0] = MoveGizmo.parent.matrixWorld.elements[12];
 			tgizpos[1] = MoveGizmo.parent.matrixWorld.elements[13];
@@ -2436,8 +2371,8 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			dist = -tgizpos2[2] / 65;
 			var oldscale = [MoveGizmo.matrix.elements[0],MoveGizmo.matrix.elements[5],MoveGizmo.matrix.elements[10]];
 			MoveGizmo.matrix.scale(new THREE.Vector3(1 / oldscale[0], 1 / oldscale[1], 1 / oldscale[2]));
-			var windowXadj = 1600.0 / $('#index-vwf').width();
-			var windowYadj = 1200.0 / $('#index-vwf').height();
+            var windowXadj = 1600.0 / $(window).width();
+            var windowYadj = 1200.0 / $(window).height();
 			var winadj = Math.max(windowXadj, windowYadj);
 			MoveGizmo.matrix.scale(new THREE.Vector3(dist * winadj * fovadj, dist * winadj * fovadj, dist * winadj * fovadj));
 			
@@ -2448,29 +2383,28 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			
 			MoveGizmo.updateMatrixWorld(true);
 		}.bind(this);
-		this.BuildMoveGizmo = function ()
-		{
+        this.BuildMoveGizmo = function() {
 			var red = [1, 0, 0, 1];
 			var green = [0, 1, .0, 1];
 			var blue = [0, 0, 1, 1];
 			if (MoveGizmo != null) return;
 			//temp mesh for all geometry to test
-			var cubeX = new THREE.Mesh(new THREE.CubeGeometry(10.00, .40, .40), new THREE.MeshLambertMaterial(
-			{
+            var cubeX = new THREE.Mesh(new THREE.CubeGeometry(10.00, .40, .40), new THREE.MeshLambertMaterial({
 				color: 0xFF0000,
-				emissive: 0xFF0000
+                emissive: 0xFF0000,
+                ambient: 0xFF0000
 			}));
 			cubeX.position.set(5.00, .15, .15);
-			var cubeY = new THREE.Mesh(new THREE.CubeGeometry(.40, 10.00, .40), new THREE.MeshLambertMaterial(
-			{
+            var cubeY = new THREE.Mesh(new THREE.CubeGeometry(.40, 10.00, .40), new THREE.MeshLambertMaterial({
 				color: 0x00FF00,
-				emissive: 0x00FF00
+                emissive: 0x00FF00,
+                ambient: 0x00FF00
 			}));
 			cubeY.position.set(.15, 5.00, .15);
-			var cubeZ = new THREE.Mesh(new THREE.CubeGeometry(.40, .40, 10.00), new THREE.MeshLambertMaterial(
-			{
+            var cubeZ = new THREE.Mesh(new THREE.CubeGeometry(.40, .40, 10.00), new THREE.MeshLambertMaterial({
 				color: 0x0000FF,
-				emissive: 0x0000FF
+                emissive: 0x0000FF,
+                ambient: 0x0000FF
 			}));
 			cubeZ.position.set(.15, .15, 5.00);
 			MoveGizmo = new THREE.Object3D();
@@ -2481,20 +2415,38 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			cubeX.geometry.setPickGeometry(new THREE.CubeGeometry(10.00, 1.80, 1.80));
 			cubeY.geometry.setPickGeometry(new THREE.CubeGeometry(1.80, 10.00, 1.80));
 			cubeZ.geometry.setPickGeometry(new THREE.CubeGeometry(1.80, 1.80, 10.00));
-			var rotx = new THREE.Mesh(new THREE.TorusGeometry(7, .50, 4, 20), new THREE.MeshLambertMaterial(
-			{
+
+
+            var arrowX = new THREE.Mesh(new THREE.CylinderGeometry(0, 1, 2, 10, 0), cubeX.material);
+            cubeX.add(arrowX, true);
+            arrowX.rotation.z = -90 * 0.0174532925;
+            arrowX.position.x = 5
+
+            var arrowY = new THREE.Mesh(new THREE.CylinderGeometry(0, 1, 2, 10, 0), cubeY.material);
+            cubeY.add(arrowY, true);
+            //arrowX.rotation.z = -90 * 0.0174532925;
+            arrowY.position.y = 5
+
+            var arrowZ = new THREE.Mesh(new THREE.CylinderGeometry(0, 1, 2, 10, 0), cubeZ.material);
+            cubeZ.add(arrowZ, true);
+            arrowZ.rotation.y = -90 * 0.0174532925;
+            arrowZ.rotation.z = -90 * 0.0174532925
+            arrowZ.position.z = 5
+
+            var rotx = new THREE.Mesh(new THREE.TorusGeometry(7, .50, 4, 20), new THREE.MeshLambertMaterial({
 				color: 0xFF0000,
-				emissive: 0xFF0000
+                emissive: 0xFF0000,
+                ambient: 0xFF0000
 			}));
-			var roty = new THREE.Mesh(new THREE.TorusGeometry(7, .50, 4, 20), new THREE.MeshLambertMaterial(
-			{
+            var roty = new THREE.Mesh(new THREE.TorusGeometry(7, .50, 4, 20), new THREE.MeshLambertMaterial({
 				color: 0x00FF00,
-				emissive: 0x00FF00
+                emissive: 0x00FF00,
+                ambient: 0x00FF00
 			}));
-			var rotz = new THREE.Mesh(new THREE.TorusGeometry(7, .50, 4, 20), new THREE.MeshLambertMaterial(
-			{
+            var rotz = new THREE.Mesh(new THREE.TorusGeometry(7, .50, 4, 20), new THREE.MeshLambertMaterial({
 				color: 0x0000FF,
-				emissive: 0x0000FF
+                emissive: 0x0000FF,
+                ambient: 0x0000FF
 			}));
 			MoveGizmo.allChildren.push(rotx);
 			roty.rotation.x = Math.PI / 2;
@@ -2502,22 +2454,41 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			rotx.rotation.y = Math.PI / 2;
 			MoveGizmo.allChildren.push(rotz);
 			rotz.rotation.z = 90;
+
+
 			MoveGizmo.allChildren.push(this.BuildBox([.5, .5, .5], [10.25, 0, 0], red)); //scale x		
 			MoveGizmo.allChildren.push(this.BuildBox([.5, .5, .5], [0, 10.25, 0], green)); //scale y
 			MoveGizmo.allChildren.push(this.BuildBox([.5, .5, .5], [0, 0, 10.25], blue)); //scale z
 			MoveGizmo.allChildren.push(this.BuildBox([.85, .85, .85], [9.25, 0, 0], red)); //scale xyz
 			MoveGizmo.allChildren.push(this.BuildBox([.85, .85, .85], [0, 9.25, 0], green)); //scale xyz
 			MoveGizmo.allChildren.push(this.BuildBox([.85, .85, .85], [0, 0, 9.25], blue)); //scale xyz
-			MoveGizmo.allChildren.push(this.BuildBox([1.50, 1.50, .30], [.75, .75, .15], [75, 75, 0, 1])); //movexy
-			MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( 8, 8, .30 ));
-			MoveGizmo.allChildren.push(this.BuildBox([1.50, .30, 1.50], [.75, .15, .75], [75, 0, 75, 1])); //movexz
-			MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( 8, .30, 8 ));
-			MoveGizmo.allChildren.push(this.BuildBox([.30, 1.50, 1.50], [.15, .75, .75], [0, 75, 75, 1])); //moveyz
-			MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( .30, 8, 8 ));
+            MoveGizmo.allChildren.push(this.BuildBox([6, 6, 0], [3, 3, -.2], [75, 75, 0, 1], .5)); //movexy
+            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( 8, 8, .30 ));
+            MoveGizmo.allChildren.push(this.BuildBox([6, 0, 6], [3.2, -.2, 3], [75, 0, 75, 1], .5)); //movexz
+            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( 8, .30, 8 ));
+            MoveGizmo.allChildren.push(this.BuildBox([0, 6, 6], [-.2, 3.2, 3], [0, 75, 75, 1], .5)); //moveyz
+            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( .30, 8, 8 ));
+
+
 			MoveGizmo.allChildren.push(this.BuildRing(12, .7, [0, 0, 1], 30, [1, 1, 1, 1], 90, 450)); //rotate z
-			MoveGizmo.allChildren.push(this.BuildRing(7, 0.5, [1, 0, 0], 37, red, 0, 370)); //rotate x
-			MoveGizmo.allChildren.push(this.BuildRing(7, 0.5, [0, 1, 0], 37, green, 0, 370)); //rotate y
-			MoveGizmo.allChildren.push(this.BuildRing(7, 0.5, [0, 0, 1], 37, blue, 0, 370)); //rotate z
+
+            var xRotation = this.BuildRing(7, 0.5, [1, 0, 0], 37, red, 0, 370);
+            xRotation.add(this.BuildBox([.5, .5, 13], [0, 0, 0], red), true);
+            xRotation.children[0].material = xRotation.material;
+            MoveGizmo.allChildren.push(xRotation); //rotate x
+
+
+            var yRotation = this.BuildRing(7, 0.5, [0, 1, 0], 37, green, 0, 370);
+            yRotation.add(this.BuildBox([.5, .5, 13], [0, 0, 0], green), true);
+            yRotation.children[0].material = yRotation.material;
+            MoveGizmo.allChildren.push(yRotation); //rotate y
+
+
+
+            var zRotation = this.BuildRing(7, 0.5, [0, 0, 1], 37, blue, 0, 370);
+            zRotation.add(this.BuildBox([.5, .5, 13], [0, 0, 0], blue), true);
+            zRotation.children[0].material = zRotation.material;
+            MoveGizmo.allChildren.push(zRotation); //rotate z
 			//MoveGizmo.allChildren.push(this.BuildBox([5, 5, 5], [0, 0, 0], [1, 1, 1, 1])); //scale uniform
 			MoveGizmo.allChildren.push(this.BuildScaleUniform()); //scale uniform
 			
@@ -2565,8 +2536,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			_SceneManager.addToRoot(movegizhead);
 			this.findscene().add(movegizhead, true);
 			MoveGizmo.matrixAutoUpdate = false;
-			for (var i = 0; i < MoveGizmo.allChildren.length; i++)
-			{
+            for (var i = 0; i < MoveGizmo.allChildren.length; i++) {
 				MoveGizmo.allChildren[i].material.originalColor = new THREE.Color();
 				var c = MoveGizmo.allChildren[i].material.color;
 				MoveGizmo.allChildren[i].material.originalColor.setRGB(c.r, c.g, c.b);
@@ -2579,80 +2549,58 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			}
 			this.SetGizmoMode(Move);
 		}.bind(this);
-		this.SetGizmoMode = function (type)
-		{
+        this.SetGizmoMode = function(type) {
 			
 			this.GizmoMode = type;
 			
 			if(!this.GetSelectedVWFID()) return;
-			if (type == Move)
-			{
+            if (type == Move) {
 				$('#StatusTransform').text('Move');
-				for (var i = 0; i < MoveGizmo.allChildren.length; i++)
-				{
-					if ((i >= 0 && i <= 2) || (i >= 12 && i <= 14))
-					{
+                for (var i = 0; i < MoveGizmo.allChildren.length; i++) {
+                    if ((i >= 0 && i <= 2) || (i >= 12 && i <= 14)) {
 						MoveGizmo.add(MoveGizmo.allChildren[i], true);
-					}
-					else
-					{
+                    } else {
 						MoveGizmo.remove(MoveGizmo.allChildren[i], true);
 					}
 					this.GizmoMode = Move;
 				}
 			}
-			if (type == Rotate)
-			{
+            if (type == Rotate) {
 				$('#StatusTransform').text('Rotate');
-				for (var i = 0; i < MoveGizmo.allChildren.length; i++)
-				{
-					if (i >= 16 && i <= 18)
-					{
+                for (var i = 0; i < MoveGizmo.allChildren.length; i++) {
+                    if (i >= 16 && i <= 18) {
 						MoveGizmo.add(MoveGizmo.allChildren[i], true);
-					}
-					else
-					{
+                    } else {
 						MoveGizmo.remove(MoveGizmo.allChildren[i], true);
 					}
 					this.GizmoMode = Rotate;
 				}
 			}
-			if (type == Scale)
-			{
+            if (type == Scale) {
 				$('#StatusTransform').text('Scale');
 				//SetCoordSystem(LocalCoords);			
-				for (var i = 0; i < MoveGizmo.allChildren.length; i++)
-				{
-					if (i == 19)
-					{
+                for (var i = 0; i < MoveGizmo.allChildren.length; i++) {
+                    if (i == 19) {
 						MoveGizmo.add(MoveGizmo.allChildren[i], true);
-					}
-					else
-					{
+                    } else {
 						MoveGizmo.remove(MoveGizmo.allChildren[i], true);
 					}
 					this.GizmoMode = Scale;
 				}
 			}
-			if (type == Multi)
-			{
+            if (type == Multi) {
 				$('#StatusTransform').text('Multi');
-				for (var i = 0; i < MoveGizmo.allChildren.length; i++)
-				{
-					if (i <= 15)
-					{
+                for (var i = 0; i < MoveGizmo.allChildren.length; i++) {
+                    if (i <= 15) {
 						MoveGizmo.add(MoveGizmo.allChildren[i], true);
-					}
-					else
-					{
+                    } else {
 						MoveGizmo.remove(MoveGizmo.allChildren[i], true);
 					}
 					this.GizmoMode = Multi;
 				}
 			}
 		}.bind(this);
-		this.BuildRing = function (radius1, radius2, axis, steps, color, startdeg, enddeg)
-		{
+        this.BuildRing = function(radius1, radius2, axis, steps, color, startdeg, enddeg) {
 			var mesh = new THREE.Mesh(new THREE.TorusGeometry(radius1, radius2, 6, steps), new THREE.MeshLambertMaterial());
 			mesh.material.color.r = color[0];
 			mesh.material.color.g = color[1];
@@ -2666,19 +2614,22 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			mesh.updateMatrixWorld(true);
 			return mesh;
 		}.bind(this);
-		this.BuildBox = function (size, offset, color)
-		{
+        this.BuildBox = function(size, offset, color, alpha) {
 			var mesh = new THREE.Mesh(new THREE.CubeGeometry(size[0], size[1], size[2]), new THREE.MeshLambertMaterial());
 			mesh.material.color.r = color[0];
 			mesh.material.color.g = color[1];
 			mesh.material.color.b = color[2];
+            mesh.material.ambient.r = color[0];
+            mesh.material.ambient.g = color[1];
+            mesh.material.ambient.b = color[2];
 			mesh.material.emissive.r = color[0];
 			mesh.material.emissive.g = color[1];
 			mesh.material.emissive.b = color[2];
 			mesh.material.shading = false;
+            mesh.material.transparent = true;
+            mesh.material.opacity = alpha || 1;
 			//mesh.matrix.setPosition(new THREE.Vector3(offset[0],offset[1],offset[2]));
-			for (var i = 0; i < mesh.geometry.vertices.length; i++)
-			{
+            for (var i = 0; i < mesh.geometry.vertices.length; i++) {
 				mesh.geometry.vertices[i].x += offset[0];
 				mesh.geometry.vertices[i].y += offset[1];
 				mesh.geometry.vertices[i].z += offset[2];
@@ -2687,8 +2638,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			mesh.updateMatrixWorld(true);
 			return mesh;
 		}.bind(this);
-		this.BuildWireBox = function (size, offset, color)
-		{
+        this.BuildWireBox = function(size, offset, color) {
 			
 			var mesh = new THREE.Line(new THREE.Geometry(), new THREE.LineBasicMaterial(), THREE.LinePieces );
 			mesh.material.color.r = color[0];
@@ -2709,8 +2659,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				];
 
 				//mesh.matrix.setPosition(new THREE.Vector3(offset[0],offset[1],offset[2]));
-				for (var i = 0; i < vertices.length; i++)
-				{
+            for (var i = 0; i < vertices.length; i++) {
 					vertices[i].x += offset[0];
 					vertices[i].y += offset[1];
 					vertices[i].z += offset[2];
@@ -2743,8 +2692,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			return mesh;
 		}.bind(this);
 		
-		this.BuildScaleUniform = function ()
-		{
+        this.BuildScaleUniform = function() {
 			var mesh = new THREE.Mesh(new THREE.SphereGeometry(3,4,2), new THREE.MeshPhongMaterial());
 			mesh.material.color.r = .5;
 			mesh.material.color.g = .5;
@@ -2763,24 +2711,22 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		}.bind(this);
 		
 		//callback for setPArent. CAlled once a node is picked. Selected objects will become children of this node
-		this.PickParentCallback = function (parentnode)
-		{
-			_UndoManager.startCompoundEvent();
-			if(parentnode)
-			{
+        this.PickParentCallback = function(parentnode) {
 				
+
+            var newnames = [];
+            if (parentnode) {
+
 				var parent = parentnode.id;
 
-				for(var i = 0; i < this.getSelectionCount(); i++)
-				{
+                for (var i = 0; i < this.getSelectionCount(); i++) {
 					var id = this.GetSelectedVWFNode(i).id;
 
-					if(id != parent)
-					{
-						if(vwf.parent(id) != parent)
-						{
-							if(vwf.decendants(id).indexOf(parent) == -1)
-							{
+                    if (id != parent) {
+                        if (vwf.parent(id) != parent) {
+                            if (vwf.decendants(id).indexOf(parent) == -1) {
+                                _UndoManager.startCompoundEvent();
+
 								var node = _DataManager.getCleanNodePrototype(id);
 								var childmat = toGMat(this.findviewnode(id).matrixWorld);
 								var parentmat = toGMat(this.findviewnode(parentnode.id).matrixWorld);
@@ -2791,39 +2737,36 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 								delete node.properties.quaternion;
 								delete node.properties.scale;
 								node.properties.transform = MATH.transposeMat4(childmat);
+                                var newname = GUID();
+                                newnames.push(newname)
+                                this.createChild(parentnode.id, newname, node);
+                                this.DeleteSelection();
+                                this.TempPickCallback = null;
+                                self.SelectOnNextCreate(newnames);
+                                this.SetSelectMode('Pick');
+                                _UndoManager.stopCompoundEvent();
 								
-								this.createChild(parentnode.id, GUID(), node);
-							}else
-							{
+                            } else {
 								alertify.alert('This object cannot be assigned to be a child of one of its decendants')
 							}
-						}
-						else
-						{
+                        } else {
 								alertify.alert('This object is already the selected objects parent');
 						}
-					}else
-					{
+                    } else {
 						alertify.alert('An object cannot be linked to itself');
 					}	
 				}
 
-			}else
-			{
+            } else {
 					alertify.alert('No object selected')
 			}
 
-			this.DeleteSelection();
-			this.TempPickCallback = null;
-			self.SelectOnNextCreate();
-			this.SetSelectMode('Pick');
-			_UndoManager.stopCompoundEvent();
+
 		}
-		this.RemoveParent = function ()
-		{
+        this.RemoveParent = function() {
 			_UndoManager.startCompoundEvent();
-			for(var i = 0; i < this.getSelectionCount(); i++)
-			{
+            var newnames = [];
+            for (var i = 0; i < this.getSelectionCount(); i++) {
 				var id = this.GetSelectedVWFNode(i).id;
 				var node = _DataManager.getCleanNodePrototype(id);
 				var childmat = toGMat(this.findviewnode(id).matrixWorld);
@@ -2832,24 +2775,23 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				delete node.properties.quaternion;
 				delete node.properties.scale;
 				node.properties.transform = MATH.transposeMat4(childmat);
-				this.createChild('index-vwf', GUID(), node);
+                var newname = GUID();
+                newnames.push(newname);
+                this.createChild('index-vwf', newname, node);
 			}
 
 			this.DeleteSelection();
-			self.SelectOnNextCreate(this.getSelectionCount());
+            self.SelectOnNextCreate(newnames);
 			this.SetSelectMode('Pick');
 			_UndoManager.stopCompoundEvent();
 		}
 		//Choose the node to become the parent of the selected node
-		this.SetParent = function ()
-		{
-			if (!this.GetSelectedVWFNode())
-			{
+        this.SetParent = function() {
+            if (!this.GetSelectedVWFNode()) {
 				_Notifier.alert('No object selected. Select the desired child, then use this to choose the parent.');
 				return;
 			}
-			if (this.findviewnode(this.GetSelectedVWFID()).initializedFromAsset)
-			{
+            if (this.findviewnode(this.GetSelectedVWFID()).initializedFromAsset) {
 				_Notifier.alert('This object is part of a 3D asset, and cannot have its heirarchy modified');
 				return;
 			}
@@ -2857,12 +2799,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			this.SetSelectMode('TempPick');
 			this.TempPickCallback = this.PickParentCallback;
 		}
-		this.UngroupSelection = function ()
-		{
+        this.UngroupSelection = function() {
 			_UndoManager.startCompoundEvent();
 
-			for (var i = 0; i < this.getSelectionCount(); i++)
-			{
+            for (var i = 0; i < this.getSelectionCount(); i++) {
 				// if(!self.isOwner(SelectedVWFNodes[i].id,document.PlayerNumber))
 				// {
 				// _Notifier.alert('You must be the group owner to ungroup objects.');
@@ -2870,8 +2810,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				// }
 				var vwfparent = vwf.parent(this.GetSelectedVWFNode(i).id);
 				var children = vwf.children(this.GetSelectedVWFNode(i).id);
-				for (var j = 0; j < children.length; j++)
-				{
+                for (var j = 0; j < children.length; j++) {
 					var node = _DataManager.getCleanNodePrototype(children[j]);
 					var childmat = toGMat(this.findviewnode(children[j]).matrixWorld);
 					var parentmat = toGMat(this.findviewnode(vwfparent).matrixWorld);
@@ -2895,15 +2834,12 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			_UndoManager.stopCompoundEvent();
 			this.SelectObject();
 		}
-		this.GroupSelection = function ()
-		{
+        this.GroupSelection = function() {
 			var parentmat = MATH.identMatrix();
 			var parent = this.findviewnode(this.GetSelectedVWFID()).parent;
 			var pos;
-			for (var i = 0; i < this.getSelectionCount(); i++)
-			{
-				if (parent != this.findviewnode(this.GetSelectedVWFNode(i).id).parent)
-				{
+            for (var i = 0; i < this.getSelectionCount(); i++) {
+                if (parent != this.findviewnode(this.GetSelectedVWFNode(i).id).parent) {
 					_Notifier.alert('All objects must have the same parent to be grouped');
 					return;
 				}
@@ -2929,8 +2865,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				},
 				children: {}
 			};
-			for (var i = 0; i < this.getSelectionCount(); i++)
-			{
+            for (var i = 0; i < this.getSelectionCount(); i++) {
 				var node = _DataManager.getCleanNodePrototype(this.GetSelectedVWFNode(i).id);
 				var childmat = toGMat(this.findviewnode(this.GetSelectedVWFNode(i).id).matrixWorld);
 				var invparentmat = MATH.inverseMat4(parentmat);
@@ -2947,33 +2882,26 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			var newname = GUID();
 			_UndoManager.recordCreate('index-vwf', newname, proto)
 			vwf_view.kernel.createChild('index-vwf',newname, proto);
-			self.SelectOnNextCreate();
+            self.SelectOnNextCreate([newname]);
 			this.SetSelectMode('Pick');
 			_UndoManager.stopCompoundEvent();
 		}
-		this.findviewnode = function (id)
-		{
-			for (var i = 0; i < vwf.views.length; i++)
-			{
+        this.findviewnode = function(id) {
+            for (var i = 0; i < vwf.views.length; i++) {
 				if (vwf.views[i] && vwf.views[i].state && vwf.views[i].state.nodes && vwf.views[i].state.nodes[id] && vwf.views[i].state.nodes[id].threeObject) return vwf.views[i].state.nodes[id].threeObject;
 				if (vwf.views[i] && vwf.views[i].state && vwf.views[i].state.scenes && vwf.views[i].state.scenes[id] && vwf.views[i].state.scenes[id].threeScene) return vwf.views[i].state.scenes[id].threeScene;
 			}
 			return null;
 		}.bind(this);
-		this.SelectScene = function ()
-		{
+        this.SelectScene = function() {
 			this.SelectObject('index-vwf');
 		}
-		this.guiNodeDragStart = function(e)
-		{
+        this.guiNodeDragStart = function(e) {
 			
-			if(_Editor.GUIdragging) 
-			{
+            if (_Editor.GUIdragging) {
 				
 				_Editor.guiNodeDragEnd(e);
-			}
-			else
-			{
+            } else {
 				_Editor.GUIdragging = true;
 				$('#guioverlay_index-vwf').on('mousemove',_Editor.guiNodeDraged);
 				$('#guioverlay_index-vwf').on('mousedown',_Editor.guiNodeDragEnd);
@@ -2984,11 +2912,9 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			e.stopImmediatePropagation();
 			return false;
 		}
-		this.guiNodeDraged = function(e)
-		{
+        this.guiNodeDraged = function(e) {
 			
-			if(_Editor.GUIdragging)
-			{
+            if (_Editor.GUIdragging) {
 				
 				var val = goog.vec.Mat4.createIdentity();
 				val[12] = e.clientX - 5;
@@ -3006,17 +2932,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			e.stopImmediatePropagation();
 			return false;
 		}.bind(this)
-		this.guiNodeDragEnd = function(e)
-		{
+        this.guiNodeDragEnd = function(e) {
 			_Editor.GUIdragging = false;
 			$('#guioverlay_index-vwf').off('mousemove',_Editor.guiNodeDraged);
 			$('#guioverlay_index-vwf').css('pointer-events','none');
 			$('#guioverlay_index-vwf').off('mousedown',_Editor.guiNodeDragEnd);
 		}.bind(this)
-		this.guiNodePick = function(e)
-		{	
-			if (SelectMode == 'TempPick')
-			{
+        this.guiNodePick = function(e) {
+            if (SelectMode == 'TempPick') {
 				if (_Editor.TempPickCallback)
 					 _Editor.TempPickCallback(this.vwfID);
 			}else
@@ -3025,173 +2948,135 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			e.stopImmediatePropagation();
 			return false;
 		}
-		this.bindGuiNodePick =function()
-		{
+        this.bindGuiNodePick = function() {
 			
 			$('.guinode').addClass('guipick');
 			$('.guinode').on('mouseup',this.guiNodePick);
 			$('.guinode').on('mousedown',this.guiNodePick);
 			$('.guinode').on('click',this.guiNodePick);
 		}
-		this.unbindGuiNodePick =function()
-		{
+        this.unbindGuiNodePick = function() {
 			$('.guinode').removeClass('guipick');
 			$('.guinode').off('mouseup',this.guiNodePick)
 			$('.guinode').off('mousedown',this.guiNodePick)
 			$('.guinode').off('click',this.guiNodePick);
 		}
-		this.SetSelectMode = function (e)
-		{
+        this.SetSelectMode = function(e) {
 			SelectMode = e;
 			$('#StatusPickMode').text('Pick: ' + e);
-			if (e == 'Pick') 
-			{	
+            if (e == 'Pick') {
 				$('#MenuSelectPickicon').addClass('iconselected')
 				$('#glyphOverlay').show();
 				
-			}
-			else {
+            } else {
 			
 				$('#MenuSelectPickicon').removeClass('iconselected')
 				$('#glyphOverlay').hide();
 				
 			}
-			if (SelectMode == 'TempPick')
-			{
+            if (SelectMode == 'TempPick') {
 				$('#index-vwf').css('cursor', 'crosshair');
 				
-			}
-			else
-			{
+            } else {
 				$('#index-vwf').css('cursor', 'default');
 				
 			}
-			if(SelectMode == "Pick" || SelectMode == "TempPick")
-			{
+            if (SelectMode == "Pick" || SelectMode == "TempPick") {
 				this.bindGuiNodePick();
-			}else
-			{
+            } else {
 				this.unbindGuiNodePick();
 			}
 		}.bind(this);
-		this.SetCoordSystem = function (e)
-		{
+        this.SetCoordSystem = function(e) {
 			CoordSystem = e;
-			if (e == WorldCoords)
-			{
+            if (e == WorldCoords) {
 				$('#StatusCoords').text('World Coords');
 				$('#MenuWorldicon').addClass('iconselected')
 				$('#MenuLocalicon').removeClass('iconselected');
-			}
-			else
-			{
+            } else {
 				$('#StatusCoords').text('Local Coords');
 				$('#MenuWorldicon').removeClass('iconselected');
 				$('#MenuLocalicon').addClass('iconselected')
 			}
 		}.bind(this);
-		this.GetMoveGizmo = function (e)
-		{
+        this.GetMoveGizmo = function(e) {
 			return MoveGizmo;
 		}.bind(this);
-		this.SetSnaps = function (m, r, s)
-		{
+        this.SetSnaps = function(m, r, s) {
 			RotateSnap = r;
 			MoveSnap = m;
 			ScaleSnap = s;
 			$('#StatusSnaps').text('Snaps: ' + (r / 0.0174532925) + 'deg, ' + m + 'm, ' + s + '%');
 		}.bind(this);
-		this.GetSelectedVWFID = function ()
-		{
+        this.GetSelectedVWFID = function() {
 			return this.SelectedVWFID;
 		}
-		this.CallCreateNodeCallback = function (e, p)
-		{
-			try
-			{
-				this.createNodeCallback(e, p);
-			}
-			catch (e)
-			{
+        this.CallCreateNodeCallback = function(c, p, n) {
+            try {
+                this.createNodeCallback(c, p, n);
+            } catch (e) {
 				//console.log(e);
 			}
 		}
-		this.SetCreateNodeCallback = function (callback)
-		{
+        this.SetCreateNodeCallback = function(callback) {
 			this.createNodeCallback = callback;
 		}
-		this.SelectOnNextCreate = function (count)
-		{
-			if (!count) count = 1;
-			this.toSelect = count;
+        this.SelectOnNextCreate = function(names) {
+
+            this.toSelect = names;
 			this.tempSelect = [];
-			this.expectedParent = vwf.parent(self.GetSelectedVWFID());
-			this.SetCreateNodeCallback(function (e, p)
-			{
-				if (p == this.expectedParent)
-				{
-					self.tempSelect.push(e);
-					self.toSelect--;
-					if (self.toSelect == 0)
-					{
+
+            this.SetCreateNodeCallback(function(c, p, n) {
+                if (self.toSelect.indexOf(n) >= 0) {
+                    self.tempSelect.push(c);
+                    self.toSelect.splice(self.toSelect.indexOf(n), 1);
+                    if (self.toSelect.length == 0) {
 						self.createNodeCallback = null;
+                        self.SelectObject(null);
 						self.SelectObject(self.tempSelect, Add);
 					}
 				}
 			});
 		}
-		this.GetSelectedVWFNode = function (idx)
-		{
+        this.GetSelectedVWFNode = function(idx) {
 			if (idx === undefined) idx = 0;
-			try
-			{
-				if (SelectedVWFNodes[idx]) return vwf.getNode(SelectedVWFNodes[idx].id);
-			}
-			catch (e)
-			{
+            try {
+                if (SelectedVWFNodes[idx]) return _Editor.getNode(SelectedVWFNodes[idx].id);
+            } catch (e) {
 				return null;
 			}
 		}.bind(this);
-		this.findscene = function ()
-		{
+        this.findscene = function() {
 			return vwf.views[0].state.scenes["index-vwf"].threeScene;
 		}
-		this.findcamera = function ()
-		{
-			try
-			{
+        this.findcamera = function() {
+            try {
 				return _dView.getCamera();
-			}
-			catch (e)
-			{
+            } catch (e) {
 				return null;
 			}
 		}
 
-		function matcpy(mat)
-		{
+        function matcpy(mat) {
 			var newmat = [];
 			for (var i = 0; i < 16; i++) newmat[i] = mat[i];
 			return newmat;
 		}
-		this.getViewProjection = function ()
-		{
+        this.getViewProjection = function() {
 			var cam = this.findcamera();
 			cam.matrixWorldInverse.getInverse(cam.matrixWorld);
 			var _viewProjectionMatrix = new THREE.Matrix4();
 			_viewProjectionMatrix.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
-			return MATH.transposeMat4(_viewProjectionMatrix.flattenToArray([]));
+            return MATH.transposeMat4(_viewProjectionMatrix.toArray([]));
 		}
 
-		function toGMat(threemat)
-		{
+        function toGMat(threemat) {
 			var mat = [];
 			mat = matcpy(threemat.elements);
 			mat = (MATH.transposeMat4(mat));
 			return mat;
 		}
-		this.buildContextMenu = function ()
-		{
+        this.buildContextMenu = function() {
 			$(document.body).append('<div id="ContextMenu" />');
 			$('#ContextMenu').append('<div id="ContextMenuName" style="border-bottom: 3px solid gray;">name</div>');
 			$('#ContextMenu').append('<div id="ContextMenuActions" style="border-bottom: 2px gray dotted;"></div>');
@@ -3207,16 +3092,14 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			$('#ContextMenu').append('<div id="ContextMenuDelete" class="ContextMenuItem" style="border-bottom: 1px solid gray;">Delete</div>');
 			//$('#ContextMenu').append('<div id="ContextMenuWires" class="ContextMenuItem" style="border-bottom: 1px solid gray;">Wire Properties</div>');
 			$('#ContextMenu').disableSelection();
-			$('#ContextMenuSelect').click(function ()
-			{
+            $('#ContextMenuSelect').click(function() {
 				self.SelectObject($('#ContextMenuName').attr('VWFID'));
 				$('#ContextMenu').hide();
 				$('#ContextMenu').css('z-index', '-1');
 				$(".ddsmoothmenu").find('li').trigger('mouseleave');
 				$('#index-vwf').focus();
 			});
-			$('#ContextMenuWires').click(function ()
-			{
+            $('#ContextMenuWires').click(function() {
 				self.SelectObject($('#ContextMenuName').attr('VWFID'));
 				$('#ContextMenu').hide();
 				$('#ContextMenu').css('z-index', '-1');
@@ -3224,71 +3107,62 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				$('#index-vwf').focus();
 				_WireEditor.Show();
 			});
-			$('#ContextMenuSelectNone').click(function ()
-			{
+            $('#ContextMenuSelectNone').click(function() {
 				self.SelectObject(null);
-				self.SetSelectMode('None');
+
 				$('#ContextMenu').hide();
 				$('#ContextMenu').css('z-index', '-1');
 				$(".ddsmoothmenu").find('li').trigger('mouseleave');
 				$('#index-vwf').focus();
 			});
-			$('#ContextMenuMove').click(function ()
-			{
+            $('#ContextMenuMove').click(function() {
 				$('#MenuMove').click();
 				$('#ContextMenu').hide();
 				$('#ContextMenu').css('z-index', '-1');
 				$(".ddsmoothmenu").find('li').trigger('mouseleave');
 				$('#index-vwf').focus();
 			});
-			$('#ContextMenuRotate').click(function ()
-			{
+            $('#ContextMenuRotate').click(function() {
 				$('#MenuRotate').click();
 				$('#ContextMenu').hide();
 				$('#ContextMenu').css('z-index', '-1');
 				$(".ddsmoothmenu").find('li').trigger('mouseleave');
 				$('#index-vwf').focus();
 			});
-			$('#ContextMenuScale').click(function ()
-			{
+            $('#ContextMenuScale').click(function() {
 				$('#MenuScale').click();
 				$('#ContextMenu').hide();
 				$('#ContextMenu').css('z-index', '-1');
 				$(".ddsmoothmenu").find('li').trigger('mouseleave');
 				$('#index-vwf').focus();
 			});
-			$('#ContextMenuFocus').click(function ()
-			{
+            $('#ContextMenuFocus').click(function() {
 				$('#MenuFocusSelected').click();
 				$('#ContextMenu').hide();
 				$('#ContextMenu').css('z-index', '-1');
 				$(".ddsmoothmenu").find('li').trigger('mouseleave');
 				$('#index-vwf').focus();
 			});
-			$('#ContextMenuCopy').click(function ()
-			{
+            $('#ContextMenuCopy').click(function() {
 				$('#MenuCopy').click();
 				$('#ContextMenu').hide();
 				$('#ContextMenu').css('z-index', '-1');
 				$(".ddsmoothmenu").find('li').trigger('mouseleave');
 				$('#index-vwf').focus();
 			});
-			$('#ContextMenuPaste').click(function (e)
-			{
+            $('#ContextMenuPaste').click(function(e) {
 				self.Paste(true);
 				$('#ContextMenu').hide();
 				$('#ContextMenu').css('z-index', '-1');
 			});
-			$('#ContextMenuDuplicate').click(function ()
-			{
+            $('#ContextMenuDuplicate').click(function() {
 				$('#MenuDuplicate').click();
 				$('#ContextMenu').hide();
 				$('#ContextMenu').css('z-index', '-1');
 				$(".ddsmoothmenu").find('li').trigger('mouseleave');
 				$('#index-vwf').focus();
 			});
-			$('#ContextMenuDelete').click(function ()
-			{
+            $('#ContextMenuDelete').click(function() {
 				$('#MenuDelete').click();
 				$('#ContextMenu').hide();
 				$('#ContextMenu').css('z-index', '-1');
@@ -3296,8 +3170,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				$('#index-vwf').focus();
 			});
 		}
-		this.getDefaultMaterial = function ()
-		{
+        this.getDefaultMaterial = function() {
 			var currentmat = new THREE.MeshPhongMaterial();
 			currentmat.color.r = 1;
 			currentmat.color.g = 1;
@@ -3314,8 +3187,7 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			currentmat.map = THREE.ImageUtils.loadTexture('checker.jpg');
 			return currentmat;
 		}
-		this.getDefForMaterial = function (currentmat)
-		{
+        this.getDefForMaterial = function(currentmat) {
 		   try{
 			var value = {};
 			value.color = {}
@@ -3340,13 +3212,10 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			 value.reflect = currentmat.reflectivity * 10;
 			var mapnames = ['map', 'bumpMap', 'lightMap', 'normalMap', 'specularMap', 'envMap'];
 			value.layers = [];
-			for (var i = 0; i < mapnames.length; i++)
-			{
+                for (var i = 0; i < mapnames.length; i++) {
 				var map = currentmat[mapnames[i]];
-				if (map)
-				{
-					value.layers.push(
-					{});
+                    if (map) {
+                        value.layers.push({});
 					value.layers[value.layers.length-1].mapTo = i + 1;
 					value.layers[value.layers.length-1].scalex = map.repeat.x;
 					value.layers[value.layers.length-1].scaley = map.repeat.y;
@@ -3364,13 +3233,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				}
 			}
 			return value;
-			}catch(e)
-			{
+            } catch (e) {
 				return this.getDefaultMaterial();
 			}
 		}
-		this.setMaterialByDef = function (currentmat, value)
-		{
+        this.setMaterialByDef = function(currentmat, value) {
 			currentmat.color.r = value.color.r;
 			currentmat.color.g = value.color.g;
 			currentmat.color.b = value.color.b;
@@ -3389,65 +3256,51 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			currentmat.shininess = value.shininess * 5;
 			var mapnames = ['map', 'bumpMap', 'lightMap', 'normalMap', 'specularMap', 'envMap'];
 			currentmat.reflectivity = value.reflect/10;
-			for (var i = 0; i < value.layers.length; i++)
-			{
+            for (var i = 0; i < value.layers.length; i++) {
 				var mapname;
-				if (value.layers[i].mapTo == 1)
-				{
+                if (value.layers[i].mapTo == 1) {
 					mapname = 'map';
 					currentmat.alphaTest = 1 - value.layers[i].alpha;
 					
 				}
-				if (value.layers[i].mapTo == 2)
-				{
+                if (value.layers[i].mapTo == 2) {
 					mapname = 'bumpMap';
 					currentmat.bumpScale = value.layers[i].alpha;
 				}
-				if (value.layers[i].mapTo == 3)
-				{
+                if (value.layers[i].mapTo == 3) {
 					mapname = 'lightMap';
 				}
-				if (value.layers[i].mapTo == 4)
-				{
+                if (value.layers[i].mapTo == 4) {
 					mapname = 'normalMap';
 					currentmat.normalScale.x = value.layers[i].alpha;
 					currentmat.normalScale.y = value.layers[i].alpha;
 				}
-				if (value.layers[i].mapTo == 5)
-				{
+                if (value.layers[i].mapTo == 5) {
 					mapname = 'specularMap';
 				}
-				if (value.layers[i].mapTo == 6)
-				{
+                if (value.layers[i].mapTo == 6) {
 					mapname = 'envMap';
 				}
 				mapnames.splice(mapnames.indexOf(mapname), 1);
-				String.prototype.endsWith = function (suffix)
-				{
+                String.prototype.endsWith = function(suffix) {
 					return this.indexOf(suffix, this.length - suffix.length) !== -1;
 				};
-				if ((currentmat[mapname] && currentmat[mapname].image && !currentmat[mapname].image.src.toString().endsWith(value.layers[i].src)) || !currentmat[mapname])
-				{
+                if ((currentmat[mapname] && currentmat[mapname].image && !currentmat[mapname].image.src.toString().endsWith(value.layers[i].src)) || !currentmat[mapname]) {
 					currentmat[mapname] = THREE.ImageUtils.loadTexture(value.layers[i].src);
 				}
-				if (value.layers[i].mapInput == 0)
-				{
+                if (value.layers[i].mapInput == 0) {
 					currentmat[mapname].mapping = new THREE.UVMapping();
 				}
-				if (value.layers[i].mapInput == 1)
-				{
+                if (value.layers[i].mapInput == 1) {
 					currentmat[mapname].mapping = new THREE.CubeReflectionMapping();
 				}
-				if (value.layers[i].mapInput == 2)
-				{
+                if (value.layers[i].mapInput == 2) {
 					currentmat[mapname].mapping = new THREE.CubeRefractionMapping();
 				}
-				if (value.layers[i].mapInput == 3)
-				{
+                if (value.layers[i].mapInput == 3) {
 					currentmat[mapname].mapping = new THREE.SphericalReflectionMapping();
 				}
-				if (value.layers[i].mapInput == 4)
-				{
+                if (value.layers[i].mapInput == 4) {
 					currentmat[mapname].mapping = new THREE.SphericalRefractionMapping();
 				}
 				currentmat[mapname].wrapS = THREE.RepeatWrapping;
@@ -3459,23 +3312,26 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 				
 				//return currentmat;
 			}
-			for (var i in mapnames)
-			{
+            for (var i in mapnames) {
 				currentmat[mapnames[i]] = null;
 			}
-			if(currentmat.reflectivity)
-			{
+            if (currentmat.reflectivity) {
 			var sky = vwf_view.kernel.kernel.callMethod('index-vwf','getSkyMat')
 				currentmat.envMap = sky.uniforms.texture.value;
 				currentmat.envMap.mapping = new THREE.CubeReflectionMapping();
 			}
 			currentmat.needsUpdate = true;
 		}
-		this.loadMesh = function(url,type)
-		{
+        this.loadMesh = function(url, type) {
+            var self = this;
+            //ok, here, let's preload the asset. If there is an error during parse, the preloader will never hit the callback and 
+            // we won't end up with a broken VWF entity.
+            _assetLoader.loadAssets([{
+                type: type,
+                url: url
+            }], function() {
 			
-			var Proto = 
-			{
+                var Proto = {
 				extends: 'asset.vwf',
 				source: url,
 				type : type || 'subDriver/threejs/asset/vnd.collada+xml',
@@ -3487,19 +3343,48 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			
 			var newintersectxy = self.GetInsertPoint();
 			Proto.properties.owner = _UserManager.GetCurrentUserName();
-			Proto.properties.translation = newintersectxy;
-			var newname = this.GetUniqueName(url);
+                Proto.properties.transform = MATH.transposeMat4(MATH.translateMatrix(newintersectxy));
+                var newname = self.GetUniqueName(url);
 			_UndoManager.recordCreate('index-vwf', newname, Proto);
 			vwf_view.kernel.createChild('index-vwf', newname, Proto);
 			
+
+            }, true)
+
+
 		}
-		this.initialize = function ()
-		{
+        this.focusSelected = function() {
+            var focusID = null;
+            if (_Editor.GetSelectedVWFNode())
+                focusID = _Editor.GetSelectedVWFNode().id;
+            if (!focusID)
+                focusID = _UserManager.GetAvatarForClientID(vwf.moniker()) && _UserManager.GetAvatarForClientID(vwf.moniker()).id;
+            if (focusID && _Editor.findviewnode(focusID)) {
+
+                var t = _Editor.GetMoveGizmo().parent.matrixWorld.getPosition();
+                var gizpos = [t.x, t.y, t.z];
+                var matrix = _Editor.findviewnode(focusID).matrixWorld.elements;
+                matrix = MATH.transposeMat4(matrix);
+                var box = _Editor.findviewnode(focusID).GetBoundingBox(true);
+                box = box.transformBy(matrix);
+
+                var dist = 1;
+                if (box)
+                    dist = Math.max(box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]);
+                if (dist == Infinity)
+                    dist = 1;
+                vwf.models[0].model.nodes['index-vwf'].orbitPoint(gizpos);
+                vwf.models[0].model.nodes['index-vwf'].zoom = dist;
+                vwf.models[0].model.nodes['index-vwf'].updateCamera();
+                box.release();
+
+            }
+        }
+        this.initialize = function() {
 			this.BuildMoveGizmo();
 			this.SelectObject(null);
 			_dView.bind('prerender', this.updateGizmoSize.bind(this));
-			document.oncontextmenu = function ()
-			{
+            document.oncontextmenu = function() {
 				return false;
 			};
 			this.SelectionBoundsContainer = new THREE.Object3D();
@@ -3520,79 +3405,86 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			this.selectionMarquee.css('border', '2px dotted darkslategray');
 			this.selectionMarquee.css('border-radius', '10px');
 			//this.selectionMarquee.css('box-shadow','0px 0px 10px lightgray, 0px 0px 10px lightgray inset');
-			this.selectionMarquee.mousedown(function (e)
-			{
+            this.selectionMarquee.mousedown(function(e) {
 				self.mousedown(e);
 				e.preventDefault();
 				e.stopPropagation();
 				return false;
 			});
-			this.selectionMarquee.mouseup(function (e)
-			{
+            this.selectionMarquee.mouseup(function(e) {
 				self.mouseup(e);
 				e.preventDefault();
 				e.stopPropagation();
 				return false;
 			});
-			this.selectionMarquee.mousemove(function (e)
-			{
+            this.selectionMarquee.mousemove(function(e) {
 				self.mousemove(e);
 				e.preventDefault();
 				e.stopPropagation();
 				return false;
 			});
-			$('body *').not(':has(input)').not('input').disableSelection();
+
 			this.selectionMarquee.hide();
 			$('#ContextMenu').hide();
 		}
-		this.mousedown = function (e)
-		{
+        this.mousedown = function(e) {
 			if (this.activeTool && this.activeTool.mousedown) this.activeTool.mousedown(e);
 		}
-		this.mouseup = function (e)
-		{
+        this.mouseup = function(e) {
 			if(!toolsOpen()) return;
-			
+            if (vwf.getProperty(vwf.application(), 'playMode') == 'play') return;
 			if (this.activeTool && this.activeTool.mouseup) this.activeTool.mouseup(e);
 		}
-		this.click = function (e)
-		{
+        this.click = function(e) {
 			if(!toolsOpen()) return;
+            if (vwf.getProperty(vwf.application(), 'playMode') == 'play') return;
 			if (this.activeTool && this.activeTool.click) this.activeTool.click(e);
 		}
-		this.mousemove = function (e)
-		{
+        this.mousemove = function(e) {
 			if(!toolsOpen()) return;
+            if (vwf.getProperty(vwf.application(), 'playMode') == 'play') return;
 			if (this.activeTool && this.activeTool.mousemove) this.activeTool.mousemove(e);
 		}
-		this.mousewheel = function (e)
-		{
+        this.mousewheel = function(e) {
 			if(!toolsOpen()) return;
+            if (vwf.getProperty(vwf.application(), 'playMode') == 'play') return;
 			if (this.activeTool && this.activeTool.mousewheel) this.activeTool.mousewheel(e);
 		}
-		this.keyup = function (e)
-		{
+        this.keyup = function(e) {
 			if(!toolsOpen()) return;
+            if (vwf.getProperty(vwf.application(), 'playMode') == 'play') return;
 			if (this.activeTool && this.activeTool.keyup) this.activeTool.keyup(e);
 		}
-		this.keydown = function (e)
-		{
+        this.keydown = function(e) {
 			if(!toolsOpen()) return;
+            if (vwf.getProperty(vwf.application(), 'playMode') == 'play') return;
 			if (this.activeTool && this.activeTool.keydown) this.activeTool.keydown(e);
 		}
-		this.createdNode = function()
-		{
+        this.createdNode = function() {
 
 			if(!toolsOpen()) return;
 			if (this.activeTool && this.activeTool.createdNode) this.activeTool.createdNode.apply(this.activeTool,arguments);
+
+            //if a new node is created, and it's a GUI node, and we're in pick mode, it needs the pick events bound so it can be selected
+            if (SelectMode == "Pick" || SelectMode == "TempPick") {
+                //unbind so that we dont bind twice
+                //the actual DOM objects are created by a different driver, higher on the stack.
+                //need to give it a sec to get there
+                window.setTimeout(function() {
+
+                    _Editor.unbindGuiNodePick();
+                    _Editor.bindGuiNodePick();
+
+                }, 500)
+
 		}
+
+        }
 		this.tools = {};
-		this.addTool = function (name, tool)
-		{
+        this.addTool = function(name, tool) {
 			this.tools[name] = tool;
 		}
-		this.addTool('Gizmo',
-		{
+        this.addTool('Gizmo', {
 			mousedown: this.mousedown_Gizmo,
 			mouseup: this.mouseup_Gizmo,
 			mousemove: this.mousemove_Gizmo,
@@ -3601,13 +3493,11 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 			keydown: this.keydown_Gizmo,
 			keyup: this.keyup_Gizmo
 		});
-		this.setActiveTool = function (str)
-		{
+        this.setActiveTool = function(str) {
 			this.activeTool = this.tools[str];
 		}
 		this.setActiveTool('Gizmo');
-		this.GetSelectionBounds = function ()
-		{
+        this.GetSelectionBounds = function() {
 			return SelectionBounds;
 		}; 
 		this.Move = Move;
@@ -3624,20 +3514,16 @@ define(["vwf/view/editorview/log","vwf/view/editorview/progressbar"],function (L
 		this.WorldZ = WorldZ;
 		this.WorldY = WorldY;
 		this.WorldX = WorldX;
-		this.GetCurrentZ = function ()
-		{
+        this.GetCurrentZ = function() {
 			return CurrentZ
 		};
-		this.GetCurrentY = function ()
-		{
+        this.GetCurrentY = function() {
 			return CurrentY
 		};
-		this.GetCurrentX = function ()
-		{
+        this.GetCurrentX = function() {
 			return CurrentX
 		};
-		this.GetSelectMode = function ()
-		{
+        this.GetSelectMode = function() {
 			return SelectMode;
 		}
 
