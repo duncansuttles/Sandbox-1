@@ -694,7 +694,7 @@ phyObject.prototype.setTransform = function(matrix) {
     this.transform = matrix;
     //todo: the compound collision of the parent does not need to be rebuild, just transforms updated
     //need new flag for this instead of full rebuild
-    if (this.enabled === true && this.parent.id !== vwf.application() || MATH.distanceVec3(this.localScale, oldScale) > .0001) {
+    if (this.enabled === true && this.parent.id !== vwf.application() && MATH.distanceVec3(this.localScale, oldScale) > .0001) {
         this.markRootBodyCollisionDirty();
     }
     else if (this.initialized === true) {
