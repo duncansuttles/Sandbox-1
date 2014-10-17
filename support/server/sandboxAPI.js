@@ -861,56 +861,6 @@ function CheckHash(filename, data, callback) {
 
 }
 
-//Save an instance. the POST URL must contain valid name/pass and that UID must match the Asset Author
-function SaveState(URL, id, data, response) {
-	if (!URL.loginData) {
-		respond(response, 401, 'No login data when saving state');
-		return;
-	}
-
-	DAL.getInstance(id, function(state) {
-
-		//state not found
-		if (!state) {
-			require('./examples.js').getExampleMetadata(id, function(metadata) {
-
-				if (!metadata) {
-					respond(response, 500, 'State not found. State ' + id);
-					return;
-				} else {
-					if (URL.loginData.UID == global.adminUID) {
-						require('./examples.js').saveExampleData(URL, id, data, function() {
-							respond(response, 200, 'Example saved ' + id);
-						})
-
-					} else {
-						respond(response, 200, 'Examples cannot be saved ' + id);
-						return;
-					}
-
-				}
-
-			});
-			return;
-		}
-
-		//not allowed to update a published world
-		if (state.publishSettings) {
-			respond(response, 500, 'World is published, Should never have tried to save. How did we get here? ' + id);
-			return;
-		}
-
-		//not currently checking who saves the state, so long as they are logged in
-		DAL.saveInstanceState(id, data, function() {
-			respond(response, 200, 'saved ' + id);
-			return;
-		});
-
-	});
-
-
-
-}
 
 
 
@@ -1501,11 +1451,6 @@ function serve(request, response) {
 				case "thumbnail":
 					{
 						SaveThumbnail(URL, SID, body, response);
-					}
-					break;
-				case "state":
-					{
-						SaveState(URL, SID, body, response);
 					}
 					break;
 				case "createstate":

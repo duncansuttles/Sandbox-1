@@ -198,6 +198,7 @@ function ServeSinglePlayer(socket, namespace, instancedata) {
             });
             var joinMessage = messageCompress.pack(JSON.stringify({
                 "action": "fireEvent",
+               
                 "parameters": ["clientConnected", [socket.id, socket.loginData.Username, socket.loginData.UID]],
                 node: "index-vwf",
                 "time": 0
@@ -215,6 +216,53 @@ function ServeSinglePlayer(socket, namespace, instancedata) {
 }
 
 
+function SaveInstanceState(namespace, data, socket) {
+
+
+    if(!socket.loginData) return;
+
+    var id = namespace.replace(/[\\\/]/g, '_');
+    console.log(id);
+    DAL.getInstance(id, function(state) {
+
+        //state not found
+        if (!state) {
+            require('./examples.js').getExampleMetadata(id, function(metadata) {
+
+                if (!metadata) {
+                    
+                    return;
+                } else {
+                    if (socket.loginData.UID == global.adminUID) {
+                        require('./examples.js').saveExampleData(URL, id, data, function() {
+                            
+                        })
+
+                    } else {
+                        
+                        return;
+                    }
+
+                }
+
+            });
+            return;
+        }
+
+        //not allowed to update a published world
+        if (state.publishSettings) {
+            return;
+        }
+
+        //not currently checking who saves the state, so long as they are logged in
+        DAL.saveInstanceState(id, data, function() {
+            return;
+        });
+
+    });
+    console.log('saved');
+}
+
 function WebSocketConnection(socket, _namespace) {
 
     //get the session information for the socket
@@ -222,6 +270,7 @@ function WebSocketConnection(socket, _namespace) {
 
 
 
+          
         //fill out some defaults if we did not get credentials
         //note that the client list for an anonymous connection may only contain that once connection
         socket.loginData = loginData || {
@@ -730,6 +779,12 @@ function ClientConnected(socket, namespace, instancedata) {
             message.client = socket.id;
 
 
+            if (message.action == "saveStateResponse") {
+                console.log(message.data);
+                SaveInstanceState(namespace, message.data, socket);
+                return;
+            }
+
             //Log all message if level is high enough
             if (isPointerEvent(message)) {
                 thisInstance.Log(JSON.stringify(message), 4);
@@ -740,6 +795,7 @@ function ClientConnected(socket, namespace, instancedata) {
 
 
             var sendingclient = thisInstance.clients[socket.id];
+
 
             //do not accept messages from clients that have not been claimed by a user
             //currently, allow getstate from anonymous clients

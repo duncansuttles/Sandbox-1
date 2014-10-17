@@ -227,47 +227,9 @@ define(function ()
 			var SID = this.getCurrentSession();
 			var UID = _UserManager.GetCurrentUserName();
 			if (!UID) return;
-			
-			if (nodes.length > 0) var ret = jQuery.ajax(
-				{
-					type: 'POST',
-					url:  './vwfDataManager.svc/state?SID=' + _DataManager.getCurrentSession(),
-					data: JSON.stringify(nodes),
-					dataType: 'json',
-					contentType: "application/json; charset=utf-8",
-					success: function(err,data,xhr)
-					{
-					
-						if (xhr.status != 200)
-						{
-							alert('Save failed! Reloading');
-							window.onunload = function (e)
-							{};
-							window.onbeforeunload = function (e)
-							{};
-							document.location.reload(true);
-						}
-						
-						$('#SceneSaved').text('Saved ' + (new Date()).toLocaleTimeString());
-						$('#SceneSaved').css('color','lightblue');
-						$('#SceneSaved').animate({'color':'#808080'},2000);
-					},
-					error: function(e)
-					{
-						
-							alert('Save failed! Reloading');
-							window.onunload = function (e)
-							{};
-							window.onbeforeunload = function (e)
-							{};
-							document.location.reload(true);
-						
-					},
-					async: !sync,
-					dataType: "text"
-				});
-			
-			
+
+			var data = JSON.stringify(nodes);
+			vwf.saveState(data);
 		}
 		this.getInstances = function ()
 		{

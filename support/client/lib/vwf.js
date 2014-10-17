@@ -2209,7 +2209,27 @@ this.getMethods = function( nodeID ) {  // TODO: rework as a cover for getProper
 
     return methods;
 };
+this.promptSaveState = function()
+{
+    _DataManager.saveToServer();
+}
+this.saveState = function(data)
+{
+    var fields = {
+        action: 'saveStateResponse',
+        data:data
+        // callback: callback_async,  // TODO: provisionally add fields to queue (or a holding queue) then execute callback when received back from reflector
+    };
 
+    if ( socket ) {
+
+        // Send the message.
+        var message = JSON.stringify( fields );
+
+        socket.send( messageCompress.pack(message) );
+    }
+
+}
 this.getEvents = function( nodeID ) {  // TODO: rework as a cover for getProperty(), or remove; passing all properties to each driver is impractical since reentry can't be controlled when multiple gets are in progress.
 
     this.logger.debuggx( "getevents", nodeID );
