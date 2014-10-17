@@ -230,6 +230,8 @@ function WebSocketConnection(socket, _namespace) {
             UID: "Anonymous",
             clients: [socket.id]
         };
+        if(!socket.loginData.UID && socket.loginData.Username)
+            socket.loginData.UID = socket.loginData.Username;
 
 
         var namespace = _namespace || getNamespace(socket);
@@ -765,8 +767,10 @@ function ClientConnected(socket, namespace, instancedata) {
 
                 }
                 //send the message to the sender and to the receiver
-                thisInstance.clients[textmessage.receiver].emit('message', messageCompress.pack(JSON.stringify(message)));
-                thisInstance.clients[textmessage.sender].emit('message', messageCompress.pack(JSON.stringify(message)));
+                if(textmessage.receiver)
+                    thisInstance.clients[textmessage.receiver].emit('message', messageCompress.pack(JSON.stringify(message)));
+                if(textmessage.sender)
+                    thisInstance.clients[textmessage.sender].emit('message', messageCompress.pack(JSON.stringify(message)));
 
 
                 return;
