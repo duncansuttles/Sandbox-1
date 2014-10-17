@@ -305,7 +305,7 @@ define(function ()
 		}
 		this.saveTimer = function ()
 		{
-			var num = this.getClientCount();
+			var num = this.getClientCount() + 1;
 			var milliseconds = num * 1000 * 60;
 			this.saveToServer();
 			window.setTimeout(this.saveTimer.bind(this), milliseconds);
