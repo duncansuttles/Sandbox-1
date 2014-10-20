@@ -127,6 +127,46 @@ properties:
                   return this.findNodeByID(this.clients[id].cameraID);
            }.bind(this);
            return this.___clientAPI;
+  commsAPI:
+    get: |
+          var self = this;
+          if(this.___commsAPI) return this.___commsAPI;
+          this.___commsAPI = {};
+          this.___commsAPI.PM = function(from_client_id, to_client_id)
+          {
+            if(vwf.moniker() == from_client_id)
+            {
+               if(self.clients[to_client_id])
+               {
+                setupPmWindow(to_client_id)
+               }
+            }
+          }
+          this.___commsAPI.Chat = function()
+          {
+              $('#ChatWindow').dialog('open');
+          }
+          this.___commsAPI.VideoCall = function(from_client_id, to_client_id)
+          {
+            if(vwf.moniker() == from_client_id)
+            {
+               if(self.clients[to_client_id])
+               {
+                 vwf.callMethod(vwf.application(),'rtcVideoCall',{target:to_client_id});
+               }
+            }
+          }
+          this.___commsAPI.VoiceCall = function(from_client_id, to_client_id)
+          {
+            if(vwf.moniker() == from_client_id)
+            {
+               if(self.clients[to_client_id])
+               {
+                 vwf.callMethod(vwf.application(),'rtcCall',{target:to_client_id});
+               }
+            }
+          } 
+          return this.___commsAPI;         
   EditorData:
     fog:
       displayname: 'Fog'
