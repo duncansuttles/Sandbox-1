@@ -249,7 +249,7 @@
                         },
                         diffuseTex: {
                             type: "t",
-                            value: _SceneManager.getTexture(this.texture || './terrain/grass.png')
+                            value: _SceneManager.getTexture(this.texture || './terrain/Grass.png')
                         },
                         projection: {
                             type: "m4",
@@ -417,7 +417,7 @@
                             var newmesh = new THREE.Mesh(this.geo, oldmat);
                             oldmesh.parent.add(newmesh);
                             oldmesh.parent.remove(oldmesh);
-                            newmesh.position = oldmesh.position;
+                            newmesh.position.set(oldmesh.position);
                             newmesh.rotation.set(oldmesh.rotation.x, oldmesh.rotation.y, oldmesh.rotation.z, oldmesh.rotation.order);
                             newmesh.vwfID = oldmesh.vwfID;
                             newmesh.InvisibleToCPUPick = true;
