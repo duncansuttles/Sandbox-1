@@ -13,7 +13,7 @@ var fills = {
         window.ToSafeID = function(value) {
             return value.replace(/[^A-Za-z0-9]/g, "");
         }
-        
+
 
     },
     //try to generate crytographicly secure random numbers
@@ -458,15 +458,18 @@ var fills = {
 
                     if (performance.now() - lastError > 5000) {
                         if (xhr.status != 200) {
-                            alertify.error('Sorry, an error has occured, but could not be logged');
+                            if (window.alertify)
+                                alertify.error('Sorry, an error has occured, but could not be logged');
                         } else
+                        if (window.alertify)
                             alertify.error('Sorry, an error has occured and was logged to the server.');
                         lastError = performance.now();
                     }
                 },
                 error: function(e) {
                     if (performance.now() - lastError > 5000) {
-                        alertify.error('Sorry, an error has occured, but could not be logged');
+                        if (window.alertify)
+                            alertify.error('Sorry, an error has occured, but could not be logged');
                         lastError = performance.now();
                     }
                 },

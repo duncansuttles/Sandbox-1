@@ -29,11 +29,11 @@ if (!window.jQuery) {
 
             require(["../vwf/view/editorview/lib/jquery-migrate-1.2.1.min.js", "../vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js", "md5.js", "closure/deps.js", "../vwf/view/editorview/lib/jquery.transit.min.js", "../vwf/view/editorview/lib/jquery-mousewheel.js", "../vwf/view/editorview/lib/jquery-scrollpane.min.js", "../vwf/model/threejs/three.js", "closure/vec/float32array.js", "closure/vec/float64array.js"],
                 function() {
-                    require(["../vwf/model/threejs/DDSLoader.js", "../vwf/model/threejs/ColladaLoader.js", "../vwf/model/threejs/UTF8JSONLoader.js", "../vwf/view/localization/i18next-1.7.2.min.js", "../vwf/view/localization/cookies.js", "compatibility.js", "closure/vec/vec.js", "../vwf.js"],
+                    require(["../vwf/model/threejs/DDSLoader.js", "../vwf/model/threejs/ColladaLoader.js", "../vwf/model/threejs/UTF8JSONLoader.js", "../vwf/view/localization/i18next-1.7.2.min.js", "../vwf/view/localization/cookies.js", "compatibility.js", "closure/vec/vec.js", "../vwf.js","Class.create.js"],
                         function() {
                             require(["closure/vec/vec3.js", "closure/vec/vec4.js"],
                                 function() {
-                                    require(["closure/vec/mat4.js", "closure/vec/quaternion.js", "alea.js", "mash.js", "Class.create.js", "jquery-encoder-0.1.0.js", "rAF.js", "centerinclient.js"],
+                                    require(["closure/vec/mat4.js", "closure/vec/quaternion.js", "alea.js", "mash.js", "jquery-encoder-0.1.0.js", "rAF.js", "centerinclient.js"],
                                         function() {
                                             require(["boot"], function(boot) {
                                                 //ok, the loading stage is complete - fire up some initial gui logic
