@@ -43,7 +43,7 @@ function RunPrefixMethod(obj, method, param) {
         }
 var pfx = ["webkit", "moz", "ms", "o", ""];
 
-define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/threejs/VRRenderer"], function(module, view) {
+define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/threejs/ThermalCamEffect" ,"vwf/model/threejs/VRRenderer"], function(module, view) {
     var stats;
     var NORMALRENDER = 0;
     var STEREORENDER = 1;
@@ -123,6 +123,12 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
             effect.setSize(parseInt($("#index-vwf").css('width')), parseInt($("#index-vwf").css('height')));
             this.addEffect(effect);
             vwf.callMethod(vwf.application(),'activteOculusBridge')
+        },
+        activateThermalCamEffect : function()
+        {
+            var effect = new THREE.ThermalCamEffect(_dRenderer, _dScene, this.getCamera());
+            effect.setSize(parseInt($("#index-vwf").css('width')), parseInt($("#index-vwf").css('height')));
+            this.addEffect(effect);
         },
         initialize: function(rootSelector) {
 

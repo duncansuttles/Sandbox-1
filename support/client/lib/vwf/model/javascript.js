@@ -252,6 +252,12 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                 },
                 enumerable: true,
             });
+            Object.defineProperty(node, "random", { // TODO: only define on shared "node" prototype?
+                value: function() {
+                    return vwf.random(this.id);
+                },
+                enumerable: true,
+            });
 
             Object.defineProperty(node, 'bind', {
 
@@ -685,7 +691,7 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
 
                 },
                 configurable: true,
-                enumerable: true
+                enumerable: false
             });
 
 

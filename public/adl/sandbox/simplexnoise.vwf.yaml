@@ -27,15 +27,15 @@ properties:
     set: |
             this.seed = value;
             
-            this.random = this.Random(this.seed);
+            this.rcrandom = this.Random(this.seed);
          
              this.permutation = [];
              for(var i =0; i < 512; i++)
              {
-                this.permutation.push(Math.floor(this.random.getRandomNumber()*256));
+                this.permutation.push(Math.floor(this.rcrandom.getRandomNumber()*256));
              }         
             
-            this.simplex = new SimplexNoise(this.random.getRandomNumber);
+            this.simplex = new SimplexNoise(this.rcrandom.getRandomNumber);
             this.dirtyStack(); 
   effectX:
     set: |
@@ -149,18 +149,18 @@ scripts:
         var seed = vwf.getProperty(this.id,'seed');
         
         
-        if(!this.random)
+        if(!this.rcrandom)
         {
             
-            this.random = this.Random(seed);
+            this.rcrandom = this.Random(seed);
          
              this.permutation = [];
              for(var i =0; i < 512; i++)
              {
-                this.permutation.push(Math.floor(this.random.getRandomNumber()*256));
+                this.permutation.push(Math.floor(this.rcrandom.getRandomNumber()*256));
              }         
             
-             this.simplex = new SimplexNoise(this.random.getRandomNumber);
+             this.simplex = new SimplexNoise(this.rcrandom.getRandomNumber);
         
         }
         

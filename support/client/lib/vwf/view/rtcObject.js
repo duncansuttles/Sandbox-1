@@ -228,10 +228,10 @@ MyRTC.prototype.receiveMessage = function( msg )
 			}),
 			
 			// if failed
-			function(error){
+			bind_safetydance(this,function(error){
 				console.error('Failed to set remote description from offer', error);
 				this.setStatus( this.statusText.error );
-			}
+			})
 		);
 	}
 	else if( msg.type == 'answer' )
