@@ -26,6 +26,25 @@ function _FileCache()
     {
         this.files.length = 0;
     }
+    this.dirCache = {};
+    //return true if the file on disk is the same caps as the request
+    this.proofFileCaps = function(d)
+    {
+        var dir = d.substr(0,d.replace(/\\/g,'/').lastIndexOf('/'));
+        var name = d.substr(1+d.replace(/\\/g,'/').lastIndexOf('/'));
+        if(!this.dirCache[d])
+            this.dirCache[d] = fs.readdirSync(dir);
+
+        //just in case the file was added or renames, reload the cache entry for this file when the 
+        //test is bad
+        if(!this.dirCache[d].indexOf(name))
+            this.dirCache[d] = fs.readdirSync(dir);
+
+        //well, if the raw string compare does not show the dir contains the same file
+        //***string case sensitive compare***
+        //return false;
+        return this.dirCache[d].indexOf(name) > -1
+    }
     this.getDataType = function(file)
     {
         var type = file.substr(file.lastIndexOf('.')+1).toLowerCase();
@@ -40,7 +59,7 @@ function _FileCache()
     {
         path = libpath.normalize(path);
         path = libpath.resolve(__dirname, path);
-        
+        var self = this;
         //Cannot escape above the application paths!!!!
         if(path.toLowerCase().indexOf(libpath.resolve(__dirname,'../../').toLowerCase()) != 0 && path.toLowerCase().indexOf(global.datapath.toLowerCase()) != 0)
         {
@@ -73,6 +92,13 @@ function _FileCache()
         fs.readFile(path,function(err,file){
             fs.stat(path,function(err,stats)
             {
+                
+                //force file capitalization to be correct, even on windows
+                if(!FileCache.proofFileCaps(path))
+                {
+                    callback(null);
+                    return;
+                }
                 var self = this;
                 //Call this after minify, or right away if not js or minify disabled
                 var preMin = function(file)
@@ -201,10 +227,10 @@ function _FileCache()
         {
             //error if not found
             if (!file) {
-                response.writeHead(500, {
+                response.writeHead(404, {
                     "Content-Type": "text/plain"
                 });
-                response.write('file load error' + "\n");
+                response.write('file not found' + "\n");
                 response.end();
                 return;
             }
