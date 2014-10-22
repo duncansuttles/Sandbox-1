@@ -177,7 +177,7 @@ define(["module", "vwf/view", "vwf/view/rtcObject"], function(module, view, RTCO
 								this.rtc[params.sender].rtcTarget = params.sender;
 
 								
-								this.rtc[params.sender].mode = params.rtcData.mediaDescription;
+								this.rtc[params.sender].mode = {audio: params.rtcData.mediaDescription.audio, video: !!params.rtcData.mediaDescription.video};
 								var typeWord = params.rtcData.mediaDescription.video ? 'Video' : 'Voice';
 								//	$('#vidFrame').dialog('option', 'title', typeWord+' chat with '+this.rtcTarget);
 								$('#vidFrame #messagePanel').css('z-index', 1);

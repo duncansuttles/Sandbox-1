@@ -68,13 +68,22 @@ MyRTC.prototype.initialize = function( params )
 		this.registerReceiveCallback = undefined;
 	}
 	
-	// set which media to stream
 	var mediaDescription = {};
 	if( params.video == true )
-		mediaDescription.video = true;
+		//mediaDescription.video = true;
+		mediaDescription.video = { mandatory: {
+			//aspectRatio: 4/3,
+			/*width: { min:320, max:640 },
+			height: { min:240, max:480 },*/
+			//width: 320, height: 240,
+			minWidth: 320, maxWidth: 320,
+			minHeight:240, maxHeight:240
+		}};
 	if( params.audio == true )
 		mediaDescription.audio = true;
-			
+
+	console.log('Initializing with media', mediaDescription);
+
 	// initialize webcam if available
 	if( this.getUserMedia )
 	{
@@ -105,6 +114,10 @@ MyRTC.prototype.initialize = function( params )
 
 					this.attachStreamToFrame(stream, this.localPlayer);
 					this.localStream = stream;
+					
+					setTimeout(function(){
+						console.log('Local video running at', this.localPlayer.videoWidth, 'by', this.localPlayer.videoHeight);
+					}.bind(this), 500);
 
 					this.setStatus( this.statusText.calling );
 
