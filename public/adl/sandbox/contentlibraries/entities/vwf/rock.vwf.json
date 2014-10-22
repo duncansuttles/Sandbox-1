@@ -1,7 +1,7 @@
 {
     "id": "asset-vwf-3a6a613-cc5b-5e6d-ddc6-645fd0131ef9",
     "extends": "asset.vwf",
-    "source": "./vwfdatamanager.svc/datafile/models/village/rock1.dae",
+    "source": "./contentlibraries/entities/assets/rock/rock1.DAE",
     "type": "subDriver/threejs/asset/vnd.collada+xml",
     "sequence": 0,
     "random": {
@@ -42,7 +42,7 @@
                 "offsety": 0,
                 "scalex": 1,
                 "scaley": 1,
-                "src": "./vwfdatamanager.svc/datafile/models/village/rockdiff1.jpg"
+                "src": "./contentlibraries/entities/assets/rock/RockDiff1.jpg"
             }, {
                 "alpha": "1.5",
                 "blendMode": 0,
@@ -53,7 +53,7 @@
                 "rot": 0,
                 "scalex": 1,
                 "scaley": 1,
-                "src": "./vwfdatamanager.svc/datafile/models/village/rocknorm1.jpg"
+                "src": "./contentlibraries/entities/assets/rock/Rocknorm1.jpg"
             }, {
                 "alpha": 1,
                 "blendMode": 0,
@@ -64,7 +64,7 @@
                 "rot": 0,
                 "scalex": 1,
                 "scaley": 1,
-                "src": "./vwfdatamanager.svc/datafile/models/village/rockspec1.jpg"
+                "src": "./contentlibraries/entities/assets/rock/RockSpec1.jpg"
             }],
             "morphTargets": false,
             "reflect": 0,
