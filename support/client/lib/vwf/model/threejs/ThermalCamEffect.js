@@ -44,9 +44,9 @@ define(["module", "vwf/view", "vwf/view/threejs/postprocessing/EffectComposer",
                 mat.alphaMap = mat.map;
                 mat.map = null;
                 if (mat.diffuse) {
-                    mat.diffuse.r = 1;
-                    mat.diffuse.g = 1;
-                    mat.diffuse.b = 1;
+                    mat.diffuse.r = def.IR || .5;
+                    mat.diffuse.g = def.IR || .5;
+                    mat.diffuse.b = def.IR || .5;
                 }
                 if (mat.emissive) {
                     mat.emissive.r = def.IR || .2;
@@ -55,8 +55,14 @@ define(["module", "vwf/view", "vwf/view/threejs/postprocessing/EffectComposer",
                 }
                
                 mat.needsUpdate = true;
-                
+                for(var i in _dScene.__lights)
+            {
+                _dScene.__lights[i].color.r = .1;
+                _dScene.__lights[i].color.g = .1;
+                _dScene.__lights[i].color.b = .1;
             }
+            }
+            
         }
         this.render = function(scene, camera) {
 
