@@ -149,8 +149,11 @@ scripts:
         var seed = vwf.getProperty(this.id,'seed');
         
         
-        if(!this.rcrandom)
-        {
+        
+        //wow, this was tricky. there is stateful information inside the rcrandom object
+        //it must be reinitialized each time from the seed to make sure results are the same on other clients
+        //this is because the pattern of gets and sets is differnt on late joiners, and it is possible that the getRandomNumber
+        //function is called more times on the original client than the late one. So, the results can sometimes be different
             
             this.rcrandom = this.Random(seed);
          
@@ -162,7 +165,7 @@ scripts:
             
              this.simplex = new SimplexNoise(this.rcrandom.getRandomNumber);
         
-        }
+        
         
         
         var x = vwf.getProperty(this.id,'effectX');
@@ -170,8 +173,10 @@ scripts:
         var z = vwf.getProperty(this.id,'effectZ');
         var world = vwf.getProperty(this.id,'WorldSpace');
         var phase = vwf.getProperty(this.id,'phase');
-        
+       
+        console.log(scale,iterations,seed,x,y,z,world,phase);
         this.noise(scale,iterations,seed,x,y,z,world,phase);
+        
     }
     this.ready = function()
     {
@@ -480,7 +485,7 @@ scripts:
 
     
     function SimplexNoise(random) {
-        if (!random) random = Math.random;
+        
         this.p = new Uint8Array(256);
         this.perm = new Uint8Array(512);
         this.permMod12 = new Uint8Array(512);
