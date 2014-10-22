@@ -192,7 +192,7 @@ scripts:
       var newdiv = $("#Player_" + ToSafeID(PlayerNumber) + 'label')[0];
       var self = this;
       $("#Player_" + PlayerNumber + 'label').click(function(){
-        setupPmWindow(self.PlayerNumber);
+        setupPmWindow(self.ownerClientID);
       })
       
       newdiv.style.left = '0px';
