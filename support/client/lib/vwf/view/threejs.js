@@ -1395,7 +1395,12 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             if (!$.parseQuerystring().norender) {
             if (detectWebGL() && getURLParameter('disableWebGL') == 'null') {
 
-                
+                sceneNode.renderer = new THREE.WebGLRenderer({
+                    canvas: mycanvas,
+                    antialias: true,
+                    alpha: false,
+                    stencil: false
+                });
                 sceneNode.renderer.autoUpdateScene = false;
                 sceneNode.renderer.setSize($('#index-vwf').width(), $('#index-vwf').height());
 
@@ -1419,7 +1424,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 //so, we create a renderer anyway.
 
                 //just throw out to a page. Could be a custom error warning. 
-                
+
                 window.location = 'http://get.webgl.org/';
                 window.onbeforeunload = null;
                 window.onunload = null;

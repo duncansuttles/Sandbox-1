@@ -406,7 +406,7 @@ SceneManager.prototype.getDefaultTexture = function() {
         this.defaultTexture.minFilter = THREE.LinearMipMapLinearFilter;
         this.defaultTexture.magFilter = THREE.LinearFilter;
         if (window._dRenderer)
-            this.defaultTexture = 1; //_dRenderer.getMaxAnisotropy();
+            this.defaultTexture.anisotropy = 1; //_dRenderer.getMaxAnisotropy();
         this.defaultTexture.wrapS = THREE.RepeatWrapping;
         this.defaultTexture.wrapT = THREE.RepeatWrapping;
     }
