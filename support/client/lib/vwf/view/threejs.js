@@ -1395,12 +1395,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             if (!$.parseQuerystring().norender) {
             if (detectWebGL() && getURLParameter('disableWebGL') == 'null') {
 
-                sceneNode.renderer = new THREE.WebGLRenderer({
-                    canvas: mycanvas,
-                    antialias: true,
-                    alpha: false,
-                    stencil: false
-                });
+                
                 sceneNode.renderer.autoUpdateScene = false;
                 sceneNode.renderer.setSize($('#index-vwf').width(), $('#index-vwf').height());
 
@@ -1419,11 +1414,16 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     b: 1
                 }, 1.0);
             } else {
-                sceneNode.renderer = new THREE.CanvasRenderer({
-                    canvas: mycanvas,
-                    antialias: true
-                });
-                sceneNode.renderer.setSize(window.innerWidth, window.innerHeight);
+
+                //lets not fall back on canvas renderer. there just is no point trying to do this without it.
+                //so, we create a renderer anyway.
+
+                //just throw out to a page. Could be a custom error warning. 
+                
+                window.location = 'http://get.webgl.org/';
+                window.onbeforeunload = null;
+                window.onunload = null;
+
             }
                 if (sceneNode.renderer.setFaceCulling)
                     sceneNode.renderer.setFaceCulling(false);
@@ -1450,6 +1450,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             window._dScene = scene;
             window._dbackgroundScene = backgroundScene;
             window._dRenderer = renderer;
+
             window._dSceneNode = sceneNode;
             sceneNode.frameCount = 0; // needed for estimating when we're pick-safe
 
