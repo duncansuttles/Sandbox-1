@@ -25,25 +25,25 @@ function matset(newv, old) {
 }
 
 function RunPrefixMethod(obj, method, param) {
-            var p = 0,
-                m, t;
-            while (p < pfx.length && !obj[m]) {
-                m = method;
-                if (pfx[p] == "") {
-                    m = m.substr(0, 1).toLowerCase() + m.substr(1);
-                }
-                m = pfx[p] + m;
-                t = typeof obj[m];
-                if (t != "undefined") {
-                    pfx = [pfx[p]];
-                    return (t == "function" ? obj[m](param) : obj[m]);
-                }
-                p++;
-            }
+    var p = 0,
+        m, t;
+    while (p < pfx.length && !obj[m]) {
+        m = method;
+        if (pfx[p] == "") {
+            m = m.substr(0, 1).toLowerCase() + m.substr(1);
         }
+        m = pfx[p] + m;
+        t = typeof obj[m];
+        if (t != "undefined") {
+            pfx = [pfx[p]];
+            return (t == "function" ? obj[m](param) : obj[m]);
+        }
+        p++;
+    }
+}
 var pfx = ["webkit", "moz", "ms", "o", ""];
 
-define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/threejs/ThermalCamEffect" ,"vwf/model/threejs/VRRenderer"], function(module, view) {
+define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/threejs/ThermalCamEffect", "vwf/model/threejs/VRRenderer"], function(module, view) {
     var stats;
     var NORMALRENDER = 0;
     var STEREORENDER = 1;
@@ -53,15 +53,14 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
         renderMode: NORMALRENDER,
         effects: [],
-        topCamera:new THREE.OrthographicCamera(1,-1,1,-1,0,10000),
-        leftCamera:new THREE.OrthographicCamera(1,-1,1,-1,0,10000),
-        frontCamera:new THREE.OrthographicCamera(1,-1,1,-1,0,10000),
+        topCamera: new THREE.OrthographicCamera(1, -1, 1, -1, 0, 10000),
+        leftCamera: new THREE.OrthographicCamera(1, -1, 1, -1, 0, 10000),
+        frontCamera: new THREE.OrthographicCamera(1, -1, 1, -1, 0, 10000),
         vrHMDSensor: null,
-        vrHMD:null,
+        vrHMD: null,
         vrRenderer: null,
-        toggleFullScreen:function()
-        {
-        
+        toggleFullScreen: function() {
+
             if (RunPrefixMethod(document, "FullScreen") || RunPrefixMethod(document, "IsFullScreen")) {
                 RunPrefixMethod(document, "CancelFullScreen");
             } else {
@@ -73,15 +72,14 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     canvas.webkitRequestFullscreen({
                         vrDisplay: this.vrHMD
                     });
-                }
-                else
-                     RunPrefixMethod(document.body, "RequestFullScreen", 1);
+                } else
+                    RunPrefixMethod(document.body, "RequestFullScreen", 1);
             }
         },
         initHMD: function() {
 
             function vrDeviceCallback(vrdevs) {
-                
+
                 for (var i = 0; i < vrdevs.length; ++i) {
                     if (vrdevs[i] instanceof HMDVRDevice) {
                         _dView.vrHMD = vrdevs[i];
@@ -92,7 +90,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     if (vrdevs[i] instanceof PositionSensorVRDevice &&
                         vrdevs[i].hardwareUnitId == _dView.vrHMD.hardwareUnitId) {
                         _dView.vrHMDSensor = vrdevs[i];
-                        
+
                         alertify.log('WebVR compatable HMD detected');
                         break;
                     }
@@ -104,8 +102,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 navigator.getVRDevices().then(vrDeviceCallback);
             } else if (navigator.mozGetVRDevices) {
                 navigator.mozGetVRDevices(vrDeviceCallback);
-            }else
-            {
+            } else {
                 alertify.log('WebVR not supported');
             }
 
@@ -122,10 +119,9 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             });
             effect.setSize(parseInt($("#index-vwf").css('width')), parseInt($("#index-vwf").css('height')));
             this.addEffect(effect);
-            vwf.callMethod(vwf.application(),'activteOculusBridge')
+            vwf.callMethod(vwf.application(), 'activteOculusBridge')
         },
-        activateThermalCamEffect : function()
-        {
+        activateThermalCamEffect: function() {
             var effect = new THREE.ThermalCamEffect(_dRenderer, _dScene, this.getCamera());
             effect.setSize(parseInt($("#index-vwf").css('width')), parseInt($("#index-vwf").css('height')));
             this.addEffect(effect);
@@ -303,14 +299,13 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     //don't do interpolation for static objects
                     if (this.nodes[i].isStatic) continue;
                     if (!this.neededTransfromInterp[i]) {
-                            this.nodes[i].lastTickTransform = null;
-                            continue;
-                        }
-                    if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
+                        this.nodes[i].lastTickTransform = null;
+
+                    } else if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
                         this.nodes[i].lastTickTransform = matset(this.nodes[i].lastTickTransform, this.nodes[i].thisTickTransform);
                         this.nodes[i].thisTickTransform = matset(this.nodes[i].thisTickTransform, this.state.nodes[i].gettingProperty('transform'));
-
-
+                    }
+                    if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
                         this.nodes[i].lastAnimationFrame = this.nodes[i].thisAnimationFrame;
                         this.nodes[i].thisAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
 
@@ -320,7 +315,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 if (everyOtherFrame) {
                     this.neededTransfromInterp = {};
                 }
-                    
+
             }
             if (hit > 1) {
                 this.tickTime = 0;
@@ -359,7 +354,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
                 var last = this.nodes[i].lastTickTransform;
                 var now = this.nodes[i].thisTickTransform;
-                if (last && now ) {
+                if (last && now) {
 
                     interp = matset(interp, last);
                     interp = this.matrixLerp(last, now, step, interp);
@@ -374,7 +369,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
                 last = this.nodes[i].lastAnimationFrame;
                 now = this.nodes[i].thisAnimationFrame;
-                if (last && now && Math.abs(now - last) < 3 ) {
+                if (last && now && Math.abs(now - last) < 3) {
 
                     var interpA = 0;
 
@@ -447,7 +442,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             this.renderMode = VRRENDER;
             hideTools();
             this.toggleFullScreen();
-            vwf.callMethod(vwf.application(),'activteOculusBridge');
+            vwf.callMethod(vwf.application(), 'activteOculusBridge');
             //this.triggerWindowResize();
         },
         setRenderModeNormal: function() {
@@ -581,9 +576,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
 
         },
-        setCamera:function(camID)
-        {
-            vwf_view.kernel.callMethod(vwf.application(),'setClientCamera',[vwf.moniker(),camID]);
+        setCamera: function(camID) {
+            vwf_view.kernel.callMethod(vwf.application(), 'setClientCamera', [vwf.moniker(), camID]);
         },
         setCamera_internal: function(camID) {
             var defaultCameraID;
@@ -596,7 +590,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
             var cam = this.state.scenes['index-vwf'].camera.threeJScameras[this.state.scenes['index-vwf'].camera.ID];
 
-            if(camID === 'top')
+            if (camID === 'top')
                 cam = this.topCamera;
             if (this.cameraID) {
                 clearCameraModeIcons();
@@ -606,11 +600,11 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                         cam = this.state.nodes[this.cameraID].getRoot();
                     }
             }
-            if(camID === 'top')
+            if (camID === 'top')
                 cam = this.topCamera;
-            if(camID === 'left')
+            if (camID === 'left')
                 cam = this.leftCamera;
-            if(camID === 'front')
+            if (camID === 'front')
                 cam = this.frontCamera;
 
             if (cam) {
@@ -627,12 +621,9 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         setCameraDefault: function() {
             this.setCamera();
         },
-        calledMethod: function(id,method,args)
-        {
-            if(id == vwf.application() && method == 'setClientCamera')
-            {
-                if(vwf.moniker() == args[0])
-                {
+        calledMethod: function(id, method, args) {
+            if (id == vwf.application() && method == 'setClientCamera') {
+                if (vwf.moniker() == args[0]) {
                     this.setCamera_internal(args[1]);
                 }
             }
@@ -640,7 +631,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         createdProperty: function(nodeID, propertyName, propertyValue) {
             this.satProperty(nodeID, propertyName, propertyValue);
         },
-        neededTransfromInterp:{},
+        neededTransfromInterp: {},
         satProperty: function(nodeID, propertyName, propertyValue) {
 
             //console.log([nodeID,propertyName,propertyValue]);
@@ -656,7 +647,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             if (this.nodes[nodeID])
                 this.nodes[nodeID].properties[propertyName] = propertyValue;
 
-            if(propertyName == 'transform')
+            if (propertyName == 'transform')
                 this.neededTransfromInterp[nodeID] = true;
 
             node[propertyName] = propertyValue;
@@ -1164,7 +1155,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
             //only render effects in normal mode. Should our older stereo support move into a THREE.js effect?
             if (self.renderMode === NORMALRENDER) {
-                if(cam.setViewOffset)
+                if (cam.setViewOffset)
                     cam.setViewOffset(undefined);
                 cam.updateProjectionMatrix();
                 //if there are no effects, we can do a normal render
@@ -1176,8 +1167,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                         self.effects[i].render(scene, cam);
                     }
                 }
-            }else if(self.renderMode == VRRENDER)
-            {
+            } else if (self.renderMode == VRRENDER) {
 
                 if (cam.setViewOffset)
                     cam.setViewOffset(undefined);
@@ -1218,12 +1208,12 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
                 renderer.setViewport(0, centerh, ww2, h);
                 _dRenderer.setScissor(0, centerh, ww2, h);
-                
-                if(cam.setViewOffset)
+
+                if (cam.setViewOffset)
                     cam.setViewOffset(ww2, h, -100, 0, ww2, h);
                 cam.updateProjectionMatrix();
 
-                if(cam.setViewOffset)
+                if (cam.setViewOffset)
                     cam.setViewOffset(ww2, h, -_SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
                 cam.updateProjectionMatrix();
                 renderer.render(scene, cam);
@@ -1236,7 +1226,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 renderer.setViewport(ww2, centerh, ww2, h);
                 _dRenderer.setScissor(ww2, centerh, ww2, h);
 
-                if(cam.setViewOffset)
+                if (cam.setViewOffset)
                     cam.setViewOffset(ww2, h, _SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
                 cam.updateProjectionMatrix();
 
@@ -1393,43 +1383,43 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             var view = this;
 
             if (!$.parseQuerystring().norender) {
-            if (detectWebGL() && getURLParameter('disableWebGL') == 'null') {
+                if (detectWebGL() && getURLParameter('disableWebGL') == 'null') {
 
-                sceneNode.renderer = new THREE.WebGLRenderer({
-                    canvas: mycanvas,
-                    antialias: true,
-                    alpha: false,
-                    stencil: false
-                });
-                sceneNode.renderer.autoUpdateScene = false;
-                sceneNode.renderer.setSize($('#index-vwf').width(), $('#index-vwf').height());
+                    sceneNode.renderer = new THREE.WebGLRenderer({
+                        canvas: mycanvas,
+                        antialias: true,
+                        alpha: false,
+                        stencil: false
+                    });
+                    sceneNode.renderer.autoUpdateScene = false;
+                    sceneNode.renderer.setSize($('#index-vwf').width(), $('#index-vwf').height());
 
 
 
-                if (_SettingsManager.getKey('shadows')) {
+                    if (_SettingsManager.getKey('shadows')) {
 
+
+                    }
+                    sceneNode.renderer.shadowMapType = THREE.PCFSoftShadowMap;
+                    sceneNode.renderer.shadowMapEnabled = true;
+                    sceneNode.renderer.autoClear = false;
+                    sceneNode.renderer.setClearColor({
+                        r: 1,
+                        g: 1,
+                        b: 1
+                    }, 1.0);
+                } else {
+
+                    //lets not fall back on canvas renderer. there just is no point trying to do this without it.
+                    //so, we create a renderer anyway.
+
+                    //just throw out to a page. Could be a custom error warning. 
+
+                    window.location = 'http://get.webgl.org/';
+                    window.onbeforeunload = null;
+                    window.onunload = null;
 
                 }
-                sceneNode.renderer.shadowMapType = THREE.PCFSoftShadowMap;
-                sceneNode.renderer.shadowMapEnabled = true;
-                sceneNode.renderer.autoClear = false;
-                sceneNode.renderer.setClearColor({
-                    r: 1,
-                    g: 1,
-                    b: 1
-                }, 1.0);
-            } else {
-
-                //lets not fall back on canvas renderer. there just is no point trying to do this without it.
-                //so, we create a renderer anyway.
-
-                //just throw out to a page. Could be a custom error warning. 
-
-                window.location = 'http://get.webgl.org/';
-                window.onbeforeunload = null;
-                window.onunload = null;
-
-            }
                 if (sceneNode.renderer.setFaceCulling)
                     sceneNode.renderer.setFaceCulling(false);
             }
@@ -1449,7 +1439,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
             var renderer = sceneNode.renderer;
             // by this point, the callback should be done. Create the renderer if the sensor was detected
-            if(_dView.vrHMDSensor)
+            if (_dView.vrHMDSensor)
                 _dView.vrRenderer = new THREE.VRRenderer(renderer, _dView.vrHMD);
             var scenenode = sceneNode;
             window._dScene = scene;

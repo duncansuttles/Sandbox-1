@@ -208,38 +208,34 @@ THREE.glTFInterpolator.prototype.interp = function(t)
 		var key = Math.floor(rate * t);
 		var i = key;
 		var key1 = i;
-		var key2 = i*2;
+		var key2 = i+1;
+		var lerp  = (rate * t) - key;
 
-
-		//for (i = 0; i < this.count - 1; i++)
-		//{
-		//	var key1 = this.keys[i];
-		//	var key2 = this.keys[i + 1];
-	    //if (t >= key1 && t <= key2)
+		
 			{
 				if (this.isRot) {
-					this.quat1.set(this.values[i * 4],
-							this.values[i * 4 + 1],
-							this.values[i * 4 + 2],
-							this.values[i * 4 + 3]);
-					this.quat2.set(this.values[(i + 1) * 4],
-							this.values[(i + 1) * 4 + 1],
-							this.values[(i + 1) * 4 + 2],
-							this.values[(i + 1) * 4 + 3]);
-					THREE.Quaternion.slerp(this.quat1, this.quat2, this.quat3, (t - key1) / (key2 - key1));
+					this.quat1.set(this.values[key1 * 4],
+							this.values[key1 * 4 + 1],
+							this.values[key1 * 4 + 2],
+							this.values[key1 * 4 + 3]);
+					this.quat2.set(this.values[key2 * 4],
+							this.values[key2 * 4 + 1],
+							this.values[key2 * 4 + 2],
+							this.values[key2 * 4 + 3]);
+					THREE.Quaternion.slerp(this.quat1, this.quat2, this.quat3, lerp);
 				}
 				else {
-					this.vec3.set(this.values[i * 3],
-							this.values[i * 3 + 1],
-							this.values[i * 3 + 2]);
-					this.vec2.set(this.values[(i + 1) * 3],
-							this.values[(i + 1) * 3 + 1],
-							this.values[(i + 1) * 3 + 2]);
+					this.vec3.set(this.values[key1 * 3],
+							this.values[key1 * 3 + 1],
+							this.values[key1 * 3 + 2]);
+					this.vec2.set(this.values[key2 * 3],
+							this.values[key2 * 3 + 1],
+							this.values[key2 * 3 + 2]);
 	
-					this.vec3.lerp(this.vec2, (t - key1) / (key2 - key1));
+					this.vec3.lerp(this.vec2, lerp);
 				}
 			}
-		//}
+		
 	}
 	
 	if (this.target)
