@@ -480,6 +480,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                             while (hits[i] && hits[i].object && !hits[i].object.vwfID) hits[i].object = hits[i].object.parent;
                             if (hits[i] && hits[i].object) vwfnode = hits[i].object.vwfID;
                             if (vwfhits.indexOf(vwfnode) == -1 && vwfnode) vwfhits.push(vwfnode);
+
+                            hits[i].release();
                         }
                         this.SelectObject(vwfhits, this.PickMod);
 

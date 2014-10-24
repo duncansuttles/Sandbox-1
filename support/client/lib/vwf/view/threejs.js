@@ -59,6 +59,14 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         vrHMDSensor: null,
         vrHMD: null,
         vrRenderer: null,
+        simulateContextLoss: function() {
+            var cx = _dRenderer.context.getExtension('WEBGL_lose_context');
+            cx.loseContext();
+            window.setTimeout(function() {
+                cx.restoreContext();
+            }, 1000);
+
+        },
         toggleFullScreen: function() {
 
             if (RunPrefixMethod(document, "FullScreen") || RunPrefixMethod(document, "IsFullScreen")) {
@@ -1101,6 +1109,10 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 }
 
                 self.lastPickId = newPickId;
+
+                //be sure to return the pick to the pool so that it does not require GC
+                if (self.lastPick)
+                    self.lastPick.release();
                 self.lastPick = newPick;
                 if (view.lastEventData && (view.lastEventData.eventData[0].screenPosition[0] != oldMouseX || view.lastEventData.eventData[0].screenPosition[1] != oldMouseY)) {
                     oldMouseX = view.lastEventData.eventData[0].screenPosition[0];
@@ -1391,9 +1403,191 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                         alpha: false,
                         stencil: false
                     });
+
+                    sceneNode.renderer.context.canvas.addEventListener("webglcontextlost", function(event) {
+                        event.preventDefault();
+                        
+
+                        //no point in rendering when we have no context
+                        _dView.paused = true;
+
+                        //clean up existing resources
+                        var walk = function(node) {
+                            if (node.children)
+                                for (var i = 0; i < node.children.length; i++)
+                                    walk(node.children[i])
+                            if (node.dispose)
+                                node.dispose();
+                            if (node.__webglInit)
+                                node.__webglInit = undefined;
+                            if (node.__webglActive)
+                                node.__webglActive = undefined;
+
+                            if (node.geometryGroups)
+                                node.geometryGroups = undefined;
+
+                            if (node.geometry)
+                                walk(node.geometry);
+                            walk(_dScene);
+                        }
+
+                    }, false);
+
+                    sceneNode.renderer.context.canvas.addEventListener("webglcontextrestored", function(event) {
+                        // Do something 
+                        //chadwick :10/24/14
+                        //try to recreate all the webgl stuff when context is restored.
+                        //TODO: the terrain engine does all sorts of crazy things. Things that current probably don't work
+                        //terrain
+                        //render-to-texture
+                        //videotextures
+                        //the grass system
+                        //postprocessing
+                        //any other code that manually manages rendertargets 
+
+                        //ok, good to render next frame
+                        _dView.paused = false;
+
+                        //create a new renderer and set all pointers to it
+                        renderer = _dRenderer = sceneNode.renderer = new THREE.WebGLRenderer({
+                            canvas: mycanvas,
+                            antialias: true,
+                            alpha: false,
+                            stencil: false
+                        });
+
+                       
+                        //here, we are going to do a lot of work to clean up the three.js datastructures
+                        //to force the  new renderer to recreate all the webgl objects
+                        _dScene.__webglObjects = {};
+
+                        //reset the renderer properties
+                        sceneNode.renderer.shadowMapType = THREE.PCFSoftShadowMap;
+                        sceneNode.renderer.shadowMapEnabled = true;
+                        sceneNode.renderer.autoClear = false;
+                        sceneNode.renderer.setClearColor({
+                            r: 1,
+                            g: 1,
+                            b: 1
+                        }, 1.0);
+
+                        //because we can encounter the same objects over and over in the scenegraph, we need to keep track of what we hit
+                        var geoProcessedList = [];
+                        var matProcessedList = [];
+                        var walk = function(node) {
+                            if (node.children)
+                                for (var i = 0; i < node.children.length; i++)
+                                    walk(node.children[i])
+
+                            //mark objects an not inited
+                            if (node.__webglInit)
+                                node.__webglInit = undefined;
+                            if (node.__webglActive)
+                                node.__webglActive = undefined;
+
+
+                            //clear buffers and caches on geometries
+                            if (node instanceof THREE.Geometry && geoProcessedList.indexOf(node) == -1) {
+                                if (node.geometryGroups)
+                                    node.geometryGroups = undefined;
+                                if (node.geometryGroupsList)
+                                    node.geometryGroupsList = undefined;
+                                node.__colorArray = undefined;
+                                node.__sortArray = undefined;
+                                node.__vertexArray = undefined;
+                                node.__webglColorBuffer = undefined;
+                                node.__webglCustomAttributesList = undefined;
+                                node.__webglInit = undefined;
+                                node.__webglParticleCount = undefined;
+                                node.__webglVertexBuffer = undefined;
+                                geoProcessedList.push(node);
+                            }
+                            //send geometry into this same function
+                            if (node.geometry) {
+                                walk(node.geometry);
+
+                            }
+
+                            //have to be careful! renderer stashes the rendertarget in the light itself
+                            //clear it
+                            if (node instanceof THREE.Light) {
+                                if (node.shadowMap) {
+                                    node.shadowMap.__webglFramebuffer = undefined;
+                                    node.shadowMap.__webglRenderbuffer = undefined;
+                                    node.shadowMap.__webglTexture = undefined;
+                                }
+
+                            }
+                            //careful! three.js uses a datatexture to send bone transforms. clear this texture
+                            if (node instanceof THREE.SkinnedMesh) {
+                                node.skeleton.boneTexture.needsUpdate = true
+                                node.skeleton.boneTexture.__webglInit = undefined;
+                                node.skeleton.boneTexture.__webglTexture = undefined;
+                            }
+
+                            //scene needs to be tricked into re-initing the objects. this does that
+                            if (!(node instanceof THREE.Geometry))
+                                _dScene.__objectsAdded.push(node);
+
+                            //big step here, deal with materials
+                            if (node.material && matProcessedList.indexOf(node.material) == -1) {
+
+                                matProcessedList.push(node.material);
+
+                                //if the material is alread inited
+                                if (node.material.__webglShader) {  
+
+                                    //find all textures in the material, and re-init
+                                    for (var i in node.material.__webglShader.uniforms) {
+                                        if (node.material.__webglShader.uniforms[i].type == 't') {
+                                            var tex = node.material.__webglShader.uniforms[i].value;
+
+                                            //don't forget cubemaps, slightly differnet under the hood
+                                            if (tex) {
+                                                if (tex.image.length) {
+                                                    tex.image.__webglTextureCube = undefined;
+                                                }
+                                                tex.__webglInit = undefined;
+                                                tex.__webglTexture = undefined;
+                                                tex.needsUpdate = true;
+                                            }
+                                        }
+
+                                    }
+                                }
+                                //reset the default datatexture provided while real textures are loading
+                                var defaulttex = _SceneManager.getDefaultTexture();
+                                defaulttex.__webglInit = undefined;
+                                defaulttex.__webglTexture = undefined;
+                                defaulttex.needsUpdate = true;
+
+                                //if the material has any custom vertex attributes (particle system use this heavily)
+                                //the webgl buffers for those attributes have to be reinited
+                                if (node.material.attributes) {
+                                    for (var i in node.material.attributes) {
+                                        node.material.attributes[i].buffer = undefined;
+                                        node.material.attributes[i].__webglInitialized = undefined;
+                                    }
+                                }
+                                //mark material for general update - should rebuild shaders and uniforms at webgl level
+                                node.material.dispose();
+                                node.material.__webglShader = null;
+                                node.material.needsUpdate = true;
+
+                            }
+
+
+                            if (node.geometry)
+                                walk(node.geometry);
+                        }
+                        //walk the scenegraph and recreate
+                        walk(_dScene);
+
+
+                    }, false);
+
                     sceneNode.renderer.autoUpdateScene = false;
                     sceneNode.renderer.setSize($('#index-vwf').width(), $('#index-vwf').height());
-
 
 
                     if (_SettingsManager.getKey('shadows')) {

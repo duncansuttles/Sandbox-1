@@ -293,11 +293,8 @@ SceneManager.prototype.FrustrumCast = function(f, opts) {
             hitlist = hitlist.concat(childhits);
     }
 
-    //return an array that is not tracked by the pool, so users will not have to manually deallocate
-    var unTrackedReturn = [];
-    unTrackedReturn = hitlist.slice(0);
 
-    return unTrackedReturn;
+    return hitlist;
 }
 SceneManager.prototype.SphereCast = function(center, r, opts) {
     //console.profile("PickProfile");

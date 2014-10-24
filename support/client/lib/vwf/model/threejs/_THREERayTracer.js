@@ -371,6 +371,7 @@ function allocate_FaceIntersect(point, norm, face) {
         clean_FaceIntersect(ret, point, norm, face);
         return ret;
     } else {
+        
         return new FaceIntersect(point, norm, face)
     }
 }
@@ -2092,7 +2093,7 @@ THREE.Object3D.prototype.FrustrumCast = function(frustrum, options) {
 
         if (this instanceof THREE.Mesh) {
             //collide with the mesh
-            ret = this.geometry.FrustrumCast(tfrustrum, options);
+            ret = ret.concat(this.geometry.FrustrumCast(tfrustrum, options));
             if (ret.length)
                 mat2 = this.getModelMatrix().slice(0);
             for (var i = 0; i < ret.length; i++) {
