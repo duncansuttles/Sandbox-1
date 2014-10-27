@@ -447,21 +447,6 @@ properties:
   quaternion: 
   scale:
   enabled: true
-  boundingbox: 
-    set: |
-      this.logger.info("WARNING: node3 boundingbox cannot be set" )
-  centerOffset: 
-    set: |
-      this.logger.info( "WARNING: node3 centerOffset cannot be set" )
-  vertices: 
-    set: |
-      this.logger.info( "WARNING: node3 vertices cannot be set" )
-    value: 
-  vertexIndices: 
-    set: |
-      this.logger.info( "WARNING: node3 vertexIndices cannot be set" )
-    value: 
-  speed: 1
   playing: false
   looping: false
   lookAt: ""

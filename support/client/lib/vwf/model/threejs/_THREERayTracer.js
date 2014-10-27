@@ -1439,7 +1439,7 @@ THREE.Geometry.prototype.BuildRayTraceAccelerationStructure = function() {
     var denPerCm3 = this.faces.length / volCm3;
 
     if (denPerCm3 > .001 && this.faces.length > OCTMaxFaces) {
-        console.warn('Mesh density is greater than one poly per cubic centimeter. This is insane. Bailing out of octree generation');
+        //console.warn('Mesh density is greater than one poly per cubic centimeter. This is insane. Bailing out of octree generation');
         this.RayTraceAccelerationStructure = buildFaceListFromBounds(bounds);
         return;
     }

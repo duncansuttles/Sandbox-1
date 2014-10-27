@@ -34,7 +34,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
 
 
 
-                console.log('initialize Index-vwf');
+               
 
                 window._DataManager = require("vwf/view/editorview/DataManager").getSingleton();;
 

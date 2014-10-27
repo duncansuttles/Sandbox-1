@@ -26,7 +26,7 @@ function PainterTool()
 	$('#PainterToolGUITexture').attr('src','./vwfDataManager.svc/texture?UID=checker.jpg');
 	$('#paintertoolclose').click(function(){_PainterTool.hide()});
 	
-	this.display = new THREE.Mesh(new THREE.CubeGeometry(1,1,1),new THREE.MeshLambertMaterial());
+	this.display = new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial());
 	
 	this.display.InvisibleToCPUPick = true;
 	this.display.material.wireframe = false;

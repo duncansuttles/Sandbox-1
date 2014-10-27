@@ -47,7 +47,7 @@ define([
 ], function(ready) {
 
     return function(stateData) {
-         console.log('begin preload');
+         //console.log('begin preload');
         require("vwf/view/editorview/ObjectPools").getSingleton();
         window.alertify = require("vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify");
         window._SettingsManager = require("SettingsManager").getSingleton();

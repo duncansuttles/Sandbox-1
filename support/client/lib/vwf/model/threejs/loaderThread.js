@@ -145,7 +145,7 @@
              cbid: cbid
          });
      }
-     self.log('background loader init complete');
+     //self.log('background loader init complete');
  }
 
  self.addEventListener('message', function(e) {

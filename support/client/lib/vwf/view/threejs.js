@@ -368,7 +368,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 _Editor.GetMoveGizmo().parent.updateMatrixWorld(true);
             }*/
 
-            var lerpStep = Math.min(1,.2 * (deltaTime/16.6));  //the slower the frames ,the more we have to move per frame. Should feel the same at 60 0r 20
+            var lerpStep = Math.min(1, .2 * (deltaTime / 16.6)); //the slower the frames ,the more we have to move per frame. Should feel the same at 60 0r 20
             var keys = Object.keys(this.nodes);
             var interp = null;
             for (var j = 0; j < keys.length; j++) {
@@ -1413,7 +1413,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             sceneNode.lastTime = now;
             self.inFrame = false;
 
-            
+
             if (glext_ft) {
                 glext_ft.frameTerminator();
             }
@@ -1422,59 +1422,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
         var mycanvas = this.canvasQuery.get(0);
 
-        function detectWebGL() {
-            var asa;
-            var canvas;
-            var dcanvas;
-            var gl;
-            var expmt;
-
-            $(document.body).append('<canvas width="100" height="100" id="testWebGLSupport" />');
-            canvas = $('#testWebGLSupport');
-
-
-            // check to see if we can do webgl
-            // ALERT FOR JQUERY PEEPS: canvas is a jquery obj - access the dom obj at canvas[0]
-            dcanvas = canvas[0];
-            expmt = false;
-            if ("WebGLRenderingContext" in window) {
-                console.log("browser at least knows what webgl is.");
-            }
-            // some browsers don't have a .getContext for canvas...
-            try {
-                gl = dcanvas.getContext("webgl");
-            } catch (x) {
-                gl = null;
-            }
-            if (gl == null) {
-                try {
-                    gl = dcanvas.getContext("experimental-webgl");
-                } catch (x) {
-                    gl = null;
-                }
-                if (gl == null) {
-                    console.log('but can\'t speak it');
-                } else {
-                    expmt = true;
-                    console.log('and speaks it experimentally.');
-                }
-            } else {
-                console.log('and speaks it natively.');
-            }
-
-            if (gl || expmt) {
-                console.log("loading webgl content.");
-                canvas.remove();
-                return true;
-            } else {
-                console.log("image-only fallback. no webgl.");
-                canvas.remove();
-                return false;
-            }
-
-
-
-        }
 
         function getURLParameter(name) {
             return decodeURI(
@@ -1489,17 +1436,28 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             var view = this;
 
             if (!$.parseQuerystring().norender) {
-                if (detectWebGL() && getURLParameter('disableWebGL') == 'null') {
+                if (getURLParameter('disableWebGL') == 'null') {
+
 
                     sceneNode.renderer = new THREE.WebGLRenderer({
                         canvas: mycanvas,
                         antialias: true,
                         alpha: false,
-                        stencil: false
+                        stencil: false,
+                        depth:true,
+                        preserveDrawingBuffer:true
                     });
+                    if (!sceneNode.renderer.context) {
+                        //lets not fall back on canvas renderer. there just is no point trying to do this without it.
+                        //so, we create a renderer anyway.
+                        //just throw out to a page. Could be a custom error warning. 
+                        window.location = 'http://get.webgl.org/';
+                        window.onbeforeunload = null;
+                        window.onunload = null;
+                    };
 
                     sceneNode.renderer.context.canvas.addEventListener("webglcontextlost", function(event) {
-                        
+
                         alertify.error('WebGL Context Lost!');
 
                         //no point in rendering when we have no context
@@ -1551,7 +1509,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                             stencil: false
                         });
 
-                        
+
 
                         //here, we are going to do a lot of work to clean up the three.js datastructures
                         //to force the  new renderer to recreate all the webgl objects
@@ -1680,17 +1638,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                         g: 1,
                         b: 1
                     }, 1.0);
-                } else {
-
-                    //lets not fall back on canvas renderer. there just is no point trying to do this without it.
-                    //so, we create a renderer anyway.
-
-                    //just throw out to a page. Could be a custom error warning. 
-
-                    window.location = 'http://get.webgl.org/';
-                    window.onbeforeunload = null;
-                    window.onunload = null;
-
                 }
                 if (sceneNode.renderer.setFaceCulling)
                     sceneNode.renderer.setFaceCulling(false);

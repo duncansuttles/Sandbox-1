@@ -293,7 +293,8 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                             listeners.splice(found, 1);
                         }
                     } else {
-                        console.error('bound value must be a function');
+                        //no need to report this, is commonly expected
+                        //console.error('bound value must be a function');
                     }
 
                 },
@@ -844,7 +845,7 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                 }
 
                 var watchable = new jsDriverSelf._Watchable();
-                console.log('new watchable', dotNotation);
+               // console.log('new watchable', dotNotation);
                 watchable.dotNotation = dotNotation;
                 jsDriverSelf.setupWatchableArray(watchable, val, propertyname, id, masterval, dotNotation);
                 this.__WatchableCache[dotNotation] = watchable;
@@ -856,7 +857,7 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                 }
 
                 var watchable = new jsDriverSelf._Watchable();
-                console.log('new watchable', dotNotation);
+              //  console.log('new watchable', dotNotation);
                 watchable.dotNotation = dotNotation;
                 jsDriverSelf.setupWatchableObject(watchable, val, propertyname, id, masterval, dotNotation);
                 this.__WatchableCache[dotNotation] = watchable;

@@ -186,7 +186,7 @@ define(["vwf/model/threejs/backgroundLoader", "vwf/view/editorview/lib/alertify.
 
                 var time = performance.now();
                 loader.load(url, function(asset) {
-                    console.log(url, performance.now() - time);
+                    //console.log(url, performance.now() - time);
 
                     assetLoader.collada[url] = asset;
                     assetLoader.BuildCollisionData(asset.scene, function(cb3) {
@@ -232,10 +232,10 @@ define(["vwf/model/threejs/backgroundLoader", "vwf/view/editorview/lib/alertify.
                 this.loader = new UTF8JsonLoader({
                     source: url
                 }, function(asset) {
-                    console.log(url, performance.now() - time);
+                    //console.log(url, performance.now() - time);
                     assetLoader.utf8Json[url] = asset;
                     assetLoader.BuildCollisionData(asset.scene, function(cb3) {
-                        console.log(url, performance.now() - time);
+                        //console.log(url, performance.now() - time);
                         cb2();
                     });
                 }, function(err) {
@@ -248,10 +248,10 @@ define(["vwf/model/threejs/backgroundLoader", "vwf/view/editorview/lib/alertify.
                 this.loader = new UTF8JsonLoader_Optimized({
                     source: url
                 }, function(asset) {
-                    console.log(url, performance.now() - time);
+                    //console.log(url, performance.now() - time);
                     assetLoader.utf8JsonOptimized[url] = asset;
                     assetLoader.BuildCollisionData(asset.scene, function(cb3) {
-                        console.log(url, performance.now() - time);
+                        //console.log(url, performance.now() - time);
                         cb2();
                     });
                 }, function(err) {
@@ -265,10 +265,10 @@ define(["vwf/model/threejs/backgroundLoader", "vwf/view/editorview/lib/alertify.
                 this.loader = new THREE.glTFLoader();
                 this.loader.useBufferGeometry = true;
                 this.loader.load(url, function(asset) {
-                    console.log(url, performance.now() - time);
+                    //console.log(url, performance.now() - time);
                     assetLoader.glTF[url] = asset;
                     assetLoader.BuildCollisionData(asset.scene, function(cb3) {
-                        console.log(url, performance.now() - time);
+                       // console.log(url, performance.now() - time);
                         cb2();
                     });
                 });

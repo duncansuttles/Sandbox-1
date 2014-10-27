@@ -121,7 +121,7 @@ define([], function() {
                 for (var i in node.properties) {
                     //4th param as true returns whether or not delegation happened during get. if so, no need to store this property.
                     if (vwf.getProperty(node.id, i, false, true)) {
-                        console.log('Removing delegated property', node.id, i);
+                       // console.log('Removing delegated property', node.id, i);
                         delete node.properties[i];
                     }
                 }

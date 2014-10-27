@@ -2378,19 +2378,19 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             var blue = [0, 0, 1, 1];
             if (MoveGizmo != null) return;
             //temp mesh for all geometry to test
-            var cubeX = new THREE.Mesh(new THREE.CubeGeometry(10.00, .40, .40), new THREE.MeshLambertMaterial({
+            var cubeX = new THREE.Mesh(new THREE.BoxGeometry(10.00, .40, .40), new THREE.MeshLambertMaterial({
                 color: 0xFF0000,
                 emissive: 0xFF0000,
                 ambient: 0xFF0000
             }));
             cubeX.position.set(5.00, .15, .15);
-            var cubeY = new THREE.Mesh(new THREE.CubeGeometry(.40, 10.00, .40), new THREE.MeshLambertMaterial({
+            var cubeY = new THREE.Mesh(new THREE.BoxGeometry(.40, 10.00, .40), new THREE.MeshLambertMaterial({
                 color: 0x00FF00,
                 emissive: 0x00FF00,
                 ambient: 0x00FF00
             }));
             cubeY.position.set(.15, 5.00, .15);
-            var cubeZ = new THREE.Mesh(new THREE.CubeGeometry(.40, .40, 10.00), new THREE.MeshLambertMaterial({
+            var cubeZ = new THREE.Mesh(new THREE.BoxGeometry(.40, .40, 10.00), new THREE.MeshLambertMaterial({
                 color: 0x0000FF,
                 emissive: 0x0000FF,
                 ambient: 0x0000FF
@@ -2401,9 +2401,9 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             MoveGizmo.allChildren.push(cubeX);
             MoveGizmo.allChildren.push(cubeY);
             MoveGizmo.allChildren.push(cubeZ);
-            cubeX.geometry.setPickGeometry(new THREE.CubeGeometry(10.00, 1.80, 1.80));
-            cubeY.geometry.setPickGeometry(new THREE.CubeGeometry(1.80, 10.00, 1.80));
-            cubeZ.geometry.setPickGeometry(new THREE.CubeGeometry(1.80, 1.80, 10.00));
+            cubeX.geometry.setPickGeometry(new THREE.BoxGeometry(10.00, 1.80, 1.80));
+            cubeY.geometry.setPickGeometry(new THREE.BoxGeometry(1.80, 10.00, 1.80));
+            cubeZ.geometry.setPickGeometry(new THREE.BoxGeometry(1.80, 1.80, 10.00));
 
 
             var arrowX = new THREE.Mesh(new THREE.CylinderGeometry(0, 1, 2, 10, 0), cubeX.material);
@@ -2452,11 +2452,11 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             MoveGizmo.allChildren.push(this.BuildBox([.85, .85, .85], [0, 9.25, 0], green)); //scale xyz
             MoveGizmo.allChildren.push(this.BuildBox([.85, .85, .85], [0, 0, 9.25], blue)); //scale xyz
             MoveGizmo.allChildren.push(this.BuildBox([6, 6, 0], [3, 3, -.2], [75, 75, 0, 1], .5)); //movexy
-            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( 8, 8, .30 ));
+            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.BoxGeometry( 8, 8, .30 ));
             MoveGizmo.allChildren.push(this.BuildBox([6, 0, 6], [3.2, -.2, 3], [75, 0, 75, 1], .5)); //movexz
-            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( 8, .30, 8 ));
+            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.BoxGeometry( 8, .30, 8 ));
             MoveGizmo.allChildren.push(this.BuildBox([0, 6, 6], [-.2, 3.2, 3], [0, 75, 75, 1], .5)); //moveyz
-            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( .30, 8, 8 ));
+            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.BoxGeometry( .30, 8, 8 ));
 
 
             MoveGizmo.allChildren.push(this.BuildRing(12, .7, [0, 0, 1], 30, [1, 1, 1, 1], 90, 450)); //rotate z
@@ -2604,7 +2604,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             return mesh;
         }.bind(this);
         this.BuildBox = function(size, offset, color, alpha) {
-            var mesh = new THREE.Mesh(new THREE.CubeGeometry(size[0], size[1], size[2]), new THREE.MeshLambertMaterial());
+            var mesh = new THREE.Mesh(new THREE.BoxGeometry(size[0], size[1], size[2]), new THREE.MeshLambertMaterial());
             mesh.material.color.r = color[0];
             mesh.material.color.g = color[1];
             mesh.material.color.b = color[2];
