@@ -1,9 +1,10 @@
 ﻿"use strict";
-  function setClone(ab) {
-                                            var f32 = new Float32Array(ab.length);
-                                            f32.set(ab);
-                                            return f32;
-                                        }
+
+function setClone(ab) {
+    var f32 = new Float32Array(ab.length);
+    f32.set(ab);
+    return f32;
+}
 // Copyright 2012 United States Government, as represented by the Secretary of Defense, Under
 // Secretary of Defense (Personnel & Readiness).
 // 
@@ -27,16 +28,16 @@ function matset(newv, old) {
         newv[i] = old[i];
     return newv;
 }
-function matdiff(mat1,mat2)
-{
+
+function matdiff(mat1, mat2) {
     var diff = 0;
-    for(var i = 0; i < 16; i++)
-    {
+    for (var i = 0; i < 16; i++) {
         diff += Math.abs(mat1[i] - mat2[i]);
     }
     return diff;
 
 }
+
 function RunPrefixMethod(obj, method, param) {
     var p = 0,
         m, t;
@@ -319,8 +320,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     var i = keys[j];
                     //don't do interpolation for static objects
                     if (this.nodes[i].isStatic) continue;
-                   if (!this.neededTransfromInterp[i]) {
-                //       this.nodes[i].lastTickTransform = null;
+                    if (!this.neededTransfromInterp[i]) {
+                        //       this.nodes[i].lastTickTransform = null;
 
                     } else if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
                         this.nodes[i].lastTickTransform = matset(this.nodes[i].lastTickTransform, this.nodes[i].thisTickTransform);
@@ -382,14 +383,13 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     interp = this.matrixLerp(last, now, step, interp);
 
                     this.nodes[i].currentTickTransform = matset(this.nodes[i].currentTickTransform, this.state.nodes[i].gettingProperty('transform'));
-                    if (this.state.nodes[i].setTransformInternal)
-                    {
-                        
+                    if (this.state.nodes[i].setTransformInternal) {
 
-                        if(this.state.nodes[i].lastFrameInterp)
+
+                        if (this.state.nodes[i].lastFrameInterp)
                             interp = this.matrixLerp(this.state.nodes[i].lastFrameInterp, now, .2, interp);
                         this.state.nodes[i].setTransformInternal(interp, false);
-                        this.state.nodes[i].lastFrameInterp = matset(this.state.nodes[i].lastFrameInterp || [] , interp);
+                        this.state.nodes[i].lastFrameInterp = matset(this.state.nodes[i].lastFrameInterp || [], interp);
                     }
 
 
@@ -408,18 +408,16 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
 
                     this.nodes[i].currentAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
-                    if (this.state.nodes[i].setAnimationFrameInternal)
-                    {
-                         if(this.state.nodes[i].lastAnimationInterp)
-                            interpA = this.lerp(this.state.nodes[i].lastAnimationInterp,now,.2);
+                    if (this.state.nodes[i].setAnimationFrameInternal) {
+                        if (this.state.nodes[i].lastAnimationInterp)
+                            interpA = this.lerp(this.state.nodes[i].lastAnimationInterp, now, .2);
                         this.state.nodes[i].setAnimationFrameInternal(interpA, false);
                         this.state.nodes[i].lastAnimationInterp = interpA || 0;
                     }
 
 
-                }else if(this.state.nodes[i])
-                {
-                        this.state.nodes[i].lastAnimationInterp = null;
+                } else if (this.state.nodes[i]) {
+                    this.state.nodes[i].lastAnimationInterp = null;
                 }
 
 
@@ -994,9 +992,69 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             return list;
         }
 
-        function windowResize() {
+        function resetMaterial(material) {
+
+            if (!material) {
+                return;
+            }
+            if (material instanceof THREE.MeshFaceMaterial) {
+                for (var i in material.materials) {
+                    resetMaterial(material.materials[i])
+                }
+                return;
+
+            }
+
+            //if the material is alread inited
+            if (material.__webglShader) {
+
+                //find all textures in the material, and re-init
+                for (var i in material.__webglShader.uniforms) {
+                    if (material.__webglShader.uniforms[i].type == 't') {
+                        var tex = material.__webglShader.uniforms[i].value;
+
+                        //don't forget cubemaps, slightly differnet under the hood
+                        if (tex && tex instanceof THREE.Texture) {
+                            if (tex.image && tex.image.length) {
+                                tex.image.__webglTextureCube = undefined;
+                            }
+                            tex.__webglInit = undefined;
+                            tex.__webglTexture = undefined;
+                            tex.needsUpdate = true;
+                        }
+
+                        //since we hit the shadow targets on the light, not necessary to also hit them when found in materials
+                        if (tex && tex instanceof THREE.WebGLRenderTarget && i != 'shadowMap') {
+
+                            tex.dispose();
+                            tex.__webglFramebuffer = undefined;
+                            tex.__webglRenderbuffer = undefined;
+                            tex.__webglTexture = undefined;
+
+                        }
+
+
+                    }
+
+                }
+            }
+
+
+            //if the material has any custom vertex attributes (particle system use this heavily)
+            //the webgl buffers for those attributes have to be reinited
+            if (material.attributes) {
+                for (var i in material.attributes) {
+                    material.attributes[i].buffer = undefined;
+                    material.attributes[i].__webglInitialized = undefined;
+                }
+            }
+            //mark material for general update - should rebuild shaders and uniforms at webgl level
+            material.dispose();
+            material.__webglShader = null;
+            material.needsUpdate = true;
 
         }
+
 
 
         var timepassed;
@@ -1435,7 +1493,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
                     sceneNode.renderer.context.canvas.addEventListener("webglcontextlost", function(event) {
                         event.preventDefault();
-
+                        alertify.error('WebGL Context Lost!');
 
                         //no point in rendering when we have no context
                         _dView.paused = true;
@@ -1469,9 +1527,10 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                         //TODO: the terrain engine does all sorts of crazy things. Things that current probably don't work
                         //terrain   //nope, turns out this is fine
                         //render-to-texture
-                        //videotextures
-                        //the grass system
+                        //videotextures   //seems ok, but does stop the vidoe
+                        //the grass system  
                         //postprocessing
+                        //buffergeometry - in progress
                         //any other code that manually manages rendertargets 
 
                         //ok, good to render next frame
@@ -1575,62 +1634,15 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
                                 //big step here, deal with materials
                                 if (node.material && matProcessedList.indexOf(node.material) == -1) {
-
+                                    resetMaterial(node.material);
                                     matProcessedList.push(node.material);
-
-                                    //if the material is alread inited
-                                    if (node.material.__webglShader) {
-
-                                        //find all textures in the material, and re-init
-                                        for (var i in node.material.__webglShader.uniforms) {
-                                            if (node.material.__webglShader.uniforms[i].type == 't') {
-                                                var tex = node.material.__webglShader.uniforms[i].value;
-
-                                                //don't forget cubemaps, slightly differnet under the hood
-                                                if (tex && tex instanceof THREE.Texture) {
-                                                    if (tex.image && tex.image.length) {
-                                                        tex.image.__webglTextureCube = undefined;
-                                                    }
-                                                    tex.__webglInit = undefined;
-                                                    tex.__webglTexture = undefined;
-                                                    tex.needsUpdate = true;
-                                                }
-
-                                                //since we hit the shadow targets on the light, not necessary to also hit them when found in materials
-                                                if (tex && tex instanceof THREE.WebGLRenderTarget && i != 'shadowMap') {
-
-                                                    tex.dispose();
-                                                    tex.__webglFramebuffer = undefined;
-                                                    tex.__webglRenderbuffer = undefined;
-                                                    tex.__webglTexture = undefined;
-
-                                                }
-
-
-                                            }
-
-                                        }
-                                    }
-                                    //reset the default datatexture provided while real textures are loading
-                                    var defaulttex = _SceneManager.getDefaultTexture();
-                                    defaulttex.__webglInit = undefined;
-                                    defaulttex.__webglTexture = undefined;
-                                    defaulttex.needsUpdate = true;
-
-                                    //if the material has any custom vertex attributes (particle system use this heavily)
-                                    //the webgl buffers for those attributes have to be reinited
-                                    if (node.material.attributes) {
-                                        for (var i in node.material.attributes) {
-                                            node.material.attributes[i].buffer = undefined;
-                                            node.material.attributes[i].__webglInitialized = undefined;
-                                        }
-                                    }
-                                    //mark material for general update - should rebuild shaders and uniforms at webgl level
-                                    node.material.dispose();
-                                    node.material.__webglShader = null;
-                                    node.material.needsUpdate = true;
-
                                 }
+
+                                //reset the default datatexture provided while real textures are loading
+                                var defaulttex = _SceneManager.getDefaultTexture();
+                                defaulttex.__webglInit = undefined;
+                                defaulttex.__webglTexture = undefined;
+                                defaulttex.needsUpdate = true;
 
 
                                 if (node.geometry)
@@ -1639,6 +1651,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                             //walk the scenegraph and recreate
                         walk(_dScene);
 
+                        alertify.log('WebGL Context Restored!');
 
                     }, false);
 
