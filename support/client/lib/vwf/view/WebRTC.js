@@ -211,6 +211,15 @@ define(["module", "vwf/view", "vwf/view/rtcObject"], function(module, view, RTCO
 				}
 			}
 		},
+		firedEvent:function(nodeID,eventName,params)
+		{
+			
+			if(eventName == 'clientDisconnected')
+			{
+				var cid = params[0];
+				$('#vidFrame' + ToSafeID(cid)).remove();
+			}
+		},
 
 
 		// send a signal to the other clients

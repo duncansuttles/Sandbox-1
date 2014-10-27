@@ -63,6 +63,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
     var STEREORENDER = 1;
     var VRRENDER = 2;
     var everyOtherFrame = false;
+    var glext_ft = null;
     return view.load(module, {
 
         renderMode: NORMALRENDER,
@@ -358,15 +359,16 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 }
             }
 
-
+            /*
             if (this.gizmoThisTickTransform && this.gizmoLastTickTransform) {
                 this.currentGizmoTransform = _Editor.GetMoveGizmo().parent.matrix.clone();
                 var interpG = this.matrixLerp(matCpy(this.gizmoLastTickTransform.elements), matCpy(this.gizmoThisTickTransform.elements), step);
 
                 _Editor.GetMoveGizmo().parent.matrix.fromArray(interpG);
                 _Editor.GetMoveGizmo().parent.updateMatrixWorld(true);
-            }
+            }*/
 
+            var lerpStep = Math.min(1,.2 * (deltaTime/16.6));  //the slower the frames ,the more we have to move per frame. Should feel the same at 60 0r 20
             var keys = Object.keys(this.nodes);
             var interp = null;
             for (var j = 0; j < keys.length; j++) {
@@ -387,7 +389,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
 
                         if (this.state.nodes[i].lastFrameInterp)
-                            interp = this.matrixLerp(this.state.nodes[i].lastFrameInterp, now, .2, interp);
+                            interp = this.matrixLerp(this.state.nodes[i].lastFrameInterp, now, lerpStep, interp);
                         this.state.nodes[i].setTransformInternal(interp, false);
                         this.state.nodes[i].lastFrameInterp = matset(this.state.nodes[i].lastFrameInterp || [], interp);
                     }
@@ -410,7 +412,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     this.nodes[i].currentAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
                     if (this.state.nodes[i].setAnimationFrameInternal) {
                         if (this.state.nodes[i].lastAnimationInterp)
-                            interpA = this.lerp(this.state.nodes[i].lastAnimationInterp, now, .2);
+                            interpA = this.lerp(this.state.nodes[i].lastAnimationInterp, now, lerpStep);
                         this.state.nodes[i].setAnimationFrameInternal(interpA, false);
                         this.state.nodes[i].lastAnimationInterp = interpA || 0;
                     }
@@ -439,10 +441,10 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         },
         restoreTransforms: function() {
 
-            if (this.currentGizmoTransform) {
+            /*if (this.currentGizmoTransform) {
                 _Editor.GetMoveGizmo().parent.matrix = this.currentGizmoTransform;
                 _Editor.GetMoveGizmo().parent.updateMatrixWorld(true);
-            }
+            }*/
 
             var keys = Object.keys(this.nodes);
 
@@ -1411,6 +1413,11 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             sceneNode.lastTime = now;
             self.inFrame = false;
 
+            
+            if (glext_ft) {
+                glext_ft.frameTerminator();
+            }
+
         };
 
         var mycanvas = this.canvasQuery.get(0);
@@ -1492,7 +1499,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     });
 
                     sceneNode.renderer.context.canvas.addEventListener("webglcontextlost", function(event) {
-                        event.preventDefault();
+                        
                         alertify.error('WebGL Context Lost!');
 
                         //no point in rendering when we have no context
@@ -1544,6 +1551,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                             stencil: false
                         });
 
+                        
 
                         //here, we are going to do a lot of work to clean up the three.js datastructures
                         //to force the  new renderer to recreate all the webgl objects
@@ -1652,6 +1660,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                         walk(_dScene);
 
                         alertify.log('WebGL Context Restored!');
+                        glext_ft = _dRenderer.context.getExtension("GLI_frame_terminator");
 
                     }, false);
 
@@ -1708,7 +1717,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             window._dScene = scene;
             window._dbackgroundScene = backgroundScene;
             window._dRenderer = renderer;
-
+            glext_ft = _dRenderer.context.getExtension("GLI_frame_terminator");
             window._dSceneNode = sceneNode;
             sceneNode.frameCount = 0; // needed for estimating when we're pick-safe
 
