@@ -27,7 +27,16 @@ function matset(newv, old) {
         newv[i] = old[i];
     return newv;
 }
+function matdiff(mat1,mat2)
+{
+    var diff = 0;
+    for(var i = 0; i < 16; i++)
+    {
+        diff += Math.abs(mat1[i] - mat2[i]);
+    }
+    return diff;
 
+}
 function RunPrefixMethod(obj, method, param) {
     var p = 0,
         m, t;
@@ -310,8 +319,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     var i = keys[j];
                     //don't do interpolation for static objects
                     if (this.nodes[i].isStatic) continue;
-                    if (!this.neededTransfromInterp[i]) {
-                        this.nodes[i].lastTickTransform = null;
+                   if (!this.neededTransfromInterp[i]) {
+                //       this.nodes[i].lastTickTransform = null;
 
                     } else if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
                         this.nodes[i].lastTickTransform = matset(this.nodes[i].lastTickTransform, this.nodes[i].thisTickTransform);
@@ -329,7 +338,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 }
 
             }
-            if (hit > 1) {
+            if (false && hit > 1) {
                 this.tickTime = 0;
                 var keys = Object.keys(this.nodes);
 
@@ -352,6 +361,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             if (this.gizmoThisTickTransform && this.gizmoLastTickTransform) {
                 this.currentGizmoTransform = _Editor.GetMoveGizmo().parent.matrix.clone();
                 var interpG = this.matrixLerp(matCpy(this.gizmoLastTickTransform.elements), matCpy(this.gizmoThisTickTransform.elements), step);
+
                 _Editor.GetMoveGizmo().parent.matrix.fromArray(interpG);
                 _Editor.GetMoveGizmo().parent.updateMatrixWorld(true);
             }
@@ -373,7 +383,14 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
                     this.nodes[i].currentTickTransform = matset(this.nodes[i].currentTickTransform, this.state.nodes[i].gettingProperty('transform'));
                     if (this.state.nodes[i].setTransformInternal)
+                    {
+                        
+
+                        if(this.state.nodes[i].lastFrameInterp)
+                            interp = this.matrixLerp(this.state.nodes[i].lastFrameInterp, now, .2, interp);
                         this.state.nodes[i].setTransformInternal(interp, false);
+                        this.state.nodes[i].lastFrameInterp = matset(this.state.nodes[i].lastFrameInterp || [] , interp);
+                    }
 
 
 
@@ -392,9 +409,17 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
                     this.nodes[i].currentAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
                     if (this.state.nodes[i].setAnimationFrameInternal)
+                    {
+                         if(this.state.nodes[i].lastAnimationInterp)
+                            interpA = this.lerp(this.state.nodes[i].lastAnimationInterp,now,.2);
                         this.state.nodes[i].setAnimationFrameInternal(interpA, false);
+                        this.state.nodes[i].lastAnimationInterp = interpA || 0;
+                    }
 
 
+                }else if(this.state.nodes[i])
+                {
+                        this.state.nodes[i].lastAnimationInterp = null;
                 }
 
 
@@ -1511,7 +1536,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
                                         node.attributes[i].buffer = _dRenderer.context.createBuffer();
 
-                                      
+                                        debugger;
                                         node.attributes[i].array = setClone(node.attributes[i].array);
                                         _dRenderer.context.bindBuffer(_dRenderer.context.ARRAY_BUFFER, node.attributes[i].buffer);
                                         _dRenderer.context.bufferData(_dRenderer.context.ARRAY_BUFFER, node.attributes[i].array, _dRenderer.context.STATIC_DRAW);
@@ -1570,6 +1595,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                                                     tex.__webglTexture = undefined;
                                                     tex.needsUpdate = true;
                                                 }
+
+                                                //since we hit the shadow targets on the light, not necessary to also hit them when found in materials
                                                 if (tex && tex instanceof THREE.WebGLRenderTarget && i != 'shadowMap') {
 
                                                     tex.dispose();
