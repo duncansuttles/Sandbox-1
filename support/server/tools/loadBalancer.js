@@ -9,11 +9,11 @@ fs = require('fs'),
 url = require("url"),
 express = require('express'),
 app = express();
-var ServerFeatures = require("./serverFeatures.js");
+var ServerFeatures = require("../serverFeatures.js");
 
 global.configuration = {
     "port": 3001,            
-    "loadBalancerKey" : "$cormR0ck$"
+    "loadBalancerKey" : "SECRETKEY"
 }
 
 app.use(express.methodOverride());
@@ -23,8 +23,7 @@ app.use(ServerFeatures.CORSSupport);
 app.use(express.cookieParser());
 
 app.use(express.bodyParser());
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 app.use(app.router);
 
@@ -51,9 +50,10 @@ function Host(url)
 	}
 	this.healthCheck = function()
 	{
-		require('request').get('http://'+this.url+"/admin/instances",function(error,response,body)
+		require('request').get(this.url+"/admin/instances",function(error,response,body)
 		{
-			if(!error && response.statusCode == 200)
+			//remember, servers using the cache-busting version number will 302
+			if(!error && (response.statusCode == 200 ||  response.statusCode == 302))
 			{
 				console.log(this.url + " health check ok.");
 				global.setTimeout(this.healthCheck.bind(this),3000);
@@ -135,9 +135,9 @@ app.get('/register',function(req,res,next){
 		{
 			global.setTimeout(function(){
 
-				require('request').get('http://'+host.host+"/admin/instances",function(error,response,body)
+				require('request').get(host.host+"/admin/instances",function(error,response,body)
 				{
-					if (!error && response.statusCode == 200) {
+					if(!error && (response.statusCode == 200 ||  response.statusCode == 302)) {
 						hosts.push(new Host(host.host));
 						console.log(host.host + " registration successful");
 					}else

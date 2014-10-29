@@ -792,9 +792,9 @@
             if ( window.location.protocol === "https:" )
             {
 
-                socket = io.connect("https://"+host, {secure:true, reconnect: false});
+                socket = io.connect(host, {secure:true, reconnect: false});
             } else {
-                socket = io.connect("http://"+host,{reconnect: false});
+                socket = io.connect(host,{reconnect: false});
             }
 
         } else {  // Ruby Server
