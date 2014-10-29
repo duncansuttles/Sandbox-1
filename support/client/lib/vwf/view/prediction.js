@@ -103,7 +103,7 @@ define( [ "module", "vwf/view","vwf/view/prediction/javascript","vwf/view/predic
 
 
             
-            if(this.predictions[nodeID][propertyName])
+            if(this.predictions[nodeID] && this.predictions[nodeID][propertyName])
             {
                 if(this.predictions[nodeID][propertyName].time >= vwf.message.time || vwf.message.client == vwf.moniker())
                     {
@@ -113,9 +113,8 @@ define( [ "module", "vwf/view","vwf/view/prediction/javascript","vwf/view/predic
                 
             }
 
-           //don't actually receive messages 
-          // if(!vwf.message.client) 
-        //   this.predictKernel.setProperty( nodeID, propertyName, propertyValue);
+        
+           this.predictKernel.setProperty( nodeID, propertyName, propertyValue);
         },
         setProperty: function( nodeID, propertyName, propertyValue ) {
 
