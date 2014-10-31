@@ -185,6 +185,7 @@ define( [ "module", "vwf/view" ], function( module, view ) {
             case "dispatchEvent":
 
                 return function( nodeID, eventName, eventParameters, eventNodeParameters, when, callback ) {
+                    if(this.kernel.views['vwf/view/prediction'] && !when) this.kernel.views['vwf/view/prediction'].dispatchEvent( nodeID, eventName, eventParameters, eventNodeParameters);
                     this.kernel.send( nodeID, kernelFunctionName, eventName,
                         [ eventParameters, eventNodeParameters ], when || 0, callback /* result */ );
                 };

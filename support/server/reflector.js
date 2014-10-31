@@ -929,7 +929,7 @@ function ClientConnected(socket, namespace, instancedata) {
                             (function(__client, __message) {
                                 global.setTimeout(function() {
                                     __client.emit('message', __message);
-                                }, 150)
+                                }, global.latencySim)
                             })(client, compressedMessage);
                         } else {
                             client.emit('message', compressedMessage);

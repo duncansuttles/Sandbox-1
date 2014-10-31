@@ -13,143 +13,159 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-define( [ "module", "vwf/view","vwf/view/prediction/javascript","vwf/view/prediction/object","vwf/view/prediction/kernel"  ], function( module, view ) {
+define(["module", "vwf/view", "vwf/view/prediction/javascript", "vwf/view/prediction/object", "vwf/view/prediction/kernel"], function(module, view) {
 
     // vwf/model/object.js is a backstop property store.
 
-    return view.load( module, {
+
+    return view.load(module, {
 
         // == Module Definition ====================================================================
 
         // -- initialize ---------------------------------------------------------------------------
         initialize: function() {
-            
-            
+
+
             var kernel = require("vwf/view/prediction/kernel");
+            window.vwfPredict = kernel;
             this.predictKernel = kernel;
             this.predictKernel.initialize();
             this.predictions = {};
             this.time = 0;
-        },
-        getProperty:function(nodeID, name)
-        {
-            return this.predictKernel.getProperty(nodeID,name);
-        },
-        calledMethod:function(nodeID,method,args)
-        {
-            this.predictKernel.callMethod(nodeID,method,args);
-        },
-        callMethod:function(nodeID,method,args)
-        {
-            this.predictKernel.callMethod(nodeID,method,args);
-        },
-        createdNode: function( nodeID, childID, childExtendsID, childImplementsIDs,childSource, childType, childURI, childName, callback /* ( ready ) */ ) {
+            window._dPrediction = this;
 
-            this.predictions[childID] = {};
-
-            this.predictKernel.creatingNode(nodeID, childID, childExtendsID, childImplementsIDs,childSource, childType, childURI, childName, callback /* ( ready ) */);
         },
+        getProperty: function(nodeID, name) {
+            return this.predictKernel.getProperty(nodeID, name);
+        },
+        calledMethod: function(nodeID, method, args) {
+            this.predictKernel.callMethod(nodeID, method, args);
+        },
+        callMethod: function(nodeID, method, args) {
+            this.predictKernel.callMethod(nodeID, method, args);
+        },
+        createdChild:function(nodeID,childName,childComponent,childURI,callback_async)
+        {    
+            callback_async();
+            return;
+            try{
+            console.log(nodeID,childName,childComponent,childURI);
+            window.inPrediction = true;
+            this.predictKernel.createChild(nodeID,childName,childComponent,childURI,function(){
+                window.inPrediction = false;
+                callback_async();
+            });
+            }catch(e)
+            {
+                callback_async();
+            }
+        },
+        createdNode: function(nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType, childURI, childName, callback /* ( ready ) */ ) {
+            //this.predictions[childID] = {};
+            //this.predictKernel.createNode(nodeID, childID, childExtendsID, childImplementsIDs, childSource, childType, childURI, childName, callback /* ( ready ) */ );
+        },
+        
 
         // -- initializingNode ---------------------------------------------------------------------
 
-        initializedNode: function( nodeID, childID ) {
+        initializedNode: function(nodeID, childID) {
 
         },
 
         // -- deletingNode -------------------------------------------------------------------------
 
-        deletedNode: function( nodeID ) {
+        deletedNode: function(nodeID) {
             delete this.predictions[nodeID];
-           this.predictKernel.deletingNode(nodeID);
+            this.predictKernel.deletingNode(nodeID);
         },
 
-         addedChild: function( nodeID, childID, childName ) { 
+        addedChild: function(nodeID, childID, childName) {
 
-         },
+        },
 
-  
-         removedChild: function( nodeID, childID ) {
 
-         },
+        removedChild: function(nodeID, childID) {
 
-  
-        satProperties: function( nodeID, properties ) {
+        },
+
+
+        satProperties: function(nodeID, properties) {
 
         },
 
         // -- gettingProperties --------------------------------------------------------------------
 
-        gotProperties: function( nodeID, properties ) {
+        gotProperties: function(nodeID, properties) {
 
         },
 
         // -- creatingProperty ---------------------------------------------------------------------
 
-        createdProperty: function( nodeID, propertyName, propertyValue ) {
-            return this.initializedProperty( nodeID, propertyName, propertyValue );
+        createdProperty: function(nodeID, propertyName, propertyValue) {
+            return this.initializedProperty(nodeID, propertyName, propertyValue);
         },
 
         // -- initializingProperty -----------------------------------------------------------------
 
-        initializedProperty: function( nodeID, propertyName, propertyValue ) {
-            return this.satProperty( nodeID, propertyName, propertyValue );
+        initializedProperty: function(nodeID, propertyName, propertyValue) {
+            return this.satProperty(nodeID, propertyName, propertyValue);
         },
 
         // TODO: deletingProperty
 
         // -- settingProperty ----------------------------------------------------------------------
 
-        satProperty: function( nodeID, propertyName, propertyValue ) {
+        satProperty: function(nodeID, propertyName, propertyValue) {
 
 
-            
-            if(this.predictions[nodeID] && this.predictions[nodeID][propertyName])
-            {
-                if(this.predictions[nodeID][propertyName].time >= vwf.message.time || vwf.message.client == vwf.moniker())
-                    {
-                        
-                        return;
-                    }
-                
+
+            //update the prediction model with inputs from other users
+            //don't input my own, since the prediction kernel gets them instantly
+            if (vwf.client() != vwf.moniker()) {
+                this.predictKernel.setProperty(nodeID, propertyName, propertyValue);
             }
 
-        
-           this.predictKernel.setProperty( nodeID, propertyName, propertyValue);
+
+
         },
-        setProperty: function( nodeID, propertyName, propertyValue ) {
+        setProperty: function(nodeID, propertyName, propertyValue) {
 
-            this.predictions[nodeID][propertyName] = {
-                time : vwf.now,
-                value : propertyValue 
-            }
             
-           this.predictKernel.setProperty( nodeID, propertyName, propertyValue);
+
+            this.predictKernel.setProperty(nodeID, propertyName, propertyValue);
         },
 
         // -- gettingProperty ----------------------------------------------------------------------
 
-        gotProperty: function( nodeID, propertyName, propertyValue ) {
-            return this.predictKernel.getProperty( nodeID, propertyName, propertyValue );
+        gotProperty: function(nodeID, propertyName) {
+            return this.predictKernel.getProperty(nodeID, propertyName);
         },
-        ticked:function()
-        {
-            if(this.time <= vwf.time())
-            {
+        ticked: function() {
+            if (this.time <= vwf.time()) {
                 this.predictKernel.ticking();
                 this.time = vwf.time();
-            }else
-            {
+            } else {
                 //already predicted this tick
             }
         },
-        predictTick:function()
-        {
+        predictTick: function() {
             this.time += .05;
             this.predictKernel.ticking();
+        },
+        dispatchEvent: function(nodeID, eventName, eventParameters, eventNodeParameters) {
+           // this.predictKernel.dispatchEvent(nodeID, eventName, eventParameters, eventNodeParameters);
+        },
+        dispatchedEvent: function(nodeID, eventName, eventParameters, eventNodeParameters) {
+          //  if (vwf.client() != vwf.moniker()) {
+          //      this.predictKernel.dispatchEvent(nodeID, eventName, eventParameters, eventNodeParameters);
+          //  }
+        },
+        satState:function(state,cb)
+        {
+            debugger;
+            this.predictKernel.setState(state,cb);
         }
-
         // -- name_source_type --------------------------------------------------------------------
+    });
 
-    } );
-
-} );
+});
