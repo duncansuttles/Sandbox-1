@@ -637,65 +637,7 @@ define(function() {
                     this.showPlayers();
             }
         }
-        this.Logout = function() {
-            //if (!_UserManager.GetCurrentUserName()) return;
-
-            var needlogin = true;
-            var statedata = _DataManager.getInstanceData();
-
-            //published worlds may choose to allow anonymous users
-            //singleplayers worlds do not need login
-            if (statedata && statedata.publishSettings && (statedata.publishSettings.allowAnonymous || statedata.publishSettings.singlePlayer))
-                needlogin = false;
-
-
-            $('#MenuLogOuticon').addClass('icondisabled')
-            $('#MenuLogInicon').removeClass('icondisabled')
-            $('#MenuLogIn').removeAttr('disabled');
-            $('#MenuLogOut').attr('disabled', 'disabled');
-            //var parms = new Array();
-            //parms.push(document[document.PlayerNumber +'link'].id);
-            //alert(JSON.stringify(parms));
-            //vwf_view.kernel.callMethod('index-vwf','deleteplayer',parms);
-            var parms = new Array();
-            parms.push(JSON.stringify({
-                sender: '*System*',
-                text: (document.PlayerNumber + " logging off")
-            }));
-
-
-            //
-            //vwf_view.kernel.callMethod('index-vwf','receiveChat',parms);
-            if (document[document.PlayerNumber + 'link']) vwf_view.kernel.deleteNode(document[document.PlayerNumber + 'link'].id);
-            //take ownership of the client connection
-            var profile = _DataManager.GetProfileForUser(_UserManager.GetCurrentUserName());
-            var S = _DataManager.getCurrentSession();
-
-            _DataManager.saveToServer(true);
-
-            //inform the server that you intend to disconnect from the world
-            if (needlogin) {
-                var data = jQuery.ajax({
-                    type: 'GET',
-                    url: "./vwfDataManager.svc/logout?S=" + S + "&CID=" + vwf.moniker(),
-                    data: null,
-                    success: null,
-                    async: false,
-                    dataType: "json"
-                });
-                if (data.status != 200) {
-                    alert(data.responseText);
-                    return;
-                }
-            }
-
-            document[document.PlayerNumber + 'link'] = null;
-            document.PlayerNumber = null;
-            _UserManager.currentUsername = null;
-
-            window.location = window.location.pathname.replace('/sandbox/', '/sandbox/world/')
-            return;
-        }
+       
         this.showLogin = function() {
             //new system does not do logins!
 
@@ -722,12 +664,7 @@ define(function() {
             });
 
         }
-        $(window).unload(function() {
-            if (this.GetCurrentUserName())
-                this.Logout();
-        }.bind(this));
-        //$('#Players').dialog({ position:['left','bottom'],width:300,height:200,title: "Players",autoOpen:false});
-
+       
 
         //these three functions should be deprecated and replaced by the ClientAPI on the Scene object for access
         //from within the model.

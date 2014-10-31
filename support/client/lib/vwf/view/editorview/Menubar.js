@@ -162,7 +162,7 @@ define({
 
         $('#MenuLogOut').click(function(e) {
             if ($('#MenuLogOut').attr('disabled') == 'disabled') return;
-            _UserManager.Logout();
+            window.location = window.location.pathname.replace('/sandbox/', '/sandbox/world/');
         });
         $('#MenuSelectPick').click(function(e) {
             _Editor.SetSelectMode('Pick');
