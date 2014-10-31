@@ -302,11 +302,11 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
                         }
                     if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
                         this.nodes[i].lastTickTransform = matset(this.nodes[i].lastTickTransform, this.nodes[i].thisTickTransform);
-                        this.nodes[i].thisTickTransform = matset(this.nodes[i].thisTickTransform, this.state.nodes[i].gettingProperty('transform'));
+                        this.nodes[i].thisTickTransform = matset(this.nodes[i].thisTickTransform, vwf.views['vwf/view/prediction'].gotProperty('transform'));
 						
 						
                         this.nodes[i].lastAnimationFrame = this.nodes[i].thisAnimationFrame;
-                        this.nodes[i].thisAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
+                        this.nodes[i].thisAnimationFrame = vwf.views['vwf/view/prediction'].gotProperty('animationFrame');
 
 					}
                 }
@@ -317,22 +317,34 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/th
 					
             }
             if (hit > 1) {
+
+                //ok, so we did not get the tick in time. we need to tick the prediction engine, and use the values from that
+                while(hit > 0)
+                {
+                    vwf.views['vwf/view/prediction'].predictTick();
+                    hit--;    
+                }
+                
                 this.tickTime = 0;
                 var keys = Object.keys(this.nodes);
 					
-                for (var j = 0; j < keys.length; j++) {
+               for (var j = 0; j < keys.length; j++) {
                     var i = keys[j];
+                    //don't do interpolation for static objects
+                    if (this.nodes[i].isStatic) continue;
+                    if (!this.neededTransfromInterp[i]) {
+                            this.nodes[i].lastTickTransform = null;
+                            continue;
+                        }
                     if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
-                        this.nodes[i].lastTickTransform = null;
-                        this.nodes[i].thisTickTransform = null;
-                        this.nodes[i].lastAnimationFrame = null;
-                        this.nodes[i].thisAnimationFrame = null;
-                        this.gizmoLastTickTransform = null;
-                        this.gizmoThisTickTransform;
-						
-						
-					}
-			}
+                        this.nodes[i].lastTickTransform = matset(this.nodes[i].lastTickTransform, this.nodes[i].thisTickTransform);
+                        this.nodes[i].thisTickTransform = matset(this.nodes[i].thisTickTransform, vwf.views['vwf/view/prediction'].gotProperty('transform'));
+                        
+                        
+                        this.nodes[i].lastAnimationFrame = this.nodes[i].thisAnimationFrame;
+                        this.nodes[i].thisAnimationFrame = vwf.views['vwf/view/prediction'].gotProperty('animationFrame');
+                    }
+                }
             }
 			
 		

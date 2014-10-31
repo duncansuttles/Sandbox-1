@@ -163,9 +163,10 @@ define(["vwf/view/prediction/javascript", "vwf/view/prediction/object"], functio
 			}
 			return methodValue;
 		},
-		ticked: function() {
+		ticking: function() {
 			for (var i = 0; i < this.models.length; i++) {
-				this.models[i].ticking();
+				if(this.models[i].ticking)
+					this.models[i].ticking();
 			}
 		},
 		fireEvent: function() {

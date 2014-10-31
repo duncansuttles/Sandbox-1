@@ -29,7 +29,7 @@ define( [ "module", "vwf/view","vwf/view/prediction/javascript","vwf/view/predic
             this.predictKernel = kernel;
             this.predictKernel.initialize();
             this.predictions = {};
-          
+            this.time = 0;
         },
         getProperty:function(nodeID, name)
         {
@@ -129,8 +129,24 @@ define( [ "module", "vwf/view","vwf/view/prediction/javascript","vwf/view/predic
         // -- gettingProperty ----------------------------------------------------------------------
 
         gotProperty: function( nodeID, propertyName, propertyValue ) {
-            
+            return this.predictKernel.getProperty( nodeID, propertyName, propertyValue );
         },
+        ticked:function()
+        {
+            if(this.time <= vwf.time())
+            {
+                this.predictKernel.ticking();
+                this.time = vwf.time();
+            }else
+            {
+                //already predicted this tick
+            }
+        },
+        predictTick:function()
+        {
+            this.time += .05;
+            this.predictKernel.ticking();
+        }
 
         // -- name_source_type --------------------------------------------------------------------
 
