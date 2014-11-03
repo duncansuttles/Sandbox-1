@@ -56,7 +56,7 @@ define([], function() {
             $(window).on('setstatecomplete',function()
             {
                 
-                var statebackup = vwf.getProperty(vwf.application(),'statebackup');
+                var statebackup = vwf.getProperty(vwf.application(),'playBackup');
                 if(!statebackup)
                 {
                     _Publisher.backupState();
@@ -136,6 +136,8 @@ define([], function() {
 
         }
         this.satProperty = function(id, prop, val) {
+
+             
             if (id == vwf.application()) {
                 if (prop == 'playMode' && val == 'play') {
                     $('#playButton').addClass('pulsing');
@@ -303,6 +305,7 @@ define([], function() {
             if (currentState === 'play') return;
             if (currentState === 'stop')
                 this.backupState();
+
             vwf_view.kernel.callMethod(vwf.application(), 'preWorldPlay');
             vwf_view.kernel.setProperty(vwf.application(), 'playMode', 'play')
 
