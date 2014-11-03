@@ -432,10 +432,11 @@ phyObject.prototype.initialize = function() {
         var lin = this.linearVelocity;
         this.linearVelocity = null;
         vwf.setProperty(this.id, '___physics_linear_velocity', lin);
-
+        this.linearVelocity = lin;
         var ang = this.angularVelocity;
         this.angularVelocity = null;
         vwf.setProperty(this.id, '___physics_angular_velocity', ang);
+        this.angularVelocity = ang;
     }
 }
 phyObject.prototype.deinitialize = function() {

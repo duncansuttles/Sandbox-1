@@ -209,6 +209,7 @@ SceneManager.prototype.hide = function() {
     this.rebuild(maxObjects, maxDepth)
 }
 SceneManager.prototype.addToRoot = function(child) {
+    debugger;
     this.specialCaseObjects.push(child);
 }
 SceneManager.prototype.removeFromRoot = function(child) {
@@ -734,11 +735,12 @@ SceneManager.prototype.initialize = function(scene) {
     THREE.Line.prototype.materialUpdated = THREE.Mesh.prototype.materialUpdated;
     THREE.Object3D.prototype.setStatic = function(_static) {
         if (this.isDynamic && this.isDynamic()) return;
+        if(this._static == _static) return;
         this._static = _static;
         this.sceneManagerUpdate();
     }
     THREE.Object3D.prototype.setDynamic = function(_dynamic) {
-        if (this.dynamic == _dynamic) return;
+        if (this._dynamic == _dynamic) return;
         this._dynamic = _dynamic;
         this._static = false;
         if (this._dynamic) {
