@@ -198,7 +198,7 @@ function ServeSinglePlayer(socket, namespace, instancedata) {
             });
             var joinMessage = messageCompress.pack(JSON.stringify({
                 "action": "fireEvent",
-               
+
                 "parameters": ["clientConnected", [socket.id, socket.loginData.Username, socket.loginData.UID]],
                 node: "index-vwf",
                 "time": 0
@@ -219,7 +219,7 @@ function ServeSinglePlayer(socket, namespace, instancedata) {
 function SaveInstanceState(namespace, data, socket) {
 
 
-    if(!socket.loginData) return;
+    if (!socket.loginData) return;
 
     var id = namespace.replace(/[\\\/]/g, '_');
     console.log(id);
@@ -230,16 +230,16 @@ function SaveInstanceState(namespace, data, socket) {
             require('./examples.js').getExampleMetadata(id, function(metadata) {
 
                 if (!metadata) {
-                    
+
                     return;
                 } else {
                     if (socket.loginData.UID == global.adminUID) {
                         require('./examples.js').saveExampleData(URL, id, data, function() {
-                            
+
                         })
 
                     } else {
-                        
+
                         return;
                     }
 
@@ -270,7 +270,7 @@ function WebSocketConnection(socket, _namespace) {
 
 
 
-          
+
         //fill out some defaults if we did not get credentials
         //note that the client list for an anonymous connection may only contain that once connection
         socket.loginData = loginData || {
@@ -279,7 +279,7 @@ function WebSocketConnection(socket, _namespace) {
             UID: "Anonymous",
             clients: [socket.id]
         };
-        if(!socket.loginData.UID && socket.loginData.Username)
+        if (!socket.loginData.UID && socket.loginData.Username)
             socket.loginData.UID = socket.loginData.Username;
 
 
@@ -351,13 +351,15 @@ function runningInstance(id) {
     }
     this.getLoadClient = function() {
         var loadClient = null;
+        var nonPendingClients = [];
         for (var i in this.clients) {
             var testClient = this.clients[i];
             if (!testClient.pending) { //&& testClient.loginData remove check - better to get untrusted data than a sync error
-                loadClient = testClient;
-                break;
+                nonPendingClients.push(testClient);
             }
         }
+        //pick randomly, so if there are several and you need to try again, you don't keep hitting the same one
+        loadClient = nonPendingClients[Math.floor(Math.random() * nonPendingClients.length - .001)];
         return loadClient;
     }
     this.Error = function(message, level) {
@@ -431,6 +433,7 @@ function runningInstance(id) {
     //keep track of the timer for this instance
     var self = this;
     self.accum = 0;
+    self.resyncCounter = 0;
     var timer = function() {
 
         var now = process.hrtime();
@@ -442,7 +445,19 @@ function runningInstance(id) {
         var timedelta = (now - self.lasttime) || 0;
 
         self.accum += timedelta;
-
+        self.resyncCounter++;
+        if (self.resyncCounter == 10) {
+            self.resyncCounter = 0;
+            var syncClient = self.getLoadClient();
+            var syncmessage = messageCompress.pack(JSON.stringify({
+                "action": "activeResync",
+                "parameters": [],
+                "time": self.time,
+                "respond": true
+            }));
+            if(syncClient)
+                syncClient.emit('message', syncmessage)
+        }
         while (self.accum > .05) {
             self.accum -= .05;
             self.time += .05;
@@ -452,15 +467,7 @@ function runningInstance(id) {
                 "parameters": [],
                 "time": self.time
             }));
-            for (var i in self.clients) {
-                var client = self.clients[i];
-                if (!client.pending)
-                    client.emit('message', tickmessage);
-                else {
-                    client.pendingList.push(tickmessage);
-                    global.log('pending tick', 2);
-                }
-            }
+            self.messageClients(tickmessage);
         }
         self.lasttime = now;
         self.timerID = setTimeout(timer, 5);
@@ -625,7 +632,7 @@ function ClientConnected(socket, namespace, instancedata) {
                 }
 
 
-
+                //note: don't have to worry about pending status here, client is first
                 thisInstance.cachedState = blankscene;
                 socket.emit('message', messageCompress.pack(JSON.stringify({
                     "action": "createNode",
@@ -654,7 +661,7 @@ function ClientConnected(socket, namespace, instancedata) {
         //firstclient = global.instances[namespace].clients[firstclient];
         socket.pending = true;
         thisInstance.getStateTime = thisInstance.time;
-        firstclient.emit('message', messageCompress.pack(JSON.stringify({
+        loadClient.emit('message', messageCompress.pack(JSON.stringify({
             "action": "status",
             "parameters": ["Server requested state. Sending..."],
             "time": thisInstance.getStateTime
@@ -673,7 +680,7 @@ function ClientConnected(socket, namespace, instancedata) {
 
         thisInstance.messageClients(resetMessage);
 
-        firstclient.emit('message', messageCompress.pack(JSON.stringify({
+        loadClient.emit('message', messageCompress.pack(JSON.stringify({
             "action": "getState",
             "respond": true,
             "time": thisInstance.time
@@ -692,22 +699,16 @@ function ClientConnected(socket, namespace, instancedata) {
             this.count = 0;
             this.time = function() {
                 try {
-
-                    var loadClients = [];
-
-                    if (Object.keys(this.namespace.clients).length != 0) {
-                        for (var i in this.namespace.clients) {
-                            var testClient = this.namespace.clients[i];
-                            if (!testClient.pending && testClient.loginData)
-                                loadClients.push(testClient);
-                        }
-                    }
-                    var loadClient = loadClients[Math.floor((Math.max(0, require('./cryptoRandom.js').random() - .001)) * loadClients.length)];
+                    var loadClient = thisInstance.getLoadClient();
                     if (loadClient) {
                         this.count++;
                         if (this.count < 5) {
                             global.log('did not get state, resending request', 2);
                             this.namespace.getStateTime = this.namespace.time;
+
+                            //update 11/2/14
+                            //if the last loadclient does not respond, pick a new client randomly
+
                             loadClient.emit('message', messageCompress.pack(JSON.stringify({
                                 "action": "getState",
                                 "respond": true,
@@ -722,6 +723,8 @@ function ClientConnected(socket, namespace, instancedata) {
                         } else {
                             global.log('sending default state', 2);
                             var state = this.namespace.cachedState;
+
+                            //send cached state to all pending clients, drain their pending list, mark active
                             for (var i in this.namespace.clients) {
                                 var client = this.namespace.clients[i];
 
@@ -732,7 +735,7 @@ function ClientConnected(socket, namespace, instancedata) {
                                         "parameters": ["State Not Received, Transmitting default"],
                                         "time": this.namespace.getStateTime
                                     })));
-                                    socket.emit('message', messageCompress.pack(JSON.stringify({
+                                    client.emit('message', messageCompress.pack(JSON.stringify({
                                         "action": "createNode",
                                         "parameters": [state],
                                         "time": this.namespace.getStateTime
@@ -759,7 +762,7 @@ function ClientConnected(socket, namespace, instancedata) {
                 this.namespace.requestTimer = null;
             }
             this.namespace.requestTimer = this;
-            this.handle = global.setTimeout(this.time.bind(this), 3000);
+            this.handle = global.setTimeout(this.time.bind(this), 6000);
         }
         thisInstance.Log('GetState from Client', 2);
         if (!thisInstance.requestTimer)
@@ -823,9 +826,9 @@ function ClientConnected(socket, namespace, instancedata) {
 
                 }
                 //send the message to the sender and to the receiver
-                if(textmessage.receiver)
+                if (textmessage.receiver)
                     thisInstance.clients[textmessage.receiver].emit('message', messageCompress.pack(JSON.stringify(message)));
-                if(textmessage.sender)
+                if (textmessage.sender)
                     thisInstance.clients[textmessage.sender].emit('message', messageCompress.pack(JSON.stringify(message)));
 
 
@@ -841,9 +844,9 @@ function ClientConnected(socket, namespace, instancedata) {
                 if (rtcMessages.slice(0, 2).indexOf(message.member) != -1)
                     return;
 
-                console.log('socketid',socket.id);
-                console.log('sender',params.sender);
-                console.log('target',params.target);
+                console.log('socketid', socket.id);
+                console.log('sender', params.sender);
+                console.log('target', params.target);
                 // route messages by the 'target' param, verifying 'sender' param
                 if (rtcMessages.slice(2).indexOf(message.member) != -1 &&
                     params.sender == socket.id
@@ -956,7 +959,6 @@ function ClientConnected(socket, namespace, instancedata) {
                     thisInstance.cachedState = JSON.parse(JSON.stringify(state));
 
 
-
                     if (message.client != i && client.pending === true) {
                         client.emit('message', messageCompress.pack(JSON.stringify({
                             "action": "status",
@@ -971,12 +973,20 @@ function ClientConnected(socket, namespace, instancedata) {
                     }
                     client.pending = false;
                     for (var j = 0; j < client.pendingList.length; j++) {
-
                         client.emit('message', client.pendingList[j]);
-
-
                     }
                     client.pendingList = [];
+                } else if (message.action == "activeResync") {
+                    //here we deal with continual resycn messages
+                    var node = message.result.node;
+                    if (node) {
+                        delete node.children; //remove children or we could end up getting large trees
+                        thisInstance.messageClients(JSON.stringify({
+                            "action": "setNode",
+                            "parameters": [node.id, node],
+                            "time": thisInstance.time
+                        }))
+                    }
                 } else {
                     //just a regular message, so push if the client is pending a load, otherwise just send it.
                     if (client.pending == true) {
@@ -1029,40 +1039,38 @@ function ClientConnected(socket, namespace, instancedata) {
                 delete loginData.clients[socket.id];
                 global.error("Disconnect. Deleting node for user avatar " + loginData.UID);
                 var avatarID = 'character-vwf-' + loginData.UID;
-                for (var i in thisInstance.clients) {
-                    var cl = thisInstance.clients[i];
-                    cl.emit('message', messageCompress.pack(JSON.stringify({
-                        "action": "deleteNode",
-                        "node": avatarID,
-                        "time": thisInstance.time
-                    })));
-                    cl.emit('message', messageCompress.pack(JSON.stringify({
-                        "action": "callMethod",
-                        "node": 'index-vwf',
-                        member: 'cameraBroadcastEnd',
-                        "time": thisInstance.time,
-                        client: socket.id
-                    })));
-                    cl.emit('message', messageCompress.pack(JSON.stringify({
-                        "action": "callMethod",
-                        "node": 'index-vwf',
-                        member: 'PeerSelection',
-                        parameters: [
-                            []
-                        ],
-                        "time": thisInstance.time,
-                        client: socket.id
-                    })));
-                }
+
+                thisInstance.messageClients(JSON.stringify({
+                    "action": "deleteNode",
+                    "node": avatarID,
+                    "time": thisInstance.time
+                }));
+                thisInstance.messageClients(JSON.stringify({
+                    "action": "callMethod",
+                    "node": 'index-vwf',
+                    member: 'cameraBroadcastEnd',
+                    "time": thisInstance.time,
+                    client: socket.id
+                }));
+                thisInstance.messageClients(JSON.stringify({
+                    "action": "callMethod",
+                    "node": 'index-vwf',
+                    member: 'PeerSelection',
+                    parameters: [
+                        []
+                    ],
+                    "time": thisInstance.time,
+                    client: socket.id
+                }));
                 thisInstance.state.deleteNode(avatarID);
             }
-            for (var i in thisInstance.clients) {
-                thisInstance.clients[i].emit('message', messageCompress.pack(JSON.stringify({
-                    "action": "status",
-                    "parameters": ["Peer disconnected: " + (loginData ? loginData.UID : "Unknown")],
-                    "time": thisInstance.getStateTime
-                })));
-            }
+
+            thisInstance.messageClients(JSON.stringify({
+                "action": "status",
+                "parameters": ["Peer disconnected: " + (loginData ? loginData.UID : "Unknown")],
+                "time": thisInstance.getStateTime
+            }));
+
             if (thisInstance.clientCount() == 0) {
                 clearInterval(thisInstance.timerID);
                 RunningInstances.remove(thisInstance.id);

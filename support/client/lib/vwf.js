@@ -1918,7 +1918,16 @@ this.setNode = function( nodeID, nodeComponent, callback_async /* ( nodeID ) */ 
 /// @name module:vwf.getNode
 /// 
 /// @see {@link module:vwf/api/kernel.getNode}
-
+//start looking into continious resync of nodes. Here, we return a node stripped of the children, plus the count of nodes
+//the server will query this at some interval, and sync the propertis of a given node
+//todo:  make the server sync more nodes per second as the number in the scene grows
+this.activeResync = function() {
+    var nodes = nodes = vwf.decendants(vwf.application());
+    return {
+        node: this.getNode(nodes[Math.floor(Math.random() * nodes.length - .001)]), 
+        count: nodes.length
+    }
+}
 this.getNode = function( nodeID, full, normalize ) {  // TODO: options to include/exclude children, prototypes
 
     if(!nodeID) return undefined;
