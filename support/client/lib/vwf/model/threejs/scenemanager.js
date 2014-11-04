@@ -209,7 +209,7 @@ SceneManager.prototype.hide = function() {
     this.rebuild(maxObjects, maxDepth)
 }
 SceneManager.prototype.addToRoot = function(child) {
-    debugger;
+    
     this.specialCaseObjects.push(child);
 }
 SceneManager.prototype.removeFromRoot = function(child) {

@@ -25,7 +25,6 @@
 
 
 
-
         this.init = false;
         this.childAdded = function(child) {
 
@@ -99,9 +98,9 @@
                     //  if(z > o[2]) return [];
                     point.z = z;
 
-                    var hit = new FaceIntersect([point.x, point.y, point.z],[0, 0, 1],null);
-                    hit.distance= Math.abs(o[2] - point.z);
-                    hit.object= self.getRoot();
+                    var hit = new FaceIntersect([point.x, point.y, point.z], [0, 0, 1], null);
+                    hit.distance = Math.abs(o[2] - point.z);
+                    hit.object = self.getRoot();
                     hit.priority = 1
                     hits.push(hit);
                     return hits;
@@ -133,6 +132,8 @@
         }
         this.setAlgorithmData = function(data) {
 
+            if (JSON.stringify(this.terrainParams) == JSON.stringify(data)) return;
+
             this.terrainParams = data;
 
             vwf.setProperty(this.ID, 'terrainParams', data);
@@ -163,6 +164,13 @@
             return this.terrainGenerator.getAlgorithmData();
         }
         this.setMeshParams = function(min, max, size, res) {
+
+            if (totalmintilesize == min &&
+                tileres == res &&
+                maxTileSize == max &&
+                worldExtents == size) return;
+
+
             totalmintilesize = min;
             minTileSize = totalmintilesize;
             tileres = res;
@@ -184,6 +192,9 @@
             }
         }
         this.setTerrainAlgorithm = function(algo, params) {
+            if (this.terrainType == algo &&
+                JSON.stringify(this.terrainParams) == JSON.stringify(params)) return;
+
             try {
                 loadScript('vwf/model/threejs/' + algo + '.js');
                 this.terrainType = algo;
@@ -337,7 +348,6 @@
 
 
 
-
                     this.currentMinRes = minTileSize;
                     //maxTileSize = Math.max(maxRes,2048);
                     this.quadtree.updateMinMax(minTileSize, maxTileSize);
@@ -360,7 +370,6 @@
                     var cont = this.quadtree.containing([x, y]);
                     if (!cont || !cont.parent) return;
                     this.containing = cont.parent;
-
 
 
 
@@ -442,7 +451,6 @@
 
 
 
-
                     if (this.containing.NEN())
                         lowergridinner.push(this.containing.NEN().SW());
                     if (this.containing.NWN())
@@ -451,8 +459,6 @@
                         lowergridinner.push(this.containing.SEN().NW());
                     if (this.containing.SWN())
                         lowergridinner.push(this.containing.SWN().NE());
-
-
 
 
 
@@ -647,12 +653,6 @@
             }
 
         }.bind(self);
-
-
-
-
-
-
 
 
 
