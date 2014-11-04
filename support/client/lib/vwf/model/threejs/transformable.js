@@ -104,7 +104,7 @@ function getAllDrawables(threeObject, list) {
             }
 
             //signals the driver that we don't have to process further, this prop was handled
-            return propertyValue;
+            return;
         }
         this.settingProperty = function(propertyName, propertyValue) {
 
@@ -112,10 +112,11 @@ function getAllDrawables(threeObject, list) {
 
                 if (!this.TransformEnabled()) {
 
-                    return propertyValue;
+                    return;
                 };
 
-                return this.setTransformInternal(propertyValue, true);
+                this.setTransformInternal(propertyValue, true);
+                return;
             }
             if (propertyName == 'inheritScale') {
                 var walk = function(node, val, force) {

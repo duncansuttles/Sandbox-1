@@ -97,6 +97,61 @@ var messageCompress = {
         this.addMapping('null');
         this.addMapping('"deltaY"');
         this.addMapping('"client"');
+         this.addMapping('"activeResync"');
+         this.addMapping('"result"');
+         this.addMapping('"properties"');
+         this.addMapping('"___physics_activation_state"');
+         this.addMapping('"___physics_deactivation_time"');
+         this.addMapping('"___physics_velocity_linear"');
+         this.addMapping('"___physics_velocity_angular"');
+         this.addMapping('"DisplayName"');
+         this.addMapping('"___physics_enabled"');
+         this.addMapping('"isSelectable"');
+         this.addMapping('"materialDef"');
+         this.addMapping('"alpha"');
+         this.addMapping('"ambient"');
+         this.addMapping('"color"');
+         this.addMapping('"emit"');
+         this.addMapping('"layers"');
+         this.addMapping('"blendMode"');
+         this.addMapping('"mapInput"');
+         this.addMapping('"mapTo"');
+         this.addMapping('"offsetx"');
+         this.addMapping('"offsety"');
+         this.addMapping('"rot"');
+         this.addMapping('"scalex"');
+         this.addMapping('"scaley"');
+         this.addMapping('"morphTargets"');
+         this.addMapping('"reflect"');
+         this.addMapping('"shadeless"');
+         this.addMapping('"morphTargets"');
+         this.addMapping('"shadow"');
+         this.addMapping('"shininess"');
+         this.addMapping('"skinning"');
+         this.addMapping('"specularColor"');
+         this.addMapping('"specularLevel"');
+         this.addMapping('"type"');
+         this.addMapping('"phong"');
+         this.addMapping('"owner"');
+         this.addMapping('"radius"');
+         this.addMapping('"size"');
+         this.addMapping('"tempid"');
+         this.addMapping('"texture"');
+         this.addMapping('"Primitive"');
+         this.addMapping('"count"');
+         this.addMapping('"translation"');
+         this.addMapping('"3DR Object"');
+		this.addMapping('"___physics_mass"');
+		this.addMapping('"resyncNode"');
+		this.addMapping('"___physics_angular_velocity"');
+		this.addMapping('"___physics_collision_height"');
+		this.addMapping('"___physics_collision_type"');
+		this.addMapping('"___physics_collision_radius"');
+		this.addMapping('"___physics_linear_velocity"');
+
+
+
+
 
         this.initialized = true;
     },
@@ -104,7 +159,7 @@ var messageCompress = {
     dnc_mappings: [],
     addMapping: function(from) {
         var fromex = new RegExp(from, 'g');
-        var to = String.fromCharCode(7) + String.fromCharCode(this.enc_mappings.length + 255);
+        var to = String.fromCharCode(254) + String.fromCharCode(this.enc_mappings.length + 255);
         var toex = new RegExp(to, 'g');
         this.enc_mappings.push([fromex, to]);
         this.dnc_mappings.push([toex, from]);
