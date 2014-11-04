@@ -982,7 +982,7 @@ function ClientConnected(socket, namespace, instancedata) {
                     if (node) {
                         delete node.children; //remove children or we could end up getting large trees
                         thisInstance.messageClients(JSON.stringify({
-                            "action": "setNode",
+                            "action": "resyncNode",
                             "parameters": [node.id, node],
                             "time": thisInstance.time
                         }))

@@ -1921,6 +1921,17 @@ this.setNode = function( nodeID, nodeComponent, callback_async /* ( nodeID ) */ 
 //start looking into continious resync of nodes. Here, we return a node stripped of the children, plus the count of nodes
 //the server will query this at some interval, and sync the propertis of a given node
 //todo:  make the server sync more nodes per second as the number in the scene grows
+
+this.resyncNode = function(nodeID,node)
+{
+    for(var i in node.properties)
+    {
+        if(JSON.stringify(vwf.getProperty(nodeID,i)) !== JSON.stringify(node.properties[i]))
+            vwf.setProperty(nodeID,i,node.properties[i]);
+    }
+
+}
+
 this.activeResync = function() {
     var nodes = nodes = vwf.decendants(vwf.application());
     return {
