@@ -1944,11 +1944,12 @@ this.setNode = function( nodeID, nodeComponent, callback_async /* ( nodeID ) */ 
 
 this.resyncNode = function(nodeID,node)
 {
+    if(!node || !node.properties) return;
     var keys = Object.keys(node.properties);
     for(var j =0; j < keys.length; j++)
     {
         var i = keys[j];
-        if(JSON.stringify(this.models.object.objects[nodeID].properties[i]) !== JSON.stringify(node.properties[i]))
+        if(JSON.stringify(vwf.getProperty(nodeID,i)) !== JSON.stringify(node.properties[i]))
             vwf.setProperty(nodeID,i,node.properties[i]);
     }
 
@@ -1957,7 +1958,8 @@ this.resyncNode = function(nodeID,node)
 this.activeResync = function() {
     var nodes = nodes = vwf.decendants(vwf.application());
     var nodeID = nodes[Math.floor(Math.random() * nodes.length - .001)];
-    var props = this.models.object.objects[nodeID].properties;
+    var props = this.getNode(nodeID).properties;
+    if(!props) return null;
     return {
         node: {id:nodeID,properties:props}, 
         count: nodes.length
