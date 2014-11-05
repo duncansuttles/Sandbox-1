@@ -1422,7 +1422,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             //initializing the world in a given state. There is stateful information internal to the physics engine that can only be reset on the other clients
             //by rebuilding the whole sim on each.
             var world = this.allNodes[vwf.application()].world;
-
+            var IDs_to_enable = [];
             if (world) {
                 for (var i in this.allNodes) {
                     var node = this.allNodes[i];
@@ -1432,7 +1432,8 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                         //node.backupTrans = backupTrans;
 
 
-                        vwf.setProperty(i, "___physics_enabled", false)
+                        vwf.setProperty(i, "___physics_enabled", false);
+                        IDs_to_enable.push(i);
                     }
                 }
                 world.removeRigidBody(this.allNodes[vwf.application()].ground);
@@ -1479,7 +1480,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             //we need to see if adding the node back to the world is enough, or if we really have to kill and rebuild
             //research seems to indicate that you could just recreate the world but not all the bodies
             //but that did not work here, it needs to delay to next tick.
-            for (var i in this.allNodes) {
+            for (var i in IDs_to_enable {
                 var node = this.allNodes[i];
                 if (node.world && i != vwf.application()) {
 
@@ -1526,8 +1527,8 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 // if(vwf.moniker() != args[0])
                 {
                     console.log('reset world to sync late joining cleent');
-                    //if(!this.pendingReset)
-                    //    this.resetWorld();
+                    if(!this.pendingReset)
+                        this.resetWorld();
 
                 }
             }
