@@ -1526,8 +1526,8 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 // if(vwf.moniker() != args[0])
                 {
                     console.log('reset world to sync late joining cleent');
-                    if(!this.pendingReset)
-                        this.resetWorld();
+                    //if(!this.pendingReset)
+                    //    this.resetWorld();
 
                 }
             }
