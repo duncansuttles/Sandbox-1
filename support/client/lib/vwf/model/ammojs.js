@@ -1480,7 +1480,8 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             //we need to see if adding the node back to the world is enough, or if we really have to kill and rebuild
             //research seems to indicate that you could just recreate the world but not all the bodies
             //but that did not work here, it needs to delay to next tick.
-            for (var i in IDs_to_enable {
+            for (var j = 0; j <  IDs_to_enable.length; j++) {
+                var i = IDs_to_enable[j];
                 var node = this.allNodes[i];
                 if (node.world && i != vwf.application()) {
 

@@ -445,6 +445,7 @@ function runningInstance(id) {
         var timedelta = (now - self.lasttime) || 0;
 
         self.accum += timedelta;
+        while (self.accum > .05) {
         self.resyncCounter++;
         if (self.resyncCounter == 10) {
             self.resyncCounter = 0;
@@ -458,7 +459,7 @@ function runningInstance(id) {
             if(syncClient)
                 syncClient.emit('message', syncmessage)
         }
-        while (self.accum > .05) {
+      
             self.accum -= .05;
             self.time += .05;
 
