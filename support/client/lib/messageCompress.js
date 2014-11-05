@@ -148,6 +148,15 @@ var messageCompress = {
 		this.addMapping('"___physics_collision_type"');
 		this.addMapping('"___physics_collision_radius"');
 		this.addMapping('"___physics_linear_velocity"');
+		this.addMapping('"depthtest"');
+		this.addMapping('"depthwrite"');
+		this.addMapping('"castShadows"');
+		this.addMapping('"_length"');
+		this.addMapping('"castShadows"');
+		this.addMapping('"receiveShadows"');
+		this.addMapping('"animationFrame"');
+		this.addMapping('"animationStart"');
+		this.addMapping('"animationEnd"');
 
 
 
