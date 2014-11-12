@@ -628,6 +628,8 @@ phyObject.prototype.getTransform = function(outmat) {
 
     if (!outmat)
         outmat = [];
+
+    
     var transform = this.body.getWorldTransform();
     var o = transform.getOrigin();
     var rot = transform.getRotation();
@@ -644,6 +646,7 @@ phyObject.prototype.getTransform = function(outmat) {
 
     quat = Quaternion.normalize(quat, tempquat2);
     var mat = goog.vec.Quaternion.toRotationMatrix4(quat, tempmat1);
+
 
 
 
