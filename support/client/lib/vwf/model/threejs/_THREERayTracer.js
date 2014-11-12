@@ -396,6 +396,7 @@ function FaceIntersect(point, norm, face) {
 
 function release_FaceIntersect(FT) {
     cache_FaceIntersect.push(FT);
+    clean_FaceIntersect(FT);
 }
 FaceIntersect.prototype.release = function() {
     release_FaceIntersect(this);
@@ -2405,7 +2406,7 @@ THREE.Scene.prototype.FrustrumCast = function(frustrum) {
 
 
 window.BoundingBoxRTAS = BoundingBoxRTAS;
-window.FaceIntersect = FaceIntersect;
+window.allocate_FaceIntersect = allocate_FaceIntersect;
 window.Frustrum = Frustrum;
 //return {
 //	BoundingBoxRTAS:BoundingBoxRTAS

@@ -98,7 +98,7 @@
                     //  if(z > o[2]) return [];
                     point.z = z;
 
-                    var hit = new FaceIntersect([point.x, point.y, point.z], [0, 0, 1], null);
+                    var hit = allocate_FaceIntersect([point.x, point.y, point.z], [0, 0, 1], null);
                     hit.distance = Math.abs(o[2] - point.z);
                     hit.object = self.getRoot();
                     hit.priority = 1
