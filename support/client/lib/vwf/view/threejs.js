@@ -322,7 +322,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     //don't do interpolation for static objects
                     if (this.nodes[i].isStatic) continue;
                     if (!this.neededTransfromInterp[i]) {
-                        //       this.nodes[i].lastTickTransform = null;
+                               this.nodes[i].lastTickTransform = null;
 
                     } else if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
                         this.nodes[i].lastTickTransform = matset(this.nodes[i].lastTickTransform, this.nodes[i].thisTickTransform);
@@ -340,24 +340,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 }
 
             }
-            if (false && hit > 1) {
-                this.tickTime = 0;
-                var keys = Object.keys(this.nodes);
 
-                for (var j = 0; j < keys.length; j++) {
-                    var i = keys[j];
-                    if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
-                        this.nodes[i].lastTickTransform = null;
-                        this.nodes[i].thisTickTransform = null;
-                        this.nodes[i].lastAnimationFrame = null;
-                        this.nodes[i].thisAnimationFrame = null;
-                        this.gizmoLastTickTransform = null;
-                        this.gizmoThisTickTransform;
-
-
-                    }
-                }
-            }
 
             /*
             if (this.gizmoThisTickTransform && this.gizmoLastTickTransform) {
@@ -379,7 +362,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
                 var last = this.nodes[i].lastTickTransform;
                 var now = this.nodes[i].thisTickTransform;
-                if (last && now) {
+                if (last && now ) {
 
                     interp = matset(interp, last);
                     interp = this.matrixLerp(last, now, step, interp);
