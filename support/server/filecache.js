@@ -33,7 +33,7 @@ function _FileCache() {
 
             //just in case the file was added or renames, reload the cache entry for this file when the 
             //test is bad
-            if (!this.dirCache[d].indexOf(name))
+            if (this.dirCache[d].indexOf(name) == -1)
                 this.dirCache[d] = fs.readdirSync(dir);
 
             //well, if the raw string compare does not show the dir contains the same file

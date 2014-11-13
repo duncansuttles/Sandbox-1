@@ -321,9 +321,10 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     var i = keys[j];
                     //don't do interpolation for static objects
                     if (this.nodes[i].isStatic) continue;
-                    if (!this.neededTransfromInterp[i]) {
-                               this.nodes[i].lastTickTransform = null;
-
+                    if (this.nodes[i].lastTransformStep +1 < vwf.time()) {
+                            this.nodes[i].lastTickTransform = null;
+                             this.nodes[i].lastFrameInterp = null;
+                             this.nodes[i].thisTickTransform = null;
                     } else if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
                         this.nodes[i].lastTickTransform = matset(this.nodes[i].lastTickTransform, this.nodes[i].thisTickTransform);
                         this.nodes[i].thisTickTransform = matset(this.nodes[i].thisTickTransform, this.state.nodes[i].gettingProperty('transform'));
@@ -334,10 +335,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
                     }
                 }
-                everyOtherFrame = !everyOtherFrame;
-                if (everyOtherFrame) {
-                    this.neededTransfromInterp = {};
-                }
+                
 
             }
 
@@ -362,7 +360,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
                 var last = this.nodes[i].lastTickTransform;
                 var now = this.nodes[i].thisTickTransform;
-                if (last && now ) {
+                if (last && now) {
 
                     interp = matset(interp, last);
                     interp = this.matrixLerp(last, now, step, interp);
@@ -371,10 +369,10 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     if (this.state.nodes[i].setTransformInternal) {
 
 
-                        if (this.state.nodes[i].lastFrameInterp)
-                            interp = this.matrixLerp(this.state.nodes[i].lastFrameInterp, now, lerpStep, interp);
+                        if (this.nodes[i].lastFrameInterp)
+                            interp = this.matrixLerp(this.nodes[i].lastFrameInterp, now, lerpStep, interp);
                         this.state.nodes[i].setTransformInternal(interp, false);
-                        this.state.nodes[i].lastFrameInterp = matset(this.state.nodes[i].lastFrameInterp || [], interp);
+                        this.nodes[i].lastFrameInterp = matset(this.nodes[i].lastFrameInterp || [], interp);
                     }
 
 
@@ -651,7 +649,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         createdProperty: function(nodeID, propertyName, propertyValue) {
             this.satProperty(nodeID, propertyName, propertyValue);
         },
-        neededTransfromInterp: {},
+        
         satProperty: function(nodeID, propertyName, propertyValue) {
 
             //console.log([nodeID,propertyName,propertyValue]);
@@ -668,7 +666,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 this.nodes[nodeID].properties[propertyName] = propertyValue;
 
             if (propertyName == 'transform')
-                this.neededTransfromInterp[nodeID] = true;
+                this.nodes[nodeID].lastTransformStep = vwf.time();
 
             node[propertyName] = propertyValue;
 
