@@ -27,8 +27,14 @@ function startup(listen) {
         sio.set('authorization', function(data, callback) {
             if (data.headers.cookie) {
                 // save parsedSessionId to handshakeData
+                try{
                 data.cookieData = parseSignedCookie(cookie.parse(data.headers.cookie)[global.configuration.sessionKey ? global.configuration.sessionKey : 'virtual'],
                     global.configuration.sessionSecret ? global.configuration.sessionSecret : 'unsecure cookie secret');
+                }catch(e)
+                {   
+                    //this is important! We're seeing a few crashes from here.
+                    callback(null,false);
+                }
             }
             callback(null, true);
         });

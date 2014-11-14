@@ -479,6 +479,12 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         },
         deletedNode: function(childID) {
             delete this.nodes[childID];
+            //be sure not to keep around a reference to an object that no longer exists
+            if(this.lastPickId == childID)
+            {
+                this.lastPickId = null;
+                this.lastPick = null;
+            }
         },
         createdNode: function(nodeID, childID, childExtendsID, childImplementsIDs,
             childSource, childType, childURI, childName, callback /* ( ready ) */ ) {

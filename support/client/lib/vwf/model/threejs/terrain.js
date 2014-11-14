@@ -2,6 +2,7 @@
 (function() {
     function terrain(childID, childSource, childName) {
         window._dTerrain = this;
+        debugger;
         var self = this;
         var totalmintilesize = 16;
         var tileres = 16;
@@ -14,6 +15,7 @@
         function loadScript(url) {
 
             var xhr = $.ajax(url, {
+
                 async: false
             });
             return eval(xhr.responseText);
@@ -46,8 +48,8 @@
             };
 
 
-            quadtreesetSelf(this);
-            quadtreesetRes(tileres);
+            window.QuadtreeNode.quadtreesetSelf(this);
+            window.QuadtreeNode.quadtreesetRes(tileres);
             self.TileCache = new TileCache();
 
 
@@ -85,7 +87,7 @@
             this.counter = 0;
 
             this.getRoot().FrustrumCast = function(frustrum, opts) {
-                return {};
+                return null;
             };
             this.getRoot().CPUPick = function(o, d, opts, hits) {
                 if (!hits)
@@ -226,6 +228,8 @@
             for (var i = 0; i < children.length; i++) {
                 children[i].parent.remove(children[i]);
             }
+            //be sure to remove from scenemanager
+            _SceneManager.specialCaseObjects.splice(_SceneManager.specialCaseObjects.indexOf(this.getRoot()),1);
             delete window._dTerrain;
         }
         this.cancelUpdates = function() {

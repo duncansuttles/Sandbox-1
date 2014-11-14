@@ -55,14 +55,14 @@ function PainterTool()
 			_Editor.addTool('Painter',_PainterTool);
 			_Editor.setActiveTool('Painter');
 			_dScene.add(_PainterTool.display);
-			_Editor.setSelectMode('None');
+			_Editor.SetSelectMode('None');
 		}
 		else
 		{
 			$(this).next().children().css('background-color','');
 			_Editor.setActiveTool('Gizmo');
 			_dScene.remove(_PainterTool.display);
-			_Editor.setSelectMode('Pick');
+			_Editor.SetSelectMode('Pick');
 		}
 	})
 	
@@ -99,22 +99,6 @@ function PainterTool()
 				1,
 				1,
 				1
-			],
-			"translation": [
-				-6.199999809265137,
-				7,
-				1.2010000944137573
-			],
-			"scale": [
-				1,
-				1,
-				1
-			],
-			"rotation": [
-				1,
-				0,
-				0,
-				0
 			],
 			"isStatic":"true",
 			"owner": "Rob",
@@ -246,9 +230,7 @@ function PainterTool()
 			t.properties.transform[13] = this.display.position.y;
 			t.properties.transform[14] = this.display.position.z;
 
-			t.properties.translation[0] = this.display.position.x;
-			t.properties.translation[1] = this.display.position.y;
-			t.properties.translation[2] = this.display.position.z;
+			
 		
 			t.properties.DisplayName = _Editor.GetUniqueName(t.properties.DisplayName);
 			
@@ -350,7 +332,7 @@ function PainterTool()
 				
 			}
 			
-			this.display.position = pos.clone();
+			this.display.position.copy(pos);
 			this.display.updateMatrixWorld();
 			
 			if(false&&this.mouseisdown == true && this.currentClickCallback)
