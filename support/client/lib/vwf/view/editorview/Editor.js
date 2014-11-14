@@ -400,13 +400,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 this.undoPoint = null;
                 this.restoreTransforms();
                 document.AxisSelected = -1;
-                var ids = [];
-                for (var s = 0; s < SelectedVWFNodes.length; s++)
-                    ids.push(SelectedVWFNodes[s].id);
-                this.SelectObject(null);
-                window.setTimeout(function() {
-                    _Editor.SelectObject(ids);
-                }, 1000);
+                this.mouseDownScreenPoint = null;
                 return false;
             }
 
@@ -2164,12 +2158,25 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             this.updateBounds();
         }
         this.CloseGroup = function() {
+
+            var closedGroups = [];
             for (var i = 0; i < this.getSelectionCount(); i++) {
-                if (vwf.getProperty(SelectedVWFNodes[i].id, 'type') == 'Group') {
-                    this.setProperty(SelectedVWFNodes[i].id, 'open', false);
+
+                // look up the chain for a group, and close it if you find one
+
+                var parentGroup = SelectedVWFNodes[i].id;
+                while(parentGroup && vwf.getNode(parentGroup).extends !== 'sandboxGroup.vwf')
+                    parentGroup = vwf.parent(parentGroup);
+
+                if(!parentGroup) continue;
+
+                if (vwf.getNode(parentGroup).extends == 'sandboxGroup.vwf') {
+                    this.setProperty(parentGroup, 'open', false);
+                    closedGroups.push(parentGroup);
                 }
             }
             this.updateBounds();
+            this.SelectObject(closedGroups);
         }
         //new vwf kernel does not add the ID to the get node, but all our old code expects it. Add it and return the node.
         this.getNode = function(id) {
@@ -2705,6 +2712,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
 
             var newnames = [];
+            //be sure to exit temp pick mode no matter what
+            this.SetSelectMode('Pick');
             if (parentnode) {
 
                 var parent = parentnode.id;
@@ -2790,14 +2799,16 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             this.TempPickCallback = this.PickParentCallback;
         }
         this.UngroupSelection = function() {
+
+            if(this.GetSelectedVWFNode(i).extends !== 'sandboxGroup.vwf')
+            {
+                alertify.alert('Selected object is not a group');
+                return;
+            }
+
             _UndoManager.startCompoundEvent();
 
             for (var i = 0; i < this.getSelectionCount(); i++) {
-                // if(!self.isOwner(SelectedVWFNodes[i].id,document.PlayerNumber))
-                // {
-                // _Notifier.alert('You must be the group owner to ungroup objects.');
-                // continue;
-                // }
                 var vwfparent = vwf.parent(this.GetSelectedVWFNode(i).id);
                 var children = vwf.children(this.GetSelectedVWFNode(i).id);
                 for (var j = 0; j < children.length; j++) {
