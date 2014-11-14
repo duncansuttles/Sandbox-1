@@ -777,7 +777,7 @@ define({
 
         $('#ToolsShowID').click(function(e) {
             if (_Editor.GetSelectedVWFID())
-                alertify.prompt(vwf.getProperty(_Editor.GetSelectedVWFID(), "DisplayName"), function() {}, _Editor.GetSelectedVWFID());
+                alertify.prompt(vwf.getProperty(_Editor.GetSelectedVWFID(), "DisplayName") || "No DisplayName", function() {}, _Editor.GetSelectedVWFID());
             else
                 alertify.alert('No Selection');
         });
