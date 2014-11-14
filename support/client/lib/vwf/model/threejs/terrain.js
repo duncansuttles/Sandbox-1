@@ -2,7 +2,7 @@
 (function() {
     function terrain(childID, childSource, childName) {
         window._dTerrain = this;
-        debugger;
+        
         var self = this;
         var totalmintilesize = 16;
         var tileres = 16;

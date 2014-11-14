@@ -29,7 +29,7 @@ window.QuadtreeNode = (function() {
 			this.c = [this.min[0] + (this.max[0] - this.min[0]) / 2, this.min[1] + (this.max[1] - this.min[1]) / 2]
 		}
 		QuadtreeNode.quadtreesetSelf =function(s) {
-			debugger;
+			
 			self = s;
 		};
 
