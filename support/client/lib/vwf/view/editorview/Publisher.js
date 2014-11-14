@@ -148,6 +148,14 @@ define([], function() {
                     $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', 'gray');
                     $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', 'none');
                     $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', 'not-allowed');
+                    
+               
+                    //remember the last selection and then deselect;
+                    this.lastSelection = [];
+                    for(var i = 0; i < _Editor.getSelectionCount(); i++)
+                    {
+                        this.lastSelection.push(_Editor.GetSelectedVWFNode(i).id);
+                    }
                     _Editor.SelectObject(null);
                     _Editor.SetSelectMode('none');
                     $('#index-vwf').focus();
@@ -156,7 +164,8 @@ define([], function() {
 
                 if (prop == 'playMode' && val == 'paused') {
 
-
+                    //restore selection
+                    _Editor.SelectObject(this.lastSelection);
                     $('#playButton').addClass('pulsing');
                     $('#pauseButton').addClass('pulsing');
                     $('#stopButton').removeClass('pulsing');
@@ -169,7 +178,9 @@ define([], function() {
                 }
                 if (prop == 'playMode' && val == 'stop') {
 
-
+                    //restore selection
+                    
+                    _Editor.SelectObject(this.lastSelection);
                     $('#playButton').removeClass('pulsing');
                     $('#pauseButton').removeClass('pulsing');
                     $('#stopButton').addClass('pulsing');

@@ -2203,6 +2203,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
             this.guiNodeDragEnd();
             if (VWFNode && VWFNode.constructor == Array) {
+                VWFNode = VWFNode.slice(0); // don't modify the array in place, the caller might be using it!
                 for (var i = 0; i < VWFNode.length; i++) VWFNode[i] = _Editor.getNode(VWFNode[i]);
             } else if (typeof(VWFNode) == 'object') VWFNode = [VWFNode];
             else if (typeof(VWFNode) == 'string') VWFNode = [_Editor.getNode(VWFNode)];
