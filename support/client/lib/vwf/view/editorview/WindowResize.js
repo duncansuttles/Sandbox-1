@@ -21,14 +21,14 @@ define({
                 $('#index-vwf').css('top', ($('#smoothmenu1').height() + $('#toolbar').height()));
 
                 if ($('#sidepanel').offset().left + 5 < window.innerWidth)
-                    $('#index-vwf').css('width', window.innerWidth - $('#sidepanel').width() - (parseInt($('#EntityLibrary').css('left')) + $('#EntityLibrary').width()));
+                    $('#index-vwf').css('width', window.innerWidth  - (parseInt($('#EntityLibrary').css('left')) + $('#EntityLibrary').width()));
                 else
                     $('#index-vwf').css('width', window.innerWidth - (parseInt($('#EntityLibrary').css('left')) + $('#EntityLibrary').width()));
 
                 $('#ScriptEditor').css('top', $(window).height() - $('#ScriptEditor').height() - $('#statusbar').height());
 
 
-                //$('#ScriptEditor').css('height',	$(window).height() - $('#ScriptEditor').offset().top - $('#statusbar').height() + 'px');
+                //$('#ScriptEditor').css('height',  $(window).height() - $('#ScriptEditor').offset().top - $('#statusbar').height() + 'px');
 
 
                 if ($('#ScriptEditor').attr('maximized')) {
@@ -77,9 +77,10 @@ define({
                 $('#sidepanel').css('height', $(window).height() - ($('#statusbar').height() + $('#toolbar').height() + $('#smoothmenu1').height()));
                 $('#ScriptEditor').css('width', $(window).width() - ($(window).width() - $('#sidepanel').offset().left) - (parseInt($('#EntityLibrary').css('left')) + $('#EntityLibrary').width()));
                 $('#EntityLibrary').css('height', $('#index-vwf').css('height'));
-                $('#EntityLibraryAccordion').css('height', $('#index-vwf').css('height') - $('#entitylibrarytitle').height());
+                $('#EntityLibraryAccordion').css('height', $(window).height() - $('#EntityLibraryAccordion').offset().top -$('#statusbar').height());
+               // $('#EntityLibraryMain').css('height', $('#statusbar').height() + parseInt($('#index-vwf').css('height')) + parseInt($('#ScriptEditor').css('height')) - $('#entitylibrarytitle').height());
                 _ScriptEditor.resize();
-
+                //hideSidePanel();
                 if ($('#index-vwf').offset()) {
                     $('#glyphOverlay').css('position', 'absolute');
                     $('#glyphOverlay').css('left', $('#index-vwf').offset().left);
