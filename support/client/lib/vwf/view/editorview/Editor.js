@@ -1883,7 +1883,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     var tpos = new THREE.Vector3();
                     tpos.setFromMatrixPosition(MoveGizmo.parent.matrixWorld);
                     originalGizmoPos = [tpos.x, tpos.y, tpos.z];
-                    var gizoffset = MATH.subVec3(vwf.getProperty(tocopy[i].id, this.translationPropertyName), originalGizmoPos);
+                    var gizoffset = MATH.subVec3(this.getTranslationCallback(tocopy[i].id), originalGizmoPos);
                     t.properties.transform[12] = gizoffset[0];
                     t.properties.transform[13] = gizoffset[1];
                     t.properties.transform[14] = gizoffset[2];

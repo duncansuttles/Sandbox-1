@@ -106,12 +106,14 @@ define(function() {
 
                     //when dragging over the 3d view, update the preview positoin    
                     $("#index-vwf").live('dragover', function(evt) {
+
                         evt.preventDefault();
                         if(!currentDrag) return;
+                        
                         if (currentDrag.type == 'asset') {
                             var pos = _Editor.GetInsertPoint(evt.originalEvent);
                             
-                            EntityLibrary.dropPreview.position = new THREE.Vector3(pos[0], pos[1], pos[2]);
+                            EntityLibrary.dropPreview.position.copy( new THREE.Vector3(pos[0], pos[1], pos[2]));
                             EntityLibrary.dropPreview.updateMatrixWorld();
                         }
                         if (currentDrag.type == 'material' || currentDrag.type == 'child') {
@@ -139,6 +141,7 @@ define(function() {
                     //when dragging into the 3d view, create a preview sphere, then try to attach the preview model
                     $("#index-vwf").live('dragenter', function(evt) {
 
+                    
                         if(!currentDrag) return;
                         var data = currentDrag;
                         if (currentDrag.type == 'asset') {
@@ -147,14 +150,15 @@ define(function() {
                                 _dScene.add(EntityLibrary.dropPreview, true);
 
                                 if (data.dropPreview) {
+                                    console.log(data.dropPreview.url);
                                     //the asset must have a 'drop preview' key
                                     _assetLoader.getOrLoadAsset(data.dropPreview.url, data.dropPreview.type, function(asset) {
-                                        if (asset && EntityLibrary.dropPreview) {
+                                        if (asset && asset.scene && EntityLibrary.dropPreview) {
                                             var transformNode = new THREE.Object3D();
                                             transformNode.matrixAutoUpdate = false;
                                             if (data.dropPreview.transform)
                                                 transformNode.matrix.fromArray(data.dropPreview.transform)
-                                            EntityLibrary.dropPreview.visible = false;
+                                            //EntityLibrary.dropPreview.visible = false;
                                             transformNode.add(asset.scene, true);
                                             EntityLibrary.dropPreview.add(transformNode, true);
                                         }

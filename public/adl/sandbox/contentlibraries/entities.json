@@ -27,7 +27,7 @@
         "url": "./contentlibraries/entities/vwf/t90.vwf.json",
         "preview": "./contentlibraries/entities/thumbs/t90.png",
         "dropPreview": {
-            "url": "./contentlibraries/entities/assets/t90/t90.json",
+            "url": "./contentlibraries/entities/assets/t90/T90.json",
             "type": "subDriver/threejs/asset/vnd.osgjs+json+compressed"
         },
         "type": "asset"
@@ -50,7 +50,7 @@
         "url": "./contentlibraries/entities/vwf/rock.vwf.json",
         "preview": "./contentlibraries/entities/thumbs/rock.jpg",
         "dropPreview": {
-            "url": "./vwfdatamanager.svc/datafile/models/village/rock1.dae",
+            "url": "./vwfdatamanager.svc/datafile/models/village/rock1.DAE",
             "type": "subDriver/threejs/asset/vnd.collada+xml"
         },
         "type": "asset"
