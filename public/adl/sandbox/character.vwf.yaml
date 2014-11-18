@@ -392,7 +392,7 @@ scripts:
       this.standingUpdate = function(newpos) {
         if (this.standingOnID) {
           var world = vwf.getProperty(this.standingOnID, 'worldTransform');
-          if(!world) return;
+          if(!world) {this.standingOnID = null; return;}
           var offset = Mat4.multMat(world, this.standingOnOffset.internal_val, []);
           this.transform = offset;
           //this.originalvelocity = [0,0,0];
@@ -401,6 +401,7 @@ scripts:
       this.updateStandingOn = function(newpos) {
         if (this.standingOnID) {
           var world = vwf.getProperty(this.standingOnID, 'worldTransform');
+          if(!world) {this.standingOnID = null; return;}
           var iWorld = [];
           Mat4.invert(world, iWorld);
           var offset = Mat4.multMat(iWorld, this.transform.internal_val, []);
