@@ -40,14 +40,13 @@ function _FileCache() {
             //***string case sensitive compare***
             //return false;
             return this.dirCache[d].indexOf(name) > -1
-        }catch(e)
-        {
+        } catch (e) {
             //in case of errors (where the dir does not exist) just do whatever the system did before
             //why do we even attempt to serve in this case? is the check for actual file existance later?
             console.log(e);
             return true;
         }
-        
+
     }
     this.getDataType = function(file) {
         var type = file.substr(file.lastIndexOf('.') + 1).toLowerCase();
@@ -59,6 +58,20 @@ function _FileCache() {
     this.getFile = function(path, callback) {
         path = libpath.normalize(path);
         path = libpath.resolve(__dirname, path);
+        //force file capitalization to be correct, even on windows
+
+        /*   if (!FileCache.proofFileCaps(path)) {
+                    callback(null);
+                    return;
+                }
+                */
+        //ok, the above code forces correct capitalizaion even when the file system does not
+        //this broke a lot of old content
+        //the below code fixes the caps to be correct for the file on the drive, basically makeing
+        //the whole process insensitive, even if the filesystem is. Note: probably doing a lot of 
+        //unnecessary work if we could know that the filesystem is not sensitive, maybe from a config value
+        path = resolveCase(path);
+
         var self = this;
         //Cannot escape above the application paths!!!!
         if (path.toLowerCase().indexOf(libpath.resolve(__dirname, '../../').toLowerCase()) != 0 && path.toLowerCase().indexOf(global.datapath.toLowerCase()) != 0) {
@@ -88,22 +101,9 @@ function _FileCache() {
         fs.readFile(path, function(err, file) {
             fs.stat(path, function(err, stats) {
 
-                //force file capitalization to be correct, even on windows
-             
-             /*   if (!FileCache.proofFileCaps(path)) {
-                    callback(null);
-                    return;
-                }
-                */
-                //ok, the above code forces correct capitalizaion even when the file system does not
-                //this broke a lot of old content
-                //the below code fixes the caps to be correct for the file on the drive, basically makeing
-                //the whole process insensitive, even if the filesystem is. Note: probably doing a lot of 
-                //unnecessary work if we could know that the filesystem is not sensitive, maybe from a config value
-                path = resolveCase(path);
 
-                if(!path)
-                {
+
+                if (!path) {
                     callback(null);
                     return;
                 }
