@@ -1,12 +1,9 @@
-define(function ()
-{
+define(function() {
 	var HierarchyManager = {};
 	var isInitialized = false;
 	return {
-		getSingleton: function ()
-		{
-			if (!isInitialized)
-			{
+		getSingleton: function() {
+			if (!isInitialized) {
 				initialize.call(HierarchyManager);
 				isInitialized = true;
 			}
@@ -14,8 +11,7 @@ define(function ()
 		}
 	}
 
-	function initialize()
-	{
+	function initialize() {
 		var self = this;
 		$('#sidepanel').append("<div id='hierarchyManager' class='ui-accordion-content ui-helper-reset ui-widget-content ui-corner-bottom ui-accordion-content-active' style='padding-bottom:5px;overflow:hidden;height:auto'></div>");
 		$('#hierarchyManager').append("<div id='hierarchyManagertitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span id='hierarchyManagertitletext' class='ui-dialog-title' id='ui-dialog-title-Players'>Hierarchy</span></div>");
@@ -24,104 +20,83 @@ define(function ()
 		$('#hierarchyManager').append("<div id='hierarchyManagerMakeNode'></div>");
 		$('#hierarchyManager').append("<div id='hierarchyManagerSelect'></div>");
 		$('#hierarchyManager').append("<div id='hierarchyManagerExplode'></div>");
-		
-		$('#HeirarchyFilter').keyup(function()
-		{
+
+		$('#HeirarchyFilter').keyup(function() {
 			self.BuildGUI();
 		});
-		
-		$('#hierarchyManagerMakeNode').button(
-		{
+
+		$('#hierarchyManagerMakeNode').button({
 			label: 'Make VWF Node'
 		});
-		$('#hierarchyManagerExplode').button(
-		{
+		$('#hierarchyManagerExplode').button({
 			label: 'Explode'
 		});
-		$('#hierarchyManagerSelect').button(
-		{
+		$('#hierarchyManagerSelect').button({
 			label: 'Select'
 		});
 		$('#hierarchyManagertitle').append('<a id="hierarchyclose" href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
 		$('#hierarchyManagertitle').prepend('<div class="headericon hierarchy" />');
 		$('#hierarchyManager').css('border-bottom', '5px solid #444444')
 		$('#hierarchyManager').css('border-left', '2px solid #444444')
-		$('#hierarchyclose').click(function ()
-		{
+		$('#hierarchyclose').click(function() {
 			HierarchyManager.hide()
 		});
-		$('#hierarchyManagerMakeNode').click(function ()
-		{
+		$('#hierarchyManagerMakeNode').click(function() {
 			HierarchyManager.makeVWFNode()
 		});
-		$('#hierarchyManagerSelect').click(function ()
-		{
+		$('#hierarchyManagerSelect').click(function() {
 			HierarchyManager.select()
 		});
-		$('#hierarchyManagerExplode').click(function ()
-		{
+		$('#hierarchyManagerExplode').click(function() {
 			HierarchyManager.explode()
 		});
-		this.createChild = function (parent, name, proto, uri, callback)
-		{
-			if (document.PlayerNumber == null)
-			{
+		this.createChild = function(parent, name, proto, uri, callback) {
+			if (document.PlayerNumber == null) {
 				_Notifier.notify('You must log in to participate');
 				return;
 			}
 			_UndoManager.recordCreate(parent, name, proto, uri);
 			vwf_view.kernel.createChild(parent, name, proto, uri, callback);
 		}
-		this.show = function ()
-		{
+		this.show = function() {
 			//$('#hierarchyManager').dialog('open');
 			$('#hierarchyManager').prependTo($('#hierarchyManager').parent());
-			$('#hierarchyManager').show('blind', function ()
-			{
+			$('#hierarchyManager').show('blind', function() {
 				if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 			});
 			//$('#hierarchyManager').dialog('option','position',[1282,40]);
-			if(!this.selectedID)
+			if (!this.selectedID)
 				this.selectedID = 'index-vwf';
 			HierarchyManager.BuildGUI();
 			showSidePanel();
 			HierarchyManager.open = true;
 			$('#MenuHierarchyManagericon').addClass('iconselected');
 		}
-		this.hide = function ()
-		{
+		this.hide = function() {
 			//$('#hierarchyManager').dialog('close');
-			if (this.isOpen())
-			{
-				$('#hierarchyManager').hide('blind', function ()
-				{
+			if (this.isOpen()) {
+				$('#hierarchyManager').hide('blind', function() {
 					if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 					if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
 				});
 				$('#MenuHierarchyManagericon').removeClass('iconselected');
 			}
 		}
-		this.isOpen = function ()
-		{
+		this.isOpen = function() {
 			//return $("#hierarchyManager").dialog( "isOpen" );
 			return $('#hierarchyManager').is(':visible');
 		}
-		this.offClicked = function ()
-		{
+		this.offClicked = function() {
 			$('#InventoryRename').hide();
-			if (HierarchyManager.inRename)
-			{
+			if (HierarchyManager.inRename) {
 				_DataManager.renamehierarchyItem(document.PlayerNumber, HierarchyManager.selectedName, $('#InventoryRename').val(), HierarchyManager.selectedType);
 				HierarchyManager.BuildGUI();
 				HierarchyManager.inRename = false;
 			}
 		}
-		this.makeBounds = function (node, color)
-		{
-			if (node)
-			{
-				if (this.SelectionBounds != null)
-				{
+		this.makeBounds = function(node, color) {
+			if (node) {
+				if (this.SelectionBounds != null) {
 					this.SelectionBounds.parent.remove(this.SelectionBounds);
 					this.SelectionBounds = null;
 				}
@@ -155,12 +130,10 @@ define(function ()
 			}
 		}
 		$('#hierarchyDisplay').click(this.offClicked);
-		this.makeVWFNode = function ()
-		{
-			if (HierarchyManager.selectedType == 'three')
-			{
-				
-				var node = this.findTHREEChild(_Editor.findviewnode(this.selectedID),  this.selectedName);
+		this.makeVWFNode = function() {
+			if (HierarchyManager.selectedType == 'three') {
+
+				var node = this.findTHREEChild(_Editor.findviewnode(this.selectedID), this.selectedName);
 				var parent = this.selectedID;
 				var childname = HierarchyManager.selectedName;
 				var proto = {
@@ -177,61 +150,58 @@ define(function ()
 				var newname = GUID();
 				_UndoManager.recordCreate(parent, newname, proto);
 				vwf_view.kernel.createChild(parent, newname, proto, null);
+			} else {
+				alertify.alert('Select a "SceneNode" to become a "VWF" node.')
 			}
 		}
-		this.explode = function()
-		{
-				
-				var nodes = this.getTHREEChildren(this.findTHREEChild(_Editor.findviewnode(this.selectedID),  this.selectedName));
+		this.explode = function() {
+			alertify.confirm("Would you like to make all SceneNode children into VWF children?", function(ok) {
+				if (ok) {
+					var nodes = this.getTHREEChildren(this.findTHREEChild(_Editor.findviewnode(this.selectedID), this.selectedName));
 
-				for(var i in nodes.children)
-				{
-					var node = this.findTHREEChild(_Editor.findviewnode(this.selectedID),  nodes.children[i].name);
-					var parent = this.selectedID;
-					var childname = nodes.children[i].name;
-					var proto = {
-						extends: 'asset.vwf',
-						type: "link_existing/threejs",
-						source: childname,
-						properties: {
-							owner: document.PlayerNumber,
-							type: '3DR Object',
-							DisplayName: childname,
-							transform: matCpy(node.matrix.elements)
-						}
-					};
-					var newname = GUID();
-					_UndoManager.recordCreate(parent, newname, proto);
-					vwf_view.kernel.createChild(parent, newname, proto, null);
+					for (var i in nodes.children) {
+						var node = this.findTHREEChild(_Editor.findviewnode(this.selectedID), nodes.children[i].name);
+						var parent = this.selectedID;
+						var childname = nodes.children[i].name;
+						var proto = {
+							extends: 'asset.vwf',
+							type: "link_existing/threejs",
+							source: childname,
+							properties: {
+								owner: document.PlayerNumber,
+								type: '3DR Object',
+								DisplayName: childname,
+								transform: matCpy(node.matrix.elements)
+							}
+						};
+						var newname = GUID();
+						_UndoManager.recordCreate(parent, newname, proto);
+						vwf_view.kernel.createChild(parent, newname, proto, null);
+					}
 				}
+			})
 		}
-		this.select = function ()
-		{
-			if (HierarchyManager.selectedType == 'vwf')
-			{
+		this.select = function() {
+			if (HierarchyManager.selectedType == 'vwf') {
 				_Editor.SelectObject(HierarchyManager.selectedName);
 			}
 		}
-		this.itemClicked = function ()
-		{
+		this.itemClicked = function() {
 			var name = $(this).attr('name');
 			var type = $(this).attr('type');
 			HierarchyManager.selectItem(name, type);
 		}
-		this.itemDblClicked = function ()
-		{
+		this.itemDblClicked = function() {
 			var name = $(this).attr('name');
 			var type = $(this).attr('type');
 			_Editor.SelectObject(name);
 		}
-		this.selectItem = function (name, type)
-		{
+		this.selectItem = function(name, type) {
 			HierarchyManager.selectedType = type;
 			HierarchyManager.selectedName = name;
 			var node;
 			var color = [0, .5, 1, 1];
-			if (type == 'vwf')
-			{
+			if (type == 'vwf') {
 				node = _Editor.findviewnode(name);
 				color = [0, 1, .5, 1];
 			}
@@ -242,34 +212,33 @@ define(function ()
 			$('#hierarchyDisplay').find('[name="' + name + '"]').addClass('hierarchyItemSelected');
 		}
 
-		this.getVWFChildren = function (nodeID)
-		{
-			if (nodeID === undefined)
-			{
+		this.getVWFChildren = function(nodeID) {
+			if (nodeID === undefined) {
 				nodeID = this.selectedID;
 			}
-			var ret = {name:'',vwfID:'',children:[]};
+			var ret = {
+				name: '',
+				vwfID: '',
+				children: []
+			};
 			ret.vwfID = nodeID;
 
 			var vwfnode = _Editor.getNode(nodeID);
 			ret.name = ret.vwfID;
-			if(vwfnode.properties && vwfnode.properties.DisplayName)
+			if (vwfnode.properties && vwfnode.properties.DisplayName)
 				ret.name = vwfnode.properties.DisplayName;
 
 			var children = vwf.children(nodeID);
 			if (children)
-				for (var i = 0; i < children.length; i++)
-				{
+				for (var i = 0; i < children.length; i++) {
 					ret.children.push(this.getVWFChildren(children[i]));
 				}
-			
+
 			return ret;
 
 		}
-		this.getVWFParent = function (node)
-		{
-			if (node === undefined)
-			{
+		this.getVWFParent = function(node) {
+			if (node === undefined) {
 				node = this.selectedID;
 			}
 			if (!node) return null;
@@ -279,96 +248,125 @@ define(function ()
 			if (!parent) return null;
 			return parent.properties.DisplayName || parent.id;
 		}
-		this.findTHREEChild = function (node, name)
-		{
+		this.findTHREEChild = function(node, name) {
 			if (node.name == name) return node;
-			if (node.children) for (var i = 0; i < node.children.length; i++)
-				{
+			if (node.children)
+				for (var i = 0; i < node.children.length; i++) {
 					var ret2 = this.findTHREEChild(node.children[i], name);
 					if (ret2) return ret2;
-			}
+				}
 			return null;
 		}
-		this.getTHREEChildren = function (threenode)
-		{
-			var ret =  {name:"",children:[]};
-			if (threenode === undefined)
-			{
+		this.getTHREEChildren = function(threenode) {
+			var ret = {
+				name: "",
+				children: []
+			};
+			if (threenode === undefined) {
 				threenode = _Editor.findviewnode(this.selectedID);
-			}	
-			if (!threenode)
-			{
+			}
+			if (!threenode) {
 				return ret;
-			}	
+			}
 
 			ret.name = threenode.name || threenode.uid || threenode.VWFID || 'No Name';
 
 
-				
+
 			if (threenode.children)
-				for (var i = 0; i < threenode.children.length; i++)
-				{
-					if(!threenode.children[i].vwfID)
+				for (var i = 0; i < threenode.children.length; i++) {
+					if (!threenode.children[i].vwfID)
 						ret.children.push(this.getTHREEChildren(threenode.children[i]));
 				}
-			
+
 			return ret;
-			
-		
+
+
 		}
-		this.BuildGUI = function ()
-		{
-		
-			
-			$('#hierarchyManagertitletext').text((vwf.getProperty(this.selectedID,'DisplayName')||"") + ' Hierarchy');
+		this.BuildGUI = function() {
+
+
+			$('#hierarchyManagertitletext').text((vwf.getProperty(this.selectedID, 'DisplayName') || "") + ' Hierarchy');
 			$('#hierarchyDisplay').empty();
 			$('#InventoryRename').hide();
 			$('#InventoryRename').keypress(HierarchyManager.rename)
-			$('#InventoryRename').keydown(function (e)
-			{
+			$('#InventoryRename').keydown(function(e) {
 				e.stopPropagation();
 			})
-			$('#InventoryRename').focus(function ()
-			{
+			$('#InventoryRename').focus(function() {
 				$(this).select();
 			});
 			if (this.getVWFParent()) $('#hierarchyDisplay').append("<div id='heirarchyParent' style='font-weight:bold;white-space: nowrap;text-overflow: ellipsis;overflow:hidden'><div>&#x25B2 Parent (" + HierarchyManager.getVWFParent() + ")</div></div>");
-			$('#hierarchyDisplay').append("<div id='VWFChildren' style='font-weight:bold'><div>VWF Object Children</div></div>");
-			$('#hierarchyDisplay').append("<div id='THREEChildren' style='font-weight:bold'><div>SceneNode Children</div></div>");
-			$('#heirarchyParent').dblclick(function ()
+			$('#hierarchyDisplay').append("<div id='VWFChildren' tabindex=0 style='font-weight:bold'><div>VWF Object Children</div></div>");
+			$('#hierarchyDisplay').append("<div id='THREEChildren' tabindex=1 style='font-weight:bold'><div>SceneNode Children</div></div>");
+
+			//move the selection up or down with a keypress
+			$('#VWFChildren, #THREEChildren').keyup(function(evt,ui)
 			{
+				console.log(evt.keyCode);
+				if(evt.keyCode == 27)
+				{
+					$('#heirarchyParent').dblclick();
+					$($($('#VWFChildren').children()[1]).children()[1]).click();
+					$('#VWFChildren').focus();
+				}
+				if(evt.keyCode == 32)
+				{
+					$(this).find('[name="' + HierarchyManager.selectedName +'"]').dblclick()
+					$($($('#VWFChildren').children()[1]).children()[1]).click();
+					$('#VWFChildren').focus();
+				}
+				//find and click the next node and click it; The click handlers should deal the bounds checking the list;
+				if(evt.keyCode == 40)
+				{
+					if($(this).find('[name="' + HierarchyManager.selectedName +'"]').parent().children()[3] && $($(this).find('[name="' + HierarchyManager.selectedName +'"]').parent().children()[0]).text() == '-')
+						$($($(this).find('[name="' + HierarchyManager.selectedName +'"]').parent().children()[3]).children()[1]).click()
+					else
+						$($(this).find('[name="' + HierarchyManager.selectedName +'"]').parent().next().children()[1]).click();
+				}
+				if(evt.keyCode == 38)
+				{
+					if($(this).find('[name="' + HierarchyManager.selectedName +'"]').parent().prev().children()[1])
+						$($(this).find('[name="' + HierarchyManager.selectedName +'"]').parent().prev().children()[1]).click();
+					else
+						$($(this).find('[name="' + HierarchyManager.selectedName +'"]').parent().parent().children()[1]).click()
+				}
+				if(evt.keyCode == 39 || evt.keyCode == 37)
+				{
+					$(this).find('[name="' + HierarchyManager.selectedName +'"]').prev().click();
+				}
+				
+			})
+			
+			$('#heirarchyParent').dblclick(function() {
 				_Editor.SelectObject(vwf.parent(this.selectedID));
 			}.bind(this));
 			$('#heirarchyParent').click(this.itemClicked);
 			$('#heirarchyParent').attr('name', vwf.parent(this.selectedID));
 			$('#heirarchyParent').attr('type', 'vwf');
 			var VWFChildren = HierarchyManager.getVWFChildren();
-			for(var i=0; i < VWFChildren.children.length; i++ )
-				this.appendThreeChildDOM(VWFChildren.children[i],'VWFChildren','vwf');
+			for (var i = 0; i < VWFChildren.children.length; i++)
+				this.appendThreeChildDOM(VWFChildren.children[i], 'VWFChildren', 'vwf');
 
 			var THREEChildren = HierarchyManager.getTHREEChildren();
-			for(var i=0; i < THREEChildren.children.length; i++ )
-				this.appendThreeChildDOM(THREEChildren.children[i],'THREEChildren','three');
+			for (var i = 0; i < THREEChildren.children.length; i++)
+				this.appendThreeChildDOM(THREEChildren.children[i], 'THREEChildren', 'three');
 
 
 			if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 		}
-		this.appendThreeChildDOM = function(node,parentDiv,type)
-		{
+		this.appendThreeChildDOM = function(node, parentDiv, type) {
 			var thisid = 'THREEChild' + ToSafeID(node.name) + ToSafeID(GUID());
-			$('#' + parentDiv).append('<div id="'+thisid+'container'+'" style="margin-left:1em; overflow:hidden; height:1em"><span id="'+thisid+'toggle'+'">+</span><span class="hierarchyItem" style="" id="' + thisid + '" /><span>');
-			$('#' + thisid +'toggle').css('cursor','pointer');
-			$('#' + thisid +'toggle').click(function()
-			{
-				
-				if($(this).text() == '-')
-				{
-					$(this).parent().css('height','1em');
+			$('#' + parentDiv).append('<div id="' + thisid + 'container' + '" style="margin-left:1em; overflow:hidden; height:1em"><span id="' + thisid + 'toggle' + '">+</span><span class="hierarchyItem" style="" id="' + thisid + '" /><span>');
+			$('#' + thisid + 'toggle').css('cursor', 'pointer');
+			$('#' + thisid + 'toggle').click(function() {
+
+				if ($(this).text() == '-') {
+					$(this).parent().css('height', '1em');
 					$(this).text('+');
 					window.updateSidepanelScrollbars()
-				}else
-				{
-					$(this).parent().css('height','');
+				} else {
+					$(this).parent().css('height', '');
 					$(this).text('-');
 					window.updateSidepanelScrollbars()
 				}
@@ -380,48 +378,37 @@ define(function ()
 			$('#' + thisid).attr('name', node.vwfID || node.name);
 			$('#' + thisid).attr('type', type);
 			$('#' + thisid).click(HierarchyManager.itemClicked);
-			if(type == 'vwf')
-			$('#' + thisid).dblclick(HierarchyManager.itemDblClicked);
-			for(var i = 0; i < node.children.length; i++)
-			{
-				this.appendThreeChildDOM(node.children[i],thisid+'container',type);
+			if (type == 'vwf')
+				$('#' + thisid).dblclick(HierarchyManager.itemDblClicked);
+			for (var i = 0; i < node.children.length; i++) {
+				this.appendThreeChildDOM(node.children[i], thisid + 'container', type);
 			}
 		}
-		this.SelectionChanged = function (e, node)
-		{
-			try
-			{
-				if (this.SelectionBounds != null)
-				{
+		this.SelectionChanged = function(e, node) {
+			try {
+				if (this.SelectionBounds != null) {
 					this.SelectionBounds.parent.remove(this.SelectionBounds);
 					this.SelectionBounds = null;
 				}
-				if (node )
-				{
+				if (node) {
 					this.selectedID = node.id
-					if(this.isOpen())
+					if (this.isOpen())
 						this.BuildGUI();
-				}
-				else
-				{
+				} else {
 					this.hide();
 					this.selectedID = null;
 				}
-			}
-			catch (e)
-			{
+			} catch (e) {
 				console.log(e);
 			}
 		}
-		this.createdNode = function(id)
-		{
-			
-			if(this.selectedID == id || vwf.decendants(this.selectedID ).indexOf(id) != -1)
-			{
-				window.setTimeout(function(){
-					this.BuildGUI();	
-				}.bind(this),500)
-				
+		this.createdNode = function(id) {
+
+			if (this.selectedID == id || vwf.decendants(this.selectedID).indexOf(id) != -1) {
+				window.setTimeout(function() {
+					this.BuildGUI();
+				}.bind(this), 500)
+
 			}
 		}
 		$(document).bind('selectionChanged', this.SelectionChanged.bind(this));

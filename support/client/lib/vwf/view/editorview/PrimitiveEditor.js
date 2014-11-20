@@ -945,7 +945,11 @@ define(function() {
         this.scaleChanged = function() {
             this.setTransform();
         }
-        this.NodePropertyUpdate = function(nodeID, propName, propVal) {
+        this.initializedProperty = function (nodeID, propName, propVal)
+        {
+            this.satProperty(nodeID, propName, propVal);
+        }
+        this.satProperty = function(nodeID, propName, propVal) {
 
 
             for (var i = 0; i < this.propertyEditorDialogs.length; i++) {
@@ -1010,7 +1014,7 @@ define(function() {
         $(document).bind('selectionChanged', this.SelectionChanged.bind(this));
         $(document).bind('modifierCreated', this.SelectionChanged.bind(this));
         $(document).bind('selectionTransformedLocal', this.SelectionTransformed.bind(this));
-        $(document).bind('nodePropChanged', this.NodePropertyUpdate.bind(this));
+       
         $('#PositionX').change(this.positionChanged.bind(this));
         $('#PositionY').change(this.positionChanged.bind(this));
         $('#PositionZ').change(this.positionChanged.bind(this));

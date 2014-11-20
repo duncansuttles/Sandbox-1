@@ -1,3 +1,4 @@
+"use strict";
 (function() {
     function terrainDecorator(childID, childSource, childName) {
 
@@ -138,6 +139,7 @@
         }
         this.wind = true;
         this.renderHeightMap = function() {
+
             if (!this.counter) this.counter = 0;
             this.counter++;
             if (this.wind)
@@ -148,11 +150,14 @@
             this.needReRender = false;
             var oldparent = this.TerrainRoot.parent;
 
-            this.camera.position = this.lastCameraPosition.clone();
+            this.camera.position.x = this.lastCameraPosition.x;
+            this.camera.position.y = this.lastCameraPosition.y;
+            this.camera.position.z = this.lastCameraPosition.z;
             this.camera.position.z += 500;
+           
             this.camera.updateMatrixWorld();
             this.camera.updateProjectionMatrix();
-            //this.cameraHelper.updateMatrixWorld();
+           // this.cameraHelper.updateMatrixWorld();
             var matrixWorldInverse = new THREE.Matrix4();
             var _viewProjectionMatrix = new THREE.Matrix4();
             matrixWorldInverse.getInverse(this.camera.matrixWorld);
@@ -167,12 +172,22 @@
                     meshes_to_toggle = meshes_to_toggle.concat(this.positions[i][j].meshes);
                 }
             var self = this;
-            this.TerrainRoot.parent.parent.traverse(function(child) {
-                //ahhh, have to be careful to not turn off the sun
-                if (child.parent !== self.root && child.visible === true && child != _dSun) {
-                    meshes_to_toggle.push(child);
+
+            
+            var walk = function(node)
+            {
+                if(node.visible && node != _dSun && node instanceof THREE.Mesh || node instanceof THREE.Line || node instanceof THREE.PointCloud)
+                {
+                    meshes_to_toggle.push(node);
                 }
-            });
+                if(node !== self.TerrainRoot)
+                for(var i =0; i < node.children.length; i++)
+                {
+                    walk(node.children[i]);
+                }
+
+            }
+            walk(_dScene);
 
 
             for (var i = 0; i < meshes_to_toggle.length; i++) {
@@ -180,20 +195,20 @@
             }
 
             this.TerrainRoot.traverse(function(child) {
-                if (child.visible === true && child.material && child.material.uniforms.renderMode) //should only be terrain tiles 
+                if (child.visible === true && child.material && child.material.uniforms && child.material.uniforms.renderMode) //should only be terrain tiles 
                 {
                     child.material.uniforms.renderMode.value = 1;
-                    child.material.side = 2;
+                   
                 }
             });
 
 
             _dRenderer.clearTarget(this.rtt);
-            _dRenderer.render(_dScene, this.camera, this.rtt);
+            _dRenderer.render(_dScene, this.camera, this.rtt,true);
 
 
-            this.TerrainRoot.traverse(function(child) {
-                if (child.visible === true && child.material && child.material.uniforms.renderMode) //should only be terrain tiles 
+         this.TerrainRoot.traverse(function(child) {
+                if (child.visible === true && child.material && child.material.uniforms && child.material.uniforms.renderMode) //should only be terrain tiles 
                 {
                     child.material.uniforms.renderMode.value = 2;
 
@@ -202,16 +217,16 @@
 
 
             _dRenderer.clearTarget(this.rtt2);
-            _dRenderer.render(_dScene, this.camera, this.rtt2);
+            _dRenderer.render(_dScene, this.camera, this.rtt2,true);
 
 
             this.TerrainRoot.traverse(function(child) {
-                if (child.visible === true && child.material && child.material.uniforms.renderMode) //should only be terrain tiles 
+                if (child.visible === true && child.material && child.material.uniforms && child.material.uniforms.renderMode) //should only be terrain tiles 
                 {
                     child.material.uniforms.renderMode.value = 0;
-                    child.material.side = 0;
+                    
                 }
-            });
+            }); 
 
             for (var i = 0; i < meshes_to_toggle.length; i++) {
                 meshes_to_toggle[i].visible = true;
@@ -234,7 +249,7 @@
                         },
                         diffuseTex: {
                             type: "t",
-                            value: _SceneManager.getTexture(this.texture || './terrain/grass.png')
+                            value: _SceneManager.getTexture(this.texture || './terrain/Grass.png')
                         },
                         projection: {
                             type: "m4",
@@ -277,6 +292,7 @@
                         "  wind = vec2(sin(position.x/2.0 + time/1900.0)+cos(position.y/2.0 + time/1900.0),0.0);\n" +
                         "wind = (wind + 1.0) / 4.0;\n" +
                         "    gl_Position = modMat * vec4( position.xy + wind * uv.y,position.z+z-0.45, 1.0 );\n" +
+                 //   /*debug render target*/    "    gl_Position = modelMatrix * vec4( position,1.0);\n"+
                         "    ar = length(gl_Position.xyz - cameraPosition)/20.0;\n" +
                     //"    gl_Position.z = z;"+
                     "    gl_Position = viewMatrix * gl_Position;\n" +
@@ -286,6 +302,7 @@
                         "rand = random;" +
                         "} ",
                     fragmentShader: "uniform lowp sampler2D diffuseTex;" +
+                    "uniform lowp sampler2D heightMap;" +
                         "uniform lowp sampler2D gBuffer;" +
                         "varying lowp vec2 progtc;" +
                         "varying lowp vec2 tc;" +
@@ -293,13 +310,15 @@
                         "varying lowp vec2 wind;" +
                         "varying lowp float ar;" +
                         "void main() { " +
+                        
                         "lowp vec4 color1 = texture2D(diffuseTex,tc);" +
                         "lowp vec4 gb = texture2D(gBuffer,progtc);\n" +
+                       
                         "lowp float light =  gb.a;" +
                         "lowp float density =  gb.g;" +
 
                     "if ( color1.a < ar * ar ) discard;\n" +
-                        "if ( color1.a * density < .5) discard;\n" +
+                       // "if ( color1.a * density < .5) discard;\n" +
                         "gl_FragColor = color1;" +
                         "gl_FragColor.xyz *= (light +.15*rand) + wind.x * wind.x * tc.y* tc.y;\n" +
 
@@ -398,7 +417,7 @@
                             var newmesh = new THREE.Mesh(this.geo, oldmat);
                             oldmesh.parent.add(newmesh);
                             oldmesh.parent.remove(oldmesh);
-                            newmesh.position = oldmesh.position;
+                            newmesh.position.set(oldmesh.position);
                             newmesh.rotation.set(oldmesh.rotation.x, oldmesh.rotation.y, oldmesh.rotation.z, oldmesh.rotation.order);
                             newmesh.vwfID = oldmesh.vwfID;
                             newmesh.InvisibleToCPUPick = true;
@@ -560,13 +579,21 @@
 
             this.lastCameraPosition = new THREE.Vector3(0, 0, 0);
 
-            this.camera = new THREE.OrthographicCamera(-h, h, -h, h, 0, 1000);
+            this.camera = new THREE.OrthographicCamera(-h, h, h, -h, 0, 10000);
             //this.camera = new THREE.PerspectiveCamera();
             //	this.cameraHelper = new THREE.CameraHelper(this.camera);
             //	this.cameraHelper.InvisibleToCPUPick = true;
             //	this.root.add(this.cameraHelper,true);
-            this.rtt = new THREE.WebGLRenderTarget(128, 128, {});
-            this.rtt2 = new THREE.WebGLRenderTarget(128, 128, {});
+            this.rtt =  new THREE.WebGLRenderTarget(256, 256, {
+                format: THREE.RGBAFormat,
+                minFilter: THREE.NearestFilter,
+                magFilter: THREE.NearestFilter
+            });
+            this.rtt2 =  new THREE.WebGLRenderTarget(256, 256, {
+                format: THREE.RGBAFormat,
+                minFilter: THREE.NearestFilter,
+                magFilter: THREE.NearestFilter
+            });
             //	this.rtt.generateMipmaps = false;
 
             //this.scene.add(this.root);

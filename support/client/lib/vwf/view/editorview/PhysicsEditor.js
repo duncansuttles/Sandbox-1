@@ -11,6 +11,37 @@ define([], function() {
         }
     }
 
+    function hasPrototype(nodeID, prototype) {
+        if (!nodeID) return false;
+        if (nodeID == prototype)
+            return true;
+        else return hasPrototype(vwf.prototype(nodeID), prototype);
+    }
+
+    function isSphere(id) {
+        return hasPrototype(id, 'sphere2-vwf');
+    }
+
+    function isBox(id) {
+        return hasPrototype(id, 'box2-vwf');
+    }
+
+    function isCone(id) {
+        return hasPrototype(id, 'cone2-vwf');
+    }
+
+    function isCylinder(id) {
+        return hasPrototype(id, 'cylinder2-vwf');
+    }
+
+    function isPlane(id) {
+        return hasPrototype(id, 'plane2-vwf');
+    }
+
+    function isAsset(id) {
+        return hasPrototype(id, 'asset-vwf');
+    }
+
     function initialize() {
 
         $('#sidepanel').append("<div id='PhysicsEditor'>" + "<div id='PhysicsEditortitle' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' >Physics Editor</div>" + "</div>");
@@ -27,14 +58,17 @@ define([], function() {
             $('#PhysicsEditor').show('blind', function() {
                 if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
             });
+            this.selectedID = _Editor.GetSelectedVWFID();
             showSidePanel();
             this.BuildGUI();
             $('#MenuPhysicsEditoricon').addClass('iconselected');
+
 
         }
         this.hide = function() {
             //$('#PhysicsEditor').dialog('close');
             if (this.isOpen()) {
+                this.clearPreview();
                 $('#PhysicsEditor').hide('blind', function() {
                     if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
                     if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
@@ -45,6 +79,20 @@ define([], function() {
         this.isOpen = function() {
             //$("#PhysicsEditor").dialog( "isOpen" )
             return $('#PhysicsEditor').is(':visible');
+        }
+        this.createdProperty = function(nodeID, propertyName, propertyValue) {
+            this.satProperty(nodeID, propertyName, propertyValue);
+        }
+        this.initializedProperty = function(nodeID, propertyName, propertyValue) {
+            this.satProperty(nodeID, propertyName, propertyValue);
+        }
+        this.createdNode = function(nodeID) {
+            //note taht we dont have to upate the physics preive here,  because all the sets on the new node's props will do it
+        }
+        this.deletedNode = function(nodeID) {
+            if (this.worldPreviewRoot) {
+                this.BuildWorldPreview();
+            }
         }
         this.satProperty = function(nodeID, propName, propVal) {
             for (var i = 0; i < this.propertyEditorDialogs.length; i++) {
@@ -60,6 +108,45 @@ define([], function() {
                         diag.element.slider('value', propVal);
                     if (diag.type == 'check')
                         diag.element.attr('checked', propVal);
+                }
+            }
+            //basically, any property change on a selected node might require a redraw
+            //we could be smarter about this, but probably not worth the effort
+            if (_Editor.isSelected(nodeID) && this.isOpen()) {
+                //optimization for only movement of roots
+                if (this.physicsPreviewRoot && this.physicsPreviewRoot[nodeID] && propName == "transform") {
+                    this.physicsPreviewRoot[nodeID].matrix.fromArray(propVal);
+                    this.physicsPreviewRoot[nodeID].updateMatrixWorld(true);
+                } else {
+                    this.BuildPreview();
+                }
+            }
+            //here, if we are displaying all of the physics world, we need to update transforms
+            //note that the above function rebuilds all objects each time a property is set
+            //this is inteneded to show the world in motion, so the above is inefficient
+            //instead, we will set transforms for physics body roots, but not update geometries for now
+            if (this.worldPreviewRoot) {
+                if (this.worldPreviewRoot[nodeID] && propName == 'transform') {
+                    this.worldPreviewRoot[nodeID].matrix.fromArray(propVal);
+                    this.worldPreviewRoot[nodeID].updateMatrixWorld(true);
+                }
+                //here, we pick up some other properties and just rebuild
+                //not that since we sort of expect this to run fairly fast, we need to be a bit more careful then we were above
+                else if ([
+                    "transform",
+                    "___physics_enabled",
+                    "___physics_collision_length",
+                    "___physics_collision_width",
+                    "___physics_collision_height",
+                    "___physics_collision_radius",
+                    "___physics_collision_type",
+                    "___physics_collision_offset",
+                    "_length",
+                    "width",
+                    "height",
+                    "radius"
+                ].indexOf(propName) > -1) {
+                    this.BuildWorldPreview();
                 }
             }
         }
@@ -178,6 +265,10 @@ define([], function() {
                 $('#' + baseid + 'X').val(propmin[0]);
                 $('#' + baseid + 'Y').val(propmin[1]);
                 $('#' + baseid + 'Z').val(propmin[2]);
+            } else {
+                $('#' + baseid + 'X').val(0);
+                $('#' + baseid + 'Y').val(0);
+                $('#' + baseid + 'Z').val(0);
             }
             $('#' + baseid + 'X').change(vecvalchanged);
             $('#' + baseid + 'Y').change(vecvalchanged);
@@ -254,41 +345,218 @@ define([], function() {
             this.addPropertyEditorDialog(nodeid, propertyName, $('#' + nodeid + i), 'text');
 
         }
+        //walk a threejs node and dispose of the geometry and materials
+        this.dispose = function(threeNode) {
+            if (threeNode && threeNode.dispose)
+                threeNode.dispose();
+            if (threeNode && threeNode.geometry)
+                this.dispose(threeNode.geometry)
+            if (threeNode && threeNode.material)
+                this.dispose(threeNode.material)
+            if (threeNode && threeNode.children)
+                for (var i = 0; i < threeNode.children.length; i++)
+                    this.dispose(threeNode.children[i]);
+        }
+        this.clearPreview = function() {
+            //release all held memory
+            this.dispose(this.physicsPreviewRoot);
+            for (var i in this.physicsPreviewRoot.children) {
+                this.physicsPreviewRoot.remove(this.physicsPreviewRoot.children[i]);
+            }
+        }
+        this.clearWorldPreview = function() {
+            //release all held memory
+            this.dispose(this.worldPreviewRoot);
+            for (var i in this.worldPreviewRoot.children) {
+                this.worldPreviewRoot.remove(this.worldPreviewRoot.children[i]);
+            }
+        }
+        this.disableWorldPreview = function() {
+            if (this.worldPreviewRoot) {
+                this.clearWorldPreview();
+                this.worldPreviewRoot.parent.remove(this.worldPreviewRoot);
+                delete this.worldPreviewRoot;
+            }
+        }
+        this.toggleWorldPreview = function() {
+            if (this.worldPreviewRoot) this.disableWorldPreview();
+            else this.BuildWorldPreview();
+        }
+        this.BuildPreviewInner = function(i, root, scale) {
+            
+            if(!findphysicsnode(i)) return;
+            var transform = findphysicsnode(i).transform;
+            var worldScale = findphysicsnode(i).getWorldScale();
+            var geo = null;
+            //we actually create all cylinder and cone prims with the Zaxis as up, but three.js builds them with y up. We need to add a rotation in this case.
+            // This is handled in prim.js for the visual nodes.
+            var needRotate = false;
+            if (!vwf.getProperty(i, '___physics_enabled')) return;
+
+            if (isSphere(i)) //sphere
+            {
+                geo = new THREE.SphereGeometry(vwf.getProperty(i, 'radius') * worldScale[0], 10, 10);
+            }
+            if (isBox(i)) //sphere
+            {
+                geo = new THREE.BoxGeometry(vwf.getProperty(i, '_length') * worldScale[0], vwf.getProperty(i, 'width') * worldScale[1], vwf.getProperty(i, 'height') * worldScale[2], 5, 5, 5);
+            }
+            if (isCylinder(i)) //sphere
+            {
+                needRotate = true;
+                geo = new THREE.CylinderGeometry(vwf.getProperty(i, 'radius') * worldScale[0], vwf.getProperty(i, 'radius') * worldScale[0], vwf.getProperty(i, 'height') * worldScale[1], 10, 10);
+            }
+            if (isCone(i)) //sphere
+            {
+                needRotate = true;
+                geo = new THREE.CylinderGeometry(0, vwf.getProperty(i, 'radius') * worldScale[0], vwf.getProperty(i, 'height') * worldScale[1], 10, 10);
+            }
+            if (isPlane(i)) //sphere
+            {
+                geo = new THREE.PlaneGeometry(vwf.getProperty(i, '_length') * worldScale[0], vwf.getProperty(i, 'width') * worldScale[1], 5, 5);
+            }
+            if (isAsset(i)) //asset
+            {
+
+
+                switch (parseInt(vwf.getProperty(i, "___physics_collision_type"))) {
+                    case 1:
+                        {
+                            geo = new THREE.SphereGeometry(vwf.getProperty(i, '___physics_collision_radius') * worldScale[0], 10, 10);
+                        }
+                        break;
+                    case 2:
+                        {
+                            geo = new THREE.BoxGeometry(vwf.getProperty(i, '___physics_collision_length') * worldScale[0], vwf.getProperty(i, '___physics_collision_width') * worldScale[1], vwf.getProperty(i, '___physics_collision_height') * worldScale[2], 5, 5, 5);
+                        }
+                        break;
+                    case 3:
+                        {
+                            needRotate = true;
+                            geo = new THREE.CylinderGeometry(vwf.getProperty(i, '___physics_collision_radius') * worldScale[0], vwf.getProperty(i, '___physics_collision_radius') * worldScale[0], vwf.getProperty(i, '___physics_collision_height') * worldScale[1], 10, 10, 10);
+                        }
+                        break;
+                    case 4:
+                        {
+                            needRotate = true;
+                            geo = new THREE.CylinderGeometry(0, vwf.getProperty(i, '___physics_collision_radius') * worldScale[0], vwf.getProperty(i, '___physics_collision_height') * worldScale[1], 10, 5);
+                        }
+                        break;
+                    case 5:
+                        {
+                            geo = new THREE.PlaneGeometry(vwf.getProperty(i, '___physics_collision_length') * worldScale[0], vwf.getProperty(i, '___physics_collision_width') * worldScale[1], 5, 5);
+                        }
+                        break;
+                    case 6:
+                        {
+                            //none
+                        }
+                        break;
+                    case 7:
+                        {
+                            //mesh
+                        }
+                        break;
+                    default:
+
+
+
+                }
+
+            }
+            var mesh = null;
+            if (geo) {
+                mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial());
+
+                mesh.material.color.b = 1;
+                mesh.material.color.g = .3;
+                mesh.material.color.r = 1;
+
+                if (vwf.parent(i) != vwf.application()) {
+                    mesh.material.color.g = .0;
+                    mesh.material.color.r = .5;
+                }
+
+                mesh.material.transparent = true;
+                mesh.material.depthTest = false;
+                mesh.material.depthWrite = false;
+                mesh.material.wireframe = true;
+                mesh.InvisibleToCPUPick = true;
+
+            }
+            var children = vwf.children(i);
+            //the current node does not have a mesh, so we use a blank object3
+            if (!mesh) mesh = new THREE.Object3D();
+
+
+            //apply a premultiplied rotation matrix
+            //hold it in a seperate node, so the rotation will not effect other children
+            if (needRotate) {
+
+
+                mesh.matrix.makeRotationX(Math.PI / 2);
+                mesh.matrixAutoUpdate = false;
+                mesh.updateMatrixWorld(true);
+                var rotNode = new THREE.Object3D();
+                rotNode.add(mesh);
+                mesh = rotNode;
+
+            }
+            root.add(mesh);
+            root[i] = mesh;
+            if (transform)
+                mesh.matrix.fromArray(transform);
+            mesh.matrixAutoUpdate = false;
+
+            mesh.matrix.elements[12] *= scale[0];
+            mesh.matrix.elements[13] *= scale[1];
+            mesh.matrix.elements[14] *= scale[2];
+
+            mesh.updateMatrixWorld(true);
+            var thisWorldScale = [1, 1, 1];
+            thisWorldScale[0] = scale[0] * findphysicsnode(i).localScale[0];
+            thisWorldScale[1] = scale[1] * findphysicsnode(i).localScale[1];
+            thisWorldScale[2] = scale[2] * findphysicsnode(i).localScale[2];
+            for (var ik = 0; ik < children.length; ik++) {
+                this.BuildPreviewInner(children[ik], mesh, thisWorldScale);
+            }
+        }
         this.BuildPreview = function() {
             if (!this.physicsPreviewRoot.parent)
                 _dScene.add(this.physicsPreviewRoot);
-            for (var i in this.physicsPreviewRoot.children)
-                this.physicsPreviewRoot.remove(this.physicsPreviewRoot.children[i]);
+
+            this.clearPreview();
 
             var roots = [];
             for (var i = 0; i < _Editor.getSelectionCount(); i++) {
                 var id = _Editor.GetSelectedVWFID(i);
-                while (vwf.parent(id) !== vwf.application())
+                while (id && vwf.parent(id) !== vwf.application())
                     id = vwf.parent(id);
-                roots[id] = findphysicsnode(id);
+                roots[id] = true;
             }
             for (var i in roots) {
-                if (roots[i] && roots[i].enabled) {
-                    if (roots[i].type == 1) //sphere
-                    {
-
-                        var mesh = new THREE.Mesh(new THREE.SphereGeometry(roots[i].radius * roots[i].getWorldScale()[0]), new THREE.MeshBasicMaterial());
-                        mesh.material.color.b = 1;
-                        mesh.material.color.g = 0;
-                        mesh.material.color.r = 0;
-                        mesh.material.transparent = true;
-                        mesh.material.depthTest = false;
-                        mesh.material.depthWrite = false;
-                        mesh.material.wireframe = true;
-                        mesh.InvisibleToCPUPick = true;
-                       
-                        mesh.matrix.fromArray(roots[i].transform);
-                        mesh.matrixAutoUpdate = false;
-                        this.physicsPreviewRoot.add(mesh);
-                         mesh.updateMatrixWorld(true);
-                    }
+                if (roots[i] && vwf.getProperty(i, '___physics_enabled')) {
+                    this.BuildPreviewInner(i, this.physicsPreviewRoot, [1, 1, 1]);
                 }
             }
+        }
+        //this is used not for previewing the selected item, but for displaying all physics bodies
+        //note that it won't update for collision shapes that change during runtime, IE, a compound
+        //collision body is updated during execution. This should not be happening anyway.
+        this.BuildWorldPreview = function() {
+            if (this.worldPreviewRoot) {
+                this.clearWorldPreview();
+                _dScene.remove(this.worldPreviewRoot);
+            }
+
+            this.worldPreviewRoot = new THREE.Object3D();
+            var roots = vwf.children(vwf.application());
+            for (var i in roots) {
+                if (roots[i] && vwf.getProperty(roots[i], '___physics_enabled')) {
+                    this.BuildPreviewInner(roots[i], this.worldPreviewRoot, [1, 1, 1]);
+                }
+            }
+            _dScene.add(this.worldPreviewRoot, true);
         }
         this.BuildGUI = function() {
 
@@ -320,74 +588,81 @@ define([], function() {
                 this.createSlider($('#PhysicsBasicSettings'), this.selectedID, '___physics_accuracy', 'Physics Accuracy', 1, 1, 10);
                 this.createCheck($('#PhysicsBasicSettings'), this.selectedID, '___physics_active', 'Enable Physics');
             } else if (hasOwnBody) {
-                this.createCheck($('#PhysicsBasicSettings'), this.selectedID, '___physics_enabled', hasOwnBody ? 'Physics Enabled' : 'Collision Enabled');
-                this.createSlider($('#PhysicsBasicSettings'), this.selectedID, '___physics_mass', 'Mass', .1, 0, 10000);
-                this.createChoice($('#PhysicsBasicSettings'), this.selectedID, '___physics_activation_state', 'Activation State', [
-                    "Awake", "Sleeping", "Wants Sleep", "Stay Awake", "Stay Asleep"
-                ], [
-                    "1", "2", "3", "4", "5"
-                ]);
-
-                $('#physicsaccordion').append('<h3><a href="#">Collision Material</a>    </h3>   <div id="PhysicsMaterialSettings">  </div>');
-                this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_restitution', 'Bounciness', .1, 0, 1);
-                this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_friction', 'Friction', .1, 0, 10);
-                this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_damping', 'Damping', .1, 0, 10);
 
                 var phyNode = findphysicsnode(_Editor.GetSelectedVWFID());
+                if (!phyNode) {
+                    $('#PhysicsBasicSettings').append('Physics are currently not supported for this object type');
+                    
+                } else {
 
-                if (phyNode.type == 7) {
-                    $('#physicsaccordion').append('<h3><a href="#">Collision Shape</a>    </h3>   <div id="PhysicsCollisionSettings">  </div>');
-                    this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_length', 'Collision Length', .1, 0, 50);
-                    this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_width', 'Collision Width', .1, 0, 50);
-                    this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_height', 'Collision Height', .1, 0, 50);
-                    this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_radius', 'Collision Radius', .1, 0, 50);
-                    this.createChoice($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_type', 'Collision Type', [
-                        "None", "Box", "Sphere", "Cylinder", "Cone", "Mesh"
+                    this.createCheck($('#PhysicsBasicSettings'), this.selectedID, '___physics_enabled', hasOwnBody ? 'Physics Enabled' : 'Collision Enabled');
+                    this.createSlider($('#PhysicsBasicSettings'), this.selectedID, '___physics_mass', 'Mass', .1, 0, 10000);
+                    this.createChoice($('#PhysicsBasicSettings'), this.selectedID, '___physics_activation_state', 'Activation State', [
+                        "Awake", "Sleeping", "Wants Sleep", "Stay Awake", "Stay Asleep"
                     ], [
-                        "0", "2", "1", "3", "4", "5"
+                        "1", "2", "3", "4", "5"
                     ]);
 
+                    $('#physicsaccordion').append('<h3><a href="#">Collision Material</a>    </h3>   <div id="PhysicsMaterialSettings">  </div>');
+                    this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_restitution', 'Bounciness', .1, 0, 1);
+                    this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_friction', 'Friction', .1, 0, 10);
+                    this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_damping', 'Damping', .1, 0, 10);
+
+
+                    if (phyNode.type == 7) {
+                        $('#physicsaccordion').append('<h3><a href="#">Collision Shape</a>    </h3>   <div id="PhysicsCollisionSettings">  </div>');
+                        this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_length', 'Collision Length', .1, 0, 50);
+                        this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_width', 'Collision Width', .1, 0, 50);
+                        this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_height', 'Collision Height', .1, 0, 50);
+                        this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_radius', 'Collision Radius', .1, 0, 50);
+                        this.createChoice($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_type', 'Collision Type', [
+                            "None", "Box", "Sphere", "Cylinder", "Cone", "Mesh"
+                        ], [
+                            "0", "2", "1", "3", "4", "5"
+                        ]);
+
+                    }
+
+                    $('#physicsaccordion').append('<h3><a href="#">Forces</a>    </h3>   <div id="PhysicsForceSettings">  </div>');
+
+
+                    this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_constant_torque', 'Constant Torque');
+                    this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_constant_force', 'Contant Force');
+                    this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_velocity_angular', 'Angular Velocity');
+                    this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_velocity_linear', 'Linear Velocity');
+
+                    $('#physicsaccordion').append('<h3><a href="#">Motion Locks</a>    </h3>   <div id="PhysicsLockSettings">  </div>');
+                    $('#PhysicsLockSettings').append('<div><input id="lockXMotion" type="checkbox" />X<input id="lockYMotion" type="checkbox" />Y<input id="lockZMotion" type="checkbox" />Z Motion Enabled</div>')
+                    $('#PhysicsLockSettings').append('<div><input id="lockXRotation" type="checkbox" />X<input id="lockYRotation" type="checkbox" />Y<input id="lockZRotation" type="checkbox" />Z Rotation Enabled</div>')
+
+                    var linearFactor = vwf.getProperty(this.selectedID, '___physics_factor_linear');
+                    var angularFactor = vwf.getProperty(this.selectedID, '___physics_factor_angular');
+                    if (linearFactor) {
+                        if (linearFactor[0] == 1) $('#lockXMotion').attr('checked', 'checked');
+                        if (linearFactor[1] == 1) $('#lockYMotion').attr('checked', 'checked');
+                        if (linearFactor[2] == 1) $('#lockZMotion').attr('checked', 'checked');
+
+                        if (angularFactor[0] == 1) $('#lockXRotation').attr('checked', 'checked');
+                        if (angularFactor[1] == 1) $('#lockYRotation').attr('checked', 'checked');
+                        if (angularFactor[2] == 1) $('#lockZRotation').attr('checked', 'checked');
+                    }
+                    $('#lockXMotion, #lockYMotion, #lockZMotion').click(function() {
+
+                        var linearFactor = [0, 0, 0];
+                        linearFactor[0] = $('#lockXMotion').attr('checked') == 'checked' ? 1 : 0;
+                        linearFactor[1] = $('#lockYMotion').attr('checked') == 'checked' ? 1 : 0;
+                        linearFactor[2] = $('#lockZMotion').attr('checked') == 'checked' ? 1 : 0;
+                        _PrimitiveEditor.setProperty(PhysicsEditor.selectedID, '___physics_factor_linear', linearFactor);
+                    });
+                    $('#lockXRotation, #lockYRotation, #lockZRotation').click(function() {
+
+                        var angularFactor = [0, 0, 0];
+                        angularFactor[0] = $('#lockXRotation').attr('checked') == 'checked' ? 1 : 0;
+                        angularFactor[1] = $('#lockYRotation').attr('checked') == 'checked' ? 1 : 0;
+                        angularFactor[2] = $('#lockZRotation').attr('checked') == 'checked' ? 1 : 0;
+                        _PrimitiveEditor.setProperty(PhysicsEditor.selectedID, '___physics_factor_angular', angularFactor);
+                    });
                 }
-
-                $('#physicsaccordion').append('<h3><a href="#">Forces</a>    </h3>   <div id="PhysicsForceSettings">  </div>');
-
-
-                this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_forces_angular', 'Torque');
-                this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_forces_linear', 'Force');
-                this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_velocity_angular', 'Angular Velocity');
-                this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_velocity_linear', 'Linear Velocity');
-
-                $('#physicsaccordion').append('<h3><a href="#">Motion Locks</a>    </h3>   <div id="PhysicsLockSettings">  </div>');
-                $('#PhysicsLockSettings').append('<div><input id="lockXMotion" type="checkbox" />X<input id="lockYMotion" type="checkbox" />Y<input id="lockZMotion" type="checkbox" />Z Motion Enabled</div>')
-                $('#PhysicsLockSettings').append('<div><input id="lockXRotation" type="checkbox" />X<input id="lockYRotation" type="checkbox" />Y<input id="lockZRotation" type="checkbox" />Z Rotation Enabled</div>')
-
-                var linearFactor = vwf.getProperty(this.selectedID, '___physics_factor_linear');
-                var angularFactor = vwf.getProperty(this.selectedID, '___physics_factor_angular');
-                if (linearFactor) {
-                    if (linearFactor[0] == 1) $('#lockXMotion').attr('checked', 'checked');
-                    if (linearFactor[1] == 1) $('#lockYMotion').attr('checked', 'checked');
-                    if (linearFactor[2] == 1) $('#lockZMotion').attr('checked', 'checked');
-
-                    if (angularFactor[0] == 1) $('#lockXRotation').attr('checked', 'checked');
-                    if (angularFactor[1] == 1) $('#lockYRotation').attr('checked', 'checked');
-                    if (angularFactor[2] == 1) $('#lockZRotation').attr('checked', 'checked');
-                }
-                $('#lockXMotion, #lockYMotion, #lockZMotion').click(function() {
-
-                    var linearFactor = [0, 0, 0];
-                    linearFactor[0] = $('#lockXMotion').attr('checked') == 'checked' ? 1 : 0;
-                    linearFactor[1] = $('#lockYMotion').attr('checked') == 'checked' ? 1 : 0;
-                    linearFactor[2] = $('#lockZMotion').attr('checked') == 'checked' ? 1 : 0;
-                    _PrimitiveEditor.setProperty(PhysicsEditor.selectedID, '___physics_factor_linear', linearFactor);
-                });
-                $('#lockXRotation, #lockYRotation, #lockZRotation').click(function() {
-
-                    var angularFactor = [0, 0, 0];
-                    angularFactor[0] = $('#lockXRotation').attr('checked') == 'checked' ? 1 : 0;
-                    angularFactor[1] = $('#lockYRotation').attr('checked') == 'checked' ? 1 : 0;
-                    angularFactor[2] = $('#lockZRotation').attr('checked') == 'checked' ? 1 : 0;
-                    _PrimitiveEditor.setProperty(PhysicsEditor.selectedID, '___physics_factor_angular', angularFactor);
-                });
 
             } else {
 
@@ -409,18 +684,20 @@ define([], function() {
             $(".ui-accordion-content").css('height', 'auto');
         }
 
-
-
         this.SelectionChanged = function(e, node) {
             try {
-                if (node) {
-                    this.propertyEditorDialogs = [];
-                    this.selectedID = _Editor.getSelectionCount() == 1 ? node.id : "selection";
-                    this.BuildGUI();
+                if (this.isOpen()) {
+                    if (node) {
+                        this.propertyEditorDialogs = [];
+                        this.selectedID = _Editor.getSelectionCount() == 1 ? node.id : "selection";
+                        this.BuildGUI();
+                    } else {
+                        this.propertyEditorDialogs = [];
+                        this.selectedID = null;
+                        this.hide();
+                    }
                 } else {
-                    this.propertyEditorDialogs = [];
-                    this.selectedID = null;
-                    this.hide();
+                    this.clearPreview();
                 }
             } catch (e) {
                 console.log(e);

@@ -47,31 +47,32 @@ define([
 ], function(ready) {
 
     return function(stateData) {
+         //console.log('begin preload');
         require("vwf/view/editorview/ObjectPools").getSingleton();
         window.alertify = require("vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify");
         window._SettingsManager = require("SettingsManager").getSingleton();
         var assetLoader = require("assetLoader").getSingleton();
-        ready(function() {
-
-            // With the scripts loaded, we must initialize the framework. vwf.initialize()
-            // accepts three parameters: a world specification, model configuration parameters,
-            // and view configuration parameters.
-            $(document.body).append('<div id="glyphOverlay" style="display:none"/>');
-            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu.css" />');
-            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu-v.css" />')
-            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/Editorview.css" />')
-            $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/sprites.css" />')
-            $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/MATH.js"></script>');
-            $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/_THREERayTracer.js"></script>');
-            $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/scenemanager.js"></script>');
-            $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/GeometryExporter.js"></script>');
 
 
+        // With the scripts loaded, we must initialize the framework. vwf.initialize()
+        // accepts three parameters: a world specification, model configuration parameters,
+        // and view configuration parameters.
+        $(document.body).append('<div id="glyphOverlay" style="display:none"/>');
+        $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu.css" />');
+        $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu-v.css" />')
+        $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/Editorview.css" />')
+        $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/sprites.css" />')
+        $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/MATH.js"></script>');
+        $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/_THREERayTracer.js"></script>');
+        $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/scenemanager.js"></script>');
+        $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/GeometryExporter.js"></script>');
 
-            $(document.head).append('<script src="vwf/model/threejs/helvetiker_regular.typeface.js"></script>');
 
-            assetLoader.load(stateData, function() {
-                /*   vwf.initialize(
+
+        $(document.head).append('<script src="vwf/model/threejs/helvetiker_regular.typeface.js"></script>');
+       
+        assetLoader.load(stateData, function() {
+            /*   vwf.initialize(
 
                     // This is the world specification. The world may be specified using a component
                     // literal as shown here, or the specification may be placed in a network-
@@ -121,12 +122,12 @@ define([
 
                     );*/
 
-                vwf.loadConfiguration(null, {
-                    model: [],
-                    view: []
-                });
-
+            vwf.loadConfiguration(null, {
+                model: [],
+                view: []
             });
+
+
 
 
 

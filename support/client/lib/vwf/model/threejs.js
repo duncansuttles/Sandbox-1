@@ -40,7 +40,7 @@ function matComploose(m1, m2) {
     return true;
 }
 
-define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/threejs/backgroundLoader", "vwf/model/threejs/glTFCloner", "vwf/model/threejs/glTFLoaderUtils", "vwf/model/threejs/glTFLoader", "vwf/model/threejs/glTFAnimation","vwf/model/threejs/glTFAnimation", "vwf/model/threejs/webgl-tf-deprecated"], function(module, model, utility, Color, backgroundLoader) {
+define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/threejs/backgroundLoader", "vwf/model/threejs/glTFCloner", "vwf/model/threejs/glTFLoaderUtils", "vwf/model/threejs/glTFLoader", "vwf/model/threejs/glTFAnimation","vwf/model/threejs/glTFAnimation"], function(module, model, utility, Color, backgroundLoader) {
 
 
 
@@ -210,43 +210,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
 
 
-                ///////////////////////////////////////////////
-                //temp mesh for all geometry to test
-                var cubeX = new THREE.Mesh(
-                    new THREE.CubeGeometry(10.00, .30, .30),
-                    new THREE.MeshLambertMaterial({
-                        color: 0xFF0000,
-                        emissive: 0xFF0000
-                    })
-                );
-                cubeX.position.set(5.00, .15, .15);
-                var cubeY = new THREE.Mesh(
-                    new THREE.CubeGeometry(.30, 10.00, .30),
-                    new THREE.MeshLambertMaterial({
-                        color: 0x00FF00,
-                        emissive: 0x00FF00
-                    })
-                );
-                cubeY.position.set(.15, 5.00, .15);
-                var cubeZ = new THREE.Mesh(
-                    new THREE.CubeGeometry(.30, .30, 10.00),
-                    new THREE.MeshLambertMaterial({
-                        color: 0x0000FF,
-                        emissive: 0x0000FF
-                    })
-                );
-                cubeZ.position.set(.15, .15, 5.00);
-
-                var group = new THREE.Object3D();
-                ////   group.add(cubeX);
-                //   group.add(cubeY);
-                //   group.add(cubeZ);
-                group.vwfID = "TEST DUMMY AXIS GIZMO";
-
-                sceneNode.axes = group;
-                //	sceneNode.threeScene.add(group);
-                //cam.position.set(0, 0, 0);
-                //cam.lookAt( sceneNode.threeScene.position );
+               
 
                 cam.name = 'camera';
                 this.state.cameraInUse = cam;
@@ -1072,17 +1036,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 }
                 if (threeObject instanceof THREE.PointLight || threeObject instanceof THREE.DirectionalLight || threeObject instanceof THREE.SpotLight) {
 
-                    if (propertyName == 'transform') {
-                        if (threeObject.target) {
-                            var offset = new THREE.Vector3(0, 0, -1);
-                            offset.applyMatrix4(threeObject.matrixWorld);
-                            threeObject.target.position.x = offset.x;
-                            threeObject.target.position.y = offset.y;
-                            threeObject.target.position.z = offset.z;
-                            threeObject.target.updateMatrixWorld(true);
-                        }
-
-                    }
+                    
 
 
 
@@ -1137,8 +1091,11 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                             rebuildAllMaterials.call(this);
                         }
                         node.threeObject.updateMatrixWorld(true);
-                        if (node.threeObject.target)
-                            node.threeObject.target.updateMatrixWorld(true);
+                        if (node.threeObject.target){
+                             node.threeObject.add(node.threeObject.target);
+                             node.threeObject.target.position.z = -1;
+                             node.threeObject.target.updateMatrixWorld(true);
+                        }
                     }
                     //if(propertyName == 'diffuse')
                     //{

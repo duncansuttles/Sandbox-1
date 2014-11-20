@@ -27,9 +27,9 @@ properties:
   isSelectable: true
   ___physics_enabled: false
   ___physics_mass: 1
-  ___physics_restitution: 0
-  ___physics_friction: 1.0
-  ___physics_damping: 0.0
+  ___physics_restitution: 0.1
+  ___physics_friction: 0.5
+  ___physics_damping: 0.05
   ___physics_velocity_linear: [ 0, 0, 0]
   ___physics_velocity_angular: [ 0, 0, 0]
   ___physics_force_linear: [ 0, 0, 0]
@@ -38,6 +38,8 @@ properties:
   ___physics_activation_state: 1
   ___physics_factor_angular: [ 1, 1, 1]
   ___physics_factor_linear: [ 1, 1, 1]
+  ___physics_constant_force: null
+  ___physics_constant_torque: null
   physicsAPI:
     get: |
         if(!this.___physicsAPI)

@@ -25,6 +25,23 @@
 
     window.console && console.debug && console.debug( "loading vwf" );
 
+    function getUTF8Length(string) {
+    var utf8length = 0;
+    for (var n = 0; n < string.length; n++) {
+        var c = string.charCodeAt(n);
+        if (c < 128) {
+            utf8length++;
+        }
+        else if((c > 127) && (c < 2048)) {
+            utf8length = utf8length+2;
+        }
+        else {
+            utf8length = utf8length+3;
+        }
+    }
+    return utf8length;
+ }
+
     window.vwf = new function() {
 
         window.console && console.debug && console.debug( "creating vwf" );
@@ -796,9 +813,9 @@
             if ( window.location.protocol === "https:" )
             {
 
-                socket = io.connect("https://"+host, {secure:true, reconnect: false});
+                socket = io.connect(host, {secure:true, reconnect: false});
             } else {
-                socket = io.connect("http://"+host,{reconnect: false});
+                socket = io.connect(host,{reconnect: false});
             }
 
         } else {  // Ruby Server
@@ -870,7 +887,7 @@
 
         socket.on( "connect", function() {
 
-
+            window.setInterval(vwf.socketMonitorInterval.bind(vwf),10000);
             vwf.logger.infox( "-socket", "connected" );
 
             if ( isSocketIO07() ) {
@@ -893,8 +910,8 @@
 
             // vwf.logger.debugx( "-socket", "message", message );
 
-            try {
-
+            try {   
+                vwf.socketBytesReceived += 34 + getUTF8Length(message);
                 if ( isSocketIO07() ) {
 
                     if(message.constructor === String)
@@ -1046,8 +1063,9 @@ this.send = function( nodeID, actionName, memberName, parameters, when, callback
 
         // Send the message.
         var message = JSON.stringify( fields );
-
-        socket.send( messageCompress.pack(message) );
+        message = messageCompress.pack(message);
+        vwf.socketBytesSent += 34 + getUTF8Length(message);
+        socket.send( message );
 
     } else {
 
@@ -1060,7 +1078,11 @@ this.send = function( nodeID, actionName, memberName, parameters, when, callback
         //data in the params can be a structure that changes after the send, which would not be possible if 
         //the data traveled over the reflector
         fields = JSON.parse(JSON.stringify(fields));
-        queue.insert( fields );
+        //must be careful that we do this actually async, or logic that expects async operation will fail
+        window.setImmediate(function(){
+            queue.insert( fields );;    
+        })
+        
 
     }
 
@@ -1095,6 +1117,8 @@ this.respond = function( nodeID, actionName, memberName, parameters, result ) {
         // Send the message.
 
         var message = JSON.stringify( fields );
+        message = messageCompress.pack(message);
+        vwf.socketBytesSent += 34 + getUTF8Length(message);
         socket.send( message );
 
     } else {
@@ -1918,7 +1942,37 @@ this.setNode = function( nodeID, nodeComponent, callback_async /* ( nodeID ) */ 
 /// @name module:vwf.getNode
 /// 
 /// @see {@link module:vwf/api/kernel.getNode}
+//start looking into continious resync of nodes. Here, we return a node stripped of the children, plus the count of nodes
+//the server will query this at some interval, and sync the propertis of a given node
+//todo:  make the server sync more nodes per second as the number in the scene grows
 
+this.resyncNode = function(nodeID,node)
+{
+   
+    if(!node || !node.properties) return;
+    var keys = Object.keys(node.properties);
+    for(var j =0; j < keys.length; j++)
+    {
+        var i = keys[j];
+        if(JSON.stringify(vwf.getProperty(nodeID,i)) !== JSON.stringify(node.properties[i]))
+            vwf.setProperty(nodeID,i,node.properties[i]);
+    }
+
+}
+
+this.activeResync = function() {
+    var nodes = nodes = vwf.decendants(vwf.application());
+    var nodeID = nodes[Math.floor(Math.random() * nodes.length - .001)];
+    var props = this.getProperties(nodeID);
+
+    if(!props) return null;
+    for(var i in props)
+        props[i] = this.getProperty(nodeID,i);
+    return {
+        node: {id:nodeID,properties:props}, 
+        count: nodes.length
+    }
+}
 this.getNode = function( nodeID, full, normalize ) {  // TODO: options to include/exclude children, prototypes
 
     if(!nodeID) return undefined;
@@ -2209,7 +2263,43 @@ this.getMethods = function( nodeID ) {  // TODO: rework as a cover for getProper
 
     return methods;
 };
+this.promptSaveState = function()
+{
+    _DataManager.saveToServer();
+}
+this.socketBytesSentLast = 0;
+this.socketBytesSent= 0;
+this.socketBytesReceivedLast = 0;
+this.socketBytesReceived= 0;
+this.socketMonitorInterval = function()
+{
+    this.socketBytesSentLast = this.socketBytesSent;
+    this.socketBytesSent = 0;
+    this.socketBytesReceivedLast = this.socketBytesReceived;
+    this.socketBytesReceived = 0;
+    console.log(this.socketBytesSentLast/10000 + 'KBps up',this.socketBytesReceivedLast/10000 +'KBps down');
+    
+},
+this.saveState = function(data)
+{
+    var fields = {
+        action: 'saveStateResponse',
+        data:data
+        // callback: callback_async,  // TODO: provisionally add fields to queue (or a holding queue) then execute callback when received back from reflector
+    };
 
+    if ( socket ) {
+
+        // Send the message.
+        var message = JSON.stringify( fields );
+        message = messageCompress.pack(message);
+
+        vwf.socketBytesSent += 34 + getUTF8Length(message);
+
+        socket.send( message );
+    }
+
+}
 this.getEvents = function( nodeID ) {  // TODO: rework as a cover for getProperty(), or remove; passing all properties to each driver is impractical since reentry can't be controlled when multiple gets are in progress.
 
     this.logger.debuggx( "getevents", nodeID );
@@ -5758,7 +5848,7 @@ var queue = this.private.queue = {
         // To prevent actions from executing out of order, callers should immediately return
         // to the host after invoking insert with chronic set.
 
-        if ( chronic ) {
+        if ( true ) {
             vwf.dispatch();
         }
 

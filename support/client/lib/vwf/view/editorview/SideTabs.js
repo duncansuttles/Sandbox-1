@@ -19,9 +19,7 @@ define(function() {
         });
 
         $("#SideTabUsers").click(function() {
-            $('#Players').prependTo($('#Players').parent());
-            $('#Players').show('blind', function() {});
-            showSidePanel();
+          _UserManager.showPlayers();
         });
 
         $("#SideTabChat").click(function() {

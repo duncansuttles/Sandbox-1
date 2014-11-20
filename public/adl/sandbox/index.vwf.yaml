@@ -116,7 +116,57 @@ properties:
            {
            	  return this.findNodeByID('character-vwf-' + name);
            }.bind(this);
+           this.___clientAPI.getCameraIDForClient = function(id)
+           {
+             if(!this.clients || !this.clients[id]) return null;
+                  return this.clients[id].cameraID;
+           }.bind(this);
+           this.___clientAPI.getCameraForClient = function(id)
+           {
+             if(!this.clients || !this.clients[id]) return null;
+                  return this.findNodeByID(this.clients[id].cameraID);
+           }.bind(this);
            return this.___clientAPI;
+  commsAPI:
+    get: |
+          var self = this;
+          if(this.___commsAPI) return this.___commsAPI;
+          this.___commsAPI = {};
+          this.___commsAPI.PM = function(from_client_id, to_client_id)
+          {
+            if(vwf.moniker() == from_client_id)
+            {
+               if(self.clients[to_client_id])
+               {
+                setupPmWindow(to_client_id)
+               }
+            }
+          }
+          this.___commsAPI.Chat = function()
+          {
+              $('#ChatWindow').dialog('open');
+          }
+          this.___commsAPI.VideoCall = function(from_client_id, to_client_id)
+          {
+            if(vwf.moniker() == from_client_id)
+            {
+               if(self.clients[to_client_id])
+               {
+                 vwf.callMethod(vwf.application(),'rtcVideoCall',{target:to_client_id});
+               }
+            }
+          }
+          this.___commsAPI.VoiceCall = function(from_client_id, to_client_id)
+          {
+            if(vwf.moniker() == from_client_id)
+            {
+               if(self.clients[to_client_id])
+               {
+                 vwf.callMethod(vwf.application(),'rtcCall',{target:to_client_id});
+               }
+            }
+          } 
+          return this.___commsAPI;         
   EditorData:
     fog:
       displayname: 'Fog'
@@ -299,6 +349,7 @@ events:
   pointerMove:
   keyDown:
   keyUp:
+  clientCameraChanged:
 methods:  
   AmLocal:
   newplayer:
@@ -320,6 +371,8 @@ methods:
   getEdXGrade:
   getEdXState:
   setEdXState:
+  activteOculusBridge:
+  setClientCamera:
 scripts:
 - |
     this.getEdXGrade = function()
@@ -509,6 +562,7 @@ scripts:
     {
         return this.broadcastingCamera;
     }
+
     this.cameraBroadcastStart = function()
     {
         if(this.client == this.moniker)
@@ -604,7 +658,7 @@ scripts:
     		this.clients = {}
     	}
     	if(!this.clients[id])
-    		this.clients.defineProperty(id,{cid:id,name:name,UID:UID});
+    		this.clients.defineProperty(id,{cid:id,name:name,UID:UID,cameraID:null});
     }
     // a client other than this one has left
     this.clientDisconnected = function(id,name,UID)
@@ -614,6 +668,18 @@ scripts:
     		delete this.clients.internal_val[id];
     		this.clients = this.clients.internal_val;		
     	}
+    }
+    this.setClientCamera = function(id,cameraID)
+    {
+        if(!this.clients)
+        {
+          this.clients = {}
+        }
+        if(this.clients[id])
+        {
+          this.clients[id].cameraID = cameraID;
+          this.clientCameraChanged(id,cameraID);
+        }
     }
     this.CreatePlane = function(width,height)
     {
@@ -1141,7 +1207,6 @@ scripts:
               this.center = MATH.addVec3(this.center,offset);
 
            }
-
         }
         if(this.cameramode != '3RDPerson' && this.cameramode != 'FirstPerson')
         {
@@ -1241,6 +1306,43 @@ scripts:
             
         } 
         this.callUpdateCallbacks();
+        findcamera().updateMatrixWorld();
+        findcamera().updateMatrix();
+        //this really belongs in the view 
+        if(this.oculusActive &&  _dView.vrHMDSensor)
+        {
+            var state = _dView.vrHMDSensor.getState();
+            //console.log(state.timeStamp);
+            var headPos= new THREE.Vector3(state.position.x,state.position.y,state.position.z);
+       
+            
+
+            var headPosVel= new THREE.Vector3(state.linearVelocity.x,state.linearVelocity.y,state.linearVelocity.z);
+            var headQuatVel= new THREE.Vector3(state.angularVelocity.x,state.angularVelocity.y,state.angularVelocity.z);
+            var headQuatAcc= new THREE.Vector3(state.angularAcceleration.x,state.angularAcceleration.y,state.angularAcceleration.z);
+            var headQuatEuler = new THREE.Euler(0,0,0,'XYZ');
+            var headQuat= new THREE.Quaternion(state.orientation.x,state.orientation.y,state.orientation.z,state.orientation.w); 
+            headQuatEuler.setFromQuaternion(headQuat);
+
+            var t = window.fpt || .2; //20ms
+            var x = headQuatEuler.x + headQuatVel.x * t + .5 * headQuatAcc.x *t*t;
+            var y = headQuatEuler.y + headQuatVel.y * t + .5 * headQuatAcc.y *t*t;
+            var z = headQuatEuler.z + headQuatVel.z * t + .5 * headQuatAcc.z *t*t;
+            headQuatEuler.x = x;
+            headQuatEuler.y = y;
+            headQuatEuler.z = z;
+            if(window.fpt > 0)
+              headQuat.setFromEuler(headQuatEuler);
+
+            headPos.applyMatrix3((new THREE.Matrix4()).extractRotation(findcamera().matrix));
+           
+
+            //forward predict rotation 10ms
+           
+            
+            //findcamera().position.add(headPos);
+            findcamera().quaternion.multiply(headQuat);    
+      }
         findcamera().updateMatrixWorld();
         findcamera().updateMatrix();
        
@@ -1498,7 +1600,7 @@ scripts:
             
             center.add(offset);
             this.center = [center.x,center.y,center.z];
-            findcamera().position = center;
+            findcamera().position.copy(center);
             
             
             
@@ -1580,13 +1682,18 @@ scripts:
     }    
 
 
-      this.pointerOver = function(){return true;}
-    this.pointerOut= function(){return true;}
-    this.pointerClick= function(){return true;}
-    this.pointerDown= function(){return true;}
-    this.pointerUp= function(){return true;}
-     this.pointerMove= function(){return true;}
+    this.pointerOver = function(){return false;}
+    this.pointerOut= function(){return false;}
+    this.pointerClick= function(){return false;}
+    this.pointerDown= function(){return false;}
+    this.pointerUp= function(){return false;}
+    this.pointerMove= function(){return false;}
 
+    //this really belongs in the view 
+    this.activteOculusBridge = function()
+    {
+        this.oculusActive = true;
+    }
 
         
     
@@ -1595,4 +1702,3 @@ scripts:
  
    
 
-   

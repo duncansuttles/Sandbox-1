@@ -1,6 +1,6 @@
 {
     "extends": "asset.vwf",
-    "source": "./contentlibraries/entities/assets/t90/t90.json",
+    "source": "./contentlibraries/entities/assets/t90/T90.json",
     "type": "subDriver/threejs/asset/vnd.osgjs+json+compressed",
     "methods": {
         "tick": "    var force = this.transformAPI.localToGlobalRotation(0, 1, 0);force = Vec3.normalize(force, []);force[2] = 0;force[1] *= 10000;force[0] *= 10000;this.physicsAPI.addForceAtCenter(force);"

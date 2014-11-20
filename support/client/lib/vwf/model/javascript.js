@@ -252,6 +252,12 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                 },
                 enumerable: true,
             });
+            Object.defineProperty(node, "random", { // TODO: only define on shared "node" prototype?
+                value: function() {
+                    return vwf.random(this.id);
+                },
+                enumerable: true,
+            });
 
             Object.defineProperty(node, 'bind', {
 
@@ -287,7 +293,8 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                             listeners.splice(found, 1);
                         }
                     } else {
-                        console.error('bound value must be a function');
+                        //no need to report this, is commonly expected
+                        //console.error('bound value must be a function');
                     }
 
                 },
@@ -685,7 +692,7 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
 
                 },
                 configurable: true,
-                enumerable: true
+                enumerable: false
             });
 
 
@@ -838,7 +845,7 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                 }
 
                 var watchable = new jsDriverSelf._Watchable();
-                console.log('new watchable', dotNotation);
+               // console.log('new watchable', dotNotation);
                 watchable.dotNotation = dotNotation;
                 jsDriverSelf.setupWatchableArray(watchable, val, propertyname, id, masterval, dotNotation);
                 this.__WatchableCache[dotNotation] = watchable;
@@ -850,7 +857,7 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                 }
 
                 var watchable = new jsDriverSelf._Watchable();
-                console.log('new watchable', dotNotation);
+              //  console.log('new watchable', dotNotation);
                 watchable.dotNotation = dotNotation;
                 jsDriverSelf.setupWatchableObject(watchable, val, propertyname, id, masterval, dotNotation);
                 this.__WatchableCache[dotNotation] = watchable;
@@ -1085,7 +1092,7 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
 
             var node = this.nodes[nodeID];
             var methods = {};
-
+            if(!node) return methods;
 
             for (var i in node.methods) {
                 if (node.methods.hasOwnProperty(i)) {
@@ -1116,7 +1123,7 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
 
             var node = this.nodes[nodeID];
             var events = {};
-
+            if(!node) return events;
 
 
             if (node.events)

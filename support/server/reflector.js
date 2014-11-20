@@ -27,8 +27,14 @@ function startup(listen) {
         sio.set('authorization', function(data, callback) {
             if (data.headers.cookie) {
                 // save parsedSessionId to handshakeData
+                try{
                 data.cookieData = parseSignedCookie(cookie.parse(data.headers.cookie)[global.configuration.sessionKey ? global.configuration.sessionKey : 'virtual'],
                     global.configuration.sessionSecret ? global.configuration.sessionSecret : 'unsecure cookie secret');
+                }catch(e)
+                {   
+                    //this is important! We're seeing a few crashes from here.
+                    callback(null,false);
+                }
             }
             callback(null, true);
         });
@@ -126,151 +132,211 @@ var fixIDs = function(node) {
     }
 }
 
-    function getBlankScene(state, instanceData, cb) {
-        var state2 = JSON.parse(JSON.stringify(state));
-        fs.readFile("./public" + global.appPath + "/index.vwf.yaml", 'utf8', function(err, blankscene) {
+function getBlankScene(state, instanceData, cb) {
+    var state2 = JSON.parse(JSON.stringify(state));
+    fs.readFile("./public" + global.appPath + "/index.vwf.yaml", 'utf8', function(err, blankscene) {
 
-            var err = null;
-            try {
-                blankscene = YAML.load(blankscene);
+        var err = null;
+        try {
+            blankscene = YAML.load(blankscene);
 
-                blankscene.id = 'index-vwf';
-                blankscene.patches = "index.vwf";
-                if (!blankscene.children)
-                    blankscene.children = {};
-                //only really doing this to keep track of the ownership
-                for (var i = 0; i < state.length - 1; i++) {
+            blankscene.id = 'index-vwf';
+            blankscene.patches = "index.vwf";
+            if (!blankscene.children)
+                blankscene.children = {};
+            //only really doing this to keep track of the ownership
+            for (var i = 0; i < state.length - 1; i++) {
 
-                    var childComponent = state[i];
-                    var childName = (state[i].name || state[i].properties.DisplayName) || i;
-                    var childID = childComponent.id || childComponent.uri || (childComponent["extends"]) + "." + childName.replace(/ /g, '-');
-                    childID = childID.replace(/[^0-9A-Za-z_]+/g, "-");
-                    //state[i].id = childID;
-                    //state2[i].id = childID;
-                    blankscene.children[childName] = state2[i];
-                    state[i].id = childID;
+                var childComponent = state[i];
+                var childName = (state[i].name || state[i].properties.DisplayName) || i;
+                var childID = childComponent.id || childComponent.uri || (childComponent["extends"]) + "." + childName.replace(/ /g, '-');
+                childID = childID.replace(/[^0-9A-Za-z_]+/g, "-");
+                //state[i].id = childID;
+                //state2[i].id = childID;
+                blankscene.children[childName] = state2[i];
+                state[i].id = childID;
 
-                    fixIDs(state[i]);
-                }
-                var props = state[state.length - 1];
-                if (props) {
-                    if (!blankscene.properties)
-                        blankscene.properties = {};
-                    for (var i in props) {
-                        blankscene.properties[i] = props[i];
-                    }
-                    for (var i in blankscene.properties) {
-                        if (blankscene.properties[i] && blankscene.properties[i].value)
-                            blankscene.properties[i] = blankscene.properties[i].value;
-                        else if (blankscene.properties[i] && (blankscene.properties[i].get || blankscene.properties[i].set))
-                            delete blankscene.properties[i];
-                    }
-                    //don't allow the clients to persist between a save/load cycle
-                    blankscene.properties['clients'] = null;
-                    if (instanceData && instanceData.publishSettings) {
-                        blankscene.properties['playMode'] = 'play';
-                    } else
-                        blankscene.properties['playMode'] = 'stop';
-                }
-            } catch (e) {
-                err = e;
+                fixIDs(state[i]);
             }
-            if (err)
-                cb(null);
-            else
-                cb(blankscene);
-        });
-    }
+            var props = state[state.length - 1];
+            if (props) {
+                if (!blankscene.properties)
+                    blankscene.properties = {};
+                for (var i in props) {
+                    blankscene.properties[i] = props[i];
+                }
+                for (var i in blankscene.properties) {
+                    if (blankscene.properties[i] && blankscene.properties[i].value)
+                        blankscene.properties[i] = blankscene.properties[i].value;
+                    else if (blankscene.properties[i] && (blankscene.properties[i].get || blankscene.properties[i].set))
+                        delete blankscene.properties[i];
+                }
+                //don't allow the clients to persist between a save/load cycle
+                blankscene.properties['clients'] = null;
+                if (instanceData && instanceData.publishSettings) {
+                    blankscene.properties['playMode'] = 'play';
+                } else
+                    blankscene.properties['playMode'] = 'stop';
+            }
+        } catch (e) {
+            err = e;
+        }
+        if (err)
+            cb(null);
+        else
+            cb(blankscene);
+    });
+}
 
-    function ServeSinglePlayer(socket, namespace, instancedata) {
-        global.log('single player', 2);
-        var instance = namespace;
-        var state = SandboxAPI.getState(instance, function(state) {
-            if (!state) state = [{
-                owner: undefined
-            }];
+function ServeSinglePlayer(socket, namespace, instancedata) {
+    global.log('single player', 2);
+    var instance = namespace;
+    var state = SandboxAPI.getState(instance, function(state) {
+        if (!state) state = [{
+            owner: undefined
+        }];
 
-            getBlankScene(state, instancedata, function(blankscene) {
-                socket.emit('message', {
-                    "action": "createNode",
-                    "parameters": [blankscene],
-                    "time": 0
-                });
-                var joinMessage = messageCompress.pack(JSON.stringify({
-                    "action": "fireEvent",
-                    "parameters": ["clientConnected", [socket.id, socket.loginData ? socket.loginData.Username : "Anonymous0", socket.loginData ? socket.loginData.UID : "Anonymous0"]],
-                    node: "index-vwf",
-                    "time": 0
-                }));
-                socket.emit('message', joinMessage);
-
-                socket.emit('message', {
-                    "action": "goOffline",
-                    "parameters": [blankscene],
-                    "time": 0
-                });
-                socket.pending = false;
+        getBlankScene(state, instancedata, function(blankscene) {
+            socket.emit('message', {
+                "action": "createNode",
+                "parameters": [blankscene],
+                "time": 0
             });
+            var joinMessage = messageCompress.pack(JSON.stringify({
+                "action": "fireEvent",
+
+                "parameters": ["clientConnected", [socket.id, socket.loginData.Username, socket.loginData.UID]],
+                node: "index-vwf",
+                "time": 0
+            }));
+            socket.emit('message', joinMessage);
+
+            socket.emit('message', {
+                "action": "goOffline",
+                "parameters": [blankscene],
+                "time": 0
+            });
+            socket.pending = false;
         });
-    }
+    });
+}
 
 
-    function WebSocketConnection(socket, _namespace) {
-
-        //get the session information for the socket
-        sessions.GetSessionData(socket.handshake, function(loginData) {
+function SaveInstanceState(namespace, data, socket) {
 
 
+    if (!socket.loginData) return;
 
-            socket.loginData = loginData;
+    var id = namespace.replace(/[\\\/]/g, '_');
+    console.log(id);
+    DAL.getInstance(id, function(state) {
 
-            var namespace = _namespace || getNamespace(socket);
+        //state not found
+        if (!state) {
+            require('./examples.js').getExampleMetadata(id, function(metadata) {
 
-            if (!namespace) {
-                socket.on('setNamespace', function(msg) {
-                    global.log(msg.space, 2);
-                    WebSocketConnection(socket, msg.space);
-                    socket.emit('namespaceSet', {});
+                if (!metadata) {
+
+                    return;
+                } else {
+                    if (socket.loginData.UID == global.adminUID) {
+                        require('./examples.js').saveExampleData(URL, id, data, function() {
+
+                        })
+
+                    } else {
+
+                        return;
+                    }
+
+                }
+
+            });
+            return;
+        }
+
+        //not allowed to update a published world
+        if (state.publishSettings) {
+            return;
+        }
+
+        //not currently checking who saves the state, so long as they are logged in
+        DAL.saveInstanceState(id, data, function() {
+            return;
+        });
+
+    });
+    console.log('saved');
+}
+
+function WebSocketConnection(socket, _namespace) {
+
+    //get the session information for the socket
+    sessions.GetSessionData(socket.handshake, function(loginData) {
+
+
+
+
+        //fill out some defaults if we did not get credentials
+        //note that the client list for an anonymous connection may only contain that once connection
+        socket.loginData = loginData || {
+
+            Username: "Anonymous",
+            UID: "Anonymous",
+            clients: [socket.id]
+        };
+        if (!socket.loginData.UID && socket.loginData.Username)
+            socket.loginData.UID = socket.loginData.Username;
+
+
+        var namespace = _namespace || getNamespace(socket);
+
+        if (!namespace) {
+            socket.on('setNamespace', function(msg) {
+                global.log(msg.space, 2);
+                WebSocketConnection(socket, msg.space);
+                socket.emit('namespaceSet', {});
+            });
+            socket.on('connectionTest', function(msg) {
+                socket.emit('connectionTest', msg);
+            })
+            return;
+        }
+
+
+        DAL.getInstance(namespace.replace(/\//g, "_"), function(instancedata) {
+
+            if (!instancedata) {
+                require('./examples.js').getExampleMetadata(namespace.replace(/\//g, "_"), function(instancedata) {
+                    if (instancedata) {
+                        //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
+                        if (instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer) {
+                            ServeSinglePlayer(socket, namespace, instancedata)
+                        } else
+                            ClientConnected(socket, namespace, instancedata);
+
+                    } else {
+                        socket.disconnect();
+                        return;
+                    }
                 });
-                socket.on('connectionTest', function(msg) {
-                    socket.emit('connectionTest', msg);
-                })
                 return;
             }
-
-
-            DAL.getInstance(namespace.replace(/\//g, "_"), function(instancedata) {
-
-                if (!instancedata) {
-                    require('./examples.js').getExampleMetadata(namespace.replace(/\//g, "_"), function(instancedata) {
-                        if (instancedata) {
-                            //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
-                            if (instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer) {
-                                ServeSinglePlayer(socket, namespace, instancedata)
-                            } else
-                                ClientConnected(socket, namespace, instancedata);
-
-                        } else {
-                            socket.disconnect();
-                            return;
-                        }
-                    });
-                    return;
-                }
-                //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
-                if (instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer) {
-                    ServeSinglePlayer(socket, namespace, instancedata)
-                } else
-                    ClientConnected(socket, namespace, instancedata);
-            });
+            //if this is a single player published world, there is no need for the server to get involved. Server the world state and tell the client to disconnect
+            if (instancedata && instancedata.publishSettings && instancedata.publishSettings.singlePlayer) {
+                ServeSinglePlayer(socket, namespace, instancedata)
+            } else
+                ClientConnected(socket, namespace, instancedata);
         });
-    };
+    });
+};
 
 function runningInstance(id) {
     this.id = id;
     this.clients = {};
     this.time = 0.0;
     this.state = {};
+
     var log = null;
     try {
         var log = fs.createWriteStream(SandboxAPI.getDataPath() + '//Logs/' + id.replace(/[\\\/]/g, '_'), {
@@ -291,13 +357,15 @@ function runningInstance(id) {
     }
     this.getLoadClient = function() {
         var loadClient = null;
+        var nonPendingClients = [];
         for (var i in this.clients) {
             var testClient = this.clients[i];
-            if (!testClient.pending && testClient.loginData) {
-                loadClient = testClient;
-                break;
+            if (!testClient.pending) { //&& testClient.loginData remove check - better to get untrusted data than a sync error
+                nonPendingClients.push(testClient);
             }
         }
+        //pick randomly, so if there are several and you need to try again, you don't keep hitting the same one
+        loadClient = nonPendingClients[Math.floor(Math.random() * nonPendingClients.length - .001)];
         return loadClient;
     }
     this.Error = function(message, level) {
@@ -341,10 +409,37 @@ function runningInstance(id) {
         }));
         this.messageClients(joinMessage);
     }
+    this.GetNextAnonName = function() {
+
+        var clients = this.clients;
+        var _int = 0;
+        if (!clients)
+            return "Anonymous" + _int;
+
+        while (true) {
+            var test = "Anonymous" + _int;
+            var found = false;
+            _int++;
+            for (var i in clients) {
+                if (clients[i].loginData.Username == test) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return test;
+            }
+            if (_int > 10000) {
+                throw (new Error('error finding anonymous name'))
+            }
+        }
+
+    }
     this.totalerr = 0;
     //keep track of the timer for this instance
     var self = this;
     self.accum = 0;
+    self.resyncCounter = 0;
     var timer = function() {
 
         var now = process.hrtime();
@@ -356,8 +451,21 @@ function runningInstance(id) {
         var timedelta = (now - self.lasttime) || 0;
 
         self.accum += timedelta;
-
         while (self.accum > .05) {
+        self.resyncCounter++;
+        if (self.resyncCounter == 10) {
+            self.resyncCounter = 0;
+            var syncClient = self.getLoadClient();
+            var syncmessage = messageCompress.pack(JSON.stringify({
+                "action": "activeResync",
+                "parameters": [],
+                "time": self.time,
+                "respond": true
+            }));
+            if(syncClient)
+                syncClient.emit('message', syncmessage)
+        }
+      
             self.accum -= .05;
             self.time += .05;
 
@@ -366,15 +474,7 @@ function runningInstance(id) {
                 "parameters": [],
                 "time": self.time
             }));
-            for (var i in self.clients) {
-                var client = self.clients[i];
-                if (!client.pending)
-                    client.emit('message', tickmessage);
-                else {
-                    client.pendingList.push(tickmessage);
-                    global.log('pending tick', 2);
-                }
-            }
+            self.messageClients(tickmessage);
         }
         self.lasttime = now;
         self.timerID = setTimeout(timer, 5);
@@ -435,7 +535,13 @@ function ClientConnected(socket, namespace, instancedata) {
     //add the new client to the instance data
     thisInstance.clients[socket.id] = socket;
 
+    //count anonymous users, try to align with the value used for hte displayname of the avatar
+    if (socket.loginData.UID == "Anonymous") {
 
+        var anonName = thisInstance.GetNextAnonName();
+        socket.loginData.UID = anonName;
+        socket.loginData.Username = anonName;
+    }
 
     socket.pending = true;
     socket.pendingList = [];
@@ -533,7 +639,7 @@ function ClientConnected(socket, namespace, instancedata) {
                 }
 
 
-
+                //note: don't have to worry about pending status here, client is first
                 thisInstance.cachedState = blankscene;
                 socket.emit('message', messageCompress.pack(JSON.stringify({
                     "action": "createNode",
@@ -549,7 +655,7 @@ function ClientConnected(socket, namespace, instancedata) {
 
                 socket.pending = false;
                 //this must come after the client is added. Here, there is only one client
-                thisInstance.messageConnection(socket.id, socket.loginData ? socket.loginData.Username : null, socket.loginData ? socket.loginData.UID : null);
+                thisInstance.messageConnection(socket.id, socket.loginData.Username, socket.loginData.UID);
 
 
             });
@@ -562,15 +668,15 @@ function ClientConnected(socket, namespace, instancedata) {
         //firstclient = global.instances[namespace].clients[firstclient];
         socket.pending = true;
         thisInstance.getStateTime = thisInstance.time;
-        firstclient.emit('message', messageCompress.pack(JSON.stringify({
+        loadClient.emit('message', messageCompress.pack(JSON.stringify({
             "action": "status",
             "parameters": ["Server requested state. Sending..."],
             "time": thisInstance.getStateTime
         })));
         //here, we must reset all the physics worlds, right before who ever firstclient is responds to getState. 
         //important that nothing is between
-        
-       
+
+
 
         var resetMessage = JSON.stringify({
             "action": "callMethod",
@@ -581,7 +687,7 @@ function ClientConnected(socket, namespace, instancedata) {
 
         thisInstance.messageClients(resetMessage);
 
-        firstclient.emit('message', messageCompress.pack(JSON.stringify({
+        loadClient.emit('message', messageCompress.pack(JSON.stringify({
             "action": "getState",
             "respond": true,
             "time": thisInstance.time
@@ -592,7 +698,7 @@ function ClientConnected(socket, namespace, instancedata) {
             "time": thisInstance.getStateTime
         })));
 
-        thisInstance.messageConnection(socket.id);
+        thisInstance.messageConnection(socket.id, socket.loginData.Username, socket.loginData.UID);
 
         var timeout = function(namespace) {
 
@@ -600,22 +706,16 @@ function ClientConnected(socket, namespace, instancedata) {
             this.count = 0;
             this.time = function() {
                 try {
-
-                    var loadClients = [];
-
-                    if (Object.keys(this.namespace.clients).length != 0) {
-                        for (var i in this.namespace.clients) {
-                            var testClient = this.namespace.clients[i];
-                            if (!testClient.pending && testClient.loginData)
-                                loadClients.push(testClient);
-                        }
-                    }
-                    var loadClient = loadClients[Math.floor((Math.max(0, require('./cryptoRandom.js').random() - .001)) * loadClients.length)];
+                    var loadClient = thisInstance.getLoadClient();
                     if (loadClient) {
                         this.count++;
                         if (this.count < 5) {
                             global.log('did not get state, resending request', 2);
                             this.namespace.getStateTime = this.namespace.time;
+
+                            //update 11/2/14
+                            //if the last loadclient does not respond, pick a new client randomly
+
                             loadClient.emit('message', messageCompress.pack(JSON.stringify({
                                 "action": "getState",
                                 "respond": true,
@@ -630,6 +730,8 @@ function ClientConnected(socket, namespace, instancedata) {
                         } else {
                             global.log('sending default state', 2);
                             var state = this.namespace.cachedState;
+
+                            //send cached state to all pending clients, drain their pending list, mark active
                             for (var i in this.namespace.clients) {
                                 var client = this.namespace.clients[i];
 
@@ -640,7 +742,7 @@ function ClientConnected(socket, namespace, instancedata) {
                                         "parameters": ["State Not Received, Transmitting default"],
                                         "time": this.namespace.getStateTime
                                     })));
-                                    socket.emit('message', messageCompress.pack(JSON.stringify({
+                                    client.emit('message', messageCompress.pack(JSON.stringify({
                                         "action": "createNode",
                                         "parameters": [state],
                                         "time": this.namespace.getStateTime
@@ -667,7 +769,7 @@ function ClientConnected(socket, namespace, instancedata) {
                 this.namespace.requestTimer = null;
             }
             this.namespace.requestTimer = this;
-            this.handle = global.setTimeout(this.time.bind(this), 3000);
+            this.handle = global.setTimeout(this.time.bind(this), 6000);
         }
         thisInstance.Log('GetState from Client', 2);
         if (!thisInstance.requestTimer)
@@ -689,6 +791,12 @@ function ClientConnected(socket, namespace, instancedata) {
             message.client = socket.id;
 
 
+            if (message.action == "saveStateResponse") {
+                console.log(message.data);
+                SaveInstanceState(namespace, message.data, socket);
+                return;
+            }
+
             //Log all message if level is high enough
             if (isPointerEvent(message)) {
                 thisInstance.Log(JSON.stringify(message), 4);
@@ -699,6 +807,7 @@ function ClientConnected(socket, namespace, instancedata) {
 
 
             var sendingclient = thisInstance.clients[socket.id];
+
 
             //do not accept messages from clients that have not been claimed by a user
             //currently, allow getstate from anonymous clients
@@ -723,14 +832,11 @@ function ClientConnected(socket, namespace, instancedata) {
                     global.log(blue + textmessage.sender + ": " + textmessage.text + reset, 0);
 
                 }
-                for (var i in thisInstance.clients) {
-                    var client = thisInstance.clients[i];
-                    if (client && client.loginData && (client.loginData.UID == textmessage.receiver || client.loginData.UID == textmessage.sender)) {
-                        client.emit('message', messageCompress.pack(JSON.stringify(message)));
-
-                    }
-
-                }
+                //send the message to the sender and to the receiver
+                if (textmessage.receiver)
+                    thisInstance.clients[textmessage.receiver].emit('message', messageCompress.pack(JSON.stringify(message)));
+                if (textmessage.sender)
+                    thisInstance.clients[textmessage.sender].emit('message', messageCompress.pack(JSON.stringify(message)));
 
 
                 return;
@@ -745,16 +851,17 @@ function ClientConnected(socket, namespace, instancedata) {
                 if (rtcMessages.slice(0, 2).indexOf(message.member) != -1)
                     return;
 
+                console.log('socketid', socket.id);
+                console.log('sender', params.sender);
+                console.log('target', params.target);
                 // route messages by the 'target' param, verifying 'sender' param
                 if (rtcMessages.slice(2).indexOf(message.member) != -1 &&
-                    sendingclient.loginData &&
-                    params.sender == sendingclient.loginData.UID
+                    params.sender == socket.id
                 ) {
-                    for (var i in thisInstance.clients) {
-                        var client = thisInstance.clients[i];
-                        if (client && client.loginData && client.loginData.UID == params.target)
-                            client.emit('message', messageCompress.pack(JSON.stringify(message)));
-                    }
+                    var client = thisInstance.clients[params.target];
+                    if (client)
+                        client.emit('message', messageCompress.pack(JSON.stringify(message)));
+
                 }
                 return;
             }
@@ -846,7 +953,7 @@ function ClientConnected(socket, namespace, instancedata) {
             }
 
             var compressedMessage = messageCompress.pack(JSON.stringify(message))
-            //distribute message to all clients on given instance
+                //distribute message to all clients on given instance
             for (var i in thisInstance.clients) {
                 var client = thisInstance.clients[i];
 
@@ -857,7 +964,6 @@ function ClientConnected(socket, namespace, instancedata) {
                         thisInstance.requestTimer.deleteMe();
                     var state = message.result;
                     thisInstance.cachedState = JSON.parse(JSON.stringify(state));
-
 
 
                     if (message.client != i && client.pending === true) {
@@ -874,12 +980,20 @@ function ClientConnected(socket, namespace, instancedata) {
                     }
                     client.pending = false;
                     for (var j = 0; j < client.pendingList.length; j++) {
-
                         client.emit('message', client.pendingList[j]);
-
-
                     }
                     client.pendingList = [];
+                } else if (message.action == "activeResync") {
+                    //here we deal with continual resycn messages
+                    var node = message.result.node;
+                    if (node) {
+                        delete node.children; //remove children or we could end up getting large trees
+                        thisInstance.messageClients(JSON.stringify({
+                            "action": "resyncNode",
+                            "parameters": [node.id, node],
+                            "time": thisInstance.time
+                        }))
+                    }
                 } else {
                     //just a regular message, so push if the client is pending a load, otherwise just send it.
                     if (client.pending == true) {
@@ -892,7 +1006,7 @@ function ClientConnected(socket, namespace, instancedata) {
                             (function(__client, __message) {
                                 global.setTimeout(function() {
                                     __client.emit('message', __message);
-                                }, 150)
+                                }, global.latencySim)
                             })(client, compressedMessage);
                         } else {
                             client.emit('message', compressedMessage);
@@ -918,7 +1032,11 @@ function ClientConnected(socket, namespace, instancedata) {
             var loginData = socket.loginData;
             global.log(socket.id, loginData, 2)
             thisInstance.clients[socket.id] = null;
+            console.log(Object.keys(thisInstance.clients));
+            console.log(socket.id);
             delete thisInstance.clients[socket.id];
+            console.log('clientCount', thisInstance.clientCount());
+            console.log(Object.keys(thisInstance.clients));
             //if it's the last client, delete the data and the timer
 
             //message to each user the join of the new client. Queue it up for the new guy, since he should not send it until after getstate
@@ -927,41 +1045,39 @@ function ClientConnected(socket, namespace, instancedata) {
             if (loginData && loginData.clients) {
                 delete loginData.clients[socket.id];
                 global.error("Disconnect. Deleting node for user avatar " + loginData.UID);
-                var avatarID = 'character-vwf-' + loginData.Username;
-                for (var i in thisInstance.clients) {
-                    var cl = thisInstance.clients[i];
-                    cl.emit('message', messageCompress.pack(JSON.stringify({
-                        "action": "deleteNode",
-                        "node": avatarID,
-                        "time": thisInstance.time
-                    })));
-                    cl.emit('message', messageCompress.pack(JSON.stringify({
-                        "action": "callMethod",
-                        "node": 'index-vwf',
-                        member: 'cameraBroadcastEnd',
-                        "time": thisInstance.time,
-                        client: socket.id
-                    })));
-                    cl.emit('message', messageCompress.pack(JSON.stringify({
-                        "action": "callMethod",
-                        "node": 'index-vwf',
-                        member: 'PeerSelection',
-                        parameters: [
-                            []
-                        ],
-                        "time": thisInstance.time,
-                        client: socket.id
-                    })));
-                }
+                var avatarID = 'character-vwf-' + loginData.UID;
+
+                thisInstance.messageClients(JSON.stringify({
+                    "action": "deleteNode",
+                    "node": avatarID,
+                    "time": thisInstance.time
+                }));
+                thisInstance.messageClients(JSON.stringify({
+                    "action": "callMethod",
+                    "node": 'index-vwf',
+                    member: 'cameraBroadcastEnd',
+                    "time": thisInstance.time,
+                    client: socket.id
+                }));
+                thisInstance.messageClients(JSON.stringify({
+                    "action": "callMethod",
+                    "node": 'index-vwf',
+                    member: 'PeerSelection',
+                    parameters: [
+                        []
+                    ],
+                    "time": thisInstance.time,
+                    client: socket.id
+                }));
                 thisInstance.state.deleteNode(avatarID);
             }
-            for (var i in thisInstance.clients) {
-                thisInstance.clients[i].emit('message', messageCompress.pack(JSON.stringify({
-                    "action": "status",
-                    "parameters": ["Peer disconnected: " + (loginData ? loginData.UID : "Unknown")],
-                    "time": thisInstance.getStateTime
-                })));
-            }
+
+            thisInstance.messageClients(JSON.stringify({
+                "action": "status",
+                "parameters": ["Peer disconnected: " + (loginData ? loginData.UID : "Unknown")],
+                "time": thisInstance.getStateTime
+            }));
+
             if (thisInstance.clientCount() == 0) {
                 clearInterval(thisInstance.timerID);
                 RunningInstances.remove(thisInstance.id);

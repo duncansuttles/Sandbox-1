@@ -74,15 +74,16 @@ define(function() {
             label: 'Private Message'
         });
         $("#PrivateMessage").click(function() {
-            setupPmWindow(_UserManager.SelectedProfile.Username);
+            setupPmWindow(_UserManager.SelectedProfile.clientID);
         });
 
         $("#CallUser").button({
             label: 'Voice Call'
         });
         $("#CallUser").click(function() {
+           
             vwf.callMethod('index-vwf', 'rtcCall', {
-                target: _UserManager.SelectedProfile.Username
+                target: _UserManager.SelectedProfile.clientID
             });
         });
 
@@ -91,10 +92,38 @@ define(function() {
         });
         $("#VideoCallUser").click(function() {
             vwf.callMethod('index-vwf', 'rtcVideoCall', {
-                target: _UserManager.SelectedProfile.Username
+                target: _UserManager.SelectedProfile.clientID
             });
         });
 
+        this.GetNextAnonName = function(clients)
+        {
+            var _int = 0;
+            if(!clients)
+                return "Anonymous" + _int;
+            while(true)
+            {
+                var test = "Anonymous" + _int;
+                var found = false;
+                _int++;
+                for(var i in clients)
+                {
+                    if(clients[i].name == test)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found)
+                {
+                    return test;
+                }
+                if(_int > 10000)
+                {
+                    throw(new Error('error finding anonymous name'))
+                }
+            }
+        }
         $(document).on('setstatecomplete', function() {
 
             if (this.GetCurrentUserName()) return;
@@ -146,8 +175,9 @@ define(function() {
                     }.bind(this)
                 });
             } else {
+                
                 //this is a published world, and you do not need to be logged in
-                 $.ajax('/vwfDataManager.svc/logindata', {
+                $.ajax('/vwfDataManager.svc/logindata', {
                     cache: false,
                     async: false,
                     success: function(data, status, xhr) {
@@ -158,12 +188,15 @@ define(function() {
                         var username = logindata.username || logindata.user_uid || logindata.UID;
                         var userID = logindata.user_uid || logindata.UID;
 
+                        var clients = vwf.getProperty(vwf.application(), 'clients');
+                        var anonName = this.GetNextAnonName(clients);
 
                         //only the first client from a given login should create the avatart
+                        //this is a poor way to detect that teh user is already in the space
                         if (vwf.models[0].model.nodes['character-vwf-' + userID.replace(/ /g, '-')] == undefined)
                             this.Login(username, userID);
                         else {
-                            this.Login('Anonymous' + _UserManager.getPlayers().length, 'Anonymous' + _UserManager.getPlayers().length);
+                             this.Login(anonName,anonName);
                         }
 
 
@@ -171,7 +204,14 @@ define(function() {
                     error: function(xhr, status, err) {
                         //in this case, the world allows anonymous users, and you really are anonymous, so log in as
                         //anonymous;
-                        this.Login('Anonymous' + _UserManager.getPlayers().length, 'Anonymous' + _UserManager.getPlayers().length);
+
+                        
+                        var clients = vwf.getProperty(vwf.application(), 'clients');
+                        var anonName = this.GetNextAnonName(clients);
+
+                        
+
+                        this.Login(anonName,anonName);
                     }.bind(this)
                 });
 
@@ -183,8 +223,14 @@ define(function() {
 
         }.bind(this));
         this.SelectedProfile = null;
-        this.showProfile = function(profile) {
+        this.showProfile = function(clientID) {
+
+            var clients = vwf.getProperty(vwf.application(), 'clients');
+            var profile = _DataManager.GetProfileForUser(clients[clientID].UID) || {};
+            profile.clientID = clientID;
             if (!profile) return;
+
+
             $('#UserProfileWindow').prependTo($('#UserProfileWindow').parent());
             $('#UserProfileWindow').show('blind', function() {
                 $('#MenuUsersicon').addClass('iconselected');
@@ -192,19 +238,21 @@ define(function() {
             });
             showSidePanel();
             this.SelectedProfile = profile;
-            //$('#UserProfileWindow').dialog('open');
-            //$('#UserProfileWindow').dialog('option','position',[1282,40]);
-            //_Editor.SelectObject(null);
+
             for (i in profile) {
                 $('#Profile' + i).text(profile[i]);
             }
             $('#EditProfile').hide();
             $('#PrivateMessage').show();
             $('#CallUser').show();
-            if (this.SelectedProfile.Username == this.GetCurrentUserName()) {
+            $('#FollowUser').show();
+            $('#VideoCallUser').show();
+            if (clientID == vwf.moniker()) {
                 $('#EditProfile').show();
                 $('#PrivateMessage').hide();
                 $('#CallUser').hide();
+                $('#FollowUser').hide();
+                $('#VideoCallUser').hide();
             }
         }
         this.GetCurrentUserName = function() {
@@ -220,11 +268,15 @@ define(function() {
 
                 if ((statedata && statedata.publishSettings && !statedata.publishSettings.camera) || !statedata || !statedata.publishSettings) {
 
-                    _dView.setCameraDefault();
-                    clearCameraModeIcons();
-                    $('#MenuCamera3RDPersonicon').addClass('iconselected');
-                    vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
-                    vwf.models[0].model.nodes['index-vwf'].setCameraMode('3RDPerson');
+                    //set cameramode to avatar if an avatar is created
+                    //but only if the world is playing
+                    if (vwf.getProperty(vwf.application(), 'playMode') === 'play') {
+                        _dView.setCameraDefault();
+                        clearCameraModeIcons();
+                        $('#MenuCamera3RDPersonicon').addClass('iconselected');
+                        vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
+                        vwf.models[0].model.nodes['index-vwf'].setCameraMode('3RDPerson');
+                    }
                 }
 
 
@@ -304,7 +356,7 @@ define(function() {
                     ___physics_factor_angular: [0, 0, 0],
                     ___physics_enabled: true,
                     ___physics_mass: 100,
-                     transform: [
+                    transform: [
                         1,
                         0,
                         0,
@@ -327,8 +379,8 @@ define(function() {
                     ShowProfile: null,
                     Message: null
                 },
-                scripts: ["this.ShowProfile = function(){if(vwf.client() != vwf.moniker()) return; _UserManager.showProfile(_DataManager.GetProfileForUser(this.PlayerNumber))     }; \n" +
-                    "this.Message = function(){if(vwf.client() != vwf.moniker()) return; setupPmWindow(this.PlayerNumber)     }"
+                scripts: ["this.ShowProfile = function(){if(vwf.client() != vwf.moniker()) return; _UserManager.showProfile(this.ownerClientID)     }; \n" +
+                    "this.Message = function(){if(vwf.client() != vwf.moniker()) return; setupPmWindow(this.ownerClientID)     }"
                 ],
                 children: {
 
@@ -569,87 +621,23 @@ define(function() {
             })
             return playerNodes;
         }
+        //note:: this depends on avatar creation. Remove that
         this.PlayerCreated = function(e, id) {
-            if (!this.playerNames)
-                this.playerNames = [];
-            if (!this.playerIDs)
-                this.playerIDs = [];
-
-            this.playerNames.push(e);
-            this.playerIDs.push(id);
-
-            $("#PlayerList").append("<div id='" + (e + "label") + "'  class='playerlabel'>" + e + "</div>");
-            $("#" + e + "label").attr("playerid", id);
-            $("#" + e + "label").click(function() {
-                $(".playerlabel").css("background-image", ""); // -webkit-linear-gradient(right, white 0%, #D9EEEF 100%)
-                $(this).css("background-image", "-webkit-linear-gradient(right, white 0%, #D9EEEF 100%)");
-                var profile = vwf.getProperty($(this).attr("playerid"), 'profile');
-                _UserManager.showProfile(profile);
-            });
-            if (e == document.PlayerNumber) {
-                $("#" + e + "label").attr("self", "true");
-                $("#" + e + "label").append(" (me)");
+            //refresh the list if a player joins while it is open
+            if ($('#Players').is(':visible'))
+                this.showPlayers();
+        }
+        this.firedEvent = function(id, event, params) {
+            if (id == vwf.application() && event == 'clientConnected') {
+                if ($('#Players').is(':visible'))
+                    this.showPlayers();
+            }
+            if (id == vwf.application() && event == 'clientDisconnected') {
+                if ($('#Players').is(':visible'))
+                    this.showPlayers();
             }
         }
-        this.Logout = function() {
-            //if (!_UserManager.GetCurrentUserName()) return;
-
-            var needlogin = true;
-            var statedata = _DataManager.getInstanceData();
-
-            //published worlds may choose to allow anonymous users
-            //singleplayers worlds do not need login
-            if (statedata && statedata.publishSettings && (statedata.publishSettings.allowAnonymous || statedata.publishSettings.singlePlayer))
-                needlogin = false;
-
-
-            $('#MenuLogOuticon').addClass('icondisabled')
-            $('#MenuLogInicon').removeClass('icondisabled')
-            $('#MenuLogIn').removeAttr('disabled');
-            $('#MenuLogOut').attr('disabled', 'disabled');
-            //var parms = new Array();
-            //parms.push(document[document.PlayerNumber +'link'].id);
-            //alert(JSON.stringify(parms));
-            //vwf_view.kernel.callMethod('index-vwf','deleteplayer',parms);
-            var parms = new Array();
-            parms.push(JSON.stringify({
-                sender: '*System*',
-                text: (document.PlayerNumber + " logging off")
-            }));
-
-
-            //
-            //vwf_view.kernel.callMethod('index-vwf','receiveChat',parms);
-            if (document[document.PlayerNumber + 'link']) vwf_view.kernel.deleteNode(document[document.PlayerNumber + 'link'].id);
-            //take ownership of the client connection
-            var profile = _DataManager.GetProfileForUser(_UserManager.GetCurrentUserName());
-            var S = _DataManager.getCurrentSession();
-
-            _DataManager.saveToServer(true);
-
-            //inform the server that you intend to disconnect from the world
-            if (needlogin) {
-                var data = jQuery.ajax({
-                    type: 'GET',
-                    url: "./vwfDataManager.svc/logout?S=" + S + "&CID=" + vwf.moniker(),
-                    data: null,
-                    success: null,
-                    async: false,
-                    dataType: "json"
-                });
-                if (data.status != 200) {
-                    alert(data.responseText);
-                    return;
-                }
-            }
-
-            document[document.PlayerNumber + 'link'] = null;
-            document.PlayerNumber = null;
-            _UserManager.currentUsername = null;
-
-            window.location = window.location.pathname.replace('/sandbox/', '/sandbox/world/')
-            return;
-        }
+       
         this.showLogin = function() {
             //new system does not do logins!
 
@@ -676,18 +664,13 @@ define(function() {
             });
 
         }
-        $(window).unload(function() {
-            if (this.GetCurrentUserName())
-                this.Logout();
-        }.bind(this));
-        //$('#Players').dialog({ position:['left','bottom'],width:300,height:200,title: "Players",autoOpen:false});
-
+       
 
         //these three functions should be deprecated and replaced by the ClientAPI on the Scene object for access
         //from within the model.
         this.GetPlayernameForClientID = function(id) {
-            var clients = vwf.getProperty(vwf.application(),'clients')
-            if(clients && clients[id])
+            var clients = vwf.getProperty(vwf.application(), 'clients')
+            if (clients && clients[id])
                 return clients[id].UID;
         }
         this.GetAvatarForClientID = function(id) {
@@ -698,13 +681,38 @@ define(function() {
             }
         }
         this.GetClientIDForPlayername = function(id) {
-            var clients = vwf.getProperty(vwf.application(),'clients')
-            for(var i in clients)
-            {
-                if(clients[i].UID == id) return clietns[i].cid;
+            var clients = vwf.getProperty(vwf.application(), 'clients')
+            for (var i in clients) {
+                if (clients[i].UID == id) return clietns[i].cid;
             }
         }
+        this.showPlayers = function() {
+            $('#Players').prependTo($('#Players').parent());
+            $('#Players').show('blind', function() {});
 
+            $("#PlayerList").empty();
+            var clients = vwf.getProperty(vwf.application(), 'clients');
+            
+            for (var i in clients) {
+                var e = ToSafeID(i);
+                $("#PlayerList").append("<div id='" + (e + "label") + "'  class='playerlabel'>" + clients[i].name + "</div>");
+                $("#" + e + "label").attr("playerid", i);
+                $("#" + e + "label").click(function() {
+                    $(".playerlabel").css("background-image", ""); // -webkit-linear-gradient(right, white 0%, #D9EEEF 100%)
+                    $(this).css("background-image", "-webkit-linear-gradient(right, white 0%, #D9EEEF 100%)");
+
+
+                    _UserManager.showProfile($(this).attr("playerid"));
+                });
+                if (e == vwf.moniker()) {
+                    $("#" + e + "label").attr("self", "true");
+                    $("#" + e + "label").append(" (me)");
+                }
+            }
+
+
+            showSidePanel();
+        }
         $('#UserProfileWindow').hide();
         $('#Players').hide();
     }

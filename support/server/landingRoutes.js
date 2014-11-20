@@ -676,7 +676,7 @@ exports.getVWFCore = function() {
             cachedVWFCore = cachedVWFCore.replace('{{loadBalancerAddress}}', "'" + global.configuration.loadBalancer + "'"); //otherwise, script syntax is invalid
         } else {
             //otherwise, this is a single, simple server. Look up the host from the url.
-            cachedVWFCore = cachedVWFCore.replace('{{host}}', 'window.location.host');
+            cachedVWFCore = cachedVWFCore.replace('{{host}}', "window.location.protocol +'//'+ window.location.host");
             cachedVWFCore = cachedVWFCore.replace('{{loadBalancerAddress}}', "'" + global.configuration.loadBalancer + "'"); //otherwise, script syntax is invalid
         }
     }

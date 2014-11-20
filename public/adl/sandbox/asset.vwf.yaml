@@ -81,6 +81,19 @@ properties:
                var force = [x,y,z];
                this.___physics_addTorqueImpulse(force);
             }.bind(this);
+            this.___physicsAPI.addTorque = function(x,y,z,coords)
+            {
+               if(!coords)
+                  coords = 0;
+               if(x.length)
+               {
+                  y = x[1];
+                  z = x[2];
+                  x = x[0];
+               }
+               var force = [x,y,z];
+               this.___physics_addTorque(force);
+            }.bind(this);
             this.___physicsAPI.addForceOffset = function(x,y,z,x1,y1,z1,coords)
             {
                if(!coords)
@@ -141,9 +154,9 @@ properties:
         return this.___physicsAPI;
   ___physics_enabled: false
   ___physics_mass: 1
-  ___physics_restitution: 0
-  ___physics_friction: 1.0
-  ___physics_damping: 0.0
+  ___physics_restitution: 0.1
+  ___physics_friction: 0.5
+  ___physics_damping: 0.05
   ___physics_collision_length: .5
   ___physics_collision_width: .5
   ___physics_collision_height: .5
@@ -158,3 +171,5 @@ properties:
   ___physics_activation_state: 1
   ___physics_factor_angular: [ 1, 1, 1]
   ___physics_factor_linear: [ 1, 1, 1]
+  ___physics_constant_force: null
+  ___physics_constant_torque: null

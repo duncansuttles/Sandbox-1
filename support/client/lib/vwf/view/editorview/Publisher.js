@@ -14,6 +14,7 @@ define([], function() {
     function initialize() {
         this.setup = function() {
             $(document.body).append('<div id="publishSettings"></div>');
+
             $('#publishSettings').dialog({
                 title: "Test Publish",
                 buttons: {
@@ -51,6 +52,16 @@ define([], function() {
                     $('#chooseCamera').button('option', 'label', val);
                     $('#chooseCamera').attr('cameraID', idList[camList.indexOf(val)]);
                 }, camList)
+            })
+            $(window).on('setstatecomplete',function()
+            {
+                
+                var statebackup = vwf.getProperty(vwf.application(),'playBackup');
+                if(!statebackup)
+                {
+                    _Publisher.backupState();
+                }
+
             })
         }
 
@@ -110,7 +121,7 @@ define([], function() {
                 for (var i in node.properties) {
                     //4th param as true returns whether or not delegation happened during get. if so, no need to store this property.
                     if (vwf.getProperty(node.id, i, false, true)) {
-                        console.log('Removing delegated property', node.id, i);
+                       // console.log('Removing delegated property', node.id, i);
                         delete node.properties[i];
                     }
                 }
@@ -125,6 +136,8 @@ define([], function() {
 
         }
         this.satProperty = function(id, prop, val) {
+
+             
             if (id == vwf.application()) {
                 if (prop == 'playMode' && val == 'play') {
                     $('#playButton').addClass('pulsing');
@@ -135,6 +148,14 @@ define([], function() {
                     $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', 'gray');
                     $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', 'none');
                     $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', 'not-allowed');
+                    
+               
+                    //remember the last selection and then deselect;
+                    this.lastSelection = [];
+                    for(var i = 0; i < _Editor.getSelectionCount(); i++)
+                    {
+                        this.lastSelection.push(_Editor.GetSelectedVWFNode(i).id);
+                    }
                     _Editor.SelectObject(null);
                     _Editor.SetSelectMode('none');
                     $('#index-vwf').focus();
@@ -143,15 +164,23 @@ define([], function() {
 
                 if (prop == 'playMode' && val == 'paused') {
 
-
+                    //restore selection
+                    _Editor.SelectObject(this.lastSelection);
                     $('#playButton').addClass('pulsing');
                     $('#pauseButton').addClass('pulsing');
                     $('#stopButton').removeClass('pulsing');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', '');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', '');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', '');
+                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', '');
+                    _Editor.SetSelectMode('Pick');
 
                 }
                 if (prop == 'playMode' && val == 'stop') {
 
-
+                    //restore selection
+                    
+                    _Editor.SelectObject(this.lastSelection);
                     $('#playButton').removeClass('pulsing');
                     $('#pauseButton').removeClass('pulsing');
                     $('#stopButton').addClass('pulsing');
@@ -201,7 +230,9 @@ define([], function() {
                     } catch (e) {
                         //create it and when done, do the next child of the current node
                         if (node.children[i].extends != 'character.vwf')
-                            vwf.createChild(node.id, i, node.children[i], null, null, eachSeriesCallback);
+                            vwf.createChild(node.id, i, node.children[i], null,  function(childID){
+                                eachSeriesCallback();
+                            });
                         else
                             eachSeriesCallback();
                         return;
@@ -220,7 +251,9 @@ define([], function() {
                     } else {
                         //create it and when done, do the next child of the current node
                         if (node.children[i].extends != 'character.vwf')
-                            vwf.createChild(node.id, i, node.children[i], null, null, eachSeriesCallback);
+                            vwf.createChild(node.id, i, node.children[i], null,   function(childID){
+                                eachSeriesCallback();
+                            });
                         else
                             eachSeriesCallback();
                     }
@@ -274,6 +307,7 @@ define([], function() {
 
         }
         this.playWorld = function() {
+           
             if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(), vwf.application()) == 0) {
                 alertify.log('You do not have permission to modify this world');
                 return;
@@ -282,6 +316,7 @@ define([], function() {
             if (currentState === 'play') return;
             if (currentState === 'stop')
                 this.backupState();
+
             vwf_view.kernel.callMethod(vwf.application(), 'preWorldPlay');
             vwf_view.kernel.setProperty(vwf.application(), 'playMode', 'play')
 

@@ -71,8 +71,12 @@ define(function ()
 						return;
 					}					
 					
-				$('#MenuCamera3RDPersonicon').click();		
-				vwf_view.kernel(_UserManager.GetCurrentUserID(),'setPosition',[vals]);
+				$('#MenuCamera3RDPersonicon').click();	
+				var trans = vwf.getProperty(_UserManager.GetCurrentUserID(),'transform');  //get the users current transform;
+				trans[12] = vals[0];
+				trans[13] = vals[1];
+				trans[14] = vals[2];
+				vwf_view.kernel.setProperty(_UserManager.GetCurrentUserID(),'transform',trans);
 				
 				
 				}

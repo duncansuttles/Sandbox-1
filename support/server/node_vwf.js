@@ -175,7 +175,7 @@ function startVWF() {
     global.latencySim = p >= 0 ? parseInt(process.argv[p + 1]) : (configSettings.latencySim ? configSettings.latencySim : 0);
 
     if (global.latencySim > 0)
-        global.log(red + 'Latency Sim = ' + global.latencySim + reset);
+        console.log(red + 'Latency Sim = ' + global.latencySim + reset);
 
     p = process.argv.indexOf('-l');
     global.logLevel = p >= 0 ? process.argv[p + 1] : (configSettings.logLevel ? configSettings.logLevel : 1);
@@ -303,11 +303,12 @@ function startVWF() {
                 //find pretty world URL's, and redirect to the non-pretty url for the world
                 app.use(ServerFeatures.prettyWorldURL);
 
+                app.use(express.limit('500mb'));
                 app.use(express.methodOverride());
 
                 //Wait until all data is loaded before continuing
                 //app.use (ServerFeatures.waitForAllBody);
-                app.use(express.bodyParser());
+                app.use(express.bodyParser( {maxFieldsSize:2 * 1024 * 1024 * 1024 }));
                 //CORS support
                 app.use(ServerFeatures.CORSSupport);
 

@@ -162,7 +162,7 @@ define({
 
         $('#MenuLogOut').click(function(e) {
             if ($('#MenuLogOut').attr('disabled') == 'disabled') return;
-            _UserManager.Logout();
+            window.location = window.location.pathname.replace('/sandbox/', '/sandbox/world/');
         });
         $('#MenuSelectPick').click(function(e) {
             _Editor.SetSelectMode('Pick');
@@ -234,9 +234,7 @@ define({
             $('#ChatWindow').dialog('open');
         });
         $('#MenuUsers').click(function(e) {
-            $('#Players').prependTo($('#Players').parent());
-            $('#Players').show('blind', function() {});
-            showSidePanel();
+           _UserManager.showPlayers();
         });
         $('#MenuModels').click(function(e) {
             _ModelLibrary.show();
@@ -527,6 +525,9 @@ define({
                 _Editor.findscene().overrideMaterial.fog = false;
             }
         });
+        $('#MenuViewTogglePhysics').click(function(e) {
+           _PhysicsEditor.toggleWorldPreview()
+        });
 
         $('#MenuViewToggleBones').click(function(e) {
             if (_SceneManager.getBonesVisible())
@@ -638,32 +639,11 @@ define({
             vwf.models[0].model.nodes['index-vwf'].setCameraMode('Orbit');
             vwf.models[0].model.nodes['index-vwf'].setCameraMode('Free');
         });
-        var pfx = ["webkit", "moz", "ms", "o", ""];
+        
 
-        function RunPrefixMethod(obj, method, param) {
-            var p = 0,
-                m, t;
-            while (p < pfx.length && !obj[m]) {
-                m = method;
-                if (pfx[p] == "") {
-                    m = m.substr(0, 1).toLowerCase() + m.substr(1);
-                }
-                m = pfx[p] + m;
-                t = typeof obj[m];
-                if (t != "undefined") {
-                    pfx = [pfx[p]];
-                    return (t == "function" ? obj[m](param) : obj[m]);
-                }
-                p++;
-            }
-        }
+        
         $('#MenuViewFullscreen').click(function(e) {
-            if (RunPrefixMethod(document, "FullScreen") || RunPrefixMethod(document, "IsFullScreen")) {
-                RunPrefixMethod(document, "CancelFullScreen");
-            } else {
-
-                RunPrefixMethod(document.body, "RequestFullScreen", Element.ALLOW_KEYBOARD_INPUT);
-            }
+           _dView.toggleFullScreen();
         });
         $('#MenuCamera3RDPerson').click(function(e) {
 
@@ -797,7 +777,7 @@ define({
 
         $('#ToolsShowID').click(function(e) {
             if (_Editor.GetSelectedVWFID())
-                alertify.prompt(vwf.getProperty(_Editor.GetSelectedVWFID(), "DisplayName"), function() {}, _Editor.GetSelectedVWFID());
+                alertify.prompt(vwf.getProperty(_Editor.GetSelectedVWFID(), "DisplayName") || "No DisplayName", function() {}, _Editor.GetSelectedVWFID());
             else
                 alertify.alert('No Selection');
         });
@@ -840,6 +820,9 @@ define({
         });
         $('#MenuViewRenderStereo').click(function(e) {
             _dView.setRenderModeStereo()
+        });
+         $('#MenuViewRenderVR').click(function(e) {
+            _dView.setRenderModeVR();
         });
 
         $('#TestSettings').click(function(e) {

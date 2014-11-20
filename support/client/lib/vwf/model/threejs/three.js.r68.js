@@ -11985,7 +11985,8 @@ THREE.Loader.prototype = {
 
 			}
 
-			var parameters = { fragmentShader: shader.fragmentShader, vertexShader: shader.vertexShader, uniforms: uniforms, lights: true, fog: true };
+			var parameters = { fragmentShader: shader.fragmentShader, vertexShader: shader.vertexShader, uniforms: uniforms, lights: true, 
+: true };
 			var material = new THREE.ShaderMaterial( parameters );
 
 			if ( mpars.transparent ) {

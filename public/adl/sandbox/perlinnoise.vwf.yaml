@@ -145,6 +145,7 @@ methods:
   dirtyStack:
   GetMesh:
   noise:
+  ready:
 events:
   childAdded:
 scripts:
@@ -182,6 +183,10 @@ scripts:
         var phase = vwf.getProperty(this.id,'phase');
         
         this.noise(scale,iterations,seed,x,y,z,world,phase);
+    }
+    this.ready = function()
+    {
+      this.dirtyStack();
     }
     var RotateVecAroundAxis = function(Vector, Axis, Radians)
     {

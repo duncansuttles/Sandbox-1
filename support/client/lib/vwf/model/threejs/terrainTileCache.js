@@ -1,3 +1,4 @@
+"use strict";
 function TileCache()
 			{
 				this.tiles = {};
@@ -171,6 +172,7 @@ function TileCache()
 						"}\n"+
 						
 						"void main() {\n"+
+						
 						
 						" if(renderMode == 1){ gl_FragColor = packFloatVec4(vFogPosition.z/1000.0); return; }\n"+
 						"   vec3 vLightDir = normalize(viewMatrix * vec4(directionalLightDirection[0],0.0)).xyz;\n"+

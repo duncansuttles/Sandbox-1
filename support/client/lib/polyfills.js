@@ -9,9 +9,8 @@ var fills = {
         this.detectIE11();
         this.escapeHTMLStrings();
         this.setImmediate();
-
-        window.ToSafeID = function(value)
-        {
+        this.functionBind();
+        window.ToSafeID = function(value) {
             return value.replace(/[^A-Za-z0-9]/g, "");
         }
 
@@ -30,6 +29,30 @@ var fills = {
             return (buf[0]) / 4294967296;
         }
 
+    },
+    functionBind: function() {
+        if (!Function.prototype.bind) {
+            Function.prototype.bind = function(oThis) {
+                if (typeof this !== 'function') {
+                    // closest thing possible to the ECMAScript 5
+                    // internal IsCallable function
+                    throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+                }
+
+                var aArgs = Array.prototype.slice.call(arguments, 1),
+                    fToBind = this,
+                    fNOP = function() {},
+                    fBound = function() {
+                        return fToBind.apply(this instanceof fNOP && oThis ? this : oThis,
+                            aArgs.concat(Array.prototype.slice.call(arguments)));
+                    };
+
+                fNOP.prototype = this.prototype;
+                fBound.prototype = new fNOP();
+
+                return fBound;
+            };
+        }
     },
     escapeHTMLStrings: function() {
         var entityMap = {
@@ -435,15 +458,18 @@ var fills = {
 
                     if (performance.now() - lastError > 5000) {
                         if (xhr.status != 200) {
-                            alertify.error('Sorry, an error has occured, but could not be logged');
+                            if (window.alertify)
+                                alertify.error('Sorry, an error has occured, but could not be logged');
                         } else
+                        if (window.alertify)
                             alertify.error('Sorry, an error has occured and was logged to the server.');
                         lastError = performance.now();
                     }
                 },
                 error: function(e) {
                     if (performance.now() - lastError > 5000) {
-                        alertify.error('Sorry, an error has occured, but could not be logged');
+                        if (window.alertify)
+                            alertify.error('Sorry, an error has occured, but could not be logged');
                         lastError = performance.now();
                     }
                 },

@@ -1,5 +1,26 @@
+"use strict";
+
+function getAllDrawables(threeObject, list) {
+
+    if (!threeObject) return;
+    if (!list) list = [];
+    if (threeObject instanceof THREE.Mesh || threeObject instanceof THREE.Line)
+        list.push(threeObject);
+    if (threeObject.children) {
+        for (var i = 0; i < threeObject.children.length; i++) {
+            findAllMeshes(threeObject.children[i], list);
+        }
+    }
+    return list;
+
+
+}
+
 (function() {
     var matComploose = window.matComploose;
+
+
+
     function transformable(childID, childSource, childName) {
         this.overrideTransform = false;
         this.DisableTransform = function() {
@@ -72,12 +93,18 @@
                 //if this transformable is a bone, we need to update the skin
                 //if (threeObject.skin)
                 //    threeObject.skin.updateMatrixWorld(true);
-                if (sceneManagerUpdate)
-                    _SceneManager.setDirty(threeObject);
+
+                if (sceneManagerUpdate) {
+                    var allMeshes = getAllDrawables(threeObject);
+                    for (var k = 0; k < allMeshes.length; k++)
+                        _SceneManager.setDirty(allMeshes[k]);
+                }
+
+
             }
 
             //signals the driver that we don't have to process further, this prop was handled
-            return propertyValue;
+            return;
         }
         this.settingProperty = function(propertyName, propertyValue) {
 
@@ -85,10 +112,11 @@
 
                 if (!this.TransformEnabled()) {
 
-                    return propertyValue;
+                    return;
                 };
 
-                return this.setTransformInternal(propertyValue, true);
+                this.setTransformInternal(propertyValue, true);
+                return;
             }
             if (propertyName == 'inheritScale') {
                 var walk = function(node, val, force) {
@@ -174,6 +202,32 @@
                     threeObject.updateMatrixWorld(true);
                     var mat = threeObject.matrixWorld.clone();
                     //	mat = (new THREE.Matrix4()).multiplyMatrices(skinmat,mat);
+                    return mat.elements;
+
+                }
+                return value;
+            }
+            if (propertyName == 'orthoWorldTransform') {
+                var threeObject = this.getRoot().parent;
+                if (this.getRoot().initializedFromAsset)
+                    threeObject = this.getRoot();
+                var value = matCpy(threeObject.orthoMatrixWorld.elements);
+
+                if (threeObject instanceof THREE.Camera) {
+                    var columny = goog.vec.Vec4.create();
+                    goog.vec.Mat4.getColumn(value, 1, columny);
+                    var columnz = goog.vec.Vec4.create();
+                    goog.vec.Mat4.getColumn(value, 2, columnz);
+                    goog.vec.Mat4.setColumn(value, 2, columny);
+                    goog.vec.Mat4.setColumn(value, 1, goog.vec.Vec4.negate(columnz, columnz));
+                }
+                if (threeObject instanceof THREE.Bone) {
+
+
+
+                    threeObject.updateMatrixWorld(true);
+                    var mat = threeObject.orthoMatrixWorld.clone();
+                    //  mat = (new THREE.Matrix4()).multiplyMatrices(skinmat,mat);
                     return mat.elements;
 
                 }
