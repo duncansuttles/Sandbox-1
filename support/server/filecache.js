@@ -71,7 +71,7 @@ function _FileCache() {
         //the whole process insensitive, even if the filesystem is. Note: probably doing a lot of 
         //unnecessary work if we could know that the filesystem is not sensitive, maybe from a config value
         path = resolveCase(path);
-
+        path = libpath.normalize(path);
         var self = this;
         //Cannot escape above the application paths!!!!
         if (path.toLowerCase().indexOf(libpath.resolve(__dirname, '../../').toLowerCase()) != 0 && path.toLowerCase().indexOf(global.datapath.toLowerCase()) != 0) {
