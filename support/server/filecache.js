@@ -6,7 +6,7 @@ var libpath = require('path'),
 var zlib = require('zlib');
 var compressor = require('node-minify');
 var async = require('async');
-
+var resolveCase = require('./resolveCaseInsensitiveFilename').resolveName;
 //***node, uses REGEX, escape properly!
 function strEndsWith(str, suffix) {
     return str.match(suffix + "$") == suffix;
@@ -89,7 +89,21 @@ function _FileCache() {
             fs.stat(path, function(err, stats) {
 
                 //force file capitalization to be correct, even on windows
-                if (!FileCache.proofFileCaps(path)) {
+             
+             /*   if (!FileCache.proofFileCaps(path)) {
+                    callback(null);
+                    return;
+                }
+                */
+                //ok, the above code forces correct capitalizaion even when the file system does not
+                //this broke a lot of old content
+                //the below code fixes the caps to be correct for the file on the drive, basically makeing
+                //the whole process insensitive, even if the filesystem is. Note: probably doing a lot of 
+                //unnecessary work if we could know that the filesystem is not sensitive, maybe from a config value
+                path = resolveCase(path);
+
+                if(!path)
+                {
                     callback(null);
                     return;
                 }
