@@ -13,8 +13,9 @@ function sum(array, start, end) {
 }
 
 function readdirSync(dir) {
-    console.log('readingdir', dir);
-    return fs.readdirSync(dir);
+
+
+    return fs.readdirSync(dir ||'/');
 }
 
 function resolveOneLevel(localpath, file) {
@@ -40,10 +41,10 @@ function resolveOneLevel(localpath, file) {
 }
 
 function resolveName(localPath) {
-    console.log(localPath);
+    
     var parts = path.normalize(localPath).split(path.sep);
 
-    parts[0] = parts[0] || '/';
+    parts[0] = parts[0] || '';
     for (var i = 1; i < parts.length; i++) {
 
         parts[i] = resolveOneLevel(sum(parts, 0, i), parts[i]);
