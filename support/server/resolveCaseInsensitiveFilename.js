@@ -44,7 +44,7 @@ function resolveName(localPath) {
     
     var parts = path.normalize(localPath).split(path.sep);
 
-    parts[0] = parts[0] || '';
+    parts[0] = parts[0] || '/';
     for (var i = 1; i < parts.length; i++) {
 
         parts[i] = resolveOneLevel(sum(parts, 0, i), parts[i]);
