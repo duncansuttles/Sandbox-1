@@ -1293,16 +1293,17 @@ function getStatesFilelist(id, cb) {
     });
 }
 
-function searchStates(cb, start, count) {
+function searchStates(query, cb, start, count) {
+    query = new RegExp('.*'+query+'.*','gim');
     var search = {
         $or: [{
-            "val.owner": search
+            "val.owner": query
         }, {
-            "val.title": search
+            "val.title": query
         }, {
-            "val.description": search
+            "val.description": query
         }, {
-            "_key": search
+            "_key": query
         }]
     }
     searchStatesInner(search, cb, start, count)
