@@ -337,14 +337,14 @@ function handleRequest(request, response, next) {
                     }
 
                 }
-                filename = resolveCase(filename);
+                //filename = resolveCase(filename);
                 //file does exist, serve normally 
                 existsCaseInsensitive(libpath.resolve(__dirname, filename), function(c3) {
                     existsCaseInsensitive(libpath.resolve(__dirname, filename + ".yaml"), function(c4) {
                         if (c3) {
                             //if requesting directory, setup instance
                             //also, redirect to current instnace name of does not end in slash
-                            fs.stat(libpath.resolve(__dirname, filename), function(err, isDir) {
+                            fs.stat(resolveCase(libpath.resolve(__dirname, filename)), function(err, isDir) {
                                 //server started throwing these when added case logic
                                 if(err){
                                     _404(response);

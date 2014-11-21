@@ -64,6 +64,10 @@ exports.new = function(DBTablePath,cb)
             {
                 DB.find(key,data,cb);
             },
+            find_raw : function(key,cb)
+            {
+                return DB.find(key,cb);
+            },
             remove:function(key,cb)
             {
                 this.get(key,function(err,doc,key)
