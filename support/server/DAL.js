@@ -1364,10 +1364,14 @@ function searchStatesInner(query, found, start, count) {
                     return;
                 }
 
-                var ret = [];
+                var ret = {};
                 for (var i in data) {
                     if (states.indexOf(data[i]._key) != -1)
-                        ret.push(JSON.parse(JSON.stringify(data[i].val)));
+                        {
+                            var s = JSON.parse(JSON.stringify(data[i].val));
+                            s.id = data[i]._key;
+                            ret[data[i]._key] = s;
+                        }
                 }
                 found(ret);
 
