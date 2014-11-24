@@ -11,7 +11,7 @@
 		$('#form').submit( function(o, e){
 		
 			var terms =  $('#txtTerms').val();
-			window.location.href = '{{root}}/searchResults/' + terms + '/0'; 
+			window.location.href = '{{root}}/searchResults/' + encodeURIComponent(terms) + '/0'; 
 			o.preventDefault();	
 		});
 	});	

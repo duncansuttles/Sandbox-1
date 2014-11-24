@@ -171,7 +171,7 @@ routesMap = {
 exports.statsHandler = function(req, res, next) {
 
     sessions.GetSessionData(req, function(sessionData) {
-        var allSessions = sessions.getAllSessions();
+        
         var instances = global.instances.instances;
         var allConnections = 0;
         for (var i in instances) {
@@ -184,7 +184,7 @@ exports.statsHandler = function(req, res, next) {
                 states: states,
                 users: users,
                 allConnections: allConnections,
-                sessions: allSessions,
+               
                 instances: instances || [],
                 sessionData: sessionData,
                 url: req.url,

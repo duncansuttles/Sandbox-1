@@ -6,7 +6,7 @@
 		$('#form').submit( function(o, e){
 		
 			var terms =  $('#txtTerms').val();
-			window.location = '{{root}}/searchResults/' + terms +'/0'; 
+			window.location = '{{root}}/searchResults/' + encodeURIComponent(terms) +'/0'; 
 			o.preventDefault();
 		});
 	});	

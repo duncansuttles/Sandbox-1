@@ -1474,6 +1474,7 @@ function startup(callback) {
         },
         function(cb) {
 
+            
             DAL_Singleton.getUser = getUser;
             DAL_Singleton.updateUser = updateUser;
             DAL_Singleton.createUser = createUser;

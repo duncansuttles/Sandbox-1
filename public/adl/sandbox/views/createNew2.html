@@ -57,7 +57,12 @@ color: lightgray;
 			var name = $('#txtInstanceName').val(); 
 			var des = $('#txtInstanceDescription').val();
 			
-			
+			if(!name)
+			{
+				alertify.alert("Please enter a title for the world.");
+				event.preventDefault();
+				return;
+			}
 			
 			var statedata = {};
 			statedata.title = name;
