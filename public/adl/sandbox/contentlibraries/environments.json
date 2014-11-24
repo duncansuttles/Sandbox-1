@@ -18,5 +18,10 @@
 		"url":"./contentlibraries/environments/vwf/night.vwf.json",
 		"preview":"./contentlibraries/environments/thumbs/night.png",
 		"type":"environment"
+	},
+	"Fog":{
+		"url":"./contentlibraries/environments/vwf/fog.vwf.json",
+		"preview":"./contentlibraries/environments/thumbs/fog.png",
+		"type":"environment"
 	}
 }
