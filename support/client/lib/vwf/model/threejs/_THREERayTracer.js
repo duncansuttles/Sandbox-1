@@ -1939,7 +1939,7 @@ THREE.Object3D.prototype.CPUPick = function(origin, direction, options, ret) {
         }
         if (this instanceof THREE.Line) {
             for (var i = 0; i < this.geometry.vertices.length - 1; i++) {
-                var hitdata = {};
+                var hitdata = allocate_FaceIntersect();
 
                 var v1 = [this.geometry.vertices[i].x, this.geometry.vertices[i].y, this.geometry.vertices[i].z];
                 var v2 = [this.geometry.vertices[i + 1].x, this.geometry.vertices[i + 1].y, this.geometry.vertices[i + 1].z];
@@ -2116,12 +2116,13 @@ THREE.Object3D.prototype.FrustrumCast = function(frustrum, options) {
             for (var i = 0; i < this.geometry.vertices.length; i++) {
                 var v0 = [this.geometry.vertices[i].x, this.geometry.vertices[i].y, this.geometry.vertices[i].z];
                 if (pointInFrustrum(v0, tfrustrum)) {
-                    var hit = {};
-                    hit.point = MATH.mulMat4Vec3(mat2, v0);
+                    
+                    var point = MATH.mulMat4Vec3(mat2, v0);
                     mat2[3] = 0;
                     mat2[7] = 0;
                     mat2[11] = 0;
-                    hit.norm = MATH.mulMat4Vec3(mat2, [0, 0, 1]);
+                    var norm = MATH.mulMat4Vec3(mat2, [0, 0, 1]);
+                    var hit = allocate_FaceIntersect(point,norm,null);
                     hit.distance = MATH.distanceVec3([0, 0, 0], hit.point);
                     hit.object = this;
                     hit.priority = this.PickPriority !== undefined ? this.PickPriority : 1;
@@ -2356,7 +2357,7 @@ THREE.Light.prototype.FrustrumCast = function(frustrum) {
     for (var i = 0; i < ret.length; i++) {
         //move the normal and hit point into worldspace
 
-        ret[i] = {};
+        ret[i] = allocate_FaceIntersect();
         ret[i].point = MATH.mulMat4Vec3(mat2, [0, 0, 0]);
         mat2[3] = 0;
         mat2[7] = 0;
@@ -2378,7 +2379,7 @@ THREE.Scene.prototype.FrustrumCast = function(frustrum) {
     for (var i = 0; i < hitlist.length; i++) {
         //move the normal and hit point into worldspace
 
-        hitlist[i] = {};
+        hitlist[i] = allocate_FaceIntersect();
         hitlist[i].point = [0, 0, 0];
 
         hitlist[i].norm = [0, 0, 1];

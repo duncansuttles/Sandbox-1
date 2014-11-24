@@ -40,7 +40,21 @@ function matComploose(m1, m2) {
     return true;
 }
 
-define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/threejs/backgroundLoader", "vwf/model/threejs/glTFCloner", "vwf/model/threejs/glTFLoaderUtils", "vwf/model/threejs/glTFLoader", "vwf/model/threejs/glTFAnimation","vwf/model/threejs/glTFAnimation"], function(module, model, utility, Color, backgroundLoader) {
+function setMeshDynamic(node, val) {
+    if (node instanceof THREE.Mesh)
+        node.setDynamic(val);
+    for (var i = 0; i < node.children.length; i++)
+        setMeshDynamic(node.children[i], val);
+}
+
+function setMeshStatic(node, val) {
+    if (node instanceof THREE.Mesh)
+        node.setStatic(val);
+    for (var i = 0; i < node.children.length; i++)
+        setMeshStatic(node.children[i], val);
+}
+
+define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/threejs/backgroundLoader", "vwf/model/threejs/glTFCloner", "vwf/model/threejs/glTFLoaderUtils", "vwf/model/threejs/glTFLoader", "vwf/model/threejs/glTFAnimation", "vwf/model/threejs/glTFAnimation"], function(module, model, utility, Color, backgroundLoader) {
 
 
 
@@ -210,7 +224,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
 
 
-               
+
 
                 cam.name = 'camera';
                 this.state.cameraInUse = cam;
@@ -673,12 +687,16 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                     }
                     if (propertyName == 'isStatic') {
                         //debugger;
-                        threeObject.setStatic(propertyValue);
+
+
+                        setMeshStatic(threeObject, propertyValue);
+
                     }
                     if (propertyName == 'isDynamic') {
                         //debugger;
+
                         vwf.setProperty(nodeID, 'isStatic', false);
-                        threeObject.setDynamic(propertyValue);
+                        setMeshDynamic(threeObject, propertyValue);
                     }
                     //This can be a bit confusing, as the node has a material property, and a material child node. 
                     //setting the property does this, but the code in the component is ambigious
@@ -1009,7 +1027,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                         _SceneManager.setMaxDepth(propertyValue);
                     }
                     if (propertyName == 'octreeObjects') {
-                         _SceneManager.setMaxObjects(propertyValue);
+                        _SceneManager.setMaxObjects(propertyValue);
                     }
                     if (propertyName == 'backgroundColor') {
                         if (node && node.renderer) {
@@ -1036,7 +1054,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 }
                 if (threeObject instanceof THREE.PointLight || threeObject instanceof THREE.DirectionalLight || threeObject instanceof THREE.SpotLight) {
 
-                    
+
 
 
 
@@ -1091,10 +1109,10 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                             rebuildAllMaterials.call(this);
                         }
                         node.threeObject.updateMatrixWorld(true);
-                        if (node.threeObject.target){
-                             node.threeObject.add(node.threeObject.target);
-                             node.threeObject.target.position.z = -1;
-                             node.threeObject.target.updateMatrixWorld(true);
+                        if (node.threeObject.target) {
+                            node.threeObject.add(node.threeObject.target);
+                            node.threeObject.target.position.z = -1;
+                            node.threeObject.target.updateMatrixWorld(true);
                         }
                     }
                     //if(propertyName == 'diffuse')
