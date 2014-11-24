@@ -39,7 +39,7 @@ function cleanRecycledSceneManagerRegion(min, max, depth, scene, order)
         this.mesh.updateMatrixWorld(true);
     }
 
-/*
+
     if (this.RenderBatchManager) {
         _SceneManager.BatchManagers.splice(_SceneManager.BatchManagers.indexOf(this.RenderBatchManager), 1);
         this.RenderBatchManager.deinitialize();
@@ -49,7 +49,7 @@ function cleanRecycledSceneManagerRegion(min, max, depth, scene, order)
     if (this.depth <= batchAtLevel) {
         this.RenderBatchManager = new THREE.RenderBatchManager(scene, GUID());
         _SceneManager.BatchManagers.push(this.RenderBatchManager);
-    }*/
+    }
 }
 function allocateSceneManagerRegion(min, max, depth, scene, order)
 {
@@ -187,14 +187,22 @@ SceneManager.prototype.setExtents = function(extents) {
 }
 SceneManager.prototype.rebuild = function() {
 
-    var children = this.root.getChildren();
+    
+    var children = this.root.getChildren().concat(this.staticRoot.getChildren());
     this.root.deinitialize();
+    this.staticRoot.deinitialize();
     this.min = [-maxSize, -maxSize, -maxSize];
     this.max = [maxSize, maxSize, maxSize];
     this.root = allocateSceneManagerRegion(this.min, this.max, 0, this.scene, 0);
+    this.staticRoot = allocateSceneManagerRegion(this.min, this.max, 0, this.scene, 0);
     for (var i = 0; i < children.length; i++) {
         if (!children[i].isDynamic())
-            this.root.addChild(children[i]);
+        {
+            if(children[i].isStatic())
+                this.staticRoot.addChild(children[i]);
+            else        
+                this.root.addChild(children[i]);
+        }
         else
             this.addToRoot(children[i]);
 
@@ -253,6 +261,7 @@ SceneManager.prototype.CPUPick = function(o, d, opts) {
 
     var hitlist = [];
     this.root.CPUPick(o, d, opts, hitlist);
+    this.staticRoot.CPUPick(o, d, opts, hitlist);
 
 
     //so, in the octree, all pickable meshes are sorted - there is no need to walk down the transform graph to an objects children
@@ -288,6 +297,7 @@ SceneManager.prototype.FrustrumCast = function(f, opts) {
     //let's lazy update only on demand;
     this.update();
     var hitlist = this.root.FrustrumCast(f, opts || this.defaultPickOptions);
+    hitlist = hitlist.concat(this.staticRoot.FrustrumCast(f, opts || this.defaultPickOptions));
     for (var i = 0; i < this.specialCaseObjects.length; i++) {
         var childhits = this.specialCaseObjects[i].FrustrumCast(f, opts || this.defaultPickOptions);
         if (childhits)
@@ -302,6 +312,7 @@ SceneManager.prototype.SphereCast = function(center, r, opts) {
     //let's lazy update only on demand;
     this.update();
     var hitlist = this.root.SphereCast(center, r, opts || this.defaultPickOptions);
+    hitlist = hitlist.concat(this.staticRoot.SphereCast(f, opts || this.defaultPickOptions));
     for (var i = 0; i < this.specialCaseObjects.length; i++) {
         var childhits = this.specialCaseObjects[i].SphereCast(center, r, opts || this.defaultPickOptions);
         if (childhits)
@@ -344,6 +355,7 @@ SceneManager.prototype.update = function(dt) {
 
     //now desplit anything that has too few objects
     this.root.processDesplits();
+    this.staticRoot.processDesplits();
 
     this.dirtyObjects.length = 0;
 
@@ -733,16 +745,21 @@ SceneManager.prototype.initialize = function(scene) {
             this.RenderBatchManager.materialUpdated(this);
     }
     THREE.Line.prototype.materialUpdated = THREE.Mesh.prototype.materialUpdated;
-    THREE.Object3D.prototype.setStatic = function(_static) {
+    THREE.Mesh.prototype.setStatic = function(_static) {
         if (this.isDynamic && this.isDynamic()) return;
         if(this._static == _static) return;
         this._static = _static;
-        this.sceneManagerUpdate();
+        _SceneManager.removeChild(this);
+        if(this._static)
+            _SceneManager.addStaticChild(this);
+        else
+            _SceneManager.addChild(this);
+        
     }
-    THREE.Object3D.prototype.setDynamic = function(_dynamic) {
+    THREE.Mesh.prototype.setDynamic = function(_dynamic) {
         if (this._dynamic == _dynamic) return;
         this._dynamic = _dynamic;
-        this._static = false;
+        this.setStatic(false);
         if (this._dynamic) {
             this.sceneManagerDelete();
             _SceneManager.addToRoot(this);
@@ -792,11 +809,16 @@ SceneManager.prototype.initialize = function(scene) {
         this.SceneManagerIgnore = true;
     }
     this.root = allocateSceneManagerRegion(this.min, this.max, 0, scene, 0);
+    this.staticRoot = allocateSceneManagerRegion(this.min, this.max, 0, scene, 0);
     this.scene = scene;
 }
 SceneManager.prototype.addChild = function(c) {
 
     this.root.addChild(c);
+}
+SceneManager.prototype.addStaticChild = function(c) {
+
+    this.staticRoot.addChild(c);
 }
 SceneManager.prototype.removeChild = function(c) {
 
@@ -809,6 +831,7 @@ SceneManager.prototype.removeChild = function(c) {
     }
 
     var removed = this.root.removeChild(c);
+    this.staticRoot.removeChild(c);
 
 
 }
@@ -962,9 +985,9 @@ SceneManagerRegion.prototype.removeChild = function(child) {
 
         this.childObjects.splice(this.childObjects.indexOf(child), 1);
         this.childRemoved();
-        if (this.RenderBatchManager) {
+        if (child.RenderBatchManager) {
 
-            this.RenderBatchManager.remove(child);
+            child.RenderBatchManager.remove(child);
         }
 
     } else {
@@ -1001,28 +1024,7 @@ SceneManagerRegion.prototype.desplit = function() {
         //this.updateObject(children[j]);
 
 
-        if (children[j].isStatic()) {
-
-            //search up for the lowest level batch manager I fit in
-            var p = this;
-            var found = false;
-            while (!found && p) {
-                if (p.RenderBatchManager) {
-                    found = true;
-                    break;
-                }
-                p = p.parent;
-
-            }
-
-            //remove me from my old batch, if any
-            if (children[j].RenderBatchManager)
-                children[j].RenderBatchManager.remove(children[j]);
-
-            //add to the correct batch, if I'm static
-            p.RenderBatchManager.add(children[j]);
-
-        }
+        
 
     }
     this.childCount = this.childObjects.length;
@@ -1198,7 +1200,7 @@ SceneManagerRegion.prototype.updateObject = function(object) {
                 object.RenderBatchManager.remove(object);
 
             //add to the correct batch, if I'm static
-            if (object.isStatic())
+            if (p && object.isStatic())
                 p.RenderBatchManager.add(object);
         }
     }
@@ -1487,8 +1489,7 @@ THREE.RenderBatch.prototype.deinitialize = function() {
         this.mesh.geometry.dispose();
         this.mesh = null;
     }
-    for(var i =0; i < this.childRegions.length; i++)
-        this.childRegions[i].deinitialize();
+   
 }
 THREE.RenderBatch.prototype.CPUPick = function(o, d, opts, hits) {
     if (!hits)
@@ -1521,7 +1522,7 @@ THREE.RenderBatch.prototype.testForMirroredMatrix = function(matrix) {
     return false;
 }
 THREE.RenderBatch.prototype.build = function() {
-    //console.log('Building batch ' + this.name + ' : objects = ' + this.objects.length); 
+    console.log('Building batch ' + this.name + ' : objects = ' + this.objects.length); 
 
     //do the merge:
     if (this.mesh) {
@@ -1553,6 +1554,8 @@ THREE.RenderBatch.prototype.build = function() {
     }
     for (var i = 0; i < this.objects.length; i++) {
 
+        if(this.objects[i].originalVisibility === false) continue;
+        this.objects[i].visible = false;
         var tg = this.objects[i].geometry;
         var matrix = this.objects[i].matrixWorld.clone();
         var matrixIsMirrored = this.testForMirroredMatrix(matrix);
@@ -1617,7 +1620,7 @@ THREE.RenderBatch.prototype.build = function() {
                 var uvs2 = tg.faceVertexUvs[l];
 
                 if (uvs2 && uvs2.length === tg.faces.length) {
-                    for (u = 0, il = uvs2.length; u < il; u++) {
+                    for (var u = 0, il = uvs2.length; u < il; u++) {
 
                         var uv = uvs2[u],
                             uvCopy = [];
@@ -1632,7 +1635,7 @@ THREE.RenderBatch.prototype.build = function() {
 
                     }
                 } else {
-                    for (u = 0, il = tg.faces.length; u < il; u++) {
+                    for (var u = 0, il = tg.faces.length; u < il; u++) {
 
                         var count = 3;
                         if (tg.faces[u].d !== undefined)
@@ -1863,8 +1866,8 @@ THREE.RenderBatchManager.prototype.add = function(child) {
 
 
     this.objects.push(child);
-    child.visible = false;
-
+    //child.visible = false;
+    child.originalVisibility = child.visible;
     child.RenderBatchManager = this;
 
     var added = false;
@@ -1892,7 +1895,7 @@ THREE.RenderBatchManager.prototype.remove = function(child) {
     if (this.objects.indexOf(child) == -1)
         return;
 
-    child.visible = true;
+    child.visible = child.originalVisibility;
     child.RenderBatchManager = null;
     //	console.log('removing ' + child.name + ' from batch' + this.name);  
     this.objects.splice(this.objects.indexOf(child), 1);
