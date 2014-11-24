@@ -1126,7 +1126,7 @@
         }
         this.settingProperty = function(propname,propval)
         {
-            if(propname == 'materialDef' && propval && propval.layers)
+            if(propname == 'materialDef' && propval && propval.layers && !Object.deepEquals(propval,this.materialDef))
             {
 
                 var needRebuild = false;
