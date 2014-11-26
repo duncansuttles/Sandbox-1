@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 function setClone(ab) {
         var f32 = new Float32Array(ab.length);
@@ -57,7 +57,7 @@ function RunPrefixMethod(obj, method, param) {
 }
 var pfx = ["webkit", "moz", "ms", "o", ""];
 
-define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/threejs/ThermalCamEffect", "vwf/model/threejs/VRRenderer"], function(module, view) {
+define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect","vwf/model/threejs/ThermalCamEffect", "vwf/model/threejs/VRRenderer"], function(module, view) {
     var stats;
     var NORMALRENDER = 0;
     var STEREORENDER = 1;
