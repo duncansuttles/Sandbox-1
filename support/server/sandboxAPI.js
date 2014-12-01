@@ -724,7 +724,8 @@ function SaveThumbnail(URL, SID, body, response) {
 	var data = body.image.replace(/^data:image\/\w+;base64,/, "");
 
 	var buf = new Buffer(data, 'base64');
-	SID = SID ? SID : request.url.query.SID;
+	SID = SID ? SID : URL.query.SID;
+	var automatic = URL.query.auto;
 	if (SID.length == 16) {
 		SID = global.appPath.replace(/\//g, "_") + '_' + SID + '_';
 	}
@@ -732,6 +733,12 @@ function SaveThumbnail(URL, SID, body, response) {
 		if (!state) {
 			respond(response, 500, 'state does not exist');
 			return
+		}
+		//if somehow we got an auto set thumb, but the world has one set explicitly, just return
+		if(!state.userSetThumbnail && automatic === 'true')
+		{
+			respond(response, 200, '');
+			return;
 		}
 		if (state.owner != URL.loginData.UID && URL.loginData.UID != global.adminUID) {
 			respond(response, 401, 'User does not have permission to edit instance');
@@ -743,8 +750,20 @@ function SaveThumbnail(URL, SID, body, response) {
 				if (err)
 					respond(response, 500, err.toString());
 				else
-					respond(response, 200, '');
-
+				{
+					if(automatic === 'true')
+						respond(response, 200, '');
+					else
+					{
+						//set state metadata that the file was explicitly set
+						state.userSetThumbnail = true;
+						console.log('userSetThumbnail');
+						DAL.updateInstance(SID,state,function()
+						{
+							respond(response, 200, '');
+						})
+					}
+				}
 			});
 		}
 	});
