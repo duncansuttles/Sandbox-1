@@ -21,7 +21,7 @@
 	},
 	"Fog":{
 		"url":"./contentlibraries/environments/vwf/fog.vwf.json",
-		"preview":"./contentlibraries/environments/thumbs/fog.png",
+		"preview":"./contentlibraries/environments/thumbs/fog.jpg",
 		"type":"environment"
 	}
 }
