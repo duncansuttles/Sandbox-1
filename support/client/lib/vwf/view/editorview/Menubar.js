@@ -29,7 +29,10 @@ define({
             }
 
             window.setTimeout(function() {
-                window.setThumbnail();
+
+                //only set the thumb automatically if the user has not specified one
+                if(!_DataManager.getInstanceData().userSetThumbnail)
+                    window.setThumbnail(true);
 
             }, 10000)
 
@@ -42,7 +45,7 @@ define({
 
         });
 
-        window.setThumbnail = function() {
+        window.setThumbnail = function(auto) {
 
             if (vwf.getProperty('index-vwf', 'owner') != _UserManager.GetCurrentUserName()) {
                 alertify.alert('Sorry, only the world owner can set the thumbnail');
@@ -67,7 +70,7 @@ define({
 
                 jQuery.ajax({
                     type: 'POST',
-                    url: './vwfDataManager.svc/thumbnail?SID=' + _DataManager.getCurrentSession().replace(/\//g, '_'),
+                    url: './vwfDataManager.svc/thumbnail?SID=' + _DataManager.getCurrentSession().replace(/\//g, '_') +'&auto=' + auto,
                     data: JSON.stringify({
                         image: img
                     }),
@@ -91,7 +94,7 @@ define({
         }
 
         $('#SetThumbnail').click(function(e) {
-            window.setThumbnail();
+            window.setThumbnail(false);
         });
 
         $('#MenuCreateGUIDialog').click(function(e) {

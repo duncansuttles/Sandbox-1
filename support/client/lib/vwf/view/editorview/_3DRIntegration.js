@@ -374,7 +374,10 @@ define(["vwf/view/editorview/Editor"], function(Editor) {
             $('#ModelLibrary').dialog('close');
         }
         this.showUpload = function() {
-            if (!_UserManager.GetCurrentUserName()) {
+
+            
+
+            if (!_DataManager.getCurrentUserName()) {
                 alertify.alert('You must be logged in to upload a model');
                 return;
             }
