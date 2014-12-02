@@ -149,32 +149,37 @@ phyPointToPointJoint.prototype.buildJoint = function() {
     return new Ammo.btPoint2PointConstraint(this.bodyA, this.bodyB, pa, pb);
 }
 
+function setupPhyObject(node,id,world)
+{
+    node.body = null;
+    node.ready = false;
+    node.mass = 1;
+    node.collision = null;
+    node.enabled = false;
+    node.initialized = false;
+    node.collisionDirty = false;
+    node.id = id;
+    node.restitution = .1;
+    node.friction = .5;
+    node.damping = .05;
+    node.world = world;
+    node.children = {};
+    node.localOffset = null;
+    node.collisionBodyOffsetPos = [0, 0, 0];
+    node.collisionBodyOffsetRot = [1, 0, 0, 1];
+    node.angularVelocity = [0, 0, 0];
+    node.linearVelocity = [0, 0, 0];
+    node.localScale = [1, 1, 1];
+    node.activationState = 1;
+    node.deactivationTime = 0;
+    node.linearFactor = [1, 1, 1];
+    node.angularFactor = [1, 1, 1];
+    node.constantForce = null;
+    node.constantTorque = null;
+    node.transform = [];
+}
 function phyObject(id, world) {
-    this.body = null;
-    this.ready = false;
-    this.mass = 1;
-    this.collision = null;
-    this.enabled = false;
-    this.initialized = false;
-    this.collisionDirty = false;
-    this.id = id;
-    this.restitution = .1;
-    this.friction = .5;
-    this.damping = .05;
-    this.world = world;
-    this.children = {};
-    this.localOffset = null;
-    this.collisionBodyOffsetPos = [0, 0, 0];
-    this.collisionBodyOffsetRot = [1, 0, 0, 1];
-    this.angularVelocity = [0, 0, 0];
-    this.linearVelocity = [0, 0, 0];
-    this.localScale = [1, 1, 1];
-    this.activationState = 1;
-    this.deactivationTime = 0;
-    this.linearFactor = [1, 1, 1];
-    this.angularFactor = [1, 1, 1];
-    this.constantForce = null;
-    this.constantTorque = null;
+    setupPhyObject(this,id,world);
 
 }
 phyObject.prototype.getWorldScale = function() {
@@ -312,7 +317,7 @@ phyObject.prototype.initialize = function() {
             var z = 0;
             for (var i = 0; i < childCollisions.length; i++) {
                 //note!! at this point, this object must be a child of the scene, so transform === worldtransform
-                var thisworldmatrix = this.transform;
+                var thisworldmatrix = vecset([],this.transform);
                 var wmi = [];
                 Mat4.invert(thisworldmatrix, wmi);
                 var aslocal = Mat4.multMat(wmi, childCollisions[i].matrix, []);
@@ -669,8 +674,8 @@ phyObject.prototype.getTransform = function(outmat) {
 
 
     //since the value is orthonormal, scaling is easy.
-
-    //this.transform = vecset(this.transform, mat);
+    if(this.parent.id == vwf.application())
+        this.transform = vecset(this.transform, mat);
     outmat = vecset(outmat, mat);
     return outmat;
 }
@@ -705,15 +710,20 @@ phyObject.prototype.setTransform = function(matrix) {
     matrix[9] /= this.localScale[2];
     matrix[10] /= this.localScale[2];
 
-    if(this.initialized === true && matComp(matrix,this.transform || [])) return;
+    //if(this.initialized === true && matComp(matrix,this.transform || [])) return;
 
-    this.transform = matrix;
+    
     //todo: the compound collision of the parent does not need to be rebuild, just transforms updated
     //need new flag for this instead of full rebuild
-    if (this.enabled === true && MATH.distanceVec3(this.localScale, oldScale) > .0001) {
+    if (this.parent.id !== vwf.application() && this.enabled === true && !matComp(this.transform,matrix))  //if I'm part of a compound collsion
         this.markRootBodyCollisionDirty();
-    } else if (this.initialized === true) {
-
+    else if (this.enabled === true && MATH.distanceVec3(this.localScale, oldScale) > .0001) //if I'm not part of a compound collision but my scale has changedd
+    {
+        this.markRootBodyCollisionDirty();
+    }
+    else if (this.initialized === true ){  //if I'm not part of a compound collision but I've moved but not scaled
+       
+        this.transform = vecset(this.transform, matrix);
         if(this.parent.id !== vwf.application())
             this.markRootBodyCollisionDirty();
 
@@ -753,6 +763,7 @@ phyObject.prototype.setTransform = function(matrix) {
 
         }
     }
+    this.transform = vecset(this.transform, matrix);;
 
 
 
@@ -806,6 +817,7 @@ function phySphere(id, world) {
     this.id = id;
     this.type = SPHERE;
     this.children = {};
+    setupPhyObject(this,id,world);
 }
 phySphere.prototype = new phyObject();
 phySphere.prototype.buildCollisionShape = function() {
@@ -830,6 +842,7 @@ function phyBox(id, world) {
     this.id = id;
     this.type = BOX;
     this.children = {};
+    setupPhyObject(this,id,world);
 }
 phyBox.prototype = new phyObject();
 phyBox.prototype.buildCollisionShape = function() {
@@ -873,6 +886,7 @@ function phyCylinder(id, world) {
     this.id = id;
     this.type = CYLINDER;
     this.children = {};
+    setupPhyObject(this,id,world);
 }
 phyCylinder.prototype = new phyObject();
 phyCylinder.prototype.buildCollisionShape = function() {
@@ -905,6 +919,7 @@ function phyCone(id, world) {
     this.id = id;
     this.type = CONE;
     this.children = {};
+    setupPhyObject(this,id,world);
 }
 phyCone.prototype = new phyObject();
 phyCone.prototype.buildCollisionShape = function() {
@@ -936,6 +951,7 @@ function phyPlane(id, world) {
     this.id = id;
     this.type = PLANE;
     this.children = {};
+    setupPhyObject(this,id,world);
 }
 phyPlane.prototype = new phyObject();
 phyPlane.prototype.buildCollisionShape = function() {
@@ -973,6 +989,7 @@ function phyAsset(id, world) {
     this.id = id;
 
     this.children = {};
+    setupPhyObject(this,id,world);
 }
 phyAsset.prototype = new phyObject();
 phyAsset.prototype.setMass = function(mass) {
