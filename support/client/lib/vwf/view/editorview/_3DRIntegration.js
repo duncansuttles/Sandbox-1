@@ -211,10 +211,6 @@ define(["vwf/view/editorview/Editor"], function(Editor) {
 
 
 
-
-
-
-
             $('#cancel3DRUpload').click(function() {
                 $('#ModelUploadDialog').hide();
 
@@ -322,7 +318,15 @@ define(["vwf/view/editorview/Editor"], function(Editor) {
             resizable: false,
             position: 'center',
             modal: true,
-            movable: true
+            movable: true,
+            show: {
+                effect: "fade",
+                duration: 300
+            },
+            hide: {
+                effect: "fade",
+                duration: 300
+            }
         });
 
         $('#ModelDetails').dialog({
@@ -336,6 +340,14 @@ define(["vwf/view/editorview/Editor"], function(Editor) {
             position: 'center',
             modal: true,
             movable: false,
+            show: {
+                effect: "fade",
+                duration: 300
+            },
+            hide: {
+                effect: "fade",
+                duration: 300
+            },
             buttons: {
                 Close: function() {
                     $('#ModelDetails').dialog('close');

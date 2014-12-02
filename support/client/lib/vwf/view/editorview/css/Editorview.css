@@ -356,7 +356,7 @@ border-radius: 6px;
 	}
 	.ContextMenuAction:hover
 	{
-	background: #4040A0;
+	background: rgb(130,184,255);
 	}
 	.ContextMenuItem
 	{
@@ -380,6 +380,8 @@ border-radius: 6px;
 		display: inline-block;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		color: black;
+		text-shadow: 1px 1px 3px white;
 	}
 	.editorCheck
 	{
@@ -600,7 +602,7 @@ font-weight: bold;
 		display: block;
 		position: fixed;
 		
-		z-index: 101;
+		
 		width: 100%;
 		left: 0px;
 	
@@ -1008,7 +1010,7 @@ box-shadow: 3px 2px 10px lightgray inset;
 
 .PrivateMessageWindow input:focus
 {
-border:1px solid blue;
+border:1px solid rgb(130, 184, 255);
 box-shadow: 3px 2px 10px lightgray inset;
 }
 
@@ -1041,7 +1043,7 @@ background: linear-gradient(to bottom,  #6ea0da 0%,#8cbce4 50%,#80b5e4 51%,#b9d8
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6ea0da', endColorstr='#b9d8ef',GradientType=0 ); /* IE6-9 */
 
 border: 1px solid lightgray;
-box-shadow: 5px 5px 10px lightgray;
+
 border-bottom-left-radius: 1px;
 border-top-left-radius: 25px;
 border-bottom-color: #AAA
@@ -1077,7 +1079,7 @@ background: -ms-linear-gradient(top,  rgba(143,233,167,1) 0%,rgba(167,239,180,1)
 background: linear-gradient(to bottom,  rgba(143,233,167,1) 0%,rgba(167,239,180,1) 50%,rgba(157,239,173,1) 51%,rgba(202,246,210,1) 100%); /* W3C */
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8fe9a7', endColorstr='#caf6d2',GradientType=0 ); /* IE6-9 */
 border: 1px solid lightgray;
-box-shadow: 5px 5px 10px lightgray;
+
 border-bottom-right-radius: 0px;
 border-top-right-radius: 25px;
 border-bottom-color: #AAA
@@ -1105,13 +1107,14 @@ position: absolute;
 padding: 5px 0px 5px 10px;
 font-size: 1.5em;
 left: 1%;
-right: 1%;
 box-shadow: 3px 2px 10px lightgray inset;
+width: 97%;
+box-sizing: border-box;
 }
 #ChatInput:focus
 {
 
-	border:1px solid blue;
+	border:1px solid rgb(130, 184, 255);
 box-shadow: 3px 2px 10px lightgray inset;
 }
 #ChatLog
@@ -1122,14 +1125,7 @@ box-shadow: 3px 2px 10px lightgray inset;
 #ChatBodyInner
 {
 	
-background: #f1f9ff; /* Old browsers */
-background: -moz-linear-gradient(top,  #f1f9ff 0%, #e7f4ff 49%, #e9f5ff 50%, #e1efff 100%); /* FF3.6+ */
-background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f1f9ff), color-stop(49%,#e7f4ff), color-stop(50%,#e9f5ff), color-stop(100%,#e1efff)); /* Chrome,Safari4+ */
-background: -webkit-linear-gradient(top,  #f1f9ff 0%,#e7f4ff 49%,#e9f5ff 50%,#e1efff 100%); /* Chrome10+,Safari5.1+ */
-background: -o-linear-gradient(top,  #f1f9ff 0%,#e7f4ff 49%,#e9f5ff 50%,#e1efff 100%); /* Opera 11.10+ */
-background: -ms-linear-gradient(top,  #f1f9ff 0%,#e7f4ff 49%,#e9f5ff 50%,#e1efff 100%); /* IE10+ */
-background: linear-gradient(to bottom,  #f1f9ff 0%,#e7f4ff 49%,#e9f5ff 50%,#e1efff 100%); /* W3C */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f1f9ff', endColorstr='#e1efff',GradientType=0 ); /* IE6-9 */
+
 
 
 width: 99%;
@@ -1365,9 +1361,10 @@ display: inline-block;
 }
 .hierarchyItemSelected
 {
-	background: lightblue url(../../../images/ui-bg_glass_75_cfe4ef_1x400.png) repeat;
+	background: rgb(130, 184, 255) url(../../../images/ui-bg_glass_75_cfe4ef_1x400.png) repeat;
 background-size: 100% 100%;
 border: 1px solid lightgray;
+color:black;
 }
 
 #hierarchyDisplay
@@ -1658,3 +1655,57 @@ box-shadow: 2px 2px 5px gray;
 ::-webkit-scrollbar-thumb:window-inactive {
 	background: rgba(130, 184, 255,1);
 }
+
+
+.scriptchoice
+{
+cursor: pointer;
+font-size: 1.5em;
+border: 1px solid gray;
+border-radius: 5px;
+box-shadow: 0px 0px 20px #555 inset;
+margin: 2px;
+padding: 1px;
+text-overflow: ellipsis;
+overflow: hidden;
+color: #DDD;
+}
+
+.scriptchoicesug
+{
+color:#666;
+cursor: pointer;
+font-size: 1.5em;
+border: 1px solid gray;
+border-radius: 5px;
+box-shadow: 0px 0px 20px #555 inset;
+margin: 2px;
+padding: 1px;
+text-overflow: ellipsis;
+overflow: hidden;
+}
+
+.scriptchoice:hover
+{
+color:rgb(130, 184, 255);
+}
+
+.scriptchoicesug:hover
+{
+color:rgb(130, 184, 255);
+}
+
+.libraryAsset img:hover
+{
+
+box-shadow: 2px 2px 10px rgb(130, 184, 255), 9px 9px 10px black inset;
+border: 2px solid rgb(130,184,255);
+}
+
+.BigTextureThumb:hover, .BigTextureThumbSrc:hover
+	{
+		
+		
+		border: 3px solid rgb(140,185,255);
+	
+	}

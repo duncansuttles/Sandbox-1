@@ -719,7 +719,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				for (var j = 0; j < layersliderprops.length; j++)
 				{
 					var prop = layersliderprops[j].prop;
-					var inputstyle = "display: inline;float: right;padding: 0;width: 50px;border-radius: 6px;background: transparent;text-align: center;border-width: 1px;color: black;margin-bottom: 4px;"
+					var inputstyle = "display: inline;float: right;padding: 0;width: 50px;border-radius: 6px;background: transparent;text-align: center;border-width: 1px;color: white;margin-bottom: 4px;"
 					$('#' + rootid).append('<div style="display:inline-block;margin-bottom: 4px;">' + prop + ': </div>');
 					$('#' + rootid).append('<input style="' + inputstyle + '" id="' + rootid + prop + 'value"></input>');
 					$('#' + rootid + prop + 'value').change(this.LayerPropTypein);

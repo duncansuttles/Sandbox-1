@@ -16,6 +16,14 @@ define([], function() {
             $(document.body).append('<div id="publishSettings"></div>');
 
             $('#publishSettings').dialog({
+                show: {
+                    effect: "fade",
+                    duration: 300
+                },
+                hide: {
+                    effect: "fade",
+                    duration: 300
+                },
                 title: "Test Publish",
                 buttons: {
                     ok: function() {
@@ -53,12 +61,10 @@ define([], function() {
                     $('#chooseCamera').attr('cameraID', idList[camList.indexOf(val)]);
                 }, camList)
             })
-            $(window).on('setstatecomplete',function()
-            {
-                
-                var statebackup = vwf.getProperty(vwf.application(),'playBackup');
-                if(!statebackup)
-                {
+            $(window).on('setstatecomplete', function() {
+
+                var statebackup = vwf.getProperty(vwf.application(), 'playBackup');
+                if (!statebackup) {
                     _Publisher.backupState();
                 }
 
@@ -121,7 +127,7 @@ define([], function() {
                 for (var i in node.properties) {
                     //4th param as true returns whether or not delegation happened during get. if so, no need to store this property.
                     if (vwf.getProperty(node.id, i, false, true)) {
-                       // console.log('Removing delegated property', node.id, i);
+                        // console.log('Removing delegated property', node.id, i);
                         delete node.properties[i];
                     }
                 }
@@ -137,7 +143,7 @@ define([], function() {
         }
         this.satProperty = function(id, prop, val) {
 
-             
+
             if (id == vwf.application()) {
                 if (prop == 'playMode' && val == 'play') {
                     $('#playButton').addClass('pulsing');
@@ -148,12 +154,11 @@ define([], function() {
                     $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', 'gray');
                     $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', 'none');
                     $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', 'not-allowed');
-                    
-               
+
+
                     //remember the last selection and then deselect;
                     this.lastSelection = [];
-                    for(var i = 0; i < _Editor.getSelectionCount(); i++)
-                    {
+                    for (var i = 0; i < _Editor.getSelectionCount(); i++) {
                         this.lastSelection.push(_Editor.GetSelectedVWFNode(i).id);
                     }
                     _Editor.SelectObject(null);
@@ -179,7 +184,7 @@ define([], function() {
                 if (prop == 'playMode' && val == 'stop') {
 
                     //restore selection
-                    
+
                     _Editor.SelectObject(this.lastSelection);
                     $('#playButton').removeClass('pulsing');
                     $('#pauseButton').removeClass('pulsing');
@@ -206,15 +211,15 @@ define([], function() {
 
             //find a node from one state in another
             var find = function(node, id) {
-                if (node.id == id)
-                    return true;
-                for (var i in node.children) {
-                    var ret = find(node.children[i], id);
-                    if (ret) return true;
+                    if (node.id == id)
+                        return true;
+                    for (var i in node.children) {
+                        var ret = find(node.children[i], id);
+                        if (ret) return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
-            //async walk the graph and create nodes that don't exist. if htey do exist, set all their props
+                //async walk the graph and create nodes that don't exist. if htey do exist, set all their props
             var walk = function(node, walkCallback) {
                 if (!node.children) {
                     walkCallback();
@@ -230,7 +235,7 @@ define([], function() {
                     } catch (e) {
                         //create it and when done, do the next child of the current node
                         if (node.children[i].extends != 'character.vwf')
-                            vwf.createChild(node.id, i, node.children[i], null,  function(childID){
+                            vwf.createChild(node.id, i, node.children[i], null, function(childID) {
                                 eachSeriesCallback();
                             });
                         else
@@ -251,7 +256,7 @@ define([], function() {
                     } else {
                         //create it and when done, do the next child of the current node
                         if (node.children[i].extends != 'character.vwf')
-                            vwf.createChild(node.id, i, node.children[i], null,   function(childID){
+                            vwf.createChild(node.id, i, node.children[i], null, function(childID) {
                                 eachSeriesCallback();
                             });
                         else
@@ -291,7 +296,7 @@ define([], function() {
 
             });
 
-         //_PhysicsDriver.resetWorld();
+            //_PhysicsDriver.resetWorld();
 
         }
         this.restoreState = function() {
@@ -307,7 +312,7 @@ define([], function() {
 
         }
         this.playWorld = function() {
-           
+
             if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(), vwf.application()) == 0) {
                 alertify.log('You do not have permission to modify this world');
                 return;
@@ -336,15 +341,15 @@ define([], function() {
 
         }
         this.togglePauseWorld = function() {
-            if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(), vwf.application()) == 0) {
-                alertify.log('You do not have permission to modify this world');
-                return;
+                if (_PermissionsManager.getPermission(_UserManager.GetCurrentUserName(), vwf.application()) == 0) {
+                    alertify.log('You do not have permission to modify this world');
+                    return;
+                }
+                var currentState = vwf.getProperty(vwf.application(), 'playMode');
+                if (currentState === 'stop') return;
+                vwf_view.kernel.setProperty(vwf.application(), 'playMode', 'paused')
             }
-            var currentState = vwf.getProperty(vwf.application(), 'playMode');
-            if (currentState === 'stop') return;
-            vwf_view.kernel.setProperty(vwf.application(), 'playMode', 'paused')
-        }
-        //quickly clone a world, publish it and open it. When that world closes, delete it.
+            //quickly clone a world, publish it and open it. When that world closes, delete it.
         this.testPublish = function() {
 
 

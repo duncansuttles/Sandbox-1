@@ -45,12 +45,20 @@ define({
 			}
 			var s = e;
 			e = ToSafeID(e);
-			var displayName = vwf.getProperty(vwf.application(),'clients')[s].name;
+			var displayName = vwf.getProperty(vwf.application(), 'clients')[s].name;
 			if ($('#PM' + e).length == 1) {
 				$('#PM' + e).dialog("open");
 			} else {
 				$(document.body).prepend("<div id='" + 'PM' + e + "' class='PrivateMessageWindow'/>");
 				$('#PM' + e).dialog({
+					show: {
+						effect: "fade",
+						duration: 300
+					},
+					hide: {
+						effect: "fade",
+						duration: 300
+					},
 					title: "Chat with " + displayName,
 					autoOpen: true,
 					height: 180
@@ -133,8 +141,8 @@ define({
 		function PMReceived(e) {
 			vwf.callMethod('index-vwf', 'playSound', ['./sounds/ChatDing.wav'])
 			e = JSON.parse(e);
-			var displayNameSender = vwf.getProperty(vwf.application(),'clients')[e.sender].name;;
-			var displayNameReceiver = vwf.getProperty(vwf.application(),'clients')[e.receiver].name;;
+			var displayNameSender = vwf.getProperty(vwf.application(), 'clients')[e.sender].name;;
+			var displayNameReceiver = vwf.getProperty(vwf.application(), 'clients')[e.receiver].name;;
 			if (e.sender != vwf.moniker() && e.receiver != vwf.moniker()) return;
 			if (e.sender != vwf.moniker() && e.receiver == vwf.moniker()) setupPmWindow(e.sender);
 			var color = 'darkred';
@@ -167,7 +175,7 @@ define({
 			vwf.callMethod('index-vwf', 'playSound', ['./sounds/ChatDing.wav'])
 			var message = JSON.parse(e);
 			var color = 'darkred';
-			var displayNameSender = vwf.getProperty(vwf.application(),'clients')[message.sender].name;;
+			var displayNameSender = vwf.getProperty(vwf.application(), 'clients')[message.sender].name;;
 			var text = replaceURLWithHTMLLinks(message.text);
 
 			if (message.sender == vwf.moniker())
@@ -231,6 +239,14 @@ define({
 				"Send": function() {
 					SendChatMessage();
 				}
+			},
+			show: {
+				effect: "fade",
+				duration: 300
+			},
+			hide: {
+				effect: "fade",
+				duration: 300
 			},
 			autoOpen: false
 		});

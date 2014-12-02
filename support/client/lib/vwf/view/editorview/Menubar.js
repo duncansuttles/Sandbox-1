@@ -435,7 +435,7 @@ define({
         });
         $('#ChatInput').keypress(function(e) {
             e.stopPropagation();
-            ChatKeypress(e);
+            
         });
         $('#ChatInput').keydown(function(e) {
             e.stopPropagation();

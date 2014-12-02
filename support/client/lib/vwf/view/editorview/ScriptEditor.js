@@ -187,7 +187,7 @@ define(function ()
 		this.EventChanged = false;
 		//$('#ScriptEditor').resize(function(){_ScriptEditor.resize()});
 		$('#scripteditortitle').prepend('<div class="headericon script"  />');
-		$('#scripteditortitle').append('<div id="maximizescripteditor" style="float:right" class="icon up2" />');
+		$('#scripteditortitle').append('<div id="maximizescripteditor" style="float:right;margin-right: 20px;" class="icon up2" />');
 		$('#scripteditortitle').append('<div id="hidescripteditor" class="icon down" style="float:right"  />');
 		$('#hidescripteditor').click(function ()
 		{
@@ -220,6 +220,7 @@ define(function ()
 		});
 		//$('#ScriptEditor').dialog({title:'Script Editor',autoOpen:false,resize:this.resize,height:520,width:760,position:'center'});
 		
+		$('#ScriptEditor').css('background','black');
 		$('#ScriptEditorDeleteMethod').dialog(
 		{
 			title: 'Delete Method?',
@@ -382,7 +383,7 @@ define(function ()
 			}
 		});
 		$('#ScriptEditorTabs').tabs();
-		$('#ScriptEditorTabs ul').css('background', 'lightgray');
+		//
 		$('#methodlist').css('width', '180px');
 		$('#eventlist').css('width', '180px');
 		$('#propertylist').css('width', '180px');
@@ -391,6 +392,10 @@ define(function ()
 		$('#methodlist').css('overflow-y', 'scroll');
 		$('#eventlist').css('overflow-y', 'scroll');
 		$('#propertylist').css('overflow-y', 'scroll');
+
+		$('#methodlist').css('overflow-x', 'hidden');
+		$('#eventlist').css('overflow-x', 'hidden');
+		$('#propertylist').css('overflow-x', 'hidden');
 		
 		
 		$('#saveEvent').css('position', 'absolute');
@@ -475,7 +480,7 @@ define(function ()
 		$('#newEvent').css('float', 'right');
 		$('#callEvent').css('margin-top', '3px');
 		$('#deleteEvent').css('margin-top', '3px');
-		$('#deleteProperty').css('margin-top', '3px');
+		
 		$('#newEvent').css('margin-top', '3px');
 		
 		$('#saveMethodCopy').click(function (e)
@@ -1198,18 +1203,18 @@ define(function ()
 			this.properties = this.getProperties();
 			var style = "cursor:pointer;font-size: 1.5em;border: 1px solid gray;border-radius: 5px;box-shadow: 0px 0px 20px lightgray inset;margin: 2px;padding: 3px;"
 			var newstyle = "cursor:pointer;font-size: 1.5em;border: 2px solid gray;border-radius: 5px;box-shadow: 0px 0px 20px gray inset;margin: 2px;padding: 3px;"
-			var lightstyle = "color:lightgray;cursor:pointer;font-size: 1.5em;border: 0px solid lightgray;border-radius: 5px;box-shadow: 0px 0px 20px #EEEEEE inset;margin: 2px;padding: 3px;"
+			var lightstyle = "color:#666;cursor:pointer;font-size: 1.5em;border: 0px solid lightgray;border-radius: 5px;box-shadow: 0px 0px 20px #EEEEEE inset;margin: 2px;padding: 3px;"
 			for (var i in this.methodlist)
 			{
-				$('#methodlist').append('<div class="scriptchoice" style="' + style + '" id="method' + i + '"></div>');
+				$('#methodlist').append('<div class="scriptchoice" id="method' + i + '"></div>');
 				$('#method' + i).text(i);
 				
 				$('#method' + i).attr('method', i);
 				$('#method' + i).click(function ()
 				{
 					
-					$("#methodlist").children().css('border-color', 'gray');
-					$(this).css('border-color', 'blue');
+					$("#methodlist").children().css('background-color', '');
+					$(this).css('background-color', 'rgb(130, 184, 255)');
 					var method = $(this).attr('method');
 					var body = _ScriptEditor.methodlist[method].body;
 					var params = _ScriptEditor.methodlist[method].parameters;
@@ -1227,14 +1232,14 @@ define(function ()
 			}
 			for (var i in this.properties)
 			{
-				$('#propertylist').append('<div class="scriptchoice" style="' + style + '" id="property' + i + '"></div>');
+				$('#propertylist').append('<div class="scriptchoice"  id="property' + i + '"></div>');
 				$('#property' + i).text(i);
 				
 				$('#property' + i).attr('property', i);
 				$('#property' + i).click(function ()
 				{
-					$("#propertylist").children().css('border-color', 'gray');
-					$(this).css('border-color', 'blue');
+					$("#propertylist").children().css('background-color', '');
+					$(this).css('background-color', 'rgb(130, 184, 255)');
 					var property = $(this).attr('property');
 					var val = vwf.getProperty(_ScriptEditor.currentNode.id,property);
 					if(typeof(val) == 'object')
@@ -1258,14 +1263,14 @@ define(function ()
 			}
 			for (var i in this.eventlist)
 			{
-				$('#eventlist').append('<div  style="' + style + '"  id="event' + i + '"></div>');
+				$('#eventlist').append('<div    id="event' + i + '"></div>');
 				$('#event' + i).text(i);
 				$('#event' + i).attr('event', i);
 				
 				$('#event' + i).click(function ()
 				{
-					$("#eventlist").children().css('border-color', 'gray');
-					$(this).css('border-color', 'blue');
+					$("#eventlist").children().css('background-color', '');
+					$(this).css('background-color', 'rgb(130, 184, 255)');
 					var event = $(this).attr('event');
 					var params = "";
 					for (var j in _ScriptEditor.eventlist[event].parameters)
@@ -1296,7 +1301,7 @@ define(function ()
 				var thissug = methodsuggestions[i];
 				if (!this.methodlist || (this.methodlist && this.methodlist[thissug] === undefined))
 				{
-					$('#methodlist').append('<div class="scriptchoice" style="' + lightstyle + '" id="method'+thissug+'"></div>');
+					$('#methodlist').append('<div class="scriptchoicesug"  id="method'+thissug+'"></div>');
 					$('#method'+thissug).text(thissug);
 					$('#method'+thissug).attr('method', thissug);
 					$('#method'+thissug).qtip(
@@ -1328,7 +1333,7 @@ define(function ()
 				if (!this.eventlist || (this.eventlist && this.eventlist[pointersugs[i]] === undefined))
 				{
 					var name = pointersugs[i];
-					$('#eventlist').append('<div class="scriptchoice" style="' + lightstyle + '" id="event' + name + '"></div>');
+					$('#eventlist').append('<div class="scriptchoicesug" id="event' + name + '"></div>');
 					$('#event' + name).text(name);
 					$('#event' + name).qtip(
 					{
@@ -1477,7 +1482,7 @@ define(function ()
 		}
 		$(document).bind('selectionChanged', this.SelectionChanged.bind(this));
 		this.methodEditor = ace.edit("methodtext");
-		this.methodEditor.setTheme("ace/theme/chrome");
+		this.methodEditor.setTheme("ace/theme/monokai");
 		this.methodEditor.getSession().setMode("ace/mode/javascript");
 		var self = this;
 		//show the little popup that displays the parameters to a function call
@@ -1926,7 +1931,7 @@ define(function ()
 		
 		
 		this.eventEditor = ace.edit("eventtext");
-		this.eventEditor.setTheme("ace/theme/chrome");
+		this.eventEditor.setTheme("ace/theme/monokai");
 		this.eventEditor.getSession().setMode("ace/mode/javascript");
 		
 		//route change events to check for autocomplete
@@ -1943,7 +1948,7 @@ define(function ()
 		this.eventEditor.setFontSize('15px');
 		
 		this.propertyEditor = ace.edit("propertytext");
-		this.propertyEditor.setTheme("ace/theme/chrome");
+		this.propertyEditor.setTheme("ace/theme/monokai");
 		this.propertyEditor.getSession().setMode("ace/mode/javascript");
 		this.propertyEditor.setPrintMarginColumn(false);
 		this.propertyEditor.setFontSize('15px');

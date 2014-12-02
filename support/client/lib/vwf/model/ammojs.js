@@ -705,7 +705,7 @@ phyObject.prototype.setTransform = function(matrix) {
     matrix[9] /= this.localScale[2];
     matrix[10] /= this.localScale[2];
 
-    //if(matComp(matrix,this.transform || [])) return;
+    if(this.initialized === true && matComp(matrix,this.transform || [])) return;
 
     this.transform = matrix;
     //todo: the compound collision of the parent does not need to be rebuild, just transforms updated
@@ -713,6 +713,9 @@ phyObject.prototype.setTransform = function(matrix) {
     if (this.enabled === true && MATH.distanceVec3(this.localScale, oldScale) > .0001) {
         this.markRootBodyCollisionDirty();
     } else if (this.initialized === true) {
+
+        if(this.parent.id !== vwf.application())
+            this.markRootBodyCollisionDirty();
 
         this.lastTickRotation = null;
         this.thisTickRotation = null;

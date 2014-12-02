@@ -2097,7 +2097,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
             box = self.findviewnode(id).GetBoundingBox(true);
             mat = toGMat(self.findviewnode(id).matrixWorld).slice(0);
-            var color = [1, 1, 1, 1];
+            var color = [.5, .5, 1, 1];
             if (this.findviewnode(id).initializedFromAsset) color = [1, 0, 0, 1];
             if (vwf.getProperty(id, 'type') == 'Group' && vwf.getProperty(id, 'open') == false) color = [0, 1, 0, 1];
             if (vwf.getProperty(id, 'type') == 'Group' && vwf.getProperty(id, 'open') == true) color = [.7, 1.0, .7, 1];
