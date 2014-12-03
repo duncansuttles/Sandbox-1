@@ -194,11 +194,18 @@ phyObject.prototype.getWorldScale = function() {
     return localScale;
 
 }
-phyObject.prototype.addForce = function(vec) {
+phyObject.prototype.addForce = function(vec,offset) {
     if (vec.length !== 3) return;
     if (this.initialized === true) {
         var f = new Ammo.btVector3(vec[0], vec[1], vec[2]);
-        this.body.applyForce(f);
+        if(!offset)
+            this.body.applyForce(f);
+        else
+        {
+            var o = new Ammo.btVector3(offset[0],offset[1],offset[2]);
+
+            this.body.applyForce(f,o);
+        }
         Ammo.destroy(f);
 
     }
@@ -1540,6 +1547,10 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             if (methodName === '___physics_addForce') {
 
                 node.addForce(args[0]);
+            }
+            if (methodName === '___physics_addForceOffset') {
+
+                node.addForce(args[0],args[1]);
             }
             if (methodName === '___physics_addTorque') {
                 node.addTorque(args[0]);
