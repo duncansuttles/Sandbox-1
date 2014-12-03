@@ -184,10 +184,11 @@ border-radius: 6px;
 		z-index: 10000;
 		font-size: 1.5em;
 		font-family: sans-serif;
-		background: white;
+		background: black;
 		border: 1px solid gray;
 		box-shadow: 2px 2px 2px gray;
 		font-style: italic;
+		color:white;
 	
 	}
 	.AutoCompleteOption
@@ -195,25 +196,26 @@ border-radius: 6px;
 		font-size: 1.5em;
 		font-family: Monaco, Menlo, 'Ubuntu Mono', Consolas, source-code-pro, monospace;
 		padding: 0px 50px 0px 5px;
-		color: #000;
+		color: #FFF;
 		border-bottom: 1px dashed #EDEDED;
 	}
 	.AutoCompleteOption:hover
 	{
 		
-		color: #00D;
+		color: rgb(90, 180, 230);
 		
 	}
 	.AutoCompleteOptionFunction
 	{
-		font-style:italic
+		font-style:italic;
+		color:orange;
 	}
 	#AutoComplete
 	{
 	
 		position: absolute;
 		z-index: 10000000;
-		background: white;
+		background: black;
 		border: 1px solid #888;
 		box-shadow: 5px 5px 10px #888;
 		border-radius: 5px;
@@ -1709,3 +1711,8 @@ border: 2px solid rgb(130,184,255);
 		border: 3px solid rgb(140,185,255);
 	
 	}
+
+#eventtext,#methodtext,#propertytext
+{
+	background:url(vwf/view/editorview/images/ui-bg_diagonals-thick_8_cccccc_40x40.png) 50% 50% repeat;
+}

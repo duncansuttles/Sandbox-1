@@ -1684,14 +1684,13 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             }
 
             proto.properties.materialDef = defaultmaterialDef;
-            proto.properties.size = size;
+           
             proto.properties.transform = MATH.transposeMat4(MATH.translateMatrix(translation));
-            proto.properties.scale = [1, 1, 1];
-            proto.properties.rotation = [0, 0, 1, 0];
+            
             proto.properties.owner = owner;
-            proto.properties.texture = texture;
+           
             proto.properties.type = 'primitive';
-            proto.properties.tempid = id;
+            
             proto.properties.DisplayName = self.GetUniqueName(type);
             var newname = GUID();
             this.createChild('index-vwf', newname, proto, null, null);
@@ -1766,11 +1765,9 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 ModProto.type = 'subDriver/threejs';
                 ModProto.source = 'vwf/model/threejs/' + type + '.js';
             }
-            proto.NotProto = "NOT!";
-            proto.properties.NotProto = "NOT!";
-            proto.properties.translation = [0, 0, 0];
-            proto.properties.scale = [1, 1, 1];
-            proto.properties.rotation = [0, 0, 1, 0];
+            
+           
+            
             proto.properties.owner = owner;
             proto.properties.type = 'modifier';
             proto.properties.DisplayName = self.GetUniqueName(type);
@@ -1800,10 +1797,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             BoxProto.type = 'subDriver/threejs';
             BoxProto.source = 'vwf/model/threejs/' + type + '.js';
             proto.NotProto = "NOT!";
-            proto.properties.NotProto = "NOT!";
-            proto.properties.translation = [0, 0, 0];
-            proto.properties.scale = [1, 1, 1];
-            proto.properties.rotation = [0, 0, 1, 0];
+          
             proto.properties.owner = owner;
             proto.properties.type = 'modifier';
             proto.properties.DisplayName = self.GetUniqueName(type);

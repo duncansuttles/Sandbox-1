@@ -16,8 +16,6 @@ extends: http://vwf.example.com/node.vwf
 implements:
 - http://vwf.example.com/xapi.vwf
 properties:
-  lookAxis: 2
-  upAxis: [ 0, 0, 1]
   inheritScale: true
   audioAPI:
     get: |
@@ -453,16 +451,7 @@ properties:
         
         return this._tapi
   worldTransform:
-    set: |
-      var parentInverse = goog.vec.Mat4.invert( this.transformFromValue( parent.transform.internal_val ), goog.vec.Vec3.create() );
-      var transform = goog.vec.Mat4.multMat( parentInverse, this.transformFromValue( value ), goog.vec.Vec3.create() );
-      this.transform = transform;
   transform:
-  translation:
-  rotation:
-  rotationMatrix:
-  quaternion: 
-  scale:
   enabled: true
   playing: false
   looping: false
