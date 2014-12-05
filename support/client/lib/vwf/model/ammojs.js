@@ -1476,7 +1476,8 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 
                 if(node instanceof phyObject)
                     this.dirtyAssociatedJoints(nodeID);
-
+                if(node instanceof phyJoint)
+                    delete this.jointBodyMap[nodeID]
                 delete node.parent.children[nodeID];
                 node.parent = null;
                 node.deinitialize();
