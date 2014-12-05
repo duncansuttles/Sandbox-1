@@ -1136,7 +1136,7 @@ define(function() {
 				}
 			}
 			for (var i in this.eventlist) {
-				$('#eventlist').append('<div    id="event' + i + '"></div>');
+				$('#eventlist').append('<div class="scriptchoice"   id="event' + i + '"></div>');
 				$('#event' + i).text(i);
 				$('#event' + i).attr('event', i);
 

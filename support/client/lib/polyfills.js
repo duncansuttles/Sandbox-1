@@ -15,6 +15,25 @@ var fills = {
             return value.replace(/[^A-Za-z0-9]/g, "");
         }
 
+        function RunPrefixMethod(obj, method, param) {
+            var p = 0,
+                m, t;
+            while (p < pfx.length && !obj[m]) {
+                m = method;
+                if (pfx[p] == "") {
+                    m = m.substr(0, 1).toLowerCase() + m.substr(1);
+                }
+                m = pfx[p] + m;
+                t = typeof obj[m];
+                if (t != "undefined") {
+                    pfx = [pfx[p]];
+                    return (t == "function" ? obj[m](param) : obj[m]);
+                }
+                p++;
+            }
+        }
+        window.RunPrefixMethod = RunPrefixMethod;
+
 
     },
     _deepEquals: function() {

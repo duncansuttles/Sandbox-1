@@ -399,7 +399,11 @@ define({
             _Editor.CreateBehavior('clamptoground', _UserManager.GetCurrentUserName());
         });
 
+        $('#MenuPhysicsPointConstraint').click(function(e) {
+            _Editor.CreatePhysicsConstraint('point', _UserManager.GetCurrentUserName());
+        });
 
+        
 
         //trigger section
         $('#MenuCreateTriggerDistance').click(function(e) {

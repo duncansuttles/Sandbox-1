@@ -38,23 +38,7 @@ function matdiff(mat1, mat2) {
 
 }
 
-function RunPrefixMethod(obj, method, param) {
-    var p = 0,
-        m, t;
-    while (p < pfx.length && !obj[m]) {
-        m = method;
-        if (pfx[p] == "") {
-            m = m.substr(0, 1).toLowerCase() + m.substr(1);
-        }
-        m = pfx[p] + m;
-        t = typeof obj[m];
-        if (t != "undefined") {
-            pfx = [pfx[p]];
-            return (t == "function" ? obj[m](param) : obj[m]);
-        }
-        p++;
-    }
-}
+
 var pfx = ["webkit", "moz", "ms", "o", ""];
 
 define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/threejs/ThermalCamEffect", "vwf/model/threejs/VRRenderer"], function(module, view) {

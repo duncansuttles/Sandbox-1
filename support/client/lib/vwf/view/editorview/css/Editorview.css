@@ -1458,6 +1458,16 @@ color: #ccc;
 font-size: .7em;
 }
 
+#fullscreenlink
+{
+	cursor:pointer;
+}
+
+#fullscreenlink:hover
+{
+	color:blue;
+}
+
 #preloadprogress
 {
 	vertical-align: middle;
@@ -1488,9 +1498,11 @@ height: 100%;
 left: 0%;
 top: 0%;
 background: white;
-z-index: 1000;
+z-index: 100000;
 box-shadow: 0px 0px 300px #666 inset;
-
+text-align: center;
+font-size: 1.5em;
+font-family: sans-serif;
   }
 .guinode
 {
@@ -1715,4 +1727,26 @@ border: 2px solid rgb(130,184,255);
 #eventtext,#methodtext,#propertytext
 {
 	background:url(vwf/view/editorview/images/ui-bg_diagonals-thick_8_cccccc_40x40.png) 50% 50% repeat;
+}
+
+#loadingSplash
+{
+
+position: absolute;
+align-content: center;
+text-align: center;
+width: 80%;
+left: 10%;
+top: 10%;
+border: 1px solid grey;
+box-shadow: 10px 10px 30px;
+border-radius: 15px;
+
+}
+
+#GuestLogin
+{
+	position: absolute;
+left: 20px;
+top: 20px;
 }
