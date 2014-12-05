@@ -93,6 +93,8 @@ phyJoint.prototype.destroy = function() {
         Ammo.destroy(this.joint);
         this.joint = null;
         this.initialized = false;
+        this.bodyA = null;
+        this.bodyB = null;
     }
 }
 phyJoint.prototype.deinitialize =function()
