@@ -11,8 +11,20 @@
 # or implied. See the License for the specific language governing permissions and limitations under
 # the License.
 ---
-extends: http://vwf.example.com/node3.vwf
-methods:
+extends: "http://vwf.example.com/node3.vwf"
 properties:
-  open: false
-  glyphURL: '../vwf/view/editorview/images/icons/inventory.png'
+  ___physics_joint_body_A:
+  ___physics_joint_body_B:
+  glyphURL: '../vwf/view/editorview/images/icons/hinge.png'
+  BodyIDB:
+  EditorData:
+    BodyA:
+      type: "nodeid"
+      displayname: "Select Body A"
+      property: "___physics_joint_body_A"
+    BodyB:
+      type: "nodeid"
+      displayname: "Select Body B"
+      property: "___physics_joint_body_B"
+
+

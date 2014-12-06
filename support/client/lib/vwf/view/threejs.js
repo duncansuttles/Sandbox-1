@@ -1,22 +1,22 @@
 ﻿"use strict";
 
 function setClone(ab) {
-    var f32 = new Float32Array(ab.length);
-    f32.set(ab);
-    return f32;
-}
-// Copyright 2012 United States Government, as represented by the Secretary of Defense, Under
-// Secretary of Defense (Personnel & Readiness).
-// 
-// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-// in compliance with the License. You may obtain a copy of the License at
-// 
-//   http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software distributed under the License
-// is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-// or implied. See the License for the specific language governing permissions and limitations under
-// the License.
+        var f32 = new Float32Array(ab.length);
+        f32.set(ab);
+        return f32;
+    }
+    // Copyright 2012 United States Government, as represented by the Secretary of Defense, Under
+    // Secretary of Defense (Personnel & Readiness).
+    // 
+    // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+    // in compliance with the License. You may obtain a copy of the License at
+    // 
+    //   http://www.apache.org/licenses/LICENSE-2.0
+    // 
+    // Unless required by applicable law or agreed to in writing, software distributed under the License
+    // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+    // or implied. See the License for the specific language governing permissions and limitations under
+    // the License.
 function matset(newv, old) {
     if (!old) {
         newv = old;
@@ -113,6 +113,101 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 alertify.log('WebVR not supported');
             }
 
+        },
+        glyphs: [],
+        addGlyph: function(id, url) {
+
+            if(this.glyphs.indexOf(id) == -1)
+                this.glyphs.push(id);
+            else
+            {
+                $('#glyph' + ToSafeID(id)).attr('src',url);
+                return;
+            }
+
+            var newdiv = document.createElement('img');
+
+            $(newdiv).addClass('glyph');
+            newdiv.style.position = 'absolute';
+            newdiv.id = ToSafeID('glyph' + id);
+            //newdiv.innerHTML = "" + this.name;
+            $(newdiv).attr('src', url);
+            newdiv.style.left = '0px';
+            newdiv.style.top = '0px';
+
+            $('#glyphOverlay').append(newdiv);
+            $(newdiv).disableSelection();
+            $(newdiv).mousedown(function(e) {
+                $('#index-vwf').focus();
+                if (_Editor.GetSelectMode() == "None" || e.which != 1) $('#index-vwf').trigger(e)
+            });
+            $(newdiv).mouseup(function(e) {
+                $('#index-vwf').focus();
+                $('#index-vwf').trigger(e)
+            });
+            $(newdiv).mousemove(function(e) {
+                $('#index-vwf').trigger(e)
+            });
+            $(newdiv).click(function(e) {
+                $('#index-vwf').focus();
+                if (_Editor.GetSelectMode() != "None") _Editor.SelectObjectPublic(id)
+            });
+
+        },
+        removeGlyph:function(id)
+        {
+            if(this.glyphs.indexOf(id) == -1)
+                return
+            else
+            {
+                $('#glyph' + ToSafeID(id)).remove();
+                this.glyphs.splice(this.glyphs.indexOf(id),1);
+                return;
+            }
+        },
+        updateGlyphs: function(e, viewprojection, wh, ww) {
+
+            for (var i = 0; i < this.glyphs.length; i++) {
+                var div = $('#glyph' + ToSafeID(this.glyphs[i]))[0];
+                if(!div) continue;
+
+                var trans = vwf.getProperty(this.glyphs[i],'worldTransform');
+                
+                var pos = [trans[12], trans[13], trans[14], 1];
+
+
+
+                var screen = MATH.mulMat4Vec4(viewprojection, pos);
+                screen[0] /= screen[3];
+                screen[1] /= screen[3];
+
+                screen[0] /= 2;
+                screen[1] /= 2;
+                screen[2] /= 2;
+                screen[0] += .5;
+                screen[1] += .5;
+
+
+                screen[0] *= ww;
+                screen[1] *= wh;
+
+
+                screen[1] = wh - screen[1];
+
+                div.style.top = (screen[1]) + 'px';
+                div.style.left = (screen[0] - 20 / 2) + 'px';
+
+
+                if ((screen[0] < 0 || screen[0] > ww || screen[1] < 0 || screen[1] > wh)) {
+                    if (div.style.display != 'none')
+                        div.style.display = 'none';
+                } else {
+                    if ((screen[2] > 10 || screen[2] < 0) && div.style.display != 'none')
+                        div.style.display = 'none';
+                    if (screen[2] < 10 && screen[2] > 0 && div.style.display == 'none')
+                        div.style.display = 'block';
+                }
+            }
         },
         addEffect: function(effect) {
             this.effects.push(effect);
@@ -305,10 +400,10 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     var i = keys[j];
                     //don't do interpolation for static objects
                     if (this.nodes[i].isStatic) continue;
-                    if (this.nodes[i].lastTransformStep +1 < vwf.time()) {
-                            this.nodes[i].lastTickTransform = null;
-                             this.nodes[i].lastFrameInterp = null;
-                             this.nodes[i].thisTickTransform = null;
+                    if (this.nodes[i].lastTransformStep + 1 < vwf.time()) {
+                        this.nodes[i].lastTickTransform = null;
+                        this.nodes[i].lastFrameInterp = null;
+                        this.nodes[i].thisTickTransform = null;
                     } else if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
                         this.nodes[i].lastTickTransform = matset(this.nodes[i].lastTickTransform, this.nodes[i].thisTickTransform);
                         this.nodes[i].thisTickTransform = matset(this.nodes[i].thisTickTransform, this.state.nodes[i].gettingProperty('transform'));
@@ -319,7 +414,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
                     }
                 }
-                
+
 
             }
 
@@ -463,9 +558,9 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         },
         deletedNode: function(childID) {
             delete this.nodes[childID];
+            this.removeGlyph(childID);
             //be sure not to keep around a reference to an object that no longer exists
-            if(this.lastPickId == childID)
-            {
+            if (this.lastPickId == childID) {
                 this.lastPickId = null;
                 this.lastPick = null;
             }
@@ -480,6 +575,15 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     properties: {}
                 };
 
+            //man VWF makes this stuff so hard. Why must we deal with this? Who though that a game engine needed prototypical inheritance?
+            //why must every driver deal with this crap? The design of this thing is ridiculous.
+            //here, we must deal with the fact that we might never see a setproperty for a node based on one of the standard types
+            //because the property for the glyphURL is defined on the prototype
+            var glyph = vwf.getProperty(childExtendsID,'glyphURL');
+            if(glyph)
+            {
+                this.addGlyph(childID,glyph);
+            }
             //the created node is a scene, and has already been added to the state by the model.
             //how/when does the model set the state object? 
 
@@ -639,7 +743,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         createdProperty: function(nodeID, propertyName, propertyValue) {
             this.satProperty(nodeID, propertyName, propertyValue);
         },
-        
+
         satProperty: function(nodeID, propertyName, propertyValue) {
 
             //console.log([nodeID,propertyName,propertyValue]);
@@ -668,6 +772,10 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             //There is not three object for this node, so there is nothing this driver can do. return
             if (!threeObject) return value;
 
+            if(node && propertyName == 'glyphURL')
+            {
+                this.addGlyph(nodeID,propertyValue);
+            }
             if (node && threeObject && propertyValue !== undefined) {
                 if (threeObject instanceof THREE.Scene) {
                     if (propertyName == 'skyColorBlend') {
@@ -1128,7 +1236,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
 
             self.trigger('prerender', vpargs);
-
+            self.updateGlyphs(null,vp,wh,ww);
             var keys = Object.keys(vwf.models[0].model.nodes);
             for (var j = 0; j < keys.length; j++) {
                 var i = keys[j];
@@ -1415,8 +1523,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                         antialias: true,
                         alpha: false,
                         stencil: false,
-                        depth:true,
-                        preserveDrawingBuffer:true
+                        depth: true,
+                        preserveDrawingBuffer: true
                     });
                     if (!sceneNode.renderer.context) {
                         //lets not fall back on canvas renderer. there just is no point trying to do this without it.
@@ -1646,42 +1754,42 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
     function rebuildAllMaterials(start) {
 
-        if (!start) {
-            for (var i in this.state.scenes) {
-                rebuildAllMaterials(this.state.scenes[i].threeScene);
-            }
-        } else {
-            if (start && start.material) {
-                start.material.needsUpdate = true;
-            }
-            if (start && start.children) {
-                for (var i in start.children)
-                    rebuildAllMaterials(start.children[i]);
+            if (!start) {
+                for (var i in this.state.scenes) {
+                    rebuildAllMaterials(this.state.scenes[i].threeScene);
+                }
+            } else {
+                if (start && start.material) {
+                    start.material.needsUpdate = true;
+                }
+                if (start && start.children) {
+                    for (var i in start.children)
+                        rebuildAllMaterials(start.children[i]);
+                }
             }
         }
-    }
-    //necessary when settign the amibent color to match MATH behavior
-    //Three js mults scene ambient by material ambient
+        //necessary when settign the amibent color to match MATH behavior
+        //Three js mults scene ambient by material ambient
     function SetMaterialAmbients(start) {
 
-        if (!start) {
-            for (var i in this.state.scenes) {
-                SetMaterialAmbients(this.state.scenes[i].threeScene);
-            }
-        } else {
-            if (start && start.material) {
-                //.005 chosen to make the 255 range for the ambient light mult to values that look like MATH values.
-                //this will override any ambient colors set in materials.
-                if (start.material.ambient)
-                    start.material.ambient.setRGB(1, 1, 1);
-            }
-            if (start && start.children) {
-                for (var i in start.children)
-                    SetMaterialAmbients(start.children[i]);
+            if (!start) {
+                for (var i in this.state.scenes) {
+                    SetMaterialAmbients(this.state.scenes[i].threeScene);
+                }
+            } else {
+                if (start && start.material) {
+                    //.005 chosen to make the 255 range for the ambient light mult to values that look like MATH values.
+                    //this will override any ambient colors set in materials.
+                    if (start.material.ambient)
+                        start.material.ambient.setRGB(1, 1, 1);
+                }
+                if (start && start.children) {
+                    for (var i in start.children)
+                        SetMaterialAmbients(start.children[i]);
+                }
             }
         }
-    }
-    // -- initInputEvents ------------------------------------------------------------------------
+        // -- initInputEvents ------------------------------------------------------------------------
 
 
     function initInputEvents(canvas) {
