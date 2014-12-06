@@ -174,6 +174,15 @@ phyJoint.prototype.getPointRelBody = function(bodyID,worldpoint)
     return bodyRelPos;
 
 }
+phyJoint.prototype.getAxisRelBody = function(bodyID,worldAxis)
+{   
+    var bodyWorldTx = vwf.getProperty(bodyID,'worldtransform');
+    var bodyWorldTxI = [];
+    Mat4.invert(bodyWorldTx,bodyWorldTxI);
+    var bodyRelAxis = Mat4.multVec3NoTranslate(bodyWorldTxI,worldAxis,[]);
+    return bodyRelAxis;
+
+}
 function phyPointToPointJoint(id, world, driver) {
     this.pointA = null;
     this.pointB = null;
@@ -189,6 +198,30 @@ phyPointToPointJoint.prototype.buildJoint = function() {
     var pa = new Ammo.btVector3(this.pointA[0], this.pointA[1], this.pointA[2]);
     var pb = new Ammo.btVector3(this.pointB[0], this.pointB[1], this.pointB[2]);
     return new Ammo.btPoint2PointConstraint(this.bodyA, this.bodyB, pa, pb);
+}
+
+
+function phyHingeJoint(id, world, driver) {
+    this.pointA = null;
+    this.pointB = null;
+    phyJoint.call(this, id, world, driver);
+}
+phyHingeJoint.prototype = new phyJoint();
+
+phyHingeJoint.prototype.buildJoint = function() {
+    var worldTx = vwf.getProperty(this.id,'worldtransform');
+    var worldTrans = [worldTx[12],worldTx[13],worldTx[14]];
+    this.pointA = this.getPointRelBody(this.aID,worldTrans);
+    this.pointB = this.getPointRelBody(this.bID,worldTrans);
+
+    var worldX = [worldTx[0],worldTx[1],worldTx[2]];
+    var BodyAX = this.getAxisRelBody(this.aID,worldX);
+    var BodyBX = this.getAxisRelBody(this.bID,worldX);
+    var pa = new Ammo.btVector3(this.pointA[0], this.pointA[1], this.pointA[2]);
+    var pb = new Ammo.btVector3(this.pointB[0], this.pointB[1], this.pointB[2]);
+    var axisInA = new Ammo.btVector3(BodyAX[0], BodyAX[1], BodyAX[2]);
+    var axisInB = new Ammo.btVector3(BodyBX[0], BodyBX[1], BodyBX[2]);
+    return new Ammo.btHingeConstraint(this.bodyA, this.bodyB, pa, pb, axisInA,axisInB,false);
 }
 
 function setupPhyObject(node, id, world) {
@@ -1323,6 +1356,10 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             if (nodeID && hasPrototype(childID, 'pointConstraint-vwf')) {
                 
                 this.allNodes[nodeID].children[childID] = new phyPointToPointJoint(childID, this.allNodes[vwf.application()].world, this);
+            }
+            if (nodeID && hasPrototype(childID, 'hingeConstraint-vwf')) {
+                
+                this.allNodes[nodeID].children[childID] = new phyHingeJoint(childID, this.allNodes[vwf.application()].world, this);
             }
             if (nodeID && (hasPrototype(childID, 'asset-vwf') || hasPrototype(childID, 'sandboxGroup-vwf'))) {
                 this.allNodes[nodeID].children[childID] = new phyAsset(childID, this.allNodes[vwf.application()].world);

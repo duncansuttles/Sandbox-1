@@ -402,6 +402,10 @@ define({
         $('#MenuPhysicsPointConstraint').click(function(e) {
             _Editor.CreatePhysicsConstraint('point', _UserManager.GetCurrentUserName());
         });
+        $('#MenuPhysicsHingeConstraint').click(function(e) {
+            _Editor.CreatePhysicsConstraint('hinge', _UserManager.GetCurrentUserName());
+        });
+
 
         
 
