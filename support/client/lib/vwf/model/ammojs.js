@@ -73,6 +73,7 @@ function phyJoint(id, world, driver) {
     this.initialized = false;
     this.ready = true;
     this.driver = driver;
+    this.localScale = [1,1,1];
     this.transform = [];
     if (this.driver) this.driver.jointBodyMap[id] = [];
 }
@@ -219,18 +220,49 @@ function btTransformFromMat(mat) {
 function phySliderJoint(id, world, driver) {
     this.pointA = null;
     this.pointB = null;
+    this.lowerLinLimit = 0;
+    this.upperLinLimit = 0;
     phyJoint.call(this, id, world, driver);
 }
 phySliderJoint.prototype = new phyJoint();
 
-
+phySliderJoint.prototype.setLowerLinLimit = function(limit)
+{
+    this.lowerLinLimit = limit;
+    if(this.joint)
+    {
+        this.joint.setLowerLinLimit(this.lowerLinLimit);
+    }
+}
+phySliderJoint.prototype.setUpperLinLimit = function(limit)
+{
+    this.upperLinLimit = limit;
+    if(this.joint)
+    {
+        this.joint.setUpperLinLimit(this.upperLinLimit);
+    }
+}
+phySliderJoint.prototype.getLowerLinLimit = function()
+{
+   return this.lowerLinLimit ;
+    
+}
+phySliderJoint.prototype.getUpperLinLimit = function()
+{
+    return this.upperLinLimit ;
+    
+}
 phySliderJoint.prototype.buildJoint = function() {
+    
     var worldTx = vwf.getProperty(this.id, 'worldtransform');
     this.pointA = this.getMatrixRelBody(this.aID, worldTx);
     this.pointB = this.getMatrixRelBody(this.bID, worldTx);
     var pa = btTransformFromMat(this.pointA);
     var pb = btTransformFromMat(this.pointB);
-    return new Ammo.btSliderConstraint(this.bodyA, this.bodyB, pa, pb, true);
+    var joint = new Ammo.btSliderConstraint(this.bodyA, this.bodyB, pa, pb, true);
+    joint.setLowerLinLimit(this.lowerLinLimit);
+    joint.setUpperLinLimit(this.upperLinLimit);
+    return joint;
 }
 
 function phyFixedJoint(id, world, driver) {
@@ -674,6 +706,11 @@ function vecset(newv, old) {
 }
 phyObject.prototype.getTransform = function(outmat) {
     if (!outmat) outmat = [];
+    if(!this.body)
+    {
+        outmat = vecset(outmat,this.transform);
+        return outmat;
+    }
     var transform = this.body.getWorldTransform();
     var o = transform.getOrigin();
     var rot = transform.getRotation();
@@ -1556,10 +1593,18 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                     node.setConstantTorque(propertyValue);
                 }
                 if (propertyName === '___physics_joint_body_A') {
-                    return node.setBodyAID(propertyValue);
+                    node.setBodyAID(propertyValue);
                 }
                 if (propertyName === '___physics_joint_body_B') {
-                    return node.setBodyBID(propertyValue);
+                    node.setBodyBID(propertyValue);
+                }
+                if(propertyName === '___physics_joint_slider_lower_lin_limit')
+                {
+                    node.setLowerLinLimit(propertyValue);
+                }
+                if(propertyName === '___physics_joint_slider_upper_lin_limit')
+                {
+                    node.setUpperLinLimit(propertyValue);
                 }
                 //this is a hack
                 //find a better way. Maybe delete the old key from the map above

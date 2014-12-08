@@ -11,10 +11,18 @@
 # or implied. See the License for the specific language governing permissions and limitations under
 # the License.
 ---
-extends: "constraint.vwf"
+extends: "http://vwf.example.com/node3.vwf"
 properties:
-  glyphURL: '../vwf/view/editorview/images/icons/hinge.png'
-  ___physics_joint_slider_lower_lin_limit: 0
-  ___physics_joint_slider_upper_lin_limit: 0
+  ___physics_joint_body_A:
+  ___physics_joint_body_B:
+  EditorData:
+    BodyA:
+      type: "nodeid"
+      displayname: "Select Body A"
+      property: "___physics_joint_body_A"
+    BodyB:
+      type: "nodeid"
+      displayname: "Select Body B"
+      property: "___physics_joint_body_B"
 
 
