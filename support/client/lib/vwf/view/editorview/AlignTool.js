@@ -177,9 +177,9 @@ function AlignTool() {
 		var tcenter = new THREE.Vector3();
 		var mat = target.matrixWorld.clone();
 		tbounds = tbounds.transformBy(mat.clone().transpose().elements);
-		this.xDisplay.position = tcenter.clone();
-		this.yDisplay.position = tcenter.clone();
-		this.zDisplay.position = tcenter.clone();
+		this.xDisplay.position.copy(tcenter);
+		this.yDisplay.position.copy(tcenter);
+		this.zDisplay.position.copy(tcenter);
 		var xFrom = $('#AlignToolGUI').find('#XFrom :checked').next().text();
 		var xTo = $('#AlignToolGUI').find('#XTo :checked').next().text();
 
@@ -331,9 +331,11 @@ function AlignTool() {
 				this.zDisplay.visible = false;
 			}
 
-
-
-			vwf_view.kernel.setProperty(this.sourceNodeIDs[i], 'translation', [spos.x, spos.y, spos.z]);
+			var trans = vwf.getProperty(this.sourceNodeIDs[i],'transform');
+			trans[12] = spos.x;
+			trans[13] = spos.y;
+			trans[14] = spos.z;
+ 			vwf_view.kernel.setProperty(this.sourceNodeIDs[i], 'transform', trans);
 		}
 
 		if (zTo == 'Max')
@@ -361,7 +363,7 @@ function AlignTool() {
 	}
 	this.PickTarget = function() {
 		this.backcolor = $('#AlignToolGUI_PickTarget').css('background');
-		$('#AlignToolGUI_PickTarget').css('background', 'lightyellow');
+		$('#AlignToolGUI_PickTarget').addClass('ui-state-active')
 		this.pickMode = 'Pick';
 
 
@@ -406,7 +408,7 @@ function AlignTool() {
 	this.hide = function() {
 		_Editor.setActiveTool('Gizmo');
 		if (this.backcolor)
-			$('#AlignToolGUI_PickTarget').css('background', this.backcolor);
+			$('#AlignToolGUI_PickTarget').removeClass('ui-state-active')
 		this.pickMode = "";
 		if (window._dScene) {
 			_dScene.remove(this.xDisplay, true);
@@ -463,7 +465,7 @@ function AlignTool() {
 
 			this.updateDisplay();
 			this.pickMode = '';
-			$('#AlignToolGUI_PickTarget').css('background', this.backcolor);
+			$('#AlignToolGUI_PickTarget').removeClass('ui-state-active')
 		}
 	}
 }

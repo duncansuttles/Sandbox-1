@@ -405,6 +405,12 @@ define({
         $('#MenuPhysicsHingeConstraint').click(function(e) {
             _Editor.CreatePhysicsConstraint('hinge', _UserManager.GetCurrentUserName());
         });
+        $('#MenuPhysicsSliderConstraint').click(function(e) {
+            _Editor.CreatePhysicsConstraint('slider', _UserManager.GetCurrentUserName());
+        });
+        $('#MenuPhysicsFixedConstraint').click(function(e) {
+            _Editor.CreatePhysicsConstraint('fixed', _UserManager.GetCurrentUserName());
+        });
 
 
         
