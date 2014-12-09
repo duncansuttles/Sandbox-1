@@ -194,3 +194,5 @@
         return new prim(childID, childSource, childName);
     }
 })();
+
+//@ sourceURL=threejs.subdriver.prim

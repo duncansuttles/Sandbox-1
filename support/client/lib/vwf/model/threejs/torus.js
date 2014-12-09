@@ -60,3 +60,5 @@
             return new torus(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.torus

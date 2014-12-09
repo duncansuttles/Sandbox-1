@@ -43,3 +43,5 @@
         return new visible(childID, childSource, childName);
     }
 })();
+
+//@ sourceURL=threejs.subdriver.visible

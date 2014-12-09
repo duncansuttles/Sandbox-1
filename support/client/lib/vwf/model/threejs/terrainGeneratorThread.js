@@ -347,3 +347,5 @@ self.addEventListener('message', function(e) {
 
 
 }, false);
+
+//@ sourceURL=threejs.terrain.terrainGeneratorThread

@@ -144,10 +144,14 @@
             }
 
         }
+        
     }
     //default factory code
     return function(childID, childSource, childName) {
         //name of the node constructor
         return new animatable(childID, childSource, childName);
     }
+
 })();
+
+//@ sourceURL=threejs.subdriver.animatable

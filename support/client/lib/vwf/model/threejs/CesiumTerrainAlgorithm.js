@@ -261,3 +261,5 @@ function CesiumTerrainAlgorithm(seed)
 		return true;
 	}
 }
+
+//@ sourceURL=threejs.terrain.CesiumTerrainAlgorithm

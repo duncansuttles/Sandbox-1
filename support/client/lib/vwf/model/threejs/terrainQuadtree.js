@@ -724,3 +724,5 @@ window.QuadtreeNode = (function() {
 		}
 		return QuadtreeNode;
 	})();
+
+	//@ sourceURL=threejs.terrain.quadtree

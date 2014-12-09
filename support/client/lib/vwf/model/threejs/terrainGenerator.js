@@ -372,3 +372,5 @@ new(function() {
     }
 
 })()
+
+//@ sourceURL=threejs.terrain.generator

@@ -227,3 +227,5 @@
         return new uvmap(childID, childSource, childName);
     }
 })();
+
+//@ sourceURL=threejs.subdriver.uvmap

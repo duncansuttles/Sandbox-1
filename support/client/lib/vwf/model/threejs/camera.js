@@ -71,3 +71,5 @@
             return new camera(childID, childSource, childName, childType, assetSource, asyncCallback, this.assetRegistry);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.camera

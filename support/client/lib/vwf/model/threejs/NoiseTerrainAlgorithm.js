@@ -126,3 +126,4 @@ function NoiseTerrainAlgorithm()
 		return z + 30;
 	}
 }
+//@ sourceURL=threejs.terrain.NoiseTerrainAlgorithm

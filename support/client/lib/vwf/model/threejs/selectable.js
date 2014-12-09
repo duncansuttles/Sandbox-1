@@ -36,3 +36,5 @@
         return new isSelectable(childID, childSource, childName);
     }
 })();
+
+//@ sourceURL=threejs.subdriver.selectable

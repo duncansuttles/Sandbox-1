@@ -614,3 +614,5 @@
         return new asset(childID, childSource, childName, childType, assetSource, asyncCallback, this.assetRegistry);
     }
 })();
+
+//@ sourceURL=threejs.subdriver.asset

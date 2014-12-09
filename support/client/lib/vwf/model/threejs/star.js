@@ -93,3 +93,5 @@
             return new star(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.star

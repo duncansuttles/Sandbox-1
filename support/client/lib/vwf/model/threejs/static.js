@@ -60,3 +60,5 @@
         return new isStatic(childID, childSource, childName);
     }
 })();
+
+//@ sourceURL=threejs.subdriver.static

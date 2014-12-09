@@ -125,3 +125,5 @@
             return new lathe(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.lathe

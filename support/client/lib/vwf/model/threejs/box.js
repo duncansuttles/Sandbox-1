@@ -94,3 +94,5 @@
             return new box(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.box

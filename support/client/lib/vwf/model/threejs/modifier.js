@@ -82,3 +82,5 @@
             return new modifier(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.modifier

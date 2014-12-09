@@ -657,3 +657,5 @@
         return new terrainDecorator(childID, childSource, childName);
     }
 })();
+
+//@ sourceURL=threejs.subdriver.terrainDecorator

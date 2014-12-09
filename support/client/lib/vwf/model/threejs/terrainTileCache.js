@@ -604,3 +604,5 @@ function TileCache()
 					return newtile;
 				}
 			}
+
+			//@ sourceURL=threejs.terrain.TileCache

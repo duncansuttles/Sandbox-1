@@ -241,3 +241,5 @@ function getAllDrawables(threeObject, list) {
         return new transformable(childID, childSource, childName);
     }
 })();
+
+//@ sourceURL=threejs.subdriver.tramsformable

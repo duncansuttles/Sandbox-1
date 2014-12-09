@@ -836,3 +836,5 @@
         return new terrain(childID, childSource, childName);
     }
 })();
+
+//@ sourceURL=threejs.subdriver.terrain

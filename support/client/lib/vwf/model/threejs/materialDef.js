@@ -1171,3 +1171,5 @@
         return new materialDef(childID, childSource, childName);
     }
 })();
+
+//@ sourceURL=threejs.subdriver.materialDef
