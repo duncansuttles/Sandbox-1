@@ -37,7 +37,8 @@
     "passport-google-oauth": "0.1.5",
     "connect": "2.19.2",
     "passport-local": "~1.0.0",
-    "spdy": "~1.26.5"
+    "spdy": "~1.26.5",
+    "mongodb": "~1.4.23"
   },
   "devDependencies": {},
   "scripts": {
