@@ -36,15 +36,19 @@ define([], function() {
     function isPlane(id) {
         return hasPrototype(id, 'plane2-vwf');
     }
+
     function isConstraint(id) {
         return hasPrototype(id, 'constraint-vwf');
     }
+
     function isHinge(id) {
         return hasPrototype(id, 'hingeConstraint-vwf');
     }
+
     function isSlider(id) {
         return hasPrototype(id, 'sliderConstraint-vwf');
     }
+
     function isPoint(id) {
         return hasPrototype(id, 'pointConstraint-vwf');
     }
@@ -215,57 +219,57 @@ define([], function() {
             this.addPropertyEditorDialog(nodeid, propertyName, $('#' + propertyName + nodeid), 'check');
         }
         this.createNodeID = function(parentdiv, nodeid, propertyName, displayName) {
-            $(parentdiv).append('<div style="margin-top: 5px;margin-bottom: 5px;"><div >' + displayName + '</div><input type="text" style="display: inline;width: 50%;padding: 2px;border-radius: 5px;font-weight: bold;" id="' + nodeid + propertyName + '" nodename="' + nodeid + '" propname="' + propertyName + '"/><div  style="float:right;width:45%;height:2em" id="' + nodeid + propertyName + 'button" nodename="' + nodeid + '" propname="' + propertyName + '"/></div><div style="clear:both" />');
-            $('#' + nodeid + propertyName).attr('disabled', 'disabled');
-            $('#' + nodeid + propertyName + 'button').button({
-                label: 'Choose Node'
-            });
-            var label = $('#' + nodeid + propertyName);
-            $('#' + nodeid + propertyName + 'button').click(function() {
-                var propname = $(this).attr('propname');
-                var nodename = $(this).attr('nodename');
-                _Editor.TempPickCallback = function(node) {
-                    if (!node) return;
-                    $('#' + nodename + propname).val(node.id);
-                    _Editor.TempPickCallback = null;
-                    _Editor.SetSelectMode('Pick');
-                    _PrimitiveEditor.setProperty(nodename, propname, node.id);
-                };
-                _Editor.SetSelectMode('TempPick');
-            });
-            this.addPropertyEditorDialog(nodeid, propertyName, $('#' + nodeid + propertyName), 'text');
-            $('#' + nodeid + propertyName).val(vwf.getProperty(nodeid, propertyName));
-        },
-        this.createVector = function(parentdiv, nodeid, propertyName, displayName) {
-            var vecvalchanged = function(e) {
-                    if (_PhysicsEditor.inSetup) return;
+                $(parentdiv).append('<div style="margin-top: 5px;margin-bottom: 5px;"><div >' + displayName + '</div><input type="text" style="display: inline;width: 50%;padding: 2px;border-radius: 5px;font-weight: bold;" id="' + nodeid + propertyName + '" nodename="' + nodeid + '" propname="' + propertyName + '"/><div  style="float:right;width:45%;height:2em" id="' + nodeid + propertyName + 'button" nodename="' + nodeid + '" propname="' + propertyName + '"/></div><div style="clear:both" />');
+                $('#' + nodeid + propertyName).attr('disabled', 'disabled');
+                $('#' + nodeid + propertyName + 'button').button({
+                    label: 'Choose Node'
+                });
+                var label = $('#' + nodeid + propertyName);
+                $('#' + nodeid + propertyName + 'button').click(function() {
                     var propname = $(this).attr('propname');
-                    var component = $(this).attr('component');
-                    var nodeid = $(this).attr('nodename');
-                    var thisid = $(this).attr('id');
-                    thisid = thisid.substr(0, thisid.length - 1);
-                    var x = $('#' + thisid + 'X').val();
-                    var y = $('#' + thisid + 'Y').val();
-                    var z = $('#' + thisid + 'Z').val();
-                    _PrimitiveEditor.setProperty(nodeid, propname, [parseFloat(x), parseFloat(y), parseFloat(z)]);
+                    var nodename = $(this).attr('nodename');
+                    _Editor.TempPickCallback = function(node) {
+                        if (!node) return;
+                        $('#' + nodename + propname).val(node.id);
+                        _Editor.TempPickCallback = null;
+                        _Editor.SetSelectMode('Pick');
+                        _PrimitiveEditor.setProperty(nodename, propname, node.id);
+                    };
+                    _Editor.SetSelectMode('TempPick');
+                });
+                this.addPropertyEditorDialog(nodeid, propertyName, $('#' + nodeid + propertyName), 'text');
+                $('#' + nodeid + propertyName).val(vwf.getProperty(nodeid, propertyName));
+            },
+            this.createVector = function(parentdiv, nodeid, propertyName, displayName) {
+                var vecvalchanged = function(e) {
+                        if (_PhysicsEditor.inSetup) return;
+                        var propname = $(this).attr('propname');
+                        var component = $(this).attr('component');
+                        var nodeid = $(this).attr('nodename');
+                        var thisid = $(this).attr('id');
+                        thisid = thisid.substr(0, thisid.length - 1);
+                        var x = $('#' + thisid + 'X').val();
+                        var y = $('#' + thisid + 'Y').val();
+                        var z = $('#' + thisid + 'Z').val();
+                        _PrimitiveEditor.setProperty(nodeid, propname, [parseFloat(x), parseFloat(y), parseFloat(z)]);
+                    }
+                    //$('#basicSettings'+nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">'+editordata[i].displayname+': </div>');
+                var baseid = 'basicSettings' + nodeid + propertyName + 'min';
+                $(parentdiv).append('<div class="editorSliderLabel"  style="width:100%;text-align: left;margin-top: 4px;" ><div style="display:inline" >' + displayName + ':</div> <div style="display:inline-block;float:right">' + '<input id="' + baseid + 'X' + '" component="X" nodename="' + nodeid + '" propname="' + propertyName + '" type="number" step="' + .01 + '" class="vectorinputfront"/>' + '<input id="' + baseid + 'Y' + '" component="Y" nodename="' + nodeid + '" propname="' + propertyName + '" type="number" step="' + .01 + '" class="vectorinput"/>' + '<input id="' + baseid + 'Z' + '" component="Z" nodename="' + nodeid + '" propname="' + propertyName + '" type="number" step="' + .01 + '" class="vectorinput"/>' + '</div><div style="clear:both"/></div>');
+                var propmin = vwf.getProperty(nodeid, propertyName);
+                if (propmin) {
+                    $('#' + baseid + 'X').val(propmin[0]);
+                    $('#' + baseid + 'Y').val(propmin[1]);
+                    $('#' + baseid + 'Z').val(propmin[2]);
+                } else {
+                    $('#' + baseid + 'X').val(0);
+                    $('#' + baseid + 'Y').val(0);
+                    $('#' + baseid + 'Z').val(0);
                 }
-                //$('#basicSettings'+nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">'+editordata[i].displayname+': </div>');
-            var baseid = 'basicSettings' + nodeid + propertyName + 'min';
-            $(parentdiv).append('<div class="editorSliderLabel"  style="width:100%;text-align: left;margin-top: 4px;" ><div style="display:inline" >' + displayName + ':</div> <div style="display:inline-block;float:right">' + '<input id="' + baseid + 'X' + '" component="X" nodename="' + nodeid + '" propname="' + propertyName + '" type="number" step="' + .01 + '" class="vectorinputfront"/>' + '<input id="' + baseid + 'Y' + '" component="Y" nodename="' + nodeid + '" propname="' + propertyName + '" type="number" step="' + .01 + '" class="vectorinput"/>' + '<input id="' + baseid + 'Z' + '" component="Z" nodename="' + nodeid + '" propname="' + propertyName + '" type="number" step="' + .01 + '" class="vectorinput"/>' + '</div><div style="clear:both"/></div>');
-            var propmin = vwf.getProperty(nodeid, propertyName);
-            if (propmin) {
-                $('#' + baseid + 'X').val(propmin[0]);
-                $('#' + baseid + 'Y').val(propmin[1]);
-                $('#' + baseid + 'Z').val(propmin[2]);
-            } else {
-                $('#' + baseid + 'X').val(0);
-                $('#' + baseid + 'Y').val(0);
-                $('#' + baseid + 'Z').val(0);
+                $('#' + baseid + 'X').change(vecvalchanged);
+                $('#' + baseid + 'Y').change(vecvalchanged);
+                $('#' + baseid + 'Z').change(vecvalchanged);
             }
-            $('#' + baseid + 'X').change(vecvalchanged);
-            $('#' + baseid + 'Y').change(vecvalchanged);
-            $('#' + baseid + 'Z').change(vecvalchanged);
-        }
         this.createSlider = function(parentdiv, nodeid, propertyName, displayName, step, min, max) {
             var inputstyle = "";
             $(parentdiv).append('<div class="editorSliderLabel">' + displayName + ': </div>');
@@ -298,31 +302,31 @@ define([], function() {
             this.addPropertyEditorDialog(nodeid, propertyName, $('#' + nodeid + propertyName + 'value'), 'text');
         }
         this.createChoice = function(parentdiv, nodeid, propertyName, displayName, labels, values) {
-            //  $('#basicSettings' + nodeid).append('<input type="button" style="width: 100%;font-weight: bold;" id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' +  editordata[i].property + '"/>');
-            $(parentdiv).append('<div><div class="editorSliderLabel">' + displayName + ': </div>' + '<select id="' + nodeid + propertyName + '" style="float:right;clear:right" ' + ' nodename="' + nodeid + '" propname="' + propertyName + '"" ></select></div>');
-            $('#' + nodeid + propertyName).val(displayName + ": " + labels[vwf.getProperty(nodeid, propertyName)]);
-            $('#' + nodeid + propertyName).attr('index', propertyName);
-            for (var k = 0; k < labels.length; k++) {
-                $('#' + nodeid + propertyName).append("<option value='" + values[k] + "'>  " + labels[k] + "  </option>")
+                //  $('#basicSettings' + nodeid).append('<input type="button" style="width: 100%;font-weight: bold;" id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' +  editordata[i].property + '"/>');
+                $(parentdiv).append('<div><div class="editorSliderLabel">' + displayName + ': </div>' + '<select id="' + nodeid + propertyName + '" style="float:right;clear:right" ' + ' nodename="' + nodeid + '" propname="' + propertyName + '"" ></select></div>');
+                $('#' + nodeid + propertyName).val(displayName + ": " + labels[vwf.getProperty(nodeid, propertyName)]);
+                $('#' + nodeid + propertyName).attr('index', propertyName);
+                for (var k = 0; k < labels.length; k++) {
+                    $('#' + nodeid + propertyName).append("<option value='" + values[k] + "'>  " + labels[k] + "  </option>")
+                }
+                //$('#' + nodeid + i).button();
+                //find and select the current value in the dropdown
+                var selectedindex = values.indexOf(vwf.getProperty(nodeid, propertyName));
+                var selectedLabel = labels[selectedindex];
+                $("select option").filter(function() {
+                    //may want to use $.trim in here
+                    return $.trim($(this).text()) == $.trim(selectedLabel);
+                }).prop('selected', true);
+                $('#' + nodeid + propertyName).change(function() {
+                    var propname = $(this).attr('propname');
+                    var nodename = $(this).attr('nodename');
+                    var value = $(this).val();
+                    var div = this;
+                    _PrimitiveEditor.setProperty(nodename, propname, value);
+                });
+                this.addPropertyEditorDialog(nodeid, propertyName, $('#' + nodeid + i), 'text');
             }
-            //$('#' + nodeid + i).button();
-            //find and select the current value in the dropdown
-            var selectedindex = values.indexOf(vwf.getProperty(nodeid, propertyName));
-            var selectedLabel = labels[selectedindex];
-            $("select option").filter(function() {
-                //may want to use $.trim in here
-                return $.trim($(this).text()) == $.trim(selectedLabel);
-            }).prop('selected', true);
-            $('#' + nodeid + propertyName).change(function() {
-                var propname = $(this).attr('propname');
-                var nodename = $(this).attr('nodename');
-                var value = $(this).val();
-                var div = this;
-                _PrimitiveEditor.setProperty(nodename, propname, value);
-            });
-            this.addPropertyEditorDialog(nodeid, propertyName, $('#' + nodeid + i), 'text');
-        }
-        //walk a threejs node and dispose of the geometry and materials
+            //walk a threejs node and dispose of the geometry and materials
         this.dispose = function(threeNode) {
             if (threeNode && threeNode.dispose) threeNode.dispose();
             if (threeNode && threeNode.geometry) this.dispose(threeNode.geometry)
@@ -356,7 +360,7 @@ define([], function() {
             else this.BuildWorldPreview();
         }
         this.BuildPreviewInner = function(i, root, scale) {
-            
+
             if (!findphysicsnode(i)) return;
             var transform = findphysicsnode(i).transform;
             var worldScale = findphysicsnode(i).getWorldScale();
@@ -387,35 +391,40 @@ define([], function() {
             {
                 geo = new THREE.PlaneGeometry(vwf.getProperty(i, '_length') * worldScale[0], vwf.getProperty(i, 'width') * worldScale[1], 5, 5);
             }
-            if(isConstraint(i))
-            {
-                 if (isHinge(i)) {
+            if (isConstraint(i)) {
+                if (isHinge(i)) {
                     geo = new THREE.CylinderGeometry(.03, .03, 1, 10, 2);
+                    var lowerOff = vwf.getProperty(i, '___physics_joint_hinge_lower_ang_limit') * 0.0174532925;
+                    var upperOff = vwf.getProperty(i, '___physics_joint_hinge_upper_ang_limit') * 0.0174532925;
+
                     var t = new THREE.Matrix4()
+
                     t.makeRotationZ(Math.PI / 2);
                     geo.applyMatrix(t);
-                    var min = new THREE.PlaneGeometry(1, .25, 5, 2);
-                    t.makeTranslation(0, .125, 0);
-                    min.applyMatrix(t);
-                    t.makeRotationX(Math.PI / 8);
-                    min.applyMatrix(t);
-                    geo.merge(min);
-                    var min = new THREE.PlaneGeometry(1, .25, 5, 2);
-                    t.makeTranslation(0, -.125, 0);
-                    min.applyMatrix(t);
-                    t.makeRotationX(-Math.PI / 8);
-                    min.applyMatrix(t);
-                    geo.merge(min);
-                }
-                else if (isSlider(i)) {
+
+                    if (lowerOff < upperOff) {
+                        var min = new THREE.PlaneGeometry(1, .25, 5, 2);
+                        t.makeTranslation(0, .125, 0);
+                        min.applyMatrix(t);
+                        t.makeRotationX(lowerOff);
+                        min.applyMatrix(t);
+                        geo.merge(min);
+                        var min = new THREE.PlaneGeometry(1, .25, 5, 2);
+                        t.makeTranslation(0, -.125, 0);
+                        min.applyMatrix(t);
+                        t.makeRotationX(upperOff);
+                        min.applyMatrix(t);
+                        geo.merge(min);
+                    }
+                } else if (isSlider(i)) {
                     geo = new THREE.CylinderGeometry(.03, .03, 1, 10, 2);
-                   
+
                     var min = new THREE.CylinderGeometry(.06, .06, .03, 10, 2);
-                    var lowerOff = vwf.getProperty(i,'___physics_joint_slider_lower_lin_limit');
-                    var upperOff = vwf.getProperty(i,'___physics_joint_slider_upper_lin_limit');
+                    var lowerOff = vwf.getProperty(i, '___physics_joint_slider_lower_lin_limit');
+                    var upperOff = vwf.getProperty(i, '___physics_joint_slider_upper_lin_limit');
                     var t = new THREE.Matrix4();
                     if (lowerOff < upperOff) {
-                        
+
                         t.makeTranslation(0, upperOff, 0);
                         min.applyMatrix(t);
                         geo.merge(min);
@@ -426,16 +435,14 @@ define([], function() {
                     }
                     t.makeRotationZ(Math.PI / 2);
                     geo.applyMatrix(t);
-                }
-                else if (isPoint(i)) {
+                } else if (isPoint(i)) {
                     needRotate = true;
                     geo = new THREE.CylinderGeometry(.0, .3, .6, 10, 2);
                     var geo2 = new THREE.CylinderGeometry(.0, .3, -.6, 10, 2);
                     geo.merge(geo2)
-                
-                    
-                }else
-                {
+
+
+                } else {
                     geo = new THREE.SphereGeometry(1., 10, 10);
                 }
 
@@ -529,24 +536,24 @@ define([], function() {
             }
         }
         this.BuildPreview = function() {
-            if (!this.physicsPreviewRoot.parent) _dScene.add(this.physicsPreviewRoot);
-            this.clearPreview();
-            var roots = [];
-            for (var i = 0; i < _Editor.getSelectionCount(); i++) {
-                var id = _Editor.GetSelectedVWFID(i);
-                while (id && vwf.parent(id) !== vwf.application()) id = vwf.parent(id);
-                roots[id] = true;
-            }
-            
-            for (var i in roots) {
-                if (roots[i] && (vwf.getProperty(i, '___physics_enabled') || isConstraint(i))) {
-                    this.BuildPreviewInner(i, this.physicsPreviewRoot, [1, 1, 1]);
+                if (!this.physicsPreviewRoot.parent) _dScene.add(this.physicsPreviewRoot);
+                this.clearPreview();
+                var roots = [];
+                for (var i = 0; i < _Editor.getSelectionCount(); i++) {
+                    var id = _Editor.GetSelectedVWFID(i);
+                    while (id && vwf.parent(id) !== vwf.application()) id = vwf.parent(id);
+                    roots[id] = true;
+                }
+
+                for (var i in roots) {
+                    if (roots[i] && (vwf.getProperty(i, '___physics_enabled') || isConstraint(i))) {
+                        this.BuildPreviewInner(i, this.physicsPreviewRoot, [1, 1, 1]);
+                    }
                 }
             }
-        }
-        //this is used not for previewing the selected item, but for displaying all physics bodies
-        //note that it won't update for collision shapes that change during runtime, IE, a compound
-        //collision body is updated during execution. This should not be happening anyway.
+            //this is used not for previewing the selected item, but for displaying all physics bodies
+            //note that it won't update for collision shapes that change during runtime, IE, a compound
+            //collision body is updated during execution. This should not be happening anyway.
         this.BuildWorldPreview = function() {
             if (this.worldPreviewRoot) {
                 this.clearWorldPreview();
@@ -562,7 +569,7 @@ define([], function() {
             _dScene.add(this.worldPreviewRoot, true);
         }
         this.BuildGUI = function() {
-            
+
             this.BuildPreview();
             //does this object have it's own body, or is it just a compound collision?
             var hasOwnBody = vwf.parent(_Editor.GetSelectedVWFID()) == vwf.application();
@@ -639,15 +646,18 @@ define([], function() {
                         });
 
                     }
-                     if (phyNode instanceof phyJoint) {
+                    if (phyNode instanceof phyJoint) {
                         this.createNodeID($('#PhysicsBasicSettings'), this.selectedID, '___physics_joint_body_A', "Object A");
                         this.createNodeID($('#PhysicsBasicSettings'), this.selectedID, '___physics_joint_body_B', "Object B");
-                        if(isSlider(this.selectedID))
-                        {
-                             this.createSlider($('#PhysicsBasicSettings'), this.selectedID, '___physics_joint_slider_lower_lin_limit', 'Lower Linear Stop', .1, -50, 0);
-                             this.createSlider($('#PhysicsBasicSettings'), this.selectedID, '___physics_joint_slider_upper_lin_limit', 'Upper Linear Stop', .1, 0, 50);
+                        if (isSlider(this.selectedID)) {
+                            this.createSlider($('#PhysicsBasicSettings'), this.selectedID, '___physics_joint_slider_lower_lin_limit', 'Lower Linear Stop', .1, -5, 0);
+                            this.createSlider($('#PhysicsBasicSettings'), this.selectedID, '___physics_joint_slider_upper_lin_limit', 'Upper Linear Stop', .1, 0, 5);
                         }
-                     }
+                        if (isHinge(this.selectedID)) {
+                            this.createSlider($('#PhysicsBasicSettings'), this.selectedID, '___physics_joint_hinge_lower_ang_limit', 'Lower Angular Stop', .01, 0, 360);
+                            this.createSlider($('#PhysicsBasicSettings'), this.selectedID, '___physics_joint_hinge_upper_ang_limit', 'Upper Angular Stop', .01, -.01, 360);
+                        }
+                    }
                 }
             } else {
                 $('#PhysicsBasicSettings').append('This object can have collision but no forces, because it is a child of another object');

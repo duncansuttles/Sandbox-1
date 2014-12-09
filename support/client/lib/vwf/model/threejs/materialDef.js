@@ -435,7 +435,7 @@
 
             }
             if (currentmat.reflectivity) {
-                var sky = vwf_view.kernel.kernel.callMethod('scene-c3d', 'getSkyMat')
+                var sky = vwf_view.kernel.kernel.callMethod(vwf.application(), 'getSkyMat')
                 if (sky) {
                     currentmat.envMap = sky.uniforms.texture.value;
                     currentmat.envMap.mapping = new THREE.CubeReflectionMapping();
@@ -568,7 +568,7 @@
 
             }
             if (currentmat.reflectivity) {
-                var sky = vwf_view.kernel.kernel.callMethod('scene-c3d', 'getSkyMat')
+                var sky = vwf_view.kernel.kernel.callMethod(vwf.application(), 'getSkyMat')
                 if (sky) {
                     currentmat.envMap = sky.uniforms.texture.value;
                     currentmat.envMap.mapping = new THREE.CubeReflectionMapping();
@@ -708,7 +708,7 @@
 
             }
             if (currentmat.reflectivity) {
-                var sky = vwf_view.kernel.kernel.callMethod('scene-c3d', 'getSkyMat')
+                var sky = vwf_view.kernel.kernel.callMethod(vwf.application(), 'getSkyMat')
                 if (sky) {
                     currentmat.envMap = sky.uniforms.texture.value;
                     currentmat.envMap.mapping = new THREE.CubeReflectionMapping();
@@ -953,7 +953,7 @@
             // configure reflectivity
             /*if(currentmat.uniforms.reflectivity.value)
              {
-             var sky = vwf_view.kernel.kernel.callMethod('scene-c3d','getSkyMat');
+             var sky = vwf_view.kernel.kernel.callMethod(vwf.application(),'getSkyMat');
              if(sky)
              {
              //console.log('Skymap:', sky.uniforms.texture);

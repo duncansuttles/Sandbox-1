@@ -14,5 +14,6 @@
 extends: "constraint.vwf"
 properties:
   glyphURL: '../vwf/view/editorview/images/icons/hinge.png'
-
+  ___physics_joint_hinge_lower_ang_limit: 0
+  ___physics_joint_hinge_upper_ang_limit: -0.01
 
