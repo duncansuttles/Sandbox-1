@@ -279,7 +279,12 @@ phyFixedJoint.prototype.buildJoint = function() {
     this.pointB = this.getMatrixRelBody(this.bID, worldTx);
     var pa = btTransformFromMat(this.pointA);
     var pb = btTransformFromMat(this.pointB);
-    return new Ammo.btFixedConstraint(this.bodyA, this.bodyB, pa, pb, true);
+    var joint = new Ammo.btGeneric6DofConstraint(this.bodyA, this.bodyB, pa, pb, true);
+    joint.setLinearLowerLimit(new Ammo.btVector3(0,0,0));
+    joint.setLinearUpperLimit(new Ammo.btVector3(0,0,0));
+    joint.setAngularLowerLimit(new Ammo.btVector3(0,0,0));
+    joint.setAngularUpperLimit(new Ammo.btVector3(0,0,0));
+    return joint;  
 }
 function setupPhyObject(node, id, world) {
     node.body = null;
@@ -685,7 +690,8 @@ phyObject.prototype.disable = function() {
     if (this.parent.id !== vwf.application()) {
         this.markRootBodyCollisionDirty();
     }
-    vwf.setProperty(this.id, 'transform', this.getTransform());
+    //can't do this! causes the kernel to sense ___physics_enabled as a delegated property
+    //vwf.setProperty(this.id, 'transform', this.getTransform());
     if (this.initialized === true) {
         this.deinitialize();
     }
@@ -1422,7 +1428,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
             var body = new Ammo.btRigidBody(rbInfo);
             body.setDamping(1, 1);
-            body.setFriction(.1);
+            body.setFriction(.7);
             body.setRestitution(.4);
             this.allNodes[vwf.application()].ground = body;
             world.addRigidBody(this.allNodes[vwf.application()].ground);
@@ -1529,6 +1535,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                     node.setWidth(propertyValue);
                 }
                 if (propertyName === '___physics_enabled') {
+
                     if (propertyValue === true) node.enable();
                     if (propertyValue === false) node.disable();
                 }
@@ -1609,6 +1616,8 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 //this is a hack
                 //find a better way. Maybe delete the old key from the map above
                 if (node.body) this.bodiesToID[node.body.ptr] = nodeID;
+
+
             }
         },
         // -- gettingProperty ----------------------------------------------------------------------
