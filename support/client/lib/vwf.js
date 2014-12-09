@@ -1950,7 +1950,8 @@ this.resyncNode = function(nodeID,node)
     for(var j =0; j < keys.length; j++)
     {
         var i = keys[j];
-        if(JSON.stringify(vwf.getProperty(nodeID,i)) !== JSON.stringify(node.properties[i]))
+        //dont use json compare, it is not robust enough
+        if(!Object.deepEquals(vwf.getProperty(nodeID,i),node.properties[i]))
             vwf.setProperty(nodeID,i,node.properties[i]);
     }
 
