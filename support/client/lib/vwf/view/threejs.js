@@ -134,7 +134,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             $(newdiv).attr('src', url);
             newdiv.style.left = '0px';
             newdiv.style.top = '0px';
-
+            newdiv.tabIndex = 10;
             $('#glyphOverlay').append(newdiv);
             $(newdiv).disableSelection();
             $(newdiv).mousedown(function(e) {

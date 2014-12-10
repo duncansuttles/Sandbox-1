@@ -73,6 +73,12 @@ define([], function() {
             this.BuildGUI();
             $('#MenuPhysicsEditoricon').addClass('iconselected');
         }
+        this.setProperty = function(id,propertyName,propertyValue)
+        {
+            //the prim editor will always set properties for all selected objects
+            id = 'selection';
+            _PrimitiveEditor.setProperty(id,propertyName,propertyValue);
+        }
         this.hide = function() {
             //$('#PhysicsEditor').dialog('close');
             if (this.isOpen()) {
@@ -153,8 +159,8 @@ define([], function() {
             if (_PhysicsEditor.inSetup) return;
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
-            if ($(this).attr('checked') == 'checked') _PrimitiveEditor.setProperty(id, prop, true);
-            else _PrimitiveEditor.setProperty(id, prop, false);
+            if ($(this).attr('checked') == 'checked') _PhysicsEditor.setProperty(id, prop, true);
+            else _PhysicsEditor.setProperty(id, prop, false);
         }
         this.primPropertyTypein = function(e, ui) {
             if (_PhysicsEditor.inSetup) return;
@@ -163,7 +169,7 @@ define([], function() {
             var amount = $(this).val();
             var slider = $(this).attr('slider');
             $(slider).slider('value', amount);
-            _PrimitiveEditor.setProperty(id, prop, parseFloat(amount));
+            _PhysicsEditor.setProperty(id, prop, parseFloat(amount));
         }
         this.primSpinner = function(e, ui) {
             if (_PhysicsEditor.inSetup) return;
@@ -172,7 +178,7 @@ define([], function() {
             var amount = $(this).val();
             var slider = $(this).attr('slider');
             $(slider).slider('value', ui.value);
-            _PrimitiveEditor.setProperty(id, prop, parseFloat(ui.value));
+            _PhysicsEditor.setProperty(id, prop, parseFloat(ui.value));
         }
         this.primPropertySlide = function(e, ui) {
             if (_PhysicsEditor.inSetup) return;
@@ -181,7 +187,7 @@ define([], function() {
             $('#' + id + prop + 'value').val(ui.value);
             var amount = ui.value;
             //be sure to skip undo - handled better in slidestart and slidestop
-            _PrimitiveEditor.setProperty(id, prop, parseFloat(amount), true);
+            _PhysicsEditor.setProperty(id, prop, parseFloat(amount), true);
         }
         this.primPropertySlideStart = function(e, ui) {
             if (_PhysicsEditor.inSetup) return;
@@ -195,7 +201,7 @@ define([], function() {
             } else {
                 this.undoEvent.push(new _UndoManager.SetPropertyEvent(id, prop, null))
             }
-            _PrimitiveEditor.setProperty(id, prop, parseFloat(amount), true);
+            _PhysicsEditor.setProperty(id, prop, parseFloat(amount), true);
         }
         this.primPropertySlideStop = function(e, ui) {
             if (_PhysicsEditor.inSetup) return;
@@ -207,7 +213,7 @@ define([], function() {
                 for (var i = 0; i < this.undoEvent.list.length; i++) this.undoEvent.list[i].val = amount;
             _UndoManager.pushEvent(this.undoEvent);
             this.undoEvent = null;
-            _PrimitiveEditor.setProperty(id, prop, parseFloat(amount), true);
+            _PhysicsEditor.setProperty(id, prop, parseFloat(amount), true);
         }
         this.createCheck = function(parentdiv, nodeid, propertyName, displayName) {
             $(parentdiv).append('<div><input style="vertical-align: middle" type="checkbox" id="' + propertyName + nodeid + '" nodename="' + nodeid + '" propname="' + propertyName + '"/><div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">' + displayName + ' </div></div>');
@@ -233,7 +239,7 @@ define([], function() {
                         $('#' + nodename + propname).val(node.id);
                         _Editor.TempPickCallback = null;
                         _Editor.SetSelectMode('Pick');
-                        _PrimitiveEditor.setProperty(nodename, propname, node.id);
+                        _PhysicsEditor.setProperty(nodename, propname, node.id);
                     };
                     _Editor.SetSelectMode('TempPick');
                 });
@@ -251,7 +257,7 @@ define([], function() {
                         var x = $('#' + thisid + 'X').val();
                         var y = $('#' + thisid + 'Y').val();
                         var z = $('#' + thisid + 'Z').val();
-                        _PrimitiveEditor.setProperty(nodeid, propname, [parseFloat(x), parseFloat(y), parseFloat(z)]);
+                        _PhysicsEditor.setProperty(nodeid, propname, [parseFloat(x), parseFloat(y), parseFloat(z)]);
                     }
                     //$('#basicSettings'+nodeid).append('<div style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">'+editordata[i].displayname+': </div>');
                 var baseid = 'basicSettings' + nodeid + propertyName + 'min';
@@ -322,7 +328,7 @@ define([], function() {
                     var nodename = $(this).attr('nodename');
                     var value = $(this).val();
                     var div = this;
-                    _PrimitiveEditor.setProperty(nodename, propname, value);
+                    _PhysicsEditor.setProperty(nodename, propname, value);
                 });
                 this.addPropertyEditorDialog(nodeid, propertyName, $('#' + nodeid + i), 'text');
             }
@@ -635,14 +641,14 @@ define([], function() {
                             linearFactor[0] = $('#lockXMotion').attr('checked') == 'checked' ? 1 : 0;
                             linearFactor[1] = $('#lockYMotion').attr('checked') == 'checked' ? 1 : 0;
                             linearFactor[2] = $('#lockZMotion').attr('checked') == 'checked' ? 1 : 0;
-                            _PrimitiveEditor.setProperty(PhysicsEditor.selectedID, '___physics_factor_linear', linearFactor);
+                            _PhysicsEditor.setProperty(PhysicsEditor.selectedID, '___physics_factor_linear', linearFactor);
                         });
                         $('#lockXRotation, #lockYRotation, #lockZRotation').click(function() {
                             var angularFactor = [0, 0, 0];
                             angularFactor[0] = $('#lockXRotation').attr('checked') == 'checked' ? 1 : 0;
                             angularFactor[1] = $('#lockYRotation').attr('checked') == 'checked' ? 1 : 0;
                             angularFactor[2] = $('#lockZRotation').attr('checked') == 'checked' ? 1 : 0;
-                            _PrimitiveEditor.setProperty(PhysicsEditor.selectedID, '___physics_factor_angular', angularFactor);
+                            _PhysicsEditor.setProperty(PhysicsEditor.selectedID, '___physics_factor_angular', angularFactor);
                         });
 
                     }

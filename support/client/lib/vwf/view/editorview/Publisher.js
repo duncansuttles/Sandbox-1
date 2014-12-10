@@ -146,6 +146,8 @@ define([], function() {
 
             if (id == vwf.application()) {
                 if (prop == 'playMode' && val == 'play') {
+
+
                     $('#playButton').addClass('pulsing');
                     $('#pauseButton').removeClass('pulsing');
                     $('#stopButton').removeClass('pulsing');
@@ -164,6 +166,10 @@ define([], function() {
                     _Editor.SelectObject(null);
                     _Editor.SetSelectMode('none');
                     $('#index-vwf').focus();
+                    hideTools();
+                    $('#statusbar').show();
+                    $('#statusbarinner').hide();
+                    $('#statusbar').css('background','none');
 
                 }
 
@@ -178,6 +184,10 @@ define([], function() {
                     $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', '');
                     $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', '');
                     $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', '');
+                     showTools();
+                    $('#statusbar').css('background','');
+                    $('#statusbarinner').show();
+                    _Editor.SelectObject(this.lastSelection);
                     _Editor.SetSelectMode('Pick');
 
                 }
@@ -185,6 +195,9 @@ define([], function() {
 
                     //restore selection
 
+                    showTools();
+                    $('#statusbar').css('background','');
+                    $('#statusbarinner').show();
                     _Editor.SelectObject(this.lastSelection);
                     $('#playButton').removeClass('pulsing');
                     $('#pauseButton').removeClass('pulsing');

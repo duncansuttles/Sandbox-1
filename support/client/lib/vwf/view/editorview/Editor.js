@@ -610,28 +610,40 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         }.bind(this);
         //	$('#vwf-root').keyup(function(e){
         this.keyup_Gizmo = function(e) {
+
             if (vwf.getProperty(vwf.application(), 'playMode') == 'play') return;
             if (e.keyCode == 17) {
                 this.PickMod = NewSelect;
+                console.log(this.PickMod);
                 $('#index-vwf').css('cursor', 'default');
             }
             if (e.keyCode == 18) {
                 this.PickMod = NewSelect;
+                console.log(this.PickMod);
                 $('#index-vwf').css('cursor', 'default');
             }
         }.bind(this);
         this.blur = function() {
-            this.PickMod = NewSelect;
-            $('#index-vwf').css('cursor', 'default');
+            // we need to let the event propagate, then check that the new focused element is not a glyph. 
+            //if it is a glyph, focus back on the canvas
+            var self = this;
+            setTimeout(function(){
+                if($(document.activeElement).hasClass('glyph')) return; // This is the element that has focus
+                console.log(self.PickMod);
+                self.PickMod = NewSelect;
+                $('#index-vwf').css('cursor', 'default');
+            },10);
         }
         this.keydown_Gizmo = function(e) {
             if (vwf.getProperty(vwf.application(), 'playMode') == 'play') return;
             if (e.keyCode == 17) {
                 this.PickMod = Add;
+                console.log(this.PickMod);
                 $('#index-vwf').css('cursor', 'all-scroll');
             }
             if (e.keyCode == 18) {
                 this.PickMod = Subtract;
+                console.log(this.PickMod);
                 $('#index-vwf').css('cursor', 'not-allowed');
             }
             if (e.keyCode == 87 && SelectMode == 'Pick') {
@@ -1612,6 +1624,9 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             this.SelectOnNextCreate([newname]);
         }
         this.CreateCamera = function(translation, owner, id) {
+            translation[0] = this.SnapTo(translation[0], MoveSnap);
+            translation[1] = this.SnapTo(translation[1], MoveSnap);
+            translation[2] = this.SnapTo(translation[2], MoveSnap);
             var CamProto = {
                 extends: 'SandboxCamera' + '.vwf',
                 properties: {}
@@ -1631,7 +1646,29 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 extends: type + 'Constraint' + '.vwf',
                 properties: {}
             };
-            ConstraintProto.properties.transform = Mat4.createFloat32Identity()
+            if(_Editor.getSelectionCount() == 0 || _Editor.getSelectionCount() > 2)
+                ConstraintProto.properties.transform = MATH.transposeMat4(MATH.translateMatrix( _Editor.GetInsertPoint()));
+            if(_Editor.getSelectionCount() == 1)
+            {
+                var trans = vwf.getProperty(_Editor.GetSelectedVWFID(),'transform');
+                trans = [trans[12],trans[13],trans[14] ]
+                ConstraintProto.properties.transform = MATH.transposeMat4(MATH.translateMatrix(trans));
+                ConstraintProto.properties.___physics_joint_body_A = _Editor.GetSelectedVWFNode(0).id;
+            }
+            if(_Editor.getSelectionCount() == 2)
+            {
+                var trans = vwf.getProperty(_Editor.GetSelectedVWFNode(0).id,'transform');
+                trans = [trans[12],trans[13],trans[14] ];
+                var trans2 = vwf.getProperty(_Editor.GetSelectedVWFNode(1).id,'transform');
+                trans2 = [trans2[12],trans2[13],trans2[14] ];
+                trans[0] = (trans[0] + trans2[0])/2;
+                trans[1] = (trans[1] + trans2[1])/2;
+                trans[2] = (trans[2] + trans2[2])/2;
+                ConstraintProto.properties.transform = MATH.transposeMat4(MATH.translateMatrix(trans));
+                ConstraintProto.properties.___physics_joint_body_A = _Editor.GetSelectedVWFNode(0).id;
+                ConstraintProto.properties.___physics_joint_body_B = _Editor.GetSelectedVWFNode(1).id;
+            }
+
             ConstraintProto.properties.owner = owner;
             ConstraintProto.properties.DisplayName = self.GetUniqueName(type + ' Constraint');
             var newname = GUID();
@@ -2204,11 +2241,13 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             if (SelectMode == 'TempPick') {
                 if (this.TempPickCallback) this.TempPickCallback(_Editor.getNode(VWFNodeid));
             } else {
+
                 this.SelectObject(VWFNodeid, this.PickMod);
             }
         }
         this.SelectObject = function(VWFNode, selectmod, skipUndo) //the skip undo flag is necessary so that the undomanager can trigger new selections without messing up the undostack
             {
+
                 this.waitingForSet.length = 0;
                 //stop the GUI drag function
 
