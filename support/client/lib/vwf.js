@@ -1944,7 +1944,7 @@ this.setNode = function( nodeID, nodeComponent, callback_async /* ( nodeID ) */ 
 
 this.resyncNode = function(nodeID,node)
 {
-   
+    if(nodeID == vwf.application()) return;
     if(!node || !node.properties) return;
     var keys = Object.keys(node.properties);
     for(var j =0; j < keys.length; j++)

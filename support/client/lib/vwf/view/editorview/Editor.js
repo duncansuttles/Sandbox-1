@@ -714,7 +714,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     var bound = peerselection.bounds[i];
                     if (bound) {
                         bound.parent.remove(bound);
-                        bound.dispose();
+                       
                         bound.children[0].geometry.dispose();
                     }
                 }

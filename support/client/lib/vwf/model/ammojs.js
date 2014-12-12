@@ -94,8 +94,40 @@ phyJoint.prototype.destroy = function() {
 phyJoint.prototype.deinitialize = function() {
     this.destroy();
 }
+phyJoint.prototype.getTransform = function(temp)
+{
+    //this is important and tricky!!! 
+    //since the joint orientation is relative to the bodies, and the bodies are moving,
+    //recreating the joint without updating it's position will result in very different results
+    //it's probably  good pratice to make the joint object a  child of the bodyA, so that the 
+    //joint location never changes relative to body a. However, we can also make this work by 
+    //updating the stored location of each joint to be relative to the body A position after each tick
+
+    //NOTE:: the this.transform value should be storing the location RELATIVE to BODYA in the reference frame of the joint parent!!!
+    //NOTE:: updates from the physics tick should not actually change and rebind these joints, this information is useful only to 
+    //late joiners and DB saves
+    
+    if(this.bodyA)
+    {
+        if(!temp) temp = [];
+        
+
+        var bodyWorldTx = vwf.getProperty(this.aID, 'worldtransform');
+        var bodyRelMat = Mat4.multMat(bodyWorldTx,this.transRelBodyA, temp);
+
+        
+        return bodyRelMat;
+    }
+    else
+        return this.transform;
+
+}
 phyJoint.prototype.setTransform = function(propertyValue) {
-    this.transform = vecset(this.transform, propertyValue)
+    this.transform = vecset(this.transform, propertyValue);
+    if(this.aID)
+    {
+        this.transRelBodyA = this.getMatrixRelBody(this.aID,this.transform);
+    }
     //this.destroy();
 }
 phyJoint.prototype.setDirty = function() {
@@ -107,6 +139,7 @@ phyJoint.prototype.setBodyAID = function(nodeID) {
     this.aID = nodeID;
     this.destroy();
     this.driver.jointBodyMap[this.id].push(this.aID);
+    this.transRelBodyA = this.getMatrixRelBody(this.aID,this.transform);
 }
 phyJoint.prototype.setBodyBID = function(nodeID) {
     var idx = this.driver.jointBodyMap[this.id].indexOf(this.bID)
@@ -117,6 +150,9 @@ phyJoint.prototype.setBodyBID = function(nodeID) {
 }
 phyJoint.prototype.setBodyA = function(body) {
     this.bodyA = body;
+
+    var bodyWorldTx = vwf.getProperty(this.aID, 'worldtransform');
+    this.transRelBodyA = this.getMatrixRelBody(this.aID,this.transform);
 }
 phyJoint.prototype.setBodyB = function(body) {
     this.bodyB = body;
@@ -1367,7 +1403,11 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                         vwf.setProperty(node.id, '___physics_velocity_angular', node.getAngularVelocity());
                         vwf.setProperty(node.id, '___physics_velocity_linear', node.getLinearVelocity());
                         vwf.setProperty(node.id, '___physics_deactivation_time', node.getDeactivationTime());
+                    }if(node.joint)
+                    {
+                         vwf.setProperty(node.id, 'transform', node.getTransform(tempmat));
                     }
+
                 }
                 this.triggerCollisions();
                 this.reEntry = false;
