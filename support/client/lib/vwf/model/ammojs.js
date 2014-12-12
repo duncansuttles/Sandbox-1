@@ -1555,7 +1555,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 //between the GetState being sent to the load client, and this event occuring. 
                 // if(vwf.moniker() != args[0])
                 {
-                    console.log('reset world to sync late joining cleent');
+                    console.log('reset world to sync late joining cleent at', vwf.getProperty(vwf.application(),'simTime'));
                     if (!this.pendingReset) this.resetWorld();
                 }
             }
