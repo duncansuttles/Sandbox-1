@@ -15,6 +15,7 @@ extends: "http://vwf.example.com/node3.vwf"
 properties:
   ___physics_joint_body_A:
   ___physics_joint_body_B:
+  ___physics_enabled: true
   EditorData:
     BodyA:
       type: "nodeid"

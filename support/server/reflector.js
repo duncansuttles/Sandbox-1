@@ -678,14 +678,7 @@ function ClientConnected(socket, namespace, instancedata) {
 
 
 
-        var resetMessage = JSON.stringify({
-            "action": "callMethod",
-            "parameters": ["___physics_world_reset", []],
-            node: "index-vwf",
-            "time": thisInstance.time
-        });
-
-        thisInstance.messageClients(resetMessage);
+        
 
         loadClient.emit('message', messageCompress.pack(JSON.stringify({
             "action": "getState",

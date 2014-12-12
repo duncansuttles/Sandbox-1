@@ -75,11 +75,20 @@ function phyJoint(id, world, driver) {
     this.driver = driver;
     this.localScale = [1,1,1];
     this.transform = [];
+    this.enabled = true;
     if (this.driver) this.driver.jointBodyMap[id] = [];
 }
 phyJoint.prototype.getWorldScale = function()
 {
     return Mat4.createIdentity();
+}
+phyJoint.prototype.enable = function()
+{
+    this.enabled = true;
+}
+phyJoint.prototype.disable = function()
+{
+    this.enabled = false;
 }
 phyJoint.prototype.destroy = function() {
     if (this.initialized) {
@@ -111,7 +120,7 @@ phyJoint.prototype.getTransform = function(temp)
     {
         if(!temp) temp = [];
         
-
+        if(!this.transRelBodyA) throw new Error('Body not initialized before tick');
         var bodyWorldTx = vwf.getProperty(this.aID, 'worldtransform');
         var bodyRelMat = Mat4.multMat(bodyWorldTx,this.transRelBodyA, temp);
 
@@ -199,6 +208,7 @@ phyJoint.prototype.getAxisRelBody = function(bodyID, worldAxis) {
 }
 phyJoint.prototype.getMatrixRelBody = function(bodyID, worldMatrix) {
     var bodyWorldTx = vwf.getProperty(bodyID, 'worldtransform');
+    if(!bodyWorldTx) return null;
     var bodyWorldTxI = [];
     Mat4.invert(bodyWorldTx, bodyWorldTxI);
     var bodyRelMat = Mat4.multMat(bodyWorldTxI, worldMatrix, []);
@@ -1377,8 +1387,9 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
         ticking: function() {
             delete this.pendingReset;
             if (this.nodes[vwf.application()] && this.nodes[vwf.application()].active === true) {
-                for (var i in this.allNodes) {
-                    var node = this.allNodes[i];
+                var nodekeys = Object.keys(this.allNodes).sort();
+                for (var i in nodekeys) {
+                    var node = this.allNodes[nodekeys[i]];
                     if (node && node.update) {
                         node.update();
                         for (var i in node.delayedProperties) {
@@ -1393,8 +1404,9 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 this.nodes[vwf.application()].world.stepSimulation(1 / 20, 1, 1 / 20);
                 this.reEntry = true;
                 var tempmat = [];
-                for (var i in this.allNodes) {
-                    var node = this.allNodes[i];
+                var nodekeys = Object.keys(this.allNodes).sort();
+                for (var i in nodekeys) {
+                    var node = this.allNodes[nodekeys[i]];
                     if (node.body && node.initialized === true && node.mass > 0 && node.getActivationState() != 2) {
                         vwf.setProperty(node.id, 'transform', node.getTransform(tempmat));
                         //so, we were setting these here in order to inform the kernel that the property changed. Can we not do this, and 
@@ -1449,6 +1461,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             return this.settingProperty(nodeID, propertyName, propertyValue);
         },
         resetWorld: function() {
+            
             this.pendingReset = true;
             //here, we must reset the world whenever a new client joins. This is because the new client must be aligned. They will be 
             //initializing the world in a given state. There is stateful information internal to the physics engine that can only be reset on the other clients
@@ -1456,20 +1469,24 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             var world = this.allNodes[vwf.application()].world;
             var IDs_to_enable = [];
             if (world) {
-                for (var i in this.allNodes) {
-                    var node = this.allNodes[i];
-                    if (node.body) {
+
+                var nodekeys = Object.keys(this.allNodes).sort();
+                for (var i in nodekeys) {
+
+                    var node = this.allNodes[nodekeys[i]];
+                    if (vwf.getProperty(nodekeys[i], "___physics_enabled")) {
                         //call the getters, because they will cache the values to survive the reset
                         //var backupTrans = node.getTransform();
                         //node.backupTrans = backupTrans;
-                        vwf.setProperty(i, "___physics_enabled", false);
-                        IDs_to_enable.push(i);
+                        this.settingProperty(nodekeys[i], "___physics_enabled", false);
+                        IDs_to_enable.push(nodekeys[i]);
                     }
                 }
                 world.removeRigidBody(this.allNodes[vwf.application()].ground);
-                for (var i in this.allNodes) {
-                    var node = this.allNodes[i];
-                    if (this.allNodes[i].deinitialize) this.allNodes[i].deinitialize()
+                for (var i in nodekeys) {
+                    var node = this.allNodes[nodekeys[i]];
+                    if (node.deinitialize) node.deinitialize();
+                    node.world = null;
                 }
                 delete this.allNodes[vwf.application()].world;
                 Ammo.destroy(world);
@@ -1503,6 +1520,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             for (var j = 0; j < IDs_to_enable.length; j++) {
                 var i = IDs_to_enable[j];
                 var node = this.allNodes[i];
+                node.world = world;
                 if (node.world && i != vwf.application()) {
                     node.world = world;
                     node.initialized = false;

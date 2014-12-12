@@ -170,6 +170,7 @@ define([], function() {
                     $('#statusbar').show();
                     $('#statusbarinner').hide();
                     $('#statusbar').css('background','none');
+                  
 
                 }
 

@@ -625,6 +625,7 @@ scripts:
     	}
     	if(!this.clients[id])
     		this.clients.defineProperty(id,{cid:id,name:name,UID:UID,cameraID:null});
+      this.___physics_world_reset();  //reset the physics world when a client joins;
     }
     // a client other than this one has left
     this.clientDisconnected = function(id,name,UID)
