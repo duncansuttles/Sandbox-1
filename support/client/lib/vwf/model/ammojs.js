@@ -31,7 +31,7 @@ function collectChildCollisions(node, list) {
     for (var i in node.children) {
         collectChildCollisions(node.children[i], list);
     }
-    if (node.enabled === true) {
+    if (node.enabled === true && node instanceof phyObject) {
         var col = node.buildCollisionShape();
         if (col) {
             list.push({
@@ -990,7 +990,7 @@ function phyCylinder(id, world) {
 }
 phyCylinder.prototype = new phyObject();
 phyCylinder.prototype.buildCollisionShape = function() {
-    return new Ammo.btCylinderShapeZ(new Ammo.btVector3(this.radius * this.getWorldScale()[0], this.height * this.getWorldScale()[1], this.height * this.getWorldScale()[2]));
+    return new Ammo.btCylinderShapeZ(new Ammo.btVector3(this.radius * this.getWorldScale()[0], this.radius * this.getWorldScale()[1], this.height * this.getWorldScale()[2]));
 }
 phyCylinder.prototype.setRadius = function(radius) {
     if (this.radius == radius) return;

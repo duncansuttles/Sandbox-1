@@ -477,7 +477,7 @@ function runningInstance(id) {
                     "time": self.time,
                     "origin":"reflector"
                 }));
-                console.log('sending tick');
+                global.log('sending tick');
                 self.messageClients(tickmessage);
             }
             self.lasttime = now;
@@ -982,13 +982,19 @@ function ClientConnected(socket, namespace, instancedata) {
                     } else if (message.action == "activeResync") {
                         //here we deal with continual resycn messages
                         var node = message.result.node;
-                        if (node) {
-                            delete node.children; //remove children or we could end up getting large trees
-                            thisInstance.messageClients(JSON.stringify({
-                                "action": "resyncNode",
-                                "parameters": [node.id, node],
-                                "time": thisInstance.time
-                            }))
+                        if (node ) {
+                            if (message.time >= thisInstance.time) {
+                                delete node.children; //remove children or we could end up getting large trees
+                                thisInstance.messageClients(JSON.stringify({
+                                    "action": "resyncNode",
+                                    "parameters": [node.id, node],
+                                    "time": thisInstance.time
+                                }))
+                            }else
+                            {
+                                global.log('rejecting resync data from the past');
+                                global.log(message.time,thisInstance.time);
+                            }
                         }
                     } else {
                         //just a regular message, so push if the client is pending a load, otherwise just send it.

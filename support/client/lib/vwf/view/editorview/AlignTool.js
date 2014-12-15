@@ -169,6 +169,7 @@ function AlignTool() {
 
 	}
 	this.updateDisplay = function() {
+
 		var target = this.target; //_Editor.findviewnode(this.targetNodeID);
 		var tbounds = target.GetBoundingBox(true);
 
@@ -197,6 +198,11 @@ function AlignTool() {
 			var source = _Editor.findviewnode(this.sourceNodeIDs[i])
 			var sbounds = source.GetBoundingBox(true);
 			sbounds = sbounds.clone();
+			if(sbounds.max[0] == -Infinity)
+			{
+				sbounds.max = [0,0,0];
+				sbounds.min = [0,0,0];	
+			}
 			var smat = source.matrixWorld.clone();
 			smat = smat.setPosition(new THREE.Vector3());
 			sbounds = sbounds.transformBy(smat.clone().transpose().elements);

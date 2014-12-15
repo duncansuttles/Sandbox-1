@@ -1200,6 +1200,7 @@ this.receive = function( nodeID, actionName, memberName, parameters, respond, or
 /// 
 /// @name module:vwf.dispatch
 this.lastTick = 0;
+this.propertySetTimes = {},
 this.dispatch = function() {
 
     // Handle messages until we empty the queue or reach the new current time. For each,
@@ -1225,8 +1226,9 @@ this.dispatch = function() {
 
 
         // Advance the time.
-
         if ( this.now != fields.time ) {
+           
+
             this.now = fields.time;
             this.sequence_ = undefined; // clear after the previous action
             this.client_ = undefined;   // clear after the previous action                    
