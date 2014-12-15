@@ -5,6 +5,7 @@ properties:
     value: 0
     set: |
             this.amount = value;
+           
             this.dirtyStack();        
   noisescale:
     value: .1
@@ -26,15 +27,15 @@ properties:
     set: |
             this.seed = value;
             
-            this.random = this.Random(this.seed);
+            this.rcrandom = this.Random(this.seed);
          
              this.permutation = [];
              for(var i =0; i < 512; i++)
              {
-                this.permutation.push(Math.floor(this.random.getRandomNumber()*256));
+                this.permutation.push(Math.floor(this.rcrandom.getRandomNumber()*256));
              }         
             
-            this.simplex = new SimplexNoise(this.random.getRandomNumber);
+            this.simplex = new SimplexNoise(this.rcrandom.getRandomNumber);
             this.dirtyStack(); 
   effectX:
     set: |
@@ -133,6 +134,7 @@ methods:
   dirtyStack:
   GetMesh:
   noise:
+  ready:
 events:
   childAdded:
 scripts:
@@ -147,20 +149,23 @@ scripts:
         var seed = vwf.getProperty(this.id,'seed');
         
         
-        if(!this.random)
-        {
+        
+        //wow, this was tricky. there is stateful information inside the rcrandom object
+        //it must be reinitialized each time from the seed to make sure results are the same on other clients
+        //this is because the pattern of gets and sets is differnt on late joiners, and it is possible that the getRandomNumber
+        //function is called more times on the original client than the late one. So, the results can sometimes be different
             
-            this.random = this.Random(seed);
+            this.rcrandom = this.Random(seed);
          
              this.permutation = [];
              for(var i =0; i < 512; i++)
              {
-                this.permutation.push(Math.floor(this.random.getRandomNumber()*256));
+                this.permutation.push(Math.floor(this.rcrandom.getRandomNumber()*256));
              }         
             
-             this.simplex = new SimplexNoise(this.random.getRandomNumber);
+             this.simplex = new SimplexNoise(this.rcrandom.getRandomNumber);
         
-        }
+        
         
         
         var x = vwf.getProperty(this.id,'effectX');
@@ -168,8 +173,14 @@ scripts:
         var z = vwf.getProperty(this.id,'effectZ');
         var world = vwf.getProperty(this.id,'WorldSpace');
         var phase = vwf.getProperty(this.id,'phase');
-        
+       
+        console.log(scale,iterations,seed,x,y,z,world,phase);
         this.noise(scale,iterations,seed,x,y,z,world,phase);
+        
+    }
+    this.ready = function()
+    {
+        this.dirtyStack();
     }
     var RotateVecAroundAxis = function(Vector, Axis, Radians)
     {
@@ -257,6 +268,7 @@ scripts:
          if(this.amount == undefined) return;
          
          var mesh = this.GetMesh();
+       
          if(!mesh)
             return;
          var m = mesh.geometry;
@@ -473,7 +485,7 @@ scripts:
 
     
     function SimplexNoise(random) {
-        if (!random) random = Math.random;
+        
         this.p = new Uint8Array(256);
         this.perm = new Uint8Array(512);
         this.permMod12 = new Uint8Array(512);

@@ -258,6 +258,7 @@
         
 
         
+        //for assets loaded from the 3DR server, or the federation server 
         var src = "";
         if(this.url.toLowerCase().indexOf('3dr_federation') != -1)
             src = this.url.substr(0,this.url.indexOf("Model/")) + "textures/NoRedirect/" + encodeURIComponent(texturename) +"?ID=00-00-00";
@@ -266,10 +267,19 @@
         
         src = src.replace("AnonymousUser:@","");
         
+        //for assets loaded from the data directory
         if(this.url.toLowerCase().indexOf('vwfdatamanager') != -1)
             src = './vwfdatamanager.svc/3drtexture?pid=' +  this.url.substr(this.url.indexOf("pid=")+4) + "&file=" + encodeURIComponent(texturename)
-        var tex = _SceneManager.getTexture(src);
+            
+        //for assets loaded from the content library
+
         
+        if(this.url.toLowerCase().indexOf('contentlibraries') != -1)
+        {
+            src = this.url.substr(0,this.url.lastIndexOf("/")+1) + texturename;
+
+        }
+        var tex = _SceneManager.getTexture(src);
         return tex;
     }
     

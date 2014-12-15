@@ -60,3 +60,4 @@
             return new plane(childID, childSource, childName);
         }
 })();
+//@ sourceURL=threejs.subdriver.plane

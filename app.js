@@ -1,4 +1,4 @@
-var server = require("./support/server/node_vwf");
+var server = require("./support/server/sandbox");
 
 server.startVWF();
 

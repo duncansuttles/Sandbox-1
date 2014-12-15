@@ -92,3 +92,5 @@ function DesertTerrainAlgorithm()
 		return t ;
 	}
 }
+
+//@ sourceURL=threejs.terrain.DesertTerrainAlgorithm

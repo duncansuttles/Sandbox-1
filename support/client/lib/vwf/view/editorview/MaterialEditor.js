@@ -719,7 +719,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				for (var j = 0; j < layersliderprops.length; j++)
 				{
 					var prop = layersliderprops[j].prop;
-					var inputstyle = "display: inline;float: right;padding: 0;width: 50px;border-radius: 6px;background: transparent;text-align: center;border-width: 1px;color: black;margin-bottom: 4px;"
+					var inputstyle = "display: inline;float: right;padding: 0;width: 50px;border-radius: 6px;background: transparent;text-align: center;border-width: 1px;color: white;margin-bottom: 4px;"
 					$('#' + rootid).append('<div style="display:inline-block;margin-bottom: 4px;">' + prop + ': </div>');
 					$('#' + rootid).append('<input style="' + inputstyle + '" id="' + rootid + prop + 'value"></input>');
 					$('#' + rootid + prop + 'value').change(this.LayerPropTypein);
@@ -745,7 +745,7 @@ define(["vwf/view/editorview/mapbrowser"], function ()
 				}
 				$('#' + rootid).append('<div style="clear:right" id="' + rootid + 'mapToDiv" />');
 				$('#' + rootid + 'mapToDiv').append('<div  style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Map To Property: </div>');
-				$('#' + rootid + 'mapToDiv').append('<select id="' + rootid + 'mapTo" style="float:right;clear:right">' + '<option value="1">Diffuse Color</option>' + '<option value="2">Bump Map</option>' + '<option value="3">Light Map</option>' + '<option value="4">Normal Map</option>' + '<option value="5">Specular Map</option>' + '<option value="6">Environment Map</option>' + '</select>');
+				$('#' + rootid + 'mapToDiv').append('<select id="' + rootid + 'mapTo" style="float:right;clear:right">' + '<option value="1">Diffuse Color</option>' + '<option value="2">Bump Map</option>' + '<option value="3">Light Map</option>' + '<option value="4">Normal Map</option>' + '<option value="5">Specular Map</option>' + '<option value="6">Environment Map</option>' +  '<option value="7">Alpha Map</option>'+ '</select>');
 				$('#' + rootid + 'mapTo').val(this.currentMaterial.layers[i].mapTo + "");
 				$('#' + rootid + 'mapTo').attr('layer', i);
 				$('#' + rootid + 'mapTo').change(function ()

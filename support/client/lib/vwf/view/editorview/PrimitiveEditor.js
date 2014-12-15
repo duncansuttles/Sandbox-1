@@ -762,28 +762,32 @@ define(function() {
                 }
                 if (editordata[i].type == 'nodeid') {
 
-                    $('#basicSettings' + nodeid).append('<div style="margin-top: 5px;margin-bottom: 5px;"><div >' + editordata[i].displayname + '</div><input type="text" style="display: inline;width: 50%;padding: 2px;border-radius: 5px;font-weight: bold;" id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/><div  style="float:right;width:45%;height:2em" id="' + nodeid + i + 'button" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/></div><div style="clear:both" />');
-                    $('#' + nodeid + i).val(vwf.getProperty(node.id, editordata[i].property));
-                    $('#' + nodeid + i).attr('disabled', 'disabled');
+                    $('#basicSettings' + nodeid).append('<div style="margin-top: 5px;margin-bottom: 5px;"><div >' + editordata[i].displayname + '</div><input type="text" style="display: inline;width: 50%;padding: 2px;border-radius: 5px;font-weight: bold;" id="' + nodeid + editordata[i].property + '" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/><div  style="float:right;width:45%;height:2em" id="' + nodeid + i + 'button" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/></div><div style="clear:both" />');
+                    
+                   
+                    $('#' + nodeid + editordata[i].property).attr('disabled', 'disabled');
                     $('#' + nodeid + i + 'button').button({
                         label: 'Choose Node'
                     });
-                    var label = $('#' + nodeid + i);
+                    var label = $('#' + nodeid + editordata[i].property);
                     $('#' + nodeid + i + 'button').click(function() {
                         var propname = $(this).attr('propname');
                         var nodename = $(this).attr('nodename');
 
                         _Editor.TempPickCallback = function(node) {
-                            label.val(node.id);
+                            if(!node) return;
+                            $('#' + nodename + propname ).val(node.id);
                             _Editor.TempPickCallback = null;
                             _Editor.SetSelectMode('Pick');
+
                             _PrimitiveEditor.setProperty(nodename, propname, node.id);
                         };
                         _Editor.SetSelectMode('TempPick');
 
                     });
 
-                    this.addPropertyEditorDialog(node.id, editordata[i].property, $('#' + nodeid + i), 'text');
+                    this.addPropertyEditorDialog(node.id, editordata[i].property, $('#' + nodeid + editordata[i].property), 'text');
+                     $('#' + nodeid + editordata[i].property).val(vwf.getProperty(node.id, editordata[i].property));
                 }
                 if (editordata[i].type == 'color') {
                     var colorswatchstyle = "margin: 5px;float:right;clear:right;background-color: #FF19E9;width: 25px;height: 25px;border: 2px solid lightgray;border-radius: 3px;display: inline-block;margin-left: 20px;vertical-align: middle;box-shadow: 2px 2px 5px,1px 1px 3px gray inset;background-image: url(vwf/view/editorview/images/select3.png);background-position: center;";
@@ -945,7 +949,11 @@ define(function() {
         this.scaleChanged = function() {
             this.setTransform();
         }
-        this.NodePropertyUpdate = function(nodeID, propName, propVal) {
+        this.initializedProperty = function (nodeID, propName, propVal)
+        {
+            this.satProperty(nodeID, propName, propVal);
+        }
+        this.satProperty = function(nodeID, propName, propVal) {
 
 
             for (var i = 0; i < this.propertyEditorDialogs.length; i++) {
@@ -982,9 +990,9 @@ define(function() {
 
                     var mat = vwf.getProperty(node.id, 'transform');
                     var angles = this.rotationMatrix_2_XYZ(mat);
-                    var pos = vwf.getProperty(node.id, 'translation');
+                    var pos = [mat[12],mat[13],mat[14]];
 
-                    var scl = vwf.getProperty(node.id, 'scale');
+                    var scl = [MATH.lengthVec3([mat[0],mat[4],mat[8]]),MATH.lengthVec3([mat[1],mat[5],mat[9]]),MATH.lengthVec3([mat[2],mat[6],mat[10]])]
                     $('#PositionX').val(Math.floor(pos[0] * 1000) / 1000);
                     $('#PositionY').val(Math.floor(pos[1] * 1000) / 1000);
                     $('#PositionZ').val(Math.floor(pos[2] * 1000) / 1000);
@@ -995,9 +1003,13 @@ define(function() {
                     $('#RotationZ').val(Math.round(angles[2] * 57.2957795));
 
                     //$('#RotationW').val(rot[3]);
-                    $('#ScaleX').val(Math.floor(scl[0] * 1000) / 1000);
-                    $('#ScaleY').val(Math.floor(scl[1] * 1000) / 1000);
-                    $('#ScaleZ').val(Math.floor(scl[2] * 1000) / 1000);
+                    //well, this is embarassing. Old code from years ago, reflecting incorrect idea about how 
+                    //transform matrix works
+              
+                    $('#ScaleX').val((Math.floor(MATH.lengthVec3([mat[0],mat[1],mat[2]]) * 1000)) / 1000);
+                    $('#ScaleY').val((Math.floor(MATH.lengthVec3([mat[4],mat[5],mat[6]]) * 1000)) / 1000);
+                    $('#ScaleZ').val((Math.floor(MATH.lengthVec3([mat[8],mat[9],mat[10]]) * 1000)) / 1000);
+
                 }
             } catch (e) {
                 //console.log(e);
@@ -1006,7 +1018,7 @@ define(function() {
         $(document).bind('selectionChanged', this.SelectionChanged.bind(this));
         $(document).bind('modifierCreated', this.SelectionChanged.bind(this));
         $(document).bind('selectionTransformedLocal', this.SelectionTransformed.bind(this));
-        $(document).bind('nodePropChanged', this.NodePropertyUpdate.bind(this));
+       
         $('#PositionX').change(this.positionChanged.bind(this));
         $('#PositionY').change(this.positionChanged.bind(this));
         $('#PositionZ').change(this.positionChanged.bind(this));

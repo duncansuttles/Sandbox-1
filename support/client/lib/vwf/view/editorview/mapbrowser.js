@@ -1,15 +1,11 @@
-function getProperties(obj)
-{
+function getProperties(obj) {
 	var i, v;
 	var count = 0;
 	var props = [];
-	if (typeof (obj) === 'object')
-	{
-		for (i in obj)
-		{
+	if (typeof(obj) === 'object') {
+		for (i in obj) {
 			v = obj[i];
-			if (v !== undefined && typeof (v) !== 'function')
-			{
+			if (v !== undefined && typeof(v) !== 'function') {
 				props[count] = i;
 				count++;
 			}
@@ -17,15 +13,12 @@ function getProperties(obj)
 	}
 	return props;
 };
-define(function ()
-{
+define(function() {
 	var MapBrowser = {};
 	var isInitialized = false;
 	return {
-		getSingleton: function ()
-		{
-			if (!isInitialized)
-			{
+		getSingleton: function() {
+			if (!isInitialized) {
 				initialize.call(MapBrowser);
 				isInitialized = true;
 			}
@@ -33,14 +26,20 @@ define(function ()
 		}
 	}
 
-	function initialize()
-	{
+	function initialize() {
 		var self = this;
 		$(document.body).append("<div id='MapBrowser' />");
 		//$(document.body).append("<div id='AddMap'> <input type='text' id='newmapurl' /> </div>");
-		$('#MapBrowser').dialog(
-		{
+		$('#MapBrowser').dialog({
 			title: 'Map Browser',
+			show: {
+				effect: "fade",
+				duration: 300
+			},
+			hide: {
+				effect: "fade",
+				duration: 300
+			},
 			autoOpen: false,
 			modal: true,
 			maxHeight: 600,
@@ -57,28 +56,21 @@ define(function ()
 		// }
 		// }});
 		//$(document.head).append('<script type="text/javascript" src="textures/textureLibrary.js"></script>');
-		this.setTexturePickedCallback = function (e)
-		{
+		this.setTexturePickedCallback = function(e) {
 			this.texturePickedCallback = e;
 		}
-		this.texturePicked = function ()
-		{
+		this.texturePicked = function() {
 			var texture = $(this).attr('texture');
-			if (_MapBrowser.texturePickedCallback)
-			{
+			if (_MapBrowser.texturePickedCallback) {
 				_MapBrowser.texturePickedCallback(texture);
-			}
-			else
-			{
+			} else {
 				_MaterialEditor.setActiveTextureSrc(texture);
 			}
 		}
-		this.GetTextures = function ()
-		{
-			var data = jQuery.ajax(
-			{
+		this.GetTextures = function() {
+			var data = jQuery.ajax({
 				type: 'GET',
-				url: PersistanceServer + '/vwfDataManager.svc/textures',
+				url: '../vwfDataManager.svc/textures',
 				data: null,
 				success: null,
 				async: false,
@@ -89,142 +81,125 @@ define(function ()
 			stringdata = stringdata.replace(/\\/g, "\\\\")
 			data = JSON.parse(stringdata);
 
-			var SceneUsed = {"Scene":[]};
+			var SceneUsed = {
+				"Scene": []
+			};
 			var used = _SceneManager.GetLoadedTextures();
-			for(var i =0; i < used.length; i++)
-			{
+			for (var i = 0; i < used.length; i++) {
 				SceneUsed.Scene.push(used[i])
 			}
 			data.root.push(SceneUsed);
 			return data;
 		}
-		this.dirpicked = function ()
-		{
+		this.dirpicked = function() {
 			var dir = $(this).attr('dir');
 			_MapBrowser.filter.push(dir);
 			_MapBrowser.BuildGUI();
 		}
-		this.dirup = function ()
-		{
+		this.dirup = function() {
 			_MapBrowser.filter.pop();
 			_MapBrowser.BuildGUI();
 		}
-		this.BuildGUI = function ()
-		{
-			$('#MapBrowser').empty();
+		this.BuildGUI = function() {
+				$('#MapBrowser').empty();
 
-			var _TextureList = this.GetTextures().root;
-			for (var i = 0; i < this.filter.length; i++)
-			{
-				_TextureList = _TextureList[this.filter[i]][getProperties(_TextureList[this.filter[i]])[0]];
-			}
-			if (_MapBrowser.filter.length > 0)
-			{
-				$('#MapBrowser').append('<img id="UpButton" class="textureChoice" />');
-				$('#UpButton').attr('src', '../vwf/view/editorview/images/icons/up_folder.gif');
-				$('#UpButton').click(this.dirup);
-			}
-			var self = this;
-			for (var i = 0; i < _TextureList.length; i++)
-			{
-				
-				if (typeof _TextureList[i] == 'string')
-				{
-					$('#MapBrowser').append('<img id="MapChoice' + i + '" class="textureChoice" />');
-					
-					$('#MapChoice' + i).attr('texture', PersistanceServer + '/vwfDataManager.svc/texture?UID=' + _TextureList[i]);
-					$('#MapChoice' + i).attr('rawtexture',  _TextureList[i]);
-					$('#MapChoice' + i).click(this.texturePicked);
-					$('#MapChoice' + i).error(function(){
+				var _TextureList = this.GetTextures().root;
+				for (var i = 0; i < this.filter.length; i++) {
+					_TextureList = _TextureList[this.filter[i]][getProperties(_TextureList[this.filter[i]])[0]];
+				}
+				if (_MapBrowser.filter.length > 0) {
+					$('#MapBrowser').append('<img id="UpButton" class="textureChoice" />');
+					$('#UpButton').attr('src', '../vwf/view/editorview/images/icons/up_folder.gif');
+					$('#UpButton').click(this.dirup);
+				}
+				var self = this;
+				for (var i = 0; i < _TextureList.length; i++) {
 
-						var id = $(this).attr('id');
-						var texture = $(this).attr('texture');
-						var rawtexture = $(this).attr('rawtexture');
-						$(this).remove();
+					if (typeof _TextureList[i] == 'string') {
+						$('#MapBrowser').append('<img id="MapChoice' + i + '" class="textureChoice" />');
 
-						$('#MapBrowser').append('<img id="'+id+'" class="textureChoice" />');	
-						$('#' + id).attr('texture', texture);
-						$('#' + id).attr('rawtexture',  rawtexture);
-						$('#' + id).click(self.texturePicked);
-						$('#' + id).error(function(){	
-
+						$('#MapChoice' + i).attr('texture', '../vwfDataManager.svc/texture?UID=' + _TextureList[i]);
+						$('#MapChoice' + i).attr('rawtexture', _TextureList[i]);
+						$('#MapChoice' + i).click(this.texturePicked);
+						$('#MapChoice' + i).error(function() {
 
 							var id = $(this).attr('id');
 							var texture = $(this).attr('texture');
 							var rawtexture = $(this).attr('rawtexture');
 							$(this).remove();
 
-							$('#MapBrowser').append('<img id="'+id+'" class="textureChoice" />');	
-							$('#' + id).attr('texture', rawtexture);
-							$('#' + id).attr('rawtexture',  rawtexture);
+							$('#MapBrowser').append('<img id="' + id + '" class="textureChoice" />');
+							$('#' + id).attr('texture', texture);
+							$('#' + id).attr('rawtexture', rawtexture);
 							$('#' + id).click(self.texturePicked);
-							$('#' + id).error(function(){
-								$(this).attr('src', "./checker.jpg");
+							$('#' + id).error(function() {
+
+
+								var id = $(this).attr('id');
+								var texture = $(this).attr('texture');
+								var rawtexture = $(this).attr('rawtexture');
+								$(this).remove();
+
+								$('#MapBrowser').append('<img id="' + id + '" class="textureChoice" />');
+								$('#' + id).attr('texture', rawtexture);
+								$('#' + id).attr('rawtexture', rawtexture);
+								$('#' + id).click(self.texturePicked);
+								$('#' + id).error(function() {
+									$(this).attr('src', "./checker.jpg");
+								});
+								$('#' + id).attr('src', rawtexture);
+
+
 							});
-							$('#' + id).attr('src', rawtexture);
+							$('#' + id).attr('src', texture);
 
 
 						});
-						$('#' + id).attr('src', texture);
-
-
-					});
-					$('#MapChoice' + i).attr('src', PersistanceServer + '/vwfDataManager.svc/texturethumbnail?UID=' + _TextureList[i]);
+						$('#MapChoice' + i).attr('src', '../vwfDataManager.svc/texturethumbnail?UID=' + _TextureList[i]);
+					} else {
+						var name = getProperties(_TextureList[i])[0];
+						name = name.substr(name.lastIndexOf('\\') + 1);
+						$('#MapBrowser').append('<div id="MapChoice' + i + '" class="textureChoice" >' + name + '</div>');
+						$('#MapChoice' + i).css('background-image', 'url(../vwf/view/editorview/images/icons/folder.jpg)');
+						$('#MapChoice' + i).attr('dir', i);
+						$('#MapChoice' + i).click(this.dirpicked);
+					}
 				}
-				else
-				{
-					var name = getProperties(_TextureList[i])[0];
-					name = name.substr(name.lastIndexOf('\\') + 1);
-					$('#MapBrowser').append('<div id="MapChoice' + i + '" class="textureChoice" >' + name + '</div>');
-					$('#MapChoice' + i).css('background-image', 'url(../vwf/view/editorview/images/icons/folder.jpg)');
-					$('#MapChoice' + i).attr('dir', i);
-					$('#MapChoice' + i).click(this.dirpicked);
-				}
+				$('#MapBrowser').append('<img id="MapChoiceadd" class="textureChoice" src="./vwf/view/editorview/images/plus.png" />');
+				$('#MapChoiceadd').css('background', '');
+				$('#MapChoiceadd').click(self.manualEntry);
 			}
-			$('#MapBrowser').append('<img id="MapChoiceadd" class="textureChoice" src="./vwf/view/editorview/images/plus.png" />');
-			$('#MapChoiceadd').css('background','white');
-			$('#MapChoiceadd').click(self.manualEntry);
-		}
-		//this.addTextureURLClick = function()
-		//{
+			//this.addTextureURLClick = function()
+			//{
 		$('#AddMap').dialog('open');
 		//}
-		this.show = function ()
-		{
+		this.show = function() {
 			$('#MapBrowser').dialog('open');
 			$('#MapBrowser').dialog('option', 'position', 'center');
 			this.BuildGUI();
 			this.open = true;
 		}
-		this.hide = function ()
-		{
+		this.hide = function() {
 			//if(this.isOpen())
 			$('#MapBrowser').dialog('close');
 		}
 		this.filter = [];
-		this.isOpen = function ()
-		{
+		this.isOpen = function() {
 			$("#MapBrowser").dialog("isOpen")
 		}
-		this.manualEntry = function()
-		{
+		this.manualEntry = function() {
 			$('#MapBrowser').dialog('close');
-			alertify.prompt('Enter the URL to a texture. The texture must be WebGL compatable and served from a domain that supports CORS',function(ok,val)
-			{
+			alertify.prompt('Enter the URL to a texture. The texture must be WebGL compatable and served from a domain that supports CORS', function(ok, val) {
 				$('#MapBrowser').dialog('open');
-				if(ok)
-				{
+				if (ok) {
 
-					if (_MapBrowser.texturePickedCallback)
-					{
+					if (_MapBrowser.texturePickedCallback) {
 						_MapBrowser.texturePickedCallback(val);
-					}
-					else
-					{
+					} else {
 						_MaterialEditor.setActiveTextureSrc(val);
 					}
 				}
-			},"http://");
+			}, "http://");
 		}
 	}
 });

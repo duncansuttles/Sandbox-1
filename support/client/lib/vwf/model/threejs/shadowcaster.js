@@ -72,3 +72,5 @@
             return new shadowCaster(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.shadowCaster

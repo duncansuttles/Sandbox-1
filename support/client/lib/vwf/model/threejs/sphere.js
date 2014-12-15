@@ -74,3 +74,5 @@
             return new sphere(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.sphere

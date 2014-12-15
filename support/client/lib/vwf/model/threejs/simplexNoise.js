@@ -353,3 +353,5 @@
 
 
 	};
+
+	//@ sourceURL=threejs.subdriver.SimplexNoise

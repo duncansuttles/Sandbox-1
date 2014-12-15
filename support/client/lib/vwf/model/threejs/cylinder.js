@@ -59,3 +59,5 @@
             return new cylinder(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.cylinder

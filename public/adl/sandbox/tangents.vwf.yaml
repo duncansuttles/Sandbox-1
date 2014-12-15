@@ -19,6 +19,7 @@ methods:
   dirtyStack:
   GetMesh:
   tangent:
+  ready:
 events:
   childAdded:
 scripts:
@@ -30,7 +31,10 @@ scripts:
             this.tangent();
         }
     }
-    
+    this.ready = function()
+    {
+      this.dirtyStack();
+    }
     this.tangent = function()
     {   
          

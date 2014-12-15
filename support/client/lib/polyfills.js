@@ -9,6 +9,70 @@ var fills = {
         this.detectIE11();
         this.escapeHTMLStrings();
         this.setImmediate();
+        this.functionBind();
+        this._deepEquals();
+        window.ToSafeID = function(value) {
+            return value.replace(/[^A-Za-z0-9]/g, "");
+        }
+
+        function RunPrefixMethod(obj, method, param) {
+            var p = 0,
+                m, t;
+            while (p < pfx.length && !obj[m]) {
+                m = method;
+                if (pfx[p] == "") {
+                    m = m.substr(0, 1).toLowerCase() + m.substr(1);
+                }
+                m = pfx[p] + m;
+                t = typeof obj[m];
+                if (t != "undefined") {
+                    pfx = [pfx[p]];
+                    return (t == "function" ? obj[m](param) : obj[m]);
+                }
+                p++;
+            }
+        }
+        window.RunPrefixMethod = RunPrefixMethod;
+
+
+    },
+    _deepEquals: function() {
+        Object.deepEquals = function(x, y) {
+            if (x === y) return true;
+            // if both x and y are null or undefined and exactly the same
+
+            if (!(x instanceof Object) || !(y instanceof Object)) return false;
+            // if they are not strictly equal, they both need to be Objects
+
+            if (x.constructor !== y.constructor) return false;
+            // they must have the exact same prototype chain, the closest we can do is
+            // test there constructor.
+
+            for (var p in x) {
+                if (!x.hasOwnProperty(p)) continue;
+                // other properties were tested using x.constructor === y.constructor
+
+                if (!y.hasOwnProperty(p)) return false;
+                // allows to compare x[ p ] and y[ p ] when set to undefined
+
+                if (x[p] === y[p]) continue;
+                // if they have the same strict value or identity then they are equal
+
+                if (typeof(x[p]) !== "object") return false;
+                // Numbers, Strings, Functions, Booleans must be strictly equal
+
+                if (!Object.deepEquals(x[p], y[p])) return false;
+                // Objects and Arrays must be tested recursively
+            }
+
+            for (p in y) {
+                if (y.hasOwnProperty(p) && !x.hasOwnProperty(p)) return false;
+                // allows x[ p ] to be set to undefined
+            }
+            return true;
+        }
+
+
 
     },
     //try to generate crytographicly secure random numbers
@@ -24,6 +88,30 @@ var fills = {
             return (buf[0]) / 4294967296;
         }
 
+    },
+    functionBind: function() {
+        if (!Function.prototype.bind) {
+            Function.prototype.bind = function(oThis) {
+                if (typeof this !== 'function') {
+                    // closest thing possible to the ECMAScript 5
+                    // internal IsCallable function
+                    throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+                }
+
+                var aArgs = Array.prototype.slice.call(arguments, 1),
+                    fToBind = this,
+                    fNOP = function() {},
+                    fBound = function() {
+                        return fToBind.apply(this instanceof fNOP && oThis ? this : oThis,
+                            aArgs.concat(Array.prototype.slice.call(arguments)));
+                    };
+
+                fNOP.prototype = this.prototype;
+                fBound.prototype = new fNOP();
+
+                return fBound;
+            };
+        }
     },
     escapeHTMLStrings: function() {
         var entityMap = {
@@ -429,15 +517,18 @@ var fills = {
 
                     if (performance.now() - lastError > 5000) {
                         if (xhr.status != 200) {
-                            alertify.error('Sorry, an error has occured, but could not be logged');
+                            if (window.alertify)
+                                alertify.error('Sorry, an error has occured, but could not be logged');
                         } else
+                        if (window.alertify)
                             alertify.error('Sorry, an error has occured and was logged to the server.');
                         lastError = performance.now();
                     }
                 },
                 error: function(e) {
                     if (performance.now() - lastError > 5000) {
-                        alertify.error('Sorry, an error has occured, but could not be logged');
+                        if (window.alertify)
+                            alertify.error('Sorry, an error has occured, but could not be logged');
                         lastError = performance.now();
                     }
                 },

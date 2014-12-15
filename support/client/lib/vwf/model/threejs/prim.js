@@ -58,9 +58,10 @@
         }
         this.hasModifiers = function() {
             var has = false;
-            if (this.children)
-                for (var i = 0; i < this.children.length; i++) {
-                    if (vwf.getProperty(this.children[i].ID, 'type') == 'modifier')
+            var children = vwf.children(this.ID);
+            if (children)
+                for (var i = 0; i < children.length; i++) {
+                    if (vwf.getProperty(children[i], 'type') == 'modifier')
                         has = true;
 
                 }
@@ -68,6 +69,7 @@
         }
         this.updateStack = function(rebuild, cache) {
 
+          
             this.updateSelf(rebuild, cache && !this.hasModifiers());
 
             var children = vwf.children(this.ID);
@@ -172,12 +174,16 @@
 
             var pass = this.gettingProperty('passable');
             var sel = this.gettingProperty('isSelectable');
+            var sta = this.gettingProperty('isStatic');
+            var dny = this.gettingProperty('isDynamic');
             // reset the shadows flags for the new mesh
             this.settingProperty('castShadows', cast);
             this.settingProperty('visible', this.gettingProperty('visible'));
             this.settingProperty('receiveShadows', rec);
             this.settingProperty('passable', pass);
             this.settingProperty('isSelectable', sel);
+            this.settingProperty('isStatic', sta);
+            //  this.settingProperty('isDynamic', dny);
 
         }
         this.inherits = ['vwf/model/threejs/materialDef.js', 'vwf/model/threejs/shadowcaster.js', 'vwf/model/threejs/transformable.js', 'vwf/model/threejs/passable.js', 'vwf/model/threejs/visible.js', 'vwf/model/threejs/static.js', 'vwf/model/threejs/selectable.js'];
@@ -188,3 +194,5 @@
         return new prim(childID, childSource, childName);
     }
 })();
+
+//@ sourceURL=threejs.subdriver.prim

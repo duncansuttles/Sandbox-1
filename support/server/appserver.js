@@ -19,6 +19,9 @@ var libpath = require('path'),
     YAML = require('js-yaml');
 var DAL = require('./DAL').DAL;
 
+var resolveCase = require('./resolveCaseInsensitiveFilename').resolveName;
+var existsCaseInsensitive = require('./resolveCaseInsensitiveFilename').exists;
+var existsSyncCaseInsensitive = require('./resolveCaseInsensitiveFilename').existsSync;
 function setDAL(dal) {
     DAL = dal;
 }
@@ -51,7 +54,7 @@ function findAppName(uri) {
             return appNameCache[i];
         }
     }
-    while (!fs.existsSync(libpath.resolve(__dirname, current + "index.vwf.yaml"))) {
+    while (!existsSyncCaseInsensitive(libpath.resolve(__dirname, current + "index.vwf.yaml"))) {
 
         var next = uri.substr(0, Math.max(uri.indexOf('/'), uri.indexOf('\\')) + 1);
         current += next;
@@ -61,7 +64,7 @@ function findAppName(uri) {
 
         uri = uri.substr(next.length);
     }
-    if (fs.existsSync(libpath.resolve(__dirname, current + "index.vwf.yaml"))) {
+    if (existsSyncCaseInsensitive(libpath.resolve(__dirname, current + "index.vwf.yaml"))) {
 
         appNameCache.push(current);
         return current;
@@ -311,8 +314,8 @@ function handleRequest(request, response, next) {
 
 
         //global.log(filename);
-        libpath.exists(libpath.resolve(__dirname, filename), function(c1) {
-            libpath.exists(libpath.resolve(__dirname, filename + ".yaml"), function(c2) {
+        existsCaseInsensitive(libpath.resolve(__dirname, filename), function(c1) {
+            existsCaseInsensitive(libpath.resolve(__dirname, filename + ".yaml"), function(c2) {
                 if (!c1 && !c2) {
 
                     //try to find the correct support file 
@@ -334,14 +337,19 @@ function handleRequest(request, response, next) {
                     }
 
                 }
-
+                //filename = resolveCase(filename);
                 //file does exist, serve normally 
-                libpath.exists(libpath.resolve(__dirname, filename), function(c3) {
-                    libpath.exists(libpath.resolve(__dirname, filename + ".yaml"), function(c4) {
+                existsCaseInsensitive(libpath.resolve(__dirname, filename), function(c3) {
+                    existsCaseInsensitive(libpath.resolve(__dirname, filename + ".yaml"), function(c4) {
                         if (c3) {
                             //if requesting directory, setup instance
                             //also, redirect to current instnace name of does not end in slash
-                            fs.stat(libpath.resolve(__dirname, filename), function(err, isDir) {
+                            fs.stat(resolveCase(libpath.resolve(__dirname, filename)), function(err, isDir) {
+                                //server started throwing these when added case logic
+                                if(err){
+                                    _404(response);
+                                    return;
+                                }
                                 if (isDir.isDirectory()) {
 
                                     var appname = findAppName(filename);
@@ -368,7 +376,7 @@ function handleRequest(request, response, next) {
                                             
                                             _302(URL.pathname + '/', response);
                                         } else {
-                                            fs.exists(libpath.join(filename, "index.html"), function(indexexists) {
+                                            existsCaseInsensitive(libpath.join(filename, "index.html"), function(indexexists) {
 
                                                 if (indexexists)
                                                     ServeFile(request, filename + libpath.sep + "index.html", response, URL);

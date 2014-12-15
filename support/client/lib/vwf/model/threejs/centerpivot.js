@@ -38,3 +38,5 @@
             return new centerpivot(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.centerpivot

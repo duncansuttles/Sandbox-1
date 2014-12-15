@@ -78,3 +78,5 @@
             return new rectangle(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.rectangle

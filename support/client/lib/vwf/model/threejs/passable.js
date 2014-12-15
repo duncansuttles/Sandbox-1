@@ -51,3 +51,5 @@
             return new passable(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.passable

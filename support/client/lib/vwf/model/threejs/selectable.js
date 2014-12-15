@@ -2,7 +2,7 @@
 //from objects
 (function() {
     function isSelectable(childID, childSource, childName) {
-        this.isSelectable = false;
+        this.isSelectable = true;
         this.selectable_GetAllLeafMeshes = function(threeObject, list) {
             if (threeObject instanceof THREE.Mesh || threeObject instanceof THREE.Mesh) {
                 list.push(threeObject);
@@ -16,7 +16,7 @@
         }
         this.settingProperty = function(propname, propval) {
             if (propname == 'isSelectable') {
-                this.isSelectable = !propval;
+                this.isSelectable = propval;
                 var list = [];
                 this.selectable_GetAllLeafMeshes(this.getRoot(), list);
                 for (var i = 0; i < list.length; i++) {
@@ -36,3 +36,5 @@
         return new isSelectable(childID, childSource, childName);
     }
 })();
+
+//@ sourceURL=threejs.subdriver.selectable

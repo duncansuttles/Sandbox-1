@@ -114,3 +114,5 @@
             return new extrude(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.extrude

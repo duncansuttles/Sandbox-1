@@ -1,27 +1,236 @@
 ﻿"use strict";
 
-// Copyright 2012 United States Government, as represented by the Secretary of Defense, Under
-// Secretary of Defense (Personnel & Readiness).
-// 
-// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-// in compliance with the License. You may obtain a copy of the License at
-// 
-//   http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software distributed under the License
-// is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-// or implied. See the License for the specific language governing permissions and limitations under
-// the License.
+function setClone(ab) {
+        var f32 = new Float32Array(ab.length);
+        f32.set(ab);
+        return f32;
+    }
+    // Copyright 2012 United States Government, as represented by the Secretary of Defense, Under
+    // Secretary of Defense (Personnel & Readiness).
+    // 
+    // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+    // in compliance with the License. You may obtain a copy of the License at
+    // 
+    //   http://www.apache.org/licenses/LICENSE-2.0
+    // 
+    // Unless required by applicable law or agreed to in writing, software distributed under the License
+    // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+    // or implied. See the License for the specific language governing permissions and limitations under
+    // the License.
+function matset(newv, old) {
+    if (!old) {
+        newv = old;
+        return;
+    }
+    if (!newv)
+        newv = [];
+    for (var i = 0; i < old.length; i++)
+        newv[i] = old[i];
+    return newv;
+}
 
-define(["module", "vwf/view"], function(module, view) {
+function matdiff(mat1, mat2) {
+    var diff = 0;
+    for (var i = 0; i < 16; i++) {
+        diff += Math.abs(mat1[i] - mat2[i]);
+    }
+    return diff;
+
+}
+
+
+var pfx = ["webkit", "moz", "ms", "o", ""];
+
+define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/threejs/ThermalCamEffect", "vwf/model/threejs/VRRenderer"], function(module, view) {
     var stats;
     var NORMALRENDER = 0;
     var STEREORENDER = 1;
+    var VRRENDER = 2;
+    var everyOtherFrame = false;
+    var glext_ft = null;
     return view.load(module, {
 
         renderMode: NORMALRENDER,
+        effects: [],
+        topCamera: new THREE.OrthographicCamera(1, -1, 1, -1, 0, 10000),
+        leftCamera: new THREE.OrthographicCamera(1, -1, 1, -1, 0, 10000),
+        frontCamera: new THREE.OrthographicCamera(1, -1, 1, -1, 0, 10000),
+        vrHMDSensor: null,
+        vrHMD: null,
+        vrRenderer: null,
+        simulateContextLoss: function() {
+            var cx = _dRenderer.context.getExtension('WEBGL_lose_context');
+            cx.loseContext();
+            window.setTimeout(function() {
+                cx.restoreContext();
+            }, 1000);
+
+        },
+        toggleFullScreen: function() {
+
+            if (RunPrefixMethod(document, "FullScreen") || RunPrefixMethod(document, "IsFullScreen")) {
+                RunPrefixMethod(document, "CancelFullScreen");
+            } else {
+                if (this.vrHMD && this.renderMode == VRRENDER) {
+                    //RunPrefixMethod($('#index-vwf')[0], "RequestFullScreen", {
+                    //    vrDisplay: this.vrHMD
+                    //});
+                    var canvas = $('#index-vwf')[0];
+                    canvas.webkitRequestFullscreen({
+                        vrDisplay: this.vrHMD
+                    });
+                } else
+                    RunPrefixMethod(document.body, "RequestFullScreen", 1);
+            }
+        },
+        initHMD: function() {
+
+            function vrDeviceCallback(vrdevs) {
+
+                for (var i = 0; i < vrdevs.length; ++i) {
+                    if (vrdevs[i] instanceof HMDVRDevice) {
+                        _dView.vrHMD = vrdevs[i];
+                        break;
+                    }
+                }
+                for (var i = 0; i < vrdevs.length; ++i) {
+                    if (vrdevs[i] instanceof PositionSensorVRDevice &&
+                        vrdevs[i].hardwareUnitId == _dView.vrHMD.hardwareUnitId) {
+                        _dView.vrHMDSensor = vrdevs[i];
+
+                        alertify.log('WebVR compatable HMD detected');
+                        break;
+                    }
+                }
+                alertify.log('No WebVR HMD available');
+            }
+
+            if (navigator.getVRDevices) {
+                navigator.getVRDevices().then(vrDeviceCallback);
+            } else if (navigator.mozGetVRDevices) {
+                navigator.mozGetVRDevices(vrDeviceCallback);
+            } else {
+                alertify.log('WebVR not supported');
+            }
+
+        },
+        glyphs: [],
+        addGlyph: function(id, url) {
+
+            if(this.glyphs.indexOf(id) == -1)
+                this.glyphs.push(id);
+            else
+            {
+                $('#glyph' + ToSafeID(id)).attr('src',url);
+                return;
+            }
+
+            var newdiv = document.createElement('img');
+
+            $(newdiv).addClass('glyph');
+            newdiv.style.position = 'absolute';
+            newdiv.id = ToSafeID('glyph' + id);
+            //newdiv.innerHTML = "" + this.name;
+            $(newdiv).attr('src', url);
+            newdiv.style.left = '0px';
+            newdiv.style.top = '0px';
+            newdiv.tabIndex = 10;
+            $('#glyphOverlay').append(newdiv);
+            $(newdiv).disableSelection();
+            $(newdiv).mousedown(function(e) {
+                $('#index-vwf').focus();
+                if (_Editor.GetSelectMode() == "None" || e.which != 1) $('#index-vwf').trigger(e)
+            });
+            $(newdiv).mouseup(function(e) {
+                $('#index-vwf').focus();
+                $('#index-vwf').trigger(e)
+            });
+            $(newdiv).mousemove(function(e) {
+                $('#index-vwf').trigger(e)
+            });
+            $(newdiv).click(function(e) {
+                $('#index-vwf').focus();
+                if (_Editor.GetSelectMode() != "None") _Editor.SelectObjectPublic(id)
+            });
+
+        },
+        removeGlyph:function(id)
+        {
+            if(this.glyphs.indexOf(id) == -1)
+                return
+            else
+            {
+                $('#glyph' + ToSafeID(id)).remove();
+                this.glyphs.splice(this.glyphs.indexOf(id),1);
+                return;
+            }
+        },
+        updateGlyphs: function(e, viewprojection, wh, ww) {
+
+            for (var i = 0; i < this.glyphs.length; i++) {
+                var div = $('#glyph' + ToSafeID(this.glyphs[i]))[0];
+                if(!div) continue;
+
+                var trans = vwf.getProperty(this.glyphs[i],'worldTransform');
+                
+                var pos = [trans[12], trans[13], trans[14], 1];
+
+
+
+                var screen = MATH.mulMat4Vec4(viewprojection, pos);
+                screen[0] /= screen[3];
+                screen[1] /= screen[3];
+
+                screen[0] /= 2;
+                screen[1] /= 2;
+                screen[2] /= 2;
+                screen[0] += .5;
+                screen[1] += .5;
+
+
+                screen[0] *= ww;
+                screen[1] *= wh;
+
+
+                screen[1] = wh - screen[1];
+
+                div.style.top = (screen[1]) + 'px';
+                div.style.left = (screen[0] - 20 / 2) + 'px';
+
+
+                if ((screen[0] < 0 || screen[0] > ww || screen[1] < 0 || screen[1] > wh)) {
+                    if (div.style.display != 'none')
+                        div.style.display = 'none';
+                } else {
+                    if ((screen[2] > 10 || screen[2] < 0) && div.style.display != 'none')
+                        div.style.display = 'none';
+                    if (screen[2] < 10 && screen[2] > 0 && div.style.display == 'none')
+                        div.style.display = 'block';
+                }
+            }
+        },
+        addEffect: function(effect) {
+            this.effects.push(effect);
+        },
+        removeEffect: function(effect) {
+            this.effects.splice(this.effects.indexOf(effect), 1);
+        },
+        activateRiftEffect: function() {
+            var effect = new THREE.OculusRiftEffect(_dRenderer, {
+                worldScale: 1
+            });
+            effect.setSize(parseInt($("#index-vwf").css('width')), parseInt($("#index-vwf").css('height')));
+            this.addEffect(effect);
+            vwf.callMethod(vwf.application(), 'activteOculusBridge')
+        },
+        activateThermalCamEffect: function() {
+            var effect = new THREE.ThermalCamEffect(_dRenderer, _dScene, this.getCamera());
+            effect.setSize(parseInt($("#index-vwf").css('width')), parseInt($("#index-vwf").css('height')));
+            this.addEffect(effect);
+        },
         initialize: function(rootSelector) {
 
+            this.initHMD();
             rootSelector = {
                 "application-root": '#vwf-root'
             };
@@ -61,6 +270,7 @@ define(["module", "vwf/view"], function(module, view) {
                 this.paused = false;
                 $('#index-vwf').fadeIn();
 
+
             }.bind(this));
 
             this.nodes = {};
@@ -97,11 +307,9 @@ define(["module", "vwf/view"], function(module, view) {
             n[10] = z[2];
             return n;
         },
-        matrixLerp: function(a, b, l) {
-            var n = a.slice(0);
-            n[12] = this.lerp(a[12], b[12], l);
-            n[13] = this.lerp(a[13], b[13], l);
-            n[14] = this.lerp(a[14], b[14], l);
+        matrixLerp: function(a, b, l, n) {
+            if (!n) n = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
 
             var x = [a[0], a[1], a[2]];
             var xl = Vec3.magnitude(x);
@@ -156,6 +364,10 @@ define(["module", "vwf/view"], function(module, view) {
             nqm[13] = n[13];
             nqm[14] = n[14];
 
+            nqm[12] = this.lerp(a[12], b[12], l);
+            nqm[13] = this.lerp(a[13], b[13], l);
+            nqm[14] = this.lerp(a[14], b[14], l);
+
             return nqm;
         },
 
@@ -176,43 +388,49 @@ define(["module", "vwf/view"], function(module, view) {
             var step = (this.tickTime) / (50);
             if (hit === 1) {
 
+
+                if (_Editor.GetMoveGizmo().parent.matrix) {
+                    this.gizmoLastTickTransform = this.gizmoThisTickTransform;
+                    this.gizmoThisTickTransform = _Editor.GetMoveGizmo().parent.matrix.clone();
+                }
+
                 var keys = Object.keys(this.nodes);
 
                 for (var j = 0; j < keys.length; j++) {
                     var i = keys[j];
                     //don't do interpolation for static objects
                     if (this.nodes[i].isStatic) continue;
-
+                    if (this.nodes[i].lastTransformStep + 1 < vwf.time()) {
+                        this.nodes[i].lastTickTransform = null;
+                        this.nodes[i].lastFrameInterp = null;
+                        this.nodes[i].thisTickTransform = null;
+                    } else if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
+                        this.nodes[i].lastTickTransform = matset(this.nodes[i].lastTickTransform, this.nodes[i].thisTickTransform);
+                        this.nodes[i].thisTickTransform = matset(this.nodes[i].thisTickTransform, this.state.nodes[i].gettingProperty('transform'));
+                    }
                     if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
-                        this.nodes[i].lastTickTransform = this.nodes[i].thisTickTransform;
-                        this.nodes[i].thisTickTransform = this.state.nodes[i].gettingProperty('transform');
-                        if (this.nodes[i].thisTickTransform) this.nodes[i].thisTickTransform = matCpy(this.nodes[i].thisTickTransform);
-
                         this.nodes[i].lastAnimationFrame = this.nodes[i].thisAnimationFrame;
                         this.nodes[i].thisAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
 
                     }
                 }
-            }
-            if (hit > 1) {
-                this.tickTime = 0;
-                var keys = Object.keys(this.nodes);
-
-                for (var j = 0; j < keys.length; j++) {
-                    var i = keys[j];
-                    if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
-                        this.nodes[i].lastTickTransform = null;
-                        this.nodes[i].thisTickTransform = null;
-                        this.nodes[i].lastAnimationFrame = null;
-                        this.nodes[i].thisAnimationFrame = null;
 
 
-                    }
-                }
             }
 
 
+            /*
+            if (this.gizmoThisTickTransform && this.gizmoLastTickTransform) {
+                this.currentGizmoTransform = _Editor.GetMoveGizmo().parent.matrix.clone();
+                var interpG = this.matrixLerp(matCpy(this.gizmoLastTickTransform.elements), matCpy(this.gizmoThisTickTransform.elements), step);
+
+                _Editor.GetMoveGizmo().parent.matrix.fromArray(interpG);
+                _Editor.GetMoveGizmo().parent.updateMatrixWorld(true);
+            }*/
+
+            var lerpStep = Math.min(1, .2 * (deltaTime / 16.6)); //the slower the frames ,the more we have to move per frame. Should feel the same at 60 0r 20
             var keys = Object.keys(this.nodes);
+            var interp = null;
             for (var j = 0; j < keys.length; j++) {
                 var i = keys[j];
 
@@ -223,14 +441,18 @@ define(["module", "vwf/view"], function(module, view) {
                 var now = this.nodes[i].thisTickTransform;
                 if (last && now) {
 
-                    var interp = last.slice(0);
+                    interp = matset(interp, last);
+                    interp = this.matrixLerp(last, now, step, interp);
+
+                    this.nodes[i].currentTickTransform = matset(this.nodes[i].currentTickTransform, this.state.nodes[i].gettingProperty('transform'));
+                    if (this.state.nodes[i].setTransformInternal) {
 
 
-                    interp = this.matrixLerp(last, now, step);
-
-                    this.nodes[i].currentTickTransform = matCpy(this.state.nodes[i].gettingProperty('transform'));
-                    if (this.state.nodes[i].setTransformInternal)
+                        if (this.nodes[i].lastFrameInterp)
+                            interp = this.matrixLerp(this.nodes[i].lastFrameInterp, now, lerpStep, interp);
                         this.state.nodes[i].setTransformInternal(interp, false);
+                        this.nodes[i].lastFrameInterp = matset(this.nodes[i].lastFrameInterp || [], interp);
+                    }
 
 
 
@@ -240,18 +462,24 @@ define(["module", "vwf/view"], function(module, view) {
                 now = this.nodes[i].thisAnimationFrame;
                 if (last && now && Math.abs(now - last) < 3) {
 
-                    var interp = 0;
+                    var interpA = 0;
 
 
-                    interp = this.lerp(last, now, step);
+                    interpA = this.lerp(last, now, step);
 
 
 
                     this.nodes[i].currentAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
-                    if (this.state.nodes[i].setAnimationFrameInternal)
-                        this.state.nodes[i].setAnimationFrameInternal(interp, false);
+                    if (this.state.nodes[i].setAnimationFrameInternal) {
+                        if (this.state.nodes[i].lastAnimationInterp)
+                            interpA = this.lerp(this.state.nodes[i].lastAnimationInterp, now, lerpStep);
+                        this.state.nodes[i].setAnimationFrameInternal(interpA, false);
+                        this.state.nodes[i].lastAnimationInterp = interpA || 0;
+                    }
 
 
+                } else if (this.state.nodes[i]) {
+                    this.state.nodes[i].lastAnimationInterp = null;
                 }
 
 
@@ -260,15 +488,24 @@ define(["module", "vwf/view"], function(module, view) {
 
 
         },
+        windowResized: function() {
+            //called on window resize by windowresize.js
+            for (var i = 0; i < this.effects.length; i++) {
+                this.effects[i].setSize(parseInt($("#index-vwf").css('width')), parseInt($("#index-vwf").css('height')));
+            }
+        },
         triggerWindowResize: function() {
-
             //overcome by code in WindowResize.js
+            $(window).resize();
             return;
-
-
-
         },
         restoreTransforms: function() {
+
+            /*if (this.currentGizmoTransform) {
+                _Editor.GetMoveGizmo().parent.matrix = this.currentGizmoTransform;
+                _Editor.GetMoveGizmo().parent.updateMatrixWorld(true);
+            }*/
+
             var keys = Object.keys(this.nodes);
 
             for (var j = 0; j < keys.length; j++) {
@@ -298,6 +535,13 @@ define(["module", "vwf/view"], function(module, view) {
             this.renderMode = STEREORENDER;
             this.triggerWindowResize();
         },
+        setRenderModeVR: function() {
+            this.renderMode = VRRENDER;
+            hideTools();
+            this.toggleFullScreen();
+            vwf.callMethod(vwf.application(), 'activteOculusBridge');
+            //this.triggerWindowResize();
+        },
         setRenderModeNormal: function() {
             this.renderMode = NORMALRENDER;
             this.triggerWindowResize();
@@ -307,14 +551,19 @@ define(["module", "vwf/view"], function(module, view) {
 
 
         },
-        ticked: function()
-        {
+        ticked: function() {
             //so, here's what we'll do. Since the sim state cannot advance until tick, we will update on tick. 
             //but, ticks aren't fired when the scene in paused. In that case, we'll do it every frame.
-           _SceneManager.update();
+            _SceneManager.update();
         },
         deletedNode: function(childID) {
             delete this.nodes[childID];
+            this.removeGlyph(childID);
+            //be sure not to keep around a reference to an object that no longer exists
+            if (this.lastPickId == childID) {
+                this.lastPickId = null;
+                this.lastPick = null;
+            }
         },
         createdNode: function(nodeID, childID, childExtendsID, childImplementsIDs,
             childSource, childType, childURI, childName, callback /* ( ready ) */ ) {
@@ -326,6 +575,15 @@ define(["module", "vwf/view"], function(module, view) {
                     properties: {}
                 };
 
+            //man VWF makes this stuff so hard. Why must we deal with this? Who though that a game engine needed prototypical inheritance?
+            //why must every driver deal with this crap? The design of this thing is ridiculous.
+            //here, we must deal with the fact that we might never see a setproperty for a node based on one of the standard types
+            //because the property for the glyphURL is defined on the prototype
+            var glyph = vwf.getProperty(childExtendsID,'glyphURL');
+            if(glyph)
+            {
+                this.addGlyph(childID,glyph);
+            }
             //the created node is a scene, and has already been added to the state by the model.
             //how/when does the model set the state object? 
 
@@ -431,6 +689,9 @@ define(["module", "vwf/view"], function(module, view) {
 
         },
         setCamera: function(camID) {
+            vwf_view.kernel.callMethod(vwf.application(), 'setClientCamera', [vwf.moniker(), camID]);
+        },
+        setCamera_internal: function(camID) {
             var defaultCameraID;
             var instanceData = _DataManager.getInstanceData();
             var publishSettings = instanceData.publishSettings;
@@ -441,6 +702,8 @@ define(["module", "vwf/view"], function(module, view) {
 
             var cam = this.state.scenes['index-vwf'].camera.threeJScameras[this.state.scenes['index-vwf'].camera.ID];
 
+            if (camID === 'top')
+                cam = this.topCamera;
             if (this.cameraID) {
                 clearCameraModeIcons();
                 cam = null;
@@ -449,6 +712,12 @@ define(["module", "vwf/view"], function(module, view) {
                         cam = this.state.nodes[this.cameraID].getRoot();
                     }
             }
+            if (camID === 'top')
+                cam = this.topCamera;
+            if (camID === 'left')
+                cam = this.leftCamera;
+            if (camID === 'front')
+                cam = this.frontCamera;
 
             if (cam) {
                 var aspect = $('#index-vwf').width() / $('#index-vwf').height();
@@ -464,9 +733,17 @@ define(["module", "vwf/view"], function(module, view) {
         setCameraDefault: function() {
             this.setCamera();
         },
+        calledMethod: function(id, method, args) {
+            if (id == vwf.application() && method == 'setClientCamera') {
+                if (vwf.moniker() == args[0]) {
+                    this.setCamera_internal(args[1]);
+                }
+            }
+        },
         createdProperty: function(nodeID, propertyName, propertyValue) {
             this.satProperty(nodeID, propertyName, propertyValue);
         },
+
         satProperty: function(nodeID, propertyName, propertyValue) {
 
             //console.log([nodeID,propertyName,propertyValue]);
@@ -474,7 +751,7 @@ define(["module", "vwf/view"], function(module, view) {
             //this.state.nodes is shared with the threejs model!
             var node = this.state.nodes[nodeID];
             if (!node) node = this.state.scenes[nodeID];
-
+            if(!this.nodes[nodeID]) return;
             //this driver has no representation of this node, so there is nothing to do.
             if (!node) return;
 
@@ -482,7 +759,8 @@ define(["module", "vwf/view"], function(module, view) {
             if (this.nodes[nodeID])
                 this.nodes[nodeID].properties[propertyName] = propertyValue;
 
-
+            if (propertyName == 'transform')
+                this.nodes[nodeID].lastTransformStep = vwf.time();
 
             node[propertyName] = propertyValue;
 
@@ -494,6 +772,10 @@ define(["module", "vwf/view"], function(module, view) {
             //There is not three object for this node, so there is nothing this driver can do. return
             if (!threeObject) return value;
 
+            if(node && propertyName == 'glyphURL')
+            {
+                this.addGlyph(nodeID,propertyValue);
+            }
             if (node && threeObject && propertyValue !== undefined) {
                 if (threeObject instanceof THREE.Scene) {
                     if (propertyName == 'skyColorBlend') {
@@ -781,7 +1063,7 @@ define(["module", "vwf/view"], function(module, view) {
         function GetParticleSystems(node, list) {
 
             for (var i = 0; i < node.children.length; i++) {
-                if (node.children[i] instanceof THREE.ParticleSystem) {
+                if (node.children[i] instanceof THREE.PointCloud) {
                     if (!list)
                         list = [];
                     list.push(node.children[i]);
@@ -791,9 +1073,69 @@ define(["module", "vwf/view"], function(module, view) {
             return list;
         }
 
-        function windowResize() {
+        function resetMaterial(material) {
+
+            if (!material) {
+                return;
+            }
+            if (material instanceof THREE.MeshFaceMaterial) {
+                for (var i in material.materials) {
+                    resetMaterial(material.materials[i])
+                }
+                return;
+
+            }
+
+            //if the material is alread inited
+            if (material.__webglShader) {
+
+                //find all textures in the material, and re-init
+                for (var i in material.__webglShader.uniforms) {
+                    if (material.__webglShader.uniforms[i].type == 't') {
+                        var tex = material.__webglShader.uniforms[i].value;
+
+                        //don't forget cubemaps, slightly differnet under the hood
+                        if (tex && tex instanceof THREE.Texture) {
+                            if (tex.image && tex.image.length) {
+                                tex.image.__webglTextureCube = undefined;
+                            }
+                            tex.__webglInit = undefined;
+                            tex.__webglTexture = undefined;
+                            tex.needsUpdate = true;
+                        }
+
+                        //since we hit the shadow targets on the light, not necessary to also hit them when found in materials
+                        if (tex && tex instanceof THREE.WebGLRenderTarget && i != 'shadowMap') {
+
+                            tex.dispose();
+                            tex.__webglFramebuffer = undefined;
+                            tex.__webglRenderbuffer = undefined;
+                            tex.__webglTexture = undefined;
+
+                        }
+
+
+                    }
+
+                }
+            }
+
+
+            //if the material has any custom vertex attributes (particle system use this heavily)
+            //the webgl buffers for those attributes have to be reinited
+            if (material.attributes) {
+                for (var i in material.attributes) {
+                    material.attributes[i].buffer = undefined;
+                    material.attributes[i].__webglInitialized = undefined;
+                }
+            }
+            //mark material for general update - should rebuild shaders and uniforms at webgl level
+            material.dispose();
+            material.__webglShader = null;
+            material.needsUpdate = true;
 
         }
+
 
 
         var timepassed;
@@ -826,11 +1168,16 @@ define(["module", "vwf/view"], function(module, view) {
 
             requestAnimFrame(renderScene);
 
+            //lets not render when the quere is not ready. This prevents rendering of meshes that must have their children
+            //loaded before they can render
+            if (!vwf.private.queue.ready() || !window._dRenderer) {
+                return;
+            }
             //so, here's what we'll do. Since the sim state cannot advance until tick, we will update on tick. 
             //but, ticks aren't fired when the scene in paused. In that case, we'll do it every frame.
             var currentState = vwf.getProperty(vwf.application(), 'playMode');
             if (currentState === 'stop') _SceneManager.update();
-           
+
 
             //get the camera. If a default was specified, but not yet availabe, get the system default.
             cam = self.getCamera();
@@ -889,7 +1236,7 @@ define(["module", "vwf/view"], function(module, view) {
 
 
             self.trigger('prerender', vpargs);
-
+            self.updateGlyphs(null,vp,wh,ww);
             var keys = Object.keys(vwf.models[0].model.nodes);
             for (var j = 0; j < keys.length; j++) {
                 var i = keys[j];
@@ -930,6 +1277,10 @@ define(["module", "vwf/view"], function(module, view) {
                 }
 
                 self.lastPickId = newPickId;
+
+                //be sure to return the pick to the pool so that it does not require GC
+                if (self.lastPick)
+                    self.lastPick.release();
                 self.lastPick = newPick;
                 if (view.lastEventData && (view.lastEventData.eventData[0].screenPosition[0] != oldMouseX || view.lastEventData.eventData[0].screenPosition[1] != oldMouseY)) {
                     oldMouseX = view.lastEventData.eventData[0].screenPosition[0];
@@ -982,16 +1333,42 @@ define(["module", "vwf/view"], function(module, view) {
             //cam.far = far;
             //cam.updateProjectionMatrix();
 
+            //only render effects in normal mode. Should our older stereo support move into a THREE.js effect?
             if (self.renderMode === NORMALRENDER) {
-                cam.setViewOffset(undefined);
+                if (cam.setViewOffset)
+                    cam.setViewOffset(undefined);
                 cam.updateProjectionMatrix();
-                renderer.render(scene, cam);
+                //if there are no effects, we can do a normal render
+                if (self.effects.length == 0)
+                    renderer.render(scene, cam);
+                else //else, the normal render is taken care of by the effect
+                {
+                    for (var i = 0; i < self.effects.length; i++) {
+                        self.effects[i].render(scene, cam);
+                    }
+                }
+            } else if (self.renderMode == VRRENDER) {
+
+                if (cam.setViewOffset)
+                    cam.setViewOffset(undefined);
+                cam.updateProjectionMatrix();
+                //if there are no effects, we can do a normal render
+                if (self.effects.length == 0)
+                    self.vrRenderer.render(scene, cam);
+                else //else, the normal render is taken care of by the effect
+                {
+                    for (var i = 0; i < self.effects.length; i++) {
+                        self.effects[i].render(scene, cam);
+                    }
+                }
+
+
             } else if (self.renderMode === STEREORENDER) {
                 var width = $('#index-vwf').attr('width');
                 var height = $('#index-vwf').attr('height');
-                var ww2 = width / 2;
+                var ww2 = width / (2 * _dRenderer.devicePixelRatio);
                 var h = ww2 / 1.333;
-                var hdif = (height - h) / 2;
+                var hdif = (height - h) / (2 * _dRenderer.devicePixelRatio * _dRenderer.devicePixelRatio * _dRenderer.devicePixelRatio);
                 var centerh = hdif;
 
                 oldaspect = cam.aspect;
@@ -1011,10 +1388,13 @@ define(["module", "vwf/view"], function(module, view) {
 
                 renderer.setViewport(0, centerh, ww2, h);
                 _dRenderer.setScissor(0, centerh, ww2, h);
-                cam.setViewOffset(ww2, h, -100, 0, ww2, h);
+
+                if (cam.setViewOffset)
+                    cam.setViewOffset(ww2, h, -100, 0, ww2, h);
                 cam.updateProjectionMatrix();
 
-                cam.setViewOffset(ww2, h, -_SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
+                if (cam.setViewOffset)
+                    cam.setViewOffset(ww2, h, -_SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
                 cam.updateProjectionMatrix();
                 renderer.render(scene, cam);
 
@@ -1026,7 +1406,8 @@ define(["module", "vwf/view"], function(module, view) {
                 renderer.setViewport(ww2, centerh, ww2, h);
                 _dRenderer.setScissor(ww2, centerh, ww2, h);
 
-                cam.setViewOffset(ww2, h, _SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
+                if (cam.setViewOffset)
+                    cam.setViewOffset(ww2, h, _SettingsManager.getKey('stereoOffset') * ww2, 0, ww2, h);
                 cam.updateProjectionMatrix();
 
                 renderer.render(scene, cam);
@@ -1111,63 +1492,15 @@ define(["module", "vwf/view"], function(module, view) {
             sceneNode.lastTime = now;
             self.inFrame = false;
 
+
+            if (glext_ft) {
+                glext_ft.frameTerminator();
+            }
+
         };
 
         var mycanvas = this.canvasQuery.get(0);
 
-        function detectWebGL() {
-            var asa;
-            var canvas;
-            var dcanvas;
-            var gl;
-            var expmt;
-
-            $(document.body).append('<canvas width="100" height="100" id="testWebGLSupport" />');
-            canvas = $('#testWebGLSupport');
-
-
-            // check to see if we can do webgl
-            // ALERT FOR JQUERY PEEPS: canvas is a jquery obj - access the dom obj at canvas[0]
-            dcanvas = canvas[0];
-            expmt = false;
-            if ("WebGLRenderingContext" in window) {
-                console.log("browser at least knows what webgl is.");
-            }
-            // some browsers don't have a .getContext for canvas...
-            try {
-                gl = dcanvas.getContext("webgl");
-            } catch (x) {
-                gl = null;
-            }
-            if (gl == null) {
-                try {
-                    gl = dcanvas.getContext("experimental-webgl");
-                } catch (x) {
-                    gl = null;
-                }
-                if (gl == null) {
-                    console.log('but can\'t speak it');
-                } else {
-                    expmt = true;
-                    console.log('and speaks it experimentally.');
-                }
-            } else {
-                console.log('and speaks it natively.');
-            }
-
-            if (gl || expmt) {
-                console.log("loading webgl content.");
-                canvas.remove();
-                return true;
-            } else {
-                console.log("image-only fallback. no webgl.");
-                canvas.remove();
-                return false;
-            }
-
-
-
-        }
 
         function getURLParameter(name) {
             return decodeURI(
@@ -1180,46 +1513,218 @@ define(["module", "vwf/view"], function(module, view) {
             var oldMouseY = 0;
             var hovering = false;
             var view = this;
-            window.onresize = function() {
-                self.triggerWindowResize();
-            }
 
-            if (detectWebGL() && getURLParameter('disableWebGL') == 'null') {
-
-                sceneNode.renderer = new THREE.WebGLRenderer({
-                    canvas: mycanvas,
-                    antialias: true,
-                    alpha: false,
-                    stencil: false
-                });
-                sceneNode.renderer.autoUpdateScene = false;
-                sceneNode.renderer.setSize($('#index-vwf').width(), $('#index-vwf').height());
+            if (!$.parseQuerystring().norender) {
+                if (getURLParameter('disableWebGL') == 'null') {
 
 
-                if (_SettingsManager.getKey('shadows')) {
+                    sceneNode.renderer = new THREE.WebGLRenderer({
+                        canvas: mycanvas,
+                        antialias: true,
+                        alpha: false,
+                        stencil: false,
+                        depth: true,
+                        preserveDrawingBuffer: true
+                    });
+                    if (!sceneNode.renderer.context) {
+                        //lets not fall back on canvas renderer. there just is no point trying to do this without it.
+                        //so, we create a renderer anyway.
+                        //just throw out to a page. Could be a custom error warning. 
+                        window.location = 'http://get.webgl.org/';
+                        window.onbeforeunload = null;
+                        window.onunload = null;
+                    };
+
+                    sceneNode.renderer.context.canvas.addEventListener("webglcontextlost", function(event) {
+
+                        alertify.error('WebGL Context Lost!');
+
+                        //no point in rendering when we have no context
+                        _dView.paused = true;
+
+                        //clean up existing resources
+                        var walk = function(node) {
+                            if (node.children)
+                                for (var i = 0; i < node.children.length; i++)
+                                    walk(node.children[i])
+                            if (node.dispose)
+                                node.dispose();
+                            if (node.__webglInit)
+                                node.__webglInit = undefined;
+                            if (node.__webglActive)
+                                node.__webglActive = undefined;
+
+                            if (node.geometryGroups)
+                                node.geometryGroups = undefined;
+
+                            if (node.geometry)
+                                walk(node.geometry);
+                            walk(_dScene);
+                        }
+
+                    }, false);
+
+                    sceneNode.renderer.context.canvas.addEventListener("webglcontextrestored", function(event) {
+                        // Do something 
+                        //chadwick :10/24/14
+                        //try to recreate all the webgl stuff when context is restored.
+                        //TODO: the terrain engine does all sorts of crazy things. Things that current probably don't work
+                        //terrain   //nope, turns out this is fine
+                        //render-to-texture
+                        //videotextures   //seems ok, but does stop the vidoe
+                        //the grass system  
+                        //postprocessing
+                        //buffergeometry - in progress
+                        //any other code that manually manages rendertargets 
+
+                        //ok, good to render next frame
+                        _dView.paused = false;
+
+                        //create a new renderer and set all pointers to it
+                        renderer = _dRenderer = sceneNode.renderer = new THREE.WebGLRenderer({
+                            canvas: mycanvas,
+                            antialias: true,
+                            alpha: false,
+                            stencil: false
+                        });
 
 
+
+                        //here, we are going to do a lot of work to clean up the three.js datastructures
+                        //to force the  new renderer to recreate all the webgl objects
+                        _dScene.__webglObjects = {};
+
+                        //reset the renderer properties
+                        sceneNode.renderer.shadowMapType = THREE.PCFSoftShadowMap;
+                        sceneNode.renderer.shadowMapEnabled = true;
+                        sceneNode.renderer.autoClear = false;
+                        sceneNode.renderer.setClearColor({
+                            r: 1,
+                            g: 1,
+                            b: 1
+                        }, 1.0);
+
+                        //because we can encounter the same objects over and over in the scenegraph, we need to keep track of what we hit
+                        var geoProcessedList = [];
+                        var matProcessedList = [];
+                        var walk = function(node) {
+                                if (node.children)
+                                    for (var i = 0; i < node.children.length; i++)
+                                        walk(node.children[i])
+
+                                //mark objects an not inited
+                                if (node.__webglInit)
+                                    node.__webglInit = undefined;
+                                if (node.__webglActive)
+                                    node.__webglActive = undefined;
+
+
+                                //clear buffers and caches on geometries
+                                if (node instanceof THREE.Geometry && geoProcessedList.indexOf(node) == -1) {
+                                    if (node.geometryGroups)
+                                        node.geometryGroups = undefined;
+                                    if (node.geometryGroupsList)
+                                        node.geometryGroupsList = undefined;
+                                    node.__colorArray = undefined;
+                                    node.__sortArray = undefined;
+                                    node.__vertexArray = undefined;
+                                    node.__webglColorBuffer = undefined;
+                                    node.__webglCustomAttributesList = undefined;
+                                    node.__webglInit = undefined;
+                                    node.__webglParticleCount = undefined;
+                                    node.__webglVertexBuffer = undefined;
+                                    geoProcessedList.push(node);
+                                }
+                                if (node instanceof THREE.BufferGeometry) {
+                                    for (var i in node.attributes) {
+
+                                        node.attributes[i].buffer = _dRenderer.context.createBuffer();
+
+                                        debugger;
+                                        node.attributes[i].array = setClone(node.attributes[i].array);
+                                        _dRenderer.context.bindBuffer(_dRenderer.context.ARRAY_BUFFER, node.attributes[i].buffer);
+                                        _dRenderer.context.bufferData(_dRenderer.context.ARRAY_BUFFER, node.attributes[i].array, _dRenderer.context.STATIC_DRAW);
+
+
+                                    }
+                                }
+                                //send geometry into this same function
+                                if (node.geometry) {
+                                    walk(node.geometry);
+
+                                }
+
+                                //have to be careful! renderer stashes the rendertarget in the light itself
+                                //clear it
+                                if (node instanceof THREE.Light) {
+                                    if (node.shadowMap) {
+                                        node.shadowMap.__webglFramebuffer = undefined;
+                                        node.shadowMap.__webglRenderbuffer = undefined;
+                                        node.shadowMap.__webglTexture = undefined;
+                                    }
+
+                                }
+                                //careful! three.js uses a datatexture to send bone transforms. clear this texture
+                                if (node instanceof THREE.SkinnedMesh) {
+                                    if (node.skeleton.boneTexture) {
+                                        node.skeleton.boneTexture.needsUpdate = true
+                                        node.skeleton.boneTexture.__webglInit = undefined;
+                                        node.skeleton.boneTexture.__webglTexture = undefined;
+                                    }
+                                }
+
+                                //scene needs to be tricked into re-initing the objects. this does that
+                                if (!(node instanceof THREE.Geometry))
+                                    _dScene.__objectsAdded.push(node);
+
+                                //big step here, deal with materials
+                                if (node.material && matProcessedList.indexOf(node.material) == -1) {
+                                    resetMaterial(node.material);
+                                    matProcessedList.push(node.material);
+                                }
+
+                                //reset the default datatexture provided while real textures are loading
+                                var defaulttex = _SceneManager.getDefaultTexture();
+                                defaulttex.__webglInit = undefined;
+                                defaulttex.__webglTexture = undefined;
+                                defaulttex.needsUpdate = true;
+
+
+                                if (node.geometry)
+                                    walk(node.geometry);
+                            }
+                            //walk the scenegraph and recreate
+                        walk(_dScene);
+
+                        alertify.log('WebGL Context Restored!');
+                        glext_ft = _dRenderer.context.getExtension("GLI_frame_terminator");
+
+                    }, false);
+
+                    sceneNode.renderer.autoUpdateScene = false;
+                    sceneNode.renderer.setSize($('#index-vwf').width(), $('#index-vwf').height());
+
+
+                    if (_SettingsManager.getKey('shadows')) {
+
+
+                    }
+                    sceneNode.renderer.shadowMapType = THREE.PCFSoftShadowMap;
+                    sceneNode.renderer.shadowMapEnabled = true;
+                    sceneNode.renderer.autoClear = false;
+                    sceneNode.renderer.setClearColor({
+                        r: 1,
+                        g: 1,
+                        b: 1
+                    }, 1.0);
                 }
-                sceneNode.renderer.shadowMapType = THREE.PCFSoftShadowMap;
-                sceneNode.renderer.shadowMapEnabled = true;
-                sceneNode.renderer.autoClear = false;
-                sceneNode.renderer.setClearColor({
-                    r: 1,
-                    g: 1,
-                    b: 1
-                }, 1.0);
-            } else {
-                sceneNode.renderer = new THREE.CanvasRenderer({
-                    canvas: mycanvas,
-                    antialias: true
-                });
-                sceneNode.renderer.setSize(window.innerWidth, window.innerHeight);
+                if (sceneNode.renderer.setFaceCulling)
+                    sceneNode.renderer.setFaceCulling(false);
             }
 
 
             rebuildAllMaterials.call(this);
-            if (sceneNode.renderer.setFaceCulling)
-                sceneNode.renderer.setFaceCulling(false);
+
             this.state.cameraInUse = sceneNode.camera.threeJScameras[sceneNode.camera.ID];
 
 
@@ -1231,10 +1736,14 @@ define(["module", "vwf/view"], function(module, view) {
             var backgroundScene = new THREE.Scene();
 
             var renderer = sceneNode.renderer;
+            // by this point, the callback should be done. Create the renderer if the sensor was detected
+            if (_dView.vrHMDSensor)
+                _dView.vrRenderer = new THREE.VRRenderer(renderer, _dView.vrHMD);
             var scenenode = sceneNode;
             window._dScene = scene;
             window._dbackgroundScene = backgroundScene;
             window._dRenderer = renderer;
+            glext_ft = _dRenderer.context.getExtension("GLI_frame_terminator");
             window._dSceneNode = sceneNode;
             sceneNode.frameCount = 0; // needed for estimating when we're pick-safe
 
@@ -1245,42 +1754,42 @@ define(["module", "vwf/view"], function(module, view) {
 
     function rebuildAllMaterials(start) {
 
-        if (!start) {
-            for (var i in this.state.scenes) {
-                rebuildAllMaterials(this.state.scenes[i].threeScene);
-            }
-        } else {
-            if (start && start.material) {
-                start.material.needsUpdate = true;
-            }
-            if (start && start.children) {
-                for (var i in start.children)
-                    rebuildAllMaterials(start.children[i]);
+            if (!start) {
+                for (var i in this.state.scenes) {
+                    rebuildAllMaterials(this.state.scenes[i].threeScene);
+                }
+            } else {
+                if (start && start.material) {
+                    start.material.needsUpdate = true;
+                }
+                if (start && start.children) {
+                    for (var i in start.children)
+                        rebuildAllMaterials(start.children[i]);
+                }
             }
         }
-    }
-    //necessary when settign the amibent color to match MATH behavior
-    //Three js mults scene ambient by material ambient
+        //necessary when settign the amibent color to match MATH behavior
+        //Three js mults scene ambient by material ambient
     function SetMaterialAmbients(start) {
 
-        if (!start) {
-            for (var i in this.state.scenes) {
-                SetMaterialAmbients(this.state.scenes[i].threeScene);
-            }
-        } else {
-            if (start && start.material) {
-                //.005 chosen to make the 255 range for the ambient light mult to values that look like MATH values.
-                //this will override any ambient colors set in materials.
-                if (start.material.ambient)
-                    start.material.ambient.setRGB(1, 1, 1);
-            }
-            if (start && start.children) {
-                for (var i in start.children)
-                    SetMaterialAmbients(start.children[i]);
+            if (!start) {
+                for (var i in this.state.scenes) {
+                    SetMaterialAmbients(this.state.scenes[i].threeScene);
+                }
+            } else {
+                if (start && start.material) {
+                    //.005 chosen to make the 255 range for the ambient light mult to values that look like MATH values.
+                    //this will override any ambient colors set in materials.
+                    if (start.material.ambient)
+                        start.material.ambient.setRGB(1, 1, 1);
+                }
+                if (start && start.children) {
+                    for (var i in start.children)
+                        SetMaterialAmbients(start.children[i]);
+                }
             }
         }
-    }
-    // -- initInputEvents ------------------------------------------------------------------------
+        // -- initInputEvents ------------------------------------------------------------------------
 
 
     function initInputEvents(canvas) {

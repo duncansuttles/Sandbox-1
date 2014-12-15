@@ -3,5 +3,20 @@
 		"url":"./contentlibraries/materials/vwf/white.json",
 		"preview":"./contentlibraries/materials/thumbs/white.jpg",
 		"type":"material"
+	},
+	"Gold":{
+		"url":"./contentlibraries/materials/vwf/gold.json",
+		"preview":"./contentlibraries/materials/thumbs/gold.jpg",
+		"type":"material"
+	},
+	"Silver":{
+		"url":"./contentlibraries/materials/vwf/silver.json",
+		"preview":"./contentlibraries/materials/thumbs/silver.jpg",
+		"type":"material"
+	},
+	"Brick":{
+		"url":"./contentlibraries/materials/vwf/brick.json",
+		"preview":"./contentlibraries/materials/thumbs/brick.jpg",
+		"type":"material"
 	}
 }

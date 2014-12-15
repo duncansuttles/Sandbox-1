@@ -59,3 +59,5 @@
             return new cone(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.cone

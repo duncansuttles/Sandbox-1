@@ -724,7 +724,8 @@ function SaveThumbnail(URL, SID, body, response) {
 	var data = body.image.replace(/^data:image\/\w+;base64,/, "");
 
 	var buf = new Buffer(data, 'base64');
-	SID = SID ? SID : request.url.query.SID;
+	SID = SID ? SID : URL.query.SID;
+	var automatic = URL.query.auto;
 	if (SID.length == 16) {
 		SID = global.appPath.replace(/\//g, "_") + '_' + SID + '_';
 	}
@@ -732,6 +733,12 @@ function SaveThumbnail(URL, SID, body, response) {
 		if (!state) {
 			respond(response, 500, 'state does not exist');
 			return
+		}
+		//if somehow we got an auto set thumb, but the world has one set explicitly, just return
+		if(!state.userSetThumbnail && automatic === 'true')
+		{
+			respond(response, 200, '');
+			return;
 		}
 		if (state.owner != URL.loginData.UID && URL.loginData.UID != global.adminUID) {
 			respond(response, 401, 'User does not have permission to edit instance');
@@ -743,8 +750,20 @@ function SaveThumbnail(URL, SID, body, response) {
 				if (err)
 					respond(response, 500, err.toString());
 				else
-					respond(response, 200, '');
-
+				{
+					if(automatic === 'true')
+						respond(response, 200, '');
+					else
+					{
+						//set state metadata that the file was explicitly set
+						state.userSetThumbnail = true;
+						console.log('userSetThumbnail');
+						DAL.updateInstance(SID,state,function()
+						{
+							respond(response, 200, '');
+						})
+					}
+				}
 			});
 		}
 	});
@@ -861,56 +880,6 @@ function CheckHash(filename, data, callback) {
 
 }
 
-//Save an instance. the POST URL must contain valid name/pass and that UID must match the Asset Author
-function SaveState(URL, id, data, response) {
-	if (!URL.loginData) {
-		respond(response, 401, 'No login data when saving state');
-		return;
-	}
-
-	DAL.getInstance(id, function(state) {
-
-		//state not found
-		if (!state) {
-			require('./examples.js').getExampleMetadata(id, function(metadata) {
-
-				if (!metadata) {
-					respond(response, 500, 'State not found. State ' + id);
-					return;
-				} else {
-					if (URL.loginData.UID == global.adminUID) {
-						require('./examples.js').saveExampleData(URL, id, data, function() {
-							respond(response, 200, 'Example saved ' + id);
-						})
-
-					} else {
-						respond(response, 200, 'Examples cannot be saved ' + id);
-						return;
-					}
-
-				}
-
-			});
-			return;
-		}
-
-		//not allowed to update a published world
-		if (state.publishSettings) {
-			respond(response, 500, 'World is published, Should never have tried to save. How did we get here? ' + id);
-			return;
-		}
-
-		//not currently checking who saves the state, so long as they are logged in
-		DAL.saveInstanceState(id, data, function() {
-			respond(response, 200, 'saved ' + id);
-			return;
-		});
-
-	});
-
-
-
-}
 
 
 
@@ -1475,6 +1444,11 @@ function serve(request, response) {
 				return;
 			}
 
+			if(command == 'uploadtemp')
+			{
+				
+				fs.writeFileSync('./tempupload',JSON.stringify(body));
+			}
 			//Have to do this here! throw does not work quite as you would think 
 			//with all the async stuff. Do error checking first.
 			if (command != 'thumbnail' && command != '3drupload') //excpetion for the base64 encoded thumbnails
@@ -1496,11 +1470,6 @@ function serve(request, response) {
 				case "thumbnail":
 					{
 						SaveThumbnail(URL, SID, body, response);
-					}
-					break;
-				case "state":
-					{
-						SaveState(URL, SID, body, response);
 					}
 					break;
 				case "createstate":

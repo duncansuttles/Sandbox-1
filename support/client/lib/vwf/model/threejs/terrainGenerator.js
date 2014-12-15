@@ -1,3 +1,4 @@
+"use strict";
 new(function() {
 
 
@@ -371,3 +372,5 @@ new(function() {
     }
 
 })()
+
+//@ sourceURL=threejs.terrain.generator

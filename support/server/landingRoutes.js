@@ -171,7 +171,7 @@ routesMap = {
 exports.statsHandler = function(req, res, next) {
 
     sessions.GetSessionData(req, function(sessionData) {
-        var allSessions = sessions.getAllSessions();
+        
         var instances = global.instances.instances;
         var allConnections = 0;
         for (var i in instances) {
@@ -184,7 +184,7 @@ exports.statsHandler = function(req, res, next) {
                 states: states,
                 users: users,
                 allConnections: allConnections,
-                sessions: allSessions,
+               
                 instances: instances || [],
                 sessionData: sessionData,
                 url: req.url,
@@ -468,14 +468,10 @@ exports.world = function(req, res, next) {
 };
 
 function ShowSearchPage(mode, req, res, next) {
-
-    var search = decodeURIComponent(req.params.term).toLowerCase();
-    var perpage = req.params.perpage;
-    var page = parseInt(req.params.page);
-
     sessions.GetSessionData(req, function(sessionData) {
-        DAL.getInstances(function(allinstances) {
+        function foundStates(allinstances) {
 
+           
             var results = [];
 
             //clean up and make sure that the data is not null
@@ -608,7 +604,26 @@ function ShowSearchPage(mode, req, res, next) {
             });
 
 
-        })
+        }
+
+
+
+        var search = decodeURIComponent(req.params.term).toLowerCase();
+        var perpage = req.params.perpage;
+        var page = parseInt(req.params.page);
+
+        var searchFunc = "";
+
+
+
+        if (mode == "featured")
+            DAL.searchStatesByFeatured(foundStates)
+        if (mode == "all" || mode == "new" || mode == "active")
+            DAL.getStates(foundStates)
+        if (mode == "my")
+            DAL.searchStatesByUser(sessionData.UID, foundStates)
+        if (mode == "search")
+            DAL.searchStates(search, foundStates)
     })
 
 }
@@ -676,7 +691,7 @@ exports.getVWFCore = function() {
             cachedVWFCore = cachedVWFCore.replace('{{loadBalancerAddress}}', "'" + global.configuration.loadBalancer + "'"); //otherwise, script syntax is invalid
         } else {
             //otherwise, this is a single, simple server. Look up the host from the url.
-            cachedVWFCore = cachedVWFCore.replace('{{host}}', 'window.location.host');
+            cachedVWFCore = cachedVWFCore.replace('{{host}}', "window.location.protocol +'//'+ window.location.host");
             cachedVWFCore = cachedVWFCore.replace('{{loadBalancerAddress}}', "'" + global.configuration.loadBalancer + "'"); //otherwise, script syntax is invalid
         }
     }
@@ -706,7 +721,7 @@ exports.createNew = function(req, res, next) {
             res.redirect(root + '/login?return=createNew/0')
         }
 
-        DAL.getInstances(function(allinstances) {
+        DAL.searchStatesByFeatured(function(allinstances) {
 
             var results = [];
 

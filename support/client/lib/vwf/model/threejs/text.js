@@ -58,3 +58,5 @@
             return new text(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.text

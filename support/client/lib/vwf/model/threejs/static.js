@@ -2,6 +2,19 @@
     function isStatic(childID, childSource, childName) {
         this.isStatic = false;
         this.dynamic = false;
+
+        function setMeshStatic(node, val) {
+            if (node instanceof THREE.Mesh)
+                node.setStatic(val);
+            for (var i = 0; i < node.children.length; i++)
+                setMeshStatic(node.children[i], val);
+        }
+        function setMeshDynamic(node, val) {
+            if (node instanceof THREE.Mesh)
+                node.setDynamic(val);
+            for (var i = 0; i < node.children.length; i++)
+                setMeshDynamic(node.children[i], val);
+        }
         this.settingProperty = function(propname, propval) {
             if (propname == 'isStatic') {
 
@@ -9,10 +22,10 @@
                     console.warn('Optimized assets cannot currently be marked static.');
                     return propval;
                 }
-
+                
                 this.isStatic = propval;
                 if (!this.dynamic)
-                    this.getRoot().setStatic(this.isStatic);
+                    setMeshStatic(this.getRoot(), this.isStatic);
                 if (this.isStatic)
                     this.settingProperty('visible', true);
                 return propval;
@@ -26,7 +39,7 @@
 
                 this.settingProperty('isStatic', false);
                 this.dynamic = propval;
-                this.getRoot().setDynamic(propval);
+                setMeshDynamic(this.getRoot(),propval);
                 return propval;
             }
         }
@@ -47,3 +60,5 @@
         return new isStatic(childID, childSource, childName);
     }
 })();
+
+//@ sourceURL=threejs.subdriver.static

@@ -91,7 +91,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
         var instanceData = _DataManager.getInstanceData() || {};
 
-        var needTools = instanceData && instanceData.publishSettings ? instanceData.publishSettings.allowTools : true;
+        var needTools = _EditorView.needTools();
 
         if (needTools) {
             $(document.body).append('<div id="statusbar" class="statusbar" />');
@@ -353,7 +353,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             }
 
             //if the mouse is over any div that is not a selection glyph or the selection marquee, cancel all actions
-            if (!$(teste).hasClass('glyph') && teste !== this.selectionMarquee[0]) {
+            if ((!$(teste).hasClass('glyph') && !$(teste).hasClass('nametag') && !$(teste).hasClass('ignoreMouseout')) && teste !== this.selectionMarquee[0]) {
                 this.undoPoint = null;
                 this.MouseLeftDown = false;
                 this.mouseDownScreenPoint = null;
@@ -400,13 +400,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 this.undoPoint = null;
                 this.restoreTransforms();
                 document.AxisSelected = -1;
-                var ids = [];
-                for (var s = 0; s < SelectedVWFNodes.length; s++)
-                    ids.push(SelectedVWFNodes[s].id);
-                this.SelectObject(null);
-                window.setTimeout(function() {
-                    _Editor.SelectObject(ids);
-                }, 1000);
+                this.mouseDownScreenPoint = null;
                 return false;
             }
 
@@ -480,6 +474,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                             while (hits[i] && hits[i].object && !hits[i].object.vwfID) hits[i].object = hits[i].object.parent;
                             if (hits[i] && hits[i].object) vwfnode = hits[i].object.vwfID;
                             if (vwfhits.indexOf(vwfnode) == -1 && vwfnode) vwfhits.push(vwfnode);
+
+                            hits[i].release();
                         }
                         this.SelectObject(vwfhits, this.PickMod);
 
@@ -592,6 +588,10 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     _Notifier.alert('Avatars cannot be deleted');
                     continue;
                 }
+                if (SelectedVWFNodes[s].id == vwf.application()) {
+                    _Notifier.alert('The root scene cannot be deleted');
+                    continue;
+                }
                 if (SelectedVWFNodes[s]) {
 
                     _UndoManager.recordDelete(SelectedVWFNodes[s].id);
@@ -610,28 +610,40 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         }.bind(this);
         //	$('#vwf-root').keyup(function(e){
         this.keyup_Gizmo = function(e) {
+
             if (vwf.getProperty(vwf.application(), 'playMode') == 'play') return;
             if (e.keyCode == 17) {
                 this.PickMod = NewSelect;
+                console.log(this.PickMod);
                 $('#index-vwf').css('cursor', 'default');
             }
             if (e.keyCode == 18) {
                 this.PickMod = NewSelect;
+                console.log(this.PickMod);
                 $('#index-vwf').css('cursor', 'default');
             }
         }.bind(this);
         this.blur = function() {
-            this.PickMod = NewSelect;
-            $('#index-vwf').css('cursor', 'default');
+            // we need to let the event propagate, then check that the new focused element is not a glyph. 
+            //if it is a glyph, focus back on the canvas
+            var self = this;
+            setTimeout(function(){
+                if($(document.activeElement).hasClass('glyph')) return; // This is the element that has focus
+                console.log(self.PickMod);
+                self.PickMod = NewSelect;
+                $('#index-vwf').css('cursor', 'default');
+            },10);
         }
         this.keydown_Gizmo = function(e) {
             if (vwf.getProperty(vwf.application(), 'playMode') == 'play') return;
             if (e.keyCode == 17) {
                 this.PickMod = Add;
+                console.log(this.PickMod);
                 $('#index-vwf').css('cursor', 'all-scroll');
             }
             if (e.keyCode == 18) {
                 this.PickMod = Subtract;
+                console.log(this.PickMod);
                 $('#index-vwf').css('cursor', 'not-allowed');
             }
             if (e.keyCode == 87 && SelectMode == 'Pick') {
@@ -687,14 +699,14 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         }.bind(this);
         this.NotifyPeersOfSelection = function() {
 
-            var ids = [];
-            for (var i = 0; i < SelectedVWFNodes.length; i++)
-                ids.push(SelectedVWFNodes[i].id);
+                var ids = [];
+                for (var i = 0; i < SelectedVWFNodes.length; i++)
+                    ids.push(SelectedVWFNodes[i].id);
 
-            vwf_view.kernel.callMethod('index-vwf', 'PeerSelection', [ids]);
+                vwf_view.kernel.callMethod('index-vwf', 'PeerSelection', [ids]);
 
-        }
-        //remove all the peer selection gizmos
+            }
+            //remove all the peer selection gizmos
         this.hidePeerSelections = function() {
             for (var i in this.peerSelections) {
                 var peerselection = this.peerSelections[i];
@@ -702,7 +714,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     var bound = peerselection.bounds[i];
                     if (bound) {
                         bound.parent.remove(bound);
-                        bound.dispose();
+                       
                         bound.children[0].geometry.dispose();
                     }
                 }
@@ -753,6 +765,26 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             }
         }
         this.satProperty = function(id, propname, val) {
+
+
+            //here, we update the selection bounds rect when the selction transforms
+            if (window._Editor && propname == _Editor.transformPropertyName && _Editor.isSelected(id)) {
+                _Editor.updateBoundsTransform(id);
+                if (vwf.client() == vwf.moniker()) {
+                    if (_Editor.waitingForSet.length)
+                        _Editor.waitingForSet.splice(_Editor.waitingForSet.indexOf(id), 1);
+
+                }
+                if (_Editor.waitingForSet.length == 0 || vwf.client() != vwf.moniker()) {
+                    _Editor.updateGizmoLocation();
+                    _Editor.updateGizmoSize();
+                    _Editor.updateGizmoOrientation(false);
+                }
+                $(document).trigger('selectionTransformedLocal', [{
+                    id: id
+                }]);
+            }
+
             //when an object moves, check that it's not hilighted by the peer selection display.
             //if it is, update the matrix of the selection rectangle.
             if (vwf.client() != vwf.moniker() && propname == 'transform') {
@@ -1035,6 +1067,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
             //prevent moving 3D nodes that are not bound to the scene or are the scene itself
             if (SelectedVWFNodes.length > 0 && !(this.findviewnode(SelectedVWFNodes[0].id)).parent) return;
+
+
             if (this.waitingForSet.length > 0) return;
 
             if (!MoveGizmo || MoveGizmo == null) {
@@ -1225,8 +1259,9 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     gizposoffset = this.MoveTransformGizmo(MoveAxisY, relintersectyz[1]);
                     gizposoffset = MATH.addVec3(gizposoffset, this.MoveTransformGizmo(MoveAxisZ, relintersectyz[2]));
                 }
-
+                var backupScreeny = relscreeny;
                 for (var s = 0; s < SelectedVWFNodes.length; s++) {
+                    relscreeny = backupScreeny;
                     if (SelectedVWFNodes[s]) {
 
                         var tempscale = null;
@@ -1375,8 +1410,25 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
                             }
                             if (wasScaled && tempscale[0] > 0 && tempscale[1] > 0 && tempscale[2] > 0) {
+
                                 var relScale = MATH.subVec3(tempscale, lastscale[s]);
-                                var success = this.setScaleCallback(SelectedVWFNodes[s].id, [tempscale[0], tempscale[1], tempscale[2]]);
+                                var transform = this.getTransformCallback(SelectedVWFNodes[s].id);
+
+                                var sx = MATH.lengthVec3([transform[0], transform[4], transform[8]]);
+                                var sy = MATH.lengthVec3([transform[1], transform[5], transform[9]]);
+                                var sz = MATH.lengthVec3([transform[2], transform[6], transform[10]]);
+                                transform[0] *= tempscale[0] / sx;
+                                transform[4] *= tempscale[0] / sx;
+                                transform[8] *= tempscale[0] / sx;
+                                transform[1] *= tempscale[1] / sy;
+                                transform[5] *= tempscale[1] / sy;
+                                transform[9] *= tempscale[1] / sy;
+                                transform[2] *= tempscale[2] / sz;
+                                transform[6] *= tempscale[2] / sz;
+                                transform[10] *= tempscale[2] / sz;
+                                //var success = this.setScaleCallback(SelectedVWFNodes[s].id, [tempscale[0], tempscale[1], tempscale[2]]);
+                                if (SelectedVWFNodes.length == 1)
+                                    var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
                                 if (SelectedVWFNodes.length > 1) {
 
                                     var gizoffset = MATH.subVec3(lastpos[s], originalGizmoPos);
@@ -1388,8 +1440,10 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                                     gizoffset[2] *= tempscale[2];
                                     var newloc = MATH.addVec3(originalGizmoPos, gizoffset);
                                     lastpos[s] = newloc;
-
-                                    var success = this.setTranslationCallback(SelectedVWFNodes[s].id, newloc);
+                                    transform[12] = newloc[0];
+                                    transform[13] = newloc[1];
+                                    transform[14] = newloc[2];
+                                    var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
 
                                 }
                                 lastscale[s] = tempscale;
@@ -1408,9 +1462,12 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                                 transform[13] = y;
                                 transform[14] = z;
                                 lastpos[s] = [x, y, z];
-                                var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
-
+                                if (SelectedVWFNodes.length == 1) {
+                                    var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
+                                }
                                 if (SelectedVWFNodes.length > 1) {
+                                    //if more than one object is selected, update the new transform to 
+                                    //rotate around the gizmo
                                     var parentmat = toGMat(self.findviewnode(SelectedVWFNodes[s].id).parent.matrixWorld);
                                     var parentmatinv = MATH.inverseMat4(parentmat);
                                     var parentgizloc = MATH.mulMat4Vec3(parentmatinv, originalGizmoPos);
@@ -1419,7 +1476,10 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                                     gizoffset = MATH.mulMat4Vec3(rotmat, gizoffset);
                                     var newloc = MATH.addVec3(parentgizloc, gizoffset);
                                     lastpos[s] = newloc;
-                                    var success = this.setTranslationCallback(SelectedVWFNodes[s].id, newloc);
+                                    transform[12] = newloc[0];
+                                    transform[13] = newloc[1];
+                                    transform[14] = newloc[2];
+                                    var success = this.setTransformCallback(SelectedVWFNodes[s].id, transform);
 
 
                                 }
@@ -1537,7 +1597,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 extends: 'SandboxLight.vwf',
                 properties: {
                     rotation: [1, 0, 0, 0],
-                    translation: pos,
+                    transform: MATH.transposeMat4(MATH.translateMatrix(pos)),
                     owner: owner,
                     type: 'Light',
                     lightType: type,
@@ -1553,7 +1613,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 extends: 'SandboxParticleSystem.vwf',
                 properties: {
                     rotation: [1, 0, 0, 0],
-                    translation: pos,
+                    transform: MATH.transposeMat4(MATH.translateMatrix(pos)),
                     owner: owner,
                     type: 'ParticleSystem',
                     DisplayName: self.GetUniqueName('ParticleSystem')
@@ -1564,6 +1624,9 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             this.SelectOnNextCreate([newname]);
         }
         this.CreateCamera = function(translation, owner, id) {
+            translation[0] = this.SnapTo(translation[0], MoveSnap);
+            translation[1] = this.SnapTo(translation[1], MoveSnap);
+            translation[2] = this.SnapTo(translation[2], MoveSnap);
             var CamProto = {
                 extends: 'SandboxCamera' + '.vwf',
                 properties: {}
@@ -1571,13 +1634,45 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             CamProto.type = 'subDriver/threejs';
             CamProto.source = 'vwf/model/threejs/' + 'camera' + '.js';
 
-            CamProto.properties.translation = translation;
-            CamProto.properties.scale = [1, 1, 1];
-            CamProto.properties.rotation = [0, 0, 1, 0];
+            CamProto.properties.transform = MATH.transposeMat4(MATH.translateMatrix(translation));
             CamProto.properties.owner = owner;
             CamProto.properties.DisplayName = self.GetUniqueName('Camera');
             var newname = GUID();
             this.createChild('index-vwf', newname, CamProto, null, null);
+            this.SelectOnNextCreate([newname]);
+        };
+        this.CreatePhysicsConstraint = function(type, owner) {
+            var ConstraintProto = {
+                extends: type + 'Constraint' + '.vwf',
+                properties: {}
+            };
+            if(_Editor.getSelectionCount() == 0 || _Editor.getSelectionCount() > 2)
+                ConstraintProto.properties.transform = MATH.transposeMat4(MATH.translateMatrix( _Editor.GetInsertPoint()));
+            if(_Editor.getSelectionCount() == 1)
+            {
+                var trans = vwf.getProperty(_Editor.GetSelectedVWFID(),'transform');
+                trans = [trans[12],trans[13],trans[14] ]
+                ConstraintProto.properties.transform = MATH.transposeMat4(MATH.translateMatrix(trans));
+                ConstraintProto.properties.___physics_joint_body_A = _Editor.GetSelectedVWFNode(0).id;
+            }
+            if(_Editor.getSelectionCount() == 2)
+            {
+                var trans = vwf.getProperty(_Editor.GetSelectedVWFNode(0).id,'transform');
+                trans = [trans[12],trans[13],trans[14] ];
+                var trans2 = vwf.getProperty(_Editor.GetSelectedVWFNode(1).id,'transform');
+                trans2 = [trans2[12],trans2[13],trans2[14] ];
+                trans[0] = (trans[0] + trans2[0])/2;
+                trans[1] = (trans[1] + trans2[1])/2;
+                trans[2] = (trans[2] + trans2[2])/2;
+                ConstraintProto.properties.transform = MATH.transposeMat4(MATH.translateMatrix(trans));
+                ConstraintProto.properties.___physics_joint_body_A = _Editor.GetSelectedVWFNode(0).id;
+                ConstraintProto.properties.___physics_joint_body_B = _Editor.GetSelectedVWFNode(1).id;
+            }
+
+            ConstraintProto.properties.owner = owner;
+            ConstraintProto.properties.DisplayName = self.GetUniqueName(type + ' Constraint');
+            var newname = GUID();
+            this.createChild('index-vwf', newname, ConstraintProto, null, null);
             this.SelectOnNextCreate([newname]);
         };
         this.CreatePrim = function(type, translation, size, texture, owner, id) {
@@ -1636,14 +1731,13 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             }
 
             proto.properties.materialDef = defaultmaterialDef;
-            proto.properties.size = size;
-            proto.properties.translation = translation;
-            proto.properties.scale = [1, 1, 1];
-            proto.properties.rotation = [0, 0, 1, 0];
+
+            proto.properties.transform = MATH.transposeMat4(MATH.translateMatrix(translation));
+
             proto.properties.owner = owner;
-            proto.properties.texture = texture;
+
             proto.properties.type = 'primitive';
-            proto.properties.tempid = id;
+
             proto.properties.DisplayName = self.GetUniqueName(type);
             var newname = GUID();
             this.createChild('index-vwf', newname, proto, null, null);
@@ -1718,11 +1812,9 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 ModProto.type = 'subDriver/threejs';
                 ModProto.source = 'vwf/model/threejs/' + type + '.js';
             }
-            proto.NotProto = "NOT!";
-            proto.properties.NotProto = "NOT!";
-            proto.properties.translation = [0, 0, 0];
-            proto.properties.scale = [1, 1, 1];
-            proto.properties.rotation = [0, 0, 1, 0];
+
+
+
             proto.properties.owner = owner;
             proto.properties.type = 'modifier';
             proto.properties.DisplayName = self.GetUniqueName(type);
@@ -1752,10 +1844,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             BoxProto.type = 'subDriver/threejs';
             BoxProto.source = 'vwf/model/threejs/' + type + '.js';
             proto.NotProto = "NOT!";
-            proto.properties.NotProto = "NOT!";
-            proto.properties.translation = [0, 0, 0];
-            proto.properties.scale = [1, 1, 1];
-            proto.properties.rotation = [0, 0, 1, 0];
+
             proto.properties.owner = owner;
             proto.properties.type = 'modifier';
             proto.properties.DisplayName = self.GetUniqueName(type);
@@ -1835,7 +1924,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     var tpos = new THREE.Vector3();
                     tpos.setFromMatrixPosition(MoveGizmo.parent.matrixWorld);
                     originalGizmoPos = [tpos.x, tpos.y, tpos.z];
-                    var gizoffset = MATH.subVec3(vwf.getProperty(tocopy[i].id, this.translationPropertyName), originalGizmoPos);
+                    var gizoffset = MATH.subVec3(this.getTranslationCallback(tocopy[i].id), originalGizmoPos);
                     t.properties.transform[12] = gizoffset[0];
                     t.properties.transform[13] = gizoffset[1];
                     t.properties.transform[14] = gizoffset[2];
@@ -1920,11 +2009,15 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             return vwf.getProperty(id, this.transformPropertyName);
         }
         this.getTranslation = function(id) {
-            var mat = vwf.getProperty(id, "worldTransform");
+            var mat = vwf.getProperty(id, 'worldTransform');
             return [mat[12], mat[13], mat[14]];
         }
         this.getScale = function(id) {
-            return vwf.getProperty(id, this.scalePropertyName);
+            var transform = vwf.getProperty(id, this.transformPropertyName);
+            var sx = MATH.lengthVec3([transform[0], transform[4], transform[8]]);
+            var sy = MATH.lengthVec3([transform[1], transform[5], transform[9]]);
+            var sz = MATH.lengthVec3([transform[2], transform[6], transform[10]]);
+            return [sx, sy, sz];
         }
         this.setTransform = function(id, val) {
             this.waitingForSet.push(id);
@@ -2045,7 +2138,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
             box = self.findviewnode(id).GetBoundingBox(true);
             mat = toGMat(self.findviewnode(id).matrixWorld).slice(0);
-            var color = [1, 1, 1, 1];
+            var color = [.5, .5, 1, 1];
             if (this.findviewnode(id).initializedFromAsset) color = [1, 0, 0, 1];
             if (vwf.getProperty(id, 'type') == 'Group' && vwf.getProperty(id, 'open') == false) color = [0, 1, 0, 1];
             if (vwf.getProperty(id, 'type') == 'Group' && vwf.getProperty(id, 'open') == true) color = [.7, 1.0, .7, 1];
@@ -2075,6 +2168,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             // boundingbox.setPickable(false);
             // boundingbox.RenderPriority = 999;
             boundingbox.vwfid = id;
+            box.release();
             return boundingbox;
         }
         this.updateBoundsTransform = function(id) {
@@ -2105,14 +2199,27 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             this.updateBounds();
         }
         this.CloseGroup = function() {
-            for (var i = 0; i < this.getSelectionCount(); i++) {
-                if (vwf.getProperty(SelectedVWFNodes[i].id, 'type') == 'Group') {
-                    this.setProperty(SelectedVWFNodes[i].id, 'open', false);
+
+                var closedGroups = [];
+                for (var i = 0; i < this.getSelectionCount(); i++) {
+
+                    // look up the chain for a group, and close it if you find one
+
+                    var parentGroup = SelectedVWFNodes[i].id;
+                    while (parentGroup && vwf.getNode(parentGroup).extends !== 'sandboxGroup.vwf')
+                        parentGroup = vwf.parent(parentGroup);
+
+                    if (!parentGroup) continue;
+
+                    if (vwf.getNode(parentGroup).extends == 'sandboxGroup.vwf') {
+                        this.setProperty(parentGroup, 'open', false);
+                        closedGroups.push(parentGroup);
+                    }
                 }
+                this.updateBounds();
+                this.SelectObject(closedGroups);
             }
-            this.updateBounds();
-        }
-        //new vwf kernel does not add the ID to the get node, but all our old code expects it. Add it and return the node.
+            //new vwf kernel does not add the ID to the get node, but all our old code expects it. Add it and return the node.
         this.getNode = function(id) {
             if (!id) return null;
             var node = vwf.getNode(id, true, true);
@@ -2134,128 +2241,131 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             if (SelectMode == 'TempPick') {
                 if (this.TempPickCallback) this.TempPickCallback(_Editor.getNode(VWFNodeid));
             } else {
+
                 this.SelectObject(VWFNodeid, this.PickMod);
             }
         }
         this.SelectObject = function(VWFNode, selectmod, skipUndo) //the skip undo flag is necessary so that the undomanager can trigger new selections without messing up the undostack
-        {
-            this.waitingForSet.length = 0;
-            //stop the GUI drag function
+            {
 
-            this.guiNodeDragEnd();
-            if (VWFNode && VWFNode.constructor == Array) {
-                for (var i = 0; i < VWFNode.length; i++) VWFNode[i] = _Editor.getNode(VWFNode[i]);
-            } else if (typeof(VWFNode) == 'object') VWFNode = [VWFNode];
-            else if (typeof(VWFNode) == 'string') VWFNode = [_Editor.getNode(VWFNode)];
+                this.waitingForSet.length = 0;
+                //stop the GUI drag function
 
-            //this causes too much drama. look into solution in future	
-            //	if(!skipUndo)
-            //		_UndoManager.recordSelection(VWFNode);
+                this.guiNodeDragEnd();
+                if (VWFNode && VWFNode.constructor == Array) {
+                    VWFNode = VWFNode.slice(0); // don't modify the array in place, the caller might be using it!
+                    for (var i = 0; i < VWFNode.length; i++) VWFNode[i] = _Editor.getNode(VWFNode[i]);
+                } else if (typeof(VWFNode) == 'object') VWFNode = [VWFNode];
+                else if (typeof(VWFNode) == 'string') VWFNode = [_Editor.getNode(VWFNode)];
 
-            if (!selectmod) {
-                SelectedVWFNodes = [];
-            }
-            if (VWFNode && VWFNode[0] != null)
-                for (var i = 0; i < VWFNode.length; i++) {
-                    //if you've selected a node that is grouped, but not selected a group directly, select the nearest open group head.
-                    try {
-                        if (vwf.getProperty(VWFNode[i].id, 'type') != 'Group') {
-                            var testnode = VWFNode[i];
-                            //'index-vwf can never be a group, skip getting it to check'
-                            while (testnode && (vwf.getProperty(testnode.id, 'type') != 'Group' || (vwf.getProperty(testnode.id, 'type') == 'Group' && vwf.getProperty(testnode.id, 'open') == true))) {
-                                if (vwf.parent(testnode.id) == 'index-vwf') {
-                                    testnode = null;
-                                    break;
-                                } else {
-                                    testnode = _Editor.getNode(vwf.parent(testnode.id));
+                //this causes too much drama. look into solution in future	
+                //	if(!skipUndo)
+                //		_UndoManager.recordSelection(VWFNode);
+
+                if (!selectmod) {
+                    SelectedVWFNodes = [];
+                }
+                if (VWFNode && VWFNode[0] != null)
+                    for (var i = 0; i < VWFNode.length; i++) {
+                        //if you've selected a node that is grouped, but not selected a group directly, select the nearest open group head.
+                        try {
+                            if (vwf.getProperty(VWFNode[i].id, 'type') != 'Group') {
+                                var testnode = VWFNode[i];
+                                //'index-vwf can never be a group, skip getting it to check'
+                                while (testnode && (vwf.getProperty(testnode.id, 'type') != 'Group' || (vwf.getProperty(testnode.id, 'type') == 'Group' && vwf.getProperty(testnode.id, 'open') == true))) {
+                                    if (vwf.parent(testnode.id) == 'index-vwf') {
+                                        testnode = null;
+                                        break;
+                                    } else {
+                                        testnode = _Editor.getNode(vwf.parent(testnode.id));
+                                    }
                                 }
+                                if (testnode)
+                                    VWFNode[i] = testnode;
                             }
-                            if (testnode)
-                                VWFNode[i] = testnode;
+                        } catch (e) {}
+                        if (!selectmod) {
+                            if (VWFNode[i]) {
+                                if (!this.isSelected(VWFNode[i].id)) SelectedVWFNodes.push(VWFNode[i]);
+                            }
                         }
-                    } catch (e) {}
-                    if (!selectmod) {
-                        if (VWFNode[i]) {
+                        if (selectmod == Add) {
                             if (!this.isSelected(VWFNode[i].id)) SelectedVWFNodes.push(VWFNode[i]);
                         }
+                        if (selectmod == Subtract) {
+                            var index = -1;
+                            for (var j = 0; j < SelectedVWFNodes.length; j++)
+                                if (SelectedVWFNodes[j] && SelectedVWFNodes[j].id == VWFNode[i].id) index = j;
+                            SelectedVWFNodes.splice(index, 1);
+                        }
+
+
                     }
-                    if (selectmod == Add) {
-                        if (!this.isSelected(VWFNode[i].id)) SelectedVWFNodes.push(VWFNode[i]);
-                    }
-                    if (selectmod == Subtract) {
-                        var index = -1;
-                        for (var j = 0; j < SelectedVWFNodes.length; j++)
-                            if (SelectedVWFNodes[j] && SelectedVWFNodes[j].id == VWFNode[i].id) index = j;
-                        SelectedVWFNodes.splice(index, 1);
+                if (SelectedVWFNodes[0]) this.SelectedVWFID = SelectedVWFNodes[0].id;
+                else this.SelectedVWFID = null;
+                this.triggerSelectionChanged(SelectedVWFNodes[0]);
+                if (MoveGizmo == null) {
+                    BuildMoveGizmo();
+                }
+                MoveGizmo.InvisibleToCPUPick = false;
+                this.backupTransfroms = [];
+                if (SelectedVWFNodes[0]) {
+
+                    for (var s = 0; s < SelectedVWFNodes.length; s++) {
+                        lastscale[s] = this.getScaleCallback(SelectedVWFNodes[s].id);
+
+                        this.showMoveGizmo();
+                        if (this.findviewnode(SelectedVWFNodes[s].id)) {
+                            //this.findviewnode(SelectedVWFNodes[s].id).setTransformMode(MATH.P_MATRIX);
+                            //this.findviewnode(SelectedVWFNodes[s].id).setRotMatrix(this.GetRotationMatrix(this.findviewnode(SelectedVWFNodes[s].id).getLocalthis.Matrix()));
+                            //this.findviewnode(SelectedVWFNodes[s].id).updateMatrix
+                        }
                     }
 
+                    this.updateBoundsAndGizmoLoc();
+                    this.updateGizmoOrientation(true);
+                } else {
+                    this.hideMoveGizmo();
+                    MoveGizmo.InvisibleToCPUPick = true;
+                    if (SelectionBounds.length > 0) {
+                        for (var i = 0; i < SelectionBounds.length; i++) {
+                            SelectionBounds[i].parent.remove(SelectionBounds[i], true);
+                            SelectionBounds[i].children[0].geometry.dispose()
+                        }
+                        SelectionBounds = [];
+                    }
+                }
+
+
+                $('#StatusSelectedID').text('No Selection');
+                $('#StatusSelectedName').text('No Selection');
+                if (SelectedVWFNodes.length > 0) {
+                    if (SelectedVWFNodes.length == 1)
+                        $('#StatusSelectedID').text(SelectedVWFNodes[0].id);
+                    else
+                        $('#StatusSelectedID').text(SelectedVWFNodes.length + ' objects');
+
+                    $('#StatusSelectedName').text(vwf.getProperty(SelectedVWFNodes[0].id, 'DisplayName'));
+                    for (var i = 1; i < SelectedVWFNodes.length; i++)
+                        $('#StatusSelectedName').text($('#StatusSelectedName').text() + ', ' + vwf.getProperty(SelectedVWFNodes[i].id, 'DisplayName'));
+                }
+                // do some hilighting of GUI nodes to refect selection
+                $('.guiselected').off('dblclick', this.guiNodeDragStart);
+                $('.guiselected').off('dblclick', this.guiNodeDragEnd);
+
+                $('.guiselected').removeClass('guiselected');
+                for (var i = 0; i < SelectedVWFNodes.length; i++) {
+                    var id = SelectedVWFNodes[i].id;
+                    $('#guioverlay_' + id).addClass('guiselected');
 
                 }
-            if (SelectedVWFNodes[0]) this.SelectedVWFID = SelectedVWFNodes[0].id;
-            else this.SelectedVWFID = null;
-            this.triggerSelectionChanged(SelectedVWFNodes[0]);
-            if (MoveGizmo == null) {
-                BuildMoveGizmo();
-            }
-            MoveGizmo.InvisibleToCPUPick = false;
-            this.backupTransfroms = [];
-            if (SelectedVWFNodes[0]) {
-
-                for (var s = 0; s < SelectedVWFNodes.length; s++) {
-                    lastscale[s] = this.getScaleCallback(SelectedVWFNodes[s].id);
-
-                    this.showMoveGizmo();
-                    if (this.findviewnode(SelectedVWFNodes[s].id)) {
-                        //this.findviewnode(SelectedVWFNodes[s].id).setTransformMode(MATH.P_MATRIX);
-                        //this.findviewnode(SelectedVWFNodes[s].id).setRotMatrix(this.GetRotationMatrix(this.findviewnode(SelectedVWFNodes[s].id).getLocalthis.Matrix()));
-                        //this.findviewnode(SelectedVWFNodes[s].id).updateMatrix
-                    }
-                }
-
-                this.updateBoundsAndGizmoLoc();
-                this.updateGizmoOrientation(true);
-            } else {
-                this.hideMoveGizmo();
-                MoveGizmo.InvisibleToCPUPick = true;
-                if (SelectionBounds.length > 0) {
-                    for (var i = 0; i < SelectionBounds.length; i++) {
-                        SelectionBounds[i].parent.remove(SelectionBounds[i], true);
-                        SelectionBounds[i].children[0].geometry.dispose()
-                    }
-                    SelectionBounds = [];
-                }
-            }
-
-
-            $('#StatusSelectedID').text('No Selection');
-            $('#StatusSelectedName').text('No Selection');
-            if (SelectedVWFNodes.length > 0) {
-                if (SelectedVWFNodes.length == 1)
-                    $('#StatusSelectedID').text(SelectedVWFNodes[0].id);
-                else
-                    $('#StatusSelectedID').text(SelectedVWFNodes.length + ' objects');
-
-                $('#StatusSelectedName').text(vwf.getProperty(SelectedVWFNodes[0].id, 'DisplayName'));
-                for (var i = 1; i < SelectedVWFNodes.length; i++)
-                    $('#StatusSelectedName').text($('#StatusSelectedName').text() + ', ' + vwf.getProperty(SelectedVWFNodes[i].id, 'DisplayName'));
-            }
-            // do some hilighting of GUI nodes to refect selection
-            $('.guiselected').off('dblclick', this.guiNodeDragStart);
-            $('.guiselected').off('dblclick', this.guiNodeDragEnd);
-
-            $('.guiselected').removeClass('guiselected');
-            for (var i = 0; i < SelectedVWFNodes.length; i++) {
-                var id = SelectedVWFNodes[i].id;
-                $('#guioverlay_' + id).addClass('guiselected');
-
-            }
-            $('.guiselected').on('dblclick', this.guiNodeDragStart);
+                $('.guiselected').on('dblclick', this.guiNodeDragStart);
 
 
 
-            //send a signal over the reflector to let others know that I have selected something.
-            this.NotifyPeersOfSelection();
-        }.bind(this);
+                //send a signal over the reflector to let others know that I have selected something.
+                this.NotifyPeersOfSelection();
+            }.bind(this);
         this.ResetTransforms = function() {
             for (var i = 0; i < SelectedVWFNodes.length; i++) {
                 this.setProperty(SelectedVWFNodes[i].id, 'transform', [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], "You do not have permission to reset the transforms for this object");
@@ -2319,19 +2429,19 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             var blue = [0, 0, 1, 1];
             if (MoveGizmo != null) return;
             //temp mesh for all geometry to test
-            var cubeX = new THREE.Mesh(new THREE.CubeGeometry(10.00, .40, .40), new THREE.MeshLambertMaterial({
+            var cubeX = new THREE.Mesh(new THREE.BoxGeometry(10.00, .40, .40), new THREE.MeshLambertMaterial({
                 color: 0xFF0000,
                 emissive: 0xFF0000,
                 ambient: 0xFF0000
             }));
             cubeX.position.set(5.00, .15, .15);
-            var cubeY = new THREE.Mesh(new THREE.CubeGeometry(.40, 10.00, .40), new THREE.MeshLambertMaterial({
+            var cubeY = new THREE.Mesh(new THREE.BoxGeometry(.40, 10.00, .40), new THREE.MeshLambertMaterial({
                 color: 0x00FF00,
                 emissive: 0x00FF00,
                 ambient: 0x00FF00
             }));
             cubeY.position.set(.15, 5.00, .15);
-            var cubeZ = new THREE.Mesh(new THREE.CubeGeometry(.40, .40, 10.00), new THREE.MeshLambertMaterial({
+            var cubeZ = new THREE.Mesh(new THREE.BoxGeometry(.40, .40, 10.00), new THREE.MeshLambertMaterial({
                 color: 0x0000FF,
                 emissive: 0x0000FF,
                 ambient: 0x0000FF
@@ -2342,9 +2452,9 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             MoveGizmo.allChildren.push(cubeX);
             MoveGizmo.allChildren.push(cubeY);
             MoveGizmo.allChildren.push(cubeZ);
-            cubeX.geometry.setPickGeometry(new THREE.CubeGeometry(10.00, 1.80, 1.80));
-            cubeY.geometry.setPickGeometry(new THREE.CubeGeometry(1.80, 10.00, 1.80));
-            cubeZ.geometry.setPickGeometry(new THREE.CubeGeometry(1.80, 1.80, 10.00));
+            cubeX.geometry.setPickGeometry(new THREE.BoxGeometry(10.00, 1.80, 1.80));
+            cubeY.geometry.setPickGeometry(new THREE.BoxGeometry(1.80, 10.00, 1.80));
+            cubeZ.geometry.setPickGeometry(new THREE.BoxGeometry(1.80, 1.80, 10.00));
 
 
             var arrowX = new THREE.Mesh(new THREE.CylinderGeometry(0, 1, 2, 10, 0), cubeX.material);
@@ -2393,11 +2503,11 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             MoveGizmo.allChildren.push(this.BuildBox([.85, .85, .85], [0, 9.25, 0], green)); //scale xyz
             MoveGizmo.allChildren.push(this.BuildBox([.85, .85, .85], [0, 0, 9.25], blue)); //scale xyz
             MoveGizmo.allChildren.push(this.BuildBox([6, 6, 0], [3, 3, -.2], [75, 75, 0, 1], .5)); //movexy
-            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( 8, 8, .30 ));
+            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.BoxGeometry( 8, 8, .30 ));
             MoveGizmo.allChildren.push(this.BuildBox([6, 0, 6], [3.2, -.2, 3], [75, 0, 75, 1], .5)); //movexz
-            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( 8, .30, 8 ));
+            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.BoxGeometry( 8, .30, 8 ));
             MoveGizmo.allChildren.push(this.BuildBox([0, 6, 6], [-.2, 3.2, 3], [0, 75, 75, 1], .5)); //moveyz
-            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.CubeGeometry( .30, 8, 8 ));
+            //MoveGizmo.allChildren[MoveGizmo.allChildren.length -1].geometry.setPickGeometry(new THREE.BoxGeometry( .30, 8, 8 ));
 
 
             MoveGizmo.allChildren.push(this.BuildRing(12, .7, [0, 0, 1], 30, [1, 1, 1, 1], 90, 450)); //rotate z
@@ -2545,7 +2655,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             return mesh;
         }.bind(this);
         this.BuildBox = function(size, offset, color, alpha) {
-            var mesh = new THREE.Mesh(new THREE.CubeGeometry(size[0], size[1], size[2]), new THREE.MeshLambertMaterial());
+            var mesh = new THREE.Mesh(new THREE.BoxGeometry(size[0], size[1], size[2]), new THREE.MeshLambertMaterial());
             mesh.material.color.r = color[0];
             mesh.material.color.g = color[1];
             mesh.material.color.b = color[2];
@@ -2645,6 +2755,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
 
             var newnames = [];
+            //be sure to exit temp pick mode no matter what
+            this.SetSelectMode('Pick');
             if (parentnode) {
 
                 var parent = parentnode.id;
@@ -2694,28 +2806,28 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
         }
         this.RemoveParent = function() {
-            _UndoManager.startCompoundEvent();
-            var newnames = [];
-            for (var i = 0; i < this.getSelectionCount(); i++) {
-                var id = this.GetSelectedVWFNode(i).id;
-                var node = _DataManager.getCleanNodePrototype(id);
-                var childmat = toGMat(this.findviewnode(id).matrixWorld);
-                delete node.properties.translation;
-                delete node.properties.rotation;
-                delete node.properties.quaternion;
-                delete node.properties.scale;
-                node.properties.transform = MATH.transposeMat4(childmat);
-                var newname = GUID();
-                newnames.push(newname);
-                this.createChild('index-vwf', newname, node);
-            }
+                _UndoManager.startCompoundEvent();
+                var newnames = [];
+                for (var i = 0; i < this.getSelectionCount(); i++) {
+                    var id = this.GetSelectedVWFNode(i).id;
+                    var node = _DataManager.getCleanNodePrototype(id);
+                    var childmat = toGMat(this.findviewnode(id).matrixWorld);
+                    delete node.properties.translation;
+                    delete node.properties.rotation;
+                    delete node.properties.quaternion;
+                    delete node.properties.scale;
+                    node.properties.transform = MATH.transposeMat4(childmat);
+                    var newname = GUID();
+                    newnames.push(newname);
+                    this.createChild('index-vwf', newname, node);
+                }
 
-            this.DeleteSelection();
-            self.SelectOnNextCreate(newnames);
-            this.SetSelectMode('Pick');
-            _UndoManager.stopCompoundEvent();
-        }
-        //Choose the node to become the parent of the selected node
+                this.DeleteSelection();
+                self.SelectOnNextCreate(newnames);
+                this.SetSelectMode('Pick');
+                _UndoManager.stopCompoundEvent();
+            }
+            //Choose the node to become the parent of the selected node
         this.SetParent = function() {
             if (!this.GetSelectedVWFNode()) {
                 _Notifier.alert('No object selected. Select the desired child, then use this to choose the parent.');
@@ -2730,14 +2842,15 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             this.TempPickCallback = this.PickParentCallback;
         }
         this.UngroupSelection = function() {
+
+            if (this.GetSelectedVWFNode(i).extends !== 'sandboxGroup.vwf') {
+                alertify.alert('Selected object is not a group');
+                return;
+            }
+
             _UndoManager.startCompoundEvent();
 
             for (var i = 0; i < this.getSelectionCount(); i++) {
-                // if(!self.isOwner(SelectedVWFNodes[i].id,document.PlayerNumber))
-                // {
-                // _Notifier.alert('You must be the group owner to ungroup objects.');
-                // continue;
-                // }
                 var vwfparent = vwf.parent(this.GetSelectedVWFNode(i).id);
                 var children = vwf.children(this.GetSelectedVWFNode(i).id);
                 for (var j = 0; j < children.length; j++) {
@@ -3273,7 +3386,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
                 var newintersectxy = self.GetInsertPoint();
                 Proto.properties.owner = _UserManager.GetCurrentUserName();
-                Proto.properties.translation = newintersectxy;
+                Proto.properties.transform = MATH.transposeMat4(MATH.translateMatrix(newintersectxy));
                 var newname = self.GetUniqueName(url);
                 _UndoManager.recordCreate('index-vwf', newname, Proto);
                 vwf_view.kernel.createChild('index-vwf', newname, Proto);
@@ -3306,6 +3419,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 vwf.models[0].model.nodes['index-vwf'].orbitPoint(gizpos);
                 vwf.models[0].model.nodes['index-vwf'].zoom = dist;
                 vwf.models[0].model.nodes['index-vwf'].updateCamera();
+                box.release();
 
             }
         }
@@ -3352,7 +3466,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 e.stopPropagation();
                 return false;
             });
-            $('body *').not(':has(input)').not('input').disableSelection();
+
             this.selectionMarquee.hide();
             $('#ContextMenu').hide();
         }

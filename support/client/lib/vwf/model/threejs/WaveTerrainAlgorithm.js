@@ -38,3 +38,5 @@ function WaveTerrainAlgorithm()
 	
 	
 }
+
+//@ sourceURL=threejs.terrain.WaveTerrainAlgorithm

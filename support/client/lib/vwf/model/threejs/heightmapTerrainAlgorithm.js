@@ -758,3 +758,5 @@ function heightmapTerrainAlgorithm()
 		return this.bicubicInterpolate(p,u,v);
 	}
 }
+
+//@ sourceURL=threejs.terrain.heightmapTerrainAlgorithm

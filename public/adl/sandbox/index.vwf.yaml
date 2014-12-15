@@ -16,6 +16,8 @@ extends: http://vwf.example.com/navscene.vwf
 properties:
   clients: 
   DisplayName:
+  glyphURL: '../vwf/view/editorview/images/icons/scene.png'  
+  simTime: 0
   placemarks:
     Origin: [0, 0, 0]
   navmode: none     
@@ -46,7 +48,11 @@ properties:
     set: |
             if(!this.sun) return;
             this.sun.intensity = value;   
-            this.sun.shadowDarkness = value;           
+  shadowDarkness:
+    value: .5
+    set: |
+            if(!this.sun) return;
+            this.sun.shadowDarkness = value;    
   ambientColor: 
     value: [.35, .35 , .35]
   fogColor: [1, 1, 1]
@@ -60,6 +66,9 @@ properties:
   skyFogBlend: 0  
   skyApexColor: [ 0 , .5 , 1.0 ]
   skyHorizonColor: [ 0 , .5 , 1.0 ]
+  ___physics_gravity: [ 0, 0, -9.8]
+  ___physics_accuracy: 10
+  ___physics_active: true
   vAtmosphereDensity: .0005
   playMode: "paused"
   octreeObjects: 5
@@ -108,7 +117,57 @@ properties:
            {
            	  return this.findNodeByID('character-vwf-' + name);
            }.bind(this);
+           this.___clientAPI.getCameraIDForClient = function(id)
+           {
+             if(!this.clients || !this.clients[id]) return null;
+                  return this.clients[id].cameraID;
+           }.bind(this);
+           this.___clientAPI.getCameraForClient = function(id)
+           {
+             if(!this.clients || !this.clients[id]) return null;
+                  return this.findNodeByID(this.clients[id].cameraID);
+           }.bind(this);
            return this.___clientAPI;
+  commsAPI:
+    get: |
+          var self = this;
+          if(this.___commsAPI) return this.___commsAPI;
+          this.___commsAPI = {};
+          this.___commsAPI.PM = function(from_client_id, to_client_id)
+          {
+            if(vwf.moniker() == from_client_id)
+            {
+               if(self.clients[to_client_id])
+               {
+                setupPmWindow(to_client_id)
+               }
+            }
+          }
+          this.___commsAPI.Chat = function()
+          {
+              $('#ChatWindow').dialog('open');
+          }
+          this.___commsAPI.VideoCall = function(from_client_id, to_client_id)
+          {
+            if(vwf.moniker() == from_client_id)
+            {
+               if(self.clients[to_client_id])
+               {
+                 vwf.callMethod(vwf.application(),'rtcVideoCall',{target:to_client_id});
+               }
+            }
+          }
+          this.___commsAPI.VoiceCall = function(from_client_id, to_client_id)
+          {
+            if(vwf.moniker() == from_client_id)
+            {
+               if(self.clients[to_client_id])
+               {
+                 vwf.callMethod(vwf.application(),'rtcCall',{target:to_client_id});
+               }
+            }
+          } 
+          return this.___commsAPI;         
   EditorData:
     fog:
       displayname: 'Fog'
@@ -187,6 +246,13 @@ properties:
       property: sunDirection
       type: vector
       step: .05
+    sunShadowDarkness:
+      displayname: Sun Shadow Density
+      property: shadowDarkness
+      type: slider
+      step: .05
+      min: 0
+      max: 2  
     sky:
       displayname: 'Sky'
       type: 'sectionTitle'  
@@ -284,6 +350,7 @@ events:
   pointerMove:
   keyDown:
   keyUp:
+  clientCameraChanged:
 methods:  
   AmLocal:
   newplayer:
@@ -301,6 +368,9 @@ methods:
   cameraBroadcastEnd:
   playSound:
   setMusic:
+  ___physics_world_reset:
+  activteOculusBridge:
+  setClientCamera:
 scripts:
 - |
     this.initialize = function(){
@@ -336,7 +406,7 @@ scripts:
         $('#index-vwf').mouseup(function(e){this.localpointerUp(e);}.bind(this));
         $('#index-vwf').mouseleave(function(e)
         {
-            if($(e.toElement).hasClass('glyph'))
+            if($(e.toElement).hasClass('glyph') || $(e.toElement).hasClass('nametag') || $(e.toElement).hasClass('ignoreMouseLeave'))
             {
             
             }
@@ -365,13 +435,13 @@ scripts:
        
        var grassTex = THREE.ImageUtils.loadTexture('textures/gridnew.png');
        
-      
+     
        ground.material.map = grassTex;
         grassTex.wrapS = THREE.RepeatWrapping;
         grassTex.wrapT = THREE.RepeatWrapping;
         grassTex.repeat.x = 64;
         grassTex.repeat.y = 64;
-       grassTex.anisotropy  = _dRenderer.getMaxAnisotropy();
+       grassTex.anisotropy  = 0;
        this.groundplane = ground;
        
        
@@ -402,7 +472,8 @@ scripts:
        this.sun.position.normalize();
        this.sun.position.multiplyScalar(100);
        this.sun.intensity = this.sunIntensity;
-       this.sun.shadowBias = -.005
+       this.sun.shadowBias = -.005;
+       this.sun.shadowDarkness = this.shadowDarkness;
        window._dGround = this.groundplane;
        this.groundplane.name = 'GroundPlane';
        //this.groundplane.visible = false;
@@ -425,30 +496,23 @@ scripts:
        */
          if(this.id == 'Scene-vwf') return;
           this.prerendercallback = this.prerender.bind(this);
-          this.glyphrendercallback = this.glyphRender.bind(this);
           this.postprerendercallback = this.postprerender.bind(this);
           _dView.bind('prerender',this.prerendercallback);
           _dView.bind('postprerender',this.postprerendercallback);
-          _dView.bind('glyphRender',this.glyphrendercallback);
-          this.createNameTag();
+          
+         
           this.updateCamera();
     }
     this.tick = function()
     {
-       
-        if(this.broadcastingCamera)
-        {
-            vwf_view.kernel.callMethod('index-vwf','broadcastCameraPosition',[this.camera.transform]);
-        }
         if(this.receivingCameraBroadcast && this.cameramode != 'None')
             this.receivingCameraBroadcast = false;
-        
+        this.simTime = this.simTime +1;
     }
     this.broadcastCameraPosition = function(transform)
     {
         if(this.receivingCameraBroadcast)
         {
-          
             this.camera.transform = transform;
         }
     }
@@ -456,6 +520,7 @@ scripts:
     {
         return this.broadcastingCamera;
     }
+
     this.cameraBroadcastStart = function()
     {
         if(this.client == this.moniker)
@@ -463,6 +528,12 @@ scripts:
             
             this.broadcastingCamera = true;
             this.receivingCameraBroadcast = false;
+            this.cameraShareTimerHandle = window.setInterval(function(){
+
+
+              vwf_view.kernel.callMethod('index-vwf','broadcastCameraPosition',[this.camera.transform]);
+
+            }.bind(this))
         }else
         {
             alertify.confirm(_UserManager.GetPlayernameForClientID(this.client) + " would like to share the camera view with you. Accept?",function(ok)
@@ -489,6 +560,8 @@ scripts:
         {
             this.broadcastingCamera = false;
             this.receivingCameraBroadcast = false;
+            window.clearInterval(this.cameraShareTimerHandle);
+            this.cameraShareTimerHandle = null;
         }else
         {
             if(this.receivingCameraBroadcast)
@@ -551,8 +624,8 @@ scripts:
     		this.clients = {}
     	}
     	if(!this.clients[id])
-    		this.clients.defineProperty(id,{cid:id,name:name,UID:UID});
-    	
+    		this.clients.defineProperty(id,{cid:id,name:name,UID:UID,cameraID:null});
+      this.___physics_world_reset();  //reset the physics world when a client joins;
     }
     // a client other than this one has left
     this.clientDisconnected = function(id,name,UID)
@@ -562,6 +635,18 @@ scripts:
     		delete this.clients.internal_val[id];
     		this.clients = this.clients.internal_val;		
     	}
+    }
+    this.setClientCamera = function(id,cameraID)
+    {
+        if(!this.clients)
+        {
+          this.clients = {}
+        }
+        if(this.clients[id])
+        {
+          this.clients[id].cameraID = cameraID;
+          this.clientCameraChanged(id,cameraID);
+        }
     }
     this.CreatePlane = function(width,height)
     {
@@ -697,11 +782,11 @@ scripts:
     {
         if(typeof(obj) == "string")
             obj = vwf_view.kernel.kernel.models[0].model.nodes[obj];
-        if(obj && obj.translation)
+        if(obj && obj.transformAPI.getPosition())
         {
-        this.center = obj.translation;
+        this.center = obj.transformAPI.getPosition();
         if(obj.followOffset != null)
-            this.center = MATH.addVec3(obj.translation,obj.followOffset);
+            this.center = MATH.addVec3(this.center,obj.followOffset);
         }
         
     }
@@ -1089,7 +1174,6 @@ scripts:
               this.center = MATH.addVec3(this.center,offset);
 
            }
-
         }
         if(this.cameramode != '3RDPerson' && this.cameramode != 'FirstPerson')
         {
@@ -1189,6 +1273,43 @@ scripts:
             
         } 
         this.callUpdateCallbacks();
+        findcamera().updateMatrixWorld();
+        findcamera().updateMatrix();
+        //this really belongs in the view 
+        if(this.oculusActive &&  _dView.vrHMDSensor)
+        {
+            var state = _dView.vrHMDSensor.getState();
+            //console.log(state.timeStamp);
+            var headPos= new THREE.Vector3(state.position.x,state.position.y,state.position.z);
+        
+            
+
+            var headPosVel= new THREE.Vector3(state.linearVelocity.x,state.linearVelocity.y,state.linearVelocity.z);
+            var headQuatVel= new THREE.Vector3(state.angularVelocity.x,state.angularVelocity.y,state.angularVelocity.z);
+            var headQuatAcc= new THREE.Vector3(state.angularAcceleration.x,state.angularAcceleration.y,state.angularAcceleration.z);
+            var headQuatEuler = new THREE.Euler(0,0,0,'XYZ');
+            var headQuat= new THREE.Quaternion(state.orientation.x,state.orientation.y,state.orientation.z,state.orientation.w); 
+            headQuatEuler.setFromQuaternion(headQuat);
+
+            var t = window.fpt || .2; //20ms
+            var x = headQuatEuler.x + headQuatVel.x * t + .5 * headQuatAcc.x *t*t;
+            var y = headQuatEuler.y + headQuatVel.y * t + .5 * headQuatAcc.y *t*t;
+            var z = headQuatEuler.z + headQuatVel.z * t + .5 * headQuatAcc.z *t*t;
+            headQuatEuler.x = x;
+            headQuatEuler.y = y;
+            headQuatEuler.z = z;
+            if(window.fpt > 0)
+              headQuat.setFromEuler(headQuatEuler);
+
+            headPos.applyMatrix3((new THREE.Matrix4()).extractRotation(findcamera().matrix));
+           
+
+            //forward predict rotation 10ms
+           
+            
+            //findcamera().position.add(headPos);
+            findcamera().quaternion.multiply(headQuat);    
+        }
         findcamera().updateMatrixWorld();
         findcamera().updateMatrix();
        
@@ -1399,33 +1520,11 @@ scripts:
              if(this.groundplane)
               _MaterialCache.setMaterial(this.groundplane,value)       
     }
-    this.createNameTag = function()
-    {
     
-      var newdiv = document.createElement('img');
-      
-      $(newdiv).addClass('glyph');
-      newdiv.style.position = 'absolute';
-      newdiv.id = "Player " + this.name + 'icon';
-      //newdiv.innerHTML = "" + this.name;
-      $(newdiv).attr('src','../vwf/view/editorview/images/icons/scene.png');
-      newdiv.style.left = '0px';
-      newdiv.style.top = '0px';
-      
-      $('#glyphOverlay').append(newdiv);
-      $(newdiv).disableSelection();
-            $(newdiv).mousedown(function(e){$('#index-vwf').focus(); if(_Editor.GetSelectMode() == "None" || e.which != 1) $('#index-vwf').trigger(e)});
-      $(newdiv).mouseup(function(e){$('#index-vwf').focus();$('#index-vwf').trigger(e)});
-      $(newdiv).mousemove(function(e){$('#index-vwf').trigger(e)});
-      $(newdiv).click(function(e){$('#index-vwf').focus(); if(_Editor.GetSelectMode() != "None") _Editor.SelectObjectPublic(this.id)}.bind(this));
-      this.nametag = newdiv;
-                 
-    }
     this.deinitialize = function()
     {
        _dView.unbind('prerender',this.prerendercallback);
        _dView.unbind('postprerender',this.postprerendercallback);
-       _dView.unbind('glyphRender',this.glyphrendercallback);
        $(this.nametag).remove();
     }
     this.prerender = function()
@@ -1446,7 +1545,7 @@ scripts:
             
             center.add(offset);
             this.center = [center.x,center.y,center.z];
-            findcamera().position = center;
+            findcamera().position.copy(center);
             
             
             
@@ -1458,49 +1557,6 @@ scripts:
     }
     this.tempmatrix = (new THREE.Matrix4());
     this.lightvec = new THREE.Vector3(0,0,-3);
-    this.glyphRender = function(e,viewprojection, wh, ww)
-    {
-
-      
-      var div = this.nametag;
-      var pos = [0,0,0,1];
-      
-      
-      var screen = MATH.mulMat4Vec4(viewprojection,pos);
-      screen[0] /= screen[3];
-      screen[1] /= screen[3];
-     
-      screen[0] /= 2;
-      screen[1] /= 2;
-      screen[2] /= 2;
-      screen[0] += .5;
-      screen[1] += .5;
-      
-  
-      screen[0] *= ww;
-      screen[1] *= wh;
-      
-     
-      screen[1] = wh - screen[1];
-
-      div.style.top = (screen[1])  +  'px';
-      div.style.left = (screen[0]  - 20/2)  +'px';
-     
-     
-      if((screen[0] < 0 || screen[0] > ww || screen[1] < 0 || screen[1] > wh))
-      {
-            if(div.style.display != 'none')
-                div.style.display = 'none';
-      }
-      else
-      {
-          if((screen[2] > 10 || screen[2] < 0) && div.style.display != 'none')
-             div.style.display = 'none';
-          if(screen[2] < 10 && screen[2] > 0 && div.style.display == 'none')
-             div.style.display = 'block';
-      }
-
-    }
     this.postprerender = function(e,viewprojection, wh, ww)
     {
      
@@ -1528,14 +1584,18 @@ scripts:
     }    
 
 
-      this.pointerOver = function(){return true;}
-    this.pointerOut= function(){return true;}
-    this.pointerClick= function(){return true;}
-    this.pointerDown= function(){return true;}
-    this.pointerUp= function(){return true;}
-     this.pointerMove= function(){return true;}
+    this.pointerOver = function(){return false;}
+    this.pointerOut= function(){return false;}
+    this.pointerClick= function(){return false;}
+    this.pointerDown= function(){return false;}
+    this.pointerUp= function(){return false;}
+    this.pointerMove= function(){return false;}
 
-
+    //this really belongs in the view 
+    this.activteOculusBridge = function()
+    {
+        this.oculusActive = true;
+    }
         
     
     

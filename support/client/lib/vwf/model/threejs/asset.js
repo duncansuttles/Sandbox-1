@@ -1,3 +1,4 @@
+"use strict";
 (function() {
     function asset(childID, childSource, childName, childType, assetSource, asyncCallback, assetRegistry) {
 
@@ -28,6 +29,59 @@
 
         this.inherits = ['vwf/model/threejs/transformable.js', 'vwf/model/threejs/materialDef.js', 'vwf/model/threejs/animatable.js', 'vwf/model/threejs/shadowcaster.js', 'vwf/model/threejs/passable.js', 'vwf/model/threejs/visible.js', 'vwf/model/threejs/static.js', 'vwf/model/threejs/selectable.js'];
         this.initializingNode = function() {
+
+            //the parent is an asset object
+            if (true) {
+                
+                var parentRoot = null;
+                if(this.parentNode && this.parentNode.getRoot)  //if the parent internal driver object is just the scene, it does not have a getRoot function
+                    parentRoot = this.parentNode.getRoot();
+                var skeleton = null;
+                var parentSkin = null;
+                var thisroot = this.getRoot().parent;  // the asset initializing
+
+                var walk = function(node) {
+                    //dont search skeleton into self
+                    if (node == thisroot) return;
+                    //if (node !== parentRoot) return;
+                    // get skeleton data
+                    if (node.skeleton) {
+                        skeleton = node.skeleton;
+                        parentSkin = node;
+                        return;
+                    }
+                    for (var i = 0; i < node.children.length;i++)
+                        walk(node.children[i])
+                }
+                if(parentRoot)
+                    walk(parentRoot); // this really seems right. 
+
+                var skin = null;
+                var walk = function(node) {
+                    // get skinned mesh from initialing asset
+                    if (node instanceof THREE.SkinnedMesh) {
+                        skin = node;
+                        return;
+                    }
+                    for (var i = 0; i < node.children.length;i++)
+                        walk(node.children[i])
+                }
+                walk(this.getRoot());
+                // bind skinned mesh of init node to parent skeleton
+                if (skeleton && skin)
+                {
+                 
+                   
+                    skin.updateMatrixWorld(true);
+                    this.settingProperty('animationFrame',0);
+                    skin.bind(skeleton,parentSkin.matrix.clone());
+                    skin.boundingSphere = parentSkin.boundingSphere;
+                    skin.updateMatrixWorld(true);
+                    skin.frustumCulled = false;
+                  
+                }
+            }
+         
 
         }
         this.gettingProperty = function(propertyName) {
@@ -420,11 +474,40 @@
                 asyncCallback(false);
             }
             if (childType == 'subDriver/threejs/asset/vnd.gltf+json') {
-                this.loader = new THREE.glTFLoader()
-                this.loader.useBufferGeometry = true;
-                this.loader.load(assetSource, this.loaded.bind(this));
-
+                
+                var node = this;
+                node.loader = new THREE.glTFLoader()
+                node.loader.useBufferGeometry = true;
+                node.source = assetSource;
                 asyncCallback(false);
+
+                //create a queue to hold requests to the loader, since the loader cannot be re-entered for parallel loads
+                if(!THREE.glTFLoader.queue)
+                {
+                    //task is an object that olds the info about what to load
+                    //nexttask is supplied by async to trigger the next in the queue;
+                    THREE.glTFLoader.queue = new async.queue(function(task,nextTask)
+                    {
+                        var node = task.node;
+                        var cb = task.cb;
+                        //call the actual load function
+                        //signature of callback dictated by loader
+                        node.loader.load( node.source, function(geometry , materials) {
+                            //ok, this model loaded, we can start the next load
+                            nextTask();
+                            //do whatever it was (asset loaded) that this load was going to do when complete
+                            cb(geometry , materials);
+                        });
+
+                    },1);
+                }
+                
+                
+                //we need to queue up our entry to this module, since it cannot handle re-entry. This means that while it 
+                //is an async function, it cannot be entered again before it completes
+                THREE.glTFLoader.queue.push({node:node,cb:node.loaded.bind( this ) })
+
+
             }
 
 
@@ -531,3 +614,5 @@
         return new asset(childID, childSource, childName, childType, assetSource, asyncCallback, this.assetRegistry);
     }
 })();
+
+//@ sourceURL=threejs.subdriver.asset

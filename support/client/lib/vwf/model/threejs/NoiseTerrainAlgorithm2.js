@@ -65,3 +65,4 @@ function NoiseTerrainAlgorithm2(seed)
 	}
 	this.SimplexNoise = new SimplexNoise(this.Random(seed).random);
 }
+//@ sourceURL=threejs.terrain.NoiseTerrainAlgorithm2

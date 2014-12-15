@@ -114,12 +114,12 @@ define(function ()
 					}
 					catch (e)
 					{
-						return data.responseText;
+						return null;
 					}
 				}
 				else
 				{
-					return data.responseText;
+					return null;
 				}
 			}
 			return profile;
@@ -221,51 +221,15 @@ define(function ()
 			var sceneprops = vwf.getProperties('index-vwf');
 			//also just a design choice here, so that wehn we update the scene properties, old states will show the updates
 			delete sceneprops.EditorData;
+			delete sceneprops.playBackup;
+			delete sceneprops.clients;
 			nodes.push(sceneprops);
 			var SID = this.getCurrentSession();
 			var UID = _UserManager.GetCurrentUserName();
 			if (!UID) return;
-			
-			if (nodes.length > 0) var ret = jQuery.ajax(
-				{
-					type: 'POST',
-					url:  './vwfDataManager.svc/state?SID=' + _DataManager.getCurrentSession(),
-					data: JSON.stringify(nodes),
-					dataType: 'json',
-					contentType: "application/json; charset=utf-8",
-					success: function(err,data,xhr)
-					{
-					
-						if (xhr.status != 200)
-						{
-							alert('Save failed! Reloading');
-							window.onunload = function (e)
-							{};
-							window.onbeforeunload = function (e)
-							{};
-							document.location.reload(true);
-						}
-						
-						$('#SceneSaved').text('Saved ' + (new Date()).toLocaleTimeString());
-						$('#SceneSaved').css('color','lightblue');
-						$('#SceneSaved').animate({'color':'#808080'},2000);
-					},
-					error: function(e)
-					{
-						
-							alert('Save failed! Reloading');
-							window.onunload = function (e)
-							{};
-							window.onbeforeunload = function (e)
-							{};
-							document.location.reload(true);
-						
-					},
-					async: !sync,
-					dataType: "text"
-				});
-			
-			
+
+			var data = JSON.stringify(nodes);
+			vwf.saveState(data);
 		}
 		this.getInstances = function ()
 		{
@@ -341,7 +305,7 @@ define(function ()
 		}
 		this.saveTimer = function ()
 		{
-			var num = this.getClientCount();
+			var num = this.getClientCount() + 1;
 			var milliseconds = num * 1000 * 60;
 			this.saveToServer();
 			window.setTimeout(this.saveTimer.bind(this), milliseconds);

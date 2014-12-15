@@ -42,7 +42,11 @@ function walk(object, list)
 		}
 	}
 	for(var i in object)
-	{		
+	{	
+
+		if(i == 'parent')
+			continue;
+
 		if(i == 'source')
 		{
 
@@ -106,12 +110,14 @@ function parseStateForAssets(state,cb)
 function getState(id,cb)
 {
 	
-	if(global.instances && global.instances[id] && global.instances[id].cachedState)
+	if(global.instances && global.instances.get(id) && global.instances.get(id).state)
 	{
-		var state = global.instances[id].cachedState;
+		var state = global.instances.get(id).state;
+		console.log('getting assets to preload from cached state');
 		parseStateForAssets(state,cb);
 	}else
 	{
+		console.log('getting assets to preload from database state: WARNING - this will not preload avatars!');
 		SandboxAPI.getState(id.replace(/\//g,"_"),function(state)
 			{
 				parseStateForAssets(state,cb);		

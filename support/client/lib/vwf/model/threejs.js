@@ -40,7 +40,21 @@ function matComploose(m1, m2) {
     return true;
 }
 
-define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/threejs/backgroundLoader", "vwf/model/threejs/gltfCloner", "vwf/model/threejs/glTFLoaderUtils", "vwf/model/threejs/glTFLoader", "vwf/model/threejs/glTFAnimation","vwf/model/threejs/glTFAnimation", "vwf/model/threejs/webgl-tf-deprecated"], function(module, model, utility, Color, backgroundLoader) {
+function setMeshDynamic(node, val) {
+    if (node instanceof THREE.Mesh)
+        node.setDynamic(val);
+    for (var i = 0; i < node.children.length; i++)
+        setMeshDynamic(node.children[i], val);
+}
+
+function setMeshStatic(node, val) {
+    if (node instanceof THREE.Mesh)
+        node.setStatic(val);
+    for (var i = 0; i < node.children.length; i++)
+        setMeshStatic(node.children[i], val);
+}
+
+define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/threejs/backgroundLoader", "vwf/model/threejs/glTFCloner", "vwf/model/threejs/glTFLoaderUtils", "vwf/model/threejs/glTFLoader", "vwf/model/threejs/glTFAnimation", "vwf/model/threejs/glTFAnimation"], function(module, model, utility, Color, backgroundLoader) {
 
 
 
@@ -210,43 +224,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
 
 
-                ///////////////////////////////////////////////
-                //temp mesh for all geometry to test
-                var cubeX = new THREE.Mesh(
-                    new THREE.CubeGeometry(10.00, .30, .30),
-                    new THREE.MeshLambertMaterial({
-                        color: 0xFF0000,
-                        emissive: 0xFF0000
-                    })
-                );
-                cubeX.position.set(5.00, .15, .15);
-                var cubeY = new THREE.Mesh(
-                    new THREE.CubeGeometry(.30, 10.00, .30),
-                    new THREE.MeshLambertMaterial({
-                        color: 0x00FF00,
-                        emissive: 0x00FF00
-                    })
-                );
-                cubeY.position.set(.15, 5.00, .15);
-                var cubeZ = new THREE.Mesh(
-                    new THREE.CubeGeometry(.30, .30, 10.00),
-                    new THREE.MeshLambertMaterial({
-                        color: 0x0000FF,
-                        emissive: 0x0000FF
-                    })
-                );
-                cubeZ.position.set(.15, .15, 5.00);
 
-                var group = new THREE.Object3D();
-                ////   group.add(cubeX);
-                //   group.add(cubeY);
-                //   group.add(cubeZ);
-                group.vwfID = "TEST DUMMY AXIS GIZMO";
-
-                sceneNode.axes = group;
-                //	sceneNode.threeScene.add(group);
-                //cam.position.set(0, 0, 0);
-                //cam.lookAt( sceneNode.threeScene.position );
 
                 cam.name = 'camera';
                 this.state.cameraInUse = cam;
@@ -625,7 +603,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                         }
 
                         if (!matComploose(transform, threeObject.matrix.elements)) {
-                            if (threeObject instanceof THREE.ParticleSystem) {
+                            if (threeObject instanceof THREE.PointCloud) {
                                 threeObject.updateTransform(transform);
                             }
 
@@ -709,12 +687,16 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                     }
                     if (propertyName == 'isStatic') {
                         //debugger;
-                        threeObject.setStatic(propertyValue);
+
+
+                        setMeshStatic(threeObject, propertyValue);
+
                     }
                     if (propertyName == 'isDynamic') {
                         //debugger;
+
                         vwf.setProperty(nodeID, 'isStatic', false);
-                        threeObject.setDynamic(propertyValue);
+                        setMeshDynamic(threeObject, propertyValue);
                     }
                     //This can be a bit confusing, as the node has a material property, and a material child node. 
                     //setting the property does this, but the code in the component is ambigious
@@ -753,10 +735,11 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                         }
                     }
                 }
-                if (threeObject instanceof THREE.ParticleSystem) {
+                if (threeObject instanceof THREE.PointCloud) {
                     var ps = threeObject;
                     var particles = ps.geometry;
                     if (propertyName == 'quaternion') return;
+                    if (propertyName == 'rotation') return;
                     ps[propertyName] = propertyValue;
 
 
@@ -1044,7 +1027,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                         _SceneManager.setMaxDepth(propertyValue);
                     }
                     if (propertyName == 'octreeObjects') {
-                         _SceneManager.setMaxObjects(propertyValue);
+                        _SceneManager.setMaxObjects(propertyValue);
                     }
                     if (propertyName == 'backgroundColor') {
                         if (node && node.renderer) {
@@ -1071,17 +1054,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 }
                 if (threeObject instanceof THREE.PointLight || threeObject instanceof THREE.DirectionalLight || threeObject instanceof THREE.SpotLight) {
 
-                    if (propertyName == 'transform') {
-                        if (threeObject.target) {
-                            var offset = new THREE.Vector3(0, 0, -1);
-                            offset.applyMatrix4(threeObject.matrixWorld);
-                            threeObject.target.position.x = offset.x;
-                            threeObject.target.position.y = offset.y;
-                            threeObject.target.position.z = offset.z;
-                            threeObject.target.updateMatrixWorld(true);
-                        }
 
-                    }
 
 
 
@@ -1136,8 +1109,11 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                             rebuildAllMaterials.call(this);
                         }
                         node.threeObject.updateMatrixWorld(true);
-                        if (node.threeObject.target)
+                        if (node.threeObject.target) {
+                            node.threeObject.add(node.threeObject.target);
+                            node.threeObject.target.position.z = -1;
                             node.threeObject.target.updateMatrixWorld(true);
+                        }
                     }
                     //if(propertyName == 'diffuse')
                     //{
@@ -1284,7 +1260,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                     }
 
                 }
-                if (threeObject instanceof THREE.ParticleSystem) {
+                if (threeObject instanceof THREE.PointCloud) {
                     var ps = threeObject;
 
                     if (ps.hasOwnProperty(propertyName))
@@ -2318,7 +2294,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
             shaderMaterial_default.fog = true;
 
             // create the particle system
-            var particleSystem = new THREE.ParticleSystem(particles, shaderMaterial_default);
+            var particleSystem = new THREE.PointCloud(particles, shaderMaterial_default);
 
             //keep track of the shaders
             particleSystem.shaderMaterial_analytic = shaderMaterial_analytic;

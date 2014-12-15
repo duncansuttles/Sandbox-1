@@ -15,7 +15,8 @@ var DB = '';
 var safePathRE = RegExp('/\//' + (libpath.sep == '/' ? '\/' : '\\') + '/g');
 
 Array.prototype.getUnique = function() {
-    var u = {}, a = [];
+    var u = {},
+        a = [];
     for (var i = 0, l = this.length; i < l; ++i) {
         if (u.hasOwnProperty(this[i])) {
             continue;
@@ -539,7 +540,7 @@ function saveInstanceState(id, data, cb) {
 
 
         if (instance) {
-            
+
             async.waterfall([
 
                 function(cb2) {
@@ -1292,6 +1293,93 @@ function getStatesFilelist(id, cb) {
     });
 }
 
+function searchStates(query, cb, start, count) {
+    query = new RegExp('.*'+query+'.*','gim');
+    var search = {
+        $or: [{
+            "val.owner": query
+        }, {
+            "val.title": query
+        }, {
+            "val.description": query
+        }, {
+            "_key": query
+        }]
+    }
+    searchStatesInner(search, cb, start, count)
+}
+
+function searchStatesByUser(user, cb, start, count) {
+    var search = {
+        "val.owner": user
+    }
+    searchStatesInner(search, cb, start, count)
+}
+
+function searchStatesByFeatured(cb, start, count) {
+    var search = {
+        "val.featured": true
+    }
+    searchStatesInner(search, cb, start, count)
+}
+
+function getStates(cb, start, count) {
+    console.log('here!',start, count);
+    var search = {
+        "val": {
+            $exists: true
+        }
+    }
+    searchStatesInner(search, cb, start, count)
+}
+
+function searchStatesInner(query, found, start, count) {
+    if (!start) start = 0;
+    if (!count) count = 10000000;
+
+    var index = DB.find_raw({
+        _key: 'StateIndex'
+    }, function(err, data) {
+         console.log("here!");
+        if (err) {
+            found(null)
+            return;
+        }
+        var states = data[0].val;
+
+        DB.find_raw({
+            $and: [{
+                    _key: {
+                        $in: states
+                    }
+                },
+                query
+
+            ]
+        }).sort({
+            lastUpdate: 1
+        }).skip(start).limit(count).exec(
+            function(err, data) {
+                if (err) {
+                    found(null)
+                    return;
+                }
+
+                var ret = {};
+                for (var i in data) {
+                    if (states.indexOf(data[i]._key) != -1)
+                        {
+                            var s = JSON.parse(JSON.stringify(data[i].val));
+                            s.id = data[i]._key;
+                            ret[data[i]._key] = s;
+                        }
+                }
+                found(ret);
+
+            });
+    });
+}
+
 function restoreBackup(id, stateFileName, cb) {
 
     id = sanitizeString(id);
@@ -1386,6 +1474,7 @@ function startup(callback) {
         },
         function(cb) {
 
+            
             DAL_Singleton.getUser = getUser;
             DAL_Singleton.updateUser = updateUser;
             DAL_Singleton.createUser = createUser;
@@ -1410,6 +1499,12 @@ function startup(callback) {
             DAL_Singleton.getUsers = getUsers;
             DAL_Singleton.getInstances = getInstances;
 
+
+            DAL_Singleton.getStates = getStates;
+            DAL_Singleton.searchStatesByFeatured = searchStatesByFeatured;
+            DAL_Singleton.searchStatesByUser = searchStatesByUser;
+            DAL_Singleton.searchStatesByUser = searchStatesByUser;
+            DAL_Singleton.searchStates = searchStates;
             DAL_Singleton.searchUsers = searchUsers;
             DAL_Singleton.searchInstances = searchInstances;
             DAL_Singleton.saveInstanceState = saveInstanceState;

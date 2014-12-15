@@ -79,3 +79,5 @@
             return new circle(childID, childSource, childName);
         }
 })();
+
+//@ sourceURL=threejs.subdriver.circle
