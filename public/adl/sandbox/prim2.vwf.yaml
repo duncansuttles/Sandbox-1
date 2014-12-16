@@ -58,6 +58,23 @@ properties:
                var force = [x,y,z];
                this.___physics_addForce(force);
             }.bind(this);
+            this.___physicsAPI.wake = function()
+            {
+            	this.___physics_activation_state = 1;
+            }
+             this.___physicsAPI.addTorque = function(x,y,z,coords)
+            {
+               if(!coords)
+                  coords = 0;
+               if(x.length)
+               {
+                  y = x[1];
+                  z = x[2];
+                  x = x[0];
+               }
+               var force = [x,y,z];
+               this.___physics_addTorque(force);
+            }.bind(this);
             this.___physicsAPI.addForceImpulse = function(x,y,z,coords)
             {
                if(!coords)
