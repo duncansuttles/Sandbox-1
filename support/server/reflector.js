@@ -235,11 +235,11 @@ function SaveInstanceState(namespace, data, socket) {
             require('./examples.js').getExampleMetadata(id, function(metadata) {
 
                 if (!metadata) {
-
+                    console.log(id + "is not an example");
                     return;
                 } else {
                     if (socket.loginData.UID == global.adminUID) {
-                        require('./examples.js').saveExampleData(URL, id, data, function() {
+                        require('./examples.js').saveExampleData(socket, id, data, function() {
 
                         })
 
@@ -261,11 +261,12 @@ function SaveInstanceState(namespace, data, socket) {
 
         //not currently checking who saves the state, so long as they are logged in
         DAL.saveInstanceState(id, data, function() {
+           console.log('saved');
             return;
         });
 
     });
-    console.log('saved');
+    
 }
 
 function WebSocketConnection(socket, _namespace) {
