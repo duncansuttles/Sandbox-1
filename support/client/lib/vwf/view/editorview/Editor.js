@@ -23,6 +23,28 @@ function sign(x) {
     else return -1;
 }
 
+//function to check the intersection of two divs
+function hitTest(a, b){
+var aPos = a.position();
+var bPos = b.position();
+
+var aLeft = aPos.left;
+var aRight = aPos.left + a.width();
+var aTop = aPos.top;
+var aBottom = aPos.top + a.height();
+
+var bLeft = bPos.left;
+var bRight = bPos.left + b.width();
+var bTop = bPos.top;
+var bBottom = bPos.top + b.height();
+
+// http://tekpool.wordpress.com/2006/10/11/rectangle-intersection-determine-if-two-given-rectangles-intersect-each-other-or-not/
+return !( bLeft > aRight
+    || bRight < aLeft
+    || bTop > aBottom
+    || bBottom < aTop
+    );
+}
 
 
 define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(Log, ProgressBar) {
@@ -405,8 +427,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             }
 
             this.MouseLeftDown = false;
-            this.selectionMarquee.hide();
-            this.selectionMarquee.css('z-index', '-1');
+           
             this.mouseUpScreenPoint = [e.clientX, e.clientY];
 
             if (document.AxisSelected == -1 && e.button == 0) {
@@ -424,7 +445,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                         //use this to filter out mouse ups that happen when dragging a slider over into the scene
 
 
-
+                        //lets construct a screenspace rect of the selection region
                         var top = this.mouseDownScreenPoint[1];
                         var left = this.mouseDownScreenPoint[0]
                         var bottom = this.mouseUpScreenPoint[1];
@@ -453,6 +474,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                             clientX: right,
                             clientY: bottom
                         });
+
+                        //now we build a frustum from the screenspace rect and the camera
                         var campos = this.getCameraPosition();
                         var ntl = MATH.addVec3(campos, TopLeftRay);
                         var ntr = MATH.addVec3(campos, TopRightRay);
@@ -464,7 +487,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                         var fbr = MATH.addVec3(campos, MATH.scaleVec3(BottomRighttRay, 10000));
                         var frustrum = new Frustrum(ntl, ntr, nbl, nbr, ftl, ftr, fbl, fbr);
 
-
+                        //get all the objects intersected
                         var hits = _SceneManager.FrustrumCast(frustrum, {
                             OneHitPerMesh: true
                         });
@@ -476,6 +499,19 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                             if (vwfhits.indexOf(vwfnode) == -1 && vwfnode) vwfhits.push(vwfnode);
 
                             hits[i].release();
+                        }
+                        //now to find all glyphs intersected
+                        {
+                            var glyphs = $('.glyph');
+                            for(var i = 0; i < glyphs.length; i++)
+                            {
+                                
+                                if(hitTest( $(this.selectionMarquee),$(glyphs[i])))
+                                {
+                                    vwfhits.push($(glyphs[i]).attr('vwfid'));
+                                }
+                            }
+
                         }
                         this.SelectObject(vwfhits, this.PickMod);
 
@@ -515,6 +551,9 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 }
 
             }
+
+            this.selectionMarquee.hide();
+            this.selectionMarquee.css('z-index', '-1');
 
             if (document.AxisSelected != -1 && this.undoPoint) {
                 for (var i = 0; i < SelectedVWFNodes.length; i++)
