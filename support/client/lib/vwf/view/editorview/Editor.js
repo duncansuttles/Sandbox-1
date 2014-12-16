@@ -2792,21 +2792,21 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         //callback for setPArent. CAlled once a node is picked. Selected objects will become children of this node
         this.PickParentCallback = function(parentnode) {
 
-
+            
             var newnames = [];
             //be sure to exit temp pick mode no matter what
             this.SetSelectMode('Pick');
             if (parentnode) {
 
                 var parent = parentnode.id;
-
+                _UndoManager.startCompoundEvent();
                 for (var i = 0; i < this.getSelectionCount(); i++) {
                     var id = this.GetSelectedVWFNode(i).id;
 
                     if (id != parent) {
                         if (vwf.parent(id) != parent) {
                             if (vwf.decendants(id).indexOf(parent) == -1) {
-                                _UndoManager.startCompoundEvent();
+                                
 
                                 var node = _DataManager.getCleanNodePrototype(id);
                                 var childmat = toGMat(this.findviewnode(id).matrixWorld);
@@ -2821,11 +2821,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                                 var newname = GUID();
                                 newnames.push(newname)
                                 this.createChild(parentnode.id, newname, node);
-                                this.DeleteSelection();
-                                this.TempPickCallback = null;
-                                self.SelectOnNextCreate(newnames);
-                                this.SetSelectMode('Pick');
-                                _UndoManager.stopCompoundEvent();
+                               
 
                             } else {
                                 alertify.alert('This object cannot be assigned to be a child of one of its decendants')
@@ -2837,7 +2833,11 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                         alertify.alert('An object cannot be linked to itself');
                     }
                 }
-
+                 this.DeleteSelection();
+                                this.TempPickCallback = null;
+                                self.SelectOnNextCreate(newnames);
+                                this.SetSelectMode('Pick');
+                                _UndoManager.stopCompoundEvent();
             } else {
                 alertify.alert('No object selected')
             }
