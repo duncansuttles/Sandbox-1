@@ -12,4 +12,4 @@
 # the License.
 
 ---
-extends: http://vwf.example.com/node3.vwf
+extends: http://vwf.example.com/node.vwf
