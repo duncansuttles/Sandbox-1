@@ -1790,7 +1790,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             var ModProto = {
                 extends: 'http://vwf.example.com/behavior.vwf',
                 properties: {
-                    transform : [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+                    
                 }
             };
             var proto = ModProto;
@@ -1815,7 +1815,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             }
             var ModProto = {
                 extends: type + '.vwf',
-                properties: {transform : [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]}
+                
             };
             var proto = ModProto;
             proto.properties.owner = owner;
@@ -2792,7 +2792,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
         //callback for setPArent. CAlled once a node is picked. Selected objects will become children of this node
         this.PickParentCallback = function(parentnode) {
 
-            
+
             var newnames = [];
             //be sure to exit temp pick mode no matter what
             this.SetSelectMode('Pick');

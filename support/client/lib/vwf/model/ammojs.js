@@ -498,6 +498,8 @@ phyObject.prototype.initialize = function() {
     this.ready = true;
     //currently, only objects which are children of the world can be bodies
     if (this.enabled && this.parent.id == vwf.application() && this.initialized === false) {
+        var mat = vwf.getProperty(this.id, 'transform');
+        if (mat) this.setTransform(mat);
         this.initialized = true;
         console.log('init', this.id);
         var childCollisions = collectChildCollisions(this);
