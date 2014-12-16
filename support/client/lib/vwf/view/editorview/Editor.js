@@ -1790,7 +1790,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             var ModProto = {
                 extends: 'http://vwf.example.com/behavior.vwf',
                 properties: {
-                    NotProto: ""
+                    transform : [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
                 }
             };
             var proto = ModProto;
@@ -1815,7 +1815,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             }
             var ModProto = {
                 extends: type + '.vwf',
-                properties: {}
+                properties: {transform : [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]}
             };
             var proto = ModProto;
             proto.properties.owner = owner;
