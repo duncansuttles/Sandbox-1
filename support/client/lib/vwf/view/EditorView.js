@@ -13,7 +13,7 @@ jQuery.extend({
     }
 });
 
-define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify", "vwf/view/editorview/Menubar", "vwf/view/editorview/ObjectPools", "vwf/view/editorview/LocationTools", "vwf/view/editorview/WindowResize", "vwf/view/editorview/_PermissionsManager", "vwf/view/editorview/InputSetup", "vwf/view/editorview/SaveLoadTimer", "vwf/view/editorview/TouchHandler", "vwf/view/editorview/SidePanel", "vwf/view/editorview/Toolbar", "vwf/view/editorview/ChatSystemGUI", "vwf/view/editorview/PrimitiveEditor", "vwf/view/editorview/MaterialEditor", "vwf/view/editorview/Notifier", "vwf/view/editorview/ScriptEditor", "vwf/view/editorview/Editor", "vwf/view/editorview/_3DRIntegration", "vwf/view/editorview/InventoryManager", "vwf/view/editorview/HeirarchyManager", "vwf/view/editorview/DataManager", "vwf/view/editorview/UserManager", "vwf/view/editorview/help", "vwf/view/editorview/SideTabs", "vwf/view/editorview/wireeditor", "vwf/view/editorview/selectionEditor", "vwf/view/editorview/UndoManager", "vwf/view/editorview/Publisher", "vwf/view/editorview/EntityLibrary", "vwf/view/editorview/PhysicsEditor"], function(module, version, view) {
+define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify", "vwf/view/editorview/Menubar", "vwf/view/editorview/ObjectPools", "vwf/view/editorview/LocationTools", "vwf/view/editorview/WindowResize", "vwf/view/editorview/_PermissionsManager", "vwf/view/editorview/InputSetup", "vwf/view/editorview/SaveLoadTimer", "vwf/view/editorview/TouchHandler", "vwf/view/editorview/SidePanel", "vwf/view/editorview/Toolbar", "vwf/view/editorview/ChatSystemGUI", "vwf/view/editorview/PrimitiveEditor", "vwf/view/editorview/MaterialEditor", "vwf/view/editorview/Notifier", "vwf/view/editorview/ScriptEditor", "vwf/view/editorview/Editor", "vwf/view/editorview/_3DRIntegration", "vwf/view/editorview/InventoryManager", "vwf/view/editorview/HeirarchyManager", "vwf/view/editorview/DataManager", "vwf/view/editorview/UserManager", "vwf/view/editorview/help", "vwf/view/editorview/SideTabs", "vwf/view/editorview/wireeditor", "vwf/view/editorview/selectionEditor", "vwf/view/editorview/UndoManager", "vwf/view/editorview/Publisher", "vwf/view/editorview/EntityLibrary", "vwf/view/editorview/PhysicsEditor","vwf/view/editorview/PerformanceManager"], function(module, version, view) {
     return view.load(module, {
         // == Module Definition ====================================================================
 
@@ -75,6 +75,8 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
                     window._SelectionEditor = require("vwf/view/editorview/selectionEditor").getSingleton();
                     window._UndoManager = require("vwf/view/editorview/UndoManager").getSingleton();
                     window._EntityLibrary = require("vwf/view/editorview/EntityLibrary").getSingleton();
+                    window._PerformanceManager = require("vwf/view/editorview/PerformanceManager").getSingleton();
+
                     this.addManager(_ScriptEditor);
                     this.addManager(_UndoManager);
                     this.addManager(_ModelLibrary);
@@ -88,6 +90,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
                     this.addManager(_Publisher);
                     this.addManager(_EntityLibrary);
                     this.addManager(_PhysicsEditor);
+                    this.addManager(_PerformanceManager);
                 }
                 window._LocationTools = require("vwf/view/editorview/LocationTools").getSingleton();
                 window._UserManager = require("vwf/view/editorview/UserManager").getSingleton();;
@@ -228,6 +231,10 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
         executed: function(nodeID, scriptText, scriptType) {
             this.viewAPINotify('executed', arguments);
         },
+        ticked:function()
+        {
+            this.viewAPINotify('ticked', arguments);  
+        }
     });
 });
 
