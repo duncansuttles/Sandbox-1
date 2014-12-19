@@ -14,7 +14,7 @@ define([], function() {
     function initialize() {
         var FRAME_ROLLING_AVERAGE_LENGTH = 20;
         var TICK_ROLLING_AVERAGE_LENGTH = 20;
-        var FPS_GOAL_NUMBER = 30;
+        var FPS_GOAL_NUMBER = 60;
         var TICK_TIME_THRESHOLD = 60;
 
         this.currentFrameStart = 0;
@@ -46,7 +46,8 @@ define([], function() {
 
             this.resizeCounter++;
             //if the fps is low, but the ticktime is fast enough, then we should be able to go faster
-            if (this.resizeCounter > FRAME_ROLLING_AVERAGE_LENGTH) {
+            if ((this.resizeCounter > FRAME_ROLLING_AVERAGE_LENGTH && vwf.getProperty(vwf.application(),'playMode') != 'playing') ||
+            	(this.resizeCounter > FRAME_ROLLING_AVERAGE_LENGTH && vwf.getProperty(vwf.application(),'playMode') == 'playing' && this.FPSTimeAverage < TICK_TIME_THRESHOLD )) {
                 this.resizeCounter = 0;
                 var p = FPS_GOAL_NUMBER - this.FPS;
                 this.FPSPID_I += p;

@@ -75,7 +75,7 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
                     window._SelectionEditor = require("vwf/view/editorview/selectionEditor").getSingleton();
                     window._UndoManager = require("vwf/view/editorview/UndoManager").getSingleton();
                     window._EntityLibrary = require("vwf/view/editorview/EntityLibrary").getSingleton();
-                    window._PerformanceManager = require("vwf/view/editorview/PerformanceManager").getSingleton();
+                    
 
                     this.addManager(_ScriptEditor);
                     this.addManager(_UndoManager);
@@ -90,11 +90,12 @@ define(["module", "version", "vwf/view", "vwf/view/editorview/lib/alertify.js-0.
                     this.addManager(_Publisher);
                     this.addManager(_EntityLibrary);
                     this.addManager(_PhysicsEditor);
-                    this.addManager(_PerformanceManager);
+                    
                 }
                 window._LocationTools = require("vwf/view/editorview/LocationTools").getSingleton();
-                window._UserManager = require("vwf/view/editorview/UserManager").getSingleton();;
-
+                window._UserManager = require("vwf/view/editorview/UserManager").getSingleton();
+                window._PerformanceManager = require("vwf/view/editorview/PerformanceManager").getSingleton();
+                this.addManager(_PerformanceManager);
 
                 if (this.needTools()) {
                     require("vwf/view/editorview/help").getSingleton();
