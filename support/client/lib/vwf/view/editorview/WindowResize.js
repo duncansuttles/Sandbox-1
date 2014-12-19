@@ -117,7 +117,7 @@ define({
                 if(window._dRenderer)
                     _dRenderer.setSize(parseInt($('#index-vwf').css('width')) / resolutionScale, parseInt($('#index-vwf').css('height')) / resolutionScale);
                 _dView.getCamera().aspect = $('#index-vwf')[0].width / $('#index-vwf')[0].height;
-                $('#index-vwf').css('height', canvasheight);
+                $('#index-vwf').css('height', oldheight);
                 $('#index-vwf').css('width', oldwidth);
                 _dView.getCamera().updateProjectionMatrix()
                 _dView.windowResized();
