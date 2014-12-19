@@ -544,6 +544,14 @@ define(function() {
                     var inputstyle = "";
                     $('#basicSettings' + nodeid).append('<div style="" class = "EditorDataSectionTitle">' + editordata[i].displayname + ': </div>');
                 }
+                if (editordata[i].type == 'label') {
+ 
+
+                    $('#basicSettings' + nodeid).append('<div id="' + nodeid + editordata[i].property + 'value"></div>');
+                    this.addPropertyEditorDialog(node.id, editordata[i].property, $('#' + nodeid + editordata[i].property + 'value'), 'label');
+                    var val = vwf.getProperty(node.id, editordata[i].property);
+                    $('#' + nodeid + editordata[i].property + 'value').text(val);
+                }
                 if (editordata[i].type == 'slider') {
                     var inputstyle = "";
                     $('#basicSettings' + nodeid).append('<div class="editorSliderLabel">' + editordata[i].displayname + ': </div>');
@@ -976,6 +984,8 @@ define(function() {
                     //need to filter out sets from self
                     if (diag.type == 'text' && vwf.client() != vwf.moniker())
                         diag.element.val(propVal);
+                    if (diag.type == 'label')
+                        diag.element.text(propVal);
                     if (diag.type == 'slider')
                         diag.element.slider('value', propVal);
                     if (diag.type == 'check')
