@@ -668,7 +668,7 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                     });
                 })();
             }
-
+            //so, this interface cannot watch for new keys on objects. You must use the define property method to register new keys
             Object.defineProperty(watchable, 'defineProperty', {
                 value: function(name, newvalue) {
                     Object.defineProperty(this, name, {

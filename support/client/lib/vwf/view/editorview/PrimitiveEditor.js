@@ -971,6 +971,10 @@ define(function() {
                         diag.element.attr('checked', propVal);
                 }
             }
+            if(_Editor.GetSelectedVWFID() == nodeID && propName == "EditorData" && this.isOpen())
+            {
+            	_PrimitiveEditor.SelectionChanged(null, _Editor.GetSelectedVWFNode());
+            }
         }
         this.addPropertyEditorDialog = function(nodeid, propname, element, type) {
             this.propertyEditorDialogs.push({

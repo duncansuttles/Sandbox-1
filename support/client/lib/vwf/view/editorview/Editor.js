@@ -823,7 +823,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     id: id
                 }]);
             }
-
+            
             //when an object moves, check that it's not hilighted by the peer selection display.
             //if it is, update the matrix of the selection rectangle.
             if (vwf.client() != vwf.moniker() && propname == 'transform') {
