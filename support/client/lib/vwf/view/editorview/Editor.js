@@ -1815,7 +1815,9 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             }
             var ModProto = {
                 extends: type + '.vwf',
-                
+                 properties: {
+                    
+                }
             };
             var proto = ModProto;
             proto.properties.owner = owner;

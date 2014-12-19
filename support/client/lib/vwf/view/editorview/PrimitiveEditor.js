@@ -15,6 +15,17 @@ define(function() {
 
         this.propertyEditorDialogs = [];
 
+        function hasPrototype(nodeID, prototype) {
+	        if (!nodeID) return false;
+	        if (nodeID == prototype) return true;
+	        else return hasPrototype(vwf.prototype(nodeID), prototype);
+	    }
+
+	    function isBehavior(id) {
+	        return hasPrototype(id, 'http-vwf-example-com-behavior-vwf');
+	    }
+
+
         $('#sidepanel').append("<div id='PrimitiveEditor'>" + "<div id='primeditortitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span id='primeditortitletext' class='ui-dialog-title' id='ui-dialog-title-Players'>Object Properties</span></div>" +
             '<div id="accordion" style="height:100%;overflow:hidden">' +
             '<h3><a href="#">Flags</a></h3>' +
@@ -321,7 +332,7 @@ define(function() {
 			$("#"+node.children[i].id+"Amount").slider({min:-1,max:1,step:.10,slide:this.modifierAmountUpdate,stop:this.modifierAmountUpdate});
 			//$("#"+node.children[i].id+"Amount").slider('value',vwf.getProperty(node.children[i].id,'amount'));
 			*/
-                if (vwf.getProperty(node.children[i].id, 'type') == 'behavior') {
+                if (isBehavior(node.children[i].id)) {
                     this.setupEditorData(node.children[i], false);
                 }
             }
@@ -971,7 +982,15 @@ define(function() {
                         diag.element.attr('checked', propVal);
                 }
             }
+            //if the editor data changes while the object is selected, redraw
             if(_Editor.GetSelectedVWFID() == nodeID && propName == "EditorData" && this.isOpen())
+            {
+            	_PrimitiveEditor.SelectionChanged(null, _Editor.GetSelectedVWFNode());
+            }
+            //if the editordata of a child behavior changes while selected, redraw
+            //TODO:handle modifiers
+            //TODO:redraw without animation
+            if(_Editor.GetSelectedVWFID() == vwf.parent(nodeID) && isBehavior(nodeID) && propName == "EditorData" && this.isOpen())
             {
             	_PrimitiveEditor.SelectionChanged(null, _Editor.GetSelectedVWFNode());
             }
