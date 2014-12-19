@@ -93,8 +93,8 @@ define({
                 $('#vwf-root').css('top', '0px');
                 $('#index-vwf').css('height', $(window).height());
                 $('#index-vwf').css('width', $(window).width());
-               // $('#index-vwf').attr('height', $(window).height());
-               // $('#index-vwf').attr('width', $(window).width());
+                $('#index-vwf').attr('height', $(window).height());
+                $('#index-vwf').attr('width', $(window).width());
                 $('#index-vwf').css('top', 0 + 'px');
                 $('#index-vwf').css('left', 0 + 'px');
             }
@@ -117,7 +117,7 @@ define({
                 if(window._dRenderer)
                     _dRenderer.setSize(parseInt($('#index-vwf').css('width')) / resolutionScale, parseInt($('#index-vwf').css('height')) / resolutionScale);
                 _dView.getCamera().aspect = $('#index-vwf')[0].width / $('#index-vwf')[0].height;
-                $('#index-vwf').css('height', canvasheight || window.innerHeight);
+                $('#index-vwf').css('height', canvasheight);
                 $('#index-vwf').css('width', oldwidth);
                 _dView.getCamera().updateProjectionMatrix()
                 _dView.windowResized();

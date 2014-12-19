@@ -1168,7 +1168,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
 
             requestAnimFrame(renderScene);
-            _PerformanceManager.preFrame();
+          //  _PerformanceManager.preFrame();
             //lets not render when the quere is not ready. This prevents rendering of meshes that must have their children
             //loaded before they can render
             if (!vwf.private.queue.ready() || !window._dRenderer) {
@@ -1498,7 +1498,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 glext_ft.frameTerminator();
             }
 
-            _PerformanceManager.postFrame();
+       //     _PerformanceManager.postFrame();
 
         };
 

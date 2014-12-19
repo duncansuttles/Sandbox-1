@@ -50,10 +50,11 @@ define([], function() {
                 this.resizeCounter = 0;
                 var p = FPS_GOAL_NUMBER - this.FPS;
                 this.FPSPID_I += p;
-
+                if(this.FPSPID_I < 0)
+                    this.FPSPID_I = 0;
                 p *= .05;
                 p += this.FPSPID_I * .005;
-                var newResScale = 1 + p;
+                var newResScale = 1 + p*Math.abs(p);
                 if (newResScale > 16)
                     newResScale = 16;
                 if (newResScale < 1)
