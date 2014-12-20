@@ -52,12 +52,12 @@ define({
                 return;
             }
 
-            var h = $('#index-vwf').attr('height');
-            var w = $('#index-vwf').attr('width');
+            var h = parseInt($('#index-vwf').css('height'));
+            var w = parseInt($('#index-vwf').css('width'));
             _dRenderer.setSize(600, 300);
             var camera = _dView.getCamera();
             var a = camera.aspect;
-            camera.aspect = 6 / 3;
+            camera.aspect = 2;
             camera.updateProjectionMatrix();
 
             window.takeimage = function() {
@@ -66,6 +66,7 @@ define({
                 _dRenderer.setSize(w, h);
                 camera.aspect = a;
                 camera.updateProjectionMatrix();
+                _dRenderer.setSize(w, h);
 
 
                 jQuery.ajax({
@@ -85,7 +86,7 @@ define({
                     dataType: "text"
                 });
                 _dView.unbind('postrender', takeimage);
-                $(window).resize();
+                //$(window).resize();
             }
             _dView.bind('postrender', takeimage);
 
