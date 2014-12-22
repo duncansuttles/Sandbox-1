@@ -1980,6 +1980,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 "attribute vec4 random;\n" +
                 "varying vec4 vRandom;\n" +
                 "uniform float sizeRange;\n" +
+                "uniform float screenSize;\n" +
                 "uniform vec4 colorRange;\n" +
                 "varying vec3 vFogPosition;\n" +
                 "void main() {\n" +
@@ -1987,6 +1988,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 "   vColor = vertexColor + (random -0.5) * colorRange;\n" +
                 "   vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\n" +
                 "   float psize = size + (random.y -0.5) * sizeRange;\n" +
+                "   psize *= screenSize;" + 
                 "   gl_PointSize = psize * ( 1000.0/ length( mvPosition.xyz ) );\n" +
                 "   gl_Position = projectionMatrix * mvPosition;\n" +
                 "   vRandom = random;" +
@@ -2061,6 +2063,10 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                     value: 0.0
                 },
                 minSpin: {
+                    type: "f",
+                    value: 0.0
+                },
+                screenSize: {
                     type: "f",
                     value: 0.0
                 },
@@ -2148,11 +2154,13 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 "uniform vec4 startColor;\n" +
                 "uniform vec4 endColor;\n" +
                 "varying vec3 vFogPosition;\n" +
+                "uniform float screenSize;\n" +
                 "void main() {\n" +
                 "   vColor = mix(startColor,endColor,(age+fractime*3.33)/lifespan) + (random -0.5) * colorRange;\n" +
                 "   vFogPosition = (modelMatrix * vec4(mix(previousPosition,position,fractime),1.0)).xyz; \n" +
                 "   vec4 mvPosition = modelViewMatrix * vec4(mix(previousPosition,position,fractime), 1.0 );\n" +
                 "   float psize = mix(startSize,endSize,(age+fractime*3.33)/lifespan) + (random.y -0.5) * sizeRange;\n" +
+                "   psize *= screenSize;" + 
                 "   gl_PointSize = psize * ( 1000.0/ length( mvPosition.xyz ) );\n" +
                 "   gl_Position = projectionMatrix * mvPosition;\n" +
                 "   vRandom = random;" +
@@ -2207,6 +2215,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 "uniform float sizeRange;\n" +
                 "uniform vec4 colorRange;\n" +
                 "varying vec3 vFogPosition;\n" +
+                "uniform float screenSize;\n" +
                 "void main() {\n" +
                 //randomly offset in time
                 "   float lifetime = fract(random.x+(time))*lifespan*1.33;" +
@@ -2216,6 +2225,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 "   vec4 mvPosition = modelViewMatrix * vec4( pos2.xyz, 1.0 );\n" +
                 //find random size based on randomness, start and end size, and size range
                 "   float psize = mix(startSize,endSize,lifetime/lifespan) + (random.y -0.5) * sizeRange;\n" +
+                "   psize *= screenSize;" + 
                 "   gl_PointSize = psize * ( 1000.0/ length( mvPosition.xyz ) );\n" +
                 "   gl_Position = projectionMatrix * mvPosition;\n" +
                 " vec4 nR = (random -0.5);\n" +
@@ -2753,22 +2763,27 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                     particle.prevworld.applyMatrix4(inv);
                 }
             }
+            particleSystem.update = function(time)
+            {
 
+                this.updateInner(time);
+                this.material.uniforms.screenSize.value = parseFloat($('#index-vwf').attr('height')/1200);
+            }
             //Change the solver type for the system
             particleSystem.setSolverType = function(type) {
                 this.solver = type;
                 if (type == 'Euler') {
-                    particleSystem.update = particleSystem.updateEuler;
+                    particleSystem.updateInner = particleSystem.updateEuler;
                     particleSystem.material = particleSystem.shaderMaterial_interpolate;
                     particleSystem.rebuildParticles();
                 }
                 if (type == 'Analytic') {
-                    particleSystem.update = particleSystem.updateAnalytic;
+                    particleSystem.updateInner = particleSystem.updateAnalytic;
                     particleSystem.material = particleSystem.shaderMaterial_default;
                     particleSystem.rebuildParticles();
                 }
                 if (type == 'AnalyticShader') {
-                    particleSystem.update = particleSystem.updateAnalyticShader;
+                    particleSystem.updateInner = particleSystem.updateAnalyticShader;
                     particleSystem.material = particleSystem.shaderMaterial_analytic;
                     particleSystem.rebuildParticles();
                 }
