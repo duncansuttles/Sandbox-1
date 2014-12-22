@@ -912,7 +912,7 @@ BoundingBoxRTAS.prototype.buildFacelist = function() {
 
 }
 BoundingBoxRTAS.prototype.intersectSphere = function(center, r) {
-    closest = [];
+    var closest = [];
     closest[0] = (center[0] < this.min[0]) ? this.min[0] : (center[0] > this.max[0]) ? this.max[0] : center[0];
     closest[1] = (center[1] < this.min[1]) ? this.min[1] : (center[1] > this.max[1]) ? this.max[1] : center[1];
     closest[2] = (center[2] < this.min[2]) ? this.min[2] : (center[2] > this.max[2]) ? this.max[2] : center[2];
