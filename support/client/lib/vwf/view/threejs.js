@@ -2111,7 +2111,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
             if (validKey && sceneNode && !keyAlreadyDown /*&& Object.keys( sceneView.keyStates.keysDown ).length > 0*/ ) {
                 //var params = JSON.stringify( sceneView.keyStates );
-                sceneView.kernel.dispatchEvent(sceneNode.ID, "keyDown", [sceneView.keyStates]);
+
+                sceneView.kernel.dispatchEvent(getClientFocusNode(vwf.moniker()), "keyDown", [sceneView.keyStates]);
             }
         };
         window.document.getElementById('index-vwf').onblur = function() {
@@ -2122,7 +2123,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 delete sceneView.keyStates.keysDown[i];
                 sceneView.keyStates.keysUp[key.key] = key;
                 sceneView.keyStates.key = key;
-                if (sceneNode) sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
+                if (sceneNode) sceneView.kernel.dispatchEvent(getClientFocusNode(vwf.moniker()), "keyUp", [sceneView.keyStates]);
             }
             var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
             if (sceneNode) {
@@ -2164,8 +2165,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             var sceneNode = sceneView.state.scenes[sceneView.state.sceneRootID];
             if (validKey && sceneNode) {
                 //var params = JSON.stringify( sceneView.keyStates );
-                sceneView.kernel.dispatchEvent(sceneNode.ID, "keyUp", [sceneView.keyStates]);
-                sceneView.kernel.dispatchEvent(sceneNode.ID, "keyPress", [sceneView.keyStates]);
+                sceneView.kernel.dispatchEvent(getClientFocusNode(vwf.moniker()), "keyUp", [sceneView.keyStates]);
+                sceneView.kernel.dispatchEvent(getClientFocusNode(vwf.moniker()), "keyPress", [sceneView.keyStates]);
                 delete sceneView.keyStates.keysUp[key.key];
             }
 
@@ -2318,8 +2319,15 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
     };
 
+    function getClientFocusNode (client)
+    {
+        var clients = vwf.getProperty(vwf.application(),'clients');
+        if(clients[client] && clients[client].focusID)
+            return clients[client].focusID;
+        else return vwf.application();
 
 
+    }
     function mouseXPos(e) {
 
         return e.clientX - e.currentTarget.offsetLeft + (window.scrollX || 0);

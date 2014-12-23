@@ -117,6 +117,16 @@ properties:
            {
            	  return this.findNodeByID('character-vwf-' + name);
            }.bind(this);
+           this.___clientAPI.focus = function(cid,nodeID)
+           {
+              //did the user enter a whole node, not a node ID?
+              if(nodeID && nodeID.id)
+                nodeID = nodeID.id;
+              if(this.clients[cid])
+              {
+                 this.clients[cid].focusID = nodeID;
+              }  
+           }.bind(this);
            this.___clientAPI.getCameraIDForClient = function(id)
            {
              if(!this.clients || !this.clients[id]) return null;
@@ -624,7 +634,7 @@ scripts:
     		this.clients = {}
     	}
     	if(!this.clients[id])
-    		this.clients.defineProperty(id,{cid:id,name:name,UID:UID,cameraID:null});
+    		this.clients.defineProperty(id,{cid:id,name:name,UID:UID,cameraID:null,focusID:vwf.application()});
       this.___physics_world_reset();  //reset the physics world when a client joins;
     }
     // a client other than this one has left
