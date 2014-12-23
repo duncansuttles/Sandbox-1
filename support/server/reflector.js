@@ -290,7 +290,7 @@ function WebSocketConnection(socket, _namespace) {
 
         var namespace = _namespace || getNamespace(socket);
 
-        if (!namespace) {
+    //    if (!namespace) {
             socket.on('setNamespace', function(msg) {
                 global.log(msg.space, 2);
                 WebSocketConnection(socket, msg.space);
@@ -299,8 +299,8 @@ function WebSocketConnection(socket, _namespace) {
             socket.on('connectionTest', function(msg) {
                 socket.emit('connectionTest', msg);
             })
-            return;
-        }
+    //        return;
+    //    }
 
 
         DAL.getInstance(namespace.replace(/\//g, "_"), function(instancedata) {
@@ -478,7 +478,7 @@ function runningInstance(id) {
                     "time": self.time,
                     "origin":"reflector"
                 }));
-                global.log('sending tick');
+              
                 self.messageClients(tickmessage);
             }
             self.lasttime = now;

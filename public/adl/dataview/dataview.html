@@ -1,0 +1,185 @@
+<html>
+<head>
+	<script src='../sandbox/polyfills.js'> </script>
+	<script src='../sandbox/vwf/view/editorview/lib/jquery-2.0.3.min.js'> </script>
+	<script src='../sandbox/vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js'> </script>
+	<link rel='stylesheet' type="text/css" href='../sandbox/vwf/view/editorview/css/jquery-ui-1.10.3.custom.css'>
+	<link rel='stylesheet' type="text/css" href='./styles.css'>
+	<link rel='stylesheet' type="text/css" href='../sandbox/vwf/view/editorview/lib/alertify.js-0.3.9/themes/alertify.bootstrap.css'>
+	<link rel='stylesheet' type="text/css" href='../sandbox/vwf/view/editorview/lib/alertify.js-0.3.9/themes/alertify.core.css'>
+	<script src='../sandbox/require.js'> </script>
+	<script src='../sandbox/async.js'> </script>
+	
+
+	<script type="text/javaScript">
+	require(['../sandbox/messageCompress','../sandbox/vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify',"/socket.io/socket.io.js"],function(messageCompress,alertify){
+
+
+
+
+		
+		var allStates = null;
+		var runningWorlds = null;
+		var currentWorld = null;
+		var messageQueue = [];
+		var nameMapping = {};
+		var clientData = null;
+		var socket = null;
+		function getNodeName(id)
+		{
+			if(nameMapping[id]) return nameMapping[id];
+			return id;
+		}
+		function download(filename, text) {
+		 	var a = window.document.createElement('a');
+			a.href = window.URL.createObjectURL(new Blob([text], {type: 'application/json'}));
+			a.download = filename;
+
+			// Append anchor to body.
+			document.body.appendChild(a)
+			a.click();
+
+			// Remove anchor from body
+			document.body.removeChild(a)
+		}
+		function downloadData()
+		{
+			download('run.json',JSON.stringify(messageQueue));
+		}
+		window.downloadData = downloadData;
+		function loadState(id)
+		{
+			currentWorld = id;
+			messageQueue = [];
+			nameMapping = {};
+			clientData = null;
+
+			if(socket) 
+				{
+					
+					socket.disconnect();
+				}
+			socket = null;
+			$('#datalist').empty();
+			$('#currentWorld').remove();
+			$('#previewpane').append("<iframe src='../sandbox/"+id+"' id='currentWorld' />");
+
+			socket = io.connect();
+			socket.on('connect',function()
+			{
+				socket.emit('setNamespace', messageCompress.pack({ space: '/adl/sandbox/' + id +'/' }));
+			});
+			socket.on('message',function(message)
+			{
+				var message = JSON.parse(messageCompress.unpack(message));
+				messageQueue.push(message);
+				if(message.member == 'DisplayName' && message.action == 'setProperty')
+				{
+					nameMapping[message.node] = message.parameters[0];
+				}
+				if(this.showTicks === true || message.action !== 'tick')
+				{
+	                if (message.action !== 'activeResync') {
+	                    if (!message.member || this.showPointer || message.member.indexOf('pointer') !== 0) {
+	                        $('#datalist').prepend('<div class="message ' + message.action + ' ' + message.member + '"id="datalist' + messageQueue.length + '"></div>');
+	                        message.time *= 1000;
+	                        message.time = Math.floor(message.time) / 1000;
+	                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldaction">' + message.action + '</div>')
+	                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldclient">' + message.client + '</div>')
+	                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldnode">' + getNodeName(message.node) + '</div>')
+	                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldtime">' + message.time + '</div>')
+	                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldfield">' + message.member + '</div>')
+	                        if (message && message.parameters && message.parameters[0]) {
+	                            $('#datalist' + messageQueue.length).append('<div class="messagefield fieldparam0">' + message.parameters[0] + '</div>')
+	                        }
+	                        $('#datalist' + messageQueue.length).click(function()
+	                        {
+	                        	alertify.alert($(this).attr('wholeMessage'));
+	                        });
+	                        $('#datalist' + messageQueue.length).attr('wholeMessage',JSON.stringify(message));
+	                    }
+	                    if($('.message').length > 1000)
+	                    	$('.message').last().remove();
+	                }
+				}
+
+			});
+		}
+		function drawStateLists()
+		{
+			$('#allworlds').empty();
+			$('#runningworlds').empty();
+		    if (allStates) {
+		        var allKeys = Object.keys(allStates);
+
+            	for (var i = 0; i < allKeys.length; i++) {
+	            	if (allStates[allKeys[i]]) {
+		                var worldID = allKeys[i].substr(13, 16);
+		                $('#allworlds').append('<div class="state allstate" id="' + ToSafeID(allKeys[i]) + '_allstate"></div>')
+		                $('#' + ToSafeID(allKeys[i]) + '_allstate').text(allStates[allKeys[i]].title || worldID);
+		                $('#' + ToSafeID(allKeys[i]) + '_allstate').attr('worldID',worldID);
+	           		 }
+		        }
+		    }
+		    if(runningWorlds && allStates)
+		    {
+		    	var allKeys = Object.keys(runningWorlds);
+		    	for (var i = 0; i < allKeys.length; i++) {
+		    		var key = allKeys[i].replace(/\//g,'_');
+	            	if (allStates[key]) {
+	            		var worldID = key.substr(13, 16);
+		                $('#runningworlds').append('<div class="state runningstate" id="' + ToSafeID(key) + '_runningstate"></div>')
+		                $('#' + ToSafeID(key) + '_runningstate').text(allStates[key].title || worldID);
+		                $('#' + ToSafeID(allKeys[i]) + '_runningstate').attr('worldID',worldID);
+	            	}
+	            }
+		    }
+		    $('.state').each(function(i,elem)
+		    {
+		    	$(elem).click(function()
+		    	{
+		    		var worldID = $(this).attr('worldID');
+		    		
+		    		alertify.confirm('Load or join world ' + worldID + "?",function(ok)
+		    		{
+		    			if(ok)
+		    			{
+		    				loadState(worldID);
+		    			}
+		    		})
+		    	})
+		    });
+		}
+		$.getJSON('./vwfdatamanager.svc/states',function(data)
+		{
+			allStates = data;
+			drawStateLists();
+		});
+		
+		$.getJSON('./admin/instances',function(data)
+		{
+			
+			runningWorlds = data;
+			drawStateLists();
+		});
+	});	
+
+	</script>
+</head>
+<body>
+<div id='leftpane'> 
+	<div id='runningworlds'> 
+	</div>
+	<div id='allworlds'> 
+	</div>
+</div> 
+<div id='rightpane'>
+	<div id='previewpane'> 
+	</div>
+	<div id='datapane'> 
+		<div id='datalist'></div>
+		<div id='datamenu'></div>
+	</div>
+</div>
+</body>
+</html>
