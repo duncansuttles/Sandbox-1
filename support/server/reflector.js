@@ -963,7 +963,7 @@ function ClientConnected(socket, namespace, instancedata) {
                         thisInstance.cachedState = JSON.parse(JSON.stringify(state));
 
 
-                        if (message.client != i && client.pending === true) {
+                        if (true/*message.client != i && client.pending === true  make possible to restore state from client*/) {
                             client.emit('message', messageCompress.pack(JSON.stringify({
                                 "action": "status",
                                 "parameters": ["State Received, Transmitting"],

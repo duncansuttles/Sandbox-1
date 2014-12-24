@@ -25,6 +25,7 @@
 		var nameMapping = {};
 		var clientData = null;
 		var socket = null;
+		var stateShots = [];
 		function getNodeName(id)
 		{
 			if(nameMapping[id]) return nameMapping[id];
@@ -46,64 +47,118 @@
 		{
 			download('run.json',JSON.stringify(messageQueue));
 		}
+		function captureState()
+		{
+			var frame = $('iframe')[0];
+			if(frame && frame.contentWindow.vwf)
+			{
+				try{
+				var state = frame.contentWindow.vwf.getState();
+				stateShots.push(state);
+
+				 $('#datalist').prepend('<div class="stateshot" id="stateshot' + stateShots.length + '">State Snapshot '+stateShots.length+'</div>');
+				 var i = stateShots.length;
+				 $('#stateshot' + i).click(function()
+				 {
+				 	alertify.confirm("Restore State " + i,function(ok){
+				 		if(ok)
+				 		{
+				 			
+				 			frame.contentWindow.vwf.respond('index-vwf','getState',null,null,stateShots[i-1]);
+				 		}
+				 	});
+				 });
+				}catch(e)
+				{
+
+				}
+			}
+		}
 		window.downloadData = downloadData;
+		window.setInterval(captureState,30000);
 		function loadState(id)
 		{
 			currentWorld = id;
 			messageQueue = [];
+			stateShots = [];
 			nameMapping = {};
 			clientData = null;
 
-			if(socket) 
+			async.series([function(cb){
+
+				if(socket && socket.socket.connected) 
+				{
+					socket.on('disconnect',function()
+					{
+						socket = null;
+						window.setTimeout(function(){
+							cb();	
+						},100)
+						
+
+					});
+					socket.disconnect();
+					
+				}else
+				{
+					cb();
+				}
+				
+
+			},
+			function(cb){
+				
+				$('#datalist').empty();
+				$('#currentWorld').remove();
+				$('#previewpane').append("<iframe src='../sandbox/"+id+"' id='currentWorld' seamless/>");
+				
+				
+				socket = io.connect(window.location.protocol + window.location.host,{'force new connection':true});
+				socket.on('connect',function()
+				{
+					loadStates();
+					socket.emit('setNamespace', messageCompress.pack({ space: '/adl/sandbox/' + id +'/' }));
+				});
+				socket.on('connect_failed',function()
 				{
 					
-					socket.disconnect();
-				}
-			socket = null;
-			$('#datalist').empty();
-			$('#currentWorld').remove();
-			$('#previewpane').append("<iframe src='../sandbox/"+id+"' id='currentWorld' />");
-
-			socket = io.connect();
-			socket.on('connect',function()
-			{
-				socket.emit('setNamespace', messageCompress.pack({ space: '/adl/sandbox/' + id +'/' }));
-			});
-			socket.on('message',function(message)
-			{
-				var message = JSON.parse(messageCompress.unpack(message));
-				messageQueue.push(message);
-				if(message.member == 'DisplayName' && message.action == 'setProperty')
+				});
+				socket.on('message',function(message)
 				{
-					nameMapping[message.node] = message.parameters[0];
-				}
-				if(this.showTicks === true || message.action !== 'tick')
-				{
-	                if (message.action !== 'activeResync') {
-	                    if (!message.member || this.showPointer || message.member.indexOf('pointer') !== 0) {
-	                        $('#datalist').prepend('<div class="message ' + message.action + ' ' + message.member + '"id="datalist' + messageQueue.length + '"></div>');
-	                        message.time *= 1000;
-	                        message.time = Math.floor(message.time) / 1000;
-	                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldaction">' + message.action + '</div>')
-	                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldclient">' + message.client + '</div>')
-	                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldnode">' + getNodeName(message.node) + '</div>')
-	                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldtime">' + message.time + '</div>')
-	                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldfield">' + message.member + '</div>')
-	                        if (message && message.parameters && message.parameters[0]) {
-	                            $('#datalist' + messageQueue.length).append('<div class="messagefield fieldparam0">' + message.parameters[0] + '</div>')
-	                        }
-	                        $('#datalist' + messageQueue.length).click(function()
-	                        {
-	                        	alertify.alert($(this).attr('wholeMessage'));
-	                        });
-	                        $('#datalist' + messageQueue.length).attr('wholeMessage',JSON.stringify(message));
-	                    }
-	                    if($('.message').length > 1000)
-	                    	$('.message').last().remove();
-	                }
-				}
+					var message = JSON.parse(messageCompress.unpack(message));
+					messageQueue.push(message);
+					if(message.member == 'DisplayName' && message.action == 'setProperty')
+					{
+						nameMapping[message.node] = message.parameters[0];
+					}
+					if(this.showTicks === true || message.action !== 'tick')
+					{
+		                if (message.action !== 'activeResync') {
+		                    if (!message.member || this.showPointer || message.member.indexOf('pointer') !== 0) {
+		                        $('#datalist').prepend('<div class="message ' + message.action + ' ' + message.member + '"id="datalist' + messageQueue.length + '"></div>');
+		                        message.time *= 1000;
+		                        message.time = Math.floor(message.time) / 1000;
+		                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldaction">' + message.action + '</div>')
+		                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldclient">' + message.client + '</div>')
+		                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldnode">' + getNodeName(message.node) + '</div>')
+		                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldtime">' + message.time + '</div>')
+		                        $('#datalist' + messageQueue.length).append('<div class="messagefield fieldfield">' + message.member + '</div>')
+		                        if (message && message.parameters && message.parameters[0]) {
+		                            $('#datalist' + messageQueue.length).append('<div class="messagefield fieldparam0">' + message.parameters[0] + '</div>')
+		                        }
+		                        $('#datalist' + messageQueue.length).click(function()
+		                        {
+		                        	alertify.alert($(this).attr('wholeMessage'));
+		                        });
+		                        $('#datalist' + messageQueue.length).attr('wholeMessage',JSON.stringify(message));
+		                    }
+		                    if($('.message').length > 1000)
+		                    	$('.message').last().remove();
+		                }
+					}
 
-			});
+				});
+			}]);
 		}
 		function drawStateLists()
 		{
@@ -130,7 +185,11 @@
 	            		var worldID = key.substr(13, 16);
 		                $('#runningworlds').append('<div class="state runningstate" id="' + ToSafeID(key) + '_runningstate"></div>')
 		                $('#' + ToSafeID(key) + '_runningstate').text(allStates[key].title || worldID);
-		                $('#' + ToSafeID(allKeys[i]) + '_runningstate').attr('worldID',worldID);
+		                $('#' + ToSafeID(key) + '_runningstate').attr('worldID',worldID);
+		                if(worldID == currentWorld)
+		                {
+		                	$('#' + ToSafeID(key) + '_runningstate').css('background','red');
+		                }
 	            	}
 	            }
 		    }
@@ -150,25 +209,34 @@
 		    	})
 		    });
 		}
-		$.getJSON('./vwfdatamanager.svc/states',function(data)
-		{
-			allStates = data;
-			drawStateLists();
-		});
-		
-		$.getJSON('./admin/instances',function(data)
-		{
-			
-			runningWorlds = data;
-			drawStateLists();
-		});
+
+		function loadStates() {
+			$.getJSON('./vwfdatamanager.svc/states', function(data) {
+				allStates = data;
+				drawStateLists();
+			});
+
+			$.getJSON('./admin/instances', function(data) {
+
+				runningWorlds = data;
+				drawStateLists();
+			});
+		}
+		loadStates();
+		window.setInterval(loadStates,10000)
 	});	
 
 	</script>
 </head>
 <body>
 <div id='leftpane'> 
+	<div id='runningworldslabel' class='worldLabel'>
+	Currently Running Worlds 
+	</div>
 	<div id='runningworlds'> 
+	</div>
+	<div id='allworldslabel' class='worldLabel'> 
+	All Available Worlds
 	</div>
 	<div id='allworlds'> 
 	</div>
