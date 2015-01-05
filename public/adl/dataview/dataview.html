@@ -3,8 +3,11 @@
 	<script src='../sandbox/polyfills.js'> </script>
 	<script src='../sandbox/vwf/view/editorview/lib/jquery-2.0.3.min.js'> </script>
 	<script src='../sandbox/vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js'> </script>
+	<script src='./toggles.min.js'> </script>
 	<link rel='stylesheet' type="text/css" href='../sandbox/vwf/view/editorview/css/jquery-ui-1.10.3.custom.css'>
 	<link rel='stylesheet' type="text/css" href='./styles.css'>
+	<link rel='stylesheet' type="text/css" href='./toggles-full.css'>
+	<link rel='stylesheet' type="text/css" href='./toggles-iphone.css'>
 	<link rel='stylesheet' type="text/css" href='../sandbox/vwf/view/editorview/lib/alertify.js-0.3.9/themes/alertify.bootstrap.css'>
 	<link rel='stylesheet' type="text/css" href='../sandbox/vwf/view/editorview/lib/alertify.js-0.3.9/themes/alertify.core.css'>
 	<script src='../sandbox/require.js'> </script>
@@ -15,17 +18,75 @@
 	require(['../sandbox/messageCompress','../sandbox/vwf/view/editorview/lib/alertify.js-0.3.9/src/alertify',"/socket.io/socket.io.js"],function(messageCompress,alertify){
 
 
+		function propertyRecord(nodeid,property,value,time)
+		{
+			this.nodeid = nodeid;
+			this.property = property;
+			this.value = value;
+			this.time = time;
+		}
+		function createRecord(nodeid,extendsid,name,time)
+		{
+			this.nodeid = nodeid;
+			this.extendsid = extendsid;
+			this.name = name;
+			this.time = time;
+		}
+		function deleteRecord(nodeid,time)
+		{
+			this.nodeid = nodeid;
+			this.time = time;
+		}
 
+		function hookUpRecording()
+		{
+			if(recordmode == RECORD)
+			{
+				var frame = $('iframe')[0];
+				if(frame && frame.contentWindow.vwf && frame.contentWindow.vwf_view)
+				{
+					
+					frame.contentWindow.vwf_view.satProperty = function(id,propname,propval)
+					{
+						var frame = $('iframe')[0];
+						recordedProperties.push(new propertyRecord(id,propname,propval,frame.contentWindow.vwf.time()));
+					}
 
-		
+					frame.contentWindow.vwf_view.createdNode = function(id,extendsid,name)
+					{
+						var frame = $('iframe')[0];
+						recordedProperties.push(new createRecord(id,extendsid,name,frame.contentWindow.vwf.time()));
+					}
+
+					frame.contentWindow.vwf_view.deletedNode = function(id)
+					{
+						var frame = $('iframe')[0];
+						recordedProperties.push(new deleteRecord(id,frame.contentWindow.vwf.time()));
+					}
+
+				}else
+				{
+					window.setTimeout(hookUpRecording,300);
+				}
+			}
+		}
+
+		var RECORD = 1;
+		var REVIEW = 2;
+			
 		var allStates = null;
 		var runningWorlds = null;
 		var currentWorld = null;
-		var messageQueue = [];
+		
 		var nameMapping = {};
 		var clientData = null;
 		var socket = null;
 		var stateShots = [];
+		var messageQueue = [];
+		var recordedProperties = [];
+		var showTicks = false;
+		var showPointer = false;
+		var recordmode = RECORD;
 		function getNodeName(id)
 		{
 			if(nameMapping[id]) return nameMapping[id];
@@ -47,13 +108,70 @@
 		{
 			download('run.json',JSON.stringify(messageQueue));
 		}
+		//ok, we are going to set the state on the blank world, now that the blank world is loaded
+		function blankSceneLoaded()
+		{
+			var frame = $('iframe')[0];
+			if(frame && frame.contentWindow.vwf)
+			{	
+				if(frame.contentWindow.hideTools)
+					frame.contentWindow.hideTools();
+				frame.contentWindow.vwf.setState(stateShots[0]);
+			}
+		}
+		//toggle between recording the world data, and playing it back
+		function toggleRecordMode()
+		{	
+			//toggle
+			if(recordmode == RECORD) recordmode = REVIEW;
+			else
+				recordmode  = RECORD;
+			
+			//we just reconnect if the we swtich from review to record. This will loose the current data!
+			if(recordmode == RECORD)
+			{
+				loadState(currentWorld);
+				hookUpRecording();
+				$('#recordmodelabel span').text('Recording...')
+			}else	
+			{
+				//disconnect from the current world
+				socket.disconnect();
+				$('#recordmodelabel span').text('Review')
+				//if we want to review, we can load the blank world and populate it with out saved data.
+				$('#currentWorld').remove();
+				$('#previewpane').append("<iframe src='../sandbox/example_blank?nologin=true' id='currentWorld' seamless/>");
+
+				//we have to loop to wait for the world to be loaded
+				function waitForLoad()
+				{
+					var frame = $('iframe')[0];
+					if(frame && frame.contentWindow.vwf && frame.contentWindow.vwf.moniker_)
+					{
+						//ok, the world is loaded, lets set the state data
+						blankSceneLoaded();
+					}else
+					{
+						window.setTimeout(waitForLoad,1000);
+					}
+				}
+				window.setTimeout(waitForLoad,1000);
+				
+
+			}
+
+		}
 		function captureState()
 		{
+			if(recordmode == RECORD)
+			{
 			var frame = $('iframe')[0];
 			if(frame && frame.contentWindow.vwf)
 			{
 				try{
 				var state = frame.contentWindow.vwf.getState();
+				if(frame.contentWindow.hideTools)
+					frame.contentWindow.hideTools();
 				stateShots.push(state);
 
 				 $('#datalist').prepend('<div class="stateshot" id="stateshot' + stateShots.length + '">State Snapshot '+stateShots.length+'</div>');
@@ -63,8 +181,11 @@
 				 	alertify.confirm("Restore State " + i,function(ok){
 				 		if(ok)
 				 		{
-				 			
-				 			frame.contentWindow.vwf.respond('index-vwf','getState',null,null,stateShots[i-1]);
+				 			var frame = $('iframe')[0];
+				 			if(recordmode == RECORD)
+				 				frame.contentWindow.vwf.respond('index-vwf','getState',null,null,stateShots[i-1]);
+				 			else
+				 				frame.contentWindow.vwf.setState(stateShots[i-1]);
 				 		}
 				 	});
 				 });
@@ -73,9 +194,10 @@
 
 				}
 			}
+			}
 		}
 		window.downloadData = downloadData;
-		window.setInterval(captureState,30000);
+		//window.setInterval(captureState,30000);
 		function loadState(id)
 		{
 			currentWorld = id;
@@ -110,8 +232,9 @@
 				
 				$('#datalist').empty();
 				$('#currentWorld').remove();
-				$('#previewpane').append("<iframe src='../sandbox/"+id+"' id='currentWorld' seamless/>");
+				$('#previewpane').append("<iframe src='../sandbox/"+id+"?nologin=true' id='currentWorld' seamless/>");
 				
+				hookUpRecording();
 				
 				socket = io.connect(window.location.protocol + window.location.host,{'force new connection':true});
 				socket.on('connect',function()
@@ -131,10 +254,10 @@
 					{
 						nameMapping[message.node] = message.parameters[0];
 					}
-					if(this.showTicks === true || message.action !== 'tick')
+					if(showTicks === true || message.action !== 'tick')
 					{
 		                if (message.action !== 'activeResync') {
-		                    if (!message.member || this.showPointer || message.member.indexOf('pointer') !== 0) {
+		                    if (!message.member || showPointer || message.member.indexOf('pointer') !== 0) {
 		                        $('#datalist').prepend('<div class="message ' + message.action + ' ' + message.member + '"id="datalist' + messageQueue.length + '"></div>');
 		                        message.time *= 1000;
 		                        message.time = Math.floor(message.time) / 1000;
@@ -223,6 +346,23 @@
 			});
 		}
 		loadStates();
+		$("#showticks").toggles();
+		$("#showinput").toggles();
+		
+		$("#recordmode").toggles({on:false,text:{on:'Record',off:'Review'},type:'select'});
+		$("#recordmode").data('toggles').toggle();
+		
+		$("#exportdata").click(downloadData);
+		$("#recordmode").on('toggle',toggleRecordMode);
+		$("#showinput").on('toggle',function(e,active){
+			showPointer = !showPointer;
+		});
+		$("#showticks").click(function(){
+			showTicks = !showTicks;
+		});
+		$("#capturestate").click(function(){
+			captureState();
+		});
 		window.setInterval(loadStates,10000)
 	});	
 
@@ -246,7 +386,14 @@
 	</div>
 	<div id='datapane'> 
 		<div id='datalist'></div>
-		<div id='datamenu'></div>
+		<div id='datamenu'>
+			<div class="toggle toggle-light" style='width:100px;height:40px;display:inline-block;vertical-align:top' id="recordmode"></div>
+			Ticks:<div class="toggle toggle-light" style='width:100px;height:40px;display:inline-block;vertical-align:top' id="showticks"></div>
+			Inputs:<div class="toggle toggle-light" style='width:100px;height:40px;display:inline-block;vertical-align:top' id="showinput"></div>
+			<div class="button" id="exportdata">Export Data</div>
+			<div class="button" id="importdata">Import Data</div>
+			<div class="button" id="capturestate">Capture State</div>
+		</div>
 	</div>
 </div>
 </body>
