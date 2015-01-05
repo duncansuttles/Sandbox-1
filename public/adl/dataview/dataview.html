@@ -355,10 +355,10 @@
 		$("#exportdata").click(downloadData);
 		$("#recordmode").on('toggle',toggleRecordMode);
 		$("#showinput").on('toggle',function(e,active){
-			showPointer = !showPointer;
+			showPointer = active;
 		});
-		$("#showticks").click(function(){
-			showTicks = !showTicks;
+		$("#showticks").on('toggle',function(e,active){
+			showTicks = active;
 		});
 		$("#capturestate").click(function(){
 			captureState();
