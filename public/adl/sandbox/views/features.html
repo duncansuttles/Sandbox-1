@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="{{root}}/vwf/view/editorview/css/colorpicker.css" /> 
+    <link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/bootstrap.min.css" />
+	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/style.css" />
+	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/alertify.core.css" />
+	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/alertify.default.css" />
+	<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic|Roboto+Condensed|Roboto|Open+Sans' rel='stylesheet' type='text/css'>
+	<script type="text/javascript" src="{{root}}/js/jquery-1.10.2.min.js"></script>
+	<style>
+		body{
+
+			overflow: hidden;
+			background-image: url(./img/background.png);
+			background-size: 2220px;
+			background-position-x: 0px;
+			opacity: 0;
+			font-family: 'Open Sans', sans-serif;
+		}
+		
+		@media (max-width: 1920px){
+			
+			.bodypanel
+			{
+				width:1200px;
+			}
+			.buttonContainer
+			{
+				width:33%;
+			}
+		}
+		@media (max-width: 1200px){
+			
+			.bodypanel
+			{
+				width:1000px;
+			}
+			.buttonContainer
+			{
+				width:33%;
+			}
+		}
+		@media (max-width: 800px){
+			
+			.bodypanel
+			{
+				width:100%;
+
+			}
+			.ActionButtonlabel
+			{
+				
+			}
+			.buttonContainer
+			{
+				width:100%;
+			}
+			#logo
+			{
+				zoom:.75;
+				
+			}
+		}
+		@media (max-width: 400px){
+			#logo
+			{
+				zoom:.5;
+				
+			}
+		}
+		@media (max-width: 270px){
+			#logo
+			{
+				zoom:.35;
+				
+			}
+		}
+		@media (max-width: 200px){
+			#logo
+			{
+				zoom:.35;
+				
+			}
+		}
+		.bodypanel
+		{
+			margin:auto;
+			
+		}
+		.buttonContainer
+		{
+			margin: 0px;
+			padding: 0px;
+			
+			display: inline-block;
+		}
+		.thinheaderlink
+		{
+			text-align: center;
+			margin: 1em 1em;
+			font-weight: bold;
+			color: #FFF;
+			text-shadow: 1px 1px 5px black;
+			
+		}
+		.ActionButton
+		{
+			
+			width:95%;
+		}
+		.thinheader
+		{
+			text-align: center;
+			
+		}
+		#logo1
+		{
+			width:565px;
+			margin:auto;
+		}
+		#columns
+		{
+			width:100%;
+			
+
+		}
+		.column
+		{
+			width: calc(33% - 40px);
+			display: inline-block;
+			margin: 20px;
+			vertical-align: top;
+		}
+		.column .panel
+		{
+			background: white;
+border-radius: 4px;
+min-height: 200px;
+box-shadow: 3px 3px 6px;
+		}
+		#columns .paneltitle
+		{
+			text-align: CENTER;
+border-bottom: 1px solid lightgray;
+font-size: 1.4em;
+text-transform: uppercase;
+margin: 1em;
+		}
+	</style>
+	<script type="text/javascript">
+	
+
+function center()
+	{
+		var height = $('#content').height();
+				var wheight  = $(window).height();
+				$('#content').css('top',Math.max((wheight/2) - (height/2) ,0));
+				$('#content').css('position','relative');
+				
+				
+
+				$(window).resize(function(){
+
+				var height = $('#content').height();
+				var wheight  = $(window).height();
+				$('#content').css('top',Math.max((wheight/2) - (height/2) ,0));
+				$('#content').css('position','relative');
+
+				
+
+				});
+				$(window).resize();
+	}
+
+	$(document).ready(function(){
+
+		center();
+		$(document.body).css('opacity','1');
+		$(document.body).css('background-position-x','-300px');
+		$(document.body).css('transition','opacity 1.5s ease-in, background-position-x 30s');
+
+
+	})
+
+	</script>
+	<!--[if !IE 7]>
+	<style type="text/css">
+		#wrapper {display:table;height:100%}
+	</style>
+	<![endif]-->
+    <title>Virtual World Sandbox - Virtual Worlds in your browser</title>
+
+	
+	
+
+
+</head>
+<body>
+<div id='content1' class='bodypanel'>
+	<div id="logo1">
+		<a href="/adl/sandbox">
+			<div style="display:inline">
+				<img src="/adl/sandbox/img/VWS_Logo.png">
+			</div>
+			<div style=" margin-left:10px;margin-top:50px;display:inline;">
+				<img src="/adl/sandbox/img/VW_text.png">
+				<img src="/adl/sandbox/img/Sandbox_text.png">
+			</div>
+		</a>
+	</div>
+	<div id="columns">
+		<div class='column column1'>
+			<div class='panel'>
+				<div class='paneltitle'>Collaboration</div>
+			</div>
+			<div class='panel'>
+				<div class='paneltitle'>Accessibility</div>
+			</div>
+			<div class='panel'>
+				<div class='paneltitle'>Delivery</div>
+			</div>
+		</div>
+		<div class='column  column2'>
+			<div class='panel'>
+				<div class='paneltitle'>Assets and Models</div>
+			</div>
+			<div class='panel'>
+				<div class='paneltitle'>Terrain</div>
+			</div>
+			<div class='panel'>
+				<div class='paneltitle'>Scripting</div>
+			</div>
+		</div>
+		<div class='column column3'>
+			<div class='panel'>
+				<div class='paneltitle'>Physics</div>
+			</div>
+			<div class='panel'>
+				<div class='paneltitle'>Behaviors</div>
+			</div>
+			<div class='panel'>
+				<div class='paneltitle'>Physics</div>
+			</div>
+		</div>
+		
+		</div>
+	</div>
+</div>
+</body>
+</html>

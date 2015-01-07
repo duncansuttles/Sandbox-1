@@ -11,6 +11,7 @@ define([], function() {
         }
     }
 
+
     function initialize() {
         this.setup = function() {
             $(document.body).append('<div id="publishSettings"></div>');
@@ -145,6 +146,8 @@ define([], function() {
 
 
             if (id == vwf.application()) {
+
+                var disableSelector = '#ScriptEditor, #sidepanel, #sidetabs, #statusbarinner, #toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a';
                 if (prop == 'playMode' && val == 'play') {
 
 
@@ -152,24 +155,16 @@ define([], function() {
                     $('#pauseButton').removeClass('pulsing');
                     $('#stopButton').removeClass('pulsing');
 
-                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', .3);
-                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', 'gray');
-                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', 'none');
-                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', 'not-allowed');
+                    $(disableSelector).css('opacity', .3);
+                    $(disableSelector).css('background-color', 'gray');
+                    $(disableSelector).css('pointer-events', 'none');
+                    $(disableSelector).css('cursor', 'not-allowed');
 
 
-                    //remember the last selection and then deselect;
-                    this.lastSelection = [];
-                    for (var i = 0; i < _Editor.getSelectionCount(); i++) {
-                        this.lastSelection.push(_Editor.GetSelectedVWFNode(i).id);
-                    }
-                    _Editor.SelectObject(null);
                     _Editor.SetSelectMode('none');
                     $('#index-vwf').focus();
-                    hideTools();
-                    $('#statusbar').show();
-                    $('#statusbarinner').hide();
-                    $('#statusbar').css('background','none');
+               
+                    
                   
 
                 }
@@ -177,36 +172,30 @@ define([], function() {
                 if (prop == 'playMode' && val == 'paused') {
 
                     //restore selection
-                    _Editor.SelectObject(this.lastSelection);
+                   
                     $('#playButton').addClass('pulsing');
                     $('#pauseButton').addClass('pulsing');
                     $('#stopButton').removeClass('pulsing');
-                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', '');
-                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', '');
-                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', '');
-                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', '');
-                     showTools();
-                    $('#statusbar').css('background','');
-                    $('#statusbarinner').show();
-                    _Editor.SelectObject(this.lastSelection);
+                    $(disableSelector).css('opacity', '');
+                    $(disableSelector).css('pointer-events', '');
+                    $(disableSelector).css('cursor', '');
+                    $(disableSelector).css('background-color', '');
+                  
                     _Editor.SetSelectMode('Pick');
 
                 }
                 if (prop == 'playMode' && val == 'stop') {
 
-                    //restore selection
-
-                    showTools();
-                    $('#statusbar').css('background','');
-                    $('#statusbarinner').show();
-                    _Editor.SelectObject(this.lastSelection);
+                   
+                    
+                    
                     $('#playButton').removeClass('pulsing');
                     $('#pauseButton').removeClass('pulsing');
                     $('#stopButton').addClass('pulsing');
-                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('opacity', '');
-                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('pointer-events', '');
-                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('cursor', '');
-                    $('#toolbar, #EntityLibrary, .sidetab, #smoothmenu1, #smoothmenu1 ul li a').css('background-color', '');
+                    $(disableSelector).css('opacity', '');
+                    $(disableSelector).css('pointer-events', '');
+                    $(disableSelector).css('cursor', '');
+                    $(disableSelector).css('background-color', '');
                     _Editor.SetSelectMode('Pick');
                 }
             }

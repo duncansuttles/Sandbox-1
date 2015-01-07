@@ -902,7 +902,7 @@ body .ui-tooltip {
 }
 
 .ui-widget {
-    font-family:Verdana,Arial,sans-serif;
+    font-family:'Open Sans',Verdana,Arial,sans-serif;
     font-size:1.1em
 }
 
@@ -911,7 +911,7 @@ body .ui-tooltip {
 }
 
 .ui-widget input,.ui-widget select,.ui-widget textarea,.ui-widget button {
-    font-family:Verdana,Arial,sans-serif;
+    font-family:'Open Sans',Verdana,Arial,sans-serif;
     font-size:1em
 }
 

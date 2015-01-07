@@ -83,7 +83,7 @@
 		box-shadow: 0px 0px 3px inset;
 		border-radius: 8px;
 		font-size: 13px;
-		font-family: sans-serif;
+		font-family: 'Open Sans',sans-serif;
 		font-weight: bold;
 		height: 15px;
 		padding-left: 5px;
@@ -134,7 +134,7 @@ background-size: 646px;
 text-indent: 0px;
 display: inline-block;
 color: #777777;
-font-family: Arial;
+font-family: 'Open Sans',Arial;
 font-size: 27px;
 font-weight: bold;
 font-style: normal;
@@ -171,7 +171,7 @@ border-radius: 6px;
 		box-shadow: 0px 0px 3px inset;
 		border-radius: 5px;
 		font-size: 13px;
-		font-family: sans-serif;
+		font-family: 'Open Sans',sans-serif;
 		font-weight: bold;
 		height: 15px;
 	}
@@ -183,7 +183,7 @@ border-radius: 6px;
 		position: absolute;
 		z-index: 10000;
 		font-size: 1.5em;
-		font-family: sans-serif;
+		font-family: 'Open Sans',sans-serif;
 		background: black;
 		border: 1px solid gray;
 		box-shadow: 2px 2px 2px gray;
@@ -333,7 +333,7 @@ border-radius: 6px;
 		background: #404040;
 		font-size: 1.5em;
 		color: white;
-		font-family: sans-serif;
+		font-family: 'Open Sans',sans-serif;
 		font-weight: bold;
 		box-shadow: 2px 2px 5px black;
 		border: 1px solid gray;
@@ -422,7 +422,7 @@ box-sizing: border-box;
 border-radius: 13px;
 
 font-size: 1.5em;
-font-family: sans-serif;
+font-family: 'Open Sans',sans-serif;
 opacity: .8;
 transition: background 1s, opacity 1s;
 }
@@ -570,7 +570,7 @@ border-radius: 0px;
 color: gray;
 margin-left: 3px;
 margin-right: 3px;
-font-family: sans-serif;
+font-family: 'Open Sans',sans-serif;
 font-size: 1.3em;
 text-shadow: 1px 1px 3px black;
 border-left: 1px solid;
@@ -934,7 +934,7 @@ transform: rotate(-90deg);
 height: auto;
 margin: 0px -39px 32px 3px;
 font-size: 12px;
-font-family: sans-serif;
+font-family: 'Open Sans',sans-serif;
 background: #414149;
 padding: 3px 7px 24px 8px;
 text-align: center;
@@ -1425,7 +1425,7 @@ left: 35%;
 top: 42.5%;
 overflow: hidden;
 box-shadow: 0 3px 7px rgba(0,0,0,.3);
-font-family: sans-serif;
+font-family: 'Open Sans',sans-serif;
 font-size: 17px;
 
 
@@ -1502,7 +1502,7 @@ z-index: 100000;
 box-shadow: 0px 0px 300px #666 inset;
 text-align: center;
 font-size: 1.5em;
-font-family: sans-serif;
+font-family: 'Open Sans',sans-serif;
   }
 .guinode
 {
@@ -1585,7 +1585,7 @@ height: 45px;
 -moz-transform: rotate(90deg);
 transform: rotate(90deg);
 font-size: 12px;
-font-family: sans-serif;
+font-family: 'Open Sans',sans-serif;
 text-align: center;
 border-radius: 7px;
 border: 2px groove rgb(130, 184, 255);
