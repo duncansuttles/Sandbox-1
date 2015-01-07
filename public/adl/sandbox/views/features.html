@@ -13,12 +13,21 @@
 	<style>
 		body{
 
-			overflow: hidden;
+			
 			background-image: url(./img/background.png);
 			background-size: 2220px;
 			background-position-x: 0px;
 			opacity: 0;
 			font-family: 'Open Sans', sans-serif;
+
+			opacity: 1;
+/* transition: opacity 1.5s ease-in, background-position-x 30s; */
+/* -webkit-transition: opacity 1.5s ease-in, background-position-x 30s; */
+/* background-position-x: -300px; */
+background-attachment: fixed;
+/* background: transparent url(./img/background.png) fixed; */
+height: initial;
+
 		}
 		
 		@media (max-width: 1920px){
@@ -118,8 +127,9 @@
 		}
 		#logo1
 		{
-			width:565px;
-			margin:auto;
+			width: 565px;
+margin: 0em auto 5em auto;
+padding-top: 5em;
 		}
 		#columns
 		{
@@ -137,18 +147,74 @@
 		.column .panel
 		{
 			background: white;
-border-radius: 4px;
-min-height: 200px;
-box-shadow: 3px 3px 6px;
+			border-radius: 4px;
+			min-height: 200px;
+			box-shadow: 3px 3px 6px;
+			margin-bottom: 40px;
+			padding-bottom: 2em;
+			overflow: hidden;
+border: none;
+		}
+		.column .panel .section
+		{
+			margin: 0em 2em;
+		}
+        .afterImg
+        {
+			display: inline-block;
+			width: calc(70% - 2em);
+			vertical-align: middle;
+        }
+		.column .panel .section .title
+		{
+			text-decoration: none;
+			font-weight: 800;
+			font-size: 15px;
+		}
+		.column .panel  img
+		{
+			display: inline-block;
+vertical-align: middle;
+margin-left: 2em;
+		width: calc(13% - 0em);
+
+		}
+		.column .panel .section .text
+		{
+			font-family: 'Roboto condensed';
+			color: gray;
 		}
 		#columns .paneltitle
 		{
 			text-align: CENTER;
-border-bottom: 1px solid lightgray;
-font-size: 1.4em;
-text-transform: uppercase;
-margin: 1em;
+			border-bottom: 1px solid lightgray;
+			font-size: 1.4em;
+			text-transform: uppercase;
+			margin: 1em;
+			font-weight: bold;
 		}
+
+		#columns .featuretitle
+		{
+			background: rgb(61, 85, 158);
+margin: -1px -6px;
+padding: 0em;
+color: white;
+font-size: 2.5em;
+text-transform: capitalize;
+		}
+		.bottomlink
+		{
+			background: #3D559E;
+color: white;
+font-weight: bold;
+margin: 1em -1em -2em -1em;
+padding: 1em;
+text-align: center;
+vertical-align: middle;
+text-decoration: underline;
+		}
+
 	</style>
 	<script type="text/javascript">
 	
@@ -214,35 +280,160 @@ function center()
 	<div id="columns">
 		<div class='column column1'>
 			<div class='panel'>
-				<div class='paneltitle'>Collaboration</div>
+				<div class='paneltitle featuretitle'>Collaboration</div>
+				<img src="{{root}}/vwf/view/editorview/images/icons/users.png" ></img>
+				<div class = 'section afterImg'>
+					<div class='title'> Chat </div>
+					<div class='text'> The Sandbox includes tools for text chat with other users of the environment </div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Private Messages </div>
+					<div class='text'> You can also privately message other users in the same space </div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Voice And Video </div>
+					<div class='text'> Using WebRTC, the Sandbox allows you to see and speak with your partners both during authoring and playing a simulation. The Communication API lets you decide when and how users can communicate within a world.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Multi-User </div>
+					<div class='text'> By default, all simulations are multi-party. You'll see the effects of other users editing or playing in real time.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Permissions </div>
+					<div class='text'> Each world can be assigned a list of people who can modify it, or can be made public for all users to enjoy</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Share </div>
+					<div class='text'> Others users can branch off a copy of your world and make it their own. You can also copy theirs, to improve or modify it.</div>
+				</div>
 			</div>
 			<div class='panel'>
-				<div class='paneltitle'>Accessibility</div>
+				<div class='paneltitle featuretitle'>Delivery</div>
+				<div class = 'section'>
+					<div class='title'> Easy to Deploy </div>
+					<div class='text'> The Sandbox is build completely on HTML5 - there's no need for your users to download anything.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Mobile Friendly </div>
+					<div class='text'> As worldwide adoption of WebGL and HTML5 increases, more and more mobile devices are able to participate in Sandbox worlds. Currently Sandbox works on mobile Chrome, Firefox and Safari, but peformance can be lower.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Simple Networking </div>
+					<div class='text'> Other virtual world platforms have complex networking setup - various ports and firewall rules must be configured to get them working. Sandbox is simple! All you need is access to port 80 - everything is web-based.</div>
+				</div>
 			</div>
 			<div class='panel'>
-				<div class='paneltitle'>Delivery</div>
+				<div class='paneltitle'>Modeling</div>
+				<div class = 'section'>
+					<div class='title'> Basic Objects </div>
+					<div class='text'> Build in primitives for spheres, boxes, cones, cylinders, and 3D text.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> 2D Lines </div>
+					<div class='text'> Several basic 2D shapes, with the option to convert to points and edit manually.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Extrusions, Revolutions, Modifiers </div>
+					<div class='text'> 2D shapes can be extruded or revolved into 3D with a special modifier, and primitive objects can be distored with options like bend, twist, taper and more.</div>
+				</div>
+				<div class = 'bottomlink'>
+					See Modeling Examples
+				</div>
 			</div>
 		</div>
 		<div class='column  column2'>
 			<div class='panel'>
 				<div class='paneltitle'>Assets and Models</div>
+				<div class = 'section'>
+					<div class='title'> Support for Common Formats </div>
+					<div class='text'> COLLADA files can be imported directly through the Three.js DAE Parser. This import path can even include animations!</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Asset Repository </div>
+					<div class='text'> We've also built in support for the ADL 3DR asset server. This service allows you to upload 3D models in a vareity of formats, and see them appear directly in the world! Assets are hosted on a seperate service at http://3dr.adlnet.gov. You can upload, download and search for models in the repository directly from the Sandbox Editor.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> CDN Support </div>
+					<div class='text'> Since all assets are loaded via a URL that you supply, you can even host 3D files, sounds or textures on a CDN for blazing fast performance.</div>
+				</div>
 			</div>
 			<div class='panel'>
 				<div class='paneltitle'>Terrain</div>
+				<div class = 'section'>
+					<div class='title'> Resolution for Every Need </div>
+					<div class='text'> Our terrain system can render a heightfield down to a single square meter resolution, while still allowing huge spaces up to many square miles.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Easy to Author Formats </div>
+					<div class='text'> You can load a terrain directly from a black and white image file for super-simple authoring, or you can generate a .BT file using common GIS tools.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Texture Splatting </div>
+					<div class='text'> The terrain shader give you 5 channels of detail textures mixed via a user generated mixing map. Each channel can even have its own normal map. We use tri-planer mapping to avoid ugly UV artifacts, and mix the detail maps based on their alpha channels for convincing blending between detail types.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Atmospherics </div>
+					<div class='text'> Our enviornment renderer can even display beautiful atmospheric effects like fog, haze and shadows.</div>
+				</div>
+				<div class = 'bottomlink'>
+					See Terrain Examples
+				</div>
 			</div>
 			<div class='panel'>
 				<div class='paneltitle'>Scripting</div>
+				<div class = 'section'>
+					<div class='title'> Real Time Editing </div>
+					<div class='text'> You can actually see the effects of your scripts right as you work! Just click the play button in the bottom corner, no need to pubish or compile.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Intellegent Support </div>
+					<div class='text'> The Script Editor can give you real time hints about what you can type next, or if your code contains errors.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> APIs for Everyone!</div>
+					<div class='text'> We're continously adding new APIs to the scripting system to (safely) expose system functionality to programmers. Nearly everything the system does can be controlled via in-world scripts, but APIs like the TransformAPI or the ClientAPI makes manipulating the system far more transparent.</div>
+				</div>
 			</div>
 		</div>
 		<div class='column column3'>
 			<div class='panel'>
-				<div class='paneltitle'>Physics</div>
+				<div class='paneltitle featuretitle'>Physics</div>
+				<div class = 'section'>
+					<div class='title'> Powered by Bullet </div>
+					<div class='text'> Sandbox uses Ammo.js, a port of the popular C++ Bullet library. We use a custom fork of Ammo and Bullet to acheive determisitic playback while bringing high performance into the browser.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Collision Shapes </div>
+					<div class='text'> Spheres, boxes and other primitives all have native support within our physics driver. Imported objects like 3D files can have collision bodies assigned in the editor, and can even use per-polygon collision. You can even build compound collision bodies out of multiple primitives, and use these as high performance proxies for 3D assets.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Joints </div>
+					<div class='text'> Common joint types are also available. You can build complex machines with hinges, sliders, point-to-point constrains and fixed links. Joints can even have limits and motors attached.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> PhysicsAPI </div>
+					<div class='text'> All aspects of the scene physics are availble from a special API in the Script Editor. You can even receive notifications about collisions between object, or just move them around with forces.</div>
+				</div>
+				<div class = 'bottomlink'>
+					See Physics Examples
+				</div>
 			</div>
 			<div class='panel'>
 				<div class='paneltitle'>Behaviors</div>
 			</div>
 			<div class='panel'>
-				<div class='paneltitle'>Physics</div>
+				<div class='paneltitle'>Materials</div>
+				<div class = 'section'>
+					<div class='title'> Multi-layer materials </div>
+					<div class='text'> Materials can have textures applied to multiple properties like diffuse, specular or ambient lighting.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Textures </div>
+					<div class='text'> Textures can be loaded by URL, or from a library on the server</div>
+				</div>
+				<div class = 'bottomlink'>
+					See Material Examples
+				</div>
 			</div>
 		</div>
 		
