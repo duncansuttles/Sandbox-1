@@ -2047,14 +2047,18 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             self.SelectOnNextCreate(newnames);
         }
         this.getTransform = function(id) {
-            return vwf.getProperty(id, this.transformPropertyName);
+            var mat = vwf.getProperty(id, this.transformPropertyName);
+            if(!mat)
+                return Mat4.createIdentity();
         }
         this.getTranslation = function(id) {
             var mat = vwf.getProperty(id, 'worldTransform');
+            if(!mat) return [0,0,0];
             return [mat[12], mat[13], mat[14]];
         }
         this.getScale = function(id) {
             var transform = vwf.getProperty(id, this.transformPropertyName);
+            if(!transform) return [0,0,0];
             var sx = MATH.lengthVec3([transform[0], transform[4], transform[8]]);
             var sy = MATH.lengthVec3([transform[1], transform[5], transform[9]]);
             var sz = MATH.lengthVec3([transform[2], transform[6], transform[10]]);
