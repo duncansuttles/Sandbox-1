@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="{{root}}/vwf/view/editorview/css/colorpicker.css" /> 
+    <link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/bootstrap.min.css" />
+	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/style.css" />
+	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/alertify.core.css" />
+	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/alertify.default.css" />
+	<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic|Roboto+Condensed|Roboto|Open+Sans' rel='stylesheet' type='text/css'>
+	<script type="text/javascript" src="{{root}}/js/jquery-1.10.2.min.js"></script>
+	<style>
+		body{
+
+			
+			background-image: url(./img/background.png);
+			background-size: 2220px;
+			background-position-x: 0px;
+			opacity: 0;
+			font-family: 'Open Sans', sans-serif;
+
+			opacity: 1;
+/* transition: opacity 1.5s ease-in, background-position-x 30s; */
+/* -webkit-transition: opacity 1.5s ease-in, background-position-x 30s; */
+/* background-position-x: -300px; */
+background-attachment: fixed;
+/* background: transparent url(./img/background.png) fixed; */
+height: initial;
+
+		}
+		
+		@media (max-width: 1920px){
+			
+			.bodypanel
+			{
+				width:1200px;
+			}
+			.buttonContainer
+			{
+				width:33%;
+			}
+			#logo1
+			{
+				zoom:1.75;
+				
+			}
+			.column
+			{
+				width: calc(100% - 40px);
+				margin: 20px;
+				display: inline-block;
+			}
+			.column .panel .section
+			{
+				margin: 0em 2em;
+			}
+		}
+		@media (max-width: 1200px){
+			
+			.bodypanel
+			{
+				width:1000px;
+			}
+			.buttonContainer
+			{
+				width:33%;
+			}
+			#logo1
+			{
+				zoom:1.5;
+				
+			}
+		}
+		@media (max-width: 1000px){
+			
+			#logo1
+			{
+				zoom:1;
+				
+			}
+			.bodypanel
+			{
+				width:100%;
+
+			}
+			.ActionButtonlabel
+			{
+				
+			}
+			.buttonContainer
+			{
+				width:100%;
+			}
+			.column
+			{
+				width: calc(100% - 10px);
+				margin: 5px;
+				display: inline-block;
+			}
+			.column .panel .section
+			{
+				margin: 0em .5em;
+			}
+		}
+		@media (max-width: 745px){
+			.column
+			{
+				display: block;
+				width: 90%;
+				margin-left: 5%;
+			}
+
+		}
+		@media (max-width: 400px){
+			#logo1
+			{
+				zoom:.5;
+				
+			}
+		}
+		@media (max-width: 270px){
+			#logo1
+			{
+				zoom:.35;
+				
+			}
+		}
+		@media (max-width: 200px){
+			#logo1
+			{
+				zoom:.35;
+				
+			}
+		}
+		.bodypanel
+		{
+			margin:auto;
+			
+		}
+		.buttonContainer
+		{
+			margin: 0px;
+			padding: 0px;
+			
+			display: inline-block;
+		}
+		.thinheaderlink
+		{
+			text-align: center;
+			margin: 1em 1em;
+			font-weight: bold;
+			color: #FFF;
+			text-shadow: 1px 1px 5px black;
+			
+		}
+		.ActionButton
+		{
+			
+			width:95%;
+		}
+		.thinheader
+		{
+			text-align: center;
+			
+		}
+		#logo1
+		{
+			width: 565px;
+			margin: 0em auto 1em auto;
+			padding-top: 1em;
+		}
+		#columns
+		{
+			width:100%;
+		}
+		.column
+		{
+			vertical-align: top;
+		}
+
+		.column .panel
+		{
+			background: white;
+			border-radius: 4px;
+			min-height: 200px;
+			box-shadow: 3px 3px 6px;
+			margin-bottom: 40px;
+			padding-bottom: 2em;
+			overflow: hidden;
+			border: none;
+		}
+		
+        .afterImg
+        {
+			display: inline-block;
+			width: calc(70% - 2em);
+			vertical-align: middle;
+        }
+		.column .panel .section .title
+		{
+			text-decoration: none;
+			font-weight: 800;
+			font-size: 15px;
+		}
+		.column .panel  .sectionlogo
+		{
+			display: inline-block;
+			vertical-align: middle;
+			margin-left: 2em;
+			width: calc(13% - 0em);
+
+		}
+		.column .panel .section .text
+		{
+			font-family: 'Roboto condensed';
+			color: gray;
+		}
+		#columns .paneltitle
+		{
+			text-align: CENTER;
+			border-bottom: 1px solid lightgray;
+			font-size: 1.4em;
+			text-transform: uppercase;
+			margin: 1em;
+			font-weight: bold;
+		}
+
+		#columns .featuretitle
+		{
+			background: rgb(61, 85, 158);
+			margin: -1px -6px;
+			padding: 0em;
+			color: white;
+			font-size: 2.5em;
+			text-transform: capitalize;
+		}
+		.bottomlink
+		{
+			background: #3D559E;
+			color: white;
+			font-weight: bold;
+			margin: 1em -1em -2em -1em;
+			padding: 1em;
+			text-align: center;
+			vertical-align: middle;
+			text-decoration: underline;
+			display: block;
+			cursor:pointer;
+		}
+		.bottomlink:hover
+		{
+			color: blue;
+		}
+		.panelheaderlogo
+		{
+			width: 50%;
+			margin: 1em 25% 0.5em 25%;
+		}
+		.moreinfolink
+		{
+			margin: 1em 3em;
+			font-family: 'Open Sans',sans-serif;
+			/* background: rgb(141, 188, 252); */
+			text-align: center;
+			border-radius: 5px;
+		}
+		.moreinfolink p
+		{
+			font-size: 0.75em;
+			color: lightgray;
+		}
+		.moreinfolink a
+		{
+			background: #98ADFF;
+			width: 100%;
+			font-weight: bold;
+			color: white;
+			margin: 0em 0em;
+			display: inline-block;
+			padding: .3em;
+			border-radius: 3px;
+			text-shadow: 1px 1px 1px black;
+		}
+		.panel .column
+		{
+			width: calc(50% - 45px);
+		}
+	</style>
+	<script type="text/javascript">
+	
+
+function center()
+	{
+		var height = $('#content').height();
+				var wheight  = $(window).height();
+				$('#content').css('top',Math.max((wheight/2) - (height/2) ,0));
+				$('#content').css('position','relative');
+				
+				
+
+				$(window).resize(function(){
+
+				var height = $('#content').height();
+				var wheight  = $(window).height();
+				$('#content').css('top',Math.max((wheight/2) - (height/2) ,0));
+				$('#content').css('position','relative');
+
+				
+
+				});
+				$(window).resize();
+	}
+
+	$(document).ready(function(){
+
+		center();
+		$(document.body).css('opacity','1');
+		$(document.body).css('background-position-x','-300px');
+		$(document.body).css('transition','opacity 1.5s ease-in, background-position-x 30s');
+
+
+	})
+
+	</script>
+	<!--[if !IE 7]>
+	<style type="text/css">
+		#wrapper {display:table;height:100%}
+	</style>
+	<![endif]-->
+    <title>Virtual World Sandbox - Virtual Worlds in your browser</title>
+
+	
+	
+
+
+</head>
+<body>
+<div id='content1' class='bodypanel'>
+	<div id="logo1">
+		<a href="/adl/sandbox">
+			<div style="display:inline">
+				<img src="/adl/sandbox/img/VWS_Logo.png">
+			</div>
+			<div style=" margin-left:10px;margin-top:50px;display:inline;">
+				<img src="/adl/sandbox/img/VW_text.png">
+				<img src="/adl/sandbox/img/Sandbox_text.png">
+			</div>
+		</a>
+	</div>
+	<div id="columns">
+		<div class='column column1'>
+			<div class='panel'>
+				<div class='paneltitle featuretitle'>Nighttime Search Demo</div>
+				<div class='column'>
+					<div class = 'section '>
+						<div class='title'> Chat </div>
+						<div class='text'> The Sandbox includes tools for text chat with other users of the environment </div>
+					</div>
+					<div class = 'section'>
+						<div class='title'> Private Messages </div>
+						<div class='text'> You can also privately message other users in the same space </div>
+					</div>
+					<div class = 'section'>
+						<div class='title'> Voice And Video </div>
+						<div class='text'> Using WebRTC, the Sandbox allows you to see and speak with your partners both during authoring and playing a simulation. The Communication API lets you decide when and how users can communicate within a world.</div>
+					</div>
+					<div class = 'section'>
+						<div class='title'> Open Source </div>
+						<div class='text'> The Sandbox is all open source. You can see the system's code, observe development, or fork your own copy</div>
+					</div>
+					<div class="moreinfolink">
+						<a href='https://github.com/adlnet/Sandbox/'> Visit us on Github </a>
+						<p> Check out how Ammo.js makes it possible to run Bullet in a browser. </p>
+					</div>
+				</div>
+				<div class='column'>
+					<div class = 'section '>
+						<div class='title'> Chat </div>
+						<div class='text'> The Sandbox includes tools for text chat with other users of the environment </div>
+					</div>
+					<div class = 'section'>
+						<div class='title'> Private Messages </div>
+						<div class='text'> You can also privately message other users in the same space </div>
+					</div>
+					<div class = 'section'>
+						<div class='title'> Voice And Video </div>
+						<div class='text'> Using WebRTC, the Sandbox allows you to see and speak with your partners both during authoring and playing a simulation. The Communication API lets you decide when and how users can communicate within a world.</div>
+					</div>
+					<div class = 'section'>
+						<div class='title'> Open Source </div>
+						<div class='text'> The Sandbox is all open source. You can see the system's code, observe development, or fork your own copy</div>
+					</div>
+					<div class="moreinfolink">
+						<a href='https://github.com/adlnet/Sandbox/'> Visit us on Github </a>
+						<p> Check out how Ammo.js makes it possible to run Bullet in a browser. </p>
+					</div>
+				</div>
+			<!--	<div class = 'section'>
+					<div class='title'> Multi-User </div>
+					<div class='text'> By default, all simulations are multi-party. You'll see the effects of other users editing or playing in real time.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Permissions </div>
+					<div class='text'> Each world can be assigned a list of people who can modify it, or can be made public for all users to enjoy</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Share </div>
+					<div class='text'> Others users can branch off a copy of your world and make it their own. You can also copy theirs, to improve or modify it.</div>
+				</div>
+			-->	
+			</div>
+			<div class='panel'>
+				<div class='paneltitle featuretitle'>Sledding Game Demo</div>
+				<div class='column'>
+					<div class = 'section '>
+						<div class='title'> Chat </div>
+						<div class='text'> The Sandbox includes tools for text chat with other users of the environment </div>
+					</div>
+					<div class = 'section'>
+						<div class='title'> Private Messages </div>
+						<div class='text'> You can also privately message other users in the same space </div>
+					</div>
+					<div class = 'section'>
+						<div class='title'> Voice And Video </div>
+						<div class='text'> Using WebRTC, the Sandbox allows you to see and speak with your partners both during authoring and playing a simulation. The Communication API lets you decide when and how users can communicate within a world.</div>
+					</div>
+					<div class = 'section'>
+						<div class='title'> Open Source </div>
+						<div class='text'> The Sandbox is all open source. You can see the system's code, observe development, or fork your own copy</div>
+					</div>
+					<div class="moreinfolink">
+						<a href='https://github.com/adlnet/Sandbox/'> Visit us on Github </a>
+						<p> Check out how Ammo.js makes it possible to run Bullet in a browser. </p>
+					</div>
+				</div>
+				<div class='column'>
+					<div class = 'section '>
+						<div class='title'> Chat </div>
+						<div class='text'> The Sandbox includes tools for text chat with other users of the environment </div>
+					</div>
+					<div class = 'section'>
+						<div class='title'> Private Messages </div>
+						<div class='text'> You can also privately message other users in the same space </div>
+					</div>
+					<div class = 'section'>
+						<div class='title'> Voice And Video </div>
+						<div class='text'> Using WebRTC, the Sandbox allows you to see and speak with your partners both during authoring and playing a simulation. The Communication API lets you decide when and how users can communicate within a world.</div>
+					</div>
+					<div class = 'section'>
+						<div class='title'> Open Source </div>
+						<div class='text'> The Sandbox is all open source. You can see the system's code, observe development, or fork your own copy</div>
+					</div>
+					<div class="moreinfolink">
+						<a href='https://github.com/adlnet/Sandbox/'> Visit us on Github </a>
+						<p> Check out how Ammo.js makes it possible to run Bullet in a browser. </p>
+					</div>
+				</div>
+			<!--	<div class = 'section'>
+					<div class='title'> Multi-User </div>
+					<div class='text'> By default, all simulations are multi-party. You'll see the effects of other users editing or playing in real time.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Permissions </div>
+					<div class='text'> Each world can be assigned a list of people who can modify it, or can be made public for all users to enjoy</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Share </div>
+					<div class='text'> Others users can branch off a copy of your world and make it their own. You can also copy theirs, to improve or modify it.</div>
+				</div>
+			-->	
+			</div>
+			
+		</div>
+	</div>
+</div>
+</body>
+</html>

@@ -2174,7 +2174,8 @@ THREE.Object3D.prototype.SphereCast = function(center, r, options) {
         var mat = this.getModelMatrix().slice(0);
         mat = MATH.inverseMat4(mat);
         var tCenter = MATH.mulMat4Vec3(mat, center);
-
+        //in cases where the matrix is bad (scale 0) this can occur. Bail out.
+        if(isNaN(tCenter[0])) return null;
 
         mat[3] = 0;
         mat[7] = 0;
