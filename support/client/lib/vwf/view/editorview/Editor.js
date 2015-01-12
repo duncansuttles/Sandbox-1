@@ -2050,6 +2050,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             var mat = vwf.getProperty(id, this.transformPropertyName);
             if(!mat)
                 return Mat4.createIdentity();
+            return mat;
         }
         this.getTranslation = function(id) {
             var mat = vwf.getProperty(id, 'worldTransform');
