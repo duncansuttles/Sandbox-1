@@ -5,7 +5,7 @@
     var document = global.document,
         Alertify;
 
-    var autocompleteChoices = ['test'];
+    var autocompleteChoices = [];
     Alertify = function() {
 
         var _alertify = {},
@@ -607,7 +607,8 @@
 
                             response(autocompleteChoices);
                         },
-                        appendTo: jQuery(input).parent()
+                        appendTo: jQuery(input).parent(),
+                        position:{ my: "left bottom", at: "left top", collision: "none" }
                     })
 
                 }

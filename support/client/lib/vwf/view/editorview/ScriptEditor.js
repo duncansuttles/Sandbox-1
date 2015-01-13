@@ -977,9 +977,9 @@ define(function() {
 
 			}
 			try {
-				text = text || null;
+				text = text === undefined ? null : text;
 				_ScriptEditor.selectedProperty = name;
-				if (!text)
+				if (text === undefined || text === null)
 					_ScriptEditor.propertyEditor.setValue("null");
 				else if (text.constructor == String)
 					_ScriptEditor.propertyEditor.setValue("\"" + text + "\"");
@@ -1062,10 +1062,13 @@ define(function() {
 			if (!refresh) {
 				this.selectedMethod = null;
 				this.selectedEvent = null;
+				this.selectedProperty = null;
 				this.MethodChanged = false;
 				this.EventChanged = false;
+				this.PropertyChanged = false;
 				$('#eventtext').css('border-color', 'black');
 				$('#methodtext').css('border-color', 'black');
+				$('#propertytext').css('border-color', 'black');
 				$('#methodtext').attr('disabled', 'disabled');
 				$('#propertytext').attr('disabled', 'disabled');
 				$('#eventtext').attr('disabled', 'disabled');
@@ -1178,8 +1181,9 @@ define(function() {
 					$('#methodlist').append('<div class="scriptchoicesug"  id="method' + thissug + '"></div>');
 					$('#method' + thissug).text(thissug);
 					$('#method' + thissug).attr('method', thissug);
-					$('#method' + thissug).qtip({
+					$('#method' + thissug).tooltip({
 						content: "Create the " + thissug + " method.",
+						 items: "div",
 						show: {
 							delay: 1000
 						}
@@ -1203,8 +1207,9 @@ define(function() {
 					var name = pointersugs[i];
 					$('#eventlist').append('<div class="scriptchoicesug" id="event' + name + '"></div>');
 					$('#event' + name).text(name);
-					$('#event' + name).qtip({
+					$('#event' + name).tooltip({
 						content: "Create the " + name + " event.",
+						items: "div",
 						show: {
 							delay: 1000
 						}
