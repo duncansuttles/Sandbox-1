@@ -64,6 +64,8 @@ Installation (Server)
 
 3. Run "npm install" in the project directory
 
-4. Run the server: > node app.js
+4. (Optional) Download the assets packet found at http://3dr.adlnet.gov/dev/VWFSupportFiles.zip,
+	and extract it to <datadir>/, making sure paths are preserved.
+5. Run the server: > node app.js
 
 
