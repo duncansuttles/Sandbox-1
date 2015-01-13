@@ -14,6 +14,14 @@
 			window.location.href = '{{root}}/searchResults/' + encodeURIComponent(terms) + '/0'; 
 			o.preventDefault();	
 		});
+		$('#embedlink').click(function()
+		{
+			var worldid = "{{worldid}}";
+			var worldlink = window.location.protocol +'//'+ window.location.host + "{{root}}" + '/' +worldid;
+			$('#embedcode').text('<iframe width="800" height="600" src="'+worldlink+'" frameborder="0" allowfullscreen></iframe>');
+			$('#embedinfo').slideDown();
+
+		})
 	});	
 
 	
@@ -57,8 +65,24 @@
 		{{/owner}}
 		<a href='{{root}}/{{worldid}}' class='' style=""  value="" >{{#translate}}Launch{{/translate}}</a><span style="margin-left:2em" />
 		<a href='{{root}}/history?id={{worldid}}' style=""  value="" >{{#translate}}View History{{/translate}}</a><span style="margin-left:2em" />
+		<a  id='embedlink' style="cursor:pointer"  value="" >{{#translate}}Embed{{/translate}}</a><span style="margin-left:2em" />
+
 
 		{{#sessionData}}<a href='{{root}}/createNew2/{{worldid}}' class='' style=""  value="" >{{#translate}}Duplicate{{/translate}}</a><span style="margin-left:2em" />{{/sessionData}}
-		
+
+
 	</div>
+	<div id='embedinfo' style='display:none;text-align:center'>
+			Copy and paste the code below into your website to embed a Sandbox player for this world.
+			<div id='embedcode' style="display: block;
+border: 1px solid lightgray;
+margin: 0em 4em;
+background: white;
+padding: 5px;
+font-family: monospace;
+font-size: 12px;
+color: #B63333;">
+				test
+			</div>
+		</div>
 </div>
