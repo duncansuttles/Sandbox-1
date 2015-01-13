@@ -65,7 +65,7 @@ define([], function() {
     function initialize() {
         var FRAME_ROLLING_AVERAGE_LENGTH = 20;
         var TICK_ROLLING_AVERAGE_LENGTH = 20;
-        var FPS_GOAL_NUMBER = 30;
+        var FPS_GOAL_NUMBER = 20;
         var TICK_TIME_THRESHOLD = 60;
 
         this.currentFrameStart = 0;
@@ -112,6 +112,7 @@ define([], function() {
                 if (newResScale < 1)
                     newResScale = 1;
 
+                newResScale = (Math.floor(newResScale * 1000))/1000;
                 if (_SettingsManager.settings.resolutionScale != newResScale) {
                     _SettingsManager.settings.resolutionScale = newResScale;
 
