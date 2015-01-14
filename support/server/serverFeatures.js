@@ -156,10 +156,13 @@ function versioning(req, res, next) {
 
 }
 
+//pages matching these expressions should have the csrf token appended to the url, so the onpage scripts can access it when sending ajax
 function testNeedsCSRF(url)
 {
   if(url.match(/\/adl\/sandbox\/createNew2/)) return true;
   if(url.match(/\/adl\/sandbox\/avatar/)) return true;
+  if(url.match(/\/adl\/sandbox\/login/)) return true;
+  if(url.match(/\/adl\/sandbox\/logout/)) return true;
   if(url.match(/\/adl\/sandbox\/edit/)) return true;
   if(url.match(/\/adl\/sandbox\/editProfile/)) return true;
   if(url.match(/\/adl\/sandbox\/forgotPassword/)) return true;
@@ -196,12 +199,12 @@ function CSRFRedirect(req, res, next) {
       } else {
           next();
       }
-    }else //strip where not needed
+    }else //strip where not needed. important for caching
     {
-        next();
-        return;
-        console.log(req.url);
-        if( req.query['_csrf'] && req.url.indexOf('vwfDataManager') === -1)  //careful not to strip and redirect from api calls
+      
+        //urls hit be these ifs are urls where we don't want to append and 302- because that might defeat the whole point by allowing an attacker
+        //to not input the token, but should neither have the token stripped, because it's used later for these paths
+        if( req.query['_csrf'] && req.url.indexOf('vwfDataManager') === -1 && req.url.indexOf('auth/local') === -1)  //careful not to strip and redirect from api calls
         {
            req.url = req.url.replace(/_csrf=.*?&/g,'');
            req.url = req.url.replace(/&?_csrf=.*?$/g,'');

@@ -20,7 +20,8 @@
 	
 	function redirect()
 	{
-		window.location = vwfPortalModel.returnVal;
+		var ret = $.QueryString['return'];
+				window.location = ret.charAt(0) == '/' ? root + ret : root + '/' + ret;
 	}
 	
 	vwfPortalModel.handleLoginButton = function(o, e){ 
