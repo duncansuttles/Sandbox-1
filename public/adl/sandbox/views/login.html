@@ -37,7 +37,7 @@
 		formData.append('password', password);
 
 		var xhr = new XMLHttpRequest();
-		xhr.open("POST", "../../auth/local");
+		xhr.open("POST", "../../auth/local" + "?_csrf=" + $.QueryString['_csrf']);
 		xhr.addEventListener("load",function(xhr)
 		{
 			if(xhr.target.status === 301 || xhr.target.status === 302 || xhr.target.status === 200)

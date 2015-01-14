@@ -1095,7 +1095,8 @@ function Salt(URL, response) {
 		} else {
 			//respond with a fake salt so attackers can't identify which is a valid account using this endpoint
 			//note: probably a timing attack here
-			respond(response, 401, GUID());
+			//yeah umm, also, responding 401 identifies this as fake salt....
+			respond(response, 200, GUID());
 		}
 
 

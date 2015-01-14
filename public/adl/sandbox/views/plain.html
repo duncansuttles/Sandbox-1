@@ -92,6 +92,37 @@
 	<script type="text/javascript" src="{{root}}/vwfDataManager.svc/getanalytics.js"></script>
 	<script type="text/javascript"> 
 
+
+	function parseUrl( url ) {
+	    var a = document.createElement('a');
+	    a.href = url;
+	    return a;
+	}
+
+	(function($) {
+    $.QueryString = (function(a) {
+        if (a == "") return {};
+        var b = {};
+        for (var i = 0; i < a.length; ++i)
+        {
+            var p=a[i].split('=');
+            if (p.length != 2) continue;
+            b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+        }
+        return b;
+    })(window.location.search.substr(1).split('&'))
+	})(jQuery);
+
+	//here, we install a little pre-ajax call to append the CSRF token to all API calls
+	$.ajaxPrefilter(function( options , originalOptions, jqXhr) {
+		
+	  if ( parseUrl(options.url).host === window.location.host && options.url.indexOf('vwfDataManager') > -1 ) {
+	    options.url += options.url.indexOf('?') > 0 ? '&' : '?';
+	    options.url += '_csrf=' + $.QueryString['_csrf'];
+	    
+	  }
+	});
+
 	function center()
 	{
 		var height = $('#content').height();

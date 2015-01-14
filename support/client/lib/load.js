@@ -59,6 +59,12 @@ function startup(boot) {
     //window.appPath = "/adl/sandbox/";
     window.appPath = "/adl/sandbox/";
 
+    function parseUrl( url ) {
+        var a = document.createElement('a');
+        a.href = url;
+        return a;
+    }
+    
     $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
 
         var p = window.location.pathname;
@@ -76,6 +82,13 @@ function startup(boot) {
             options.url = options.url.replace(p, '');
 
 
+        
+      if ( parseUrl(options.url).host === window.location.host && options.url.indexOf('vwfDataManager') > -1 ) {
+        options.url += options.url.indexOf('?') > 0 ? '&' : '?';
+        options.url += '_csrf=' + $.parseQuerystring['_csrf'];
+        
+      
+    });
 
     });
     //some hookups for simple access to math libraries    

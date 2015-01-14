@@ -84,7 +84,7 @@ var option = {
 i18n.init(option);
 
 console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-console.log('Welcome to Sandbox.\nType "create application" to create your first app.');
+console.log('Welcome to Sandbox.');
 console.log('Type "help" for a list of commands.\n');
 
 var errorlog = null;
@@ -324,9 +324,10 @@ function startVWF() {
                 }));
                 app.use(passport.initialize());
                 app.use(passport.session());
-
+                 app.use(express.csrf());
+                app.use(ServerFeatures.CSRFRedirect);
                 app.use(app.router);
-
+               
                 app.get(global.appPath + '/:page([a-zA-Z\\0-9\?/]*)', Landing.redirectPasswordEmail);
                 app.get(global.appPath, Landing.redirectPasswordEmail);
 
