@@ -88,7 +88,7 @@ function startup(boot) {
         options.url += '_csrf=' + $.parseQuerystring['_csrf'];
         
       
-    });
+    }
 
     });
     //some hookups for simple access to math libraries    

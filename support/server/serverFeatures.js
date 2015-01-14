@@ -169,7 +169,8 @@ function testNeedsCSRF(url)
   if(url.match(/settings/) ) return true;
   if(url.match(/updatePassword/) ) return true;
   if(url.match(/user/) ) return true;
-  if(url.match(/adl\\sandbox\\[A_Za-z1-9]{16}\\/) ) return true;
+  if(url.match(/\/adl\/sandbox\/[A-Za-z0-9]{16}\/$/) ) return true;
+  if(url.match(/\/adl\/sandbox\/[A-Za-z0-9]{16}\/\?/) ) return true;
 
   return false;
 
@@ -197,6 +198,8 @@ function CSRFRedirect(req, res, next) {
       }
     }else //strip where not needed
     {
+        next();
+        return;
         console.log(req.url);
         if( req.query['_csrf'] && req.url.indexOf('vwfDataManager') === -1)  //careful not to strip and redirect from api calls
         {
