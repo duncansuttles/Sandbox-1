@@ -158,17 +158,17 @@ function versioning(req, res, next) {
 
 function testNeedsCSRF(url)
 {
-  if(url.match(/createNew2/)) return true;
-  if(url.match(/avatar/)) return true;
-  if(url.match(/edit/)) return true;
-  if(url.match(/editProfile/)) return true;
-  if(url.match(/forgotPassword/)) return true;
-  if(url.match(/publish/) ) return true;
-  if(url.match(/remove/) ) return true;
-  if(url.match(/restore/) ) return true;
-  if(url.match(/settings/) ) return true;
-  if(url.match(/updatePassword/) ) return true;
-  if(url.match(/user/) ) return true;
+  if(url.match(/\/adl\/sandbox\/createNew2/)) return true;
+  if(url.match(/\/adl\/sandbox\/avatar/)) return true;
+  if(url.match(/\/adl\/sandbox\/edit/)) return true;
+  if(url.match(/\/adl\/sandbox\/editProfile/)) return true;
+  if(url.match(/\/adl\/sandbox\/forgotPassword/)) return true;
+  if(url.match(/\/adl\/sandbox\/publish/) ) return true;
+  if(url.match(/\/adl\/sandbox\/remove/) ) return true;
+  if(url.match(/\/adl\/sandbox\/restore/) ) return true;
+  if(url.match(/\/adl\/sandbox\/settings/) ) return true;
+  if(url.match(/\/adl\/sandbox\/updatePassword/) ) return true;
+  if(url.match(/\/adl\/sandbox\/user/) ) return true;
   if(url.match(/\/adl\/sandbox\/[A-Za-z0-9]{16}\/$/) ) return true;
   if(url.match(/\/adl\/sandbox\/[A-Za-z0-9]{16}\/\?/) ) return true;
 
