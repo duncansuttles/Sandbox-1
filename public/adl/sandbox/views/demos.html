@@ -8,18 +8,16 @@
 	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/style.css" />
 	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/alertify.core.css" />
 	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/alertify.default.css" />
-	<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic|Roboto+Condensed|Roboto|Open+Sans' rel='stylesheet' type='text/css'>
+	<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic|Roboto+Condensed|Roboto|Open+Sans' rel='stylesheet' type='text/css'>
 	<script type="text/javascript" src="{{root}}/js/jquery-1.10.2.min.js"></script>
+	<link rel="shortcut icon" href="/adl/sandbox/img/VWS_Logo.ico" />
 	<style>
 		body{
-
-			
 			background-image: url(./img/background.png);
 			background-size: 2220px;
 			background-position-x: 0px;
 			opacity: 0;
 			font-family: 'Open Sans', sans-serif;
-
 			opacity: 1;
 /* transition: opacity 1.5s ease-in, background-position-x 30s; */
 /* -webkit-transition: opacity 1.5s ease-in, background-position-x 30s; */
@@ -47,7 +45,7 @@ height: initial;
 			}
 			.column
 			{
-				width: calc(100% - 40px);
+				width: calc(33% - 40px);
 				margin: 20px;
 				display: inline-block;
 			}
@@ -94,7 +92,7 @@ height: initial;
 			}
 			.column
 			{
-				width: calc(100% - 10px);
+				width: calc(33% - 10px);
 				margin: 5px;
 				display: inline-block;
 			}
@@ -173,9 +171,14 @@ height: initial;
 		#columns
 		{
 			width:100%;
+			
+
 		}
 		.column
 		{
+			
+			
+			
 			vertical-align: top;
 		}
 
@@ -257,6 +260,11 @@ height: initial;
 			width: 50%;
 			margin: 1em 25% 0.5em 25%;
 		}
+		.panelheaderscreenshot
+		{
+			text-align: center;
+			margin: 1em;
+		}
 		.moreinfolink
 		{
 			margin: 1em 3em;
@@ -282,10 +290,12 @@ height: initial;
 			border-radius: 3px;
 			text-shadow: 1px 1px 1px black;
 		}
-		.panel .column
+		.panel .iframeholder
 		{
-			width: calc(50% - 45px);
+			text-align: center;
+			margin: 1em;
 		}
+
 	</style>
 	<script type="text/javascript">
 	
@@ -351,126 +361,158 @@ function center()
 	<div id="columns">
 		<div class='column column1'>
 			<div class='panel'>
-				<div class='paneltitle featuretitle'>Nighttime Search Demo</div>
-				<div class='column'>
-					<div class = 'section '>
-						<div class='title'> Chat </div>
-						<div class='text'> The Sandbox includes tools for text chat with other users of the environment </div>
-					</div>
-					<div class = 'section'>
-						<div class='title'> Private Messages </div>
-						<div class='text'> You can also privately message other users in the same space </div>
-					</div>
-					<div class = 'section'>
-						<div class='title'> Voice And Video </div>
-						<div class='text'> Using WebRTC, the Sandbox allows you to see and speak with your partners both during authoring and playing a simulation. The Communication API lets you decide when and how users can communicate within a world.</div>
-					</div>
-					<div class = 'section'>
-						<div class='title'> Open Source </div>
-						<div class='text'> The Sandbox is all open source. You can see the system's code, observe development, or fork your own copy</div>
-					</div>
-					<div class="moreinfolink">
-						<a href='https://github.com/adlnet/Sandbox/'> Visit us on Github </a>
-						<p> Check out how Ammo.js makes it possible to run Bullet in a browser. </p>
-					</div>
-				</div>
-				<div class='column'>
-					<div class = 'section '>
-						<div class='title'> Chat </div>
-						<div class='text'> The Sandbox includes tools for text chat with other users of the environment </div>
-					</div>
-					<div class = 'section'>
-						<div class='title'> Private Messages </div>
-						<div class='text'> You can also privately message other users in the same space </div>
-					</div>
-					<div class = 'section'>
-						<div class='title'> Voice And Video </div>
-						<div class='text'> Using WebRTC, the Sandbox allows you to see and speak with your partners both during authoring and playing a simulation. The Communication API lets you decide when and how users can communicate within a world.</div>
-					</div>
-					<div class = 'section'>
-						<div class='title'> Open Source </div>
-						<div class='text'> The Sandbox is all open source. You can see the system's code, observe development, or fork your own copy</div>
-					</div>
-					<div class="moreinfolink">
-						<a href='https://github.com/adlnet/Sandbox/'> Visit us on Github </a>
-						<p> Check out how Ammo.js makes it possible to run Bullet in a browser. </p>
-					</div>
-				</div>
-			<!--	<div class = 'section'>
-					<div class='title'> Multi-User </div>
-					<div class='text'> By default, all simulations are multi-party. You'll see the effects of other users editing or playing in real time.</div>
+				<div class='paneltitle featuretitle'>Multi-User Demo</div>
+				<div class='iframeholder'>
+				<iframe width="320" height="240" src="//www.youtube.com/embed/zCWcxXsNCdc?rel=0" frameborder="0" allowfullscreen></iframe> </div>
+				<div class = 'section '>
+					<div class='text'> In this recorded demonstration, you'll see several users interacting to find and apprehend a suspect in a desert environment. The scene is set up for night, and each player has a light. The helicopter is equiped with a large searchlight that is tied to the direction of the thermal camera. The demo involves 4 users- one to fly, one manning the camera, and 2 on the ground. The suspect is an NPC controlled by simple scripts </div>
 				</div>
 				<div class = 'section'>
-					<div class='title'> Permissions </div>
-					<div class='text'> Each world can be assigned a list of people who can modify it, or can be made public for all users to enjoy</div>
+					<div class='title'> Communication </div>
+					<div class='text'> While this video does not show it exactly, we have run this demo with 4 RTC connections to allow each user to communicate. In this recording, everyone was in the same room.</div>
 				</div>
 				<div class = 'section'>
-					<div class='title'> Share </div>
-					<div class='text'> Others users can branch off a copy of your world and make it their own. You can also copy theirs, to improve or modify it.</div>
+					<div class='title'> Interactivity </div>
+					<div class='text'> One of the great parts of this exercise is that it really works. The handheld lights are really not enough to search the area, and the suspect is quite hard to find without good communication from the thermal camera. Likewise, the pilot really cannot see the people below, and must work with the camera operator to aim the spot light. </div>
 				</div>
-			-->	
+				<div class="moreinfolink">
+					<a href='https://github.com/adlnet/Sandbox/'> Play the demo! </a>
+					<p> Currently Unavailable </p>
+				</div>
+			
 			</div>
 			<div class='panel'>
-				<div class='paneltitle featuretitle'>Sledding Game Demo</div>
-				<div class='column'>
-					<div class = 'section '>
-						<div class='title'> Chat </div>
-						<div class='text'> The Sandbox includes tools for text chat with other users of the environment </div>
-					</div>
-					<div class = 'section'>
-						<div class='title'> Private Messages </div>
-						<div class='text'> You can also privately message other users in the same space </div>
-					</div>
-					<div class = 'section'>
-						<div class='title'> Voice And Video </div>
-						<div class='text'> Using WebRTC, the Sandbox allows you to see and speak with your partners both during authoring and playing a simulation. The Communication API lets you decide when and how users can communicate within a world.</div>
-					</div>
-					<div class = 'section'>
-						<div class='title'> Open Source </div>
-						<div class='text'> The Sandbox is all open source. You can see the system's code, observe development, or fork your own copy</div>
-					</div>
-					<div class="moreinfolink">
-						<a href='https://github.com/adlnet/Sandbox/'> Visit us on Github </a>
-						<p> Check out how Ammo.js makes it possible to run Bullet in a browser. </p>
-					</div>
-				</div>
-				<div class='column'>
-					<div class = 'section '>
-						<div class='title'> Chat </div>
-						<div class='text'> The Sandbox includes tools for text chat with other users of the environment </div>
-					</div>
-					<div class = 'section'>
-						<div class='title'> Private Messages </div>
-						<div class='text'> You can also privately message other users in the same space </div>
-					</div>
-					<div class = 'section'>
-						<div class='title'> Voice And Video </div>
-						<div class='text'> Using WebRTC, the Sandbox allows you to see and speak with your partners both during authoring and playing a simulation. The Communication API lets you decide when and how users can communicate within a world.</div>
-					</div>
-					<div class = 'section'>
-						<div class='title'> Open Source </div>
-						<div class='text'> The Sandbox is all open source. You can see the system's code, observe development, or fork your own copy</div>
-					</div>
-					<div class="moreinfolink">
-						<a href='https://github.com/adlnet/Sandbox/'> Visit us on Github </a>
-						<p> Check out how Ammo.js makes it possible to run Bullet in a browser. </p>
-					</div>
-				</div>
-			<!--	<div class = 'section'>
-					<div class='title'> Multi-User </div>
-					<div class='text'> By default, all simulations are multi-party. You'll see the effects of other users editing or playing in real time.</div>
+				<div class='paneltitle featuretitle'>Nutrition Mission</div>
+				<div class='iframeholder'>
+				<iframe width="320" height="180" src="//www.youtube.com/embed/9PsSPvc0qkk?rel=0" frameborder="0" allowfullscreen></iframe> </div>
+				<div class = 'section '>
+					<div class='text'> This recording shows a complex Sandbox based experience embedded within EdX course content. We even have some basic data transfer between the systems, so that EdX knows that the user completed the exercise successfully.   </div>
 				</div>
 				<div class = 'section'>
-					<div class='title'> Permissions </div>
-					<div class='text'> Each world can be assigned a list of people who can modify it, or can be made public for all users to enjoy</div>
+					<div class='title'> Complex Gameplay </div>
+					<div class='text'> As with many complex applicaions, this "world" links to an external JavaScript file to handle much of the game dynamics.</div>
 				</div>
 				<div class = 'section'>
-					<div class='title'> Share </div>
-					<div class='text'> Others users can branch off a copy of your world and make it their own. You can also copy theirs, to improve or modify it.</div>
+					<div class='title'> Single Player </div>
+					<div class='text'> Because this world needs to be used by many players at once, and the game play is not designed as a multiplayer experience, the world is marked "single player" This means that when a users joins, a new world is created just for them, and is destroyed when they leave.</div>
 				</div>
-			-->	
+			</div>	
+		</div>
+		<div class='column  column2'>
+			<div class='panel'>
+				<div class='paneltitle'>Blank World</div>
+				<div class='panelheaderscreenshot'><img src='./img/blankworld.png' class=''></div>
+				<div class = 'section'>
+					<div class='text'> Use this if you just want to play around. We'll create for you a blank world where you can play around safely. Nothing you do here will be saved, and you won't need to login to try it.</div>
+				</div>
+				<div class="moreinfolink">
+					<a href='./example_blank/'>Try it out! </a>
+					<p> Click above to launch a new single player world. </p>
+				</div>
 			</div>
-			
+			<div class='panel'>
+				<div class='paneltitle'>Arcade Game</div>
+				<div class='panelheaderscreenshot'><img src='./img/arcade.png' class=''></div>
+				<div class = 'section'>
+					<div class='text'> This demo lets you build your own game level! You can drag and drop objects into the environment to prevent the player from reaching their goal.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Custom Editing </div>
+					<div class='text'> This world includes a custom GUI for the authoring portion. This GUI is simply loaded from the <code>ready</code> function of an object in the world.</div>
+				</div>
+				<div class = 'section'>
+					<div class='title'>eXperienceAPI Data tracking. </div>
+					<div class='text'> When this world is published, performance events will be tracked to the ADL Learning Record Store (LRS) using the XAPI.</div>
+				</div>
+				<div class = 'section'>
+					<div class='text'> This world is just for demonstration. If you would like to create your own copy to edit and save, <a>click here</a></div>
+				</div>
+				<div class="moreinfolink">
+					<a href='./example_blank/'> Build </a>
+					<p> Click above to launch a new single player world. </p>
+				</div>
+				<div class="moreinfolink">
+					<a href='./example_blank/'> Play </a>
+					<p> Click above to launch a new single player world. </p>
+				</div>
+			</div>
+			<div class='panel'>
+				<div class='paneltitle'>Sledding</div>
+				<div class='panelheaderscreenshot'><img src='./img/sledding.png' class=''></div>
+				<div class = 'section'>
+					<div class='text'></div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Complex Physics </div>
+					<div class='text'> Not only does this world use per-polygon collisions on an imported 3D asset file, it also has a complex controller to model the sled behavior.</div>
+				</div>
+				<div class="moreinfolink">
+					<a href='./example_sledgame/'> Go Sledding </a>
+					
+				</div>
+			</div>
+		</div>
+		<div class='column column3'>
+			<div class='panel'>
+				<div class='paneltitle'>All Examples</div>
+				<div class = 'section'>
+					<div class='text'> We also keep a long list of simple examples to demonstrate individual features and functions. These are not intended to be showcase quality items, but to simply list things the engine can do, and to serve as test cases.</div>
+				</div>
+				<a href="./examples">
+				<ul class='column column1'>
+					<li>Physics</li>
+					<li>Terrain</li>
+					<li>Assets</li>
+					<li>Sound</li>
+					<li>Scripting</li>
+					
+				</ul>
+				<ul class='column column2'>
+					<li>Objects</li>
+					<li>Particles</li>
+					<li>Materials</li>
+					<li>Lights</li>
+					<li>Behaviors</li>
+				</ul>
+				</a>
+			</div>
+			<div class='panel'>
+				<div class='paneltitle featuretitle'>Physical Joints</div>
+				<div class='iframeholder'>
+				<iframe width="320" height="180" src="//www.youtube.com/embed/_K5MNdYjJoQ?rel=0" frameborder="0" allowfullscreen></iframe> </div>
+				<div class = 'section '>
+					<div class='text'> Here's a quick video showing how a joint object can effect the motion of objects in the world. </div>
+				</div>
+			</div>
+			<div class='panel'>
+				<div class='paneltitle'>Terrain</div>
+				<div class='panelheaderscreenshot'><img src='./img/terrain.png' class=''></div>
+				<div class = 'section'>
+					<div class='text'> A simple demo showing the terrain system. Left click and drag to steer.</div>
+				</div>
+				<div class="moreinfolink">
+					<a href='./example_terraingrassfly/'> Go Flying </a>	
+				</div>
+				<div class="moreinfolink">
+					<a href='http://vwf.adlnet.gov/r/documentation/terrain/'> Read the Terrain Tutorial </a>	
+				</div>
+			</div>
+			<div class='panel'>
+				<div class='paneltitle featuretitle'>Data Recording</div>
+				<div class='iframeholder'>
+				<iframe width="320" height="180" src="//www.youtube.com/embed/HUTgepLWyig?rel=0" frameborder="0" allowfullscreen></iframe> </div>
+				<div class = 'section '>
+					<div class='text'> We have recently begun working to track, export, and play back data captured from a Sandbox environment. This video shows how we can attach to a running world and begin saving all the network traffic and changing simulation state.  </div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> Beta Software! </div>
+					<div class='text'> This tool is very much beta software. It is currently working, but probably won't work as you expect, and needs some attention to user work flow.  Be warned!</div>
+				</div>
+				<div class="moreinfolink">
+					<a href='../dataview/dataview.html'> Load the Data Recorder </a>	
+				</div>
+			</div>	
+		</div>
 		</div>
 	</div>
 </div>
