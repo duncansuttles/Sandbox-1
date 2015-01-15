@@ -329,7 +329,8 @@
 
                     this.counter = 0;
                     var now = performance.now();
-                    var campos = _Editor.findcamera().position;
+                    var campos = new THREE.Vector3();
+                    campos.setFromMatrixPosition(_Editor.findcamera().matrixWorld);
 
                     for (var i in this.children) {
 
