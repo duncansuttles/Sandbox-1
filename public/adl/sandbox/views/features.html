@@ -355,7 +355,7 @@ function center()
 		<div class='column column1'>
 			<div class='panel'>
 				<div class='paneltitle featuretitle'>Collaboration</div>
-				
+				<img src='./img/webrtc-logo.png' class='panelheaderlogo' style="width: 50%;">
 				<div class = 'section '>
 					<div class='title'> Chat </div>
 					<div class='text'> The Sandbox includes tools for text chat with other users of the environment </div>
@@ -394,12 +394,12 @@ function center()
 				<div class='paneltitle featuretitle'>Delivery</div>
 				<div class = 'section'>
 					<div class='title'> Easy to Deploy </div>
-					<div class='text'> The Sandbox is build completely on HTML5 - there's no need for your users to download anything.</div>
+					<div class='text'> The Sandbox is built completely on HTML5 - there's no need for your users to download anything.</div>
 				</div>
 				<img src='./img/HTML5_logo_and_wordmark.svg.png' class='panelheaderlogo' style="width: 25%;margin-left: 37.5%">
 				<div class = 'section'>
 					<div class='title'> Mobile Friendly </div>
-					<div class='text'> As worldwide adoption of WebGL and HTML5 increases, more and more mobile devices are able to participate in Sandbox worlds. Currently Sandbox works on mobile Chrome, Firefox and Safari, but peformance can be lower.</div>
+					<div class='text'> As worldwide adoption of WebGL and HTML5 increases, more and more mobile devices are able to participate in Sandbox worlds. Currently Sandbox works on mobile Chrome, Firefox and Safari, but peformance can be a challenge for complex worlds.</div>
 				</div>
 				<div class = 'section'>
 					<div class='title'> Simple Networking </div>
@@ -419,7 +419,7 @@ function center()
 					</code>
 				</div>
 				<div class="moreinfolink">
-					<a href='https://github.com/adlnet/Sandbox/wiki'> Wiki </a>
+					<a href='https://github.com/adlnet/Sandbox/wiki/Developer-Guide'> Wiki </a>
 					<p> Get more info on hosting your own server on our Wiki. </p>
 				</div>
 			</div>
@@ -490,7 +490,7 @@ function center()
 				</div>
 				<div class = 'section'>
 					<div class='title'> Real Time Editing </div>
-					<div class='text'> You can actually see the effects of your scripts right as you work! Just click the play button in the bottom corner, no need to pubish or compile.</div>
+					<div class='text'> You can see the effects of your scripts right as you work! Just click the play button in the bottom corner.There is no need to pubish or compile.</div>
 				</div>
 				<div class = 'section'>
 					<div class='title'> Intellegent Support </div>
@@ -498,7 +498,7 @@ function center()
 				</div>
 				<div class = 'section'>
 					<div class='title'> APIs for Everyone!</div>
-					<div class='text'> We're continously adding new APIs to the scripting system to (safely) expose system functionality to programmers. Nearly everything the system does can be controlled via in-world scripts, but APIs like the TransformAPI or the ClientAPI makes manipulating the system far more transparent.</div>
+					<div class='text'> We're continuously adding new APIs to the scripting system to (safely) expose system functionality to programmers. Nearly everything the system does can be controlled via in-world scripts, but APIs like the TransformAPI or the ClientAPI makes manipulating the system far more transparent.</div>
 				</div>
 			</div>
 		</div>
@@ -508,7 +508,7 @@ function center()
 				<img src='./img/bullet_logo-210-86.png' class='panelheaderlogo'>
 				<div class = 'section'>
 					<div class='title'> Powered by Bullet </div>
-					<div class='text'> Sandbox uses Ammo.js, a port of the popular C++ Bullet library. We use a custom fork of Ammo and Bullet to acheive determisitic playback while bringing high performance into the browser.</div>
+					<div class='text'> Sandbox uses Ammo.js, a port of the popular C++ Bullet library. We use a custom fork of Ammo and Bullet to achieve deterministic playback while bringing high performance into the browser.</div>
 				</div>
 				<div class="moreinfolink">
 					<a href='https://github.com/kripken/ammo.js/'> Ammo.JS at GitHub </a>
@@ -516,7 +516,7 @@ function center()
 				</div>
 				<div class = 'section'>
 					<div class='title'> Collision Shapes </div>
-					<div class='text'> Spheres, boxes and other primitives all have native support within our physics driver. Imported objects like 3D files can have collision bodies assigned in the editor, and can even use per-polygon collision. You can even build compound collision bodies out of multiple primitives, and use these as high performance proxies for 3D assets.</div>
+					<div class='text'> Spheres, boxes and other primitives all have native support within our physics driver. Imported objects like 3D models can have collision bodies assigned in the editor. You can build compound collision bodies out of multiple primitives, and use these as high performance proxies for 3D assets, or even use per-polygon accurate collisions. </div>
 				</div>
 				<div class = 'section'>
 					<div class='title'> Joints </div>
@@ -524,7 +524,7 @@ function center()
 				</div>
 				<div class = 'section'>
 					<div class='title'> PhysicsAPI </div>
-					<div class='text'> All aspects of the scene physics are availble from a special API in the Script Editor. You can even receive notifications about collisions between object, or just move them around with forces.</div>
+					<div class='text'> All aspects of the scene physics are available from the  Physics API. You can receive notifications about collisions between objects, or just move them around with forces.</div>
 				</div>
 				<a class = 'bottomlink'>
 					See Physics Examples
@@ -535,15 +535,15 @@ function center()
 				<div class='paneltitle'>Materials</div>
 				<div class = 'section'>
 					<div class='title'> Multi-layer materials </div>
-					<div class='text'> Materials can have textures applied to multiple properties like diffuse, specular or ambient lighting.</div>
+					<div class='text'> Materials can have textures applied to multiple properties like diffuse, specular, or ambient lighting.</div>
 				</div>
 				<div class = 'section'>
 					<div class='title'> Textures </div>
-					<div class='text'> Textures can be loaded by URL, or from a library on the server</div>
+					<div class='text'> Textures can be loaded by URL or from a library on the server.</div>
 				</div>
 				<div class = 'section'>
 					<div class='title'> Video </div>
-					<div class='text'> A video file can be used as the texture for a special material type</div>
+					<div class='text'> A video file can be used as the texture for a special material type.</div>
 				</div>
 				<div class = 'section'>
 					<div class='title'> Render-to-texture </div>
@@ -557,15 +557,15 @@ function center()
 				<div class='paneltitle'>Modeling</div>
 				<div class = 'section'>
 					<div class='title'> Basic Objects </div>
-					<div class='text'> Build in primitives for spheres, boxes, cones, cylinders, and 3D text.</div>
+					<div class='text'> There are built in primitives for spheres, boxes, cones, cylinders, and 3D text.</div>
 				</div>
 				<div class = 'section'>
 					<div class='title'> 2D Lines </div>
-					<div class='text'> Several basic 2D shapes, with the option to convert to points and edit manually.</div>
+					<div class='text'> You can create several basic 2D shapes, with the option to convert to points and edit manually.</div>
 				</div>
 				<div class = 'section'>
 					<div class='title'> Extrusions, Revolutions, Modifiers </div>
-					<div class='text'> 2D shapes can be extruded or revolved into 3D with a special modifier, and primitive objects can be distored with options like bend, twist, taper and more.</div>
+					<div class='text'> 2D shapes can be extruded or revolved into 3D with a special modifier. Primitive objects can be distorted with options like bend, twist, taper and more.</div>
 				</div>
 				<a class = 'bottomlink'>
 					See Modeling Examples
