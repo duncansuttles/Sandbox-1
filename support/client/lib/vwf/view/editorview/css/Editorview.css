@@ -1623,6 +1623,8 @@ padding-right: 3px;
 .libraryAsset
 {
 text-align: center;
+display:inline-block;
+margin-right: 1.5em;
 }
 
 .libraryAsset div
@@ -1636,8 +1638,9 @@ text-shadow: 1px 1px 5px black;
 .libraryAsset img
 {
 	
-	width: 200px;
-height: 200px;
+	width: 75px;
+height: 75px;
+box-sizing:border-box;
 margin-bottom: -19px;
 border-radius: 10px;
 box-shadow: 2px 2px 5px gray;
