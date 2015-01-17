@@ -168,7 +168,7 @@ function Findinstance(uri) {
 
     //Really, any slash delimited string after the app name should work
     //sticking with 16 characters for now 
-    if (testapp.indexOf('example') == 0 && testapp.indexOf('.') == -1) {
+    if (testapp.indexOf('example_') == 0 && testapp.length > 7 && testapp.indexOf('.') == -1) {
         return testapp;
     }
     if (testapp.length == 16) {

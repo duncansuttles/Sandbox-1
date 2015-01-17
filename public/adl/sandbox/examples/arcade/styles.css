@@ -1,0 +1,54 @@
+.createLaser
+{
+	background: purple;
+
+}
+
+.createFire
+{
+	background: red;
+	
+}
+
+.createDoor
+{
+
+	background: darkgoldenrod;
+}
+
+.createWaypoint
+{
+	background: lightblue;
+	
+}
+
+.createEnemy
+{
+	background: orange;
+	
+}
+
+.gameObject
+{
+display: inline-block;
+width: 50px;
+height: 50px;
+margin: 3px;
+border: 1px solid gray;
+box-shadow: 3px 3px 3px;
+border-radius: 5px;
+text-align: center;
+vertical-align: middle;
+text-shadow: 2px 2px 3px white;
+font-weight: bold;
+}
+
+.blockTray
+{
+margin: 1em;
+box-shadow: 0px 0px 45px gray inset, 5px 5px 10px;
+padding: 1em;
+border-radius: 5px;
+border: 1px solid lightgrey;
+	
+}
