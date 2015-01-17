@@ -628,7 +628,7 @@ scripts:
     //a new client has joined the simulation
     this.clientConnected = function(id,name,UID)
     {
-     
+    
     	if(!this.clients)
     	{
     		this.clients = {}

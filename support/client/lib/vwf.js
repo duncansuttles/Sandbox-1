@@ -1342,6 +1342,8 @@ this.tick = function() {
 
 this.setState = function( applicationState, callback_async /* () */ ) {
 
+   
+    console.log(applicationState);
     this.logger.debuggx( "setState" );  // TODO: loggableState
 
     // Set the runtime configuration.
