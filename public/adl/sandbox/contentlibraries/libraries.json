@@ -10,5 +10,8 @@
     },
     "Behaviors": {
         "url": "./contentlibraries/behaviors.json"
+    },
+    "Primitives": {
+        "url": "./contentlibraries/primitives.json"
     }
 }

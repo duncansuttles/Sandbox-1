@@ -1,0 +1,66 @@
+{
+    "extends": "box2.vwf",
+    "properties": {
+        "DisplayName": "box1",
+        "___physics_activation_state": 1,
+        "___physics_deactivation_time": 0,
+        "___physics_velocity_angular": [0, 0, 0],
+        "___physics_velocity_linear": [0, 0, 0],
+        "materialDef": {
+            "shininess": 15,
+            "alpha": 1,
+            "ambient": {
+                "r": 1,
+                "g": 1,
+                "b": 1
+            },
+            "color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+            },
+            "emit": {
+                "r": 0,
+                "g": 0,
+                "b": 0
+            },
+            "reflect": 0.8,
+            "shadeless": false,
+            "shadow": true,
+            "specularColor": {
+                "r": 0.5773502691896258,
+                "g": 0.5773502691896258,
+                "b": 0.5773502691896258
+            },
+            "specularLevel": 1,
+            "layers": [{
+                "alpha": 1,
+                "blendMode": 0,
+                "mapInput": 0,
+                "mapTo": 1,
+                "offsetx": 0,
+                "offsety": 0,
+                "rot": 0,
+                "scalex": 1,
+                "scaley": 1,
+                "src": "checker.jpg"
+            }],
+            "morphTargets": false,
+            "skinning": false,
+            "type": "phong"
+        },
+        "owner": "Anonymous0",
+        "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 2.0009992122650146, 1],
+        "type": "Primitive"
+    },
+    "random": {
+        "c": 1,
+        "s0": 0.762057435000315,
+        "s1": 0.78030790714547,
+        "s2": 0.434719256823882
+    },
+    "sequence": 0,
+    "source": "vwf/model/threejs/box.js",
+    "type": "subDriver/threejs"
+}

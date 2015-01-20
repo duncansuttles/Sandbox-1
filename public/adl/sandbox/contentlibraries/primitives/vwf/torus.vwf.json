@@ -1,0 +1,62 @@
+{
+    "extends": "torus2.vwf",
+    "properties": {
+        "DisplayName": "torus1",
+        "materialDef": {
+            "shininess": 15,
+            "alpha": 1,
+            "ambient": {
+                "r": 1,
+                "g": 1,
+                "b": 1
+            },
+            "color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+            },
+            "emit": {
+                "r": 0,
+                "g": 0,
+                "b": 0
+            },
+            "reflect": 0.8,
+            "shadeless": false,
+            "shadow": true,
+            "specularColor": {
+                "r": 0.5773502691896258,
+                "g": 0.5773502691896258,
+                "b": 0.5773502691896258
+            },
+            "specularLevel": 1,
+            "layers": [{
+                "alpha": 1,
+                "blendMode": 0,
+                "mapInput": 0,
+                "mapTo": 1,
+                "offsetx": 0,
+                "offsety": 0,
+                "rot": 0,
+                "scalex": 1,
+                "scaley": 1,
+                "src": "checker.jpg"
+            }],
+            "morphTargets": false,
+            "skinning": false,
+            "type": "phong"
+        },
+        "owner": "Anonymous0",
+        "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -0.20000000298023224, 0, 1.0010000467300415, 1],
+        "type": "Primitive"
+    },
+    "random": {
+        "c": 1,
+        "s0": 0.920566872693598,
+        "s1": 0.634009284432977,
+        "s2": 0.630253567127511
+    },
+    "sequence": 0,
+    "source": "vwf/model/threejs/torus.js",
+    "type": "subDriver/threejs"
+}

@@ -1,0 +1,38 @@
+{
+	"Sphere":{
+		"url":"./contentlibraries/primitives/vwf/sphere.vwf.json",
+		"preview":"./contentlibraries/primitives/thumbs/sphere.jpg",
+		"type":"asset"
+	},
+	"Box":{
+		"url":"./contentlibraries/primitives/vwf/box.vwf.json",
+		"preview":"./contentlibraries/primitives/thumbs/box.jpg",
+		"type":"asset"
+	},
+	"Cone":{
+		"url":"./contentlibraries/primitives/vwf/cone.vwf.json",
+		"preview":"./contentlibraries/primitives/thumbs/cone.jpg",
+		"type":"asset"
+	},
+	"Cylinder":{
+		"url":"./contentlibraries/primitives/vwf/cylinder.vwf.json",
+		"preview":"./contentlibraries/primitives/thumbs/cylinder.jpg",
+		"type":"asset"
+	},
+	"Plane":{
+		"url":"./contentlibraries/primitives/vwf/plane.vwf.json",
+		"preview":"./contentlibraries/primitives/thumbs/plane.jpg",
+		"type":"asset"
+	},
+	"Text":{
+		"url":"./contentlibraries/primitives/vwf/text.vwf.json",
+		"preview":"./contentlibraries/primitives/thumbs/text.jpg",
+		"type":"asset"
+	},
+	"Torus":{
+		"url":"./contentlibraries/primitives/vwf/torus.vwf.json",
+		"preview":"./contentlibraries/primitives/thumbs/torus.jpg",
+		"type":"asset"
+	}
+
+}

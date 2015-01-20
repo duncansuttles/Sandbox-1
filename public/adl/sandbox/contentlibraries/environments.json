@@ -23,5 +23,10 @@
 		"url":"./contentlibraries/environments/vwf/fog.vwf.json",
 		"preview":"./contentlibraries/environments/thumbs/fog.jpg",
 		"type":"environment"
+	},
+	"Stormy":{
+		"url":"./contentlibraries/environments/vwf/stormy.vwf.json",
+		"preview":"./contentlibraries/environments/thumbs/stormy.jpg",
+		"type":"environment"
 	}
 }
