@@ -1,424 +1,492 @@
 {
-    "children": {
-        "631d7ce-3c29-5206-28a3-b521e1b3b795": {
-            "extends": "box2.vwf",
-            "properties": {
-                "DisplayName": "box3",
-                "___physics_activation_state": 1,
-                "___physics_deactivation_time": 0,
-                "___physics_enabled": true,
-                "___physics_velocity_angular": [0, 0, 0],
-                "___physics_velocity_linear": [0, 0, 0],
-                "_length": 3.38,
-                "height": 1.8,
-                "isSelectable": false,
-                "materialDef": {
-                    "alpha": 1,
-                    "ambient": {
-                        "b": 1,
-                        "g": 1,
-                        "r": 1
-                    },
-                    "color": {
-                        "a": 1,
-                        "b": 1,
-                        "g": 1,
-                        "r": 1
-                    },
-                    "emit": {
-                        "b": 0,
-                        "g": 0,
-                        "r": 0
-                    },
-                    "layers": [{
-                        "alpha": 1,
-                        "blendMode": 0,
-                        "mapInput": 0,
-                        "mapTo": 1,
-                        "offsetx": 0,
-                        "offsety": 0,
-                        "rot": 0,
-                        "scalex": 1,
-                        "scaley": 1,
-                        "src": "checker.jpg"
-                    }],
-                    "morphTargets": false,
-                    "reflect": 0.8,
-                    "shadeless": false,
-                    "shadow": true,
-                    "shininess": 15,
-                    "skinning": false,
-                    "specularColor": {
-                        "b": 0.577350269189626,
-                        "g": 0.577350269189626,
-                        "r": 0.577350269189626
-                    },
-                    "specularLevel": 1,
-                    "type": "phong"
-                },
-                "owner": "Anonymous0",
-                "size": [1, 1, 1],
-                "tempid": "",
-                "texture": "checker.jpg",
-                "transform": [1, 0, 0, 0, 0, 0.8842551708221436, -0.4670041501522064, 0, 0, 0.4670041501522064, 0.8842551708221436, 0, 0.019496440887451172, -2.940272569656372, 1.2303802967071533, 1],
-                "type": "Primitive",
-                "visible": false,
-                "width": 1.88
-            },
-            "random": {
-                "c": 1,
-                "s0": 0.409240240231156,
-                "s1": 0.876942818984389,
-                "s2": 0.810754083329812
-            },
-            "sequence": 0,
-            "source": "vwf/model/threejs/box.js",
-            "type": "subDriver/threejs"
-        },
-        "dd8af283-ffb2-c1f6-8ca-991041837e7a": {
-            "extends": "cylinder2.vwf",
-            "properties": {
-                "DisplayName": "cylinder1",
-                "___physics_activation_state": 1,
-                "___physics_deactivation_time": 0,
-                "___physics_enabled": true,
-                "___physics_velocity_angular": [0, 0, 0],
-                "___physics_velocity_linear": [0, 0, 0],
-                "height": 6.39,
-                "isSelectable": false,
-                "materialDef": {
-                    "alpha": 1,
-                    "ambient": {
-                        "b": 1,
-                        "g": 1,
-                        "r": 1
-                    },
-                    "color": {
-                        "a": 1,
-                        "b": 1,
-                        "g": 1,
-                        "r": 1
-                    },
-                    "emit": {
-                        "b": 0,
-                        "g": 0,
-                        "r": 0
-                    },
-                    "layers": [{
-                        "alpha": 1,
-                        "blendMode": 0,
-                        "mapInput": 0,
-                        "mapTo": 1,
-                        "offsetx": 0,
-                        "offsety": 0,
-                        "rot": 0,
-                        "scalex": 1,
-                        "scaley": 1,
-                        "src": "checker.jpg"
-                    }],
-                    "morphTargets": false,
-                    "reflect": 0.8,
-                    "shadeless": false,
-                    "shadow": true,
-                    "shininess": 15,
-                    "skinning": false,
-                    "specularColor": {
-                        "b": 0.577350269189626,
-                        "g": 0.577350269189626,
-                        "r": 0.577350269189626
-                    },
-                    "specularLevel": 1,
-                    "type": "phong"
-                },
-                "owner": "Anonymous0",
-                "radius": 0.17,
-                "rsegs": 4,
-                "size": [1, 0.5, 0.5],
-                "tempid": "",
-                "texture": "checker.jpg",
-                "transform": [1, 0, 0, 0, 0, 0.04135247692465782, 0.9991446733474731, 0, 0, -0.9991446733474731, 0.04135247692465782, 0, 0.006497383117675781, 2.721719264984131, 1.6283824443817139, 1],
-                "type": "Primitive",
-                "visible": false
-            },
-            "random": {
-                "c": 1,
-                "s0": 0.747689564945176,
-                "s1": 0.738760148873553,
-                "s2": 0.562328642234206
-            },
-            "sequence": 0,
-            "source": "vwf/model/threejs/cylinder.js",
-            "type": "subDriver/threejs"
-        },
-        "afdcbea7-846e-e0d6-3543-3e65c40c35fd": {
-            "extends": "box2.vwf",
-            "properties": {
-                "DisplayName": "box1",
-                "___physics_activation_state": 1,
-                "___physics_deactivation_time": 0,
-                "___physics_enabled": true,
-                "___physics_velocity_angular": [0, 0, 0],
-                "___physics_velocity_linear": [0, 0, 0],
-                "_length": 3.74,
-                "height": 1.6,
-                "isSelectable": false,
-                "materialDef": {
-                    "alpha": 1,
-                    "ambient": {
-                        "b": 1,
-                        "g": 1,
-                        "r": 1
-                    },
-                    "color": {
-                        "a": 1,
-                        "b": 1,
-                        "g": 1,
-                        "r": 1
-                    },
-                    "emit": {
-                        "b": 0,
-                        "g": 0,
-                        "r": 0
-                    },
-                    "layers": [{
-                        "alpha": 1,
-                        "blendMode": 0,
-                        "mapInput": 0,
-                        "mapTo": 1,
-                        "offsetx": 0,
-                        "offsety": 0,
-                        "rot": 0,
-                        "scalex": 1,
-                        "scaley": 1,
-                        "src": "checker.jpg"
-                    }],
-                    "morphTargets": false,
-                    "reflect": 0.8,
-                    "shadeless": false,
-                    "shadow": true,
-                    "shininess": 15,
-                    "skinning": false,
-                    "specularColor": {
-                        "b": 0.577350269189626,
-                        "g": 0.577350269189626,
-                        "r": 0.577350269189626
-                    },
-                    "specularLevel": 1,
-                    "type": "phong"
-                },
-                "owner": "Anonymous0",
-                "size": [1, 1, 1],
-                "tempid": "",
-                "texture": "checker.jpg",
-                "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.019496440887451172, -0.1752758026123047, 0.7963823080062866, 1],
-                "type": "Primitive",
-                "visible": false,
-                "width": 4.92
-            },
-            "random": {
-                "c": 1,
-                "s0": 0.377036998281255,
-                "s1": 0.835700812749565,
-                "s2": 0.712401910685003
-            },
-            "sequence": 0,
-            "source": "vwf/model/threejs/box.js",
-            "type": "subDriver/threejs"
-        },
-        "f79ec819-ebcc-e0a3-6351-6e17b93a624c": {
-            "extends": "cylinder2.vwf",
-            "properties": {
-                "DisplayName": "cylinder2",
-                "___physics_activation_state": 1,
-                "___physics_deactivation_time": 0,
-                "___physics_enabled": true,
-                "___physics_velocity_angular": [0, 0, 0],
-                "___physics_velocity_linear": [0, 0, 0],
-                "isSelectable": false,
-                "materialDef": {
-                    "alpha": 1,
-                    "ambient": {
-                        "b": 1,
-                        "g": 1,
-                        "r": 1
-                    },
-                    "color": {
-                        "a": 1,
-                        "b": 1,
-                        "g": 1,
-                        "r": 1
-                    },
-                    "emit": {
-                        "b": 0,
-                        "g": 0,
-                        "r": 0
-                    },
-                    "layers": [{
-                        "alpha": 1,
-                        "blendMode": 0,
-                        "mapInput": 0,
-                        "mapTo": 1,
-                        "offsetx": 0,
-                        "offsety": 0,
-                        "rot": 0,
-                        "scalex": 1,
-                        "scaley": 1,
-                        "src": "checker.jpg"
-                    }],
-                    "morphTargets": false,
-                    "reflect": 0.8,
-                    "shadeless": false,
-                    "shadow": true,
-                    "shininess": 15,
-                    "skinning": false,
-                    "specularColor": {
-                        "b": 0.577350269189626,
-                        "g": 0.577350269189626,
-                        "r": 0.577350269189626
-                    },
-                    "specularLevel": 1,
-                    "type": "phong"
-                },
-                "owner": "Anonymous0",
-                "radius": 1.66,
-                "size": [1, 0.5, 0.5],
-                "tempid": "",
-                "texture": "checker.jpg",
-                "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.11949682235717773, -0.18827152252197266, 1.7993825674057007, 1],
-                "type": "Primitive",
-                "visible": false
-            },
-            "random": {
-                "c": 1,
-                "s0": 0.393508623819798,
-                "s1": 0.619925062404945,
-                "s2": 0.948739394312724
-            },
-            "sequence": 0,
-            "source": "vwf/model/threejs/cylinder.js",
-            "type": "subDriver/threejs"
-        },
-        "de97a913-473b-3d40-9043-c33cf6be78cc": {
-            "extends": "box2.vwf",
-            "properties": {
-                "DisplayName": "box2",
-                "___physics_activation_state": 1,
-                "___physics_deactivation_time": 0,
-                "___physics_enabled": true,
-                "___physics_velocity_angular": [0, 0, 0],
-                "___physics_velocity_linear": [0, 0, 0],
-                "_length": 3.38,
-                "height": 0.71,
-                "isSelectable": false,
-                "materialDef": {
-                    "alpha": 1,
-                    "ambient": {
-                        "b": 1,
-                        "g": 1,
-                        "r": 1
-                    },
-                    "color": {
-                        "a": 1,
-                        "b": 1,
-                        "g": 1,
-                        "r": 1
-                    },
-                    "emit": {
-                        "b": 0,
-                        "g": 0,
-                        "r": 0
-                    },
-                    "layers": [{
-                        "alpha": 1,
-                        "blendMode": 0,
-                        "mapInput": 0,
-                        "mapTo": 1,
-                        "offsetx": 0,
-                        "offsety": 0,
-                        "rot": 0,
-                        "scalex": 1,
-                        "scaley": 1,
-                        "src": "checker.jpg"
-                    }],
-                    "morphTargets": false,
-                    "reflect": 0.8,
-                    "shadeless": false,
-                    "shadow": true,
-                    "shininess": 15,
-                    "skinning": false,
-                    "specularColor": {
-                        "b": 0.577350269189626,
-                        "g": 0.577350269189626,
-                        "r": 0.577350269189626
-                    },
-                    "specularLevel": 1,
-                    "type": "phong"
-                },
-                "owner": "Anonymous0",
-                "size": [1, 1, 1],
-                "tempid": "",
-                "texture": "checker.jpg",
-                "transform": [1, 0, 0, 0, 0, 0.7835850715637207, 0.6212846040725708, 0, 0, -0.6212846040725708, 0.7835850715637207, 0, 0.019496440887451172, 2.6367244720458984, 0.7263821959495544, 1],
-                "type": "Primitive",
-                "visible": false,
-                "width": 1.61
-            },
-            "random": {
-                "c": 1,
-                "s0": 0.507731845835224,
-                "s1": 0.737368185073137,
-                "s2": 0.118636605329812
-            },
-            "sequence": 0,
-            "source": "vwf/model/threejs/box.js",
-            "type": "subDriver/threejs"
-        }
-    },
-    "extends": "asset.vwf",
-    "methods": {
-        "deinitialize": {
-            "body": "\n\n    //This function was created for you by the system. \n        //Deinitialize is called when the object is being destroyed.\n        // Clean up here if your object allocated any resources manually during initialize.\n        \n        //remove the event handlers when this object is deleted\n        this.Scene.unbind(\"keyDown\", this.keydown);\n        this.Scene.unbind(\"keyUp\", this.keyup);\n",
-            "parameters": []
-        },
-        "ready": {
-            "body": "\n\n\n\n\n          //this is called when the object is setup, so event though the VWF state does not contain this info, it's ok - this gets called on each client, even late joiners\n\n              //here, we bind a function to the scenes keydown method.\n              //since we might be calling the function several time during development, lets unbind so we dont' get confused\n              //by several copies of the function existing\n              this.Scene.unbind(\"keyDown\", this.keydown);\n              this.Scene.unbind(\"keyUp\", this.keyup);\n              \n              var self = this;\n              //we use a stack of keys so that the user gets the motion of the most recent key down\n              //if we used just the last key, the motion would be strange when several were held\n              this.keydown = function(event)\n              {\n                  self.keysdown.push(event.key.key);\n              }\n\n              this.keyup = function(event)\n              {\n                  if (self.keysdown.indexOf(event.key.key) !== -1)\n                      self.keysdown.splice(self.keysdown.indexOf(event.key.key), 1);\n              }\n              \n              //ok, now we unbound any existing functions, and bound new ones.\n              this.Scene.bind(\"keyDown\", this.keydown);\n              this.Scene.bind(\"keyUp\", this.keyup);\n",
-            "parameters": []
-        },
-        "tick": {
-            "body": "\n  //this function uses a PI loop for controlling the state of the entity\n      //A PI loop is a common algorithm for controlling a variable when the inputs you have to the systems dont' directly effect the variable\n      //On our case, the variable we want to control the the linear or angular velocity.\n      //but when using a physics engine, it's bad pratice to set the velocities directly (though you could). Instead, you should move the object around using forces\n      //thus, our inputs to the system are forces, and the variable we wish to control is velocity.\n      //checkout Wikipedia on  PID loops for more theory on how this works. It's actually pretty simple - the farther we are from the goal, the more we push, and the longer we've not been at the \n      //goal, the more we push. \n\n      //all the constants here are hand tuned\n\n      //get the last key from the stack of pressed keys\n      var topKey = this.keysdown[this.keysdown.length - 1];\n\n      if (this.keysdown.indexOf('W') > -1 || this.keysdown.indexOf('S') > -1)\n      {\n          //we need to activate the object so the physics don't freeze it\n          this.___physics_activation_state = 1;\n          var P_TERM = .001;\n          var I_TERM = .0001;\n          var SCALE = 200;\n          var vel = this.physicsAPI.getLinearVelocity();\n          vel = this.transformAPI.globalToLocalRotation(vel);\n\n          var velgoal = 0;\n          if (this.keysdown.indexOf('W') > this.keysdown.indexOf('S'))\n          {\n              velgoal = 2;\n              this.vel_I = Math.max(0, this.vel_I);\n          }\n          if (this.keysdown.indexOf('S') > this.keysdown.indexOf('W'))\n          {\n              velgoal = -2;\n              this.vel_I = Math.min(0, this.vel_I);\n          }\n          var p = velgoal - vel[1];\n\n          if (Vec3.dot(this.transformAPI.localToGlobalRotation(0, 0, 1), [0, 0, 1]) < .5) return;\n\n          this.vel_I += p;\n          var vel_PID = p * P_TERM + this.vel_I + I_TERM;\n          var tforce = vel_PID * SCALE;\n          if (tforce > 200000) tforce = 200000;\n          if (tforce < -200000) tforce = -200000;\n          var force = this.transformAPI.localToGlobalRotation(0, tforce, 0);\n          this.physicsAPI.addForceAtCenter(force);\n      }\n      if (this.keysdown.indexOf('A') > -1 || this.keysdown.indexOf('D') > -1)\n      {\n          this.___physics_activation_state = 1;\n          var P_TERM = .10;\n          var I_TERM = .0001;\n          var SCALE = 1000;\n          var vel = this.physicsAPI.getAngularVelocity();\n          vel = this.transformAPI.globalToLocalRotation(vel);\n\n          var velgoal = 0;\n          if (this.keysdown.indexOf('A') > this.keysdown.indexOf('D'))\n          {\n              velgoal = .4;\n              this.rot_I = Math.max(0, this.rot_I);\n          }\n          if (this.keysdown.indexOf('D') > this.keysdown.indexOf('A'))\n          {\n              velgoal = -.4;\n              this.rot_I = Math.min(0, this.rot_I);\n          }\n          var p = velgoal - vel[2];\n\n          if (Vec3.dot(this.transformAPI.localToGlobalRotation(0, 0, 1), [0, 0, 1]) < .5) return;\n\n          this.rot_I += p;\n          var vel_PID = p * P_TERM + this.rot_I + I_TERM;\n          var tforce = vel_PID * SCALE;\n          if (tforce > 200000) tforce = 200000;\n          if (tforce < -200000) tforce = -200000;\n          \n          var force = this.transformAPI.localToGlobalRotation(0, 0, tforce);\n          this.physicsAPI.addTorque(force);\n\n      }\n      if (!(this.keysdown.indexOf('W') > -1 || this.keysdown.indexOf('S') > -1))\n      {\n\n          this.vel_I = 0;\n          //simulate huge friction when no motor by reducing velocity\n          var vel = this.physicsAPI.getLinearVelocity();\n          vel = this.transformAPI.globalToLocalRotation(vel);\n          vel[1] *= .5;\n\n          this.physicsAPI.setLinearVelocity(vel);\n      }\n      if (!(this.keysdown.indexOf('A') > -1 || this.keysdown.indexOf('D') > -1))\n      {\n\n          this.rot_I = 0;\n\n          //simulate huge friction when no motor by reducing velocity\n          var vel = this.physicsAPI.getAngularVelocity();\n          vel = this.transformAPI.globalToLocalRotation(vel);\n          vel[2] *= .1;\n\n          this.physicsAPI.setAngularVelocity(vel);\n      }\n\n      //since a tank has tracks, it can slide forward and back easier than side to side. So, limit sideways motion\n      var vel = this.physicsAPI.getLinearVelocity();\n      vel = this.transformAPI.globalToLocalRotation(vel);\n      vel[0] *= .3;\n      vel = this.transformAPI.localToGlobalRotation(vel);\n      this.physicsAPI.setLinearVelocity(vel);\n",
-            "parameters": []
-        }
-    },
-    "properties": {
-        "DisplayName": "T-1",
-        "___physics_activation_state": 1,
-        "___physics_angular_velocity": [0, 0, 0],
-        "___physics_damping": 0,
-        "___physics_deactivation_time": 0,
-        "___physics_enabled": true,
-        "___physics_friction": 0,
-        "___physics_linear_velocity": [0, 0, 0],
-        "___physics_mass": 1126.2,
-        "___physics_restitution": 0,
-        "___physics_velocity_angular": [0, 0, 0],
-        "___physics_velocity_linear": [0, 0, 0],
-        "isSelectable": true,
-        "keysdown": [],
-        "owner": "Anonymous0",
-        "rot_I": 0,
-        "rotation": [1, 0, 0, 0],
-        "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1.8475366830825806, -1.507416009902954, 0.01774579845368862, 1],
-        "translation": [1.84753667750175, -1.50741604087278, 0.0177457988262173],
-        "type": "3DR Object",
-        "vel_I": 0
-    },
-    "random": {
-        "c": 1,
-        "s0": 0.937413142062724,
-        "s1": 0.42679993971251,
-        "s2": 0.396942557068542
-    },
-    "sequence": 0,
-    "source": "./contentlibraries/entities/assets/t90/T90.json",
-    "type": "subDriver/threejs/asset/vnd.osgjs+json+compressed"
+	"children": {
+		"f285d24d-aba5-197d-695c-e1d4396d7c1": {
+			"extends": "cylinder2.vwf",
+			"properties": {
+				"DisplayName": "cylinder2",
+				"___physics_activation_state": 1,
+				"___physics_deactivation_time": 0,
+				"___physics_enabled": true,
+				"___physics_velocity_angular": [0, 0, 0],
+				"___physics_velocity_linear": [0, 0, 0],
+				"isSelectable": false,
+				"materialDef": {
+					"alpha": 1,
+					"ambient": {
+						"b": 1,
+						"g": 1,
+						"r": 1
+					},
+					"color": {
+						"a": 1,
+						"b": 1,
+						"g": 1,
+						"r": 1
+					},
+					"emit": {
+						"b": 0,
+						"g": 0,
+						"r": 0
+					},
+					"layers": [{
+						"alpha": 1,
+						"blendMode": 0,
+						"mapInput": 0,
+						"mapTo": 1,
+						"offsetx": 0,
+						"offsety": 0,
+						"rot": 0,
+						"scalex": 1,
+						"scaley": 1,
+						"src": "checker.jpg"
+					}],
+					"morphTargets": false,
+					"reflect": 0.8,
+					"shadeless": false,
+					"shadow": true,
+					"shininess": 15,
+					"skinning": false,
+					"specularColor": {
+						"b": 0.577350269189626,
+						"g": 0.577350269189626,
+						"r": 0.577350269189626
+					},
+					"specularLevel": 1,
+					"type": "phong"
+				},
+				"owner": "Anonymous0",
+				"radius": 1.66,
+				"size": [1, 0.5, 0.5],
+				"tempid": "",
+				"texture": "checker.jpg",
+				"transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.11949682235717773, 0.21172848343849182, 0.9993824362754822, 1],
+				"type": "Primitive",
+				"visible": false
+			},
+			"random": {
+				"c": 1,
+				"s0": 0.393508623819798,
+				"s1": 0.619925062404945,
+				"s2": 0.948739394312724
+			},
+			"sequence": 0,
+			"source": "vwf/model/threejs/cylinder.js",
+			"type": "subDriver/threejs"
+		},
+		"6c99b4e5-d92e-f803-4cb9-8b3745cbefdc": {
+			"extends": "box2.vwf",
+			"properties": {
+				"DisplayName": "box3",
+				"___physics_activation_state": 1,
+				"___physics_deactivation_time": 0,
+				"___physics_enabled": true,
+				"___physics_velocity_angular": [0, 0, 0],
+				"___physics_velocity_linear": [0, 0, 0],
+				"_length": 3.38,
+				"height": 1.8,
+				"isSelectable": false,
+				"materialDef": {
+					"alpha": 1,
+					"ambient": {
+						"b": 1,
+						"g": 1,
+						"r": 1
+					},
+					"color": {
+						"a": 1,
+						"b": 1,
+						"g": 1,
+						"r": 1
+					},
+					"emit": {
+						"b": 0,
+						"g": 0,
+						"r": 0
+					},
+					"layers": [{
+						"alpha": 1,
+						"blendMode": 0,
+						"mapInput": 0,
+						"mapTo": 1,
+						"offsetx": 0,
+						"offsety": 0,
+						"rot": 0,
+						"scalex": 1,
+						"scaley": 1,
+						"src": "checker.jpg"
+					}],
+					"morphTargets": false,
+					"reflect": 0.8,
+					"shadeless": false,
+					"shadow": true,
+					"shininess": 15,
+					"skinning": false,
+					"specularColor": {
+						"b": 0.577350269189626,
+						"g": 0.577350269189626,
+						"r": 0.577350269189626
+					},
+					"specularLevel": 1,
+					"type": "phong"
+				},
+				"owner": "Anonymous0",
+				"size": [1, 1, 1],
+				"tempid": "",
+				"texture": "checker.jpg",
+				"transform": [1, 0, 0, 0, 0, 0.8842551708221436, -0.4670041501522064, 0, 0, 0.4670041501522064, 0.8842551708221436, 0, 0.019496440887451172, -2.5402724742889404, 0.43038028478622437, 1],
+				"type": "Primitive",
+				"visible": false,
+				"width": 1.88
+			},
+			"random": {
+				"c": 1,
+				"s0": 0.409240240231156,
+				"s1": 0.876942818984389,
+				"s2": 0.810754083329812
+			},
+			"sequence": 0,
+			"source": "vwf/model/threejs/box.js",
+			"type": "subDriver/threejs"
+		},
+		"ea5f4c94-923-aa44-7d50-3bc5f0f3bd0d": {
+			"extends": "cylinder2.vwf",
+			"properties": {
+				"DisplayName": "cylinder1",
+				"___physics_activation_state": 1,
+				"___physics_deactivation_time": 0,
+				"___physics_enabled": true,
+				"___physics_velocity_angular": [0, 0, 0],
+				"___physics_velocity_linear": [0, 0, 0],
+				"height": 6.39,
+				"isSelectable": false,
+				"materialDef": {
+					"alpha": 1,
+					"ambient": {
+						"b": 1,
+						"g": 1,
+						"r": 1
+					},
+					"color": {
+						"a": 1,
+						"b": 1,
+						"g": 1,
+						"r": 1
+					},
+					"emit": {
+						"b": 0,
+						"g": 0,
+						"r": 0
+					},
+					"layers": [{
+						"alpha": 1,
+						"blendMode": 0,
+						"mapInput": 0,
+						"mapTo": 1,
+						"offsetx": 0,
+						"offsety": 0,
+						"rot": 0,
+						"scalex": 1,
+						"scaley": 1,
+						"src": "checker.jpg"
+					}],
+					"morphTargets": false,
+					"reflect": 0.8,
+					"shadeless": false,
+					"shadow": true,
+					"shininess": 15,
+					"skinning": false,
+					"specularColor": {
+						"b": 0.577350269189626,
+						"g": 0.577350269189626,
+						"r": 0.577350269189626
+					},
+					"specularLevel": 1,
+					"type": "phong"
+				},
+				"owner": "Anonymous0",
+				"radius": 0.17,
+				"rsegs": 4,
+				"size": [1, 0.5, 0.5],
+				"tempid": "",
+				"texture": "checker.jpg",
+				"transform": [1, 0, 0, 0, 0, 0.04135247692465782, 0.9991446733474731, 0, 0, -0.9991446733474731, 0.04135247692465782, 0, 0.006497383117675781, 3.1217193603515625, 0.8283823132514954, 1],
+				"type": "Primitive",
+				"visible": false
+			},
+			"random": {
+				"c": 1,
+				"s0": 0.747689564945176,
+				"s1": 0.738760148873553,
+				"s2": 0.562328642234206
+			},
+			"sequence": 0,
+			"source": "vwf/model/threejs/cylinder.js",
+			"type": "subDriver/threejs"
+		},
+		"7bd3eb91-6147-364d-48ff-d3bc3811e829": {
+			"extends": "box2.vwf",
+			"properties": {
+				"DisplayName": "box2",
+				"___physics_activation_state": 1,
+				"___physics_deactivation_time": 0,
+				"___physics_enabled": true,
+				"___physics_velocity_angular": [0, 0, 0],
+				"___physics_velocity_linear": [0, 0, 0],
+				"_length": 3.38,
+				"height": 0.71,
+				"isSelectable": false,
+				"materialDef": {
+					"alpha": 1,
+					"ambient": {
+						"b": 1,
+						"g": 1,
+						"r": 1
+					},
+					"color": {
+						"a": 1,
+						"b": 1,
+						"g": 1,
+						"r": 1
+					},
+					"emit": {
+						"b": 0,
+						"g": 0,
+						"r": 0
+					},
+					"layers": [{
+						"alpha": 1,
+						"blendMode": 0,
+						"mapInput": 0,
+						"mapTo": 1,
+						"offsetx": 0,
+						"offsety": 0,
+						"rot": 0,
+						"scalex": 1,
+						"scaley": 1,
+						"src": "checker.jpg"
+					}],
+					"morphTargets": false,
+					"reflect": 0.8,
+					"shadeless": false,
+					"shadow": true,
+					"shininess": 15,
+					"skinning": false,
+					"specularColor": {
+						"b": 0.577350269189626,
+						"g": 0.577350269189626,
+						"r": 0.577350269189626
+					},
+					"specularLevel": 1,
+					"type": "phong"
+				},
+				"owner": "Anonymous0",
+				"size": [1, 1, 1],
+				"tempid": "",
+				"texture": "checker.jpg",
+				"transform": [1, 0, 0, 0, 0, 0.7835850715637207, 0.6212846040725708, 0, 0, -0.6212846040725708, 0.7835850715637207, 0, 0.019496440887451172, 3.03672456741333, -0.07361778616905212, 1],
+				"type": "Primitive",
+				"visible": false,
+				"width": 1.61
+			},
+			"random": {
+				"c": 1,
+				"s0": 0.507731845835224,
+				"s1": 0.737368185073137,
+				"s2": 0.118636605329812
+			},
+			"sequence": 0,
+			"source": "vwf/model/threejs/box.js",
+			"type": "subDriver/threejs"
+		},
+		"7310953e-e83a-1389-e3b8-f902a4d5f39": {
+			"extends": "box2.vwf",
+			"properties": {
+				"DisplayName": "box1",
+				"___physics_activation_state": 1,
+				"___physics_deactivation_time": 0,
+				"___physics_enabled": true,
+				"___physics_velocity_angular": [0, 0, 0],
+				"___physics_velocity_linear": [0, 0, 0],
+				"_length": 3.74,
+				"height": 1.6,
+				"isSelectable": false,
+				"materialDef": {
+					"alpha": 1,
+					"ambient": {
+						"b": 1,
+						"g": 1,
+						"r": 1
+					},
+					"color": {
+						"a": 1,
+						"b": 1,
+						"g": 1,
+						"r": 1
+					},
+					"emit": {
+						"b": 0,
+						"g": 0,
+						"r": 0
+					},
+					"layers": [{
+						"alpha": 1,
+						"blendMode": 0,
+						"mapInput": 0,
+						"mapTo": 1,
+						"offsetx": 0,
+						"offsety": 0,
+						"rot": 0,
+						"scalex": 1,
+						"scaley": 1,
+						"src": "checker.jpg"
+					}],
+					"morphTargets": false,
+					"reflect": 0.8,
+					"shadeless": false,
+					"shadow": true,
+					"shininess": 15,
+					"skinning": false,
+					"specularColor": {
+						"b": 0.577350269189626,
+						"g": 0.577350269189626,
+						"r": 0.577350269189626
+					},
+					"specularLevel": 1,
+					"type": "phong"
+				},
+				"owner": "Anonymous0",
+				"size": [1, 1, 1],
+				"tempid": "",
+				"texture": "checker.jpg",
+				"transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.019496440887451172, 0.2247242033481598, -0.003617671085521579, 1],
+				"type": "Primitive",
+				"visible": false,
+				"width": 4.92
+			},
+			"random": {
+				"c": 1,
+				"s0": 0.377036998281255,
+				"s1": 0.835700812749565,
+				"s2": 0.712401910685003
+			},
+			"sequence": 0,
+			"source": "vwf/model/threejs/box.js",
+			"type": "subDriver/threejs"
+		},
+		"9f8948f0-31cf-be20-b061-6e67d5012643": {
+			"children": {
+				"c1332dd5-1131-b752-9b09-d3ff420214f": {
+					"extends": "asset.vwf",
+					"properties": {
+						"DisplayName": "barrel",
+						"___physics_activation_state": 1,
+						"___physics_deactivation_time": 0,
+						"___physics_velocity_angular": [0, 0, 0],
+						"___physics_velocity_linear": [0, 0, 0],
+						"owner": "Anonymous0",
+						"transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1.0432499647140503, -0.1444219946861267, 1],
+						"type": "3DR Object"
+					},
+					"random": {
+						"c": 1,
+						"s0": 0.593786855693907,
+						"s1": 0.456156186992303,
+						"s2": 0.021551874699071
+					},
+					"sequence": 0,
+					"source": "barrel",
+					"type": "link_existing/threejs"
+				},
+				"32f66f45-2785-b08f-e3a7-8ffdaeb543a": {
+					"extends": "asset.vwf",
+					"properties": {
+						"DisplayName": "gunmount",
+						"___physics_activation_state": 1,
+						"___physics_deactivation_time": 0,
+						"___physics_velocity_angular": [0, 0, 0],
+						"___physics_velocity_linear": [0, 0, 0],
+						"owner": "Anonymous0",
+						"transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.5879769921302795, -0.3498220145702362, 0, 1],
+						"type": "3DR Object"
+					},
+					"random": {
+						"c": 1,
+						"s0": 0.998455781023949,
+						"s1": 0.853051170241088,
+						"s2": 0.708598051918671
+					},
+					"sequence": 0,
+					"source": "gunmount",
+					"type": "link_existing/threejs"
+				}
+			},
+			"extends": "asset.vwf",
+			"properties": {
+				"DisplayName": "Turret",
+				"___physics_activation_state": 1,
+				"___physics_deactivation_time": 0,
+				"___physics_velocity_angular": [0, 0, 0],
+				"___physics_velocity_linear": [0, 0, 0],
+				"owner": "Anonymous0",
+				"transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -0.01005639974027872, 0.25562500953674316, 0.9559940099716187, 1],
+				"type": "3DR Object"
+			},
+			"random": {
+				"c": 1,
+				"s0": 0.388133844360709,
+				"s1": 0.930286076152697,
+				"s2": 0.584090003976598
+			},
+			"sequence": 0,
+			"source": "Turret",
+			"type": "link_existing/threejs"
+		}
+	},
+	"extends": "asset.vwf",
+	"methods": {
+		"deinitialize": {
+			"body": "\n\n\n\n        //This function was created for you by the system. \n            //Deinitialize is called when the object is being destroyed.\n            // Clean up here if your object allocated any resources manually during initialize.\n            \n            //remove the event handlers when this object is deleted\n            this.Scene.unbind(\"keyDown\", this.keydown);\n            this.Scene.unbind(\"keyUp\", this.keyup);\n",
+			"parameters": []
+		},
+		"ready": {
+			"body": "\n\n\n\n\n\n\n              //this is called when the object is setup, so event though the VWF state does not contain this info, it's ok - this gets called on each client, even late joiners\n\n                  //here, we bind a function to the scenes keydown method.\n                  //since we might be calling the function several time during development, lets unbind so we dont' get confused\n                  //by several copies of the function existing\n                  this.Scene.unbind(\"keyDown\", this.keydown);\n                  this.Scene.unbind(\"keyUp\", this.keyup);\n                  \n                  var self = this;\n                  //we use a stack of keys so that the user gets the motion of the most recent key down\n                  //if we used just the last key, the motion would be strange when several were held\n                  this.keydown = function(event)\n                  {\n                      self.keysdown.push(event.key.key);\n                  }\n\n                  this.keyup = function(event)\n                  {\n                      if (self.keysdown.indexOf(event.key.key) !== -1)\n                          self.keysdown.splice(self.keysdown.indexOf(event.key.key), 1);\n                  }\n                  \n                  //ok, now we unbound any existing functions, and bound new ones.\n                  this.Scene.bind(\"keyDown\", this.keydown);\n                  this.Scene.bind(\"keyUp\", this.keyup);\n",
+			"parameters": []
+		},
+		"tick": {
+			"body": "\n\n\n      //this function uses a PI loop for controlling the state of the entity\n          //A PI loop is a common algorithm for controlling a variable when the inputs you have to the systems dont' directly effect the variable\n          //On our case, the variable we want to control the the linear or angular velocity.\n          //but when using a physics engine, it's bad pratice to set the velocities directly (though you could). Instead, you should move the object around using forces\n          //thus, our inputs to the system are forces, and the variable we wish to control is velocity.\n          //checkout Wikipedia on  PID loops for more theory on how this works. It's actually pretty simple - the farther we are from the goal, the more we push, and the longer we've not been at the \n          //goal, the more we push. \n\n          //all the constants here are hand tuned\n\n          //get the last key from the stack of pressed keys\n          var topKey = this.keysdown[this.keysdown.length - 1];\n\n          if (this.keysdown.indexOf('W') > -1 || this.keysdown.indexOf('S') > -1)\n          {\n              //we need to activate the object so the physics don't freeze it\n              this.___physics_activation_state = 1;\n              var P_TERM = .001;\n              var I_TERM = .0001;\n              var SCALE = 200;\n              var vel = this.physicsAPI.getLinearVelocity();\n              vel = this.transformAPI.globalToLocalRotation(vel);\n\n              var velgoal = 0;\n              if (this.keysdown.indexOf('W') > this.keysdown.indexOf('S'))\n              {\n                  velgoal = 2;\n                  this.vel_I = Math.max(0, this.vel_I);\n              }\n              if (this.keysdown.indexOf('S') > this.keysdown.indexOf('W'))\n              {\n                  velgoal = -2;\n                  this.vel_I = Math.min(0, this.vel_I);\n              }\n              var p = velgoal - vel[1];\n\n              if (Vec3.dot(this.transformAPI.localToGlobalRotation(0, 0, 1), [0, 0, 1]) < .5) return;\n\n              this.vel_I += p;\n              var vel_PID = p * P_TERM + this.vel_I + I_TERM;\n              var tforce = vel_PID * SCALE;\n              if (tforce > 200000) tforce = 200000;\n              if (tforce < -200000) tforce = -200000;\n              var force = this.transformAPI.localToGlobalRotation(0, tforce, 0);\n              this.physicsAPI.addForceAtCenter(force);\n          }\n          if (this.keysdown.indexOf('A') > -1 || this.keysdown.indexOf('D') > -1)\n          {\n              this.___physics_activation_state = 1;\n              var P_TERM = .10;\n              var I_TERM = .0001;\n              var SCALE = 1000;\n              var vel = this.physicsAPI.getAngularVelocity();\n              vel = this.transformAPI.globalToLocalRotation(vel);\n\n              var velgoal = 0;\n              if (this.keysdown.indexOf('A') > this.keysdown.indexOf('D'))\n              {\n                  velgoal = .4;\n                  this.rot_I = Math.max(0, this.rot_I);\n              }\n              if (this.keysdown.indexOf('D') > this.keysdown.indexOf('A'))\n              {\n                  velgoal = -.4;\n                  this.rot_I = Math.min(0, this.rot_I);\n              }\n              var p = velgoal - vel[2];\n\n              if (Vec3.dot(this.transformAPI.localToGlobalRotation(0, 0, 1), [0, 0, 1]) < .5) return;\n\n              this.rot_I += p;\n              var vel_PID = p * P_TERM + this.rot_I + I_TERM;\n              var tforce = vel_PID * SCALE;\n              if (tforce > 200000) tforce = 200000;\n              if (tforce < -200000) tforce = -200000;\n              \n              var force = this.transformAPI.localToGlobalRotation(0, 0, tforce);\n              this.physicsAPI.addTorque(force);\n\n          }\n          if (!(this.keysdown.indexOf('W') > -1 || this.keysdown.indexOf('S') > -1))\n          {\n\n              this.vel_I = 0;\n              //simulate huge friction when no motor by reducing velocity\n              var vel = this.physicsAPI.getLinearVelocity();\n              vel = this.transformAPI.globalToLocalRotation(vel);\n              vel[1] *= .5;\n\n              this.physicsAPI.setLinearVelocity(vel);\n          }\n          if (!(this.keysdown.indexOf('A') > -1 || this.keysdown.indexOf('D') > -1))\n          {\n\n              this.rot_I = 0;\n\n              //simulate huge friction when no motor by reducing velocity\n              var vel = this.physicsAPI.getAngularVelocity();\n              vel = this.transformAPI.globalToLocalRotation(vel);\n              vel[2] *= .1;\n\n              this.physicsAPI.setAngularVelocity(vel);\n          }\n\n          //since a tank has tracks, it can slide forward and back easier than side to side. So, limit sideways motion\n          var vel = this.physicsAPI.getLinearVelocity();\n          vel = this.transformAPI.globalToLocalRotation(vel);\n          vel[0] *= .3;\n          vel = this.transformAPI.localToGlobalRotation(vel);\n          this.physicsAPI.setLinearVelocity(vel);\n",
+			"parameters": []
+		}
+	},
+	"properties": {
+		"DisplayName": "T-1",
+		"___physics_activation_state": 1,
+		"___physics_angular_velocity": [0, 0, 0],
+		"___physics_damping": 0,
+		"___physics_deactivation_time": 0,
+		"___physics_enabled": true,
+		"___physics_friction": 0,
+		"___physics_linear_velocity": [0, 0, 0],
+		"___physics_mass": 1126.2,
+		"___physics_restitution": 0,
+		"___physics_velocity_angular": [0, 0, 0],
+		"___physics_velocity_linear": [0, 0, 0],
+		"isSelectable": true,
+		"keysdown": [],
+		"owner": "Anonymous0",
+		"rot_I": 0,
+		"rotation": [1, 0, 0, 0],
+		"transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -0.02976749651134014, -3.2855849266052246, 0.8177458643913269, 1],
+		"translation": [-0.0297674962704214, -3.48558583255061, 0.017745798826218],
+		"type": "3DR Object",
+		"vel_I": 0
+	},
+	"random": {
+		"c": 1,
+		"s0": 0.937413142062724,
+		"s1": 0.42679993971251,
+		"s2": 0.396942557068542
+	},
+	"sequence": 0,
+	"source": "./contentlibraries/entities/assets/t90/T90.json",
+	"type": "subDriver/threejs/asset/vnd.osgjs+json+compressed"
 }

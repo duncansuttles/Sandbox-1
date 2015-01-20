@@ -683,7 +683,7 @@ function ClientConnected(socket, namespace, instancedata) {
             //important that nothing is between
 
 
-
+            thisInstance.messageConnection(socket.id, socket.loginData.Username, socket.loginData.UID);
             loadClient.emit('message', messageCompress.pack(JSON.stringify({
                 "action": "getState",
                 "respond": true,
@@ -695,7 +695,7 @@ function ClientConnected(socket, namespace, instancedata) {
                 "time": thisInstance.getStateTime
             })));
 
-            thisInstance.messageConnection(socket.id, socket.loginData.Username, socket.loginData.UID);
+            
 
             var timeout = function(namespace) {
 
@@ -963,7 +963,7 @@ function ClientConnected(socket, namespace, instancedata) {
                         thisInstance.cachedState = JSON.parse(JSON.stringify(state));
 
 
-                        if (true/*message.client != i && client.pending === true  make possible to restore state from client*/) {
+                       
                             client.emit('message', messageCompress.pack(JSON.stringify({
                                 "action": "status",
                                 "parameters": ["State Received, Transmitting"],
@@ -974,7 +974,7 @@ function ClientConnected(socket, namespace, instancedata) {
                                 "parameters": [state],
                                 "time": thisInstance.getStateTime
                             })));
-                        }
+                        
                         client.pending = false;
                         for (var j = 0; j < client.pendingList.length; j++) {
                             client.emit('message', client.pendingList[j]);
