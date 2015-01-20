@@ -1,0 +1,12 @@
+{
+	"title":"Arcade Game Demo",
+	"description":"testing the ability to serve the examples",
+	"publishSettings":{
+		"allowAnonymous":true,
+		"published":true,
+		"createAvatar":false,
+		"singlePlayer":true,
+		"allowTools":false,
+		"camera":"SandboxCamera-vwf-58faf29-3658-392-e779-44d7f701f192"
+	}
+}
