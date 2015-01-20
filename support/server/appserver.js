@@ -22,6 +22,7 @@ var DAL = require('./DAL').DAL;
 var resolveCase = require('./resolveCaseInsensitiveFilename').resolveName;
 var existsCaseInsensitive = require('./resolveCaseInsensitiveFilename').exists;
 var existsSyncCaseInsensitive = require('./resolveCaseInsensitiveFilename').existsSync;
+
 function setDAL(dal) {
     DAL = dal;
 }
@@ -191,8 +192,6 @@ function hash(str) {
 }
 
 
-
-
 //Just serve a simple file
 function ServeFile(request, filename, response, URL) {
     FileCache.ServeFile(request, filename, response, URL)
@@ -222,7 +221,7 @@ function ServeYAML(filename, response, URL) {
         try {
             var deYAML = JSON.stringify(YAML.load(file));
         } catch (e) {
-            global.log("error parsing YAML " + filename,2);
+            global.log("error parsing YAML " + filename, 2);
             _404(response);
             return;
         }
@@ -244,205 +243,302 @@ function ServeYAML(filename, response, URL) {
 
 }
 
+function admin_instances(request, response, next) {
 
+
+    var safePathRE = RegExp('/\//' + (libpath.sep == '/' ? '\/' : '\\') + '/g');
+    var path = "../../public".replace(safePathRE);
+    var URL = url.parse(request.url, true);
+    URL.pathname = decodeURIComponent(URL.pathname);
+    var uri = URL.pathname.replace(safePathRE);
+    //obey some old VWF URL formatting
+    if (uri.indexOf('/admin/'.replace(safePathRE)) != -1) {
+
+        //gets a list of all active sessions on the server, and all clients
+        if (uri.indexOf('/admin/instances'.replace(safePathRE)) != -1) {
+
+            var data = {},
+                tempLoginData;
+            for (var i in global.instances.instances) {
+                data[i] = {
+                    clients: {}
+                };
+                for (var j in global.instances.instances[i].clients) {
+                    if (global.instances.instances[i].clients[j].loginData) {
+                        tempLoginData = global.instances.instances[i].clients[j].loginData;
+                        data[i].clients[j] = {
+                            UID: tempLoginData.UID,
+                            loginTime: tempLoginData.loginTime,
+                            lastUpdate: tempLoginData.lastUpdate
+                        };
+                    } else {
+                        data[i].clients[j] = {
+                            UID: 'anonymous'
+                        };
+                    }
+                }
+            }
+            ServeJSON(data, response, URL);
+            return;
+        }
+
+    }
+    next();
+}
+
+function routeToAPI(request, response, next) {
+
+    var safePathRE = RegExp('/\//' + (libpath.sep == '/' ? '\/' : '\\') + '/g');
+    var path = "../../public".replace(safePathRE);
+    var URL = url.parse(request.url, true);
+    URL.pathname = decodeURIComponent(URL.pathname);
+    var uri = URL.pathname.replace(safePathRE);
+    //global.log( URL.pathname );
+
+    //lets try to move this into the main app.get om node_vwf
+    if (URL.pathname.toLowerCase().indexOf('/vwfdatamanager.svc/') != -1) {
+        //Route to DataServer
+        SandboxAPI.serve(request, response);
+        return;
+    }else
+      next();
+
+}
 function handleRequest(request, response, next) {
 
-    try {
-        var safePathRE = RegExp('/\//' + (libpath.sep == '/' ? '\/' : '\\') + '/g');
-        var path = "../../public".replace(safePathRE);
 
+    var safePathRE = RegExp('/\//' + (libpath.sep == '/' ? '\/' : '\\') + '/g');
+    var path = "../../public".replace(safePathRE);
+     var URL = url.parse(request.url, true);
+    URL.pathname = decodeURIComponent(URL.pathname);
+    var uri = URL.pathname.replace(safePathRE);
+    
+    if (URL.pathname == '/' || URL.pathname == '') {
+        redirect(global.appPath + '/', response);
+        return;
+    }
 
+    var filename = libpath.join(path, uri);
+    var instance = Findinstance(filename);
+    //global.log(instance);
+    //remove the instance identifier from the request
+    filename = filterinstance(filename, instance);
 
-        var URL = url.parse(request.url, true);
-        URL.pathname = decodeURIComponent(URL.pathname);
-        var uri = URL.pathname.replace(safePathRE);
-        //global.log( URL.pathname );
+    async.waterfall([
 
-        //lets try to move this into the main app.get om node_vwf
-        if (URL.pathname.toLowerCase().indexOf('/vwfdatamanager.svc/') != -1) {
-            //Route to DataServer
-            SandboxAPI.serve(request, response);
-            return;
-        }
-        if (URL.pathname == '/' || URL.pathname == '') {
-            redirect(global.appPath + '/', response);
-            return;
-        }
-
-        var filename = libpath.join(path, uri);
-        var instance = Findinstance(filename);
-        //global.log(instance);
-        //remove the instance identifier from the request
-        filename = filterinstance(filename, instance);
-
-
-        //obey some old VWF URL formatting
-        if (uri.indexOf('/admin/'.replace(safePathRE)) != -1) {
-
-            //gets a list of all active sessions on the server, and all clients
-            if (uri.indexOf('/admin/instances'.replace(safePathRE)) != -1) {
-
-                var data = {}, tempLoginData;
-                for (var i in global.instances.instances) {
-                    data[i] = {
-                        clients: {}
-                    };
-                    for (var j in global.instances.instances[i].clients) {
-                        if (global.instances.instances[i].clients[j].loginData) {
-                            tempLoginData = global.instances.instances[i].clients[j].loginData;
-                            data[i].clients[j] = {
-                                UID: tempLoginData.UID,
-                                loginTime: tempLoginData.loginTime,
-                                lastUpdate: tempLoginData.lastUpdate
-                            };
-                        } else {
-                            data[i].clients[j] = {
-                                UID: 'anonymous'
-                            };
-                        }
-                    }
+            function serve_file_directly(callback) {
+                existsCaseInsensitive(libpath.resolve(__dirname, filename), function(c1) {
+                    if (c1) {
+                        callback(null, true);
+                    } else
+                        callback(null, false);
+                });
+            },
+            function serve_file_directly_yaml(resolved, callback) {
+                //bail out of the step, the previous was successful
+                if (resolved) {
+                    callback(null, resolved);
+                    return;
                 }
-                ServeJSON(data, response, URL);
-                return;
-            }
 
-        }
-        //file is not found - serve index or map to support files
-        //file is also not a yaml document
-        var c1;
-        var c2;
-
-
-        //global.log(filename);
-        existsCaseInsensitive(libpath.resolve(__dirname, filename), function(c1) {
-            existsCaseInsensitive(libpath.resolve(__dirname, filename + ".yaml"), function(c2) {
-                if (!c1 && !c2) {
-
-                    //try to find the correct support file 
-                    var appname = findAppName(filename);
-                    if (!appname) {
-
-                        filename = filename.substr(19);
-                        filename = "../".replace(safePathRE) + filename;
-                        filename = filename.replace('vwf.example.com', 'proxy/vwf.example.com');
-
-                    } else {
-
-                        filename = filename.substr(appname.length - 2);
-                        if (appname == "")
-                            filename = '../../support/client/lib/index.html'.replace(safePathRE);
-                        else
-                            filename = '../../support/client/lib/'.replace(safePathRE) + filename;
-
-                    }
-
+                existsCaseInsensitive(libpath.resolve(__dirname, filename + ".yaml"), function(c2) {
+                    if (c2) {
+                        ServeYAML(libpath.resolve(__dirname, filename + ".yaml"), response, URL);
+                        callback(true, true); //stop processing, we're done;
+                    } else
+                        callback(null, false);
+                });
+            },
+            function map_to_support_file(resolved, callback) {
+                //bail out of the step, the previous was successful
+                if (resolved) {
+                    callback(null, resolved);
+                    return;
                 }
-                //filename = resolveCase(filename);
-                //file does exist, serve normally 
+                //try to find the correct support file 
+                var appname = findAppName(filename);
+                if (!appname) {
+
+                    filename = filename.substr(19);
+                    filename = "../".replace(safePathRE) + filename;
+                    filename = filename.replace('vwf.example.com', 'proxy/vwf.example.com');
+
+                } else {
+
+                    filename = filename.substr(appname.length - 2);
+                    if (appname == "")
+                        filename = '../../support/client/lib/index.html'.replace(safePathRE);
+                    else
+                        filename = '../../support/client/lib/'.replace(safePathRE) + filename;
+                }
+                //this step never resolves the request, just modifies the filename
+                callback(null, false);
+            },
+
+            function serve_support_file_yaml(resolved, callback) {
+                //bail out of the step, the previous was successful
+                if (resolved) {
+                    callback(null, resolved);
+                    return;
+                }
+                existsCaseInsensitive(libpath.resolve(__dirname, filename + '.yaml'), function(c4) {
+                    if (c4) {
+                        ServeYAML( libpath.resolve(__dirname, filename + '.yaml'), response, URL);
+                        callback(true, true); //exit, we're done
+                    } else
+                        callback(null, false);
+                });
+            },
+            function serve_support_file(resolved, callback) {
+                //bail out of the step, the previous was successful
+                if (resolved) {
+                    callback(null, resolved);
+                    return;
+                }
                 existsCaseInsensitive(libpath.resolve(__dirname, filename), function(c3) {
-                    existsCaseInsensitive(libpath.resolve(__dirname, filename + ".yaml"), function(c4) {
-                        if (c3) {
-                            //if requesting directory, setup instance
-                            //also, redirect to current instnace name of does not end in slash
-                            fs.stat(resolveCase(libpath.resolve(__dirname, filename)), function(err, isDir) {
-                                //server started throwing these when added case logic
-                                if(err){
-                                    _404(response);
-                                    return;
-                                }
-                                if (isDir.isDirectory()) {
+                    if (c3) {
+                        fs.stat(resolveCase(libpath.resolve(__dirname, filename)), function(err, isDir) {
+                            //server started throwing these when added case logic
+                            if (err) {
+                                _404(response);
+                                return;
+                            }
+                            if (isDir.isDirectory()) {
+                                callback(null, false);
+                            } else {
+                                ServeFile(request, resolveCase(libpath.resolve(__dirname, filename)), response, URL);
+                                callback(true, true);
+                            }
+                        })
 
-                                    var appname = findAppName(filename);
-                                    if (!appname)
-                                        appname = findAppName(filename + libpath.sep);
-
-                                    //no instance id is given, new instance
-                                    if (appname && instance == null) {
-                                        //GenerateNewInstance(request,response,appname);
-
-
-                                        redirect(URL.pathname + "/index.html", response);
-                                        //global.log('redirect ' + appname+"./index.html");
-                                        return;
-                                    }
-                                    //instance needs to end in a slash, so redirect but keep instance id
-                                    if (appname && strEndsWith(URL.pathname, instance)) {
-                                        RedirectToInstance(request, response, appname, "");
-                                        return;
-                                    }
-                                    //no app name but is directory. Not listing directories, so try for index.html or 404
-                                    if (!appname) {
-                                        if (!strEndsWith(URL.pathname, '/')) {
-                                            
-                                            _302(URL.pathname + '/', response);
-                                        } else {
-                                            existsCaseInsensitive(libpath.join(filename, "index.html"), function(indexexists) {
-
-                                                if (indexexists)
-                                                    ServeFile(request, filename + libpath.sep + "index.html", response, URL);
-                                                else
-                                                    next(); //_404(response);
-
-                                            });
-                                        }
-
-
-                                        return;
-                                    }
-
-                                    //this is the bootstrap html. Must have instnace and appname
-                                    filename = '../../support/client/lib/index.html'.replace(safePathRE);
-
-                                    //when loading the bootstrap, you must have an instance that exists in the database
-                                    
-                                    var instanceName = appname.substr(14).replace(/\//g, '_').replace(/\\/g, '_') + instance + "_";
-                                    DAL.getInstance(instanceName, function(data) {
-                                        if (data)
-                                            ServeFile(request, filename, response, URL);
-                                        else {
-
-                                            require('./examples.js').getExampleData(instanceName, function(data) {
-                                                if (data) {
-                                                    ServeFile(request, filename, response, URL);
-                                                } else {
-                                                    redirect("/", response);
-                                                }
+                    } else
+                        callback(null, false);
+                });
+            },
+            function check_exists(resolved, callback) {
+                existsCaseInsensitive(libpath.resolve(__dirname, filename), function(c3) {
+                    if (c3) {
+                        callback(null, true);
+                    } else {
+                        _404(response);
+                        callback(true, true);
+                    }
+                });
+            },
+            function check_isDir(resolved, callback) {
+                fs.stat(resolveCase(libpath.resolve(__dirname, filename)), function(err, isDir) {
+                    //server started throwing these when added case logic
+                    if (err) {
+                        _404(response);
+                        callback(true, true);
+                        return;
+                    }
+                    if (isDir.isDirectory()) {
+                        callback(null, true);
+                    } else {
+                        ServeFile(request, filename, response, URL);
+                        callback(true, true);
+                    }
+                });
+            },
+            function serve_directory_world(resolved, callback) {
+                //if we got this far, filename is should be an existing directory;
 
 
-                                            })
+                //two chances to allow lazy eval
+                var appname = findAppName(filename);
+                if (!appname)
+                    appname = findAppName(filename + libpath.sep);
 
-                                        }
-                                    });
-                                    return;
-                                }
-                                //just serve the file
-                                ServeFile(request, filename, response, URL);
-                            });
-                        } else if (c4) {
-                            //was not found, but found if appending .yaml. Serve as yaml
-                            ServeYAML(libpath.resolve(__dirname, filename) + ".yaml", response, URL);
+                //do not generate IDs on the fly, if an app name is given but no instance ID, redirect home.
+                if (appname && instance == null) {
+                    redirect(URL.pathname + "/index.html", response);
+                    callback(true, true);
+                    return;
+                }
+                //instance needs to end in a slash, so redirect but keep instance id
+                if (appname && strEndsWith(URL.pathname, instance)) {
+                    RedirectToInstance(request, response, appname, "");
+                    callback(true, true);
+                    return;
+                }
+                
+                if(appname){ //at this point, it is a directory that is a vwf application.
 
-                        }
-                        // is an admin call, currently only serving instances
-                        else {
-                            global.log("404 : " + filename,2)
-                            //_404(response);
-                            next();
+                    //this is the bootstrap html. Must have instnace and appname
+                    filename = '../../support/client/lib/index.html'.replace(safePathRE);
 
+                    //when loading the bootstrap, you must have an instance that exists in the database
+                    var instanceName = appname.substr(14).replace(/\//g, '_').replace(/\\/g, '_') + instance + "_";
+                    DAL.getInstance(instanceName, function(data) {
+                        if (data) {
+                            ServeFile(request, filename, response, URL);
+                            callback(true, true);
                             return;
+                        } else {
+
+                            require('./examples.js').getExampleData(instanceName, function(data) {
+                                if (data) {
+                                    ServeFile(request, filename, response, URL);
+                                    callback(true, true);
+                                    return;
+                                } else {
+                                    redirect("/", response);
+                                    callback(true, true);
+                                    return;
+                                }
+
+
+                            })
+
                         }
                     });
-                });
-            });
+                
+                }else{ //exists, is a dir, is not a VWF application, not directly a file, yaml, or support file
+                    callback(null,false)
+                }
+            },
+            function serve_directory_index(resolved,callback)
+            {
+                //no app name but is directory. Not listing directories, so try for index.html or 404
+                //so, this is not a VWF application directory.
+                //in this case, we redirect to add the slash if necessary.
+                if (!strEndsWith(URL.pathname, '/')) {
+
+                    _302(URL.pathname + '/', response);
+                    callback(true, true);
+                    return;
+                } else {
+                    //if this is a directory, and it ends in a slash, if there is an index.html
+                    existsCaseInsensitive(libpath.join(filename, "index.html"), function(indexexists) {
+
+                        if (indexexists) {
+                            ServeFile(request, filename + libpath.sep + "index.html", response, URL);
+                            callback(true, true);
+                            return;
+                        } else {
+                            callback(null, false);
+                            return;
+                        }
+
+                    });
+                }
+                callback(null, false);
+                return;
+            },
+            function final_404(resolved,callback)
+            {
+                next(); // give up, return to express route stack
+                callback(null, false);
+            }
+        ],
+        function appserver_waterfall_complete(err, results) {
+
+
         });
-    } catch (e) {
-        response.writeHead(500, {
-            "Content-Type": "text/plain"
-        });
-        response.write(e.toString(), "utf8");
-        response.end();
-    }
 } // close onRequest
 
 exports.handleRequest = handleRequest;
+exports.admin_instances = admin_instances;
+exports.routeToAPI = routeToAPI;
 exports.setDAL = setDAL;

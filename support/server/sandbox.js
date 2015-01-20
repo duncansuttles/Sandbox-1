@@ -350,6 +350,8 @@ function startVWF() {
                 app.post(global.appPath + '/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
                 app.post(global.appPath + '/data/:action([a-zA-Z_]+)', Landing.handlePostRequest);
 
+                app.use(appserver.admin_instances);
+                app.use(appserver.routeToAPI);
                 //The file handleing logic for vwf engine files
                 app.use(appserver.handleRequest);
                 //var listen = app.listen(port);
