@@ -580,7 +580,72 @@ function CopyInstance(URL, SID, response) {
 				if (data)
 					xapi.sendStatement(URL.loginData.UID, xapi.verbs.created, newId, data.title, data.description, SID);
 			});
-		} else respond(response, 500, 'Error in trying to copy world');
+		} else //if the state to copy was not found in the dB, is it an example? if so, set the example data as the data for the new world
+		{
+			var statedata = null;
+			var statemetadata = null;
+			var newid = null;
+			
+			async.series([
+					function getExampleData(cb) {
+						require('./examples.js').getExampleData(SID, function(data) {
+							if (data) {
+								statedata = data;
+								statedata[statedata.length - 1].owner = URL.loginData.UID;
+								cb();
+							} else {
+								cb(true);
+							}
+						})
+					},
+					function getExampleMetadata(cb) {
+						require('./examples.js').getExampleMetadata(SID, function(data) {
+							if (data) {
+								statemetadata = data;
+								statemetadata.owner = URL.loginData.UID;
+								statemetadata.create = new Date();
+								statemetadata.clonedFrom = SID;
+								delete statemetadata.publishSettings;
+                				delete statemetadata.publishedFrom;
+                				delete statemetadata.children;
+								cb();
+							} else {
+								cb(true);
+							}
+						})
+					},
+					function createNewInstance(cb) {
+						newid = "_adl_sandbox_" + makeid() + "_";
+						
+						DAL.createInstance(newid, statemetadata, function() {
+							cb();
+						})
+					},
+					function saveInstanceState(cb) {
+						DAL.saveInstanceState(newid, statedata, function(ok) {
+							console.log(ok);
+							cb();
+						})
+					},
+					function saveThumbnail(cb) {
+						var newThumbnail = datapath + libpath.sep + "States" + libpath.sep + newid + libpath.sep + "thumbnail.png";
+						var oldThumbnail = 'public' + libpath.sep + "adl" + libpath.sep + 'sandbox' + libpath.sep + 'examples' + libpath.sep + SID + libpath.sep + "thumbnail.png";
+						fs.readFile(oldThumbnail, function(err, data) {
+							if (!data || err) {
+								cb()
+							}else
+								fs.writeFile(newThumbnail, data, cb);
+						});
+					}
+				],
+				function copyExampleComplete(err) {
+
+					if (err)
+						respond(response, 500, 'Error in trying to copy world');
+					else
+						respond(response, 200, newid);
+				})
+		}
 	});
 }
 

@@ -662,18 +662,33 @@ exports.createNew2 = function(req, res, next) {
             res.redirect(root + '/login?return=createNew/0')
         }
         var template = req.params.template;
-        DAL.getInstance(global.appPath.replace(/\//g, "_") + "_" + template + "_", function(worlddata) {
+        var normalizedSID = global.appPath.replace(/\//g, "_") + "_" + template + "_";
+        console.log(normalizedSID);
+        DAL.getInstance(normalizedSID, function(worlddata) {
 
-
-            res.locals = {
+            function postWorldData()
+            {
+                res.locals = {
                 worlddata: worlddata,
                 template: (template == 'noTemplate' ? false : template),
                 root: getRoot(),
                 translate: translate(req)
-            };
-            res.render('createNew2', {
-                layout: 'plain'
-            });
+                };
+                res.render('createNew2', {
+                    layout: 'plain'
+                });
+            }
+            console.log(worlddata);
+            if(!worlddata)
+            {
+                require('./examples.js').getExampleMetadata(normalizedSID, function(data) {
+                    worlddata = data;
+                    if(worlddata) postWorldData();
+                });
+            }else
+                postWorldData();
+
+           
 
         });
 

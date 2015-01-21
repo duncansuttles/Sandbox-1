@@ -343,7 +343,7 @@ function startVWF() {
                 app.get(global.appPath + '/:page([a-zA-Z/]+)', Landing.generalHandler);
                 app.get(global.appPath + '/stats', Landing.statsHandler);
                 app.get(global.appPath + '/createNew/:page([0-9/]+)', Landing.createNew);
-                app.get(global.appPath + '/createNew2/:template([a-zA-Z0-9/]+)', Landing.createNew2);
+                app.get(global.appPath + '/createNew2/:template([_a-zA-Z0-9/]+)', Landing.createNew2);
 
                 app.get(global.appPath + '/vwf.js', Landing.serveVWFcore);
 
