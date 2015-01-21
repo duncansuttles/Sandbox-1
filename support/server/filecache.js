@@ -243,7 +243,7 @@ function _FileCache() {
             }
 
             //If the clinet can take the gzipped encoding, send that
-            if (request.headers['accept-encoding'] && request.headers['accept-encoding'].indexOf('gzip') >= 0) {
+            if (request.headers['accept-encoding'] && request.headers['accept-encoding'].indexOf('gzip') >= 0 && !global.configuration.disableGZip) {
                 response.writeHead(200, {
                     "Content-Type": type,
                     "Last-Modified": file.stats.mtime,
