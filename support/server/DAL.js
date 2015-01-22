@@ -536,6 +536,7 @@ function saveInstanceState(id, data, cb) {
         cb(false);
     }
     var parsedData = typeof data == 'string' ? JSON.parse(data) : data;
+    console.log(parsedData);
     getInstance(id, function(instance) {
 
 
@@ -551,7 +552,7 @@ function saveInstanceState(id, data, cb) {
 
                 },
                 function(cb2) {
-                    CheckHash((datapath + '/States/' + id + '/state').replace(safePathRE), data, function(issame) {
+                    CheckHash((datapath + '/States/' + id + '/state').replace(safePathRE), parsedData, function(issame) {
                         cb2(undefined, issame);
                     });
                 },
@@ -567,7 +568,7 @@ function saveInstanceState(id, data, cb) {
                 },
                 function(issame, cb2) {
                     if (!issame) {
-                        SaveFile((datapath + '/States/' + id + '/state').replace(safePathRE), data, function() {
+                        SaveFile((datapath + '/States/' + id + '/state').replace(safePathRE), JSON.stringify(parsedData), function() {
                             cb2(undefined);
                         });
                     } else {
