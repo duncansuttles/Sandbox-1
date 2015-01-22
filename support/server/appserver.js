@@ -374,7 +374,6 @@ function handleRequest(request, response, next) {
                 //this step never resolves the request, just modifies the filename
                 callback(null, false);
             },
-
             function serve_support_file_yaml(resolved, callback) {
                 //bail out of the step, the previous was successful
                 if (resolved) {

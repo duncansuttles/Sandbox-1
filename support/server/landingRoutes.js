@@ -194,7 +194,8 @@ exports.statsHandler = function(req, res, next) {
                 instances: instances || [],
                 sessionData: sessionData,
                 url: req.url,
-                root: getRoot()
+                root: getRoot(),
+                federal_analytics:global.configuration.federal_analytics
             };
             res.render('stats', {
                 layout: 'plain'
@@ -250,7 +251,8 @@ exports.redirectPasswordEmail = function(req, res, next) {
                     avatar: false,
                     blog: true,
                     doc: true,
-                    translate: translate(req)
+                    translate: translate(req),
+                    federal_analytics:global.configuration.federal_analytics
                 };
                 if (user && !user.Email) {
                     res.locals.message = "We've updated our database, and now require email address for users. Please update your email address below.";
@@ -330,7 +332,8 @@ exports.generalHandler = function(req, res, next) {
                     blog: blog,
                     doc: doc,
                     user: user,
-                    translate: translate(req)
+                    translate: translate(req),
+                    federal_analytics:global.configuration.federal_analytics
                 };
 
                 //hook up the buttons to show the social media logins
@@ -371,7 +374,8 @@ exports._404 = function(req, res) {
         res.locals = {
             sessionData: sessionData,
             url: req.url,
-            root: getRoot()
+            root: getRoot(),
+            federal_analytics:global.configuration.federal_analytics
         };
         res.status(404).render('_404');
     })
@@ -386,7 +390,8 @@ exports.help = function(req, res) {
     res.locals = {
         sid: root + '/' + (req.query.id ? req.query.id : '') + '/',
         root: getRoot(req),
-        script: displayPage + ".js"
+        script: displayPage + ".js",
+        federal_analytics:global.configuration.federal_analytics
     };
     res.render('help/template');
 
@@ -428,7 +433,8 @@ exports.world = function(req, res, next) {
                 res.locals = {
                     sessionData: sessionData,
                     url: req.url,
-                    root: getRoot()
+                    root: getRoot(),
+                    federal_analytics:global.configuration.federal_analytics
                 };
                 //res.status(404).render('_404');
                 res.redirect(global.appPath);
@@ -463,7 +469,8 @@ exports.world = function(req, res, next) {
                 totalusers: totalusers,
                 users: users,
                 anonymous: anonymous,
-                owner: owner
+                owner: owner,
+                federal_analytics:global.configuration.federal_analytics
             };
             res.render('worldTemplate', {
                 layout: 'plain'
@@ -602,7 +609,8 @@ function ShowSearchPage(mode, req, res, next) {
                 next: next,
                 previous: previous,
                 hadprev: (previous >= 0),
-                translate: translate(req)
+                translate: translate(req),
+                federal_analytics:global.configuration.federal_analytics
             };
             res.locals[mode] = true;
             res.render('searchResults', {
@@ -669,7 +677,8 @@ exports.createNew2 = function(req, res, next) {
                 worlddata: worlddata,
                 template: (template == 'noTemplate' ? false : template),
                 root: getRoot(),
-                translate: translate(req)
+                translate: translate(req),
+                federal_analytics:global.configuration.federal_analytics
             };
             res.render('createNew2', {
                 layout: 'plain'
@@ -775,7 +784,8 @@ exports.createNew = function(req, res, next) {
                 next: next,
                 previous: previous,
                 hadprev: (previous >= 0),
-                translate: translate(req)
+                translate: translate(req),
+                federal_analytics:global.configuration.federal_analytics
             };
 
             res.render('createNew', {
