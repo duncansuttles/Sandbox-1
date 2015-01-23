@@ -28,6 +28,7 @@ function waitForAllBody(req, res, next) {
 //set the headers so we can support cross origin resource requests
 function CORSSupport(req, res, next) {
         
+        
         if(req.headers['access-control-request-headers']) {
           res.header('Access-Control-Allow-Headers', req.headers['access-control-request-headers']);
         }else
@@ -131,6 +132,7 @@ function prettyWorldURL(req, res, next)
 function versioning(req, res, next)
       {
         
+       
         //find the version number
         var version = req.url.match(/^\/[0-9]+\//);
         
@@ -168,6 +170,7 @@ function versioning(req, res, next)
         
         //if we got here, then there is a good version number
         //and, we have stripped it out, so we can continue processing as if the version was not in the url
+        
         next();
       
       }      

@@ -225,16 +225,14 @@ exports.SiteLogout = function (req,response,URL)
 	{
 		if(req.logout)
 			req.logout();
-		var username = URL.loginData.UID;
-		sessions.deleteSession(URL.loginData,function(){
-
-			xapi.sendStatement(username,xapi.verbs.logged_out);
-			response.writeHead(200, {
+		response.writeHead(200, {
 						"Content-Type":  "text/plain",
 						"Set-Cookie": "session=; Path=/; HttpOnly;, connect.sid=; Path=/; HttpOnly;"
 				});
 			response.end();	
-		});
+		var username = URL.loginData.UID;
+		xapi.sendStatement(username,xapi.verbs.logged_out);
+		
 	}
 	return;
 }

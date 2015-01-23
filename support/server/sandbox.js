@@ -281,6 +281,7 @@ function startVWF() {
 
                 //var srv = http.createServer(OnRequest).listen(port);
 
+
                 app.set('layout', 'layout');
                 app.set('views', __dirname + '/../../public' + global.appPath + '/views');
                 app.set('view engine', 'html');
@@ -295,6 +296,7 @@ function startVWF() {
                     }
                 );
 
+
                 //This first handler in the pipeline deal with the version numbers
                 // we append a version to the front if every request to keep the clients fresh
                 // otherwise, a user would have to know to refresh the cache every time we release
@@ -303,57 +305,35 @@ function startVWF() {
                 //find pretty world URL's, and redirect to the non-pretty url for the world
                 app.use(ServerFeatures.prettyWorldURL);
 
-                app.use(express.limit('500mb'));
-                app.use(express.methodOverride());
+                
+                app.use(require('method-override')());
 
                 //Wait until all data is loaded before continuing
                 //app.use (ServerFeatures.waitForAllBody);
-                app.use(express.bodyParser( {maxFieldsSize:2 * 1024 * 1024 * 1024 }));
+                app.use(require('body-parser').json( {maxFieldsSize:16 * 1024 * 1024 * 1024 }));
+                app.use(require('body-parser').urlencoded({ extended: true }));
+                app.use(require('multer')());
                 //CORS support
                 app.use(ServerFeatures.CORSSupport);
 
                 //i18n support
-                app.use(express.cookieParser());
+                app.use(require('cookie-parser')());
+
                 app.use(i18n.handle);
-                app.use(express.cookieSession({
+                app.use(require('cookie-session')({
                     key: global.configuration.sessionKey ? global.configuration.sessionKey : 'virtual',
                     secret: global.configuration.sessionSecret ? global.configuration.sessionSecret : 'unsecure cookie secret',
                     cookie: {
                         maxAge: global.configuration.sessionTimeoutMs ? global.configuration.sessionTimeoutMs : 10000000
                     }
                 }));
+
                 app.use(passport.initialize());
                 app.use(passport.session());
 
-                app.use(app.router);
-
-                app.get(global.appPath + '/:page([a-zA-Z\\0-9\?/]*)', Landing.redirectPasswordEmail);
-                app.get(global.appPath, Landing.redirectPasswordEmail);
-
-                app.get(global.appPath + '/help', Landing.help);
-                app.get(global.appPath + '/help/:page([a-zA-Z]+)', Landing.help);
-                app.get(global.appPath + '/world/:page([_a-zA-Z0-9]+)', Landing.world);
-                app.get(global.appPath + '/searchResults/:term([^/]+)/:page([0-9]+)', Landing.searchResults);
-                app.get(global.appPath + '/newWorlds', Landing.newWorlds);
-                app.get(global.appPath + '/allWorlds/:page([0-9]+)', Landing.allWorlds);
-                app.get(global.appPath + '/myWorlds/:page([0-9]+)', Landing.myWorlds);
-                app.get(global.appPath + '/featuredWorlds/:page([0-9]+)', Landing.featuredWorlds);
-                app.get(global.appPath + '/activeWorlds/:page([0-9]+)', Landing.activeWorlds);
-                app.get(global.appPath, Landing.generalHandler);
-                app.get(global.appPath + '/:page([a-zA-Z/]+)', Landing.generalHandler);
-                app.get(global.appPath + '/stats', Landing.statsHandler);
-                app.get(global.appPath + '/createNew/:page([0-9/]+)', Landing.createNew);
-                app.get(global.appPath + '/createNew2/:template([_a-zA-Z0-9/]+)', Landing.createNew2);
-
-                app.get(global.appPath + '/vwf.js', Landing.serveVWFcore);
-
-                app.post(global.appPath + '/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
-                app.post(global.appPath + '/data/:action([a-zA-Z_]+)', Landing.handlePostRequest);
-
-                app.use(appserver.admin_instances);
-                app.use(appserver.routeToAPI);
-                //The file handleing logic for vwf engine files
-                app.use(appserver.handleRequest);
+                
+ 
+                
                 //var listen = app.listen(port);
                 var listen = null;
 
@@ -416,6 +396,34 @@ function startVWF() {
                     res.redirect('/');
                 });
 
+                app.get(global.appPath + '/:page([a-zA-Z\\0-9\?/]*)', Landing.redirectPasswordEmail);
+                app.get(global.appPath, Landing.redirectPasswordEmail);
+
+                app.get(global.appPath + '/help', Landing.help);
+                app.get(global.appPath + '/help/:page([a-zA-Z]+)', Landing.help);
+                app.get(global.appPath + '/world/:page([_a-zA-Z0-9]+)', Landing.world);
+                app.get(global.appPath + '/searchResults/:term([^/]+)/:page([0-9]+)', Landing.searchResults);
+                app.get(global.appPath + '/newWorlds', Landing.newWorlds);
+                app.get(global.appPath + '/allWorlds/:page([0-9]+)', Landing.allWorlds);
+                app.get(global.appPath + '/myWorlds/:page([0-9]+)', Landing.myWorlds);
+                app.get(global.appPath + '/featuredWorlds/:page([0-9]+)', Landing.featuredWorlds);
+                app.get(global.appPath + '/activeWorlds/:page([0-9]+)', Landing.activeWorlds);
+                app.get(global.appPath, Landing.generalHandler);
+                app.get(global.appPath + '/:page([a-zA-Z/]+)', Landing.generalHandler);
+                app.get(global.appPath + '/stats', Landing.statsHandler);
+                app.get(global.appPath + '/createNew/:page([0-9/]+)', Landing.createNew);
+                app.get(global.appPath + '/createNew2/:template([_a-zA-Z0-9/]+)', Landing.createNew2);
+
+                app.get(global.appPath + '/vwf.js', Landing.serveVWFcore);
+
+                app.post(global.appPath + '/admin/:page([a-zA-Z]+)', Landing.handlePostRequest);
+                app.post(global.appPath + '/data/:action([a-zA-Z_]+)', Landing.handlePostRequest);
+
+                app.use(appserver.admin_instances);
+                app.use(appserver.routeToAPI);
+                //The file handleing logic for vwf engine files
+                app.use(appserver.handleRequest);
+                
                 if (global.configuration.pfx) {
                     listen = spdy.createServer({
                         pfx: fs.readFileSync(global.configuration.pfx),
@@ -440,7 +448,8 @@ function startVWF() {
                         res.end();
                     }).listen(port);
                 } else {
-                    listen = http.createServer(app).listen(port);
+
+                    listen = app.listen(port);
                 }
 
                 global.log(brown + 'Admin is "' + global.adminUID + "\"" + reset, 0);
