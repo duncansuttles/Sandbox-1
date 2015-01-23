@@ -33,16 +33,20 @@
 		
 		<div class='' style=''>
 		
-			<div style='font-size: 2em;font-weight: bold;'> {{worldData.title}} </div>
+			<div style='font-size: 2em;font-weight: bold;text-transform: capitalize;'> {{worldData.title}} </div>
 			<div style='font-size: .75em;color: lightgray;'> {{#translate}}Created By{{/translate}} {{worldData.owner}} {{worldData.prettyDate}}. {{#translate}}Updated{{/translate}} {{worldData.updates}} {{#translate}}times, most recently{{/translate}} {{worldData.prettyUpdated}}. {{#translate}}Contains{{/translate}} {{worldData.objects}} {{#translate}}objects{{/translate}}. </div>
 			<div style='font-size: .75em;'>  </div>
-		<form id='form'>
+		<form id='form' >
 			<fieldset>	
 			<legend style="padding-bottom:5px;"></legend>
 			<div> <a id='worldLoad' href='{{root}}/{{worldid}}'> <img style="background: white;width:100%;width: 100%;border-radius: 5px;" src="./vwfdatamanager.svc/thumbnail?SID={{worldid}}" onerror = "this.src = '/adl/sandbox/img/thumbnotfound.png';center(); " onload='center()'><img> </div>
 			</a>
+
 			{{#totalusers}}
 			<div style='font-size: .75em;color: lightgray;'> {{#users.length}}{{#users}}{{.}}, {{/users}} {{#translate}}and{{/translate}} {{/users.length}} {{anonymous.length}} {{#translate}}anonymous users are in this world{{/translate}}.</div>
+			{{/totalusers}}
+			{{^totalusers}}
+			<div style='font-size: .75em;color: lightgray;'> This world is currently suspended.</div>
 			{{/totalusers}}
 
 			</div>
@@ -50,7 +54,7 @@
 		
 				
 				<legend style="padding-bottom:5px;"></legend>
-				<div class='worldtitle'> {{#worldData.description}}{{worldData.description}}{{/worldData.description}} </div>
+				<div class='worldtitle'> {{#worldData.description}}{{worldData.description}}{{/worldData.description}}{{^worldData.description}}This world has no description.{{/worldData.description}} </div>
 				<legend style="padding-bottom:5px;"></legend>
 			</fieldset>
 			
