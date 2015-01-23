@@ -1325,7 +1325,7 @@ function searchStatesByFeatured(cb, start, count) {
 }
 
 function getStates(cb, start, count) {
-    console.log('here!',start, count);
+    
     var search = {
         "val": {
             $exists: true
@@ -1341,7 +1341,7 @@ function searchStatesInner(query, found, start, count) {
     var index = DB.find_raw({
         _key: 'StateIndex'
     }, function(err, data) {
-         console.log("here!");
+         
         if (err) {
             found(null)
             return;

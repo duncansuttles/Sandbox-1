@@ -80,13 +80,13 @@ routesMap = {
         template: 'index'
     },
     'features': {
-       layout: 'blank'
+       layout: 'plain'
     },
     'demos': {
-       layout: 'blank'
+       layout: 'plain'
     },
     'about': {
-       layout: 'blank'
+       layout: 'plain'
     },
     'edit': {
         sid: true,

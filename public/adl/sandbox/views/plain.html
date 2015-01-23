@@ -13,7 +13,7 @@
 	{{{federal_analytics}}}
 
 	<style>
-		body
+		html
 		{
 			font-family: 'Open Sans', sans-serif;
 						/* font-family: 'Open Sans', sans-serif; */
@@ -26,9 +26,13 @@ background-size: 2220px;
 /* transition: opacity 1.5s ease-in, background-position-x 30s; */
 /* -webkit-transition: opacity 1.5s ease-in, background-position-x 30s; */
 /* background-position-x: -300px; */
-/* background-attachment: fixed; */
+ background-attachment: fixed; */
 /* background: transparent url(./img/background.png) fixed; */
 /* height: initial; */
+		}
+		body 
+		{
+			background: none
 		}
 		@media (max-width: 1420px){
 			#gitBanner{
@@ -78,9 +82,11 @@ box-shadow: 3px 3px 6px;
 		}
 		.thinheaderlink
 		{
-			margin-left: 13px;
-			margin-right: 10px;
-			color:#7297AC;
+			text-align: center;
+margin: 1em 1em;
+font-weight: bold;
+color: #FFF;
+text-shadow: 1px 1px 5px black;
 		}
 		#content
 		{
@@ -157,7 +163,7 @@ box-shadow: 3px 3px 6px;
 
 
 </head>
-<body style="overflow:hidden">
+<body style="">
 	<div class='thinheader'>
 		
 		
@@ -185,7 +191,7 @@ box-shadow: 3px 3px 6px;
 			{{#translate}}Tools{{/translate}}
 		</a> 
 		{{^sessionData}}
-		<a id='login' class='thinheaderlink' href='{{root}}/login'>
+		<a id='Login' class='thinheaderlink' href='{{root}}/login'>
 			{{#translate}}Log in{{/translate}}
 		</a>
 		{{/sessionData}}

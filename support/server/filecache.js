@@ -75,13 +75,13 @@ function _FileCache() {
         var self = this;
         //Cannot escape above the application paths!!!!
         if (path.toLowerCase().indexOf(libpath.resolve(__dirname, '../../').toLowerCase()) != 0 && path.toLowerCase().indexOf(global.datapath.toLowerCase()) != 0) {
-            global.error(path + " is illegal");
+            global.log(path + " is illegal",3);
             callback(null);
             return;
         }
         //Cannot have the users.db!
         if (path.toLowerCase().indexOf('users.db') != -1) {
-            global.error(path + " is illegal");
+            global.log(path + " is illegal",3);
             callback(null);
             return;
         }
