@@ -39,7 +39,7 @@
 		<form id='form'>
 			<fieldset>	
 			<legend style="padding-bottom:5px;"></legend>
-			<div> <a id='worldLoad' href='{{root}}/{{worldid}}'> <img style="background: white;width:100%;width: 100%;border-radius: 5px;box-shadow: 3px 3px 3px #444;" src="./vwfdatamanager.svc/thumbnail?SID={{worldid}}" onerror = "this.src = '/adl/sandbox/img/thumbnotfound.png';center(); " onload='center()'><img> </div>
+			<div> <a id='worldLoad' href='{{root}}/{{worldid}}'> <img style="background: white;width:100%;width: 100%;border-radius: 5px;" src="./vwfdatamanager.svc/thumbnail?SID={{worldid}}" onerror = "this.src = '/adl/sandbox/img/thumbnotfound.png';center(); " onload='center()'><img> </div>
 			</a>
 			{{#totalusers}}
 			<div style='font-size: .75em;color: lightgray;'> {{#users.length}}{{#users}}{{.}}, {{/users}} {{#translate}}and{{/translate}} {{/users.length}} {{anonymous.length}} {{#translate}}anonymous users are in this world{{/translate}}.</div>
