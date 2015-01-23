@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="{{root}}/vwf/view/editorview/css/colorpicker.css" /> 
+    <link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/bootstrap.min.css" />
+	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/style.css" />
+	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/alertify.core.css" />
+	<link rel="stylesheet" media="screen" type="text/css" href="{{root}}/vwf/view/editorview/css/alertify.default.css" />
+	<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic|Roboto+Condensed|Roboto|Open+Sans' rel='stylesheet' type='text/css'>
+	<script type="text/javascript" src="{{root}}/js/jquery-1.10.2.min.js"></script>
+	<link rel="shortcut icon" href="/adl/sandbox/img/VWS_Logo.ico" />
+	{{{federal_analytics}}}
+	<style>
+		body{
+			background-image: url(./img/background.png);
+			background-size: 2220px;
+			background-position-x: 0px;
+			opacity: 0;
+			font-family: 'Open Sans', sans-serif;
+			opacity: 1;
+/* transition: opacity 1.5s ease-in, background-position-x 30s; */
+/* -webkit-transition: opacity 1.5s ease-in, background-position-x 30s; */
+/* background-position-x: -300px; */
+background-attachment: fixed;
+/* background: transparent url(./img/background.png) fixed; */
+height: initial;
+
+		}
+		
+		@media (max-width: 1920px){
+			
+			.bodypanel
+			{
+				width:1200px;
+			}
+			.buttonContainer
+			{
+				width:33%;
+			}
+			#logo1
+			{
+				zoom:1.75;
+				
+			}
+			.column
+			{
+				width: calc(33% - 40px);
+				margin: 20px;
+				display: inline-block;
+			}
+			.column .panel .section
+			{
+				margin: 0em 2em;
+			}
+		}
+		@media (max-width: 1200px){
+			
+			.bodypanel
+			{
+				width:1000px;
+			}
+			.buttonContainer
+			{
+				width:33%;
+			}
+			#logo1
+			{
+				zoom:1.5;
+				
+			}
+		}
+		@media (max-width: 1000px){
+			
+			#logo1
+			{
+				zoom:1;
+				
+			}
+			.bodypanel
+			{
+				width:100%;
+
+			}
+			.ActionButtonlabel
+			{
+				
+			}
+			.buttonContainer
+			{
+				width:100%;
+			}
+			.column
+			{
+				width: calc(33% - 10px);
+				margin: 5px;
+				display: inline-block;
+			}
+			.column .panel .section
+			{
+				margin: 0em .5em;
+			}
+		}
+		@media (max-width: 745px){
+			.column
+			{
+				display: block;
+				width: 90%;
+				margin-left: 5%;
+			}
+
+		}
+		@media (max-width: 400px){
+			#logo1
+			{
+				zoom:.5;
+				
+			}
+		}
+		@media (max-width: 270px){
+			#logo1
+			{
+				zoom:.35;
+				
+			}
+		}
+		@media (max-width: 200px){
+			#logo1
+			{
+				zoom:.35;
+				
+			}
+		}
+		.bodypanel
+		{
+			margin:auto;
+			
+		}
+		.buttonContainer
+		{
+			margin: 0px;
+			padding: 0px;
+			
+			display: inline-block;
+		}
+		.thinheaderlink
+		{
+			text-align: center;
+			margin: 1em 1em;
+			font-weight: bold;
+			color: #FFF;
+			text-shadow: 1px 1px 5px black;
+			
+		}
+		.ActionButton
+		{
+			
+			width:95%;
+		}
+		.thinheader
+		{
+			text-align: center;
+			
+		}
+		#logo1
+		{
+			width: 565px;
+			margin: 0em auto 1em auto;
+			padding-top: 1em;
+		}
+		#columns
+		{
+			width:100%;
+			
+
+		}
+		.column
+		{
+			
+			
+			
+			vertical-align: top;
+		}
+
+		.column .panel
+		{
+			background: white;
+			border-radius: 4px;
+			min-height: 200px;
+			box-shadow: 3px 3px 6px;
+			margin-bottom: 40px;
+			padding-bottom: 2em;
+			overflow: hidden;
+			border: none;
+		}
+		
+        .afterImg
+        {
+			display: inline-block;
+			width: calc(70% - 2em);
+			vertical-align: middle;
+        }
+		.column .panel .section .title
+		{
+			text-decoration: none;
+			font-weight: 800;
+			font-size: 15px;
+		}
+		.column .panel  .sectionlogo
+		{
+			display: inline-block;
+			vertical-align: middle;
+			margin-left: 2em;
+			width: calc(13% - 0em);
+
+		}
+		.column .panel .section .text
+		{
+			font-family: 'Roboto condensed';
+			color: gray;
+		}
+		.column .panel .section .quote
+		{
+			font-family: 'Roboto condensed';
+color: gray;
+margin-left: 0em;
+border-left: 3px solid rgb(208, 208, 208);
+padding-left: 1em;
+		}
+		#columns .paneltitle
+		{
+			text-align: CENTER;
+			border-bottom: 1px solid lightgray;
+			font-size: 1.4em;
+			text-transform: uppercase;
+			margin: 1em;
+			font-weight: bold;
+		}
+
+		#columns .featuretitle
+		{
+			background: rgb(61, 85, 158);
+			margin: -1px -6px;
+			padding: 0em;
+			color: white;
+			font-size: 2.5em;
+			text-transform: capitalize;
+		}
+		.bottomlink
+		{
+			background: #3D559E;
+			color: white;
+			font-weight: bold;
+			margin: 1em -1em -2em -1em;
+			padding: 1em;
+			text-align: center;
+			vertical-align: middle;
+			text-decoration: underline;
+			display: block;
+			cursor:pointer;
+		}
+		.bottomlink:hover
+		{
+			color: blue;
+		}
+		.panelheaderlogo
+		{
+			width: 50%;
+			margin: 1em 25% 0.5em 25%;
+		}
+		.panelheaderscreenshot
+		{
+			text-align: center;
+			margin: 1em;
+		}
+		.moreinfolink
+		{
+			margin: 1em 3em;
+			font-family: 'Open Sans',sans-serif;
+			/* background: rgb(141, 188, 252); */
+			text-align: center;
+			border-radius: 5px;
+		}
+		.moreinfolink p
+		{
+			font-size: 0.75em;
+			color: lightgray;
+		}
+		.moreinfolink a
+		{
+			background: #98ADFF;
+			width: 100%;
+			font-weight: bold;
+			color: white;
+			margin: 0em 0em;
+			display: inline-block;
+			padding: .3em;
+			border-radius: 3px;
+			text-shadow: 1px 1px 1px black;
+		}
+		.panel .iframeholder
+		{
+			text-align: center;
+			margin: 1em;
+		}
+
+	</style>
+	<script type="text/javascript">
+	
+
+function center()
+	{
+		var height = $('#content').height();
+				var wheight  = $(window).height();
+				$('#content').css('top',Math.max((wheight/2) - (height/2) ,0));
+				$('#content').css('position','relative');
+				
+				
+
+				$(window).resize(function(){
+
+				var height = $('#content').height();
+				var wheight  = $(window).height();
+				$('#content').css('top',Math.max((wheight/2) - (height/2) ,0));
+				$('#content').css('position','relative');
+
+				
+
+				});
+				$(window).resize();
+	}
+
+	$(document).ready(function(){
+
+		center();
+		$(document.body).css('opacity','1');
+		$(document.body).css('background-position-x','-300px');
+		$(document.body).css('transition','opacity 1.5s ease-in, background-position-x 30s');
+
+
+	})
+
+	</script>
+	<!--[if !IE 7]>
+	<style type="text/css">
+		#wrapper {display:table;height:100%}
+	</style>
+	<![endif]-->
+    <title>Virtual World Sandbox - Virtual Worlds in your browser</title>
+
+	
+	
+
+
+</head>
+<body>
+<div id='content1' class='bodypanel'>
+	<div id="logo1">
+		<a href="/adl/sandbox">
+			<div style="display:inline">
+				<img src="/adl/sandbox/img/VWS_Logo.png">
+			</div>
+			<div style=" margin-left:10px;margin-top:50px;display:inline;">
+				<img src="/adl/sandbox/img/VW_text.png">
+				<img src="/adl/sandbox/img/Sandbox_text.png">
+			</div>
+		</a>
+	</div>
+	<div id="columns">
+		<div class='column column1'>
+			<div class='panel'>
+				<div class='paneltitle featuretitle'>VWSandbox</div>
+				<div class='iframeholder'>
+				<img src="/adl/sandbox/img/VWS_Logo.png"> </div>
+				<div class = 'section '>
+					<div class='text'> The VW Sandbox is a project that attempts to bring interactive simulation authoring to the Web. Using the latest browser technologies, we let you create, edit and share interactive experiences without the need to send executable files across email, or to ask your users to download or install anything. We call these experiences “Worlds” but they could be used as simulations, courseware, interactive training, or games.  </div>
+				</div>
+			</div>
+			<div class='panel'>
+				<div class='paneltitle'>Open Source</div>
+				
+				<div class = 'section'>
+					<div class='text'>Both the Sandbox and the VWF teams recognize the important role community plays in developing software - we’re nothing without you! A novel arrangement with our government partners allows us to develop our systems for the public good. That means that this software is free to use, free to modify, and open for comment. Please see us on Github - we welcome pull request, bug reports, or collaboration.  </div>
+				</div>
+				<div class="moreinfolink">
+					<a href='http://github.com/adlnet/Sandbox'> Visit Sandbox on Gitub</a>
+					<p> Request features, file bugs, get documentation. </p>
+				</div>
+				<div class="moreinfolink">
+					<a href='http://github.com/virtual-world-framework/VWF'> Visit VWF on Gitub</a>
+					
+				</div>
+				
+			</div>
+		</div>
+		<div class='column  column2'>
+			<div class='panel'>
+				<div class='paneltitle'>Virtual World Framework</div>
+				<div class='panelheaderscreenshot'><img src='./img/vwf-logo-100x100.png' class=''></div>
+				<div class = 'section'>
+					<div class='text'> The Sandbox project is based on, and an outgrowth of, the Virtual World Framework (VWF). The VWF is an architecture for building collaborative web applications - any application based on the framework allows naturally for multiple users to interact in real-time. Click below to visit the VWF homepage, and learn more about the technology.</div>
+				</div>
+				<div class="">
+					<a class="bottomlink" href='http://virtual.wf'>Virtual World Framework</a>
+					
+				</div>
+			</div>
+			<div class='panel'>
+				<div class='paneltitle'>Vision</div>
+				<div class='panelheaderscreenshot'><img src='./img/FrankDiGiovanni-300x181.jpg' class=''></div>
+				<div class = 'section'>
+					<div class='quote'> "TRS prizes anticipation, adaptation and innovation. Alan Kay, the pioneer of personal computing, was once asked how he predicted technological innovations. In response, he accurately said, “I didn’t; the best way to predict the future is to create it.” In TRS, we create the future by promulgating training policies that help shape DoD. Internally, TRS continuously senses the environment, assesses the Department of Defense’s strategic vector and adjusts course when necessary. We strive not only to be on the cutting edge but a little bit ahead of it!"</div>
+					<div style="text-align:right">	
+					<div class='title'> Mr. Frank DiGiovanni </div>
+					<div class='title' style="margin-top: 0em;font-size: .75em;color: gray;"> Director OSD TRS </div>
+					</div>
+				</div>
+				
+			</div>
+			
+			
+		</div>
+		<div class='column column3'>
+			<div class='panel'>
+				<div class='paneltitle featuretitle'>ADL</div>
+				<div class='iframeholder'>
+				<img src='./img/ADL_Logo_Glossy_Bevel_200px.png' class=''>
+				
+				</div>
+				<div class = 'section '>
+				<div class='title'> Advanced Distributed Learning </div>
+					<div class='text'> The vision of the ADL Initiative is to provide access to the highest quality learning and performance aiding that can be tailored to individual needs, and delivered cost effectively at the right time and at the right place.. </div>
+				</div>
+				<div class = 'section'>
+					<div class='title'> About ADL </div>
+					<div class='text'> The ADL Initiative has laboratories in two locations: Alexandria, VA and Orlando, FL. These Collaborative Laboratories (Co-Labs) provide the opportunity to prototype and test the latest learning technologies and innovations for the development and delivery of ADL technologies for the DoD. Research and prototyping at the two Co-Labs is primarily focused on various efforts to enhance the next-generation learning environment for the next-generation learner under the umbrella of a comprehensive Training and Learning Architecture. .</div>
+				</div>
+				<div class="">
+					<a class="bottomlink" href='http://www.adlnet.gov'> www.adlnet.gov </a>
+				</div>
+			</div>
+			<div class='panel'>
+				<div class='paneltitle'>Contact</div>
+				
+				<div class = 'section'>
+				<div class='title'>Bug reports, feature requests</div>
+					<div class='text'>These comments are valuable to the community. We greatly prefer you file bugs and feature requests in the appropriate Github sections so that other users can find them.</div>
+				</div>
+				<div class = 'section'>
+				<div class='title'>Other Topics</div>
+					<div class='text'>For other topics including </div>
+					<ul>
+					  <li>Deployment assistance</li>
+					  <li>How-to advice</li>
+					  <li>Media and publications</li>
+					 </ul>
+					 <div class='text'>Contact Robert Chadwick at </div>
+					 <code class='code'>robert.chadwick.ctr@adlnet.gov </code>
+				</div>
+				</div>
+			</div>
+		</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
