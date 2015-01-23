@@ -44,8 +44,9 @@ define([
     "vwf/view/jqueryui",
     "SettingsManager"
 
-], function(ready) {
+], function(ready,pools,io) {
 
+    window.io = io;
     return function(stateData) {
          //console.log('begin preload');
         require("vwf/view/editorview/ObjectPools").getSingleton();

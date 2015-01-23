@@ -756,7 +756,7 @@
             }
 
             // Test for WebSockets
-            if( window.io && !io.Transport.websocket.check() )
+          //  if( window.io && !io.Transport.websocket.check() )
             {
                 compatibilityStatus.compatible = false;
                 jQuery.extend(compatibilityStatus.errors, {"WS": "This browser is not compatible. VWF requires WebSockets."});
@@ -809,9 +809,9 @@
             if ( window.location.protocol === "https:" )
             {
 
-                socket = io.connect(host, {secure:true, reconnect: false});
+                socket = io(host, {secure:true, reconnect: false,transports:['websocket'],query:'pathname='+window.location.pathname});
             } else {
-                socket = io.connect(host,{reconnect: false});
+                socket = io(host,{reconnect: false,transports:['websocket'],query:'pathname='+window.location.pathname});
             }
 
         } else {  // Ruby Server
@@ -887,7 +887,7 @@
             vwf.logger.infox( "-socket", "connected" );
 
             if ( isSocketIO07() ) {
-                vwf.moniker_ = this.json.namespace.socket.sessionid;
+                vwf.moniker_ = this.id;
             } else {  //Ruby Server
                 vwf.moniker_ = this.transport.sessionid;
             }
@@ -4309,7 +4309,8 @@ this.test = function( nodeID, matchPattern, testID, initializedOnly ) {
 // == Private functions ====================================================================
 
 var isSocketIO07 = function() {
-    return ( parseFloat( io.version ) >= 0.7 );
+    //return ( parseFloat( io.version ) >= 0.7 );
+    return true;
 }
 
 // -- loadComponent ------------------------------------------------------------------------
