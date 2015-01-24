@@ -14,36 +14,37 @@ YAML = require('js-yaml');
 
 function startup(listen) {
     //create socket server
-    global.log('startup refector', 2);
-    sio = sio.listen(listen, {
-        log: false
-    });
-    sio.configure(function() {
+    global.log('startup refector', 0);
+    sio = sio(listen, {
+        log: false,
         //VWF requries websocket. We will not allow socket.io to fallback on flash or long polling
-        sio.set('transports', ['websocket']);
+        'transports': ['websocket'],
         //Somehow, we still need to get the timeouts lower. This does tot seem to do it.
-        sio.set('heartbeat interval', 20);
-        sio.set('heartbeat timeout', 30);
-        sio.set('authorization', function(data, callback) {
-            if (data.headers.cookie) {
+        'heartbeat interval': 20,
+        'heartbeat timeout': 30
+       
+    });
+
+   sio.use(function(socket,next){
+        var handshake = socket.request;
+        
+        socket.handshake = handshake;
+        if (handshake.headers.cookie) {
                 // save parsedSessionId to handshakeData
                 try {
-                    data.cookieData = parseSignedCookie(cookie.parse(decodeURIComponent(data.headers.cookie))[global.configuration.sessionKey ? global.configuration.sessionKey : 'virtual'],
+                    handshake.cookieData = parseSignedCookie(cookie.parse(handshake.headers.cookie)[global.configuration.sessionKey ? global.configuration.sessionKey : 'virtual'],
                         global.configuration.sessionSecret ? global.configuration.sessionSecret : 'unsecure cookie secret');
-
+                    console.log(cookieData)
                 } catch (e) {
                     //this is important! We're seeing a few crashes from here.
-                    callback(null, false);
+                    next();
+                    return;
                 }
             }
-            callback(null, true);
-        });
-
-    });
-    sio.set('heartbeat interval', 20);
-    sio.set('heartbeat timeout', 30);
+            next();
+   })
     //When there is a new connection, goto WebSocketConnection.
-    sio.sockets.on('connection', WebSocketConnection);
+    sio.on('connect', WebSocketConnection);
 }
 
 function setDAL(dal) {
@@ -53,16 +54,17 @@ function setDAL(dal) {
 function getNamespace(socket) {
 
         try {
-            var referer = require('url').parse(socket.handshake.headers.referer).pathname;
-
-            var index = referer.indexOf(global.appPath);
-            var namespace = referer.substring(index);
-
+            var referer = require('url').parse(socket.handshake.url).query;
+            referer = require('querystring').parse(referer).pathname;
+            console.log("referer is ");
+            console.log(referer);
+           
+            var namespace = referer
 
 
             if (namespace[namespace.length - 1] != "/")
                 namespace += "/";
-
+            console.log(namespace);
             return namespace;
         } catch (e) {
             return null;
@@ -224,7 +226,7 @@ function ServeSinglePlayer(socket, namespace, instancedata) {
 
 function SaveInstanceState(namespace, data, socket) {
 
-
+    console.log(namespace)
     if (!socket.loginData) return;
 
     var id = namespace.replace(/[\\\/]/g, '_');
@@ -272,10 +274,12 @@ function SaveInstanceState(namespace, data, socket) {
 
 function WebSocketConnection(socket, _namespace) {
 
+console.error("WebSocketConnection");
+console.log(socket.id);
     //get the session information for the socket
     sessions.GetSessionData(socket.handshake, function(loginData) {
 
-
+        
 
         //fill out some defaults if we did not get credentials
         //note that the client list for an anonymous connection may only contain that once connection
@@ -790,7 +794,7 @@ function ClientConnected(socket, namespace, instancedata) {
 
 
                 if (message.action == "saveStateResponse") {
-                    console.log(message.data);
+                    
                     SaveInstanceState(namespace, message.data, socket);
                     return;
                 }
@@ -994,8 +998,8 @@ function ClientConnected(socket, namespace, instancedata) {
                                 }))
                             }else
                             {
-                                global.log('rejecting resync data from the past');
-                                global.log(message.time,thisInstance.time);
+                                //global.log('rejecting resync data from the past');
+                                //global.log(message.time,thisInstance.time);
                             }
                         }
                     } else {

@@ -536,7 +536,7 @@ function saveInstanceState(id, data, cb) {
         cb(false);
     }
     var parsedData = typeof data == 'string' ? JSON.parse(data) : data;
-    console.log(parsedData);
+    
     getInstance(id, function(instance) {
 
 
