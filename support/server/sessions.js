@@ -24,15 +24,20 @@ exports.createSession = function() {
 //find the session data for a request
 exports.GetSessionData = function(request, cb) {
     if (request.session && request.session.passport && request.session.passport.user && request.session.passport.user.sessionId)
+    {
         cb(request.session.passport.user);
+        return;
+    }
     else if (request.cookieData) {
 
         try {
             var session = JSON.parse(request.cookieData.substr(2)).passport.user;
             cb(session);
+            return;
         } catch (e) {
             global.error(e);
             cb(null);
+            return;
         }
     } else
         cb(null);

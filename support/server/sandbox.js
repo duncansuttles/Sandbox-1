@@ -320,7 +320,7 @@ function startVWF() {
                 app.use(require('cookie-parser')());
 
                 app.use(i18n.handle);
-                app.use(require('cookie-session')({
+                app.use(require('connect').cookieSession({
                     key: global.configuration.sessionKey ? global.configuration.sessionKey : 'virtual',
                     secret: global.configuration.sessionSecret ? global.configuration.sessionSecret : 'unsecure cookie secret',
                     cookie: {

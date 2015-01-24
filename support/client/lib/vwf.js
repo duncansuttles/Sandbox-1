@@ -804,14 +804,14 @@
             var host = {{host}};
 
 
-
+debugger;
         if ( isSocketIO07()) {
             if ( window.location.protocol === "https:" )
             {
 
-                socket = io(host, {secure:true, reconnect: false,transports:['websocket'],query:'pathname='+window.location.pathname});
+                socket = io(host, {secure:true, reconnection : false,transports:['websocket'],query:'pathname='+window.location.pathname});
             } else {
-                socket = io(host,{reconnect: false,transports:['websocket'],query:'pathname='+window.location.pathname});
+                socket = io(host,{reconnection : false,transports:['websocket'],query:'pathname='+window.location.pathname});
             }
 
         } else {  // Ruby Server

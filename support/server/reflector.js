@@ -14,7 +14,7 @@ YAML = require('js-yaml');
 
 function startup(listen) {
     //create socket server
-    global.log('startup refector', 2);
+    global.log('startup refector', 0);
     sio = sio(listen, {
         log: false,
         //VWF requries websocket. We will not allow socket.io to fallback on flash or long polling
@@ -38,12 +38,13 @@ function startup(listen) {
                 } catch (e) {
                     //this is important! We're seeing a few crashes from here.
                     next();
+                    return;
                 }
             }
             next();
    })
     //When there is a new connection, goto WebSocketConnection.
-    sio.sockets.on('connection', WebSocketConnection);
+    sio.on('connect', WebSocketConnection);
 }
 
 function setDAL(dal) {
@@ -57,14 +58,13 @@ function getNamespace(socket) {
             referer = require('querystring').parse(referer).pathname;
             console.log("referer is ");
             console.log(referer);
-            var index = referer.indexOf(global.appPath);
-            var namespace = referer.substring(index);
-
+           
+            var namespace = referer
 
 
             if (namespace[namespace.length - 1] != "/")
                 namespace += "/";
-
+            console.log(namespace);
             return namespace;
         } catch (e) {
             return null;
@@ -226,7 +226,7 @@ function ServeSinglePlayer(socket, namespace, instancedata) {
 
 function SaveInstanceState(namespace, data, socket) {
 
-
+    console.log(namespace)
     if (!socket.loginData) return;
 
     var id = namespace.replace(/[\\\/]/g, '_');
@@ -274,6 +274,8 @@ function SaveInstanceState(namespace, data, socket) {
 
 function WebSocketConnection(socket, _namespace) {
 
+console.error("WebSocketConnection");
+console.log(socket.id);
     //get the session information for the socket
     sessions.GetSessionData(socket.handshake, function(loginData) {
 
@@ -792,7 +794,7 @@ function ClientConnected(socket, namespace, instancedata) {
 
 
                 if (message.action == "saveStateResponse") {
-                    console.log(message.data);
+                    
                     SaveInstanceState(namespace, message.data, socket);
                     return;
                 }
