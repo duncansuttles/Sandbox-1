@@ -224,7 +224,7 @@ SceneManager.prototype.removeFromRoot = function(child) {
     if (this.specialCaseObjects.indexOf(child) != -1)
         this.specialCaseObjects.splice(this.specialCaseObjects.indexOf(child), 1);
 }
-SceneManager.prototype.defaultPickOptions = new THREE.CPUPickOptions();
+
 SceneManager.prototype.buildCPUPickOptions = function(opts) {
     if (!opts) return this.defaultPickOptions;
     if (!(opts instanceof THREE.CPUPickOptions)) {

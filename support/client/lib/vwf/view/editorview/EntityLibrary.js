@@ -105,7 +105,7 @@ define(function() {
                     }
 
                     //when dragging over the 3d view, update the preview positoin    
-                    $("#index-vwf").live('dragover', function(evt) {
+                    $("#vwf-root").on('dragover',"#index-vwf",function(evt) {
 
                         evt.preventDefault();
                         if(!currentDrag) return;
@@ -139,7 +139,7 @@ define(function() {
                         }
                     })
                     //when dragging into the 3d view, create a preview sphere, then try to attach the preview model
-                    $("#index-vwf").live('dragenter', function(evt) {
+                    $("#vwf-root").on('dragenter',"#index-vwf", function(evt) {
 
                     
                         if(!currentDrag) return;
@@ -175,7 +175,7 @@ define(function() {
                         }
                     });
                     //remove the preview,
-                    $("#index-vwf").live('dragleave', function(evt) {
+                    $("#vwf-root").on('dragleave', "#index-vwf",function(evt) {
                         if (EntityLibrary.dropPreview) {
                             _dScene.remove(EntityLibrary.dropPreview, true);
                             delete EntityLibrary.dropPreview;
@@ -183,7 +183,7 @@ define(function() {
                         }
                     })
                     //remove the preview and do the creation
-                    $("#index-vwf").live('drop', function(evt) {
+                    $("#vwf-root").on('drop',"#index-vwf", function(evt) {
                         evt.preventDefault();
                         if(!currentDrag) return;
                         data = JSON.parse(evt.originalEvent.dataTransfer.getData('json'));

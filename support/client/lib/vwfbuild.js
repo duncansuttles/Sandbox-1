@@ -25,6 +25,23 @@
 
     window.console && console.debug && console.debug( "loading vwf" );
 
+    function getUTF8Length(string) {
+    var utf8length = 0;
+    for (var n = 0; n < string.length; n++) {
+        var c = string.charCodeAt(n);
+        if (c < 128) {
+            utf8length++;
+        }
+        else if((c > 127) && (c < 2048)) {
+            utf8length = utf8length+2;
+        }
+        else {
+            utf8length = utf8length+3;
+        }
+    }
+    return utf8length;
+ }
+
     window.vwf = new function() {
 
         window.console && console.debug && console.debug( "creating vwf" );
@@ -293,7 +310,7 @@
 
 
 
-            jQuery = require("jquery");
+            jQuery = $;
 
             var requireArray = [
                 { library: "domReady", active: true },
@@ -739,7 +756,7 @@
             }
 
             // Test for WebSockets
-            if( window.io && !io.Transport.websocket.check() )
+          //  if( window.io && !io.Transport.websocket.check() )
             {
                 compatibilityStatus.compatible = false;
                 jQuery.extend(compatibilityStatus.errors, {"WS": "This browser is not compatible. VWF requires WebSockets."});
@@ -784,7 +801,7 @@
             var space = window.location.pathname.slice( 1,
                 window.location.pathname.lastIndexOf("/") );
             var protocol = window.location.protocol;
-            var host = window.location.host;
+            var host = window.location.protocol +'//'+ window.location.host;
 
 
 
@@ -792,9 +809,9 @@
             if ( window.location.protocol === "https:" )
             {
 
-                socket = io.connect("https://"+host, {secure:true, reconnect: false});
+                socket = io(host, {secure:true, reconnection : false,transports:['websocket'],query:'pathname='+window.location.pathname});
             } else {
-                socket = io.connect("http://"+host,{reconnect: false});
+                socket = io(host,{reconnection : false,transports:['websocket'],query:'pathname='+window.location.pathname});
             }
 
         } else {  // Ruby Server
@@ -866,11 +883,11 @@
 
         socket.on( "connect", function() {
 
-
+            window.setInterval(vwf.socketMonitorInterval.bind(vwf),10000);
             vwf.logger.infox( "-socket", "connected" );
 
             if ( isSocketIO07() ) {
-                vwf.moniker_ = this.json.namespace.socket.sessionid;
+                vwf.moniker_ = this.id;
             } else {  //Ruby Server
                 vwf.moniker_ = this.transport.sessionid;
             }
@@ -889,8 +906,8 @@
 
             // vwf.logger.debugx( "-socket", "message", message );
 
-            try {
-
+            try {   
+                vwf.socketBytesReceived += 34 + getUTF8Length(message);
                 if ( isSocketIO07() ) {
 
                     if(message.constructor === String)
@@ -1042,8 +1059,9 @@ this.send = function( nodeID, actionName, memberName, parameters, when, callback
 
         // Send the message.
         var message = JSON.stringify( fields );
-
-        socket.send( messageCompress.pack(message) );
+        message = messageCompress.pack(message);
+        vwf.socketBytesSent += 34 + getUTF8Length(message);
+        socket.send( message );
 
     } else {
 
@@ -1095,6 +1113,8 @@ this.respond = function( nodeID, actionName, memberName, parameters, result ) {
         // Send the message.
 
         var message = JSON.stringify( fields );
+        message = messageCompress.pack(message);
+        vwf.socketBytesSent += 34 + getUTF8Length(message);
         socket.send( message );
 
     } else {
@@ -1180,6 +1200,7 @@ this.receive = function( nodeID, actionName, memberName, parameters, respond, or
 /// 
 /// @name module:vwf.dispatch
 this.lastTick = 0;
+this.propertySetTimes = {},
 this.dispatch = function() {
 
     // Handle messages until we empty the queue or reach the new current time. For each,
@@ -1205,8 +1226,9 @@ this.dispatch = function() {
 
 
         // Advance the time.
-
         if ( this.now != fields.time ) {
+           
+
             this.now = fields.time;
             this.sequence_ = undefined; // clear after the previous action
             this.client_ = undefined;   // clear after the previous action                    
@@ -1320,6 +1342,8 @@ this.tick = function() {
 
 this.setState = function( applicationState, callback_async /* () */ ) {
 
+   
+    console.log(applicationState);
     this.logger.debuggx( "setState" );  // TODO: loggableState
 
     // Set the runtime configuration.
@@ -1918,7 +1942,38 @@ this.setNode = function( nodeID, nodeComponent, callback_async /* ( nodeID ) */ 
 /// @name module:vwf.getNode
 /// 
 /// @see {@link module:vwf/api/kernel.getNode}
+//start looking into continious resync of nodes. Here, we return a node stripped of the children, plus the count of nodes
+//the server will query this at some interval, and sync the propertis of a given node
+//todo:  make the server sync more nodes per second as the number in the scene grows
 
+this.resyncNode = function(nodeID,node)
+{
+    if(nodeID == vwf.application()) return;
+    if(!node || !node.properties) return;
+    var keys = Object.keys(node.properties);
+    for(var j =0; j < keys.length; j++)
+    {
+        var i = keys[j];
+        //dont use json compare, it is not robust enough
+        if(!Object.deepEquals(vwf.getProperty(nodeID,i),node.properties[i]))
+            vwf.setProperty(nodeID,i,node.properties[i]);
+    }
+
+}
+
+this.activeResync = function() {
+    var nodes = nodes = vwf.decendants(vwf.application());
+    var nodeID = nodes[Math.floor(Math.random() * nodes.length - .001)];
+    var props = this.getProperties(nodeID);
+
+    if(!props) return null;
+    for(var i in props)
+        props[i] = this.getProperty(nodeID,i);
+    return {
+        node: {id:nodeID,properties:props}, 
+        count: nodes.length
+    }
+}
 this.getNode = function( nodeID, full, normalize ) {  // TODO: options to include/exclude children, prototypes
 
     if(!nodeID) return undefined;
@@ -2209,7 +2264,43 @@ this.getMethods = function( nodeID ) {  // TODO: rework as a cover for getProper
 
     return methods;
 };
+this.promptSaveState = function()
+{
+    _DataManager.saveToServer();
+}
+this.socketBytesSentLast = 0;
+this.socketBytesSent= 0;
+this.socketBytesReceivedLast = 0;
+this.socketBytesReceived= 0;
+this.socketMonitorInterval = function()
+{
+    this.socketBytesSentLast = this.socketBytesSent;
+    this.socketBytesSent = 0;
+    this.socketBytesReceivedLast = this.socketBytesReceived;
+    this.socketBytesReceived = 0;
+    console.log(this.socketBytesSentLast/10000 + 'KBps up',this.socketBytesReceivedLast/10000 +'KBps down');
+    
+},
+this.saveState = function(data)
+{
+    var fields = {
+        action: 'saveStateResponse',
+        data:data
+        // callback: callback_async,  // TODO: provisionally add fields to queue (or a holding queue) then execute callback when received back from reflector
+    };
 
+    if ( socket ) {
+
+        // Send the message.
+        var message = JSON.stringify( fields );
+        message = messageCompress.pack(message);
+
+        vwf.socketBytesSent += 34 + getUTF8Length(message);
+
+        socket.send( message );
+    }
+
+}
 this.getEvents = function( nodeID ) {  // TODO: rework as a cover for getProperty(), or remove; passing all properties to each driver is impractical since reentry can't be controlled when multiple gets are in progress.
 
     this.logger.debuggx( "getevents", nodeID );
@@ -4218,7 +4309,8 @@ this.test = function( nodeID, matchPattern, testID, initializedOnly ) {
 // == Private functions ====================================================================
 
 var isSocketIO07 = function() {
-    return ( parseFloat( io.version ) >= 0.7 );
+    //return ( parseFloat( io.version ) >= 0.7 );
+    return true;
 }
 
 // -- loadComponent ------------------------------------------------------------------------

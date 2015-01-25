@@ -477,11 +477,13 @@ function startVWF() {
 
     //Use Require JS to optimize and the main application file.
     if (compile) {
-        console.log(libpath.resolve(__dirname, './../client/lib/load'));
+        //console.log(libpath.resolve(__dirname, './../client/lib/load'));
         var config = {
             baseUrl: './support/client/lib/',
             name: './load',
-            out: './build/load.js'
+            out: './build/load.js',
+            optimize: "uglify",
+           // findNestedDependencies: true
         };
 
         fs.writeFileSync('./support/client/lib/vwfbuild.js', Landing.getVWFCore());

@@ -3,7 +3,7 @@
  * Maps simple 1:1 signal model to a broadcast model using target and sender ids
  */
 
-define(["module", "vwf/view", "vwf/view/buzz/buzz.min"], function(module, view) {
+define(["module", "vwf/view", "vwf/view/buzz/buzz.min"], function(module, view,buzz) {
 
 
 
@@ -85,7 +85,7 @@ define(["module", "vwf/view", "vwf/view/buzz/buzz.min"], function(module, view) 
 	return view.load(module, {
 
 		initialize: function() {
-			this.buzz = require("buzz");
+			this.buzz = buzz;
 			window._buzz = this.buzz;
 
 			this.sounds = {};

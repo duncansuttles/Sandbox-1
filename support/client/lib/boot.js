@@ -3,13 +3,26 @@ require.config({
     paths: {
         "vwf": "../vwf"
     },
-    shims: {
+    shim: {
         'vwf/view/xapi/xapiwrapper': {
             deps: ['vwf/view/editorview/sha256', "vwf/view/editorview/_3DRIntegration"],
             exports: 'XAPIWrapper'
+        },
+        'vwf/model/threejs/_THREERayTracer': {
+            deps: ["vwf/model/threejs",'vwf/model/threejs/MATH']
+        },
+        'vwf/model/threejs/MATH': {
+            deps: ["vwf/model/threejs"]
+        },
+        'vwf/model/threejs/scenemanager': {
+            deps: ['vwf/model/threejs/_THREERayTracer']
+        },
+        'vwf/model/threejs/GeometryExporter': {
+            deps: ["vwf/model/threejs"]
+        },
+        'vwf/model/threejs/helvetiker_regular.typeface.js': {
+            deps: ["vwf/model/threejs"]
         }
-
-
 
     },
     waitSeconds: 15
@@ -42,7 +55,12 @@ define([
     "assetLoader",
     "vwf/model/jqueryui",
     "vwf/view/jqueryui",
-    "SettingsManager"
+    "SettingsManager",
+    'vwf/model/threejs/MATH',
+    'vwf/model/threejs/_THREERayTracer',
+    'vwf/model/threejs/scenemanager',
+    'vwf/model/threejs/GeometryExporter',
+    'vwf/model/threejs/helvetiker_regular.typeface.js'
 
 ], function(ready,pools,io) {
 
@@ -63,76 +81,12 @@ define([
         $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu-v.css" />')
         $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/Editorview.css" />')
         $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/sprites.css" />')
-        $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/MATH.js"></script>');
-        $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/_THREERayTracer.js"></script>');
-        $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/scenemanager.js"></script>');
-        $(document.head).append('<script type="text/javascript" src="vwf/model/threejs/GeometryExporter.js"></script>');
-
-
-
-        $(document.head).append('<script src="vwf/model/threejs/helvetiker_regular.typeface.js"></script>');
-       
+    
         assetLoader.load(stateData, function() {
-            /*   vwf.initialize(
-
-                    // This is the world specification. The world may be specified using a component
-                    // literal as shown here, or the specification may be placed in a network-
-                    // visible location and specified here as a URI or as a query parameter to this
-                    // index page.
-     
-                    // As a literal:
-                    //     { extends: "http://vwf.example.com/example-type.vwf", properties: { ... }, ... }
-     
-                    // As a string:
-                    //     "http://vwf.example.com/example-type.vwf",
-     
-                    // These are the model configurations. Each key within the configuration object
-                    // is a model name, and each value is an argument or an array of arguments to be
-                    // passed to the model's constructor.
-     
-                    // With an array of arguments for the "example" model:
-                    //     { example: [ p1, p2, ... ], // ==> new vwf.modules.example( vwf, p1, p2, ... ) }
-     
-                    // As a single argument to the "html" view:
-                    //     { html: "#vwf-root" // ==> new vwf.modules.html( vwf, "#vwf-root" ) }
-     
-                    [
-                        "vwf/model/javascript",
-                        "vwf/model/jiglib",
-                        "vwf/model/wires",
-                        "vwf/model/threejs",
-                        "vwf/model/jqueryui",
-                        "vwf/model/object",
-                    ],
-
-                        // These are the view configurations. They use the same format as the model
-                        // configurations.
-
-                    [
-						
-						{ "vwf/view/threejs": "#vwf-root" },
-                        "vwf/view/document",
-                        //"vwf/view/editor",
-						"vwf/view/EditorView",
-                    	"vwf/view/googleEarth",
-						"vwf/view/WebRTC",
-						"vwf/view/audio",
-						"vwf/view/xapi",
-                        "vwf/view/jqueryui",
-                    ]
-
-                    );*/
-
             vwf.loadConfiguration(null, {
                 model: [],
                 view: []
             });
-
-
-
-
-
-
         });
 
     }

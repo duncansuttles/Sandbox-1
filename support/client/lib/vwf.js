@@ -310,7 +310,7 @@
 
 
 
-            jQuery = require("jquery");
+            jQuery = $;
 
             var requireArray = [
                 { library: "domReady", active: true },
@@ -804,7 +804,7 @@
             var host = {{host}};
 
 
-debugger;
+
         if ( isSocketIO07()) {
             if ( window.location.protocol === "https:" )
             {
