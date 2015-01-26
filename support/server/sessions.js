@@ -28,14 +28,16 @@ exports.GetSessionData = function(request, cb)
     {
         try
         {
+
             var session = JSON.parse(request.cookieData.substr(2))
                 .passport.user;
+            console.log(session);    
             cb(session);
             return;
         }
         catch (e)
         {
-            global.error(e);
+            logger.error(e);
             cb(null);
             return;
         }

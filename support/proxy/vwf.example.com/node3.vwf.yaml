@@ -129,6 +129,7 @@ properties:
                 },
                 globalToLocal: function(x,y,z)
                 {
+                    debugger;
                     if(x.length)
                     {
                         y = x[1];

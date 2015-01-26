@@ -72,6 +72,8 @@ function getNamespace(socket)
             var namespace = referer;
             if (namespace[namespace.length - 1] != "/")
                 namespace += "/";
+            namespace = namespace.substr(namespace.indexOf("/adl/"));
+            namespace = namespace.replace(/[\\\/]/g, '_');
             return namespace;
         }
         catch (e)
@@ -87,6 +89,7 @@ function checkOwner(node, name)
         if (!node.properties.permission) node.properties.permission = {}
         var permission = node.properties['permission'];
         var owner = node.properties['owner'];
+
         if (owner == name)
         {
             level = Infinity;
@@ -147,6 +150,7 @@ var fixIDs = function(node)
 
 function getBlankScene(state, instanceData, cb)
 {
+
     var state2 = JSON.parse(JSON.stringify(state));
     fs.readFile("./public" + global.appPath + "/index.vwf.yaml", 'utf8', function(err, blankscene)
     {
@@ -214,10 +218,13 @@ function ServeSinglePlayer(socket, namespace, instancedata)
     var instance = namespace;
     var state = SandboxAPI.getState(instance, function(state)
     {
-        if (!state) state = [
-        {
-            owner: undefined
-        }];
+        if (!state){
+            logger.warn('creating new blank world!')
+            state = [
+            {
+                owner: undefined
+            }];
+        }
         getBlankScene(state, instancedata, function(blankscene)
         {
             socket.emit('message',
@@ -249,7 +256,7 @@ function SaveInstanceState(namespace, data, socket)
 {
     
     if (!socket.loginData) return;
-    var id = namespace.replace(/[\\\/]/g, '_');
+    var id = namespace;
     
     DAL.getInstance(id, function(state)
     {
@@ -300,6 +307,7 @@ function WebSocketConnection(socket, _namespace)
     {
         //fill out some defaults if we did not get credentials
         //note that the client list for an anonymous connection may only contain that once connection
+        console.log(loginData);
         socket.loginData = loginData ||
         {
             Username: "Anonymous",
@@ -320,12 +328,12 @@ function WebSocketConnection(socket, _namespace)
         {
             socket.emit('connectionTest', msg);
         })
-        DAL.getInstance(namespace.replace(/\//g, "_"), function(instancedata)
+        DAL.getInstance(namespace, function(instancedata)
         {
             if (!instancedata)
             {
                 require('./examples.js')
-                    .getExampleMetadata(namespace.replace(/\//g, "_"), function(instancedata)
+                    .getExampleMetadata(namespace, function(instancedata)
                     {
                         if (instancedata)
                         {
@@ -602,12 +610,15 @@ function ClientConnected(socket, namespace, instancedata)
             var instance = namespace;
             //Get the state and load it.
             //Now the server has a rough idea of what the simulation is
+            console.log(namespace);
             SandboxAPI.getState(namespace, function(state)
             {
-                if (!state) state = [
-                {
-                    owner: instancedata.owner
-                }];
+                if (!state) {
+                    logger.warn('creating new blank world!');
+                    state = [{
+                        owner: instancedata.owner
+                    }];
+                }
                 thisInstance.state = {
                     nodes:
                     {}
@@ -921,6 +932,7 @@ function ClientConnected(socket, namespace, instancedata)
                         thisInstance.Log('server has no record of ' + message.node, 1);
                         return;
                     }
+
                     if (allowAnonymous || checkOwner(node, sendingclient.loginData.UID))
                     {
                         //We need to keep track internally of the properties

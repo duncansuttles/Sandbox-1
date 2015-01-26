@@ -1859,7 +1859,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     meta: e.metaKey,
                 },
                 position: [mouseXPos.call(this, e) / sceneView.width, mouseYPos.call(this, e) / sceneView.height],
-                screenPosition: [mouseXPos.call(this, e), mouseYPos.call(this, e)]
+                screenPosition: [mouseXPos.call(this, e), mouseYPos.call(this, e)],
+                worldPickRay: _Editor.GetWorldPickRay(e)
             }];
 
 
