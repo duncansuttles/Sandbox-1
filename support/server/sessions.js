@@ -1,7 +1,7 @@
 //not much left of this now - completely offloaded onto passport
 var GUID = require('node-uuid')
     .v4;
-
+var logger = require('./logger');
 function SessionData()
 {
     this.sessionId = GUID();

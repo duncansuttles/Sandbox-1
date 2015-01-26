@@ -18,7 +18,7 @@ var libpath = require('path'),
 
     YAML = require('js-yaml');
 var DAL = require('./DAL').DAL;
-
+var logger = require('./logger');
 var resolveCase = require('./resolveCaseInsensitiveFilename').resolveName;
 var existsCaseInsensitive = require('./resolveCaseInsensitiveFilename').exists;
 var existsSyncCaseInsensitive = require('./resolveCaseInsensitiveFilename').existsSync;
@@ -217,11 +217,11 @@ function ServeYAML(filename, response, URL) {
             response.end();
             return;
         }
-        //global.log(tf);
+        //logger.info(tf);
         try {
             var deYAML = JSON.stringify(YAML.load(file));
         } catch (e) {
-            global.log("error parsing YAML " + filename, 2);
+            logger.error("error parsing YAML " + filename, 2);
             _404(response);
             return;
         }
@@ -293,7 +293,7 @@ function routeToAPI(request, response, next) {
     var URL = url.parse(request.url, true);
     URL.pathname = decodeURIComponent(URL.pathname);
     var uri = URL.pathname.replace(safePathRE);
-    //global.log( URL.pathname );
+    //logger.info( URL.pathname );
 
     //lets try to move this into the main app.get om node_vwf
     if (URL.pathname.toLowerCase().indexOf('/vwfdatamanager.svc/') != -1) {
@@ -320,7 +320,7 @@ function handleRequest(request, response, next) {
 
     var filename = libpath.join(path, uri);
     var instance = Findinstance(filename);
-    //global.log(instance);
+    //logger.info(instance);
     //remove the instance identifier from the request
     filename = filterinstance(filename, instance);
 

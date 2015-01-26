@@ -60,7 +60,7 @@ function newFindFeatured(gotfeatured) {
         DB.find({
             "val.featured": true
         }, function(err, data) {
-            //console.log(data);
+            //logger.info(data);
             ret = [];
             for (var i in data) {
                 if (states.indexOf(data[i]._key) != -1)
@@ -141,10 +141,10 @@ function searchStatesInner(query,found,start,count) {
 function loaded() {
     startTimer();
     oldFindFeatured(function() {
-        console.log(stopTimer());
+        logger.info(stopTimer());
         startTimer();
         newFindFeatured(function(featured) {
-            console.log(stopTimer());
+            logger.info(stopTimer());
 
         })
     });
@@ -153,8 +153,8 @@ function loaded() {
 function loaded() {
     startTimer();
     searchStatesByUser('Rob',function(results) {
-        console.log(stopTimer());
-        console.log(results);
+        logger.info(stopTimer());
+        logger.info(results);
     },20,10);
 }
 exports.DB = DB;

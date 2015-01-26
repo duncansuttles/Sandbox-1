@@ -14,7 +14,7 @@ var request = require('request');
 //however, useful for deveopers who disable client side cache
 
 var cache = {};
-
+var logger = require('./logger');
 
 var stream = require('stream');
 var util = require('util');
@@ -77,7 +77,7 @@ function proxy(string, response) {
 	
     if (CACHE_3DR_DATA_IN_MEMORY) {
         if (cache[string]) {
-        	console.log('sending from 3DR cache');
+        	logger.info('sending from 3DR cache');
             response.send(memStore[string]);
             return;
         }
@@ -93,15 +93,15 @@ function proxy(string, response) {
         //seems like you can't pipe twice, so load it twice and keep a copy
         request['get'](string).auth(Get3DRUser(), Get3DRPassword(), true).on('error', function(e) {
 
-            console.log(e);
+            logger.error(e);
             response.writeHead(500);
             response.end();
 
         }).pipe(response);
-        console.log('caching 3DR data')
+        logger.info('caching 3DR data')
         request['get'](string).auth(Get3DRUser(), Get3DRPassword(), true).on('error', function(e) {
 
-            console.log(e);
+            logger.error(e);
             response.writeHead(500);
             response.end();
 
@@ -112,7 +112,7 @@ function proxy(string, response) {
 
         request['get'](string).auth(Get3DRUser(), Get3DRPassword(), true).on('error', function(e) {
 
-            console.log(e);
+            logger.error(e);
             response.writeHead(500);
             response.end();
 

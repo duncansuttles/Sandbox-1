@@ -12,7 +12,7 @@ function hitURL()
 	var time = new Date()
 	request(url,function(err,res,body)
 	{
-		console.log(( new Date())- time,'BODY',res.statusCode);
+		logger.info(( new Date())- time,'BODY',res.statusCode);
 		if(err) console.error(err);
 		else
 		{
@@ -34,7 +34,7 @@ function hitURL()
 				request(val,function(err,res,body)
 				{
 					if(err) console.error(( new Date())- time,err + ": " +val);
-					else console.log(( new Date()) - time,res.statusCode + ": " +val);
+					else logger.info(( new Date()) - time,res.statusCode + ": " +val);
 					cb();
 				})
 

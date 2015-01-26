@@ -1,5 +1,6 @@
 var fs = require('fs');
 var libpath = require('path');
+var logger = require('./logger');
 exports.getExampleData = function(name,cb)
 {
 	name = name.split('_');

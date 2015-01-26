@@ -36,13 +36,13 @@ function Host(url)
 	{
 		if(this.instances.indexOf(instance) == -1)
 		this.instances.push(instance);
-		console.log(this.instances);
+		logger.info(this.instances);
 	}
 	this.remove = function(instance)
 	{
-		console.log(this.instances);
+		logger.info(this.instances);
 		this.instances.splice(this.instances.indexOf(instance),1);
-		console.log(this.instances);
+		logger.info(this.instances);
 	}
 	this.contains = function(instance)
 	{
@@ -55,7 +55,7 @@ function Host(url)
 			//remember, servers using the cache-busting version number will 302
 			if(!error && (response.statusCode == 200 ||  response.statusCode == 302))
 			{
-				console.log(this.url + " health check ok.");
+				logger.info(this.url + " health check ok.");
 				global.setTimeout(this.healthCheck.bind(this),3000);
 				body = JSON.parse(body);
 				var reportedInstances = Object.keys(body)
@@ -64,14 +64,14 @@ function Host(url)
 					if(this.instances.indexOf(reportedInstances[i]) == -1)
 					{
 						this.add(reportedInstances[i]);
-						console.log(this.url + ' reports untracked instance ' + reportedInstances[i]);
+						logger.info(this.url + ' reports untracked instance ' + reportedInstances[i]);
 					}
 				}
 				for(var i = 0; i < this.instances.length; i++)
 				{
 					if(reportedInstances.indexOf(this.instances[i]) == -1)
 					{
-						console.log(this.url + ' reports closing instance ' + this.instances[i]);
+						logger.info(this.url + ' reports closing instance ' + this.instances[i]);
 						this.remove(this.instances[i]);
 
 					}
@@ -80,7 +80,7 @@ function Host(url)
 			}else
 			{
 				//remove this from the list of instances
-				console.log(this.url + " health check failed. Removeing.");
+				logger.info(this.url + " health check failed. Removeing.");
 				removeHost(this.url);
 			}
 			
@@ -96,12 +96,12 @@ var hosts = [];
 
 app.get('/',function(req,res,next){
 	var instance = (req.query.instance);
-	console.log(instance);
+	logger.info(instance);
 	for(var i =0; i < hosts.length; i++)
 	{
 		if(hosts[i].contains(instance))
 		{
-			console.log("host " + hosts[i].url + " contains " + instance);
+			logger.info("host " + hosts[i].url + " contains " + instance);
 			res.writeHead(200,{'Cache-Control':'no-cache'});
 			res.write(hosts[i].url);
 			res.end();
@@ -115,7 +115,7 @@ app.get('/',function(req,res,next){
 			res.end();
 
 	hosts[i].add(instance);		
-	console.log("randomly assign host " + hosts[i].url + " to " + instance);			
+	logger.info("randomly assign host " + hosts[i].url + " to " + instance);			
 
 })
 
@@ -139,11 +139,11 @@ app.get('/register',function(req,res,next){
 				{
 					if(!error && (response.statusCode == 200 ||  response.statusCode == 302)) {
 						hosts.push(new Host(host.host));
-						console.log(host.host + " registration successful");
+						logger.info(host.host + " registration successful");
 					}else
 					{
-						console.log(host.host + " does not seem to be visible");
-						console.log(response);
+						logger.info(host.host + " does not seem to be visible");
+						logger.info(response);
 					}
 
 				})
@@ -153,10 +153,10 @@ app.get('/register',function(req,res,next){
 			
 		}
 		else
-			console.log("Already have entry for "+ host.host);
+			logger.info("Already have entry for "+ host.host);
 	}else
 	{
-		console.log('failed registration');
+		logger.info('failed registration');
 	}
 	res.end();
 })
@@ -177,11 +177,11 @@ app.get('/deregister',function(req,res,next){
 	var host = (req.body);
 	if(host.key == global.configuration.loadBalancerKey)
 	{
-		console.log('deregistered '+ host.host);
+		logger.info('deregistered '+ host.host);
 		removeHost(host.host);
 	}else
 	{
-		console.log('failed deregistration');
+		logger.info('failed deregistration');
 	}
 })
 

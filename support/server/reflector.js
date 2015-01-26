@@ -12,11 +12,11 @@ var connect = require('connect'),
     parseSignedCookie = connect.utils.parseSignedCookie,
     cookie = require('express/node_modules/cookie');
 YAML = require('js-yaml');
-
+var logger = require('./logger');
 function startup(listen)
 {
     //create socket server
-    global.log('startup refector', 0);
+    logger.info('startup refector', 0);
     sio = sio(listen,
     {
         log: false,
@@ -210,7 +210,7 @@ function getBlankScene(state, instanceData, cb)
 
 function ServeSinglePlayer(socket, namespace, instancedata)
 {
-    global.log('single player', 2);
+    logger.info('single player', 2);
     var instance = namespace;
     var state = SandboxAPI.getState(instance, function(state)
     {
@@ -261,7 +261,7 @@ function SaveInstanceState(namespace, data, socket)
                 {
                     if (!metadata)
                     {
-                        console.log(id + "is not an example");
+                        logger.info(id + "is not an example");
                         return;
                     }
                     else
@@ -287,7 +287,7 @@ function SaveInstanceState(namespace, data, socket)
         //not currently checking who saves the state, so long as they are logged in
         DAL.saveInstanceState(id, data, function()
         {
-            console.log('saved');
+            logger.info('saved');
             return;
         });
     });
@@ -311,7 +311,7 @@ function WebSocketConnection(socket, _namespace)
         var namespace = _namespace || getNamespace(socket);
         socket.on('setNamespace', function(msg)
         {
-            global.log(msg.space, 2);
+            logger.info(msg.space, 2);
             WebSocketConnection(socket, msg.space);
             socket.emit('namespaceSet',
             {});
@@ -372,15 +372,15 @@ function runningInstance(id)
     }
     catch (e)
     {
-        global.error(e.message + ' when opening ' + SandboxAPI.getDataPath() + '//Logs/' + id.replace(/[\\\/]/g, '_'));
+        logger.error(e.message + ' when opening ' + SandboxAPI.getDataPath() + '//Logs/' + id.replace(/[\\\/]/g, '_'));
     }
     this.Log = function(message, level)
     {
-        if (global.logLevel >= level)
+        if (logger.logLevel >= level)
         {
             if (log)
                 log.write(message + '\n');
-            global.log(message + '\n');
+            logger.log(message + '\n',level);
         }
     }
     this.clientCount = function()
@@ -406,15 +406,12 @@ function runningInstance(id)
     }
     this.Error = function(message, level)
     {
-        var red, brown, reset;
-        red = '\u001b[31m';
-        brown = '\u001b[33m';
-        reset = '\u001b[0m';
-        if (global.logLevel >= level)
+        
+        if (logger.logLevel >= level)
         {
             if (log)
                 log.write(message + '\n');
-            global.log(red + message + reset + '\n');
+            logger.error( message);
         }
     }
     this.messageClients = function(message)
@@ -595,7 +592,7 @@ function ClientConnected(socket, namespace, instancedata)
         //The client is the first, is can just load the index.vwf, and mark it not pending
         if (!loadClient)
         {
-            global.log('load from db', 2);
+            logger.info('load from db', 2);
             socket.emit('message', messageCompress.pack(JSON.stringify(
             {
                 "action": "status",
@@ -671,7 +668,7 @@ function ClientConnected(socket, namespace, instancedata)
                 {
                     if (id == 'index-vwf' && name == 'restoreState')
                     {
-                        console.log('Restore State from Play Backup', 2);
+                        logger.info('Restore State from Play Backup', 2);
                         //args[0][0] should be a vwf root node definition
                         if (args[0][0])
                         {
@@ -722,7 +719,7 @@ function ClientConnected(socket, namespace, instancedata)
         //this client is not the first, we need to get the state and mark it pending
         else
         {
-            global.log('load from client', 2);
+            logger.info('load from client', 2);
             var firstclient = loadClient;
             socket.pending = true;
             thisInstance.getStateTime = thisInstance.time;
@@ -761,7 +758,7 @@ function ClientConnected(socket, namespace, instancedata)
                             this.count++;
                             if (this.count < 5)
                             {
-                                global.log('did not get state, resending request', 2);
+                                logger.warn('did not get state, resending request', 2);
                                 this.namespace.getStateTime = this.namespace.time;
                                 //update 11/2/14
                                 //if the last loadclient does not respond, pick a new client randomly
@@ -781,7 +778,7 @@ function ClientConnected(socket, namespace, instancedata)
                             }
                             else
                             {
-                                global.log('sending default state', 2);
+                                logger.warn('sending default state', 2);
                                 var state = this.namespace.cachedState;
                                 //send cached state to all pending clients, drain their pending list, mark active
                                 for (var i in this.namespace.clients)
@@ -789,7 +786,7 @@ function ClientConnected(socket, namespace, instancedata)
                                     var client = this.namespace.clients[i];
                                     if (loadClient != client && client.pending === true)
                                     {
-                                        global.log('sending default state 2', 2);
+                                        logger.warn('sending default state 2', 2);
                                         client.emit('message', messageCompress.pack(JSON.stringify(
                                         {
                                             "action": "status",
@@ -814,7 +811,7 @@ function ClientConnected(socket, namespace, instancedata)
                         }
                         else
                         {
-                            global.log('need to load from db', 2);
+                            logger.warn('need to load from db', 2);
                         }
                     }
                     catch (e)
@@ -845,7 +842,7 @@ function ClientConnected(socket, namespace, instancedata)
                 {
                     return;
                 }
-                //global.log(message);
+                //logger.info(message);
                 message.client = socket.id;
                 if (message.action == "saveStateResponse")
                 {
@@ -884,7 +881,7 @@ function ClientConnected(socket, namespace, instancedata)
                         red = '\u001b[31m';
                         blue = '\u001b[33m';
                         reset = '\u001b[0m';
-                        global.log(blue + textmessage.sender + ": " + textmessage.text + reset, 0);
+                        logger.warn(blue + textmessage.sender + ": " + textmessage.text + reset, 0);
                     }
                     //send the message to the sender and to the receiver
                     if (textmessage.receiver)
@@ -1066,8 +1063,8 @@ function ClientConnected(socket, namespace, instancedata)
                             }
                             else
                             {
-                                //global.log('rejecting resync data from the past');
-                                //global.log(message.time,thisInstance.time);
+                                //logger.info('rejecting resync data from the past');
+                                //logger.info(message.time,thisInstance.time);
                             }
                         }
                     }
@@ -1077,7 +1074,7 @@ function ClientConnected(socket, namespace, instancedata)
                         if (client.pending == true)
                         {
                             client.pendingList.push(compressedMessage);
-                            global.log('PENDING', 2);
+                            logger.debug('PENDING', 2);
                         }
                         else
                         {
@@ -1103,9 +1100,9 @@ function ClientConnected(socket, namespace, instancedata)
             catch (e)
             {
                 //safe to catch and continue here
-                global.error('Error in reflector: onMessage');
-                global.error(e);
-                global.error(e.stack);
+                logger.error('Error in reflector: onMessage');
+                logger.error(e);
+                logger.error(e.stack);
             }
         });
         //When a client disconnects, go ahead and remove the instance data
@@ -1114,7 +1111,7 @@ function ClientConnected(socket, namespace, instancedata)
             try
             {
                 var loginData = socket.loginData;
-                global.log(socket.id, loginData, 2)
+                logger.debug(socket.id, loginData, 2)
                 thisInstance.clients[socket.id] = null;
                
                 delete thisInstance.clients[socket.id];
@@ -1125,7 +1122,7 @@ function ClientConnected(socket, namespace, instancedata)
                 if (loginData && loginData.clients)
                 {
                     delete loginData.clients[socket.id];
-                    global.error("Disconnect. Deleting node for user avatar " + loginData.UID);
+                    logger.error("Disconnect. Deleting node for user avatar " + loginData.UID);
                     var avatarID = 'character-vwf-' + loginData.UID;
                     thisInstance.messageClients(JSON.stringify(
                     {
@@ -1164,13 +1161,13 @@ function ClientConnected(socket, namespace, instancedata)
                 {
                     clearTimeout(thisInstance.timerID);
                     RunningInstances.remove(thisInstance.id);
-                    global.log('Shutting down ' + namespace, 2)
+                    logger.warn('Shutting down ' + namespace, 2)
                 }
             }
             catch (e)
             {
-                global.error('error in reflector disconnect')
-                global.error(e);
+                logger.error('error in reflector disconnect')
+                logger.error(e);
             }
         });
     } // end WebSocketConnection

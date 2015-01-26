@@ -1,22 +1,4 @@
-global.log = function() {
-    var args = Array.prototype.slice.call(arguments);
-    var level = args.splice(args.length - 1)[0];
 
-    if (!isNaN(parseInt(level))) {
-        level = parseInt(level);
-    } else {
-        args.push(level)
-        level = 1;
-    };
-
-    if (level <= global.logLevel) {
-        //console.log.apply(this,args);
-        var clear = '\u001b[2K',
-            reset = '\u001b[1G'
-        var testLine = clear + reset + args.join(' ') + '\n> ' + global.inbuffer;
-        process.stdout.write(testLine);
-    }
-}
 
 global.version = 1;
 
@@ -27,7 +9,7 @@ var libpath = require('path'),
     url = require("url"),
     mime = require('mime'),
     YAML = require('js-yaml');
-
+var logger = require('./logger');
 // Read configuration settings early so we can use appPath
 var configSettings;
 
@@ -35,13 +17,13 @@ try {
     configSettings = JSON.parse(fs.readFileSync('./config.json').toString());
 } catch (e) {
     configSettings = {};
-    global.log("Error: Unable to load config file");
-    global.log(e.message);
+    logger.error("Error: Unable to load config file");
+    logger.info(e.message);
 }
 
 appPath = configSettings.appPath ? configSettings.appPath : '/adl/sandbox';
 global.appPath = appPath;
-global.log('Set appPath to ' + global.appPath);
+logger.info('Set appPath to ' + global.appPath);
 
 //save configuration into global scope so other modules can use.
 global.configuration = configSettings;
@@ -83,39 +65,10 @@ var option = {
 };
 i18n.init(option);
 
-console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-console.log('Welcome to Sandbox.\nType "create application" to create your first app.');
-console.log('Type "help" for a list of commands.\n');
+logger.info("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+logger.info('Welcome to Sandbox.\nType "create application" to create your first app.');
+logger.info('Type "help" for a list of commands.\n');
 
-var errorlog = null;
-global.error = function() {
-    var red, brown, reset;
-    red = '\u001b[31m';
-    brown = '\u001b[33m';
-    reset = '\u001b[0m';
-
-    var args = Array.prototype.slice.call(arguments);
-    if (errorlog)
-        errorlog.write(args[0] + '\n');
-    args[0] = red + args[0] + reset;
-    var level = args.splice(args.length - 1)[0];
-
-    if (!isNaN(parseInt(level))) {
-        level = parseInt(level);
-    } else {
-        args.push(level)
-        level = 1;
-    };
-
-
-    if (level <= global.logLevel) {
-        //console.log.apply(this,args);
-        var clear = '\u001b[2K',
-            reset = '\u001b[1G'
-        var testLine = clear + reset + args.join(' ') + '\n> ' + global.inbuffer;
-        process.stdout.write(testLine);
-    }
-}
 
 var handleRedirectAfterLogin = function(req, res) {
     var redirectUrl = global.appPath + '/';
@@ -135,10 +88,7 @@ function startVWF() {
     global.activeinstances = [];
 
 
-    var red, brown, reset;
-    red = '\u001b[31m';
-    brown = '\u001b[33m';
-    reset = '\u001b[0m';
+    
 
 
 
@@ -154,9 +104,6 @@ function startVWF() {
     //save configuration into global scope so other modules can use.
     global.configuration = configSettings;
 
-
-
-
     var p = process.argv.indexOf('-p'),
         port = 0,
         datapath = "";
@@ -171,15 +118,17 @@ function startVWF() {
     datapath = p >= 0 ? process.argv[p + 1] : (configSettings.datapath ? libpath.normalize(configSettings.datapath) : libpath.join(__dirname, "../../data"));
     global.datapath = datapath;
 
+    logger.initFileOutput(datapath);
+
     p = process.argv.indexOf('-ls');
     global.latencySim = p >= 0 ? parseInt(process.argv[p + 1]) : (configSettings.latencySim ? configSettings.latencySim : 0);
 
     if (global.latencySim > 0)
-        console.log(red + 'Latency Sim = ' + global.latencySim + reset);
+        logger.info( 'Latency Sim = ' + global.latencySim );
 
     p = process.argv.indexOf('-l');
-    global.logLevel = p >= 0 ? process.argv[p + 1] : (configSettings.logLevel ? configSettings.logLevel : 1);
-    global.log(brown + 'LogLevel = ' + global.logLevel + reset, 0);
+    logger.logLevel = p >= 0 ? process.argv[p + 1] : (configSettings.logLevel ? configSettings.logLevel : 1);
+    logger.info('LogLevel = ' + logger.logLevel , 0);
 
     var adminUID = 'admin';
 
@@ -188,21 +137,21 @@ function startVWF() {
 
     FileCache.enabled = process.argv.indexOf('-nocache') >= 0 ? false : !configSettings.noCache;
     if (!FileCache.enabled) {
-        global.log('server cache disabled');
+        logger.info('server cache disabled');
     }
 
     FileCache.minify = process.argv.indexOf('-min') >= 0 ? true : !! configSettings.minify;
     var compile = process.argv.indexOf('-compile') >= 0 ? true : !! configSettings.compile;
     if (compile) {
-        global.log('Starting compilation process...');
+        logger.info('Starting compilation process...');
     }
 
     var versioning = process.argv.indexOf('-cc') >= 0 ? true : !! configSettings.useVersioning;
     if (versioning) {
         global.version = configSettings.version ? configSettings.version : global.version;
-        global.log(brown + 'Versioning is on. Version is ' + global.version + reset);
+        logger.info('Versioning is on. Version is ' + global.version );
     } else {
-        global.log(brown + 'Versioning is off.' + reset);
+        logger.info('Versioning is off.' );
         delete global.version;
     }
 
@@ -217,8 +166,8 @@ function startVWF() {
         global.setTimeout(function() {
             process.exit()
         }, 5000);
-        global.error(err);
-        global.error(err.stack);
+        logger.error(err);
+        logger.error(err.stack);
         mailtools.serverError(err, function(sent) {
             process.exit(1);
         });
@@ -241,11 +190,11 @@ function startVWF() {
             },
             function(error, response, body) {
                 if (!error && response.statusCode == 200) {
-                    global.log(brown + "LoadBalancer registration complete" + reset, 0);
-                    global.log(brown + body + reset, 0);
+                    logger.info("LoadBalancer registration complete" , 0);
+                    logger.info(body , 0);
                 } else {
-                    global.log(red + "LoadBalancer registration failed!" + reset, 0);
-                    global.log(brown + body + reset, 0);
+                    logger.error( "LoadBalancer registration failed!" , 0);
+                    logger.error(body , 0);
                     delete global.configuration.loadBalancer;
                 }
             });
@@ -284,7 +233,7 @@ function startVWF() {
                 //check for express 4.x
                 if(!app.locals)
                 {
-                    console.log('Please update NPM modules. Run NPM install again.');
+                    logger.error('Please update NPM modules. Run NPM install again.');
                     return;
                 }
                 app.set('layout', 'layout');
@@ -457,9 +406,9 @@ function startVWF() {
                     listen = app.listen(port);
                 }
 
-                global.log(brown + 'Admin is "' + global.adminUID + "\"" + reset, 0);
-                global.log(brown + 'Serving on port ' + port + reset, 0);
-                global.log(brown + 'minify is ' + FileCache.minify + reset, 0);
+                logger.info('Admin is "' + global.adminUID + "\"" , 0);
+                logger.info('Serving on port ' + port , 0);
+                logger.info('minify is ' + FileCache.minify , 0);
 
 
                 //if we got this far, then it's 404
@@ -482,7 +431,7 @@ function startVWF() {
 
     //Use Require JS to optimize and the main application file.
     if (compile) {
-        //console.log(libpath.resolve(__dirname, './../client/lib/load'));
+        //logger.info(libpath.resolve(__dirname, './../client/lib/load'));
         var config = {
             baseUrl: './support/client/lib/',
             name: './load',
@@ -492,17 +441,17 @@ function startVWF() {
         };
 
         fs.writeFileSync('./support/client/lib/vwfbuild.js', Landing.getVWFCore());
-        global.log('RequrieJS Build start');
+        logger.info('RequrieJS Build start');
         //This will concatenate almost 50 of the project JS files, and serve one file in it's place
         requirejs.optimize(config, function(buildResponse) {
 
-            global.log('RequrieJS Build complete');
-            global.log(buildResponse);
+            logger.info('RequrieJS Build complete');
+            logger.info(buildResponse);
             async.series([
 
                 function(cb3) {
 
-                    global.log('Closure Build start');
+                    logger.info('Closure Build start');
                     //lets do the most agressive compile possible here!
                     //not looking good on ever getting this through the compiler
                     cb3();
@@ -511,12 +460,12 @@ function startVWF() {
 
                 },
                 function(cb3) {
-                    global.log('loading ' + config.out);
+                    logger.info('loading ' + config.out);
                     var contents = fs.readFileSync(config.out, 'utf8');
                     //here, we read the contents of the built load.js file
                     var path = libpath.normalize('../../support/client/lib/load.js');
                     path = libpath.resolve(__dirname, path);
-                    console.log(path);
+                    logger.info(path);
                     //we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
                     zlib.gzip(contents, function(_, zippeddata) {
                         var newentry = {};
@@ -533,12 +482,12 @@ function startVWF() {
                     });
                 }
             ], function(err) {
-                global.log(err);
+                logger.error(err);
                 StartUp();
             });
         }, function(err) {
             //there was a requireJS build error. Not a prob, keep going.
-            global.log(err);
+            logger.error(err);
             StartUp();
         });
 

@@ -7,6 +7,7 @@ var zlib = require('zlib');
 var compressor = require('node-minify');
 var async = require('async');
 var resolveCase = require('./resolveCaseInsensitiveFilename').resolveName;
+var logger = require('./logger');
 //***node, uses REGEX, escape properly!
 function strEndsWith(str, suffix) {
     return str.match(suffix + "$") == suffix;
@@ -43,7 +44,7 @@ function _FileCache() {
         } catch (e) {
             //in case of errors (where the dir does not exist) just do whatever the system did before
             //why do we even attempt to serve in this case? is the check for actual file existance later?
-            console.log(e);
+            logger.error(e);
             return true;
         }
 
@@ -75,13 +76,13 @@ function _FileCache() {
         var self = this;
         //Cannot escape above the application paths!!!!
         if (path.toLowerCase().indexOf(libpath.resolve(__dirname, '../../').toLowerCase()) != 0 && path.toLowerCase().indexOf(global.datapath.toLowerCase()) != 0) {
-            global.log(path + " is illegal",3);
+            logger.error(path + " is illegal",3);
             callback(null);
             return;
         }
         //Cannot have the users.db!
         if (path.toLowerCase().indexOf('users.db') != -1) {
-            global.log(path + " is illegal",3);
+            logger.error(path + " is illegal",3);
             callback(null);
             return;
         }
@@ -89,7 +90,7 @@ function _FileCache() {
         //Find the record
         for (var i = 0; i < this.files.length; i++) {
             if (this.files[i].path == path) {
-                global.log('serving from cache: ' + path, 2);
+                logger.info('serving from cache: ' + path, 2);
                 //Callback with the record
                 callback(this.files[i]);
                 return;
@@ -116,7 +117,7 @@ function _FileCache() {
                                 //record the data
                                 var newentry = {};
 
-                                //global.log(file.length);
+                                //logger.info(file.length);
                                 newentry.path = path;
                                 newentry.data = file;
                                 newentry.stats = stats;
@@ -125,12 +126,12 @@ function _FileCache() {
                                 newentry.datatype = datatype;
                                 newentry.hash = hash(file);
 
-                                global.log(newentry.hash, 2);
-                                global.log('loading into cache: ' + path, 2);
+                                logger.debug(newentry.hash, 2);
+                                logger.info('loading into cache: ' + path, 2);
 
                                 // if enabled, cache in memory
                                 if (FileCache.enabled == true) {
-                                    global.log('cache ' + path, 2);
+                                    logger.info('cache ' + path, 2);
                                     FileCache.files.push(newentry);
 
                                     //minify is currently not compatable with auto-watch of files
@@ -140,7 +141,7 @@ function _FileCache() {
 
 
 
-                                            global.log(newentry.path + ' has changed on disk', 2);
+                                            logger.info(newentry.path + ' has changed on disk', 2);
                                             FileCache.files.splice(FileCache.files.indexOf(newentry), 1);
 
                                         });
@@ -165,7 +166,7 @@ function _FileCache() {
                     //if minifying and ends with js
                     if (strEndsWith(path, 'js')) {
                         //compress the JS then gzip and save the results
-                        global.log('minify ' + path);
+                        logger.info('minify ' + path);
                         new compressor.minify({
                             type: 'uglifyjs',
                             fileIn: path,
@@ -186,7 +187,7 @@ function _FileCache() {
                     // likewise, try to minify the css
                     else if (strEndsWith(path, 'css')) {
                         //compress the css then gzip and save the results
-                        global.log('minify ' + path);
+                        logger.info('minify ' + path);
                         new compressor.minify({
                             type: 'yui-css',
                             fileIn: path,

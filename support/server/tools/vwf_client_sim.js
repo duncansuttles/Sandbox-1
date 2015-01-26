@@ -9,7 +9,7 @@ var GUID = require('node-uuid').v4;
 global.appPath = "/adl/sandbox"		
 var EncryptPassword = function (password, username,salt)
 	{
-		console.log(password,username,salt);
+		logger.info(password,username,salt);
 		var unencrpytedpassword = password + username + salt;
 		for (var i = 0; i < 1000; i++)
 		{
@@ -53,12 +53,12 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 		if(chunk == 'quit')
 			process.exit();
 	});
-	console.log('Launching Avatar at ' + server +':'+port+' with username: ' + username +' and password: ' + password+' in world '+session);
+	logger.info('Launching Avatar at ' + server +':'+port+' with username: ' + username +' and password: ' + password+' in world '+session);
 	
 	//quick macro to send a message
 	function send(data)
 	{
-		//console.log(data);
+		//logger.info(data);
 		socket.emit('message',messageCompress.pack(JSON.stringify(data)));	
 	}
 	//generate a key event and send it
@@ -97,7 +97,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 							"char": key
 						}
 		//send the event				
-		console.log('send key');
+		logger.info('send key');
 		send(keyevent);		
 
 	}
@@ -218,7 +218,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
                     loop: false
                 }
             };
-		console.log('sending avatar');
+		logger.info('sending avatar');
 		socket.emit('message',messageCompress.pack(JSON.stringify(component)));
 	}
 
@@ -227,7 +227,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 	{
 		
 		data = JSON.parse(messageCompress.unpack(data));
-		//console.log(data);
+		//logger.info(data);
 		//keep track of the server time pulse
 		currenttime = data.time;
 		//if we are keeping track of state and the server requests it, send it
@@ -239,7 +239,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 		if(data.action == 'createNode')
 		{
 			global.state = data.parameters[0];
-			//console.log(global.state);
+			//logger.info(global.state);
 		}
 		if(data.action == 'createChild')
 		{
@@ -259,14 +259,14 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 		if(data.action == 'setState')
 		{
 			global.state = data.parameters[0].nodes[0];
-			console.log(global.state);
+			logger.info(global.state);
 		}
 		//Here is the real meat of the simulation.
 		//This bot randomly hits the keys, and the avatar will move.
 		if(data.action == 'tick')
 		{
 		
-			console.log('got tick');
+			logger.info('got tick');
 			//send a fake mouse event, to test server 
 			
 			var mouseevent  = {"time":5.799999999999987,"node":"index-vwf","action":"dispatchEvent","member":"pointerMove","parameters":[[{"button":"right","clicks":1,"buttons":{"left":false,"middle":false,"right":true},"modifiers":{"alt":false,"ctrl":false,"shift":false,"meta":false},"position":[0.37105263157894736,0.20229405630865485],"screenPosition":[705,194]}],{"":[{"distance":0.25039778107183475,"globalPosition":[null,null,null],"globalNormal":[0,0,1],"globalSource":[1.202807068824768,-3.8025035858154297,-3.8025035858154297]}],"box2-vwf-9d1cb46-c41b-e63-1ac-8fb9a3f7f073":[{"source":{"0":-1.5917856693267822,"1":5.0322041511535645,"2":-5.0322041511535645},"distance":0.25039778107183475,"globalSource":[1.202807068824768,-3.8025035858154297,-3.8025035858154297]}]}],"client":"wRI1voo6_Fp_h5ZMYXrM"};
@@ -324,7 +324,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 	  
 	  //now that we have set the socket to the world, tell the server that the user at the session cookie are the owner of this socket
 	  socket.on('namespaceSet', function (data) {
-		console.log(socket.socket.sessionid);
+		logger.info(socket.socket.sessionid);
 		
 		//we now must use an http request to tell the server that 'we' own the socket.
 		//'we' meaning the user logged into the client with the given session cookie
@@ -351,10 +351,10 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 
 	  //the whole response has been recieved, so we just print it out here
 	  response.on('end', function () {
-		console.log(str);
+		logger.info(str);
 		
 		//this is the session cookie for the client. It identifies that this client has session on the server
-		console.log(response.headers['set-cookie']);
+		logger.info(response.headers['set-cookie']);
 			
 		//the server sends a session ID to the client. We need to remember this to log into the world
 		connectSocket(response.headers['set-cookie']);
@@ -372,7 +372,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 
 	  //the whole response has been recieved, so we just print it out here
 	  response.on('end', function () {
-		console.log('salt: '+str);
+		logger.info('salt: '+str);
 		salt = str.trim();
 		
 		//create the proper hash for the pass, and try to loging this client to the server
@@ -396,7 +396,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 
 		  //the whole response has been recieved, so we just print it out here
 		  response.on('end', function () {
-			console.log(str);
+			logger.info(str);
 			//boot up the whole client, start by getting the hash for this user
 			//when complete, goto saltRetreiveComplete
 			http.request('http://'+server+':'+port+'/vwfDataManager.svc/salt?UID='+username, saltRetreiveComplete).end();
@@ -467,7 +467,7 @@ var world = p >= 0 ? process.argv[p+1] : "YLGSwHUNuviUx37r";
 LaunchAvatar(user,password,server,port,global.appPath + "/" + world + "/");
 
 process.on('message', function(m) {
-  console.log('CHILD got message:', m);
+  logger.info('CHILD got message:', m);
   if(m == 'kill')
 	process.exit();
 });	

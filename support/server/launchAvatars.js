@@ -15,14 +15,14 @@ function randomtick()
 	if(rnd == 4)
 	{
 		var rnd = Math.floor(require('./cryptoRandom.js').random() * 12);
-		console.log('killing ' + rnd);
+		logger.info('killing ' + rnd);
 		var p = processes[rnd]
 		p.send('kill');
 		
 		
 		var c1 = fork('vwf_client_sim.js',[, '-u', user+(rnd+1),'-p',password,'-s',server,'-t',port,'-w',world]);
 		c1.on('close', function (code) {
-		  console.log('child process exited with code ' + code);
+		  logger.info('child process exited with code ' + code);
 		});
 		
 		processes.splice(rnd,1,c1);
@@ -89,7 +89,7 @@ function launchAvatars()
 		}
 		var c1 = fork('vwf_client_sim.js',[ '-u', user+i,'-p',password,'-s',server,'-t',port,'-w',tworld]);
 		c1.on('close', function (code) {
-		  console.log('child process exited with code ' + code);
+		  logger.info('child process exited with code ' + code);
 		});
 		
 		processes.push(c1);
@@ -111,7 +111,7 @@ function getStatesComplete(response)
 		states = Object.keys(JSON.parse(str));
 		for(var i =0; i < states.length; i++)
 			states[i] = states[i].substring(13,29);
-		console.log(states);
+		logger.info(states);
 		launchAvatars();
 		
 		

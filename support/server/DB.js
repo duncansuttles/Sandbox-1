@@ -5,6 +5,7 @@ var libpath = require('path');
 nStore = nStore.extend(require('nstore/query')());
 
 var DB;
+var logger = require('./logger');
 exports.new = function(DBTablePath,cb)
 {
     

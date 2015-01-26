@@ -21,6 +21,7 @@ var UpdatePassword = passwordUtils.UpdatePassword;
 var sessions = require('./sessions');
 var mailTools = require('./mailTools');
 var xapi = require('./xapi');
+var logger = require('./logger');
 // default path to data. over written by setup flags
 //generate a random id.
 var GUID = require('node-uuid')
@@ -34,13 +35,13 @@ function respond(response, status, message)
 			"Cache-Control": "private, max-age=0, no-cache"
 		});
 		response.write(message + "\n");
-		global.log(message, 2);
+		logger.debug(message, 2);
 		response.end();
 	}
 	//Just serve a simple file
 function ServeFile(filename, response, URL, JSONHeader)
 	{
-		global.log(filename, 2);
+		logger.debug(filename, 2);
 		var datatype = "binary";
 		if (JSONHeader)
 			datatype = "utf8";
@@ -247,7 +248,7 @@ function updateInventoryItemMetadata(URL, data, response)
 	}
 	catch (e)
 	{
-		global.error(e);
+		logger.error(e);
 		respond(response, 500, 'parse error');
 		return;
 	}
@@ -388,7 +389,7 @@ function SaveProfile(URL, data, response)
 	}
 	catch (e)
 	{
-		global.error(e);
+		logger.error(e);
 		respond(response, 500, 'parse error');
 		return;
 	}
@@ -487,13 +488,13 @@ function CheckAuthor(UID, assetFilename, callback)
 				}
 				catch (e)
 				{
-					global.log(e);
+					logger.error(e);
 					callback(false);
 					return;
 				}
 				var storedAuthor = asset.Author;
 				var suppliedAuthor = UID;
-				global.log(storedAuthor, suppliedAuthor, 2);
+				logger.debug(storedAuthor, suppliedAuthor, 2);
 				callback(storedAuthor == suppliedAuthor);
 			});
 			return;
@@ -520,13 +521,13 @@ function CheckOwner(UID, stateFilename, callback)
 				}
 				catch (e)
 				{
-					global.log(e);
+					logger.error(e);
 					callback(false);
 					return;
 				}
 				var storedOwner = asset[asset.length - 1].owner;
 				var suppliedOwner = UID;
-				global.log(storedOwner, suppliedOwner, 2);
+				logger.debug(storedOwner, suppliedOwner, 2);
 				callback(storedOwner == suppliedOwner);
 			});
 			return;
@@ -553,7 +554,7 @@ function SaveAsset(URL, filename, data, response)
 				if (!fs.existsSync(filename))
 				{
 					//Save the asset Author info
-					global.log('parse asset', 2);
+					logger.info('parse asset', 2);
 					var asset;
 					try
 					{
@@ -561,14 +562,14 @@ function SaveAsset(URL, filename, data, response)
 					}
 					catch (e)
 					{
-						global.error(e);
+						logger.error(e);
 						respond(response, 500, 'parse error');
 						return;
 					}
 					asset.Author = URL.query.UID;
 					data = JSON.stringify(asset);
 					SaveFile(filename, data, response);
-					global.log('Saved Asset ' + filename, 2);
+					logger.warn('Saved Asset ' + filename, 2);
 					return;
 				}
 				else
@@ -592,14 +593,14 @@ function SaveAsset(URL, filename, data, response)
 							}
 							catch (e)
 							{
-								global.error(e);
+								logger.error(e);
 								respond(response, 500, 'parse error');
 								return;
 							}
 							asset.Author = URL.query.UID;
 							data = JSON.stringify(asset);
 							SaveFile(filename, data, response);
-							global.log('Saved Asset ' + filename, 2);
+							logger.warn('Saved Asset ' + filename, 2);
 							return;
 						}
 					});
@@ -728,7 +729,7 @@ function CopyInstance(URL, SID, response)
 						{
 							DAL.saveInstanceState(newid, statedata, function(ok)
 							{
-								console.log(ok);
+								logger.info(ok);
 								cb();
 							})
 						},
@@ -815,7 +816,7 @@ function Publish(URL, SID, publishdata, response)
 	{
 		SID = global.appPath.replace(/\//g, "_") + '_' + SID + '_';
 	}
-	global.log(SID, 2);
+	logger.debug(SID, 2);
 	DAL.getInstance(SID, function(state)
 	{
 		if (!state)
@@ -835,7 +836,7 @@ function Publish(URL, SID, publishdata, response)
 		var publishSettings = null;
 		//The settings  for the published state. 
 		//have to handle these in the client side code, with some enforcement at the server
-		global.log(publishdata, 2);
+		logger.debug(publishdata, 2);
 		if (publishdata)
 		{
 			var singlePlayer = publishdata.SinglePlayer;
@@ -938,7 +939,7 @@ function SaveThumbnail(URL, SID, body, response)
 					{
 						//set state metadata that the file was explicitly set
 						state.userSetThumbnail = true;
-						console.log('userSetThumbnail');
+						logger.debug('userSetThumbnail');
 						DAL.updateInstance(SID, state, function()
 						{
 							respond(response, 200, '');
@@ -1003,7 +1004,7 @@ function GetCameras(SID, response, URL)
 				}
 				catch (e)
 				{
-					global.error(e);
+					logger.error(e);
 					respond(response, 500, e.toString());
 					return;
 				}
@@ -1082,7 +1083,7 @@ function CheckHash(filename, data, callback)
 	{
 		fs.readFile(filename, "utf8", function(err, file)
 		{
-			global.log("hash is:" + hash(data) + " " + hash(file), 2);
+			logger.info("hash is:" + hash(data) + " " + hash(file), 2);
 			callback(hash(data) == hash(file));
 		});
 		return;
@@ -1209,7 +1210,7 @@ function setStateData(URL, data, response)
 	}
 	catch (e)
 	{
-		global.error(e);
+		logger.error(e);
 		respond(response, 500, 'parse error');
 		return;
 	}
@@ -1253,7 +1254,7 @@ function createState(URL, data, response)
 		}
 		catch (e)
 		{
-			global.error(e);
+			logger.error(e);
 			respond(response, 500, 'parse error');
 			return;
 		}
@@ -1279,7 +1280,7 @@ function getState(SID, cb)
 	var statedir = (basedir + 'States/' + SID)
 		.replace(safePathRE);
 	var statefile = statedir + '/state'.replace(safePathRE);
-	global.log('serve state ' + statedir, 2);
+	logger.info('serve state ' + statedir, 2);
 	//sync case
 	if (!cb)
 	{
@@ -1292,7 +1293,7 @@ function getState(SID, cb)
 			}
 			catch (e)
 			{
-				global.error(e);
+				logger.error(e);
 				return null;
 			}
 		}
@@ -1315,7 +1316,7 @@ function getState(SID, cb)
 					}
 					catch (e)
 					{
-						global.error(e);
+						logger.error(e);
 					}
 					cb(data);
 				});
@@ -1396,7 +1397,7 @@ function dirTree(filename)
 
 function LogError(URL, error, response)
 	{
-		global.error(JSON.stringify(JSON.parse(error), null, 4));
+		logger.error(JSON.stringify(JSON.parse(error), null, 4));
 		response.writeHead(200,
 		{});
 		response.end();
@@ -1429,8 +1430,8 @@ function serve(request, response)
 		//Normalize the path for max/unix
 		pathAfterCommand = pathAfterCommand.replace(/\//g, libpath.sep);
 		var basedir = datapath + libpath.sep;
-		//global.log(basedir+"DataFiles"+ pathAfterCommand);
-		global.log(command, UID, 3);
+		//logger.info(basedir+"DataFiles"+ pathAfterCommand);
+		logger.debug(command, UID, 3);
 		if (request.method == "GET")
 		{
 			switch (command)
@@ -1542,7 +1543,7 @@ function serve(request, response)
 					break;
 				case "statehistory":
 					{
-						global.log("statehistory", 2);
+						logger.info("statehistory", 2);
 						DAL.getHistory(SID, function(statehistory)
 						{
 							if (statehistory)
@@ -1780,7 +1781,7 @@ function serve(request, response)
 					break;
 				default:
 					{
-						global.log("POST", 2);
+						logger.warn("POST", 2);
 						_404(response);
 						return;
 					}
@@ -1813,7 +1814,7 @@ function serve(request, response)
 					break;
 				default:
 					{
-						global.log("DELETE", 2);
+						logger.warn("DELETE", 2);
 						_404(response);
 						return;
 					}

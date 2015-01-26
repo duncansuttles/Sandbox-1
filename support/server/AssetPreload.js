@@ -1,5 +1,5 @@
 var SandboxAPI = require('./sandboxAPI');
-
+var logger = require('./logger');
 //we're going to allow the client to request a list of assets the system will need for this scene
 //this allows the client to load and parse some stuff before connecting to the server, so it does not build up a load 
 //of events to process while parsing assets
@@ -113,11 +113,11 @@ function getState(id,cb)
 	if(global.instances && global.instances.get(id) && global.instances.get(id).state)
 	{
 		var state = global.instances.get(id).state;
-		console.log('getting assets to preload from cached state');
+		logger.info('getting assets to preload from cached state');
 		parseStateForAssets(state,cb);
 	}else
 	{
-		console.log('getting assets to preload from database state: WARNING - this will not preload avatars!');
+		logger.info('getting assets to preload from database state: WARNING - this will not preload avatars!');
 		SandboxAPI.getState(id.replace(/\//g,"_"),function(state)
 			{
 				parseStateForAssets(state,cb);		

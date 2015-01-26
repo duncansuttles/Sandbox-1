@@ -1,5 +1,5 @@
 var nodemailer = require("nodemailer");
-
+var logger = require('./logger');
 // create reusable transport method (opens pool of SMTP connections)
 var smtpTransport = null;
 exports.sendMail = function(to,subject,text,html,cb)
@@ -7,7 +7,7 @@ exports.sendMail = function(to,subject,text,html,cb)
 
     if(!global.configuration.sendEmails || !global.configuration.emailFrom || !global.configuration.emailService || !global.configuration.emailPassword || !global.configuration.emailUsername)
     {
-        global.log('email system not configured');
+        logger.warn('email system not configured');
         if(cb) cb(false);
         return;
     }
@@ -35,10 +35,10 @@ exports.sendMail = function(to,subject,text,html,cb)
     // send mail with defined transport object
     smtpTransport.sendMail(mailOptions, function(error, response){
         if(error){
-            global.log(error);
+            logger.error(error);
             if(cb) cb(false);
         }else{
-            global.log("Message sent: " + response.message);
+            logger.warn("Message sent: " + response.message);
             if(cb) cb(true);
         }
     });

@@ -5,7 +5,7 @@ var libpath = require('path');
 var DB;
 var GUID = require('node-uuid').v4;
 
-
+var logger = require('./logger');
 exports.new = function(DBTablePath, cb) {
 
     return (function() {

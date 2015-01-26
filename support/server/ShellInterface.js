@@ -10,7 +10,7 @@ readline = require('readline');
 var passwordUtils = require('./passwordUtils');
 var DAL = require('./DAL').DAL;
 var GUID = require('node-uuid').v4;
-
+var logger = require('./logger');
 function ParseLine(str) {
     // new parse function splits on white space except between quotes
     var ret = [];
@@ -490,13 +490,13 @@ function StartShellInterface() {
             'command': 'loglevel',
             'description': 'Retrieves the current logging level',
             'callback': function(commands) {
-                console.log(global.logLevel);
+                console.log(logger.logLevel);
             }
         }, {
             'command': 'setloglevel <level>',
             'description': 'Sets the current logging level',
             'callback': function(commands) {
-                global.logLevel = parseInt(commands[1]);
+                logger.logLevel = parseInt(commands[1]);
             }
         }, {
             'command': 'test login <state_id> <num_bots>',
@@ -643,7 +643,7 @@ function StartShellInterface() {
 
 
     }).on('close', function() {
-        global.log('Terminating server');
+        console.log('Terminating server');
         process.exit(0);
     });
 

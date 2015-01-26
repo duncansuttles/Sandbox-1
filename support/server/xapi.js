@@ -2,7 +2,7 @@ var request = require('request'),
 	XAPIStatement = require('./xapistatement'),
 	liburl = require('url'),
 	DAL = require('./DAL').DAL;
-
+var logger = require('./logger');
 
 /*
  * build a log statement and submit it
@@ -52,9 +52,9 @@ function sendStatement(userId, verb, worldId, worldName, worldDescription, other
 				if (err) {
 					global.error(err);
 				} else if (res.statusCode === 200) {
-					global.log('Action posted:', stmt.toString());
+					logger.warn('Action posted:', stmt.toString());
 				} else {
-					global.log('Statement problem:', body);
+					logger.warn('Statement problem:', body);
 				}
 			});
 	} catch (e) {
@@ -79,7 +79,7 @@ AccountAgent.prototype = new XAPIStatement.Agent;
  * Activity subclass that self-populates from a world id
  */
 function World(id, name, description) {
-	console.log('WORLD');
+	logger.debug('WORLD');
 	var match = /[_\/]adl[_\/]sandbox[_\/]([A-Za-z0-9]{16})[_\/]/.exec(id);
 	id = match[1];
 	var worldActivityId = 'http://vwf.adlnet.gov/xapi/' + id;

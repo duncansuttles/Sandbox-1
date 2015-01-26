@@ -12,6 +12,7 @@ var mailTools = require('./mailTools');
 var DBTablePath = libpath.sep + 'users.nedb';
 var DB = '';
 var safePathRE = RegExp('/\//' + (libpath.sep == '/' ? '\/' : '\\') + '/g');
+var logger = require('./logger');
 Array.prototype.getUnique = function()
 {
     var u = {},
@@ -110,7 +111,7 @@ function updateUser(id, data, cb)
                 }
                 for (var key in data)
                 {
-                    global.log('changing ' + key + ' to ' + data[key] + ' in user ' + user.Username)
+                    logger.warn('changing ' + key + ' to ' + data[key] + ' in user ' + user.Username)
                     user[key] = data[key];
                 }
                 DB.save(id, user, function(err, doc, key)
@@ -123,7 +124,7 @@ function updateUser(id, data, cb)
         {
             if (err)
             {
-                global.log(err, 0);
+                logger.error(err, 0);
                 cb(false);
                 return;
             }
@@ -138,7 +139,7 @@ function deleteInventoryItem(userID, inventoryID, cb)
     {
         if (!inventory)
         {
-            global.log('inventory not found');
+            logger.error('inventory not found');
             cb();
             return;
         }
@@ -173,7 +174,7 @@ function getInventoryItemAssetData(userID, inventoryID, cb)
     {
         if (!inventory)
         {
-            global.log('inventory not found', 0);
+            logger.error('inventory not found', 0);
             cb(null);
             return;
         }
@@ -195,7 +196,7 @@ function getInventoryItemAssetData(userID, inventoryID, cb)
         }
         else
         {
-            global.log('User does not contain inventory item');
+            logger.error('User does not contain inventory item');
             cb(null);
         }
     });
@@ -219,7 +220,7 @@ function getInventoryItemMetaData(userID, inventoryID, cb)
         }
         else
         {
-            global.log('User does not contain inventory item');
+            logger.error('User does not contain inventory item');
             cb(null);
         }
     });
@@ -231,7 +232,7 @@ function updateInventoryItemMetadata(userID, inventoryID, data, cb)
         {
             if (!inventory)
             {
-                global.log('inventory not found', 0);
+                logger.error('inventory not found', 0);
                 cb(null);
                 return;
             }
@@ -241,7 +242,7 @@ function updateInventoryItemMetadata(userID, inventoryID, data, cb)
                 {
                     if (!item)
                     {
-                        global.log('item not found', 0);
+                        logger.error('item not found', 0);
                         cb(null);
                         return;
                     }
@@ -251,14 +252,14 @@ function updateInventoryItemMetadata(userID, inventoryID, data, cb)
                     }
                     DB.save(inventoryID, item, function()
                     {
-                        global.log('saved' + item, 0);
+                        logger.warn('saved' + item, 0);
                         cb();
                     });
                 });
             }
             else
             {
-                global.log('User does not contain inventory item');
+                logger.error('User does not contain inventory item');
                 cb(null);
             }
         });
@@ -377,7 +378,7 @@ function createUser(id, data, cba)
     {
         if (user)
         {
-            global.log('user ' + id + ' already exists');
+            logger.error('user ' + id + ' already exists');
             cba(false, 'user ' + id + ' already exists');
             return;
         }
@@ -411,7 +412,7 @@ function createUser(id, data, cba)
                     {
                         var file = (datapath + '/Profiles/' + id)
                             .replace(safePathRE);
-                        global.log(file, 0);
+                        logger.debug(file, 0);
                         MakeDirIfNotExist(file + '_Data', function()
                         {
                             cb2();
@@ -420,7 +421,7 @@ function createUser(id, data, cba)
                 ],
                 function(err, results)
                 {
-                    global.log(err, 0);
+                    logger.error(err, 0);
                     cba(true);
                 }
             );
@@ -474,7 +475,7 @@ function updateInstance(id, data, cb)
     if (!id || id.length == 0 || !data)
     {
         cb(false, 'bad data');
-        global.log('bad data')
+        logger.error('bad data')
         return;
     }
     async.waterfall([
@@ -514,8 +515,8 @@ function updateInstance(id, data, cb)
         {
             if (err)
             {
-                global.log(err)
-                global.log(err, 0);
+                logger.error(err)
+               
                 cb(false);
                 return;
             }
@@ -605,7 +606,7 @@ function CheckHash(filename, data, callback)
 {
     fs.readFile(filename, "utf8", function(err, file)
     {
-        //global.log("hash is:"+hash(data) +" "+ hash(file));
+        //logger.info("hash is:"+hash(data) +" "+ hash(file));
         if (err || !file)
         {
             callback(false);
@@ -727,7 +728,7 @@ function createInstance(id, data, cb)
     {
         if (instance)
         {
-            global.log('instance ' + id + ' already exists');
+            logger.error('instance ' + id + ' already exists');
             cb(false);
         }
         else
@@ -989,12 +990,12 @@ function importStates()
             async.eachSeries(files,
                 function(i, cb)
                 {
-                    global.log(i);
+                    logger.debug(i);
                     getInstance(i, function(inst)
                     {
                         if (inst)
                         {
-                            global.log(i + " already in database");
+                            logger.error(i + " already in database");
                             cb();
                         }
                         else
@@ -1013,13 +1014,13 @@ function importStates()
                                 statedata.description = "Imported automatically from database update";
                                 createInstance(i, statedata, function()
                                 {
-                                    global.log('imported' + i);
+                                    logger.warn('imported' + i);
                                     cb();
                                 });
                             }
                             else
                             {
-                                global.log('state file not found: ' + i);
+                                logger.error('state file not found: ' + i);
                                 cb();
                             }
                         }
@@ -1027,7 +1028,7 @@ function importStates()
                 },
                 function(err)
                 {
-                    global.log('done');
+                    logger.info('done');
                 });
         });
 }
@@ -1066,11 +1067,11 @@ function getAllUsersInfo(cb)
     {
         async.eachSeries(users, function(val, cb2)
         {
-            global.log(val);
+            logger.debug(val);
             getUser(val, function(doc)
             {
                 userInfoList.push(doc);
-                global.log('done');
+                logger.info('done');
                 cb2();
             });
         }, function()
@@ -1098,7 +1099,7 @@ function purgeInstances()
             if (!fs.existsSync((datapath + "/States/" + i)
                     .replace(safePathRE)))
             {
-                global.log('delete instance ' + i);
+                logger.warn('delete instance ' + i);
                 deleteInstance(i, function()
                 {
                     cb();
@@ -1162,8 +1163,8 @@ function getHistory(id, cb)
         returndata.parents = [];
         getInstance(id, function(instance)
         {
-            global.log(id);
-            global.log(instance);
+            logger.debug(id);
+            logger.debug(instance);
             if (!instance)
             {
                 cb(
@@ -1290,7 +1291,7 @@ function createProfileFromFacebook(profile, cb)
         else
         {
             xapi.sendStatement(profile.id, xapi.verbs.unsuccessful_registered_attempt);
-            global.log("Failed registration with " + err);
+            logger.error("Failed registration with " + err);
             cb(err);
         }
     });
@@ -1316,7 +1317,7 @@ function createProfileFromTwitter(profile, cb)
         else
         {
             xapi.sendStatement(profile.id, xapi.verbs.unsuccessful_registered_attempt);
-            global.log("Failed registration with " + err);
+            logger.error("Failed registration with " + err);
             cb(err);
         }
     });
@@ -1342,7 +1343,7 @@ function createProfileFromGoogle(profile, cb)
             else
             {
                 xapi.sendStatement(profile.id, xapi.verbs.unsuccessful_registered_attempt);
-                global.log("Failed registration with " + err);
+                logger.error("Failed registration with " + err);
                 cb(err);
             }
         });
@@ -1689,11 +1690,11 @@ function startup(callback)
                     cb();
                 else
                 {
-                    global.log('creating global user')
+                    logger.warn('creating global user')
                     createUser('___Global___',
                     {}, function(ok)
                     {
-                        global.log('created global user')
+                        logger.warn('created global user')
                         cb();
                     });
                 }
@@ -1760,7 +1761,7 @@ DAL_Singleton.setDataPath = function(p)
     {
         if (err)
         {
-            global.error('Could not create data path!');
+            logger.error('Could not create data path!');
         }
         else
         {
@@ -1768,51 +1769,51 @@ DAL_Singleton.setDataPath = function(p)
             fs.mkdir(libpath.join(datapath, 'DataFiles'), '755', function(err)
             {
                 if (!err)
-                    global.log('Created DataFiles dir');
+                    logger.warn('Created DataFiles dir');
                 else if (err.code != 'EEXIST')
-                    global.error('Error checking DataFiles dir:', err);
+                    logger.error('Error checking DataFiles dir:', err);
             });
             fs.mkdir(libpath.join(datapath, 'GlobalAssets'), '755', function(err)
             {
                 if (!err)
-                    global.log('Created GlobalAssets dir');
+                    logger.warn('Created GlobalAssets dir');
                 else if (err.code != 'EEXIST')
-                    global.error('Error checking GlobalAssets dir:', err);
+                    logger.error('Error checking GlobalAssets dir:', err);
             });
             fs.mkdir(libpath.join(datapath, 'Logs'), '755', function(err)
             {
                 if (!err)
-                    global.log('Created Logs dir');
+                    logger.warn('Created Logs dir');
                 else if (err.code != 'EEXIST')
-                    global.error('Error checking Logs dir:', err);
+                    logger.error('Error checking Logs dir:', err);
             });
             fs.mkdir(libpath.join(datapath, 'Profiles'), '755', function(err)
             {
                 if (!err)
-                    global.log('Created Profiles dir');
+                    logger.warn('Created Profiles dir');
                 else if (err.code != 'EEXIST')
-                    global.error('Error checking Profiles dir:', err);
+                    logger.error('Error checking Profiles dir:', err);
             });
             fs.mkdir(libpath.join(datapath, 'States'), '755', function(err)
             {
                 if (!err)
-                    global.log('Created States dir');
+                    logger.warn('Created States dir');
                 else if (err.code != 'EEXIST')
-                    global.error('Error checking States dir:', err);
+                    logger.error('Error checking States dir:', err);
             });
             fs.mkdir(libpath.join(datapath, 'Textures'), '755', function(err)
             {
                 if (!err)
-                    global.log('Created Textures dir');
+                    logger.warn('Created Textures dir');
                 else if (err.code != 'EEXIST')
-                    global.error('Error checking Textures dir:', err);
+                    logger.error('Error checking Textures dir:', err);
             });
             fs.mkdir(libpath.join(datapath, 'Thumbnails'), '755', function(err)
             {
                 if (!err)
-                    global.log('Created Thumbnails dir');
+                    logger.warn('Created Thumbnails dir');
                 else if (err.code != 'EEXIST')
-                    global.error('Error checking Thumbnails dir:', err);
+                    logger.error('Error checking Thumbnails dir:', err);
             });
         }
     }); // end mkdirp

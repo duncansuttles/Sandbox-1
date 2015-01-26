@@ -1,6 +1,6 @@
 var hash = require('./hash'),
 	xapi = require('./xapi');
-
+var logger = require('./logger');
 /*
 CryptoJS v3.0.2
 code.google.com/p/crypto-js
@@ -30,7 +30,7 @@ function respond(response,status,message)
 					"Content-Type": "text/plain"
 				});
 	response.write(message + "\n");
-	global.log(message,2);
+	logger.debug(message,2);
 	response.end();
 }
 
@@ -69,14 +69,14 @@ exports.ResetPassword = function(username,response)
 			respond(response,500,"User not found");
 			return;
 		}
-		global.log(user1);
+		logger.debug(user1);
 		var newPassword = GenerateTempPassword();
 		if(!user1.Salt) user1.Salt = GUID();
 		var clientHash = self.EncryptPassword(newPassword,username,user1.Salt);
-		global.log(newPassword,username,user1.Salt);
-		global.log(clientHash);
+		logger.debug(newPassword,username,user1.Salt);
+		logger.debug(clientHash);
 		var serverHash = Hash(clientHash);
-		global.log(serverHash);
+		logger.debug(serverHash);
 		var data = {};
 		
 		data.TempPassword = {
@@ -85,7 +85,7 @@ exports.ResetPassword = function(username,response)
 			
 		}
 		data.Salt = user1.Salt;
-		global.log('User '+username+' reset password to ' + newPassword);
+		logger.warn('User '+username+' reset password to ' + newPassword);
 		DAL.updateUser(username,data,function()
 		{
 			mailTools.resetPasswordMail(user1.Email,newPassword);
@@ -178,7 +178,7 @@ exports.SiteLogin = function (response,URL)
 			
 			self.CheckPassword(UID,password,function(ok,isTemp)
 			{
-				global.log("Login "+ ok,2);
+				logger.debug("Login "+ ok,2);
 				if(ok)
 				{
 					sessions.createSession(UID,UID,password,isTemp,function(session){
@@ -191,7 +191,7 @@ exports.SiteLogin = function (response,URL)
 							"Set-Cookie": "session="+session.sessionId+"; Path=/; HttpOnly;"
 					});
 					response.write("Login Successful", "utf8");
-					global.log('Client Logged in',1);
+					logger.info('Client Logged in',1);
 					response.end();
 
 

@@ -4,5 +4,5 @@ page.open('http://localhost:3000/adl/sandbox/QFqfesODJi4Fk6i0?notools=true&noren
 });
 
 page.onConsoleMessage = function(msg, lineNum, sourceId) {
-  console.log(  msg );
+  logger.info(  msg );
 };

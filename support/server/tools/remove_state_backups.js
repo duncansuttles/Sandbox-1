@@ -6,8 +6,8 @@ var flag = process.argv[3];
 
 if(!statesDir)
 {	
-	console.log("Use: node remove_state_backups.js path [-S]");
-	console.log("Use -S to actually do the delete, otherwise just a preview");
+	logger.info("Use: node remove_state_backups.js path [-S]");
+	logger.info("Use -S to actually do the delete, otherwise just a preview");
 
 	return;
 }
@@ -30,7 +30,7 @@ for(var i in files)
 
 }
 
-console.log(filesToDelete)
+logger.info(filesToDelete)
 if(flag == '-S')
 {
 	for(var i in filesToDelete)
@@ -39,5 +39,5 @@ if(flag == '-S')
 	}
 }else
 {
-	console.log("use -S to actually do the delete")
+	logger.info("use -S to actually do the delete")
 }

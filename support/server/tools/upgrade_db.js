@@ -13,7 +13,7 @@ nstoreDB.new('c:\\vwfdata\\users.db',function(db)
 		oldDB.all(function(err,results){
 			
 			var keys = Object.keys(results);
-			console.log(keys);
+			logger.info(keys);
 			async.eachSeries(keys,function(val,cb){
 				newDB.save(val,results[val],function(err){
 					cb();

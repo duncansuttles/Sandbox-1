@@ -2,7 +2,7 @@ var path = require('path');
 var fs = require('fs');
 
 var fsCache = {};
-
+var logger = require('./logger');
 function sum(array, start, end) {
     var ret = array[start];
     for (var i = start + 1; i < end; i++) {
@@ -33,7 +33,7 @@ function resolveOneLevel(localpath, file) {
             }
         }
     } catch (e) {
-        console.log(e);
+        logger.info(e);
     }
     return null;
 

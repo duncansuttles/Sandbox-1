@@ -8,6 +8,7 @@ URL = require('url'),
 avatar = false,
 blog = false,
 doc = false;
+var logger = require('./logger');
 var sessions = require('./sessions');
 
 fs.readdir(__dirname + '/../../public' + root + '/views/help', function(err, files) {
@@ -356,7 +357,7 @@ exports.generalHandler = function(req, res, next) {
 
 
             } else {
-                global.log("Not found");
+                logger.error("Not found");
                 //res.status(404).end('Error');
 
                 next();
@@ -674,7 +675,7 @@ exports.createNew2 = function(req, res, next) {
         }
         var template = req.params.template;
         var normalizedSID = global.appPath.replace(/\//g, "_") + "_" + template + "_";
-        console.log(normalizedSID);
+        logger.debug(normalizedSID);
         DAL.getInstance(normalizedSID, function(worlddata) {
 
             function postWorldData()
@@ -690,7 +691,7 @@ exports.createNew2 = function(req, res, next) {
                 layout: 'plain'
             });
             }
-            console.log(worlddata);
+            logger.debug(worlddata);
             if(!worlddata)
             {
                 require('./examples.js').getExampleMetadata(normalizedSID, function(data) {
@@ -887,7 +888,7 @@ exports.handlePostRequest = function(req, res, next) {
                     function(err, results) {
 
                         var serveObj = [{}, {}];
-                        global.log(results);
+                        logger.debug(results);
                         for (var key in results[0]) {
                             if (results[1][key]) {
                                 serveObj[0][key] = results[1][key];
@@ -903,7 +904,7 @@ exports.handlePostRequest = function(req, res, next) {
 
             case "update_user":
                 var userId = data.Username;
-                global.log(data);
+                logger.debug(data);
                 delete data.Salt;
                 delete data.Username;
                 //delete data.inventoryKey;				
