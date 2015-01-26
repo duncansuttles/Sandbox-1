@@ -133,7 +133,7 @@ function InstanceLogout(response, URL)
 	{
 		respond("Client Not Logged In", 401, response);
 		return;
-		z
+		
 	}
 	var instance = URL.query.S;
 	var cid = URL.query.CID;

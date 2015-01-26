@@ -83,7 +83,7 @@ var option = {
 };
 i18n.init(option);
 
-console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 console.log('Welcome to Sandbox.\nType "create application" to create your first app.');
 console.log('Type "help" for a list of commands.\n');
 
@@ -279,9 +279,14 @@ function startVWF() {
 
                 global.adminUID = adminUID;
 
-                //var srv = http.createServer(OnRequest).listen(port);
+                
 
-
+                //check for express 4.x
+                if(!app.locals)
+                {
+                    console.log('Please update NPM modules. Run NPM install again.');
+                    return;
+                }
                 app.set('layout', 'layout');
                 app.set('views', __dirname + '/../../public' + global.appPath + '/views');
                 app.set('view engine', 'html');
