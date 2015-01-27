@@ -259,8 +259,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     this.selectionMarquee.css('top', this.mouseDownScreenPoint[1]);
                     this.selectionMarquee.css('width', '0');
                     this.selectionMarquee.css('height', '0');
-                    this.selectionMarquee.show();
-                    this.selectionMarquee.css('z-index', '100');
+                    this.selectionMarquee.css('border', '2px dotted darkslategray');
+                    this.selectionMarquee.css('pointer-events', 'all');
                 }
                 $('#StatusAxis').text('Axis: ' + axis);
                 for (var i = 0; i < MoveGizmo.allChildren.length; i++) {
@@ -380,8 +380,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 this.MouseLeftDown = false;
                 this.mouseDownScreenPoint = null;
                 this.MouseLeftDown = false;
-                this.selectionMarquee.hide();
-                this.selectionMarquee.css('z-index', '-1');
+                this.selectionMarquee.css('border', 'none');
+                this.selectionMarquee.css('pointer-events', 'none');
                 this.mouseUpScreenPoint = [e.clientX, e.clientY];
                 if (MoveGizmo) {
                     for (var i = 0; i < MoveGizmo.allChildren.length; i++) {
@@ -552,8 +552,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
             }
 
-            this.selectionMarquee.hide();
-            this.selectionMarquee.css('z-index', '-1');
+            this.selectionMarquee.css('border', 'none');
+            this.selectionMarquee.css('pointer-events', 'none');
 
             if (document.AxisSelected != -1 && this.undoPoint) {
                 for (var i = 0; i < SelectedVWFNodes.length; i++)
@@ -3492,7 +3492,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             this.selectionMarquee.css('left', '100');
             this.selectionMarquee.css('z-index', '100');
             this.selectionMarquee.css('border', '2px dotted darkslategray');
-            this.selectionMarquee.css('border-radius', '10px');
+            this.selectionMarquee.css('pointer-events', 'all');
+            this.selectionMarquee.css('border-radius', '5px');
             //this.selectionMarquee.css('box-shadow','0px 0px 10px lightgray, 0px 0px 10px lightgray inset');
             this.selectionMarquee.mousedown(function(e) {
                 self.mousedown(e);
@@ -3513,7 +3514,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 return false;
             });
 
-            this.selectionMarquee.hide();
+            this.selectionMarquee.css('border', 'none');
+            this.selectionMarquee.css('pointer-events', 'none');
             $('#ContextMenu').hide();
         }
         this.mousedown = function(e) {

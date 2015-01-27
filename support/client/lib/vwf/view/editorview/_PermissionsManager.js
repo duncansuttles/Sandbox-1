@@ -89,7 +89,7 @@ define(["vwf/view/editorview/Editor"], function(Editor) {
 		this.save = function() {
 			var newperm = {}
 			$('#PermissionsManager input[type="checkbox"]').each(function(i, v) {
-				newperm[$(v).attr('user')] = $(v).attr('checked') == 'checked' ? 1 : 0;
+				newperm[$(v).attr('user')] = $(v).is(':checked') ? 1 : 0;
 
 			});
 			this.setProperty(vwf.application(), 'permission', newperm, 'You do not have permission to edit this object');

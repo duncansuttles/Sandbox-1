@@ -408,7 +408,7 @@ define(function() {
         this.primPropertyChecked = function(e, ui) {
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
-            if ($(this).attr('checked') == 'checked') _PrimitiveEditor.setProperty(id, prop, true);
+            if ($(this).is(':checked')) _PrimitiveEditor.setProperty(id, prop, true);
             else _PrimitiveEditor.setProperty(id, prop, false);
         }
         this.setupAnimationGUI = function(node, wholeselection) {

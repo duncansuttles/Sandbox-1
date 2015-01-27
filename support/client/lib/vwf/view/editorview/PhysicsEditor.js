@@ -159,7 +159,7 @@ define([], function() {
             if (_PhysicsEditor.inSetup) return;
             var id = $(this).attr('nodename');
             var prop = $(this).attr('propname');
-            if ($(this).attr('checked') == 'checked') _PhysicsEditor.setProperty(id, prop, true);
+            if ($(this).is(':checked') ) _PhysicsEditor.setProperty(id, prop, true);
             else _PhysicsEditor.setProperty(id, prop, false);
         }
         this.primPropertyTypein = function(e, ui) {
@@ -638,16 +638,16 @@ define([], function() {
                         }
                         $('#lockXMotion, #lockYMotion, #lockZMotion').click(function() {
                             var linearFactor = [0, 0, 0];
-                            linearFactor[0] = $('#lockXMotion').attr('checked') == 'checked' ? 1 : 0;
-                            linearFactor[1] = $('#lockYMotion').attr('checked') == 'checked' ? 1 : 0;
-                            linearFactor[2] = $('#lockZMotion').attr('checked') == 'checked' ? 1 : 0;
+                            linearFactor[0] = $('#lockXMotion').is(':checked')  ? 1 : 0;
+                            linearFactor[1] = $('#lockYMotion').is(':checked')  ? 1 : 0;
+                            linearFactor[2] = $('#lockZMotion').is(':checked')  ? 1 : 0;
                             _PhysicsEditor.setProperty(PhysicsEditor.selectedID, '___physics_factor_linear', linearFactor);
                         });
                         $('#lockXRotation, #lockYRotation, #lockZRotation').click(function() {
                             var angularFactor = [0, 0, 0];
-                            angularFactor[0] = $('#lockXRotation').attr('checked') == 'checked' ? 1 : 0;
-                            angularFactor[1] = $('#lockYRotation').attr('checked') == 'checked' ? 1 : 0;
-                            angularFactor[2] = $('#lockZRotation').attr('checked') == 'checked' ? 1 : 0;
+                            angularFactor[0] = $('#lockXRotation').is(':checked')  ? 1 : 0;
+                            angularFactor[1] = $('#lockYRotation').is(':checked')  ? 1 : 0;
+                            angularFactor[2] = $('#lockZRotation').is(':checked')  ? 1 : 0;
                             _PhysicsEditor.setProperty(PhysicsEditor.selectedID, '___physics_factor_angular', angularFactor);
                         });
 

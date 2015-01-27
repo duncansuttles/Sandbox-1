@@ -527,7 +527,7 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 			
 			$('#MaterialBasicSettingsFog').click(function()
 			{
-				if ($(this).attr('checked') == 'checked') 
+				if ($(this).is(':checked')) 
 					_MaterialEditor.currentMaterial.fog = true;
 				else  
 					_MaterialEditor.currentMaterial.fog = false;
@@ -543,7 +543,7 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 			
 			$('#MaterialBasicSettingsMetal').click(function()
 			{
-				if ($(this).attr('checked') == 'checked') 
+				if ($(this).is(':checked')) 
 					_MaterialEditor.currentMaterial.metal = true;
 				else  
 					_MaterialEditor.currentMaterial.metal = false;
@@ -556,7 +556,7 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 
 			$('#MaterialBasicSettingsVertexColors').click(function()
 			{
-				if ($(this).attr('checked') == 'checked') 
+				if ($(this).is(':checked')) 
 					_MaterialEditor.currentMaterial.vertexColors = true;
 				else  
 					_MaterialEditor.currentMaterial.vertexColors = false;
@@ -569,7 +569,7 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 			
 			$('#MaterialBasicSettingsWireFrame').click(function()
 			{
-				if ($(this).attr('checked') == 'checked') 
+				if ($(this).is(':checked')) 
 					_MaterialEditor.currentMaterial.wireframe = true;
 				else  
 					_MaterialEditor.currentMaterial.wireframe = false;
@@ -582,7 +582,7 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 			
 			$('#MaterialBasicSettingsDepthTest').click(function()
 			{
-				if ($(this).attr('checked') == 'checked') 
+				if ($(this).is(':checked')) 
 					_MaterialEditor.currentMaterial.depthtest = true;
 				else  
 					_MaterialEditor.currentMaterial.depthtest = false;
@@ -595,7 +595,7 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 			
 			$('#MaterialBasicSettingsDepthWrite').click(function()
 			{
-				if ($(this).attr('checked') == 'checked') 
+				if ($(this).is(':checked')) 
 					_MaterialEditor.currentMaterial.depthwrite = true;
 				else  
 					_MaterialEditor.currentMaterial.depthwrite = false;
@@ -609,7 +609,7 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 			
 			$('#MaterialBasicSettingsShading').click(function()
 			{
-				if ($(this).attr('checked') == 'checked') 
+				if ($(this).is(':checked')) 
 					_MaterialEditor.currentMaterial.shading = true;
 				else  
 					_MaterialEditor.currentMaterial.shading = false;
