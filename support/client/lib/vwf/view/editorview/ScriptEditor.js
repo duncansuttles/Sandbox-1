@@ -71,7 +71,7 @@ jQuery.fn.sortElements = (function() {
 
 })();
 
-define(["../editorview/lib/ace/src-min-noconflict/ace.js"],function() {
+define(function() {
 	var ScriptEditor = {};
 	var isInitialized = false;
 	return {
@@ -131,6 +131,7 @@ define(["../editorview/lib/ace/src-min-noconflict/ace.js"],function() {
 			$('.ace_gutter-layer').css('width', 40);
 		}
 		
+		$(document.body).append('<script src="../vwf/view/editorview/lib/ace/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>');
 		$(document.body).append("<div id='ScriptEditorAbandonChanges'>You have are about to load a different script,but you have unsaved changes to this script. Do you want to continue and abandon the changes? This action cannot be undone.</div>");
 		$(document.body).append("<div id='ScriptEditorCreateMethod'><input id='newMethodName' type='text' /></div>");
 		$(document.body).append("<div id='ScriptEditorCreateEvent'><input id='newEventName' type='text' /></div>");
