@@ -1538,10 +1538,13 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 }
                 //display the name of the objject under the mouse
                 if (vwf.views[0].lastPickId) {
-                    var mouseovernode = vwf.getProperty(vwf.views[0].lastPickId, 'DisplayName');
-                    $('#StatusMouseOverName').text(mouseovernode || vwf.views[0].lastPickId);
+                    var mouseovernode = vwf.getProperty(vwf.views[0].lastPickId, 'DisplayName') || vwf.views[0].lastPickId;
+                    //avoid triggering a repaint of the status bar if the value is not changed
+                    if($('#StatusMouseOverName').text() !== mouseovernode)
+                        $('#StatusMouseOverName').text(mouseovernode );
                 } else {
-                    $('#StatusMouseOverName').text('Scene');
+                    if($('#StatusMouseOverName').text() !== 'Scene')
+                        $('#StatusMouseOverName').text('Scene');
                 }
 
 

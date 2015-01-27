@@ -29,6 +29,10 @@
 }
 
 .pulsing {
+
+  background-color:rgb(132, 185, 255);;
+  /*
+  maybe the animation is just not worth the repaint on the status bar
   animation-name: pulsing;
   animation-duration: 1s;
   animation-iteration-count: infinite;
@@ -39,7 +43,7 @@
   -webkit-animation-iteration-count: infinite;
   -webkit-animation-direction: alternate;
   -webkit-animation-timing-function: linear;
-  -webkit-animation-play-state: running;
+  -webkit-animation-play-state: running;*/
 }
 
 	#InventoryControls
