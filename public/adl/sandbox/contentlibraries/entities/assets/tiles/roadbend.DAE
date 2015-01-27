@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>user</author>
+      <authoring_tool>COLLADAMax NextGen;  Version: 0.9.5;  Revision: 447;  Platform: Win32;  Configuration: Release Max2010</authoring_tool>
+      <source_data>file:///C:/Users/user/Documents/3dsMax/scenes/roadtile90.max</source_data>
+    </contributor>
+    <created>2015-01-27T16:24:48</created>
+    <modified>2015-01-27T16:24:48</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="ColorEffectR0G0B0">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>0 0 0 1</color>
+            </diffuse>
+            <specular>
+              <color>1 1 1 1</color>
+            </specular>
+            <shininess>
+              <float>10</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent>
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="_1_road">
+      <profile_COMMON>
+        <newparam sid="road3_jpg-surface">
+          <surface type="2D">
+            <init_from>road3_jpg</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="road3_jpg-sampler">
+          <sampler2D>
+            <source>road3_jpg-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <phong>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0.588235 0.588235 0.588235 1</color>
+            </ambient>
+            <diffuse>
+              <texture texture="road3_jpg-sampler" texcoord="CHANNEL1"/>
+            </diffuse>
+            <specular>
+              <color>0.9 0.9 0.9 1</color>
+            </specular>
+            <shininess>
+              <float>10</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent opaque="A_ONE">
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </phong>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="3dsMAX">
+          <extended_shader>
+            <apply_reflection_dimming>0</apply_reflection_dimming>
+            <dim_level>0</dim_level>
+            <falloff_type>0</falloff_type>
+            <index_of_refraction>1.5</index_of_refraction>
+            <opacity_type>0</opacity_type>
+            <reflection_level>3</reflection_level>
+            <wire_size>1</wire_size>
+            <wire_units>0</wire_units>
+          </extended_shader>
+          <shader>
+            <ambient_diffuse_lexture_lock>1</ambient_diffuse_lexture_lock>
+            <ambient_diffuse_lock>1</ambient_diffuse_lock>
+            <diffuse_specular_lock>0</diffuse_specular_lock>
+            <soften>0.1</soften>
+            <use_self_illum_color>0</use_self_illum_color>
+          </shader>
+        </technique>
+      </extra>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="ColorEffectR0G0B0-material" name="ColorEffectR0G0B0-material">
+      <instance_effect url="#ColorEffectR0G0B0"/>
+    </material>
+    <material id="_1_road-material" name="_1_road-material">
+      <instance_effect url="#_1_road"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="geom-node_Object03" name="node_Object03">
+      <mesh>
+        <source id="geom-node_Object03-positions">
+          <float_array id="geom-node_Object03-positions-array" count="141">-34.7985 -18.8808 -8.96048 -34.888 -13.8808 -8.96048 -34.7985 -16.3762 -9.00184 -34.7985 -14.4649 -8.99794 -34.7985 -15.2807 -9.04365 -34.7985 -16.9513 -9.02592 -34.7985 -17.7696 -9.04736 -37.3834 -16.3762 -8.96377 -32.3834 -16.3762 -8.96048 -37.3834 -18.8808 -8.96048 -32.3834 -18.8808 -8.96048 -37.3834 -13.8808 -8.96048 -32.3861 -13.8808 -8.96048 -37.3834 -17.7696 -9.12141 -37.3834 -16.9513 -9.01223 -32.3834 -17.7696 -8.96048 -32.3834 -16.9513 -8.96048 -37.3834 -15.2807 -9.08226 -37.3834 -14.4649 -9.12141 -32.3834 -15.2807 -8.96048 -32.3834 -14.4649 -8.96048 -33.4946 -13.8808 -9.12141 -33.5248 -14.2582 -9.13723 -33.5608 -14.5957 -9.13781 -33.6229 -14.9738 -9.13183 -33.5505 -15.2807 -9.06574 -33.5332 -15.8023 -9.00636 -33.5918 -16.3762 -8.9278 -34.3129 -13.8808 -9.01223 -34.2881 -14.3413 -8.99002 -34.2842 -14.4649 -8.98996 -34.3075 -15.1148 -9.02674 -34.302 -15.2807 -9.02655 -34.1422 -16.0785 -8.94989 -35.9835 -13.8808 -9.08226 -36.0708 -14.1719 -9.09861 -36.0829 -14.4649 -9.18398 -36.094 -14.8738 -9.16218 -36.1018 -15.2807 -9.06312 -36.0022 -15.7908 -9.00645 -35.865 -16.3762 -8.92347 -36.7993 -13.8808 -9.12141 -36.8038 -14.3429 -9.11564 -36.8138 -14.4649 -9.12345 -36.8143 -15.1011 -9.06369 -36.8244 -15.2807 -9.07391 -36.6883 -16.0816 -8.98525</float_array>
+          <technique_common>
+            <accessor source="#geom-node_Object03-positions-array" count="47" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-node_Object03-normals">
+          <float_array id="geom-node_Object03-normals-array" count="228">0.036581 -0.119927 0.992109 0.00862846 -0.0971339 0.995234 5.69456e-005 -0.124541 0.992215 -0.000888969 0.0246583 0.999696 -0.000888969 0.0246583 0.999696 0.0195649 -0.00344238 0.999803 0.00862846 -0.0971339 0.995234 -0.00259502 -0.0628927 0.998017 -0.0149767 0.0159277 0.999761 -0.000888969 0.0246583 0.999696 5.69456e-005 -0.124541 0.992215 5.69456e-005 -0.124541 0.992215 -0.00836094 -0.117998 0.992979 -0.0149767 0.0159277 0.999761 0.0419351 -0.235478 0.970974 0.0204126 0.0814001 0.996472 5.69456e-005 -0.124541 0.992215 0.00862846 -0.0971339 0.995234 0.0139075 0.00123817 0.999903 0.0110551 0.087024 0.996145 0 0.143336 0.989674 0.0195649 -0.00344238 0.999803 0.0195649 -0.00344238 0.999803 -0.000888969 0.0246583 0.999696 0.0110551 0.087024 0.996145 0.00535667 0.0430577 0.999058 -0.0203951 -0.0788603 0.996677 -0.0210103 0.12642 0.991754 0.0110551 0.087024 0.996145 -0.000888969 0.0246583 0.999696 -0.000888969 0.0246583 0.999696 -0.0149767 0.0159277 0.999761 -0.0210103 0.12642 0.991754 -0.00836094 -0.117998 0.992979 5.69456e-005 -0.124541 0.992215 0.00541179 -0.0412423 0.999135 0.0134795 -0.00165898 0.999908 0.0171671 0.0455296 0.998816 -0.027505 0.101895 0.994415 -0.0789295 0.0492133 0.995665 -0.140766 0.0236927 0.989759 -0.0173445 0.1023 0.994602 -0.0390571 0.0301972 0.998781 -0.037527 -0.0433368 0.998355 -0.014892 0.0773607 0.996892 -0.0258516 -0.0594644 0.997896 0.000411646 -0.0127973 0.999918 0.0116668 -0.00547532 0.999917 -0.15216 0.00487497 0.988344 -0.0166639 -0.0429894 0.998936 -0.0162566 0.0236385 0.999588 -0.00995534 0.0780296 0.996901 -0.0127502 -0.0101884 0.999867 -0.0169695 -0.133456 0.99091 0.0112539 -0.0426259 0.999028 -0.00398278 0.104974 0.994467 -0.0799186 -0.0174337 0.996649 -0.0519506 -0.0971847 0.99391 -0.0369386 -0.0806555 0.996057 -0.00168954 -0.0380593 0.999274 0.0144584 -0.18969 0.981738 0.0989568 -0.00202975 0.99509 0.0979266 -0.00512113 0.995181 0.0879964 -0.0279994 0.995727 0.0496011 0.0154809 0.998649 0.00261035 0.0786217 0.996901 -0.0192809 0.0617236 0.997907 0.0550142 -0.0777794 0.995452 0.0514432 -0.123669 0.990989 0.0322145 -0.0336257 0.998915 0.0203328 0.0707413 0.997287 -0.00246734 0.0753093 0.997157 -0.0205709 0.120905 0.992451 0.145754 -0.145753 0.978525 0.0514878 -0.0339927 0.998095 -0.0190471 0.0757286 0.996947</float_array>
+          <technique_common>
+            <accessor source="#geom-node_Object03-normals-array" count="76" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-node_Object03-map-channel-2">
+          <float_array id="geom-node_Object03-map-channel-2-array" count="141">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#geom-node_Object03-map-channel-2-array" count="47" stride="3">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-node_Object03-map-channel0">
+          <float_array id="geom-node_Object03-map-channel0-array" count="141">0.596473 0.595791 0.604859 0.638996 0.63847 0.646127 0.576535 0.575883 0.58636 0.624583 0.624028 0.632336 0.604074 0.603478 0.612711 0.581135 0.580477 0.590629 0.587682 0.587014 0.596703 0.572936 0.572254 0.582565 0.579811 0.579187 0.589816 0.585865 0.585168 0.594402 0.597519 0.596882 0.606456 0.634987 0.634444 0.642108 0.640053 0.639559 0.647385 0.580165 0.579474 0.589183 0.575919 0.575234 0.585296 0.589712 0.58908 0.599119 0.583897 0.58327 0.593655 0.600294 0.599674 0.608817 0.620669 0.620094 0.628368 0.606371 0.605805 0.615198 0.626152 0.625628 0.634101 0.63964 0.639134 0.646894 0.63352 0.633001 0.64103 0.625465 0.624928 0.633328 0.615918 0.615361 0.624186 0.605261 0.60468 0.613996 0.592166 0.591559 0.601469 0.578172 0.577534 0.588087 0.639258 0.63874 0.646439 0.627856 0.627314 0.63552 0.624917 0.624369 0.632712 0.608563 0.607982 0.61706 0.604546 0.603956 0.613222 0.584642 0.584014 0.594196 0.637138 0.636604 0.644264 0.629861 0.629311 0.637275 0.622546 0.621981 0.630271 0.61241 0.611822 0.620549 0.602168 0.60156 0.610748 0.589574 0.588938 0.598673 0.57505 0.574386 0.584794 0.636086 0.635548 0.64321 0.624497 0.623932 0.632077 0.621443 0.620872 0.629153 0.605642 0.605036 0.613995 0.601111 0.600497 0.609659 0.581309 0.58065 0.590671</float_array>
+          <technique_common>
+            <accessor source="#geom-node_Object03-map-channel0-array" count="47" stride="3">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-node_Object03-map-channel1">
+          <float_array id="geom-node_Object03-map-channel1-array" count="141">0.497379 0.998479 0 0.495607 0.00072378 0 0.477067 0.502293 0 0.491329 0.116462 0 0.485241 0.281153 0 0.481754 0.61679 0 0.488424 0.779712 0 0.999381 0.499459 0 0.00158215 0.504873 0 0.999933 0.998912 0 0.00183415 0.998013 0 1.0001 0.000298906 0 0.00173765 0.00130075 0 0.99969 0.778705 0 0.999508 0.614709 0 0.00172304 0.780589 0 0.0016403 0.618667 0 0.999698 0.279381 0 0.999935 0.115482 0 0.00165071 0.28285 0 0.00170177 0.117502 0 0.194559 0.00107548 0 0.208478 0.04993 0 0.216074 0.117047 0 0.225837 0.193359 0 0.235341 0.28203 0 0.227991 0.387324 0 0.239501 0.503582 0 0.373123 0.000866873 0 0.387749 0.092098 0 0.38706 0.116683 0 0.386928 0.247879 0 0.385833 0.281502 0 0.34788 0.442663 0 0.729408 0.000526878 0 0.746978 0.0579224 0 0.756033 0.115952 0 0.746111 0.198113 0 0.744628 0.28026 0 0.724662 0.382812 0 0.692559 0.501124 0 0.861818 0.000415364 0 0.894604 0.0915143 0 0.899349 0.115676 0 0.887767 0.24351 0 0.888451 0.279764 0 0.861125 0.440755 0</float_array>
+          <technique_common>
+            <accessor source="#geom-node_Object03-map-channel1-array" count="47" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-node_Object03-vertices">
+          <input semantic="POSITION" source="#geom-node_Object03-positions"/>
+        </vertices>
+        <triangles material="_1_road_1" count="72">
+          <input semantic="VERTEX" source="#geom-node_Object03-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-node_Object03-normals" offset="1"/>
+          <input semantic="COLOR" source="#geom-node_Object03-map-channel-2" offset="2"/>
+          <input semantic="COLOR" source="#geom-node_Object03-map-channel0" offset="3" set="0"/>
+          <input semantic="TEXCOORD" source="#geom-node_Object03-map-channel1" offset="4" set="1"/>
+          <p>20 0 20 20 20 23 36 23 23 23 24 37 24 24 24 24 37 24 24 24 25 38 25 25 25 19 39 19 19 19 19 39 19 19 19 20 40 20 20 20 24 37 24 24 24 16 1 16 16 16 5 2 5 5 5 6 3 6 6 6 6 4 6 6 6 15 5 15 15 15 16 6 16 16 16 4 42 4 4 4 3 43 3 3 3 37 44 37 37 37 37 44 37 37 37 38 41 38 38 38 4 42 4 4 4 3 7 3 3 3 36 45 36 36 36 37 44 37 37 37 13 8 13 13 13 6 9 6 6 6 5 10 5 5 5 5 11 5 5 5 14 12 14 14 14 13 13 13 13 13 12 14 12 12 12 21 46 21 21 21 22 47 22 22 22 22 47 22 22 22 23 36 23 23 23 20 40 20 20 20 20 40 20 20 20 12 48 12 12 12 22 47 22 22 22 8 50 8 8 8 19 39 19 19 19 26 51 26 26 26 26 51 26 26 26 27 49 27 27 27 8 50 8 8 8 19 15 19 19 19 25 38 25 25 25 26 51 26 26 26 27 49 27 27 27 2 52 2 2 2 5 53 5 5 5 5 53 5 5 5 8 50 8 8 8 27 49 27 27 27 5 16 5 5 5 16 17 16 16 16 8 18 8 8 8 0 19 0 0 0 10 20 10 10 10 15 21 15 15 15 15 22 15 15 15 6 23 6 6 6 0 24 0 0 0 2 52 2 2 2 4 42 4 4 4 39 55 39 39 39 39 55 39 39 39 40 54 40 40 40 2 52 2 2 2 4 25 4 4 4 38 41 38 38 38 39 55 39 39 39 1 26 1 1 1 34 56 34 34 34 35 57 35 35 35 35 57 35 35 35 36 45 36 36 36 3 43 3 3 3 3 43 3 3 3 1 58 1 1 1 35 57 35 35 35 9 27 9 9 9 0 28 0 0 0 6 29 6 6 6 6 30 6 6 6 13 31 13 13 13 9 32 9 9 9 40 54 40 40 40 7 59 7 7 7 14 60 14 14 14 14 60 14 14 14 2 52 2 2 2 40 54 40 40 40 14 33 14 14 14 5 34 5 5 5 2 35 2 2 2 28 61 28 28 28 29 62 29 29 29 22 47 22 22 22 22 47 22 22 22 21 46 21 21 21 28 61 28 28 28 29 62 29 29 29 30 63 30 30 30 23 36 23 23 23 23 36 23 23 23 22 47 22 22 22 29 62 29 29 29 30 63 30 30 30 31 64 31 31 31 24 37 24 24 24 24 37 24 24 24 23 36 23 23 23 30 63 30 30 30 31 64 31 31 31 32 65 32 32 32 25 38 25 25 25 25 38 25 25 25 24 37 24 24 24 31 64 31 31 31 32 65 32 32 32 33 66 33 33 33 26 51 26 26 26 26 51 26 26 26 25 38 25 25 25 32 65 32 32 32 27 49 27 27 27 26 51 26 26 26 33 66 33 33 33 33 66 33 33 33 2 52 2 2 2 27 49 27 27 27 1 58 1 1 1 3 43 3 3 3 29 62 29 29 29 29 62 29 29 29 28 61 28 28 28 1 58 1 1 1 29 62 29 29 29 3 43 3 3 3 30 63 30 30 30 3 43 3 3 3 4 42 4 4 4 31 64 31 31 31 31 64 31 31 31 30 63 30 30 30 3 43 3 3 3 31 64 31 31 31 4 42 4 4 4 32 65 32 32 32 4 42 4 4 4 2 52 2 2 2 33 66 33 33 33 33 66 33 33 33 32 65 32 32 32 4 42 4 4 4 41 67 41 41 41 42 68 42 42 42 35 57 35 35 35 35 57 35 35 35 34 56 34 34 34 41 67 41 41 41 42 68 42 42 42 43 69 43 43 43 36 45 36 36 36 36 45 36 36 36 35 57 35 35 35 42 68 42 42 42 43 69 43 43 43 44 70 44 44 44 37 44 37 37 37 37 44 37 37 37 36 45 36 36 36 43 69 43 43 43 38 41 38 38 38 37 44 37 37 37 44 70 44 44 44 44 70 44 44 44 45 71 45 45 45 38 41 38 38 38 45 71 45 45 45 46 72 46 46 46 39 55 39 39 39 39 55 39 39 39 38 41 38 38 38 45 71 45 45 45 40 54 40 40 40 39 55 39 39 39 46 72 46 46 46 46 72 46 46 46 7 59 7 7 7 40 54 40 40 40 11 73 11 11 11 18 74 18 18 18 42 68 42 42 42 42 68 42 42 42 41 67 41 41 41 11 73 11 11 11 42 68 42 42 42 18 74 18 18 18 43 69 43 43 43 18 74 18 18 18 17 75 17 17 17 44 70 44 44 44 44 70 44 44 44 43 69 43 43 43 18 74 18 18 18 44 70 44 44 44 17 75 17 17 17 45 71 45 45 45 17 75 17 17 17 7 59 7 7 7 46 72 46 46 46 46 72 46 46 46 45 71 45 45 45 17 75 17 17 17</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_images>
+    <image id="road3_jpg">
+      <init_from>file:///F:/Development/adlnet.github.com/Sandbox/public/adl/sandbox/contentlibraries/entities/assets/tiles/road3.jpg</init_from>
+    </image>
+  </library_images>
+  <library_visual_scenes>
+    <visual_scene id="MaxScene">
+      <node id="node-Scene_Root" name="Scene_Root">
+        <node id="node-node_Object03" name="node_Object03">
+          <matrix>1 0 0 34.8834 0 1 0 16.3808 0 0 1 9.00829 0 0 0 1</matrix>
+          <instance_geometry url="#geom-node_Object03">
+            <bind_material>
+              <technique_common>
+                <instance_material symbol="_1_road_1" target="#_1_road-material"/>
+              </technique_common>
+            </bind_material>
+          </instance_geometry>
+        </node>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#MaxScene"/>
+  </scene>
+</COLLADA>

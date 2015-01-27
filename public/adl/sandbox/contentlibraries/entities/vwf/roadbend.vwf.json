@@ -1,0 +1,99 @@
+{
+  "extends": "asset.vwf",
+  "properties": {
+    "___physics_activation_state": 1,
+    "___physics_deactivation_time": 0,
+    "___physics_velocity_angular": [
+      0,
+      0,
+      0
+    ],
+    "___physics_velocity_linear": [
+      0,
+      0,
+      0
+    ],
+    "materialDef": {
+      "color": {
+        "r": 1,
+        "g": 1,
+        "b": 1
+      },
+      "ambient": {
+        "r": 1,
+        "g": 1,
+        "b": 1
+      },
+      "emit": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "specularColor": {
+        "r": 0.06666666666666667,
+        "g": 0.06666666666666667,
+        "b": 0.06666666666666667
+      },
+      "specularLevel": 1,
+      "alpha": 1,
+      "shininess": 0.2,
+      "side": 0,
+      "reflect": 0.1,
+      "layers": [
+        {
+          "mapTo": 1,
+          "scalex": 1,
+          "scaley": 1,
+          "offsetx": 0,
+          "offsety": 0,
+          "alpha": 1,
+          "src": "./contentlibraries/entities/assets/tiles/road3.jpg",
+          "mapInput": 0
+        },
+        {
+          "offsetx": 0,
+          "offsety": 0,
+          "scalex": 1,
+          "scaley": 1,
+          "rot": 0,
+          "blendMode": 0,
+          "mapTo": "9",
+          "mapInput": 0,
+          "alpha": 1,
+          "src": "./contentlibraries/entities/assets/tiles/road3norm.jpg"
+        }
+      ],
+      "type": "phong",
+      "morphTargets": false,
+      "skinning": false
+    },
+    "owner": "Anonymous0",
+    "transform": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      -0.00021551446116063744,
+      -0.10529123991727829,
+      0.4099999964237213,
+      1
+    ]
+  },
+  "random": {
+    "c": 1,
+    "s0": 0.183904041070491,
+    "s1": 0.699105898849666,
+    "s2": 0.25031821615994
+  },
+  "sequence": 0,
+  "source": "./contentlibraries/entities/assets/tiles/roadbend.DAE",
+  "type": "subDriver/threejs/asset/vnd.collada+xml"
+}

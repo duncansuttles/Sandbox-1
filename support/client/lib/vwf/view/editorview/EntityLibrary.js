@@ -112,7 +112,12 @@ define(function() {
                         
                         if (currentDrag.type == 'asset') {
                             var pos = _Editor.GetInsertPoint(evt.originalEvent);
-                            
+                            if(currentDrag.snap)
+                            {
+                               pos[0] = _Editor.SnapTo(pos[0],currentDrag.snap); 
+                               pos[1] = _Editor.SnapTo(pos[1],currentDrag.snap); 
+                               pos[2] = _Editor.SnapTo(pos[2],currentDrag.snap); 
+                            }
                             EntityLibrary.dropPreview.position.copy( new THREE.Vector3(pos[0], pos[1], pos[2]));
                             EntityLibrary.dropPreview.updateMatrixWorld();
                         }
@@ -275,6 +280,14 @@ define(function() {
             //if its a 3d file or a node prototype
             if (data.type == 'asset') {
                 var pos = _Editor.GetInsertPoint(evt.originalEvent);
+                if(data.snap)
+                {
+                   pos[0] = _Editor.SnapTo(pos[0],data.snap); 
+                   pos[1] = _Editor.SnapTo(pos[1],data.snap); 
+                   pos[2] = _Editor.SnapTo(pos[2],data.snap); 
+                }
+
+                
                 $.getJSON(data.url, function(proto) {
 
                     //very important to clean the node! Might have accidently left a name or id in the libarary
@@ -287,7 +300,18 @@ define(function() {
                     proto.properties.transform[12] = pos[0];
                     proto.properties.transform[13] = pos[1];
                     proto.properties.transform[14] = pos[2];
-                    proto.properties.translation = pos;
+                    
+                    if(data.dropOffset)
+                    {
+
+                        var dropOffset = new THREE.Matrix4();
+                        dropOffset.fromArray(data.dropOffset);
+                        var transform = new THREE.Matrix4();
+                        transform.fromArray(proto.properties.transform);
+                        transform = transform.multiply(dropOffset);
+                        proto.properties.transform = transform.elements;
+                    }
+
                     var newname = GUID();
                     _Editor.createChild('index-vwf', newname, proto);
                     _Editor.SelectOnNextCreate([newname]);

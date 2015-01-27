@@ -1,0 +1,68 @@
+{
+	"extends": "asset.vwf",
+	"properties":
+	{
+		"___physics_activation_state": 1,
+		"___physics_deactivation_time": 0,
+		"___physics_velocity_angular": [0, 0, 0],
+		"___physics_velocity_linear": [0, 0, 0],
+		"materialDef":
+		{
+			"color":
+			{
+				"r": 1,
+				"g": 1,
+				"b": 1
+			},
+			"ambient":
+			{
+				"r": 1,
+				"g": 1,
+				"b": 1
+			},
+			"emit":
+			{
+				"r": 0,
+				"g": 0,
+				"b": 0
+			},
+			"specularColor":
+			{
+				"r": 0.06666666666666667,
+				"g": 0.06666666666666667,
+				"b": 0.06666666666666667
+			},
+			"specularLevel": 1,
+			"alpha": 1,
+			"shininess": 0.2,
+			"side": 0,
+			"reflect": 0.1,
+			"layers": [
+			{
+				"mapTo": 1,
+				"scalex": 1,
+				"scaley": 1,
+				"offsetx": 0,
+				"offsety": 0,
+				"alpha": 1,
+				"src": "./contentlibraries/entities/assets/tiles/sand.jpg",
+				"mapInput": 0
+			}],
+			"type": "phong",
+			"morphTargets": false,
+			"skinning": false
+		},
+		"owner": "Anonymous0",
+		"transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -9.991568565368652, 4.98590612411499, 0.810000479221344, 1]
+	},
+	"random":
+	{
+		"c": 1,
+		"s0": 0.964935971423984,
+		"s1": 0.825991360237822,
+		"s2": 0.997987123671919
+	},
+	"sequence": 0,
+	"source": "./contentlibraries/entities/assets/tiles/sand.DAE",
+	"type": "subDriver/threejs/asset/vnd.collada+xml"
+}

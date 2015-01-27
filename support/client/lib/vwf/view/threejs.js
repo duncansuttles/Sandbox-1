@@ -129,7 +129,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
             $(newdiv).addClass('glyph');
             $(newdiv).attr('vwfid',id);
-            newdiv.style.position = 'fixed';     //chrome seems to repaint the interior of the render layer when set to absolute
+            newdiv.style.position = 'absolute';  
             newdiv.id = ToSafeID('glyph' + id);
             //newdiv.innerHTML = "" + this.name;
             $(newdiv).attr('src', url);

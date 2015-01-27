@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>user</author>
+      <authoring_tool>COLLADAMax NextGen;  Version: 0.9.5;  Revision: 447;  Platform: Win32;  Configuration: Release Max2010</authoring_tool>
+      <source_data>file:///C:/Users/user/Documents/3dsMax/scenes/sandtile.max</source_data>
+    </contributor>
+    <created>2015-01-27T16:55:21</created>
+    <modified>2015-01-27T16:55:21</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="ColorEffectR0G0B0">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>0 0 0 1</color>
+            </diffuse>
+            <specular>
+              <color>1 1 1 1</color>
+            </specular>
+            <shininess>
+              <float>10</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent>
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="_1_road">
+      <profile_COMMON>
+        <newparam sid="sand_jpg-surface">
+          <surface type="2D">
+            <init_from>sand_jpg</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="sand_jpg-sampler">
+          <sampler2D>
+            <source>sand_jpg-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <phong>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0.588235 0.588235 0.588235 1</color>
+            </ambient>
+            <diffuse>
+              <texture texture="sand_jpg-sampler" texcoord="CHANNEL1"/>
+            </diffuse>
+            <specular>
+              <color>0.9 0.9 0.9 1</color>
+            </specular>
+            <shininess>
+              <float>10</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent opaque="A_ONE">
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </phong>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="3dsMAX">
+          <extended_shader>
+            <apply_reflection_dimming>0</apply_reflection_dimming>
+            <dim_level>0</dim_level>
+            <falloff_type>0</falloff_type>
+            <index_of_refraction>1.5</index_of_refraction>
+            <opacity_type>0</opacity_type>
+            <reflection_level>3</reflection_level>
+            <wire_size>1</wire_size>
+            <wire_units>0</wire_units>
+          </extended_shader>
+          <shader>
+            <ambient_diffuse_lexture_lock>1</ambient_diffuse_lexture_lock>
+            <ambient_diffuse_lock>1</ambient_diffuse_lock>
+            <diffuse_specular_lock>0</diffuse_specular_lock>
+            <soften>0.1</soften>
+            <use_self_illum_color>0</use_self_illum_color>
+          </shader>
+        </technique>
+      </extra>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="ColorEffectR0G0B0-material" name="ColorEffectR0G0B0-material">
+      <instance_effect url="#ColorEffectR0G0B0"/>
+    </material>
+    <material id="_1_road-material" name="_1_road-material">
+      <instance_effect url="#_1_road"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="geom-node_Object03" name="node_Object03">
+      <mesh>
+        <source id="geom-node_Object03-positions">
+          <float_array id="geom-node_Object03-positions-array" count="63">-34.7985 -18.8808 -8.96048 -34.7985 -13.8808 -8.96048 -34.7985 -16.3762 -8.96048 -34.7985 -14.4649 -8.96048 -34.7985 -15.2807 -8.96048 -34.7985 -16.9513 -8.96048 -34.7985 -17.7696 -8.96048 -37.3834 -16.3762 -8.96048 -32.3834 -16.3762 -8.96048 -37.3834 -18.8808 -8.96048 -32.3834 -18.8808 -8.96048 -37.3834 -13.8808 -8.96048 -32.3861 -13.8808 -8.96048 -37.3834 -17.7696 -8.96048 -37.3834 -16.9513 -8.96048 -32.3834 -17.7696 -8.96048 -32.3834 -16.9513 -8.96048 -37.3834 -15.2807 -8.96048 -37.3834 -14.4649 -8.96048 -32.3834 -15.2807 -8.96048 -32.3834 -14.4649 -8.96048</float_array>
+          <technique_common>
+            <accessor source="#geom-node_Object03-positions-array" count="21" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-node_Object03-normals">
+          <float_array id="geom-node_Object03-normals-array" count="216">0.036581 -0.119927 0.992109 -0.00259502 -0.0628927 0.998017 0.00535667 0.0430577 0.999058 0.00535667 0.0430577 0.999058 0.0204126 0.0814001 0.996472 0.036581 -0.119927 0.992109 0.00862846 -0.0971339 0.995234 5.69456e-005 -0.124541 0.992215 -0.000888969 0.0246583 0.999696 -0.000888969 0.0246583 0.999696 0.0195649 -0.00344238 0.999803 0.00862846 -0.0971339 0.995234 -0.028122 0.0676451 0.997313 0.00535667 0.0430577 0.999058 -0.00259502 -0.0628927 0.998017 -0.00259502 -0.0628927 0.998017 -0.0275792 -0.0954021 0.995057 -0.028122 0.0676451 0.997313 -0.0149767 0.0159277 0.999761 -0.000888969 0.0246583 0.999696 5.69456e-005 -0.124541 0.992215 5.69456e-005 -0.124541 0.992215 -0.00836094 -0.117998 0.992979 -0.0149767 0.0159277 0.999761 0.0419351 -0.235478 0.970974 -0.0203951 -0.0788603 0.996677 -0.00259502 -0.0628927 0.998017 -0.00259502 -0.0628927 0.998017 0.036581 -0.119927 0.992109 0.0419351 -0.235478 0.970974 0.00541179 -0.0412423 0.999135 0.0139075 0.00123817 0.999903 0.0204126 0.0814001 0.996472 0.0204126 0.0814001 0.996472 0.00535667 0.0430577 0.999058 0.00541179 -0.0412423 0.999135 0.0139075 0.00123817 0.999903 0.00541179 -0.0412423 0.999135 5.69456e-005 -0.124541 0.992215 5.69456e-005 -0.124541 0.992215 0.00862846 -0.0971339 0.995234 0.0139075 0.00123817 0.999903 0.0110551 0.087024 0.996145 0 0.143336 0.989674 0.0195649 -0.00344238 0.999803 0.0195649 -0.00344238 0.999803 -0.000888969 0.0246583 0.999696 0.0110551 0.087024 0.996145 -0.0222204 0.0153274 0.999636 0.00541179 -0.0412423 0.999135 0.00535667 0.0430577 0.999058 0.00535667 0.0430577 0.999058 -0.028122 0.0676451 0.997313 -0.0222204 0.0153274 0.999636 -0.0203951 -0.0788603 0.996677 -2.94005e-007 -0.265632 0.964074 -0.0275792 -0.0954021 0.995057 -0.0275792 -0.0954021 0.995057 -0.00259502 -0.0628927 0.998017 -0.0203951 -0.0788603 0.996677 -0.0210103 0.12642 0.991754 0.0110551 0.087024 0.996145 -0.000888969 0.0246583 0.999696 -0.000888969 0.0246583 0.999696 -0.0149767 0.0159277 0.999761 -0.0210103 0.12642 0.991754 0.00541179 -0.0412423 0.999135 -0.0222204 0.0153274 0.999636 -0.00836094 -0.117998 0.992979 -0.00836094 -0.117998 0.992979 5.69456e-005 -0.124541 0.992215 0.00541179 -0.0412423 0.999135</float_array>
+          <technique_common>
+            <accessor source="#geom-node_Object03-normals-array" count="72" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-node_Object03-map-channel-2">
+          <float_array id="geom-node_Object03-map-channel-2-array" count="63">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#geom-node_Object03-map-channel-2-array" count="21" stride="3">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-node_Object03-map-channel0">
+          <float_array id="geom-node_Object03-map-channel0-array" count="63">0.596473 0.595791 0.604859 0.638996 0.63847 0.646127 0.576535 0.575883 0.58636 0.624583 0.624028 0.632336 0.604074 0.603478 0.612711 0.581135 0.580477 0.590629 0.587682 0.587014 0.596703 0.572936 0.572254 0.582565 0.579811 0.579187 0.589816 0.585865 0.585168 0.594402 0.597519 0.596882 0.606456 0.634987 0.634444 0.642108 0.640053 0.639559 0.647385 0.580165 0.579474 0.589183 0.575919 0.575234 0.585296 0.589712 0.58908 0.599119 0.583897 0.58327 0.593655 0.600294 0.599674 0.608817 0.620669 0.620094 0.628368 0.606371 0.605805 0.615198 0.626152 0.625628 0.634101</float_array>
+          <technique_common>
+            <accessor source="#geom-node_Object03-map-channel0-array" count="21" stride="3">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-node_Object03-map-channel1">
+          <float_array id="geom-node_Object03-map-channel1-array" count="63">0.497379 0.998479 0 0.495607 0.00072378 0 0.477067 0.502293 0 0.491329 0.116462 0 0.485241 0.281153 0 0.481754 0.61679 0 0.488424 0.779712 0 0.999381 0.499459 0 0.00158215 0.504873 0 0.999933 0.998912 0 0.00183415 0.998013 0 1.0001 0.000298906 0 0.00173765 0.00130075 0 0.99969 0.778705 0 0.999508 0.614709 0 0.00172304 0.780589 0 0.0016403 0.618667 0 0.999698 0.279381 0 0.999935 0.115482 0 0.00165071 0.28285 0 0.00170177 0.117502 0</float_array>
+          <technique_common>
+            <accessor source="#geom-node_Object03-map-channel1-array" count="21" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-node_Object03-vertices">
+          <input semantic="POSITION" source="#geom-node_Object03-positions"/>
+        </vertices>
+        <triangles material="_1_road_1" count="24">
+          <input semantic="VERTEX" source="#geom-node_Object03-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-node_Object03-normals" offset="1"/>
+          <input semantic="COLOR" source="#geom-node_Object03-map-channel-2" offset="2"/>
+          <input semantic="COLOR" source="#geom-node_Object03-map-channel0" offset="3" set="0"/>
+          <input semantic="TEXCOORD" source="#geom-node_Object03-map-channel1" offset="4" set="1"/>
+          <p>20 0 20 20 20 3 1 3 3 3 4 2 4 4 4 4 3 4 4 4 19 4 19 19 19 20 5 20 20 20 16 6 16 16 16 5 7 5 5 5 6 8 6 6 6 6 9 6 6 6 15 10 15 15 15 16 11 16 16 16 17 12 17 17 17 4 13 4 4 4 3 14 3 3 3 3 15 3 3 3 18 16 18 18 18 17 17 17 17 17 13 18 13 13 13 6 19 6 6 6 5 20 5 5 5 5 21 5 5 5 14 22 14 14 14 13 23 13 13 13 12 24 12 12 12 1 25 1 1 1 3 26 3 3 3 3 27 3 3 3 20 28 20 20 20 12 29 12 12 12 2 30 2 2 2 8 31 8 8 8 19 32 19 19 19 19 33 19 19 19 4 34 4 4 4 2 35 2 2 2 8 36 8 8 8 2 37 2 2 2 5 38 5 5 5 5 39 5 5 5 16 40 16 16 16 8 41 8 8 8 0 42 0 0 0 10 43 10 10 10 15 44 15 15 15 15 45 15 15 15 6 46 6 6 6 0 47 0 0 0 7 48 7 7 7 2 49 2 2 2 4 50 4 4 4 4 51 4 4 4 17 52 17 17 17 7 53 7 7 7 1 54 1 1 1 11 55 11 11 11 18 56 18 18 18 18 57 18 18 18 3 58 3 3 3 1 59 1 1 1 9 60 9 9 9 0 61 0 0 0 6 62 6 6 6 6 63 6 6 6 13 64 13 13 13 9 65 9 9 9 2 66 2 2 2 7 67 7 7 7 14 68 14 14 14 14 69 14 14 14 5 70 5 5 5 2 71 2 2 2</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_images>
+    <image id="sand_jpg">
+      <init_from>file:///C:/VWFData/DataFiles/Models/village/sand.jpg</init_from>
+    </image>
+  </library_images>
+  <library_visual_scenes>
+    <visual_scene id="MaxScene">
+      <node id="node-Scene_Root" name="Scene_Root">
+        <node id="node-node_Object03" name="node_Object03">
+          <matrix>1 0 0 34.8834 0 1 0 16.3808 0 0 1 9.00829 0 0 0 1</matrix>
+          <instance_geometry url="#geom-node_Object03">
+            <bind_material>
+              <technique_common>
+                <instance_material symbol="_1_road_1" target="#_1_road-material"/>
+              </technique_common>
+            </bind_material>
+          </instance_geometry>
+        </node>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#MaxScene"/>
+  </scene>
+</COLLADA>

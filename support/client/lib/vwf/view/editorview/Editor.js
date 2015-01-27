@@ -1665,6 +1665,14 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             this.createChild('index-vwf', newname, proto, null, null);
             this.SelectOnNextCreate([newname]);
         }
+        this.snapPosition = function(pos)
+        {   
+            var newpos = pos.slice(0);
+            newpos[0] = this.SnapTo(newpos[0], MoveSnap);
+            newpos[1] = this.SnapTo(newpos[1], MoveSnap);
+            newpos[2] = this.SnapTo(newpos[2], MoveSnap);
+            return newpos;
+        }
         this.CreateCamera = function(translation, owner, id) {
             translation[0] = this.SnapTo(translation[0], MoveSnap);
             translation[1] = this.SnapTo(translation[1], MoveSnap);

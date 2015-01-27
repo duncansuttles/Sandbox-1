@@ -1,0 +1,22 @@
+{
+	"extends": "asset.vwf",
+	"properties":
+	{
+		"___physics_activation_state": 1,
+		"___physics_deactivation_time": 0,
+		"___physics_velocity_angular": [0, 0, 0],
+		"___physics_velocity_linear": [0, 0, 0],
+		"owner": "Anonymous0",
+		"transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -5.310248851776123, -6.124624729156494, 12.90780258178711, 1]
+	},
+	"random":
+	{
+		"c": 1,
+		"s0": 0.504634130047634,
+		"s1": 0.499099306063727,
+		"s2": 0.851123166270554
+	},
+	"sequence": 0,
+	"source": "./contentlibraries/entities/assets/uh60/uh60.DAE",
+	"type": "subDriver/threejs/asset/vnd.collada+xml"
+}

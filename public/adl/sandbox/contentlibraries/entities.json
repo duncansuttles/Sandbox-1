@@ -1,8 +1,10 @@
 {
-    "Default Tree": {
+    "Default Tree":
+    {
         "url": "./contentlibraries/entities/vwf/defaulttree.vwf.json",
         "preview": "./contentlibraries/entities/thumbs/defaulttree.png",
-        "dropPreview": {
+        "dropPreview":
+        {
             "url": "./contentlibraries/entities/assets/defaulttree.json",
             "type": "subDriver/threejs/asset/vnd.osgjs+json+compressed",
             "transform": [
@@ -23,39 +25,218 @@
         },
         "type": "asset"
     },
-    "T90 Tank": {
+    "T90 Tank":
+    {
         "url": "./contentlibraries/entities/vwf/t90.vwf.json",
         "preview": "./contentlibraries/entities/thumbs/t90.png",
-        "dropPreview": {
+        "dropPreview":
+        {
             "url": "./contentlibraries/entities/assets/t90/T90.json",
-            "type": "subDriver/threejs/asset/vnd.osgjs+json+compressed"
+            "type": "subDriver/threejs/asset/vnd.osgjs+json+compressed",
+            "transform": [
+                1,
+                0,
+                0,
+                0,
+                0, 1,
+                0,
+                0,
+                0, 0, 1,
+                0,
+                0,
+                0,
+                1,
+                1
+            ]
         },
+        "dropOffset": [
+            1,
+            0,
+            0,
+            0,
+            0, 1,
+            0,
+            0,
+            0, 0, 1,
+            0,
+            0,
+            0,
+            1,
+            1
+        ],
         "type": "asset"
     },
-    "Barrel": {
+    "UH60 Heli":
+    {
+        "url": "./contentlibraries/entities/vwf/uh60.vwf.json",
+        "preview": "./contentlibraries/entities/thumbs/uh60.jpg",
+        "dropPreview":
+        {
+            "url": "./contentlibraries/entities/assets/uh60/uh60.DAE",
+            "type": "subDriver/threejs/asset/vnd.collada+xml",
+            "transform": [
+                1,
+                0,
+                0,
+                0,
+                0, 1,
+                0,
+                0,
+                0, 0, 1,
+                0,
+                0,
+                0,
+                1,
+                1
+            ]
+        },
+        "dropOffset": [
+            1,
+            0,
+            0,
+            0,
+            0, 1,
+            0,
+            0,
+            0, 0, 1,
+            0,
+            0,
+            0,
+            1,
+            1
+        ],
+        "type": "asset"
+    },
+    "Barrel":
+    {
         "url": "./contentlibraries/entities/vwf/barrel.vwf.json",
         "preview": "./contentlibraries/entities/thumbs/barrel.jpg",
-        "dropPreview": {
+        "dropPreview":
+        {
             "url": "./contentlibraries/entities/assets/barrel.json",
-            "type": "subDriver/threejs/asset/vnd.osgjs+json+compressed"
+            "type": "subDriver/threejs/asset/vnd.osgjs+json+compressed",
+            "transform": [
+                1,
+                0,
+                0,
+                0,
+                0, 1,
+                0,
+                0,
+                0, 0, 1,
+                0,
+                0,
+                0,
+                0.85,
+                1
+            ]
         },
-        "type": "asset"
+        "type": "asset",
+        "snap": 1
     },
-    "Fire": {
+    "Road Tile":
+    {
+        "url": "./contentlibraries/entities/vwf/roadsection.vwf.json",
+        "preview": "./contentlibraries/entities/thumbs/road.jpg",
+        "dropPreview":
+        {
+            "url": "./contentlibraries/entities/assets/tiles/road.DAE",
+            "type": "subDriver/threejs/asset/vnd.collada+xml",
+            "transform": [
+                1,
+                0,
+                0,
+                0,
+                0, 1,
+                0,
+                0,
+                0, 0, 1,
+                0,
+                0,
+                0,
+                0.85,
+                1
+            ]
+        },
+        "type": "asset",
+        "snap": 5,
+        "dropOffset":[
+                1,
+                0,
+                0,
+                0,
+                0, 1,
+                0,
+                0,
+                0, 0, 1,
+                0,
+                0,
+                0,
+                0.85,
+                1
+            ]
+    },
+    "Road Tile 90":
+    {
+        "url": "./contentlibraries/entities/vwf/roadsection.vwf.json",
+        "preview": "./contentlibraries/entities/thumbs/road90.jpg",
+        "dropPreview":
+        {
+            "url": "./contentlibraries/entities/assets/tiles/road.DAE",
+            "type": "subDriver/threejs/asset/vnd.collada+xml",
+            "transform": [-3.58659268950845e-10, 1, 0, 0, -1, -3.58659268950845e-10, 0, 0, 0, 0, 1, 0, 0, 0, 0.85, 1]
+        },
+        "type": "asset",
+        "snap": 5,
+        "dropOffset":[-3.58659268950845e-10, 1, 0, 0, -1, -3.58659268950845e-10, 0, 0, 0, 0, 1, 0, 0, 0, 0.85, 1]
+    },
+    "Road Bend 90":
+    {
+        "url": "./contentlibraries/entities/vwf/roadbend.vwf.json",
+        "preview": "./contentlibraries/entities/thumbs/roadbend90.jpg",
+        "dropPreview":
+        {
+            "url": "./contentlibraries/entities/assets/tiles/road.DAE",
+            "type": "subDriver/threejs/asset/vnd.collada+xml",
+            "transform": [-3.58659268950845e-10, 1, 0, 0, -1, -3.58659268950845e-10, 0, 0, 0, 0, 1, 0, 0, 0, 0.85, 1]
+        },
+        "type": "asset",
+        "snap": 5,
+        "dropOffset":[-3.58659268950845e-10, 1, 0, 0, -1, -3.58659268950845e-10, 0, 0, 0, 0, 1, 0, 0, 0, 0.85, 1]
+    },
+    "Sand Tile":
+    {
+        "url": "./contentlibraries/entities/vwf/sandsection.vwf.json",
+        "preview": "./contentlibraries/entities/thumbs/sandtile.jpg",
+        "dropPreview":
+        {
+            "url": "./contentlibraries/entities/assets/tiles/sand.DAE",
+            "type": "subDriver/threejs/asset/vnd.collada+xml",
+            "transform": [-3.58659268950845e-10, 1, 0, 0, -1, -3.58659268950845e-10, 0, 0, 0, 0, 1, 0, 0, 0, 0.85, 1]
+        },
+        "type": "asset",
+        "snap": 5,
+        "dropOffset":[-3.58659268950845e-10, 1, 0, 0, -1, -3.58659268950845e-10, 0, 0, 0, 0, 1, 0, 0, 0, 0.85, 1]
+    },
+    "Fire":
+    {
         "url": "./contentlibraries/entities/vwf/fire.vwf.json",
         "preview": "./contentlibraries/entities/thumbs/fire.jpg",
         "type": "asset"
     },
-    "Rock": {
+    "Rock":
+    {
         "url": "./contentlibraries/entities/vwf/rock.vwf.json",
         "preview": "./contentlibraries/entities/thumbs/rock.jpg",
-        "dropPreview": {
+        "dropPreview":
+        {
             "url": "./vwfdatamanager.svc/datafile/models/village/rock1.DAE",
             "type": "subDriver/threejs/asset/vnd.collada+xml"
         },
         "type": "asset"
     },
-    "Grass": {
+    "Grass":
+    {
         "url": "./contentlibraries/entities/vwf/grass.vwf.json",
         "preview": "./contentlibraries/entities/thumbs/grass.jpg",
         "type": "asset"
