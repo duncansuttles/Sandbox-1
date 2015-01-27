@@ -34,6 +34,9 @@ if (false) {
         "jquery-encoder-0.1.0.js",
         "./vwfbuild.js", 
         "centerinclient.js",
+        "vwf/model/ammo.js/ammo",
+        "vwf/model/ammojs",
+        "./vwf/view/editorview/lib/ace/src-min-noconflict/ace.js",
         "boot"
     ]);
 }
