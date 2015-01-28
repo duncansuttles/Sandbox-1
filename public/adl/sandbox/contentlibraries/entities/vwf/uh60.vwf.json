@@ -1,22 +1,257 @@
 {
-	"extends": "asset.vwf",
-	"properties":
-	{
-		"___physics_activation_state": 1,
-		"___physics_deactivation_time": 0,
-		"___physics_velocity_angular": [0, 0, 0],
-		"___physics_velocity_linear": [0, 0, 0],
-		"owner": "Anonymous0",
-		"transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -5.310248851776123, -6.124624729156494, 12.90780258178711, 1]
-	},
-	"random":
-	{
-		"c": 1,
-		"s0": 0.504634130047634,
-		"s1": 0.499099306063727,
-		"s2": 0.851123166270554
-	},
-	"sequence": 0,
-	"source": "./contentlibraries/entities/assets/uh60/uh60.DAE",
-	"type": "subDriver/threejs/asset/vnd.collada+xml"
+    "children": {
+        "903ceee0-db6c-7ddb-1dc7-f00d503617db": {
+            "extends": "asset.vwf",
+            "properties": {
+                "DisplayName": "RBack",
+                "___physics_activation_state": 1,
+                "___physics_deactivation_time": 0,
+                "___physics_velocity_angular": [0, 0, 0],
+                "___physics_velocity_linear": [0, 0, 0],
+                "owner": "Rob",
+                "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -21.033199310302734, 711.8720092773438, 255.27999877929688, 1],
+                "type": "3DR Object"
+            },
+            "random": {
+                "c": 1,
+                "s0": 0.616037325235084,
+                "s1": 0.16877096821554,
+                "s2": 0.0075115377549082
+            },
+            "sequence": 0,
+            "source": "RBack",
+            "type": "link_existing/threejs"
+        },
+        "f1dac813-bbdc-6a55-9bc5-67b2edb8521": {
+            "extends": "SandboxCamera.vwf",
+            "methods": {
+                "ready": {
+                    "body": "\n  //This function was created for you by the system. \n      //The scene is now completely loaded. This will fire on each client when the client joins, so it`s not a great place to create objects\n\n      this.Scene.unbind('pointerMove', this._mouseMoved);\n      this.Scene.unbind('pointerDown', this._mouseDown);\n      this.Scene.unbind('pointerUp', this._mouseup);\n      var self = this;\n      this._mouseMoved = function(eventData)\n      {\n          if (!self.Scene.clientAPI.getCameraForClient(vwf.client()) ||self.Scene.clientAPI.getCameraForClient(vwf.client()).DisplayName != self.DisplayName) return;\n          if (self.pointerState == 'down')\n          {\n              console.log(eventData);\n              var relX = self.lastPos[0] - eventData.position[0];\n              var relY = self.lastPos[1] - eventData.position[1];\n              self.lastPos = [eventData.position[0], eventData.position[1]];\n              console.log(relX, relY);\n\n              self.transformAPI.rotate(relY * 100, 0, 0, self.transformAPI.COORDINATES.LOCAL);\n              self.transformAPI.rotate(0, 0, relX * 100, self.transformAPI.COORDINATES.GLOBAL);\n\n          }\n      }\n      this._mouseDown = function(eventData)\n      {\n          if (!self.Scene.clientAPI.getCameraForClient(vwf.client()) ||self.Scene.clientAPI.getCameraForClient(vwf.client()).DisplayName != self.DisplayName) return;\n          if (eventData.button == 'left')\n          {\n              self.pointerState = \"down\";\n              console.log('pointer is down');\n              self.lastPos = [eventData.position[0], eventData.position[1]];\n          }\n      }\n      this._mouseup = function(eventData)\n      {\n          if (!self.Scene.clientAPI.getCameraForClient(vwf.client()) || self.Scene.clientAPI.getCameraForClient(vwf.client()).DisplayName != self.DisplayName) return;\n          self.pointerState = \"none\";\n      }\n\n      this.Scene.bind('pointerMove', this._mouseMoved);\n      this.Scene.bind('pointerDown', this._mouseDown);\n      this.Scene.bind('pointerUp', this._mouseup);\n",
+                    "parameters": []
+                }
+            },
+            "properties": {
+                "DisplayName": "UH60Pilot",
+                "far": 1000,
+                "fov": 70,
+                "lastPos": [0.213684210526316, 0.312938816449348],
+                "near": 0.08,
+                "owner": "Rob",
+                "pointerState": "none",
+                "transform": [-0.08242683857679367, -0.9960001707077026, -0.034498050808906555, 0, 0.8210174441337585, -0.04824206978082657, -0.5688616633415222, 0, 0.5649214386940002, -0.07521340250968933, 0.8217092752456665, 0, 0.4865036904811859, -1.7970478534698486, 1.3066357374191284, 1]
+            },
+            "random": {
+                "c": 1,
+                "s0": 0.564238151069731,
+                "s1": 0.704742263769731,
+                "s2": 0.708320440026
+            },
+            "sequence": 0,
+            "source": "vwf/model/threejs/camera.js",
+            "type": "subDriver/threejs"
+        },
+        "40c42d33-3bf1-9b00-14f8-c729c6d749ea": {
+            "events": {
+                "pointerDown": {
+                    "body": " \n  //if (this.Scene.clientAPI.getCameraForClient(vwf.client()).DisplayName != 'Pilot') return;\n      if (eventData.button == 'left')\n      {\n          console.log('here');\n          this.mouseState = \"down\";\n          this.lastPos = [eventData.position[0], eventData.position[1]];\n          return true;\n      }",
+                    "parameters": ["  eventData", "  nodeData  "]
+                },
+                "pointerMove": {
+                    "body": " \n  //if (this.Scene.clientAPI.getCameraForClient(vwf.client()).DisplayName != 'Pilot') return;\n      if (this.mouseState == 'down')\n      {\n\n          var relX = this.lastPos[0] - eventData.position[0];\n          var relY = this.lastPos[1] - eventData.position[1];\n\n          if (relY > .07)\n              this.movementState = 'forward';\n          else if (relY < -.07)\n              this.movementState = 'back';\n          else\n              this.movementState = null;\n\n          if (relX > .07)\n              this.turnState = 'left';\n          else if (relX < -.07)\n              this.turnState = 'right';\n          else\n              this.turnState = null;\n          return true;\n      }",
+                    "parameters": ["  eventData", "  nodeData  "]
+                },
+                "pointerUp": {
+                    "body": " \n  // if (this.Scene.clientAPI.getCameraForClient(vwf.client()).DisplayName != 'Pilot') return;\n      if (eventData.button == 'left' && this.mouseState == 'down')\n      {\n          console.log(\"here3\");\n          this.mouseState = \"none\";\n          this.turnState = null;\n          this.movementState = 'none';\n          this.parent.physicsAPI.setLinearVelocity([0, 0, 0]);\n          return true;\n      }",
+                    "parameters": ["  eventData", "  nodeData  "]
+                }
+            },
+            "extends": "asset.vwf",
+            "methods": {
+                "ready": {
+                    "body": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n                                                                                                                                                                                        function ready()\n                                                                                                                                                                                            {\n\n                                                                                                                                                                                                this.Scene.unbind('pointerMove', this._mouseMoved);\n                                                                                                                                                                                                this.Scene.unbind('pointerUp', this._mouseUp);\n\n                                                                                                                                                                                                var self = this;\n                                                                                                                                                                                                this._mouseMoved = function(eventData)\n                                                                                                                                                                                                {\n                                                                                                                                                                                                   \n                                                                                                                                                                                                }\n\n                                                                                                                                                                                                this._mouseUp = function(eventData) {\n\n                                                                                                                                                                                                }\n\n                                                                                                                                                                                                this.Scene.bind('pointerMove', this._mouseMoved);\n                                                                                                                                                                                                this.Scene.bind('pointerUp', this._mouseup);\n\n                                                                                                                                                                                            }\n",
+                    "parameters": []
+                },
+                "tick": {
+                    "body": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n                                                  //This function was created for you by the system. \n                                                      //The tick function is called 20 times every second. \n                                                      // Write code here to animate over time\n                                                      var rotx = 0;\n                                                      var roty = 0;\n                                                      if (this.movementState == 'forward')\n                                                      {\n                                                          var vel = this.parent.physicsAPI.getLinearVelocity();\n                                                          vel = MATH.addVec3(this.parent.transformAPI.localToGlobalRotation([0, -3, 0]), [0, 0, 0]);\n                                                          vel[2] = 0;\n                                                          this.parent.physicsAPI.setLinearVelocity(vel);\n                                                          rotx = -4;\n                                                      }\n                                                      if (this.movementState == 'back')\n                                                      {\n                                                          var vel = this.parent.physicsAPI.getLinearVelocity();\n                                                          vel = MATH.addVec3(this.parent.transformAPI.localToGlobalRotation([0, 3, 0]), [0, 0, 0]);\n                                                          vel[2] = 0;\n                                                          this.parent.physicsAPI.setLinearVelocity(vel);\n                                                          rotx = 4;\n                                                      }\n                                                      if (this.turnState == 'left')\n                                                      {\n                                                          this.parent.physicsAPI.addTorque([0, 0, .5]);\n                                                          roty = -4;\n                                                      }\n                                                      if (this.turnState == 'right')\n                                                      {\n                                                          this.parent.physicsAPI.addTorque([0, 0, -.5]);\n                                                          roty = 4;\n                                                      }\n                                                      this.transformAPI.setRotation([rotx, roty, 0], this.transformAPI.COORDINATES.LOCAL);\n",
+                    "parameters": []
+                }
+            },
+            "properties": {
+                "DisplayName": "Joy01",
+                "___physics_activation_state": 1,
+                "___physics_deactivation_time": 0,
+                "___physics_velocity_angular": [0, 0, 0],
+                "___physics_velocity_linear": [0, 0, 0],
+                "lastPos": [0.567894736842105, 0.648946840521565],
+                "mouseState": "none",
+                "movementState": "none",
+                "owner": "Rob",
+                "transform": [0.9940000176429749, 0, 0, 0, 0, 0.9850000143051147, 0, 0, 0, 0, 0.9800000190734863, 0, 42.37300109863281, -213.3679962158203, 66.27300262451172, 1],
+                "turnState": null,
+                "type": "3DR Object"
+            },
+            "random": {
+                "c": 1,
+                "s0": 0.986918177222833,
+                "s1": 0.348852456081659,
+                "s2": 0.371150277554989
+            },
+            "sequence": 0,
+            "source": "Joy01",
+            "type": "link_existing/threejs"
+        },
+        "29a6a8a9-8553-4933-3695-d5f13a57f19e": {
+            "extends": "SandboxCamera.vwf",
+            "methods": {
+                "ready": {
+                    "body": "\n  //This function was created for you by the system. \n      //The scene is now completely loaded. This will fire on each client when the client joins, so it`s not a great place to create objects\n\n      this.Scene.unbind('pointerMove', this._mouseMoved);\n      this.Scene.unbind('pointerDown', this._mouseDown);\n      this.Scene.unbind('pointerUp', this._mouseup);\n      var self = this;\n      this._mouseMoved = function(eventData)\n      {\n          if (!self.Scene.clientAPI.getCameraForClient(vwf.client()) ||self.Scene.clientAPI.getCameraForClient(vwf.client()).DisplayName != self.DisplayName) return;\n          if (self.pointerState == 'down')\n          {\n\n              var relX = self.lastPos[0] - eventData.position[0];\n              var relY = self.lastPos[1] - eventData.position[1];\n              self.lastPos = [eventData.position[0], eventData.position[1]];\n\n              self.transformAPI.rotate(relY * 100, 0, 0, self.transformAPI.COORDINATES.LOCAL);\n              self.transformAPI.rotate(0, 0, relX * 100, self.transformAPI.COORDINATES.GLOBAL);\n\n          }\n      }\n      this._mouseDown = function(eventData)\n      {\n          if (!self.Scene.clientAPI.getCameraForClient(vwf.client()) ||self.Scene.clientAPI.getCameraForClient(vwf.client()).DisplayName != self.DisplayName) return;\n          if (eventData.button == 'left')\n          {\n              self.pointerState = \"down\";\n\n              self.lastPos = [eventData.position[0], eventData.position[1]];\n          }\n      }\n      this._mouseup = function(eventData)\n      {\n          if (!self.Scene.clientAPI.getCameraForClient(vwf.client()) ||self.Scene.clientAPI.getCameraForClient(vwf.client()).DisplayName != self.DisplayName) return;\n\n          self.pointerState = \"none\";\n      }\n\n      this.Scene.bind('pointerMove', this._mouseMoved);\n      this.Scene.bind('pointerDown', this._mouseDown);\n      this.Scene.bind('pointerUp', this._mouseup);\n",
+                    "parameters": []
+                }
+            },
+            "properties": {
+                "DisplayName": "UH60 Side",
+                "far": 4142,
+                "fov": 64,
+                "lastPos": [0.730519480519481, 0.873326467559217],
+                "near": 0.28,
+                "owner": "Rob",
+                "pointerState": "none",
+                "transform": [0.2555910050868988, -0.9665907025337219, 0.019382571801543236, 0, 0.7241450548171997, 0.1781226545572281, -0.6662464737892151, 0, 0.6405342221260071, 0.1843225061893463, 0.7454774975776672, 0, 0.859683096408844, 0.05849115923047066, 1.330382227897644, 1]
+            },
+            "random": {
+                "c": 1,
+                "s0": 0.564238151069731,
+                "s1": 0.704742263769731,
+                "s2": 0.708320440026
+            },
+            "sequence": 0,
+            "source": "vwf/model/threejs/camera.js",
+            "type": "subDriver/threejs"
+        },
+        "35ff440b-6c8a-cd3b-e0b1-8de270e5c743": {
+            "extends": "asset.vwf",
+            "properties": {
+                "DisplayName": "DBackM1",
+                "___physics_activation_state": 1,
+                "___physics_deactivation_time": 0,
+                "___physics_velocity_angular": [0, 0, 0],
+                "___physics_velocity_linear": [0, 0, 0],
+                "owner": "Rob",
+                "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 86.16889953613281, 129.88333129882812, 102.67400360107422, 1],
+                "type": "3DR Object"
+            },
+            "random": {
+                "c": 1,
+                "s0": 0.464669975219294,
+                "s1": 0.707191138295457,
+                "s2": 0.0419738455675542
+            },
+            "sequence": 0,
+            "source": "DBackM1",
+            "type": "link_existing/threejs"
+        },
+        "f85a525f-3004-e594-dfc0-8c57f706bad4": {
+            "extends": "asset.vwf",
+            "properties": {
+                "DisplayName": "UH-60",
+                "___physics_activation_state": 1,
+                "___physics_deactivation_time": 0,
+                "___physics_velocity_angular": [0, 0, 0],
+                "___physics_velocity_linear": [0, 0, 0],
+                "owner": "Rob",
+                "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.6687290072441101, 240.85899353027344, 141.67300415039062, 1],
+                "type": "3DR Object"
+            },
+            "random": {
+                "c": 1,
+                "s0": 0.673767289845273,
+                "s1": 0.0710840031970292,
+                "s2": 0.22774685616605
+            },
+            "sequence": 0,
+            "source": "UH-60",
+            "type": "link_existing/threejs"
+        },
+        "835e4675-a01f-829c-959c-31bff9db1617": {
+            "extends": "asset.vwf",
+            "properties": {
+                "DisplayName": "Object01",
+                "___physics_activation_state": 1,
+                "___physics_deactivation_time": 0,
+                "___physics_velocity_angular": [0, 0, 0],
+                "___physics_velocity_linear": [0, 0, 0],
+                "owner": "Rob",
+                "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+                "type": "3DR Object"
+            },
+            "random": {
+                "c": 1,
+                "s0": 0.559984902618453,
+                "s1": 0.588205614825711,
+                "s2": 0.0936558574903756
+            },
+            "sequence": 0,
+            "source": "Object01",
+            "type": "link_existing/threejs"
+        },
+        "9ead6f7-d98-3221-e40e-ff99a97e503a": {
+            "extends": "asset.vwf",
+            "properties": {
+                "DisplayName": "Mrotor",
+                "___physics_activation_state": 1,
+                "___physics_deactivation_time": 0,
+                "___physics_velocity_angular": [0, 0, 0],
+                "___physics_velocity_linear": [0, 0, 0],
+                "owner": "Rob",
+                "transform": [-0.5000000596046448, 0.866025447845459, 0, 0, -0.866025447845459, -0.5000000596046448, 0, 0, 0, 0, 1, 0, 0.4877299964427948, 8.373089790344238, 202.0279998779297, 1],
+                "type": "3DR Object"
+            },
+            "random": {
+                "c": 1,
+                "s0": 0.615332168294117,
+                "s1": 0.487284065457061,
+                "s2": 0.04109191079624
+            },
+            "sequence": 0,
+            "source": "Mrotor",
+            "type": "link_existing/threejs"
+        }
+    },
+    "extends": "asset.vwf",
+    "methods": {
+        "tick": {
+            "body": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n                                                  this.counter += .05;\n                                                      var amt1 = Math.cos(this.counter) / 10;\n                                                      var amt2 = Math.cos(this.counter / 3) / 10;\n                                                      var amt3 = Math.cos(this.counter / 1) / 3;\n                                                      this.physicsAPI.addForceAtCenter([amt1, amt2, amt3]);\n                                                      if (this.transformAPI.getPosition()[2] < 30)\n                                                          this.physicsAPI.addForceAtCenter(0, 0, .1);\n                                                      if (this.transformAPI.getPosition()[2] > 35)\n                                                          this.physicsAPI.addForceAtCenter(0, 0, -.1);\n\n                                                      /// this.physicsAPI.addTorque(this.transformAPI.localToGlobalRotation([amt1 / 2, amt2 / 2, amt3 / 2]));\n\n                                                      this.children_by_name.Mrotor.transformAPI.rotateZ(20, this.transformAPI.COORDINATES.LOCAL);\n",
+            "parameters": []
+        }
+    },
+    "properties": {
+        "DisplayName": "Object1",
+        "___physics_activation_state": 1,
+        "___physics_angular_velocity": [0, -9.54704643744498e-42, 0],
+        "___physics_collision_height": 5.1,
+        "___physics_collision_length": 6.7,
+        "___physics_collision_radius": 2.7,
+        "___physics_collision_type": "2",
+        "___physics_collision_width": 10.8,
+        "___physics_constant_force": [0, 0, 9.8],
+        "___physics_deactivation_time": 0.05000000074505806,
+        "___physics_enabled": true,
+        "___physics_linear_velocity": [0.0979812815785408, -0.304296165704727, 0.376877307891846],
+        "___physics_mass": 1,
+        "___physics_velocity_angular": [2.096552697399575e-40, -2.6438298126416324e-41, -0.000797823304310441],
+        "___physics_velocity_linear": [-0.06483523547649384, 0.2917110025882721, -0.21153783798217773],
+        "counter": 531.550000000064,
+        "owner": "Rob",
+        "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.18835939466953278, -6.679718494415283, 3.4177463054656982, 1],
+        "translation": [-0.000215590870423598, -0.105291242445312, 0.0100000000000002]
+    },
+    "random": {
+        "c": 1,
+        "s0": 0.62164831161499,
+        "s1": 0.576636909507215,
+        "s2": 0.75034643150866
+    },
+    "sequence": 0,
+    "source": "./contentlibraries/entities/assets/uh60/uh60.DAE",
+    "type": "subDriver/threejs/asset/vnd.collada+xml"
 }

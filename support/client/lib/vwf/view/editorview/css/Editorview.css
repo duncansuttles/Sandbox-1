@@ -294,6 +294,7 @@ border-radius: 6px;
 	.inventoryItem
 	{
 		text-overflow: ellipsis;background:#FFFFF8;padding-left: 10px;
+		color: black;
 	}
 	.loadchoice:hover
 	{
