@@ -32,7 +32,6 @@ properties:
   ___physics_mass: 158.5
   animationPaused: false
 methods:
-  update:
   tick:
   attached:
   satProperty:
@@ -229,8 +228,8 @@ scripts:
 
         screen[1] = wh - screen[1];
 
-        div.style.top = (screen[1] + $("#index-vwf").offset().top) + 'px';
-        div.style.left = (parseInt($('#index-vwf').css('left')) || 0) + (screen[0] - div._offsetWidth / 2) + 'px';
+        div.style.top = (screen[1] + parseInt($("#index-vwf")[0].style.top)) + 'px';
+        div.style.left = (parseInt($("#index-vwf")[0].style.left) || 0) + (screen[0] - div._offsetWidth / 2) + 'px';
 
 
         if ((screen[0] < 0 || screen[0] > ww || screen[1] < 0 || screen[1] > wh)) {
@@ -732,14 +731,10 @@ scripts:
       }
       window.collide = this.collisionOffset;
       this.tick = function() {
-
         if (this.id == 'character-vwf') return;
-        try {
+        //try {
           this.update();
-        } catch (e) {}
-
-
-
+       // } catch (e) {}
       }
 
       function findChildViewNode(node, name) {

@@ -1050,7 +1050,18 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
 
         },
         // -- gettingProperty ----------------------------------------------------------------------
-
+        tryGetter : function(node, getter) {
+            try {
+                //unwrap watchables
+                var ret = getter.call(node);
+                if (ret && ret.internal_val) return ret.internal_val;
+                return ret;
+            } catch (e) {
+                this.logger.warn("gettingProperty", nodeID, propertyName, propertyValue,
+                    "exception in getter:", utility.exceptionMessage(e));
+                return undefined;
+            }
+        },
         gettingProperty: function(nodeID, propertyName, propertyValue) {
             if (this.disabled) return;
             var node = this.nodes[nodeID];
@@ -1058,18 +1069,9 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
             var getter = node.private.getters && node.private.getters[propertyName];
 
             if (getter && getter !== true) { // is there is a getter (and not just a guard value)
-                try {
-                    //unwrap watchables
-                    var ret = getter.call(node);
-                    if (ret && ret.internal_val) return ret.internal_val;
-                    return ret;
-                } catch (e) {
-                    this.logger.warn("gettingProperty", nodeID, propertyName, propertyValue,
-                        "exception in getter:", utility.exceptionMessage(e));
-                }
-            }
-
-            return undefined;
+                return this.tryGetter(node,getter);
+            }else
+                return undefined;
         },
         gettingMethod: function(nodeID, methodName) {
 

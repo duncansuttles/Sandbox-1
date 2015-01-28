@@ -28,8 +28,9 @@ var ASSET = 7;
 
 function collectChildCollisions(node, list) {
     if (!list) list = [];
-    for (var i in node.children) {
-        collectChildCollisions(node.children[i], list);
+    var keys = Object.keys(node.children);
+    for (var i = 0; i  < keys.length; i++) {
+        collectChildCollisions(node.children[keys[i]], list);
     }
     if (node.enabled === true && node instanceof phyObject) {
         var col = node.buildCollisionShape();
@@ -1390,12 +1391,13 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
             delete this.pendingReset;
             if (this.nodes[vwf.application()] && this.nodes[vwf.application()].active === true) {
                 var nodekeys = Object.keys(this.allNodes).sort();
-                for (var i in nodekeys) {
-                    var node = this.allNodes[nodekeys[i]];
+                for (var g =0; g < nodekeys.length; g++) {
+                    var node = this.allNodes[nodekeys[g]];
                     if (node && node.update) {
                         node.update();
-                        for (var i in node.delayedProperties) {
-                            this.settingProperty(node.id, i, node.delayedProperties[i]);
+                        var propkeys = Object.keys(node.delayedProperties || {});
+                        for (var i =0; i < propkeys.length; i++) {
+                            this.settingProperty(node.id, propkeys[i], node.delayedProperties[propkeys[i]]);
                         }
                         delete node.delayedProperties;
                         if (node.body) this.bodiesToID[node.body.ptr] = node.id;
@@ -1407,7 +1409,7 @@ define(["module", "vwf/model", "vwf/configuration"], function(module, model, con
                 this.reEntry = true;
                 var tempmat = [];
                 var nodekeys = Object.keys(this.allNodes).sort();
-                for (var i in nodekeys) {
+                 for (var i =0; i < nodekeys.length; i++) {
                     var node = this.allNodes[nodekeys[i]];
                     if (node.body && node.initialized === true && node.mass > 0 && node.getActivationState() != 2) {
                         vwf.setProperty(node.id, 'transform', node.getTransform(tempmat));

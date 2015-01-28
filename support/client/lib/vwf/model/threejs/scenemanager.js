@@ -93,7 +93,7 @@ THREE.Object3D.prototype._static = false;
 THREE.Object3D.prototype._dynamic = false;
 
 function SceneManager(scene) {
-
+    this.defaultPickOptions = new THREE.CPUPickOptions();
 }
 
 function GetAllLeafMeshes(threeObject, list) {
