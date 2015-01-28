@@ -47,8 +47,9 @@ var fills = {
             if (x.constructor !== y.constructor) return false;
             // they must have the exact same prototype chain, the closest we can do is
             // test there constructor.
-
-            for (var p in x) {
+            var keys = Object.keys(x);
+            for (var i=0; i < keys.length; i++) {
+                var p = keys[i];
                 if (!x.hasOwnProperty(p)) continue;
                 // other properties were tested using x.constructor === y.constructor
 
@@ -65,7 +66,9 @@ var fills = {
                 // Objects and Arrays must be tested recursively
             }
 
-            for (p in y) {
+            keys = Object.keys(x);
+            for (var i=0; i < keys.length; i++) {
+                var p = keys[i];
                 if (y.hasOwnProperty(p) && !x.hasOwnProperty(p)) return false;
                 // allows x[ p ] to be set to undefined
             }

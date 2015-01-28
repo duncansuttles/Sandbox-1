@@ -1213,7 +1213,9 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
                     }
                     if (propertyName == 'worldtransform' || propertyName == 'worldTransform') {
-                        threeObject.updateMatrixWorld(true);
+                      //this is just not worth the cost. In fact, because of the scene glyph,
+                      //it caused a full re-eval of the world transform stack.  
+                      //  threeObject.updateMatrixWorld(true);
                         var value = matCpy(threeObject.matrixWorld.elements);
 
                         if (threeObject instanceof THREE.Camera) {
