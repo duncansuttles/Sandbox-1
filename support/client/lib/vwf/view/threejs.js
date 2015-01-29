@@ -1869,8 +1869,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             var worldCamPos, worldCamTrans, camInverse;
             if (camera) {
                 worldCamTrans = new THREE.Vector3();
-                worldCamTrans.setFromMatrixPosition(camera.matrix);
-                worldCamPos = [worldCamTrans.x, worldCamTrans.y, worldCamTrans.y];
+                worldCamTrans.setFromMatrixPosition(camera.matrixWorld);
+                worldCamPos = [worldCamTrans.x, worldCamTrans.y, worldCamTrans.z];
 
             }
 
