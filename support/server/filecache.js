@@ -91,7 +91,8 @@ function _FileCache() {
 
                         //if the file is not served from /build, and min is enabled, it will be minned
                         self.getFile(file,function(fileentry){
-                            fs.writeFileSync(libpath.join(dirout,filename),fileentry.data);
+                            if(fileentry)
+                                fs.writeFileSync(libpath.join(dirout,filename),fileentry.data);
                             nextfile();
                         });
                     }
@@ -248,7 +249,7 @@ function _FileCache() {
                         var fileOut = path+'_min.js';
                         console.log(fileOut);
                         new compressor.minify({
-                            type: 'gcc',
+                            type: 'uglifyjs',
                             fileIn: path,
                             fileOut: fileOut,
                             callback: function(err, min) {

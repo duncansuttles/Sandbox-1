@@ -538,7 +538,7 @@ function startVWF() {
                         newentry = {};
                         newentry.path = path;
                         newentry.data = contents;
-                        newentry.stats = fs.statSync(buildname);
+                        newentry.stats = fs.statSync(config.out);
                         newentry.zippeddata = zippeddata;
                         newentry.datatype = "utf8";
                         newentry.hash = require("./filecache.js").hash(contents);
