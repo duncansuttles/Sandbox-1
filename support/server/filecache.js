@@ -1,5 +1,5 @@
 var libpath = require('path'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     url = require("url"),
     mime = require('mime'),
     YAML = require('js-yaml');
@@ -49,6 +49,77 @@ function _FileCache() {
         }
 
     }
+    this.minAllSupportScripts = function(cb)
+    {
+        
+        var files = []
+        var self = this;
+        function recurseFindJs(dir,nextdir)
+        {
+            if(!nextdir)nextdir = function(){logger.warn('build complete')};
+            var files = fs.readdirSync(dir);
+            async.eachSeries(files,function(filename,nextfile)
+            {
+                var file = libpath.join(dir,filename);
+                logger.info(file);
+                if(file === 'build')
+                {
+                    nextfile();
+                }
+                else if(strEndsWith(file,".js_min.js"))
+                {
+                    nextfile();
+                }
+                else if (fs.statSync(file).isDirectory())
+                {
+                    recurseFindJs(file,nextfile);
+                }
+                else if(strEndsWith(file,".js") || strEndsWith(file,".css"))
+                {
+                    //if there is already a file in the build dir for this file skip
+                    if(self.resolveBuildFilename(file))
+                    {
+                        logger.warn('skipping build for file ' + file);
+                        nextfile();
+                    }
+                    else //we need to build and save the file
+                    {
+                        var dirout = libpath.dirname(file);
+                        var _dirname = libpath.resolve(libpath.join(__dirname,'..','..'));
+                        dirout = dirout.replace(_dirname,libpath.join(_dirname,'build'));
+                        fs.mkdirsSync(dirout);
+
+                        //if the file is not served from /build, and min is enabled, it will be minned
+                        self.getFile(file,function(fileentry){
+                            fs.writeFileSync(libpath.join(dirout,filename),fileentry.data);
+                            nextfile();
+                        });
+                    }
+                }else
+                {
+                    nextfile();
+                }
+            },function dircomplete()
+            {
+                nextdir();
+            });
+        }
+        recurseFindJs(libpath.resolve('./support'),cb);
+    }
+    this.resolveBuildFilename = function(file)
+    {
+        var dirout = libpath.dirname(file);
+        var fileout = libpath.basename(file);
+        var _dirname = libpath.resolve(libpath.join(__dirname,'..','..'));
+        dirout = dirout.replace(_dirname,libpath.join(_dirname,'build'));
+        var tocheck = libpath.join(dirout,fileout);
+        if(fs.existsSync(tocheck))
+        {
+            console.info('serve from build: ' + tocheck);
+            return tocheck;
+        }
+        return null;
+    }
     this.getDataType = function(file) {
         var type = file.substr(file.lastIndexOf('.') + 1).toLowerCase();
         if (type === 'js' || type === 'html' || type === 'xml' || type === 'txt' || type === 'xhtml' || type === 'css') {
@@ -72,7 +143,14 @@ function _FileCache() {
         //the whole process insensitive, even if the filesystem is. Note: probably doing a lot of 
         //unnecessary work if we could know that the filesystem is not sensitive, maybe from a config value
         path = resolveCase(path);
+
         path = libpath.normalize(path);
+
+        //here, we see if there is a build file that matches, but is under the build directory
+        var buildName = this.resolveBuildFilename(path);
+        if(buildName && this.minify)
+            path = buildName;
+
         var self = this;
         //Cannot escape above the application paths!!!!
         if (path.toLowerCase().indexOf(libpath.resolve(__dirname, '../../').toLowerCase()) != 0 && path.toLowerCase().indexOf(global.datapath.toLowerCase()) != 0) {
@@ -159,25 +237,30 @@ function _FileCache() {
                         callback(null);
                     }
                     //Send right away if not minifying
-                if (!FileCache.minify) {
-
+                    //or if loaded from build dir
+                if (!FileCache.minify || buildName) {
                     preMin(file);
                 } else {
                     //if minifying and ends with js
                     if (strEndsWith(path, 'js')) {
                         //compress the JS then gzip and save the results
                         logger.info('minify ' + path);
+                        var fileOut = path+'_min.js';
+                        console.log(fileOut);
                         new compressor.minify({
-                            type: 'uglifyjs',
+                            type: 'gcc',
                             fileIn: path,
-                            fileOut: path + '_min.js',
+                            fileOut: fileOut,
                             callback: function(err, min) {
 
                                 if (err)
+                                {
+                                    logger.error("minify: " + err);
                                     preMin(file)
+                                }
                                 else {
                                     //remove the file on disk - cached in memory
-                                    fs.unlinkSync(path + '_min.js');
+                                    fs.unlinkSync(fileOut);
                                     //completed minify, go ahead and cache and serve
                                     preMin(min);
                                 }
@@ -187,15 +270,18 @@ function _FileCache() {
                     // likewise, try to minify the css
                     else if (strEndsWith(path, 'css')) {
                         //compress the css then gzip and save the results
-                        logger.info('minify ' + path);
+                        logger.error('minify ' + path);
                         new compressor.minify({
-                            type: 'yui-css',
+                            type: 'sqwish',
                             fileIn: path,
                             fileOut: path + '_min.css',
                             callback: function(err, min) {
 
                                 if (err)
+                                {
+                                    logger.error(err);
                                     preMin(file)
+                                }
                                 else {
                                     //remove the file on disk - cached in memory
                                     fs.unlinkSync(path + '_min.css');

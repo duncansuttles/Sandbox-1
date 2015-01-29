@@ -4,7 +4,7 @@ winston.emitErrs = false;
 var logger = new winston.Logger({
     transports: [
         new winston.transports.Console({
-            level: 'warn',
+            level: 'info',
             handleExceptions: true,
             json: false,
             colorize: 'all',

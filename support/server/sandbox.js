@@ -5,7 +5,7 @@ global.version = 1;
 var libpath = require('path'),
     http = require("http"),
     spdy = require("spdy"),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     url = require("url"),
     mime = require('mime'),
     YAML = require('js-yaml');
@@ -155,6 +155,13 @@ function startVWF() {
         delete global.version;
     }
 
+    var clean = process.argv.indexOf('-clean') > 0 ?true:false;
+    if(clean)
+    {
+        var path = libpath.normalize('../../build/'); //trick the filecache
+        path = libpath.resolve(__dirname, path);
+        fs.remove(path);
+    }
 
     var mailtools = require('./mailTools.js');
     //global error handler
@@ -203,7 +210,8 @@ function startVWF() {
     //Boot up sequence. May call immediately, or after build step	
     function StartUp() {
 
-
+        if(FileCache.minify)
+            FileCache.minAllSupportScripts();
         DAL.setDataPath(datapath);
         SandboxAPI.setDataPath(datapath);
 
@@ -431,6 +439,52 @@ function startVWF() {
 
     //Use Require JS to optimize and the main application file.
     if (compile) {
+
+        fs.writeFileSync('./support/client/lib/vwfbuild.js', Landing.getVWFCore());
+
+        //first, check if the build file already exists. if so, skip this step
+        if(fs.existsSync(libpath.resolve(libpath.join(__dirname,'..','..','build','load.js'))))
+        {
+             //trick the file cache
+             //note we have to add the /build/ now, because the filenames are resolved to the build folder
+             //if the script exists. Because load.js will normally be minified, we must register this in 2 places
+             //with /build/ and without, so we never accidently load the uncompiled one
+             logger.warn('Build already exists. Use --clean to rebuild');
+                var path = libpath.normalize('../../build/support/client/lib/load.js'); //trick the filecache
+                    path = libpath.resolve(__dirname, path);
+                    logger.info(path);
+                    //we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
+                    var buildname = libpath.resolve(libpath.join(__dirname,'..','..','build','load.js'));
+                    var contents = fs.readFileSync(buildname);
+                    zlib.gzip(contents, function(_, zippeddata) {
+                        var newentry = {};
+                        newentry.path = path;
+                        newentry.data = contents;
+                        newentry.stats = fs.statSync(buildname);
+                        newentry.zippeddata = zippeddata;
+                        newentry.datatype = "utf8";
+                        newentry.hash = require("./filecache.js").hash(contents);
+                        FileCache.files.push(newentry);
+
+                        path = libpath.normalize('../../support/client/lib/load.js'); //trick the filecache
+                        path = libpath.resolve(__dirname, path);
+                        newentry = {};
+                        newentry.path = path;
+                        newentry.data = contents;
+                        newentry.stats = fs.statSync(buildname);
+                        newentry.zippeddata = zippeddata;
+                        newentry.datatype = "utf8";
+                        newentry.hash = require("./filecache.js").hash(contents);
+                        FileCache.files.push(newentry);
+
+                        StartUp();
+                    });
+
+            
+            return;
+        }
+
+
         //logger.info(libpath.resolve(__dirname, './../client/lib/load'));
         var config = {
             baseUrl: './support/client/lib/',
@@ -440,7 +494,7 @@ function startVWF() {
            // findNestedDependencies: true
         };
 
-        fs.writeFileSync('./support/client/lib/vwfbuild.js', Landing.getVWFCore());
+        
         logger.info('RequrieJS Build start');
         //This will concatenate almost 50 of the project JS files, and serve one file in it's place
         requirejs.optimize(config, function(buildResponse) {
@@ -463,7 +517,7 @@ function startVWF() {
                     logger.info('loading ' + config.out);
                     var contents = fs.readFileSync(config.out, 'utf8');
                     //here, we read the contents of the built load.js file
-                    var path = libpath.normalize('../../support/client/lib/load.js');
+                    var path = libpath.normalize('../../build/support/client/lib/load.js');
                     path = libpath.resolve(__dirname, path);
                     logger.info(path);
                     //we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
@@ -478,6 +532,18 @@ function startVWF() {
                         FileCache.files.push(newentry);
                         //now that it's loaded into the filecache, we can delete it
                         //fs.unlinkSync(config.out);
+
+                        path = libpath.normalize('../../support/client/lib/load.js'); //trick the filecache
+                        path = libpath.resolve(__dirname, path);
+                        newentry = {};
+                        newentry.path = path;
+                        newentry.data = contents;
+                        newentry.stats = fs.statSync(buildname);
+                        newentry.zippeddata = zippeddata;
+                        newentry.datatype = "utf8";
+                        newentry.hash = require("./filecache.js").hash(contents);
+                        FileCache.files.push(newentry);
+
                         cb3();
                     });
                 }
