@@ -372,8 +372,9 @@ exports.generalHandler = function(req, res, next) {
     });
 };
 
-exports._404 = function(req, res) {
+exports._404 = function(req, res,next) {
 
+console.log('here');
     sessions.GetSessionData(req, function(sessionData) {
         res.locals = {
             sessionData: sessionData,
@@ -382,6 +383,7 @@ exports._404 = function(req, res) {
             federal_analytics:global.configuration.federal_analytics
         };
         res.status(404).render('_404');
+        next();
     })
 };
 

@@ -442,7 +442,7 @@ function startVWF() {
                 //var listen = app.listen(port);
                 
 
-                app.post('/auth/local',
+                app.use('/auth/local',
                     passport.authenticate('local', {
                         failureRedirect: '/login'
                     }),
@@ -562,10 +562,7 @@ function startVWF() {
                 logger.info('minify is ' + FileCache.minify, 0);
 
 
-                //if we got this far, then it's 404
-                app.use(
-                    Landing._404
-                );
+                
 
                 cb();
             },

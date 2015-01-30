@@ -399,7 +399,7 @@ function handleRequest(request, response, next) {
                         fs.stat(resolveCase(libpath.resolve(__dirname, filename)), function(err, isDir) {
                             //server started throwing these when added case logic
                             if (err) {
-                                _404(response);
+                                next();
                                 return;
                             }
                             if (isDir.isDirectory()) {
@@ -419,7 +419,7 @@ function handleRequest(request, response, next) {
                     if (c3) {
                         callback(null, true);
                     } else {
-                        _404(response);
+                        next();
                         callback(true, true);
                     }
                 });
@@ -428,7 +428,7 @@ function handleRequest(request, response, next) {
                 fs.stat(resolveCase(libpath.resolve(__dirname, filename)), function(err, isDir) {
                     //server started throwing these when added case logic
                     if (err) {
-                        _404(response);
+                        next();
                         callback(true, true);
                         return;
                     }
