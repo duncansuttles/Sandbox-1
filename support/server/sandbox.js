@@ -1,5 +1,3 @@
-
-
 global.version = 1;
 
 var libpath = require('path'),
@@ -63,6 +61,12 @@ var option = {
     resGetPath: (libpath.resolve("./locales/__lng__/__ns__.json"))
     //debug: true
 };
+var compile = false;
+var adminUID = null;
+var port = 0;
+var datapath = "";
+var listen = null;
+var clean = false;
 i18n.init(option);
 
 logger.info("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
@@ -83,152 +87,291 @@ var handleRedirectAfterLogin = function(req, res) {
     res.redirect('/');
 };
 
+var mailtools = require('./mailTools.js');
+
+
+//***node, uses REGEX, escape properly!
+function strEndsWith(str, suffix) {
+    return str.match(suffix + "$") == suffix;
+}
+
+//send to the load balancer to let it know that this server is available
+function RegisterWithLoadBalancer() {
+    require('request').get({
+            url: global.configuration.loadBalancer + '/register',
+            json: {
+                host: global.configuration.host,
+                key: global.configuration.loadBalancerKey
+            }
+        },
+        function(error, response, body) {
+            if (!error && response.statusCode == 200) {
+                logger.info("LoadBalancer registration complete", 0);
+                logger.info(body, 0);
+            } else {
+                logger.error("LoadBalancer registration failed!", 0);
+                logger.error(body, 0);
+                delete global.configuration.loadBalancer;
+            }
+        });
+}
+
 //Start the VWF HTTP server
 function startVWF() {
     global.activeinstances = [];
 
+    async.series([
 
-    
+            function readconfig(cb) {
+                //start the DAL, load configuration file
+                try {
+                    configSettings = JSON.parse(fs.readFileSync('./config.json').toString());
+                    SandboxAPI.setAnalytics(configSettings.analytics);
+                    logger.info('Configuration read.')
+                } catch (e) {
+                    configSettings = {};
+                    logger.error('Could not read config file. Loading defaults.')
+                }
+                //save configuration into global scope so other modules can use.
+                global.configuration = configSettings;
+                cb();
+            },
+            function readCommandLine(cb) {
+                var p = process.argv.indexOf('-p');
+                    
+
+                //This is a bit ugly, but it does beat putting a ton of if/else statements everywhere
+                port = p >= 0 ? parseInt(process.argv[p + 1]) : (configSettings.port ? configSettings.port : 3000);
+
+                p = process.argv.indexOf('-sp');
+                sslPort = p >= 0 ? parseInt(process.argv[p + 1]) : (configSettings.sslPort ? configSettings.sslPort : 443);
+
+                p = process.argv.indexOf('-d');
+                datapath = p >= 0 ? process.argv[p + 1] : (configSettings.datapath ? libpath.normalize(configSettings.datapath) : libpath.join(__dirname, "../../data"));
+                global.datapath = datapath;
+
+                logger.initFileOutput(datapath);
+
+                p = process.argv.indexOf('-ls');
+                global.latencySim = p >= 0 ? parseInt(process.argv[p + 1]) : (configSettings.latencySim ? configSettings.latencySim : 0);
+
+                if (global.latencySim > 0)
+                    logger.info('Latency Sim = ' + global.latencySim);
+
+                p = process.argv.indexOf('-l');
+                logger.logLevel = p >= 0 ? process.argv[p + 1] : (configSettings.logLevel ? configSettings.logLevel : 1);
+                logger.info('LogLevel = ' + logger.logLevel, 0);
+
+                adminUID = 'admin';
+
+                p = process.argv.indexOf('-a');
+                adminUID = p >= 0 ? process.argv[p + 1] : (configSettings.admin ? configSettings.admin : adminUID);
+
+                FileCache.enabled = process.argv.indexOf('-nocache') >= 0 ? false : !configSettings.noCache;
+                if (!FileCache.enabled) {
+                    logger.info('server cache disabled');
+                }
+
+                FileCache.minify = process.argv.indexOf('-min') >= 0 ? true : !!configSettings.minify;
+                compile = process.argv.indexOf('-compile') >= 0 ? true : !!configSettings.compile;
+                if (compile) {
+                    logger.info('Starting compilation process...');
+                }
+
+                var versioning = process.argv.indexOf('-cc') >= 0 ? true : !!configSettings.useVersioning;
+                if (versioning) {
+                    global.version = configSettings.version ? configSettings.version : global.version;
+                    logger.info('Versioning is on. Version is ' + global.version);
+                } else {
+                    logger.info('Versioning is off.');
+                    delete global.version;
+                }
+
+                var clean = process.argv.indexOf('-clean') > 0 ? true : false;
+                if (clean) {
+                    var path = libpath.normalize('../../build/'); //trick the filecache
+                    path = libpath.resolve(__dirname, path);
+                    fs.remove(path,cb);
+                }else
+                        cb();
+            },
+            function registerErrorHandler(cb) {
+                //global error handler
+                process.on('uncaughtException', function(err) {
+                    // handle the error safely
+                    //note: we absolutly must restart the server here. Yeah, maybe some particular error might be ok to read over, but lets stop that
+                    //and even send an email to the admin
+
+                    global.setTimeout(function() {
+                        process.exit()
+                    }, 5000);
+                    logger.error(err);
+                    logger.error(err.stack);
+                    mailtools.serverError(err, function(sent) {
+                        process.exit(1);
+                    });
+
+                });
+                cb();
+            },
+            function registerWithLB(cb) {
+                //do this before trying to compile, otherwise the vwfbuild.js file will be created with the call to the load balancer, which may not be online
+                //NOTE: If this fails, then the build will have the loadbalancer address hardcoded in. Make sure that the balancer info is right if using loadbalancer and
+                // - compile together
+                if (global.configuration.loadBalancer && global.configuration.host && global.configuration.loadBalancerKey)
+                    RegisterWithLoadBalancer();
+                cb();
+            },
+            function compileIfDefined(cb) {
+                if (!compile) {
+                    cb();
+                    return;
+                }
+                if (compile) {
+
+                    fs.writeFileSync('./support/client/lib/vwfbuild.js', Landing.getVWFCore());
+
+                    //first, check if the build file already exists. if so, skip this step
+                    if (fs.existsSync(libpath.resolve(libpath.join(__dirname, '..', '..', 'build', 'load.js')))) {
+                        //trick the file cache
+                        //note we have to add the /build/ now, because the filenames are resolved to the build folder
+                        //if the script exists. Because load.js will normally be minified, we must register this in 2 places
+                        //with /build/ and without, so we never accidently load the uncompiled one
+                        logger.warn('Build already exists. Use --clean to rebuild');
+                        var path = libpath.normalize('../../build/support/client/lib/load.js'); //trick the filecache
+                        path = libpath.resolve(__dirname, path);
+                        logger.info(path);
+                        //we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
+                        var buildname = libpath.resolve(libpath.join(__dirname, '..', '..', 'build', 'load.js'));
+                        var contents = fs.readFileSync(buildname);
+                        zlib.gzip(contents, function(_, zippeddata) {
+                            var newentry = {};
+                            newentry.path = path;
+                            newentry.data = contents;
+                            newentry.stats = fs.statSync(buildname);
+                            newentry.zippeddata = zippeddata;
+                            newentry.datatype = "utf8";
+                            newentry.hash = require("./filecache.js").hash(contents);
+                            FileCache.files.push(newentry);
+
+                            path = libpath.normalize('../../support/client/lib/load.js'); //trick the filecache
+                            path = libpath.resolve(__dirname, path);
+                            newentry = {};
+                            newentry.path = path;
+                            newentry.data = contents;
+                            newentry.stats = fs.statSync(buildname);
+                            newentry.zippeddata = zippeddata;
+                            newentry.datatype = "utf8";
+                            newentry.hash = require("./filecache.js").hash(contents);
+                            FileCache.files.push(newentry);
+
+                            cb();
+                        });
 
 
+                        return;
+                    }
 
-    //start the DAL, load configuration file
-    try {
-        configSettings = JSON.parse(fs.readFileSync('./config.json').toString());
-        SandboxAPI.setAnalytics(configSettings.analytics);
-    } catch (e) {
-        configSettings = {};
 
-    }
+                    //logger.info(libpath.resolve(__dirname, './../client/lib/load'));
+                    var config = {
+                        baseUrl: './support/client/lib/',
+                        name: './load',
+                        out: './build/load.js',
+                        optimize: "uglify",
+                        onBuildWrite   : function( name, path, contents ) {
+        logger.info( 'Writing: ' + name );
+        return contents
+    },
+                        // findNestedDependencies: true
+                    };
 
-    //save configuration into global scope so other modules can use.
-    global.configuration = configSettings;
 
-    var p = process.argv.indexOf('-p'),
-        port = 0,
-        datapath = "";
+                    logger.info('RequrieJS Build start');
+                    //This will concatenate almost 50 of the project JS files, and serve one file in it's place
+                    requirejs.optimize(config, function(buildResponse) {
 
-    //This is a bit ugly, but it does beat putting a ton of if/else statements everywhere
-    port = p >= 0 ? parseInt(process.argv[p + 1]) : (configSettings.port ? configSettings.port : 3000);
+                            logger.info('RequrieJS Build complete');
+                            
+                            async.series([
 
-    p = process.argv.indexOf('-sp');
-    sslPort = p >= 0 ? parseInt(process.argv[p + 1]) : (configSettings.sslPort ? configSettings.sslPort : 443);
+                                function(cb3) {
 
-    p = process.argv.indexOf('-d');
-    datapath = p >= 0 ? process.argv[p + 1] : (configSettings.datapath ? libpath.normalize(configSettings.datapath) : libpath.join(__dirname, "../../data"));
-    global.datapath = datapath;
+                                    logger.info('Closure Build start');
+                                    //lets do the most agressive compile possible here!
+                                    //not looking good on ever getting this through the compiler
+                                    cb3();
 
-    logger.initFileOutput(datapath);
 
-    p = process.argv.indexOf('-ls');
-    global.latencySim = p >= 0 ? parseInt(process.argv[p + 1]) : (configSettings.latencySim ? configSettings.latencySim : 0);
+                                },
+                                function(cb3) {
+                                    logger.info('loading ' + config.out);
+                                    var contents = fs.readFileSync(config.out, 'utf8');
+                                    //here, we read the contents of the built load.js file
+                                    var path = libpath.normalize('../../build/support/client/lib/load.js');
+                                    path = libpath.resolve(__dirname, path);
+                                    logger.info(path);
+                                    //we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
+                                    zlib.gzip(contents, function(_, zippeddata) {
+                                        var newentry = {};
+                                        newentry.path = path;
+                                        newentry.data = contents;
+                                        newentry.stats = fs.statSync(config.out);
+                                        newentry.zippeddata = zippeddata;
+                                        newentry.datatype = "utf8";
+                                        newentry.hash = require("./filecache.js").hash(contents);
+                                        FileCache.files.push(newentry);
+                                        //now that it's loaded into the filecache, we can delete it
+                                        //fs.unlinkSync(config.out);
 
-    if (global.latencySim > 0)
-        logger.info( 'Latency Sim = ' + global.latencySim );
+                                        path = libpath.normalize('../../support/client/lib/load.js'); //trick the filecache
+                                        path = libpath.resolve(__dirname, path);
+                                        newentry = {};
+                                        newentry.path = path;
+                                        newentry.data = contents;
+                                        newentry.stats = fs.statSync(config.out);
+                                        newentry.zippeddata = zippeddata;
+                                        newentry.datatype = "utf8";
+                                        newentry.hash = require("./filecache.js").hash(contents);
+                                        FileCache.files.push(newentry);
 
-    p = process.argv.indexOf('-l');
-    logger.logLevel = p >= 0 ? process.argv[p + 1] : (configSettings.logLevel ? configSettings.logLevel : 1);
-    logger.info('LogLevel = ' + logger.logLevel , 0);
-
-    var adminUID = 'admin';
-
-    p = process.argv.indexOf('-a');
-    adminUID = p >= 0 ? process.argv[p + 1] : (configSettings.admin ? configSettings.admin : adminUID);
-
-    FileCache.enabled = process.argv.indexOf('-nocache') >= 0 ? false : !configSettings.noCache;
-    if (!FileCache.enabled) {
-        logger.info('server cache disabled');
-    }
-
-    FileCache.minify = process.argv.indexOf('-min') >= 0 ? true : !! configSettings.minify;
-    var compile = process.argv.indexOf('-compile') >= 0 ? true : !! configSettings.compile;
-    if (compile) {
-        logger.info('Starting compilation process...');
-    }
-
-    var versioning = process.argv.indexOf('-cc') >= 0 ? true : !! configSettings.useVersioning;
-    if (versioning) {
-        global.version = configSettings.version ? configSettings.version : global.version;
-        logger.info('Versioning is on. Version is ' + global.version );
-    } else {
-        logger.info('Versioning is off.' );
-        delete global.version;
-    }
-
-    var clean = process.argv.indexOf('-clean') > 0 ?true:false;
-    if(clean)
-    {
-        var path = libpath.normalize('../../build/'); //trick the filecache
-        path = libpath.resolve(__dirname, path);
-        fs.remove(path);
-    }
-
-    var mailtools = require('./mailTools.js');
-    //global error handler
-    process.on('uncaughtException', function(err) {
-        // handle the error safely
-        //note: we absolutly must restart the server here. Yeah, maybe some particular error might be ok to read over, but lets stop that
-        //and even send an email to the admin
-
-        global.setTimeout(function() {
-            process.exit()
-        }, 5000);
-        logger.error(err);
-        logger.error(err.stack);
-        mailtools.serverError(err, function(sent) {
-            process.exit(1);
-        });
-
-    });
-
-    //***node, uses REGEX, escape properly!
-    function strEndsWith(str, suffix) {
-        return str.match(suffix + "$") == suffix;
-    }
-
-    //send to the load balancer to let it know that this server is available
-    function RegisterWithLoadBalancer() {
-        require('request').get({
-                url: global.configuration.loadBalancer + '/register',
-                json: {
-                    host: global.configuration.host,
-                    key: global.configuration.loadBalancerKey
+                                        cb3();
+                                    });
+                                }
+                            ], function(err) {
+                                logger.error(err);
+                                cb();
+                            });
+                        });
+                    
                 }
             },
-            function(error, response, body) {
-                if (!error && response.statusCode == 200) {
-                    logger.info("LoadBalancer registration complete" , 0);
-                    logger.info(body , 0);
-                } else {
-                    logger.error( "LoadBalancer registration failed!" , 0);
-                    logger.error(body , 0);
-                    delete global.configuration.loadBalancer;
-                }
-            });
-    }
+            function minScripts(cb) {
+                if (FileCache.minify)
+                    FileCache.minAllSupportScripts(cb);
+                else
+                    cb();
+            },
+            function startupDAL(cb) {
+                DAL.setDataPath(datapath);
+                SandboxAPI.setDataPath(datapath);
+                Landing.setDocumentation(configSettings);
+                logger.info('DAL Startup');
+                DAL.startup(cb);
+            },
+            function setSession(cb) {
+                 logger.info('Session Startup');
+                require('./sessions.js').sessionStartup(cb);
+            },
+            function startup(cb) {
+                //Boot up sequence. May call immediately, or after build step  
+                logger.info('Server Startup');
 
-    //Boot up sequence. May call immediately, or after build step	
-    function StartUp() {
+                //make sure that we can connect to the 3DR. Why is the cert untrusted?
 
-        if(FileCache.minify)
-            FileCache.minAllSupportScripts();
-        DAL.setDataPath(datapath);
-        SandboxAPI.setDataPath(datapath);
+                process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+                //start the session database
 
-
-
-
-        Landing.setDocumentation(configSettings);
-
-
-
-        DAL.startup(function() {
-
-            //make sure that we can connect to the 3DR. Why is the cert untrusted?
-
-            process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-            //start the session database
-            require('./sessions.js').sessionStartup(function() {
 
                 errorlog = fs.createWriteStream(SandboxAPI.getDataPath() + '//Logs/errors_' + (((new Date()).toString())).replace(/[^0-9A-Za-z]/g, '_'), {
                     'flags': 'a'
@@ -236,11 +379,9 @@ function startVWF() {
 
                 global.adminUID = adminUID;
 
-                
 
                 //check for express 4.x
-                if(!app.locals)
-                {
+                if (!app.locals) {
                     logger.error('Please update NPM modules. Run NPM install again.');
                     return;
                 }
@@ -267,13 +408,17 @@ function startVWF() {
                 //find pretty world URL's, and redirect to the non-pretty url for the world
                 app.use(ServerFeatures.prettyWorldURL);
 
-                
+
                 app.use(require('method-override')());
 
                 //Wait until all data is loaded before continuing
                 //app.use (ServerFeatures.waitForAllBody);
-                app.use(require('body-parser').json( {maxFieldsSize:16 * 1024 * 1024 * 1024 }));
-                app.use(require('body-parser').urlencoded({ extended: true }));
+                app.use(require('body-parser').json({
+                    maxFieldsSize: 16 * 1024 * 1024 * 1024
+                }));
+                app.use(require('body-parser').urlencoded({
+                    extended: true
+                }));
                 app.use(require('multer')());
                 //CORS support
                 app.use(ServerFeatures.CORSSupport);
@@ -293,11 +438,9 @@ function startVWF() {
                 app.use(passport.initialize());
                 app.use(passport.session());
 
-                
- 
-                
+
                 //var listen = app.listen(port);
-                var listen = null;
+                
 
                 app.post('/auth/local',
                     passport.authenticate('local', {
@@ -414,9 +557,9 @@ function startVWF() {
                     listen = app.listen(port);
                 }
 
-                logger.info('Admin is "' + global.adminUID + "\"" , 0);
-                logger.info('Serving on port ' + port , 0);
-                logger.info('minify is ' + FileCache.minify , 0);
+                logger.info('Admin is "' + global.adminUID + "\"", 0);
+                logger.info('Serving on port ' + port, 0);
+                logger.info('minify is ' + FileCache.minify, 0);
 
 
                 //if we got this far, then it's 404
@@ -424,161 +567,33 @@ function startVWF() {
                     Landing._404
                 );
 
+                cb();
+            },
+            function startReflector(cb) {
                 Shell.StartShellInterface();
                 reflector.startup(listen);
-
-            });
-        }); // end session startup
-    } //end StartUp
-
-    //do this before trying to compile, otherwise the vwfbuild.js file will be created with the call to the load balancer, which may not be online
-    //NOTE: If this fails, then the build will have the loadbalancer address hardcoded in. Make sure that the balancer info is right if using loadbalancer and
-    // - compile together
-    if (global.configuration.loadBalancer && global.configuration.host && global.configuration.loadBalancerKey)
-        RegisterWithLoadBalancer();
-
-    //Use Require JS to optimize and the main application file.
-    if (compile) {
-
-        fs.writeFileSync('./support/client/lib/vwfbuild.js', Landing.getVWFCore());
-
-        //first, check if the build file already exists. if so, skip this step
-        if(fs.existsSync(libpath.resolve(libpath.join(__dirname,'..','..','build','load.js'))))
-        {
-             //trick the file cache
-             //note we have to add the /build/ now, because the filenames are resolved to the build folder
-             //if the script exists. Because load.js will normally be minified, we must register this in 2 places
-             //with /build/ and without, so we never accidently load the uncompiled one
-             logger.warn('Build already exists. Use --clean to rebuild');
-                var path = libpath.normalize('../../build/support/client/lib/load.js'); //trick the filecache
-                    path = libpath.resolve(__dirname, path);
-                    logger.info(path);
-                    //we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
-                    var buildname = libpath.resolve(libpath.join(__dirname,'..','..','build','load.js'));
-                    var contents = fs.readFileSync(buildname);
-                    zlib.gzip(contents, function(_, zippeddata) {
-                        var newentry = {};
-                        newentry.path = path;
-                        newentry.data = contents;
-                        newentry.stats = fs.statSync(buildname);
-                        newentry.zippeddata = zippeddata;
-                        newentry.datatype = "utf8";
-                        newentry.hash = require("./filecache.js").hash(contents);
-                        FileCache.files.push(newentry);
-
-                        path = libpath.normalize('../../support/client/lib/load.js'); //trick the filecache
-                        path = libpath.resolve(__dirname, path);
-                        newentry = {};
-                        newentry.path = path;
-                        newentry.data = contents;
-                        newentry.stats = fs.statSync(buildname);
-                        newentry.zippeddata = zippeddata;
-                        newentry.datatype = "utf8";
-                        newentry.hash = require("./filecache.js").hash(contents);
-                        FileCache.files.push(newentry);
-
-                        StartUp();
-                    });
-
-            
-            return;
-        }
-
-
-        //logger.info(libpath.resolve(__dirname, './../client/lib/load'));
-        var config = {
-            baseUrl: './support/client/lib/',
-            name: './load',
-            out: './build/load.js',
-            optimize: "uglify",
-           // findNestedDependencies: true
-        };
-
-        
-        logger.info('RequrieJS Build start');
-        //This will concatenate almost 50 of the project JS files, and serve one file in it's place
-        requirejs.optimize(config, function(buildResponse) {
-
-            logger.info('RequrieJS Build complete');
-            logger.info(buildResponse);
-            async.series([
-
-                function(cb3) {
-
-                    logger.info('Closure Build start');
-                    //lets do the most agressive compile possible here!
-                    //not looking good on ever getting this through the compiler
-                    cb3();
-
-
-
-                },
-                function(cb3) {
-                    logger.info('loading ' + config.out);
-                    var contents = fs.readFileSync(config.out, 'utf8');
-                    //here, we read the contents of the built load.js file
-                    var path = libpath.normalize('../../build/support/client/lib/load.js');
-                    path = libpath.resolve(__dirname, path);
-                    logger.info(path);
-                    //we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
-                    zlib.gzip(contents, function(_, zippeddata) {
-                        var newentry = {};
-                        newentry.path = path;
-                        newentry.data = contents;
-                        newentry.stats = fs.statSync(config.out);
-                        newentry.zippeddata = zippeddata;
-                        newentry.datatype = "utf8";
-                        newentry.hash = require("./filecache.js").hash(contents);
-                        FileCache.files.push(newentry);
-                        //now that it's loaded into the filecache, we can delete it
-                        //fs.unlinkSync(config.out);
-
-                        path = libpath.normalize('../../support/client/lib/load.js'); //trick the filecache
-                        path = libpath.resolve(__dirname, path);
-                        newentry = {};
-                        newentry.path = path;
-                        newentry.data = contents;
-                        newentry.stats = fs.statSync(config.out);
-                        newentry.zippeddata = zippeddata;
-                        newentry.datatype = "utf8";
-                        newentry.hash = require("./filecache.js").hash(contents);
-                        FileCache.files.push(newentry);
-
-                        cb3();
-                    });
-                }
-            ], function(err) {
-                logger.error(err);
-                StartUp();
-            });
-        }, function(err) {
-            //there was a requireJS build error. Not a prob, keep going.
-            logger.error(err);
-            StartUp();
-        });
-
-    } else {
-        //boot up the rest of the server
-        StartUp();
-    }
+                cb();
+            }
+        ],
+        function(err) {
+            logger.info('Startup complete');
+        })
 
 }
 // used to serialize the user for the session
 passport.serializeUser(function(user, done) {
 
-    if(!user)
-    {
+    if (!user) {
         done(null, null);
         return;
     }
 
     DAL.getUser(user.id, function(user) {
-        if(!user)
-        {
-            done(null,null)
+        if (!user) {
+            done(null, null)
             return;;
         }
-        
+
         var userStorage = require('./sessions.js').createSession();
         userStorage.id = user.id;
         userStorage.UID = user.id;
@@ -629,13 +644,13 @@ if (global.configuration.facebook_app_id) {
 
                 DAL.getUser(profile.id, function(user) {
                     if (user) {
-                        xapi.sendStatement(user.Username, xapi.verbs.logged_in);    
+                        xapi.sendStatement(user.Username, xapi.verbs.logged_in);
                         done(null, user);
                     } else {
                         user = DAL.createProfileFromFacebook(profile, function(results) {
                             if (results === "ok") {
                                 DAL.getUser(profile.id, function(user) {
-                                    xapi.sendStatement(user.Username, xapi.verbs.logged_in);    
+                                    xapi.sendStatement(user.Username, xapi.verbs.logged_in);
                                     done(null, user);
                                 });
                             } else {
@@ -659,13 +674,13 @@ if (global.configuration.twitter_consumer_key) {
                 profile.id = "twitter_" + profile.id;
                 DAL.getUser(profile.id, function(user) {
                     if (user) {
-                        xapi.sendStatement(user.Username, xapi.verbs.logged_in);    
+                        xapi.sendStatement(user.Username, xapi.verbs.logged_in);
                         done(null, user);
                     } else {
                         user = DAL.createProfileFromTwitter(profile, function(results) {
                             if (results === "ok") {
                                 DAL.getUser(profile.id, function(user) {
-                                    xapi.sendStatement(user.Username, xapi.verbs.logged_in);    
+                                    xapi.sendStatement(user.Username, xapi.verbs.logged_in);
                                     done(null, user);
                                 });
                             } else {
@@ -691,13 +706,13 @@ if (global.configuration.google_client_id) {
                 profile.id = "google_" + profile.id;
                 DAL.getUser(profile.id, function(user) {
                     if (user) {
-                        xapi.sendStatement(user.Username, xapi.verbs.logged_in);    
+                        xapi.sendStatement(user.Username, xapi.verbs.logged_in);
                         done(null, user);
                     } else {
                         user = DAL.createProfileFromGoogle(profile, function(results) {
                             if (results === "ok") {
                                 DAL.getUser(profile.id, function(user) {
-                                    xapi.sendStatement(user.Username, xapi.verbs.logged_in);    
+                                    xapi.sendStatement(user.Username, xapi.verbs.logged_in);
                                     done(null, user);
                                     return;
                                 });
@@ -708,7 +723,7 @@ if (global.configuration.google_client_id) {
                         });
                     }
                 });
-                
+
             });
         }
     ));

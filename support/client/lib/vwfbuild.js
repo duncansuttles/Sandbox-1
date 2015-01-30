@@ -318,28 +318,25 @@
                 { library: "vwf/kernel/model", active: true },
                 { library: "vwf/model/javascript", active: true },
                 { library: "vwf/model/ammojs", linkedLibraries: ["vwf/model/ammo.js/ammo"], active: false },
-                { library: "vwf/model/glge", linkedLibraries: ["vwf/model/glge/glge-compiled"], disabledBy: ["vwf/model/threejs", "vwf/view/threejs"], active: false },
+         
                 { library: "vwf/model/threejs", linkedLibraries: ["vwf/model/threejs/three.js.r68", "vwf/model/threejs/ColladaLoader"], disabledBy: ["vwf/model/glge", "vwf/view/glge"], active: false },
-                { library: "vwf/model/cesium", linkedLibraries: ["vwf/model/cesium/Cesium"], active: false },
-                { library: "vwf/model/scenejs", active: false },
+          
                 { library: "vwf/model/object", active: true },
                 { library: "vwf/model/stage/log", active: true },
                 { library: "vwf/kernel/view", active: true },
                 { library: "vwf/view/document", active: true },
                 { library: "vwf/view/editor", active: false },
-                { library: "vwf/view/glge", disabledBy: ["vwf/model/threejs", "vwf/view/threejs"], active: false },
-                { library: "vwf/view/lesson", active: false},
+          
                 { library: "vwf/view/threejs", disabledBy: ["vwf/model/glge", "vwf/view/glge"], active: false },
                 { library: "vwf/view/webrtc", linkedLibraries: ["vwf/view/webrtc/adapter"],  active: false },
-                { library: "vwf/view/cesium", active: false },
+          
                 { library: "vwf/utility", active: true },
-                { library: "vwf/model/glge/glge-compiled", active: false },
+          
                 
               
                 { library: "vwf/model/ammo.js/ammo", active: true },
                 { library: "vwf/view/webrtc/adapter", active: false },
-                { library: "vwf/view/google-earth", active: false },
-                { library: "vwf/model/cesium/Cesium", active: false },
+            
 
 
                 { library: "vwf/view/editorview/ObjectPools", active: true },

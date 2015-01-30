@@ -59,17 +59,20 @@ function getUser(id, cb)
             DB.get(id, function(err, doc, key)
             {
                 //make super sure that the object that is returned is a copy of the data in memory, not a reference
+                var doc;
                 try
                 {
-                    var doc = JSON.parse(JSON.stringify(doc));
+                    doc = JSON.parse(JSON.stringify(doc));
                     doc["id"] = id;
                     if (!doc.Username) doc.Username = id;
-                    cb(doc);
+                    
                 }
                 catch (e)
                 {
                     cb(null);
+                    return
                 }
+                cb(doc);
             });
         }
         else
@@ -184,14 +187,17 @@ function getInventoryItemAssetData(userID, inventoryID, cb)
                 .replace(safePathRE), "utf8",
                 function(err, data)
                 {
+                    var ret = null;
                     try
                     {
-                        cb(JSON.parse(data));
+                        ret = JSON.parse(data);
                     }
                     catch (e)
                     {
                         cb(null);
+                        return;
                     }
+                    cb(ret);
                 });
         }
         else
@@ -1646,6 +1652,7 @@ exports.DAL = DAL_Singleton;
 
 function startup(callback)
 {
+
     async.series([
         function(cb)
         {
@@ -1653,6 +1660,8 @@ function startup(callback)
                 .new(DBTablePath, function(_DB)
                 {
                     DB = _DB;
+                    
+
                     cb();
                 });
         },
@@ -1684,13 +1693,20 @@ function startup(callback)
         },
         function(cb)
         {
+
             getUser('___Global___', function(user)
             {
+                
                 if (user)
+                {
+                   
                     cb();
+                    return;
+                }
                 else
                 {
-                    logger.warn('creating global user')
+                    
+                    
                     createUser('___Global___',
                     {}, function(ok)
                     {
@@ -1702,6 +1718,7 @@ function startup(callback)
         },
         function(cb)
         {
+            
             DAL_Singleton.getUser = getUser;
             DAL_Singleton.updateUser = updateUser;
             DAL_Singleton.createUser = createUser;
@@ -1746,9 +1763,14 @@ function startup(callback)
             DAL_Singleton.searchInventory = searchInventory;
             DAL_Singleton.getHistory = getHistory;
             DAL_Singleton.getStats = getStats;
-            callback();
+            cb();
         }
-    ]);
+    ],function(err)
+    {
+        if(err)
+                logger.error('DAL Start error:' + err);
+         callback();
+    });
 }
 DAL_Singleton.startup = startup;
 DAL_Singleton.setDataPath = function(p)
