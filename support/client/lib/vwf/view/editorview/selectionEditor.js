@@ -1,6 +1,7 @@
 define(["../../../jstree.min"], function(jstree) {
 	var SelectionEditor = {};
 	var isInitialized = false;
+	debugger;
 	return {
 		getSingleton: function() {
 			if (!isInitialized) {

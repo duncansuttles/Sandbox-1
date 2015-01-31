@@ -57,9 +57,9 @@
 
  self.init = function(data) {
      if (!self.THREE) {
-         importScripts('jquery.nodom.js');
-         importScripts('three.js');
-         importScripts('ColladaLoader.js');
+         //importScripts('jquery.nodom.js');
+         //importScripts('three.js');
+         //importScripts('ColladaLoader.js');
          importScripts('UTF8JSONLoader.js');
      }
      self.decompressUTF8 = function(data) {
