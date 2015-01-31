@@ -77,11 +77,9 @@ define([
         // accepts three parameters: a world specification, model configuration parameters,
         // and view configuration parameters.
         $(document.body).append('<div id="glyphOverlay" style="display:none"/>');
-        $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu.css" />');
-        $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/ddsmoothmenu-v.css" />')
-        $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/Editorview.css" />')
-        $(document.head).append('<link rel="stylesheet" type="text/css" href="vwf/view/editorview/css/sprites.css" />')
-    
+        
+        
+
         assetLoader.load(stateData, function() {
             vwf.loadConfiguration(null, {
                 model: [],

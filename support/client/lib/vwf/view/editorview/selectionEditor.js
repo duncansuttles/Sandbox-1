@@ -1,7 +1,7 @@
 define(["../../../jstree.min"], function(jstree) {
 	var SelectionEditor = {};
 	var isInitialized = false;
-	debugger;
+	
 	return {
 		getSingleton: function() {
 			if (!isInitialized) {
@@ -16,7 +16,7 @@ define(["../../../jstree.min"], function(jstree) {
 		$(document.body).append("<div id='selectionEditor'><div id='selectionEditorTree'></div></div>");
 
 
-		$(document.head).append('<link rel="stylesheet" href="../vwf/view/editorview/css/jstreestyle.min.css"></link>');
+		
 
 		var self = this;
 		//$('#selectionEditorTree').jstree();

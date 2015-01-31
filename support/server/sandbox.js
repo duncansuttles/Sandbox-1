@@ -222,6 +222,62 @@ function startVWF() {
                     RegisterWithLoadBalancer();
                 cb();
             },
+            function compileCSSIfDefined(cb) {
+                if (!compile) {
+                    cb();
+                    return;
+                } else {
+
+                    function loadCssIntoCache() {
+
+                        //trick the file cache
+                        //note we have to add the /build/ now, because the filenames are resolved to the build folder
+                        //if the script exists. Because load.js will normally be minified, we must register this in 2 places
+                        //with /build/ and without, so we never accidently load the uncompiled one
+
+                        var path = libpath.normalize('../../build/support/client/lib/index.css'); //trick the filecache
+                        path = libpath.resolve(__dirname, path);
+                        logger.info(path);
+                        //we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
+                        var buildname = libpath.resolve(libpath.join(__dirname, '..', '..', 'build', 'index.css'));
+                        var contents = fs.readFileSync(buildname);
+
+                        var path2 = libpath.normalize('../../support/client/lib/index.css'); //trick the filecache
+                        path2 = libpath.resolve(__dirname, path2);
+
+                        FileCache.insertFile([path, path2], contents, fs.statSync(buildname), "utf8", cb);
+
+
+                    }
+                    //first, check if the build file already exists. if so, skip this step
+                    if (fs.existsSync(libpath.resolve(libpath.join(__dirname, '..', '..', 'build', 'index.css')))) {
+                        logger.warn('Build already exists. Use --clean to rebuild');
+                        loadCssIntoCache();
+                        return;
+                    } else {
+                        //logger.info(libpath.resolve(__dirname, './../client/lib/load'));
+                        var config = {
+                            baseUrl: './support/',
+                            cssIn: './support/client/lib/index.css',
+                            out: './build/index.css',
+                            optimizeCss: "none",
+                            onBuildWrite: function(name, path, contents) {
+                                logger.info('Writing: ' + name);
+                                return contents
+                            },
+                            // findNestedDependencies: true
+                        };
+                        requirejs.optimize(config, function(buildResponse) {
+
+                            logger.info('RequrieJS CSS Build complete');
+                            loadCssIntoCache();
+                        });
+
+                    }
+
+
+                }
+            },
             function compileIfDefined(cb) {
                 if (!compile) {
                     cb();
@@ -231,13 +287,7 @@ function startVWF() {
 
                     fs.writeFileSync('./support/client/lib/vwfbuild.js', Landing.getVWFCore());
 
-                    //first, check if the build file already exists. if so, skip this step
-                    if (fs.existsSync(libpath.resolve(libpath.join(__dirname, '..', '..', 'build', 'load.js')))) {
-                        //trick the file cache
-                        //note we have to add the /build/ now, because the filenames are resolved to the build folder
-                        //if the script exists. Because load.js will normally be minified, we must register this in 2 places
-                        //with /build/ and without, so we never accidently load the uncompiled one
-                        logger.warn('Build already exists. Use --clean to rebuild');
+                    function loadIntoCache() {
                         var path = libpath.normalize('../../build/support/client/lib/load.js'); //trick the filecache
                         path = libpath.resolve(__dirname, path);
                         logger.info(path);
@@ -248,7 +298,16 @@ function startVWF() {
                         var path2 = libpath.normalize('../../support/client/lib/load.js'); //trick the filecache
                         path2 = libpath.resolve(__dirname, path2);
 
-                        FileCache.insertFile([path,path2],contents,fs.statSync(buildname),"utf8",cb);
+                        FileCache.insertFile([path, path2], contents, fs.statSync(buildname), "utf8", cb);
+                    }
+                    //first, check if the build file already exists. if so, skip this step
+                    if (fs.existsSync(libpath.resolve(libpath.join(__dirname, '..', '..', 'build', 'load.js')))) {
+                        //trick the file cache
+                        //note we have to add the /build/ now, because the filenames are resolved to the build folder
+                        //if the script exists. Because load.js will normally be minified, we must register this in 2 places
+                        //with /build/ and without, so we never accidently load the uncompiled one
+                        logger.warn('Build already exists. Use --clean to rebuild');
+                        loadIntoCache();
                         return;
                     }
 
@@ -272,37 +331,7 @@ function startVWF() {
                     requirejs.optimize(config, function(buildResponse) {
 
                         logger.info('RequrieJS Build complete');
-
-                        async.series([
-
-                            function(cb3) {
-
-                                logger.info('Closure Build start');
-                                //lets do the most agressive compile possible here!
-                                //not looking good on ever getting this through the compiler
-                                cb3();
-
-
-                            },
-                            function(cb3) {
-                                logger.info('loading ' + config.out);
-                                var contents = fs.readFileSync(config.out, 'utf8');
-                                //here, we read the contents of the built load.js file
-                                var path = libpath.normalize('../../build/support/client/lib/load.js');
-                                path = libpath.resolve(__dirname, path);
-                                logger.info(path);
-
-                                var path2 = libpath.normalize('../../support/client/lib/load.js'); //trick the filecache
-                                path2 = libpath.resolve(__dirname, path2);
-                                //we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
-                                
-                                FileCache.insertFile([path,path2],contents,fs.statSync(config.out),"utf8",cb3);
-                                
-                            }
-                        ], function(err) {
-                            logger.error(err);
-                            cb();
-                        });
+                        loadIntoCache();
                     });
 
                 }
