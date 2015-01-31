@@ -138,7 +138,7 @@ function startVWF() {
             },
             function readCommandLine(cb) {
                 var p = process.argv.indexOf('-p');
-                    
+
 
                 //This is a bit ugly, but it does beat putting a ton of if/else statements everywhere
                 port = p >= 0 ? parseInt(process.argv[p + 1]) : (configSettings.port ? configSettings.port : 3000);
@@ -191,9 +191,9 @@ function startVWF() {
                 if (clean) {
                     var path = libpath.normalize('../../build/'); //trick the filecache
                     path = libpath.resolve(__dirname, path);
-                    fs.remove(path,cb);
-                }else
-                        cb();
+                    fs.remove(path, cb);
+                } else
+                    cb();
             },
             function registerErrorHandler(cb) {
                 //global error handler
@@ -244,31 +244,11 @@ function startVWF() {
                         //we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
                         var buildname = libpath.resolve(libpath.join(__dirname, '..', '..', 'build', 'load.js'));
                         var contents = fs.readFileSync(buildname);
-                        zlib.gzip(contents, function(_, zippeddata) {
-                            var newentry = {};
-                            newentry.path = path;
-                            newentry.data = contents;
-                            newentry.stats = fs.statSync(buildname);
-                            newentry.zippeddata = zippeddata;
-                            newentry.datatype = "utf8";
-                            newentry.hash = require("./filecache.js").hash(contents);
-                            FileCache.files.push(newentry);
 
-                            path = libpath.normalize('../../support/client/lib/load.js'); //trick the filecache
-                            path = libpath.resolve(__dirname, path);
-                            newentry = {};
-                            newentry.path = path;
-                            newentry.data = contents;
-                            newentry.stats = fs.statSync(buildname);
-                            newentry.zippeddata = zippeddata;
-                            newentry.datatype = "utf8";
-                            newentry.hash = require("./filecache.js").hash(contents);
-                            FileCache.files.push(newentry);
+                        var path2 = libpath.normalize('../../support/client/lib/load.js'); //trick the filecache
+                        path2 = libpath.resolve(__dirname, path2);
 
-                            cb();
-                        });
-
-
+                        FileCache.insertFile([path,path2],contents,fs.statSync(buildname),"utf8",cb);
                         return;
                     }
 
@@ -279,10 +259,10 @@ function startVWF() {
                         name: './load',
                         out: './build/load.js',
                         optimize: "uglify",
-                        onBuildWrite   : function( name, path, contents ) {
-        logger.info( 'Writing: ' + name );
-        return contents
-    },
+                        onBuildWrite: function(name, path, contents) {
+                            logger.info('Writing: ' + name);
+                            return contents
+                        },
                         // findNestedDependencies: true
                     };
 
@@ -291,60 +271,193 @@ function startVWF() {
                     //This will concatenate almost 50 of the project JS files, and serve one file in it's place
                     requirejs.optimize(config, function(buildResponse) {
 
-                            logger.info('RequrieJS Build complete');
-                            
-                            async.series([
+                        logger.info('RequrieJS Build complete');
 
-                                function(cb3) {
+                        async.series([
 
-                                    logger.info('Closure Build start');
-                                    //lets do the most agressive compile possible here!
-                                    //not looking good on ever getting this through the compiler
-                                    cb3();
+                            function(cb3) {
+
+                                logger.info('Closure Build start');
+                                //lets do the most agressive compile possible here!
+                                //not looking good on ever getting this through the compiler
+                                cb3();
 
 
-                                },
-                                function(cb3) {
-                                    logger.info('loading ' + config.out);
-                                    var contents = fs.readFileSync(config.out, 'utf8');
-                                    //here, we read the contents of the built load.js file
-                                    var path = libpath.normalize('../../build/support/client/lib/load.js');
-                                    path = libpath.resolve(__dirname, path);
-                                    logger.info(path);
-                                    //we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
-                                    zlib.gzip(contents, function(_, zippeddata) {
-                                        var newentry = {};
-                                        newentry.path = path;
-                                        newentry.data = contents;
-                                        newentry.stats = fs.statSync(config.out);
-                                        newentry.zippeddata = zippeddata;
-                                        newentry.datatype = "utf8";
-                                        newentry.hash = require("./filecache.js").hash(contents);
-                                        FileCache.files.push(newentry);
-                                        //now that it's loaded into the filecache, we can delete it
-                                        //fs.unlinkSync(config.out);
+                            },
+                            function(cb3) {
+                                logger.info('loading ' + config.out);
+                                var contents = fs.readFileSync(config.out, 'utf8');
+                                //here, we read the contents of the built load.js file
+                                var path = libpath.normalize('../../build/support/client/lib/load.js');
+                                path = libpath.resolve(__dirname, path);
+                                logger.info(path);
 
-                                        path = libpath.normalize('../../support/client/lib/load.js'); //trick the filecache
-                                        path = libpath.resolve(__dirname, path);
-                                        newentry = {};
-                                        newentry.path = path;
-                                        newentry.data = contents;
-                                        newentry.stats = fs.statSync(config.out);
-                                        newentry.zippeddata = zippeddata;
-                                        newentry.datatype = "utf8";
-                                        newentry.hash = require("./filecache.js").hash(contents);
-                                        FileCache.files.push(newentry);
-
-                                        cb3();
-                                    });
-                                }
-                            ], function(err) {
-                                logger.error(err);
-                                cb();
-                            });
+                                var path2 = libpath.normalize('../../support/client/lib/load.js'); //trick the filecache
+                                path2 = libpath.resolve(__dirname, path2);
+                                //we zip it, then load it into the file cache so that it can be served in place of the noraml boot.js 
+                                
+                                FileCache.insertFile([path,path2],contents,fs.statSync(config.out),"utf8",cb3);
+                                
+                            }
+                        ], function(err) {
+                            logger.error(err);
+                            cb();
                         });
-                    
+                    });
+
                 }
+            },
+            function setupPassport(cb) {
+                // used to serialize the user for the session
+                passport.serializeUser(function(user, done) {
+
+                    if (!user) {
+                        done(null, null);
+                        return;
+                    }
+
+                    DAL.getUser(user.id, function(user) {
+                        if (!user) {
+                            done(null, null)
+                            return;;
+                        }
+
+                        var userStorage = require('./sessions.js').createSession();
+                        userStorage.id = user.id;
+                        userStorage.UID = user.id;
+                        userStorage.Username = user.Username || user.id;
+                        userStorage.PasswordIsTemp = user.isTemp;
+                        userStorage.Password = user.Password;
+
+                        done(null, userStorage);
+                    });
+                });
+
+                // used to deserialize the user
+                passport.deserializeUser(function(userStorage, done) {
+                    DAL.getUser(userStorage.id, function(user) {
+                        done(null, user);
+                    });
+                });
+
+                passport.use(new LocalStrategy(
+                    function(username, password, done) {
+                        DAL.getUser(username, function(user) {
+                            if (user) {
+                                require('./passwordUtils.js').CheckPassword(username, password, function(ok, isTemp) {
+                                    if (ok === true) {
+                                        xapi.sendStatement(username, xapi.verbs.logged_in);
+                                        if (isTemp)
+                                            user.isTemp = true;
+                                        done(null, user);
+                                    } else
+                                        done(null, null);
+                                })
+
+                            } else {
+                                done(null, null);
+                            }
+                        })
+                    }));
+
+                if (global.configuration.facebook_app_id) {
+                    passport.use(new FacebookStrategy({
+                            clientID: global.configuration.facebook_app_id,
+                            clientSecret: global.configuration.facebook_app_secret,
+                            callbackURL: global.configuration.facebook_callback_url
+                        },
+                        function(accessToken, refreshToken, profile, done) {
+                            process.nextTick(function() {
+                                profile.id = "facebook_" + profile.id;
+
+                                DAL.getUser(profile.id, function(user) {
+                                    if (user) {
+                                        xapi.sendStatement(user.Username, xapi.verbs.logged_in);
+                                        done(null, user);
+                                    } else {
+                                        user = DAL.createProfileFromFacebook(profile, function(results) {
+                                            if (results === "ok") {
+                                                DAL.getUser(profile.id, function(user) {
+                                                    xapi.sendStatement(user.Username, xapi.verbs.logged_in);
+                                                    done(null, user);
+                                                });
+                                            } else {
+                                                done("Error creating user from facebook " + results, null);
+                                            }
+                                        });
+                                    }
+                                });
+                            });
+                        }
+                    ));
+                }
+                if (global.configuration.twitter_consumer_key) {
+                    passport.use(new TwitterStrategy({
+                            consumerKey: global.configuration.twitter_consumer_key,
+                            consumerSecret: global.configuration.twitter_consumer_secret,
+                            callbackURL: global.configuration.twitter_callback_url
+                        },
+                        function(accessToken, refreshToken, profile, done) {
+                            process.nextTick(function() {
+                                profile.id = "twitter_" + profile.id;
+                                DAL.getUser(profile.id, function(user) {
+                                    if (user) {
+                                        xapi.sendStatement(user.Username, xapi.verbs.logged_in);
+                                        done(null, user);
+                                    } else {
+                                        user = DAL.createProfileFromTwitter(profile, function(results) {
+                                            if (results === "ok") {
+                                                DAL.getUser(profile.id, function(user) {
+                                                    xapi.sendStatement(user.Username, xapi.verbs.logged_in);
+                                                    done(null, user);
+                                                });
+                                            } else {
+                                                done("Error creating user from twitter " + results, null);
+                                            }
+                                        });
+                                    }
+                                });
+                            });
+                        }
+                    ));
+                }
+
+                if (global.configuration.google_client_id) {
+                    passport.use(new GoogleStrategy({
+                            clientID: global.configuration.google_client_id,
+                            clientSecret: global.configuration.google_client_secret,
+                            callbackURL: global.configuration.google_callback_url
+                        },
+                        function(token, tokenSecret, profile, done) {
+                            // asynchronous verification, for effect...
+                            process.nextTick(function() {
+                                profile.id = "google_" + profile.id;
+                                DAL.getUser(profile.id, function(user) {
+                                    if (user) {
+                                        xapi.sendStatement(user.Username, xapi.verbs.logged_in);
+                                        done(null, user);
+                                    } else {
+                                        user = DAL.createProfileFromGoogle(profile, function(results) {
+                                            if (results === "ok") {
+                                                DAL.getUser(profile.id, function(user) {
+                                                    xapi.sendStatement(user.Username, xapi.verbs.logged_in);
+                                                    done(null, user);
+                                                    return;
+                                                });
+                                            } else {
+                                                done("Error creating user from google " + results, null);
+                                                return;
+                                            }
+                                        });
+                                    }
+                                });
+
+                            });
+                        }
+                    ));
+                }
+
+                cb();
             },
             function minScripts(cb) {
                 if (FileCache.minify)
@@ -360,7 +473,7 @@ function startVWF() {
                 DAL.startup(cb);
             },
             function setSession(cb) {
-                 logger.info('Session Startup');
+                logger.info('Session Startup');
                 require('./sessions.js').sessionStartup(cb);
             },
             function startup(cb) {
@@ -440,7 +553,7 @@ function startVWF() {
 
 
                 //var listen = app.listen(port);
-                
+
 
                 app.use('/auth/local',
                     passport.authenticate('local', {
@@ -562,8 +675,6 @@ function startVWF() {
                 logger.info('minify is ' + FileCache.minify, 0);
 
 
-                
-
                 cb();
             },
             function startReflector(cb) {
@@ -577,153 +688,6 @@ function startVWF() {
         })
 
 }
-// used to serialize the user for the session
-passport.serializeUser(function(user, done) {
 
-    if (!user) {
-        done(null, null);
-        return;
-    }
-
-    DAL.getUser(user.id, function(user) {
-        if (!user) {
-            done(null, null)
-            return;;
-        }
-
-        var userStorage = require('./sessions.js').createSession();
-        userStorage.id = user.id;
-        userStorage.UID = user.id;
-        userStorage.Username = user.Username || user.id;
-        userStorage.PasswordIsTemp = user.isTemp;
-        userStorage.Password = user.Password;
-
-        done(null, userStorage);
-    });
-});
-
-// used to deserialize the user
-passport.deserializeUser(function(userStorage, done) {
-    DAL.getUser(userStorage.id, function(user) {
-        done(null, user);
-    });
-});
-
-passport.use(new LocalStrategy(
-    function(username, password, done) {
-        DAL.getUser(username, function(user) {
-            if (user) {
-                require('./passwordUtils.js').CheckPassword(username, password, function(ok, isTemp) {
-                    if (ok === true) {
-                        xapi.sendStatement(username, xapi.verbs.logged_in);
-                        if (isTemp)
-                            user.isTemp = true;
-                        done(null, user);
-                    } else
-                        done(null, null);
-                })
-
-            } else {
-                done(null, null);
-            }
-        })
-    }));
-
-if (global.configuration.facebook_app_id) {
-    passport.use(new FacebookStrategy({
-            clientID: global.configuration.facebook_app_id,
-            clientSecret: global.configuration.facebook_app_secret,
-            callbackURL: global.configuration.facebook_callback_url
-        },
-        function(accessToken, refreshToken, profile, done) {
-            process.nextTick(function() {
-                profile.id = "facebook_" + profile.id;
-
-                DAL.getUser(profile.id, function(user) {
-                    if (user) {
-                        xapi.sendStatement(user.Username, xapi.verbs.logged_in);
-                        done(null, user);
-                    } else {
-                        user = DAL.createProfileFromFacebook(profile, function(results) {
-                            if (results === "ok") {
-                                DAL.getUser(profile.id, function(user) {
-                                    xapi.sendStatement(user.Username, xapi.verbs.logged_in);
-                                    done(null, user);
-                                });
-                            } else {
-                                done("Error creating user from facebook " + results, null);
-                            }
-                        });
-                    }
-                });
-            });
-        }
-    ));
-}
-if (global.configuration.twitter_consumer_key) {
-    passport.use(new TwitterStrategy({
-            consumerKey: global.configuration.twitter_consumer_key,
-            consumerSecret: global.configuration.twitter_consumer_secret,
-            callbackURL: global.configuration.twitter_callback_url
-        },
-        function(accessToken, refreshToken, profile, done) {
-            process.nextTick(function() {
-                profile.id = "twitter_" + profile.id;
-                DAL.getUser(profile.id, function(user) {
-                    if (user) {
-                        xapi.sendStatement(user.Username, xapi.verbs.logged_in);
-                        done(null, user);
-                    } else {
-                        user = DAL.createProfileFromTwitter(profile, function(results) {
-                            if (results === "ok") {
-                                DAL.getUser(profile.id, function(user) {
-                                    xapi.sendStatement(user.Username, xapi.verbs.logged_in);
-                                    done(null, user);
-                                });
-                            } else {
-                                done("Error creating user from twitter " + results, null);
-                            }
-                        });
-                    }
-                });
-            });
-        }
-    ));
-}
-
-if (global.configuration.google_client_id) {
-    passport.use(new GoogleStrategy({
-            clientID: global.configuration.google_client_id,
-            clientSecret: global.configuration.google_client_secret,
-            callbackURL: global.configuration.google_callback_url
-        },
-        function(token, tokenSecret, profile, done) {
-            // asynchronous verification, for effect...
-            process.nextTick(function() {
-                profile.id = "google_" + profile.id;
-                DAL.getUser(profile.id, function(user) {
-                    if (user) {
-                        xapi.sendStatement(user.Username, xapi.verbs.logged_in);
-                        done(null, user);
-                    } else {
-                        user = DAL.createProfileFromGoogle(profile, function(results) {
-                            if (results === "ok") {
-                                DAL.getUser(profile.id, function(user) {
-                                    xapi.sendStatement(user.Username, xapi.verbs.logged_in);
-                                    done(null, user);
-                                    return;
-                                });
-                            } else {
-                                done("Error creating user from google " + results, null);
-                                return;
-                            }
-                        });
-                    }
-                });
-
-            });
-        }
-    ));
-}
 
 exports.startVWF = startVWF;

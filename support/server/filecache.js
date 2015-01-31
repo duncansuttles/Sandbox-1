@@ -107,6 +107,27 @@ function _FileCache() {
         }
         recurseFindJs(libpath.resolve('./support'),cb);
     }
+    this.insertFile = function(path,contents,stats,datatype,cb)
+    {
+        if(!(path instanceof Array))
+            path = [path];
+        zlib.gzip(contents, function(_, zippeddata) {
+
+            for(var i = 0; i < path.length; i ++)
+            {
+                var newentry = {};
+                newentry.path = path[i];
+                newentry.data = contents;
+                newentry.stats = stats;
+                newentry.zippeddata = zippeddata;
+                newentry.datatype = "utf8";
+                newentry.hash = require("./filecache.js").hash(contents);
+                FileCache.files.push(newentry);
+            }
+            cb();
+        });
+
+    }
     this.resolveBuildFilename = function(file)
     {
         var dirout = libpath.dirname(file);
