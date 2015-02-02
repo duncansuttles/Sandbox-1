@@ -155,13 +155,14 @@ define(function() {
 			}
 		}
 		this.explode = function() {
+			var self = this;
 			alertify.confirm("Would you like to make all SceneNode children into VWF children?", function(ok) {
 				if (ok) {
-					var nodes = this.getTHREEChildren(this.findTHREEChild(_Editor.findviewnode(this.selectedID), this.selectedName));
+					var nodes = self.getTHREEChildren(self.findTHREEChild(_Editor.findviewnode(self.selectedID), self.selectedName));
 
 					for (var i in nodes.children) {
-						var node = this.findTHREEChild(_Editor.findviewnode(this.selectedID), nodes.children[i].name);
-						var parent = this.selectedID;
+						var node = self.findTHREEChild(_Editor.findviewnode(self.selectedID), nodes.children[i].name);
+						var parent = self.selectedID;
 						var childname = nodes.children[i].name;
 						var proto = {
 							extends: 'asset.vwf',

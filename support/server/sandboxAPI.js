@@ -1431,7 +1431,7 @@ function serve(request, response)
 		pathAfterCommand = pathAfterCommand.replace(/\//g, libpath.sep);
 		var basedir = datapath + libpath.sep;
 		//logger.info(basedir+"DataFiles"+ pathAfterCommand);
-		logger.debug(command, UID, 3);
+		logger.info(command, UID, 3);
 		if (request.method == "GET")
 		{
 			switch (command)

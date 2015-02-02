@@ -373,10 +373,7 @@ function runningInstance(id)
     var log = null;
     try
     {
-        var log = fs.createWriteStream(SandboxAPI.getDataPath() + '//Logs/' + id.replace(/[\\\/]/g, '_'),
-        {
-            'flags': 'a'
-        });
+        var log = require('./logger').getWorldLogger(id);
     }
     catch (e)
     {
@@ -387,8 +384,8 @@ function runningInstance(id)
         if (logger.logLevel >= level)
         {
             if (log)
-                log.write(message + '\n');
-            logger.log(message + '\n',level);
+                log.info(message);
+            logger.info(message + '\n',level);
         }
     }
     this.clientCount = function()
@@ -418,7 +415,7 @@ function runningInstance(id)
         if (logger.logLevel >= level)
         {
             if (log)
-                log.write(message + '\n');
+                log.error(message + '\n');
             logger.error( message);
         }
     }

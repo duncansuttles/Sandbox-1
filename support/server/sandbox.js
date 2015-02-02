@@ -515,9 +515,7 @@ function startVWF() {
                 //start the session database
 
 
-                errorlog = fs.createWriteStream(SandboxAPI.getDataPath() + '//Logs/errors_' + (((new Date()).toString())).replace(/[^0-9A-Za-z]/g, '_'), {
-                    'flags': 'a'
-                });
+               
 
                 global.adminUID = adminUID;
 
