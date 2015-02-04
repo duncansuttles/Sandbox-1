@@ -304,10 +304,9 @@ define(["../../../jstree.min"], function(jstree) {
 				this.filterSearch(root);
 			this.rollUp(root);
 			if ($.jstree.reference("#selectionEditorTree")) {
-				$('#selectionEditorTree').jstree('destroy');
+				
 				$('#selectionEditorTree').jstree().destroy();
-				$('#selectionEditorTree').jstree().teardown();
-				$('#selectionEditorTree').jstree(true).destroy();
+				
 				$('#selectionEditorTree').empty();
 				$('#selectionEditorTree').removeAttr('class');
 				$('#selectionEditorTree').removeAttr('role');
