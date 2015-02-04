@@ -1,3 +1,39 @@
+function toolBarButton(src, handler,tooltip)
+{
+
+            var translatedTooltip = i18n.t(tooltip);
+
+            var iconname = 'toolbaricon' + GUID() +  "icon";
+            
+           
+
+            $('#toolbar').append('<div src="' + src + '" id="' + iconname + '" class="icon ' + src + '" />');
+            $('#' + iconname).click(function() {
+                handler();
+            });
+            $('#' + iconname).tooltip({
+                content: translatedTooltip,
+                items: "div",
+                show: {
+                    delay: 500
+                }
+            });
+            this.handler = handler;
+            this.tooltip = tooltip;
+            this.hide = function()
+            {
+                $('#' + iconname).hide();
+            }
+            this.show = function()
+            {
+                $('#' + iconname).show();
+            }
+            this.trigger = function()
+            {
+                this.handler();
+            }
+}
+var toolbarButtons = {};
 define({
     initialize: function() {
 
@@ -40,28 +76,15 @@ define({
             };
         })(jQuery);
 
-
+        $('#toolbar').dragScroll();
         function createIcon(src, menuitemname, tooltip) {
 
-            var translatedTooltip = i18n.t(tooltip);
-
-            var iconname = menuitemname + "icon";
-            var mn = menuitemname;
-            $('#toolbar').dragScroll();
-
-            $('#toolbar').append('<div src="' + src + '" id="' + iconname + '" class="icon ' + src + '" />');
-            $('#' + iconname).click(function() {
-                $('#' + mn).click();
+            var handler = function() {
+                $('#' + menuitemname).click();
 
                 $(".ddsmoothmenu").find('li').trigger('mouseleave');
-            });
-            $('#' + iconname).tooltip({
-                content: translatedTooltip,
-                items: "div",
-                show: {
-                    delay: 500
-                }
-            });
+            };
+            toolbarButtons[menuitemname] = new toolBarButton(src,handler,tooltip);
         }
 
 
@@ -120,5 +143,18 @@ define({
         $('#MenuMoveicon').addClass('iconselected');
         $('#MenuWorldicon').addClass('iconselected');
         $('#MenuLogOuticon').addClass('icondisabled');
+        this.addButton = function(name,cssname,handler,toolip)
+        {
+             toolbarButtons[name] = new toolBarButton(cssname,handler,tooltip);
+        }
+        this.getButton = function(name)
+        {
+            return toolbarButtons[name];
+        }
+        this.getButtons = function()
+        {
+            return toolbarButtons;
+        }
     }
+
 });
