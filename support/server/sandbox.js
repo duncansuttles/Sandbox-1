@@ -554,7 +554,8 @@ function startVWF() {
                 //Wait until all data is loaded before continuing
                 //app.use (ServerFeatures.waitForAllBody);
                 app.use(require('body-parser').json({
-                    maxFieldsSize: 16 * 1024 * 1024 * 1024
+                    maxFieldsSize: 16 * 1024 * 1024 * 1024,
+                    limit: '50mb'
                 }));
                 app.use(require('body-parser').urlencoded({
                     extended: true
