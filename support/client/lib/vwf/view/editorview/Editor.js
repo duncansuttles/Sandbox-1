@@ -3025,8 +3025,14 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     div = $('#guioverlay_' + _Editor.GetSelectedVWFID()).parent()[0];
                 var l = $(div).offset().left;
                 var t = $(div).offset().top;
-                val[12] -= l;
-                val[13] -= t;
+                val[12] -= l ;
+                val[13] -= t  ;
+              
+                val[12] /=  $(div).width() || 1;
+                val[13] /=  $(div).height() || 1;
+
+                val[12] *= 100;
+                val[13] *= 100;
                 this.setProperty(_Editor.GetSelectedVWFID(), 'transform', matcpy(val))
             }
             e.stopImmediatePropagation();

@@ -137,7 +137,7 @@ define( [ "module", "vwf/view"], function( module, view ) {
 			if(this.isGUINode(vwf.prototype(this.getCreateParentNode())))
 				return [0,0,0,0,0,0,0,0,0,0,0,0, 0 ,0 ,0,0];
 
-			return [0,0,0,0,0,0,0,0,0,0,0,0, w ,h ,0,0];   //when creating on a 3D asset, default to center of screen
+			return [0,0,0,0,0,0,0,0,0,0,0,0, 50 ,50 ,0,0];   //when creating on a 3D asset, default to center of screen
 		},
 		getCreateParentNode:function()
 		{
@@ -230,8 +230,10 @@ define( [ "module", "vwf/view"], function( module, view ) {
 						if(this.inSetter) return;
 						
 						var pos = goog.vec.Mat4.createIdentity();
-						pos[12] = ui.position.left;
-						pos[13] = ui.position.top;
+						pos[12] = ui.position.left / ($('#guioverlay_' + vwf.parent(this.vwfID)).width());
+						pos[13] = ui.position.top / ($('#guioverlay_' + vwf.parent(this.vwfID)).height());
+						pos[12] *= 100;
+						pos[13] *= 100;
 						vwf_view.kernel.setProperty(this.vwfID,'transform',matCpy(pos));
 					} );
 					$(node.div).on( "dialogresizestop", function( event, ui ) {
@@ -359,11 +361,12 @@ define( [ "module", "vwf/view"], function( module, view ) {
 			{
 				if(propertyName == 'transform')
 				{
-					var x = propertyValue[12];
-					var y = propertyValue[13];
+					var x = propertyValue[12]+ '%';
+					var y = propertyValue[13]+ '%';
 					var z = propertyValue[14];
 					node.div.inSetter = true;
-					$(node.div).dialog('option','position',[x,y]);
+					$(node.div).parent().css('left',x);
+					$(node.div).parent().css('top',y);
 					node.div.inSetter = false;
 				}
 				if(propertyName == 'title')
@@ -434,8 +437,8 @@ define( [ "module", "vwf/view"], function( module, view ) {
 				}
 				if(propertyName == 'transform')
 				{
-					var x = propertyValue[12];
-					var y = propertyValue[13];
+					var x = propertyValue[12] + '%';
+					var y = propertyValue[13] + '%';
 					var z = propertyValue[14];
 					node.div.inSetter = true;
 					$(node.div).css('left',x);
@@ -452,8 +455,8 @@ define( [ "module", "vwf/view"], function( module, view ) {
 				}
 				if(propertyName == 'transform')
 				{
-					var x = propertyValue[12];
-					var y = propertyValue[13];
+					var x = propertyValue[12]+ '%';
+					var y = propertyValue[13]+ '%';
 					var z = propertyValue[14];
 					node.div.inSetter = true;
 					$(node.div).css('left',x);
@@ -482,8 +485,8 @@ define( [ "module", "vwf/view"], function( module, view ) {
 				}
 				if(propertyName == 'transform')
 				{
-					var x = propertyValue[12];
-					var y = propertyValue[13];
+					var x = propertyValue[12]+ '%';
+					var y = propertyValue[13]+ '%';
 					var z = propertyValue[14];
 					node.div.inSetter = true;
 					$(node.div).css('left',x);
@@ -531,8 +534,8 @@ define( [ "module", "vwf/view"], function( module, view ) {
 				}
 				if(propertyName == 'transform')
 				{
-					var x = propertyValue[12];
-					var y = propertyValue[13];
+					var x = propertyValue[12]+ '%';
+					var y = propertyValue[13]+ '%';
 					var z = propertyValue[14];
 					node.div.inSetter = true;
 					$(node.div).css('left',x);
@@ -558,8 +561,8 @@ define( [ "module", "vwf/view"], function( module, view ) {
 			{
 				if(propertyName == 'transform')
 				{
-					var x = propertyValue[12];
-					var y = propertyValue[13];
+					var x = propertyValue[12]+ '%';
+					var y = propertyValue[13]+ '%';
 					var z = propertyValue[14];
 					node.div.inSetter = true;
 					$(node.div).css('left',x);
