@@ -237,14 +237,16 @@ function _FileCache() {
                                     //minify is currently not compatable with auto-watch of files
                                     if (!FileCache.minify) {
                                         //reload files that change on disk
+                                        console.warn('new watcher');
                                         var watcher = fs.watch(path, {}, function(event, filename) {
 
 
 
-                                            logger.info(newentry.path + ' has changed on disk', 2);
-                                            FileCache.files.splice(FileCache.files.indexOf(newentry), 1);
-
+                                            logger.info(this.entry.path + ' has changed on disk', 2);
+                                            FileCache.files.splice(FileCache.files.indexOf(this.entry), 1);
+                                            this.close();
                                         });
+                                        watcher.entry = newentry;
                                         watcher.on('error', function(e) {
                                             this.close();
                                         })
