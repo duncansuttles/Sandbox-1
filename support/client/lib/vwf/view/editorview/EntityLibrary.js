@@ -62,20 +62,17 @@ define(function() {
         $('#entitylibrarytitle').prepend('<div class="headericon properties" />');
         $('#EntityLibraryMain').append("<div id='EntityLibraryAccordion'></div>");
 
-        //fetch the list if libraries, and fetch the content of each library
-        this.setup = function() {
-            $.getJSON("./contentlibraries/libraries.json", function(libs) {
-                var keys = Object.keys(libs);
-                async.eachSeries(keys, function(i, cb) {
-                    var url = libs[i].url;
-                    $.getJSON(url, function(lib) {
-                        libs[i].library = lib;
-                        cb()
-                    })
-                }, function(err) {
+        this.buildGUI = function()
+        {
+            try{
+            $("#EntityLibraryAccordion").accordion('destroy');
+            }catch(E)
+            {
 
-                    EntityLibrary.libraries = libs;
-                    for (var i in libs) {
+            }
+            $('#EntityLibraryAccordion').empty();
+            var libs = this.libraries;
+            for (var i in libs) {
                         var section = '<h3 class="modifiersection" ><a href="#"><div style="font-weight:bold;display:inline">' + i + "</div>" + '</a></h3>' + '<div class="modifiersection" id="library' + ToSafeID(i) + '">' + '</div>';
                         $('#EntityLibraryAccordion').append(section);
 
@@ -110,6 +107,43 @@ define(function() {
 
                         }
                     }
+            $("#EntityLibraryAccordion").accordion({
+                       
+                        activate: function() {
+
+                        }
+                    });        
+        }
+        this.addLibrary = function(name,url)
+        {
+                var self = this;
+             $.getJSON(url, function(lib) {
+                        self.libraries[name] = {};
+                        self.libraries[name].url = url;
+                        self.libraries[name].library = lib;
+                        self.buildGUI();
+                })
+        }
+        this.removeLibrary = function(name)
+        {
+            delete this.libraries[name];
+            this.buildGUI();
+        }
+        //fetch the list if libraries, and fetch the content of each library
+        this.setup = function() {
+            $.getJSON("./contentlibraries/libraries.json", function(libs) {
+                var keys = Object.keys(libs);
+                async.eachSeries(keys, function(i, cb) {
+                    var url = libs[i].url;
+                    $.getJSON(url, function(lib) {
+                        libs[i].library = lib;
+                        cb()
+                    })
+                }, function(err) {
+
+                    EntityLibrary.libraries = libs;
+                    
+                    EntityLibrary.buildGUI();
 
                     //when dragging over the 3d view, update the preview positoin    
                     $("#vwf-root").on('dragover',"#index-vwf",function(evt) {
@@ -208,12 +242,7 @@ define(function() {
                         }
                     })
 
-                    $("#EntityLibraryAccordion").accordion({
-                        heightStyle: 'fill',
-                        activate: function() {
-
-                        }
-                    });
+                    
                     $(".ui-accordion-content").css('height', 'auto');
 
                 });
