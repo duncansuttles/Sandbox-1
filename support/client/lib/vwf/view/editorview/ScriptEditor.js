@@ -23,6 +23,14 @@ jQuery.fn.extend({
 	}
 });
 
+ function getHeight(id,_default)
+    {
+        if(!_default) _default = 0;
+        if($('#' + id).is(':visible'))
+            return parseInt($('#' + id).height());
+        else return _default;    
+    }
+
 jQuery.fn.sortElements = (function() {
 
 	var sort = [].sort;
@@ -193,18 +201,18 @@ define(function() {
 			if (!$('#ScriptEditor').attr('maximized')) {
 				$('#ScriptEditor').attr('originalheight', $('#ScriptEditor').height());
 				$('#ScriptEditor').attr('originaltop', $('#ScriptEditor').offset().top);
-				$('#ScriptEditor').css('top', $('#toolbar').offset().top + $('#toolbar').height() + 'px');
+				$('#ScriptEditor').css('top', getHeight('smoothmenu1') + getHeight('toolbar') + 'px');
 				$('#ScriptEditor').attr('maximized', true);
-				$('#ScriptEditor').css('height', $(window).height() - $('#toolbar').height() - $('#smoothmenu1').height() - $('#statusbar').height() + 'px');
+				$('#ScriptEditor').css('height', $(window).height() - getHeight('toolbar') - getHeight('smoothmenu1') - getHeight('statusbar') + 'px');
 				$('#maximizescripteditor').attr('class', 'icon window');
 			} else {
 				$('#ScriptEditor').css('top', $('#ScriptEditor').attr('originaltop') + 'px');
-				$('#ScriptEditor').css('height', $(window).height() - $('#ScriptEditor').offset().top - $('#statusbar').height() + 'px');
+				$('#ScriptEditor').css('height', $(window).height() - $('#ScriptEditor').offset().top - getHeight('statusbar') + 'px');
 				$('#ScriptEditor').removeAttr('maximized');
 				$('#maximizescripteditor').attr('class', 'icon up2');
 				var scripteditorheight = $('#ScriptEditor').offset().top;
 				if (scripteditorheight != 0) scripteditorheight = $(window).height() - scripteditorheight;
-				$('#index-vwf').css('height', window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - (scripteditorheight - 25) + 'px');
+				$('#index-vwf').css('height', window.innerHeight - getHeight('smoothmenu1') - getHeight('statusbar') - getHeight('toolbar') - (scripteditorheight - 25) + 'px');
 				_Editor.findcamera().aspect = (parseInt($('#index-vwf').css('width')) / parseInt($('#index-vwf').css('height')));
 				_Editor.findcamera().updateProjectionMatrix();
 			}
@@ -768,14 +776,15 @@ define(function() {
 					return;
 				}
 				$('#ScriptEditor').show();
-				var newtop = $(window).height() - $('#ScriptEditor').height() - $('#statusbar').height() + 'px';
+				
+				var newtop = $(window).height() - $('#ScriptEditor').height() - getHeight('statusbar') + 'px';
 
 				$('#ScriptEditor').animate({
 					'top': newtop
 				}, {
 					step: function() {
 						$('#ScriptEditorTabs').css('height', $('#ScriptEditor').height() + 'px');
-						var newheight = window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top - 25) + 'px';
+						var newheight = window.innerHeight - getHeight('smoothmenu1') - getHeight('statusbar') - getHeight('toolbar') - ($(window).height() - $('#ScriptEditor').offset().top - 25) + 'px';
 						//console.log(newheight);
 						$('#index-vwf').css('height', newheight);
 						_Editor.findcamera().aspect = (parseInt($('#index-vwf').css('width')) / parseInt($('#index-vwf').css('height')));
@@ -802,7 +811,7 @@ define(function() {
 					step: function() {
 						if (!$('#ScriptEditor').is(':visible')) return;
 						$('#ScriptEditorTabs').css('height', $('#ScriptEditor').height() + 'px');
-						$('#index-vwf').css('height', window.innerHeight - $('#smoothmenu1').height() - $('#statusbar').height() - $('#toolbar').height() - ($(window).height() - $('#ScriptEditor').offset().top - 25) + 'px');
+						$('#index-vwf').css('height', window.innerHeight - getHeight('smoothmenu1') - getHeight('statusbar') - getHeight('toolbar') - ($(window).height() - $('#ScriptEditor').offset().top - 25) + 'px');
 						_Editor.findcamera().aspect = (parseInt($('#index-vwf').css('width')) / parseInt($('#index-vwf').css('height')));
 						_Editor.findcamera().updateProjectionMatrix();
 					},

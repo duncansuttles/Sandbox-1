@@ -1,3 +1,10 @@
+ function getLeft(id,_default)
+    {
+        if(!_default) _default = 0;
+        if($('#' + id).is(':visible'))
+            return parseInt($('#' + id).css('left'));
+        else return _default;    
+    }
 define(function() {
     var EntityLibrary = {};
     var isInitialized = false;
@@ -236,7 +243,7 @@ define(function() {
             $('#EntityLibrary').animate({
                 'left': 0
             });
-            var w = $(window).width() - 250 - ($(window).width() - $('#sidepanel').offset().left);
+            var w = $(window).width() - 250 - ($(window).width() - getLeft('sidepanel',$(window).width()));
             $('#ScriptEditor').animate({
                 'left': $('#EntityLibrary').width(),
                 width: w
@@ -261,7 +268,7 @@ define(function() {
             $('#EntityLibrary').animate({
                 'left': -$('#EntityLibrary').width()
             });
-            var w = $(window).width() - ($(window).width() - $('#sidepanel').offset().left);
+            var w = $(window).width() - ($(window).width() - getLeft('sidepanel',$(window).width()));
             $('#ScriptEditor').animate({
                 'left': 0,
                 width: w

@@ -1,3 +1,17 @@
+function getLeft(id,_default)
+    {
+        if(!_default) _default = 0;
+        if($('#' + id).is(':visible'))
+            return parseInt($('#' + id).css('left'));
+        else return _default;    
+    }
+    function getWidth(id,_default)
+    {
+        if(!_default) _default = 0;
+        if($('#' + id).is(':visible'))
+            return parseInt($('#' + id).width());
+        else return _default;    
+    }
 define({
     initialize: function() {
         var sizeTimeoutHandle;
@@ -31,10 +45,10 @@ define({
                 'left': $(window).width()
             });
             $('#ScriptEditor').animate({
-                'width': $(window).width() - (parseInt($('#EntityLibrary').css('left')) + $('#EntityLibrary').width())
+                'width': $(window).width() - (getLeft('EntityLibrary') + getWidth('EntityLibrary'))
             });
             $('#index-vwf').animate({
-                'width': $(window).width() - (parseInt($('#EntityLibrary').css('left')) + $('#EntityLibrary').width())
+                'width': $(window).width() - (getLeft('EntityLibrary') + getWidth('EntityLibrary'))
             }, function() {
                 window.clearInterval(window.sizeTimeoutHandle);
                 sizeWindowTimer();
@@ -62,10 +76,10 @@ define({
                 'left': $(window).width() - $('#sidepanel').width()
             });
             $('#ScriptEditor').animate({
-                'width': $(window).width() - $('#sidepanel').width() - (parseInt($('#EntityLibrary').css('left')) + $('#EntityLibrary').width())
+                'width': $(window).width() - $('#sidepanel').width() - (getLeft('EntityLibrary') + getWidth('EntityLibrary'))
             });
             $('#index-vwf').animate({
-                'width': $(window).width() - $('#sidepanel').width() - (parseInt($('#EntityLibrary').css('left')) + $('#EntityLibrary').width())
+                'width': $(window).width() - $('#sidepanel').width() - (getLeft('EntityLibrary') + getWidth('EntityLibrary'))
             }, function() {
                 window.clearInterval(window.sizeTimeoutHandle);
                 window.sizeTimeoutHandle = null;

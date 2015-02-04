@@ -1,5 +1,110 @@
-define({
+ function getHeight(id,_default)
+    {
+        if(!_default) _default = 0;
+        if($('#' + id).is(':visible'))
+            return parseInt($('#' + id).height());
+        else return _default;    
+    }
+    function getLeft(id,_default)
+    {
+        if(!_default) _default = 0;
+        if($('#' + id).is(':visible'))
+            return parseInt($('#' + id).css('left'));
+        else return _default;    
+    }
+    function getTop(id,_default)
+    {
+        if(!_default) _default = 0;
+        if($('#' + id).is(':visible'))
+            return parseInt($('#' + id).css('top'));
+        else return _default;    
+    }
+    function getWidth(id,_default)
+    {
+        if(!_default) _default = 0;
+        if($('#' + id).is(':visible'))
+            return parseInt($('#' + id).width());
+        else return _default;    
+    }
 
+    var statusbarEnabled = true;
+    var toolbarEnabled = true;
+    var menubarEnabled = true;
+    var libraryEnabled = true;
+    var sidepanelEnabled = true;
+    function hideStatusbar()
+    {
+        statusbarEnabled = false;
+        $('#statusbar').hide();
+        $(window).resize();
+    }
+    function hideSidepanel()
+    {
+        sidepanelEnabled = false;
+        $('#sidepanel').hide();
+        $(window).resize();
+    }
+    function hideLibrary()
+    {
+        libraryEnabled = false;
+        $('#EntityLibrary').hide();
+        $(window).resize();
+    }
+    function hideMenubar()
+    {
+        menubarEnabled = false;
+        $('#smoothmenu1').hide();
+        $(window).resize();
+    }
+    function hideToolbar()
+    {
+        toolbarEnabled = false;
+        $('#toolbar').hide();
+        $(window).resize();
+    }
+    function showStatusbar()
+    {
+        statusbarEnabled = true;
+        $('#statusbar').show();
+        $(window).resize();
+    }
+    function showMenubar()
+    {
+        menubarEnabled = true;
+        $('#smoothmenu1').show();
+        $(window).resize();
+    }
+    function showToolbar()
+    {
+        toolbarEnabled = true;
+        $('#toolbar').show();
+        $(window).resize();
+    }
+    function showSidepanel()
+    {
+        sidepanelEnabled = true;
+        $('#sidepanel').show();
+        $(window).resize();
+    }
+    function showLibrary()
+    {
+        libraryEnabled = true;
+        $('#EntityLibrary').show();
+        $(window).resize();
+    }
+
+define({
+   
+    showToolbar:showToolbar,
+    showMenubar:showMenubar,
+    showStatusbar:showStatusbar,
+    hideMenubar:hideMenubar,
+    hideToolbar:hideToolbar,
+    hideStatusbar:hideStatusbar,
+    hideSidepanel:hideSidepanel,
+    hideLibrary:hideLibrary,
+    showSidepanel:showSidepanel,
+    showLibrary:showLibrary, 
     initialize: function() {
         var toolsHidden = false;
         var toolsLoaded = true;
@@ -13,38 +118,34 @@ define({
             if (!toolsHidden && toolsLoaded) {
                 $('#smoothmenu1').css('top', '0px');
                 $('#smoothmenu1').css('left', '0px');
-                $('#toolbar').css('top', $('#smoothmenu1').height());
+                $('#toolbar').css('top', getHeight('smoothmenu1'));
                 //$('#toolbar').css('height','35px');
                 $('#toolbar').css('left', '0px');
                 $('#statusbar').css('left', '0px');
 
-                $('#index-vwf').css('top', ($('#smoothmenu1').height() + $('#toolbar').height()));
+                $('#index-vwf').css('top', getHeight('smoothmenu1') + getHeight('toolbar'));
 
-                if ($('#sidepanel').offset().left + 5 < window.innerWidth)
-                    $('#index-vwf').css('width', window.innerWidth  - (parseInt($('#EntityLibrary').css('left')) + $('#EntityLibrary').width()));
-                else
-                    $('#index-vwf').css('width', window.innerWidth - (parseInt($('#EntityLibrary').css('left')) + $('#EntityLibrary').width()));
+                $('#index-vwf').css('width', window.innerWidth  - (getLeft('EntityLibrary') + getWidth('EntityLibrary')));
 
-                $('#ScriptEditor').css('top', $(window).height() - $('#ScriptEditor').height() - $('#statusbar').height());
+                $('#ScriptEditor').css('top', $(window).height() - $('#ScriptEditor').height() - getHeight('statusbar'));
 
 
                 //$('#ScriptEditor').css('height',  $(window).height() - $('#ScriptEditor').offset().top - $('#statusbar').height() + 'px');
 
 
                 if ($('#ScriptEditor').attr('maximized')) {
-                    $('#ScriptEditor').css('top', $('#toolbar').offset().top + $('#toolbar').height() + $('#statusbar').height());
-                    $('#ScriptEditor').css('height', $(window).height() - $('#toolbar').height() - $('#smoothmenu1').height() - $('#statusbar').height());
+                    $('#ScriptEditor').css('top', getTop('toolbar') + getHeight('toolbar') + getHeight('statusbar'));
+                    $('#ScriptEditor').css('height', $(window).height() - getTop('ScriptEditor') - getHeight('statusbar'));
                 } else {
 
-                    //$('#ScriptEditor').css('top',$('#ScriptEditor').attr('originaltop')+'px');
-                    //$('#ScriptEditor').css('height',$(window).height() - $('#ScriptEditor').offset().top- $('#statusbar').height()+'px');
-
+                    //if(_ScriptEditor.isOpen())
+                    //    $('#ScriptEditor').css('height', $(window).height() - $('#ScriptEditor').offset().top);
                 }
 
 
                 //$('#index-vwf').css('height', window.innerHeight - $('#ScriptEditor').offset().top - $('#statusbar').height());
 
-                $('#index-vwf').css('top', $('#toolbar').offset().top + $('#toolbar').height());
+                
                 $('#index-vwf').css('position', 'absolute');
                 $('#vwf-root').css('overflow', 'visible');
                 $('#vwf-root').css('left', '0px');
@@ -55,27 +156,27 @@ define({
                     canvasheight = scripteditorheight - $('#index-vwf').offset().top
                 } else {
 
-                    $('#index-vwf').css('height', window.innerHeight - ($('#toolbar').offset().top + $('#toolbar').height() + $('#statusbar').height()));
-                    canvasheight = window.innerHeight - ($('#toolbar').offset().top + $('#toolbar').height() + $('#statusbar').height());
+                    $('#index-vwf').css('height', window.innerHeight - (getTop('toolbar') + getHeight('toolbar') + getHeight('statusbar')));
+                    canvasheight = window.innerHeight - (getTop('toolbar') + getHeight('toolbar') + getHeight('statusbar'));
                 }
 
-
+                $('#index-vwf').css('left',getWidth('EntityLibrary') + getLeft('EntityLibrary'));
 
 
                 if ($('#index-vwf').length)
                     $('#sidepanel').css('left', parseInt($('#index-vwf').css('width')) + $('#index-vwf').offset().left);
                 //$('#sidepanel').css('width',320);
-                $('#sidepanel').css('top', $('#toolbar').offset().top + $('#toolbar').height());
+                $('#sidepanel').css('top', getTop('toolbar') + getHeight('toolbar'));
 
-                $('#EntityLibrary').css('top', $('#toolbar').offset().top + $('#toolbar').height());
+                $('#EntityLibrary').css('top', getHeight('smoothmenu1') + getHeight('toolbar'));
                 $('#EntityLibrary').css('height', $(window).height());
 
                 $('#sidepanel').css('height', $(window).height());
                 $('#statusbar').css('top', ($(window).height() - 25) + 'px');
 
 
-                $('#sidepanel').css('height', $(window).height() - ($('#statusbar').height() + $('#toolbar').height() + $('#smoothmenu1').height()));
-                $('#ScriptEditor').css('width', $(window).width() - ($(window).width() - $('#sidepanel').offset().left) - (parseInt($('#EntityLibrary').css('left')) + $('#EntityLibrary').width()));
+                $('#sidepanel').css('height', $(window).height() - (getHeight('toolbar') + getHeight('statusbar') + getHeight('smoothmenu1')));
+                $('#ScriptEditor').css('width', $(window).width() - ($(window).width() - getLeft('sidepanel',$(window).width())) - (getLeft('EntityLibrary') + getWidth('EntityLibrary')));
                 $('#EntityLibrary').css('height', $('#index-vwf').css('height'));
                 $('#EntityLibraryAccordion').css('height', $(window).height() - $('#EntityLibraryAccordion').offset().top -$('#statusbar').height());
                // $('#EntityLibraryMain').css('height', $('#statusbar').height() + parseInt($('#index-vwf').css('height')) + parseInt($('#ScriptEditor').css('height')) - $('#entitylibrarytitle').height());
@@ -151,12 +252,17 @@ define({
         window.showTools = function() {
             if (!toolsLoaded) return;
             toolsHidden = false;
-            $('#smoothmenu1').show();
-            $('#toolbar').show();
-            $('#sidepanel').show();
-            $('#statusbar').show();
+            if(menubarEnabled)
+                $('#smoothmenu1').show();
+            if(toolbarEnabled)
+                $('#toolbar').show();
+            if(sidepanelEnabled)
+                $('#sidepanel').show();
+            if(statusbarEnabled)
+                $('#statusbar').show();
             $('#index-vwf').focus();
-            $('#EntityLibrary').show();
+            if(libraryEnabled)
+                $('#EntityLibrary').show();
             $('#index-vwf').css('height', $(window).height() + 'px');
             $('#index-vwf').css('width', $(window).width() + 'px');
             $('#index-vwf').css('top', $('#smoothmenu1').height() + $('#toolbar').height() + 'px');
@@ -183,5 +289,8 @@ define({
                     showTools();
             }
         });
+
     }
+   
+
 });
