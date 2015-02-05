@@ -9,6 +9,7 @@ THREE.VRRenderer = function(renderer, hmd) {
         self.halfIPD = new THREE.Vector3(et.x, et.y, et.z).length();
         self.fovLeft = hmd.getRecommendedEyeFieldOfView("left");
         self.fovRight = hmd.getRecommendedEyeFieldOfView("right");
+        renderer.autoClear = true;
     }
 
     self.FovToNDCScaleOffset = function(fov) {

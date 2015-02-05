@@ -1311,14 +1311,22 @@ scripts:
             if(window.fpt > 0)
               headQuat.setFromEuler(headQuatEuler);
 
-            headPos.applyMatrix3((new THREE.Matrix4()).extractRotation(findcamera().matrix));
+            //
            
 
             //forward predict rotation 10ms
            
             
-            //findcamera().position.add(headPos);
-            findcamera().quaternion.multiply(headQuat);    
+            
+            var q = new THREE.Quaternion(0,0.7570626871303509,0.6533422439694011,0);
+          
+            headPos.applyQuaternion(q.clone().inverse());
+            findcamera().quaternion.copy(q); 
+            findcamera().quaternion.multiply(headQuat);
+         
+           // headPos.applyQuaternion(q);
+            
+            findcamera().position.add(headPos);
         }
         findcamera().updateMatrixWorld();
         findcamera().updateMatrix();
