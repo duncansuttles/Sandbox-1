@@ -1,10 +1,4 @@
 ﻿"use strict";
-
-function setClone(ab) {
-        var f32 = new Float32Array(ab.length);
-        f32.set(ab);
-        return f32;
-    }
     // Copyright 2012 United States Government, as represented by the Secretary of Defense, Under
     // Secretary of Defense (Personnel & Readiness).
     // 
@@ -17,6 +11,17 @@ function setClone(ab) {
     // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
     // or implied. See the License for the specific language governing permissions and limitations under
     // the License.
+function setClone(ab) {
+        var f32 = new Float32Array(ab.length);
+        f32.set(ab);
+        return f32;
+    }
+function getURLParameter(name) {
+            return decodeURI(
+                (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search) || [, null])[1]
+            );
+        }
+
 function matset(newv, old) {
     if (!old) {
         newv = old;
@@ -29,19 +34,12 @@ function matset(newv, old) {
     return newv;
 }
 
-function matdiff(mat1, mat2) {
-    var diff = 0;
-    for (var i = 0; i < 16; i++) {
-        diff += Math.abs(mat1[i] - mat2[i]);
-    }
-    return diff;
 
-}
 
 
 var pfx = ["webkit", "moz", "ms", "o", ""];
 
-define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/threejs/ThermalCamEffect", "vwf/model/threejs/VRRenderer"], function(module, view) {
+define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/threejs/ThermalCamEffect", "vwf/model/threejs/VRRenderer","vwf/view/threejs/editorCameraController"], function(module, view) {
     var stats;
     var NORMALRENDER = 0;
     var STEREORENDER = 1;
@@ -58,6 +56,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         vrHMDSensor: null,
         vrHMD: null,
         vrRenderer: null,
+        editorCamera:new THREE.PerspectiveCamera(35, $(document).width() / $(document).height(), .01, 10000),
         simulateContextLoss: function() {
             var cx = _dRenderer.context.getExtension('WEBGL_lose_context');
             cx.loseContext();
@@ -232,6 +231,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         initialize: function(rootSelector) {
 
             this.initHMD();
+           
             rootSelector = {
                 "application-root": '#vwf-root'
             };
@@ -239,6 +239,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 this.events = {};
 
             $(document).on('selectionChanged', this.selectionChanged.bind(this));
+
+
             this.renderTargetPasses = [];
             this.rootSelector = rootSelector;
             this.height = 600;
@@ -596,6 +598,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 this.canvasQuery = jQuery(this.rootSelector["application-root"]).append("<canvas id='" + 'index-vwf' + "' width='" + this.width + "' height='" + this.height + "' class='vwf-scene'/>").children(":last");
                 this.canvasQuery.css('display', 'none');
                 initScene.call(this, this.state.scenes[childID]);
+                require("vwf/view/threejs/editorCameraController").initialize(this.editorCamera);
             }
         },
 
@@ -627,7 +630,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         // -- satProperty ------------------------------------------------------------------------------
         getCamera: function() {
             if (!this.activeCamera)
-                return this.state.scenes['index-vwf'].camera.threeJScameras[this.state.scenes['index-vwf'].camera.ID];
+                return this.editorCamera;
             return this.activeCamera;
         },
         getCameraList: function() {
@@ -701,7 +704,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
             this.cameraID = camID || defaultCameraID;
 
-            var cam = this.state.scenes['index-vwf'].camera.threeJScameras[this.state.scenes['index-vwf'].camera.ID];
+            var cam = this.editorCamera;
 
             if (camID === 'top')
                 cam = this.topCamera;
@@ -1505,11 +1508,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         var mycanvas = this.canvasQuery.get(0);
 
 
-        function getURLParameter(name) {
-            return decodeURI(
-                (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search) || [, null])[1]
-            );
-        }
+        
 
         if (mycanvas) {
             var oldMouseX = 0;
@@ -1643,7 +1642,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
                                         node.attributes[i].buffer = _dRenderer.context.createBuffer();
 
-                                        debugger;
+                                        
                                         node.attributes[i].array = setClone(node.attributes[i].array);
                                         _dRenderer.context.bindBuffer(_dRenderer.context.ARRAY_BUFFER, node.attributes[i].buffer);
                                         _dRenderer.context.bufferData(_dRenderer.context.ARRAY_BUFFER, node.attributes[i].array, _dRenderer.context.STATIC_DRAW);
@@ -2349,7 +2348,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         };
         if (!this.pickOptions) this.pickOptions = {};
 
-        var threeCam = cam; //sceneNode.camera.threeJScameras[sceneNode.camera.ID];
+        var threeCam = cam; 
         if (!this.ray) this.ray = new THREE.Ray();
         if (!this.projector) this.projector = new THREE.Projector();
         if (!this.directionVector) this.directionVector = new THREE.Vector3();

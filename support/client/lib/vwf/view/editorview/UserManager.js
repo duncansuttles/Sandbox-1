@@ -67,8 +67,8 @@ define(function() {
         });
         $("#FollowUser").click(function() {
             var id = '-object-Object-player-' + _UserManager.SelectedProfile.Username;
-            vwf.models[0].model.nodes['index-vwf'].setCameraMode('Orbit');
-            vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[id]);
+            require("vwf/view/threejs/editorCameraController").setCameraMode('Orbit');
+            require("vwf/view/threejs/editorCameraController").followObject(vwf.models[0].model.nodes[id]);
         });
         $("#PrivateMessage").button({
             label: 'Private Message'
@@ -274,8 +274,8 @@ define(function() {
                         _dView.setCameraDefault();
                         clearCameraModeIcons();
                         $('#MenuCamera3RDPersonicon').addClass('iconselected');
-                        vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
-                        vwf.models[0].model.nodes['index-vwf'].setCameraMode('3RDPerson');
+                        require("vwf/view/threejs/editorCameraController").followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
+                        require("vwf/view/threejs/editorCameraController").setCameraMode('3RDPerson');
                     }
                 }
 
@@ -559,7 +559,7 @@ define(function() {
             this.PlayerProto.properties.transform[14] = newintersectxy[2];
             this.PlayerProto.properties.scale = [profile.avatarHeight || 1.0, profile.avatarHeight || 1.0, profile.avatarHeight || 1.0];
 
-            vwf.models.javascript.nodes['index-vwf'].orbitPoint(newintersectxy);
+            require("vwf/view/threejs/editorCameraController").orbitPoint(newintersectxy);
             document[username + 'link'] = null;
             //this.PlayerProto.id = "player"+username;
             document["PlayerNumber"] = username;

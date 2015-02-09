@@ -583,8 +583,8 @@ define({
             var ray = _Editor.GetCameraCenterRay();
             var dxy = _Editor.intersectLinePlane(ray, campos, [0, 0, 0], _Editor.WorldZ);
             var newintersectxy = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy));
-            vwf.models[0].model.nodes['index-vwf'].orbitPoint(newintersectxy);
-            vwf.models[0].model.nodes['index-vwf'].updateCamera();
+            require("vwf/view/threejs/editorCameraController").orbitPoint(newintersectxy);
+            require("vwf/view/threejs/editorCameraController").updateCamera();
         });
         // click events for touching sub menus
         $('#MenuViewBatching,#MenuParticles,#MenuLights,#MenuModifiers,#MenuGrouping,#MenuPrimitives,#MenuTransforms,#MenuSnaps,#MenuSelect').click(function(e) {
@@ -595,14 +595,14 @@ define({
             _dView.setCameraDefault();
             clearCameraModeIcons();
             $('#MenuCameraNavigateicon').addClass('iconselected');
-            vwf.models[0].model.nodes['index-vwf'].setCameraMode('Orbit');
-            vwf.models[0].model.nodes['index-vwf'].setCameraMode('Navigate');
+            require("vwf/view/threejs/editorCameraController").setCameraMode('Orbit');
+            require("vwf/view/threejs/editorCameraController").setCameraMode('Navigate');
         });
 
         $('#MenuCameraDeviceOrientation').click(function(e) {
             _dView.setCameraDefault();
             clearCameraModeIcons();
-            vwf.models[0].model.nodes['index-vwf'].setCameraMode('DeviceOrientation');
+            require("vwf/view/threejs/editorCameraController").setCameraMode('DeviceOrientation');
         });
         $('#MenuViewHideTools').click(function(e) {
             hideTools();
@@ -641,21 +641,21 @@ define({
             _dView.setCameraDefault();
             clearCameraModeIcons();
             $('#MenuCameraNavigateicon').addClass('iconselected');
-            vwf.models[0].model.nodes['index-vwf'].setCameraMode('Fly');
+            require("vwf/view/threejs/editorCameraController").setCameraMode('Fly');
 
         });
 
         $('#MenuCameraNone').click(function(e) {
             _dView.setCameraDefault();
             clearCameraModeIcons();
-            vwf.models[0].model.nodes['index-vwf'].setCameraMode('None');
+            require("vwf/view/threejs/editorCameraController").setCameraMode('None');
         });
         $('#MenuCameraFree').click(function(e) {
             _dView.setCameraDefault();
             clearCameraModeIcons();
             $('#MenuCameraFreeicon').addClass('iconselected');
-            vwf.models[0].model.nodes['index-vwf'].setCameraMode('Orbit');
-            vwf.models[0].model.nodes['index-vwf'].setCameraMode('Free');
+            require("vwf/view/threejs/editorCameraController").setCameraMode('Orbit');
+            require("vwf/view/threejs/editorCameraController").setCameraMode('Free');
         });
         
 
@@ -669,8 +669,8 @@ define({
                 _dView.setCameraDefault();
                 clearCameraModeIcons();
                 $('#MenuCamera3RDPersonicon').addClass('iconselected');
-                vwf.models[0].model.nodes['index-vwf'].followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
-                vwf.models[0].model.nodes['index-vwf'].setCameraMode('3RDPerson');
+                require("vwf/view/threejs/editorCameraController").followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
+                require("vwf/view/threejs/editorCameraController").setCameraMode('3RDPerson');
             } else {
                 _Notifier.alert('First person mode is not available when you are not logged in.');
             }

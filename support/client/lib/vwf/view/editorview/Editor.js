@@ -3479,9 +3479,9 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     dist = Math.max(box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]);
                 if (dist == Infinity)
                     dist = 1;
-                vwf.models[0].model.nodes['index-vwf'].orbitPoint(gizpos);
-                vwf.models[0].model.nodes['index-vwf'].zoom = dist;
-                vwf.models[0].model.nodes['index-vwf'].updateCamera();
+                require("vwf/view/threejs/editorCameraController").orbitPoint(gizpos);
+                require("vwf/view/threejs/editorCameraController").zoom = dist;
+                require("vwf/view/threejs/editorCameraController").updateCamera();
                 box.release();
 
             }
