@@ -1,5 +1,5 @@
  function getViewProjection(cam) {
-     
+
      cam.matrixWorldInverse.getInverse(cam.matrixWorld);
 
      var _viewProjectionMatrix = new THREE.Matrix4();
@@ -7,6 +7,13 @@
 
 
      return MATH.transposeMat4(_viewProjectionMatrix.toArray([]));
+ }
+
+ function findviewnode(id) {
+     for (var i = 0; i < vwf.views.length; i++) {
+         if (vwf.views[i].state.nodes[id].threeObject) return vwf.views[i].state.nodes[id].threeObject;
+     }
+     return null;
  }
 
  function editorCameraController() {
@@ -35,7 +42,13 @@
          this.last_x = 0;
          this.last_y = 0;
          this.navmode = 'none';
-
+         this.leftArrowDown = false;
+         this.rightArrowDown = false;
+         this.upArrowDown = false;
+         this.downArrowDown = false;
+         this.spaceDown = false;
+         this.ctrlDown = false;
+         this.shiftDown = false;
          //  this.PickOptions = new MATH.CPUPickOptions();
          //  this.PickOptions.UserRenderBatches = true;
 
@@ -64,6 +77,13 @@
              this.localpointerMove(e);
          }.bind(this));
 
+         $('#index-vwf').keydown(function(e) {
+             this.localKeyDown(e);
+         }.bind(this));
+         $('#index-vwf').keyup(function(e) {
+             this.localKeyUp(e);
+         }.bind(this));
+
          $('#index-vwf')[0].addEventListener("touchstart", this.localTouchStart.bind(this), true);
          $('#index-vwf')[0].addEventListener("touchend", this.localTouchEnd.bind(this), true);
          $('#index-vwf')[0].addEventListener("touchmove", this.localTouchMove.bind(this), true);
@@ -75,6 +95,7 @@
 
          this.updateCamera();
      }
+
      this.broadcastCameraPosition = function(transform) {
          if (this.receivingCameraBroadcast) {
              this.camera.transform = transform;
@@ -145,6 +166,7 @@
              this.updateCallbacks[i](this);
      }
      this.followObject = function(value) {
+
          if (this.objectFollowed) {
              if (this.objectFollowed.updateCallbacks) {
                  this.objectFollowed.updateCallbacks.splice(this.followcallbacknum, 1);
@@ -353,22 +375,25 @@
 
          if (this.cameramode == 'Navigate' && parms.which == 2) {
 
-             var campos = [this.camera.position.x, this.camera.position.y, this.camera.position.z];
-             var ray = this.GetWorldPickRay(parms);
-
-
-             vwf.callMethod(vwf.application(), 'getGroundPlane', []).PickPriority = 0;
-             var oldintersectxy = _Editor.ThreeJSPick(campos, ray, this.PickOptions);
-             if (!oldintersectxy) return; //this is just better. 
-             oldintersectxy = oldintersectxy ? oldintersectxy.point : [0, 0, 0];
-             vwf.callMethod(vwf.application(), 'getGroundPlane', []).PickPriority = -1;
-             var dxy2 = this.intersectLinePlane(ray, campos, [0, 0, 0], [0, 0, 1]);
-             var oldintersectxy2 = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy2));
-             if (oldintersectxy2[2] > oldintersectxy[2]) oldintersectxy = oldintersectxy2;
-
-             this.navpoint = oldintersectxy;
+             this.setNavCenter(parms);
          }
 
+     }
+     this.setNavCenter = function(parms) {
+         var campos = [this.camera.position.x, this.camera.position.y, this.camera.position.z];
+         var ray = this.GetWorldPickRay(parms);
+
+
+         vwf.callMethod(vwf.application(), 'getGroundPlane', []).PickPriority = 0;
+         var oldintersectxy = _Editor.ThreeJSPick(campos, ray, this.PickOptions);
+         if (!oldintersectxy) return; //this is just better. 
+         oldintersectxy = oldintersectxy ? oldintersectxy.point : [0, 0, 0];
+         vwf.callMethod(vwf.application(), 'getGroundPlane', []).PickPriority = -1;
+         var dxy2 = this.intersectLinePlane(ray, campos, [0, 0, 0], [0, 0, 1]);
+         var oldintersectxy2 = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy2));
+         if (oldintersectxy2[2] > oldintersectxy[2]) oldintersectxy = oldintersectxy2;
+
+         this.navpoint = oldintersectxy;
      }
      this.localpointerUp = function(parms, pickInfo) {
 
@@ -381,6 +406,130 @@
              // Ask the browser to lock the pointer
              //document.exitPointerLock();
          }
+     }
+     this.simulateMiddleDrag = function(x, y) {
+         this.middledown = true;
+         var mouse = {
+             clientX: this.last_x * window.screen.width + x,
+             clientY: this.last_y * window.screen.height + y
+         }
+         this.localpointerMove(mouse);
+         this.middledown = false;
+     }
+     this.simulateRightDrag = function(x, y) {
+         this.rightdown = true;
+         var mouse = {
+             clientX: this.last_x * window.screen.width + x,
+             clientY: this.last_y * window.screen.height + y
+         }
+         this.localpointerMove(mouse);
+         this.rightdown = false;
+     }
+     this.simulateWheel = function(z) {
+         var mouse = {
+             deltaY: z
+         }
+         this.localpointerWheel(mouse);
+     }
+     this.localKeyDown = function(e) {
+         console.log(e.keyCode);
+         if (e.keyCode == 37)
+             this.leftArrowDown = true;
+         if (e.keyCode == 38)
+             this.upArrowDown = true;
+         if (e.keyCode == 39)
+             this.rightArrowDown = true;
+         if (e.keyCode == 40)
+             this.downArrowDown = true;
+         if (e.keyCode == 32)
+             this.spaceDown = true;
+         if (e.keyCode == 17)
+             this.ctrlDown = true;
+         if (e.keyCode == 16)
+             this.shiftDown = true;
+
+         if (this.shiftDown == true && this.ctrlDown == true) {
+
+
+             this.middledown = true;
+             this.rightdown = false;
+
+         } else if (this.shiftDown == true) {
+             this.middledown = false;
+             this.rightdown = true;
+         } else {
+             this.middledown = false;
+             this.rightdown = false;
+         }
+
+     }
+     this.localKeyUp = function(e) {
+
+         if (e.keyCode == 32) {
+             var mouse = {
+                 clientX: this.last_x * window.screen.width,
+                 clientY: this.last_y * window.screen.height
+             }
+             this.setNavCenter(mouse);
+         }
+
+         if (e.keyCode == 37)
+             this.leftArrowDown = false;
+         if (e.keyCode == 38)
+             this.upArrowDown = false;
+         if (e.keyCode == 39)
+             this.rightArrowDown = false;
+         if (e.keyCode == 40)
+             this.downArrowDown = false;
+         if (e.keyCode == 32)
+             this.spaceDown = false;
+         if (e.keyCode == 17)
+             this.ctrlDown = false;
+         if (e.keyCode == 16)
+             this.shiftDown = false;
+
+         if (this.shiftDown == true && this.ctrlDown == true) {
+             this.middledown = true;
+             this.rightdown = false;
+
+         } else if (this.shiftDown == true) {
+             this.middledown = false;
+             this.rightdown = true;
+         } else {
+             this.middledown = false;
+             this.rightdown = false;
+         }
+         if (this.shiftDown && e.keyCode == 32) {
+             $('#MenuFocusSelected').click();
+         }
+
+     }
+     this.keyboardControl = function() {
+         if (this.ctrlDown) {
+             if (this.downArrowDown)
+                 this.simulateWheel(50);
+             if (this.upArrowDown)
+                 this.simulateWheel(-50);
+         } else if (!this.spaceDown) {
+             if (this.downArrowDown)
+                 this.simulateRightDrag(0, -5);
+             if (this.upArrowDown)
+                 this.simulateRightDrag(0, 5);
+             if (this.leftArrowDown)
+                 this.simulateRightDrag(5, 0);
+             if (this.rightArrowDown)
+                 this.simulateRightDrag(-5, 0);
+         } else if (this.spaceDown) {
+             if (this.downArrowDown)
+                 this.simulateMiddleDrag(0, -50);
+             if (this.upArrowDown)
+                 this.simulateMiddleDrag(0, 50);
+             if (this.leftArrowDown)
+                 this.simulateMiddleDrag(50, 0);
+             if (this.rightArrowDown)
+                 this.simulateMiddleDrag(-50, 0);
+         }
+
      }
      this.localpointerMove = function(parms, pickInfo) {
 
@@ -529,6 +678,7 @@
 
          if (!_dView.inDefaultCamera()) return;
 
+         this.keyboardControl();
          try {
              if (this.objectFollowed != null)
                  this.targetUpdated(this.objectFollowed);
@@ -772,7 +922,7 @@
              else
                  this.flyspeed *= .9;
 
-             alertify.log('Flying at ' + Math.floor(75 / this.flyspeed) + ' mph');
+
          }
          if (this.cameramode == 'FirstPerson' && pickInfo.deltaY > 0) {
              this.cameramode = '3RDPerson';
@@ -789,7 +939,7 @@
              var dist = window.deltaTime / (this.flyspeed * 30.0);
              var forward = new THREE.Vector3(0, 0, -1);
              var center = new THREE.Vector3(0, 0, 0);
-             var cam = findcamera();
+             var cam = this.camera;
              forward.applyMatrix4(cam.matrixWorld);
              center.applyMatrix4(cam.matrixWorld);
              var offset = forward.sub(center);
