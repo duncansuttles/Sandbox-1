@@ -13,5 +13,8 @@
     },
     "Primitives": {
         "url": "./contentlibraries/primitives.json"
+    },
+    "Cameras": {
+        "url": "./contentlibraries/cameras.json"
     }
 }

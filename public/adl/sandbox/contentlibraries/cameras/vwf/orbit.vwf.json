@@ -1,0 +1,45 @@
+{
+    "extends": "SandboxCamera.vwf",
+    "methods": {
+        "deinitialize": {
+            "body": "\n  this.Scene.unbind('pointerMove', this.mousemove);\n      this.Scene.unbind('pointerDown', this.mousepress);\n      this.Scene.unbind('pointerUp', this.mouseup);\n      this.Scene.unbind('pointerWheel', this.mousewheel);\n      //This function was created for you by the system. \n      //Deinitialize is called when the object is being destroyed.\n      // Clean up here if your object allocated any resources manually during initialize.\n",
+            "parameters": []
+        },
+        "ready": {
+            "body": "\n\n    this.Scene.unbind('pointerMove', this.mousemove);\n        this.Scene.unbind('pointerDown', this.mousepress);\n        this.Scene.unbind('pointerUp', this.mouseup);\n        this.Scene.unbind('pointerWheel', this.mousewheel);\n        var self = this;\n        this.mousemove = function(e, d)\n        {\n\n            var rel_x = self.last_x - e.position[0];\n            var rel_y = self.last_y - e.position[1];\n            self.rotateCam(rel_x * 3, -rel_y * 3);\n            self.last_x = e.position[0];\n            self.last_y = e.position[1];\n        }\n        this.mousewheel = function(e, d)\n        {\n            self.zoom += e.wheelDelta;\n        }\n        this.mousepress = function(e, d)\n        {\n\n            self.mousedown = true;\n            self.last_x = e.position[0];\n            self.last_y = e.position[1];\n        }\n        this.mouseup = function(e, d)\n        {\n            self.mousedown = false;\n        }\n\n        this.Scene.bind('pointerMove', this.mousemove);\n        this.Scene.bind('pointerDown', this.mousepress);\n        this.Scene.bind('pointerUp', this.mouseup);\n        this.Scene.bind('pointerWheel', this.mousewheel);\n        //This function was created for you by the system. \n        //The scene is now completely loaded. This will fire on each client when the client joins, so it`s not a great place to create objects\n",
+            "parameters": []
+        },
+        "rotateCam": {
+            "body": "\n\n    var xrot = Quaternion.fromAngleAxis(rel_x, [0, 0, 1], []);\n        var offset = this.offset.internal_val;\n        offset = Mat4.multVec3NoTranslate(Quaternion.toRotationMatrix4(xrot, []), offset, []);\n       \n        var side = Vec3.cross(offset,[0,0,1],[]);\n        var yrot = Quaternion.fromAngleAxis(rel_y,side,[]);\n        offset = Mat4.multVec3NoTranslate(Quaternion.toRotationMatrix4(yrot, []), offset, []);\n         this.offset = offset;\n",
+            "parameters": ["rel_x", "rel_y"]
+        },
+        "tick": {
+            "body": "\n\n    var node = this.Scene.findNode(this.objectToLookAt);\n            var pos = [0, 0, 0];\n            if (node)\n                pos = node.transformAPI.localToGlobal([0, 0, 0]);\n            var offset = this.offset.internal_val;\n            offset = MATH.scaleVec3(offset, this.zoom);\n            this.transformAPI.setPosition(MATH.addVec3(pos, offset));\n            this.transformAPI.lookat(pos, '', '-Y', 'Z');\n",
+            "parameters": []
+        }
+    },
+    "properties": {
+        "DisplayName": "Camera1",
+        "last_x": 0,
+        "last_y": 0,
+        "mousedown": 0,
+        "objectToLookAt": "null",
+        "offset": [1, 0, 0],
+        "owner": "Anonymous0",
+        "quaternion": [-0.168120741844177, 0.0131280934438109, -0.0767349526286125, 0.982687532901764],
+        "rotation": [-0.90743362903595, 0.0708590298891068, -0.414177775382996, 21.3538246154785],
+        "scale": [1.00000011920929, 0.998998463153839, 0.999000251293182],
+        "transform": [0.10949709266424179, -0.9939874410629272, 8.258164818641944e-9, 0, 0.888575553894043, 0.09788497537374496, -0.4459262192249298, 0, 0.44324547052383423, 0.048827677965164185, 0.8939518928527832, 0, 3.3332905769348145, -0.8693611025810242, 0.01774579845368862, 1],
+        "translation": [-4.97808504104614, -9.80616760253906, 1.45953845977783],
+        "zoom": 1
+    },
+    "random": {
+        "c": 1,
+        "s0": 0.762165069347247,
+        "s1": 0.779216341907158,
+        "s2": 0.235236180946231
+    },
+    "sequence": 0,
+    "source": "vwf/model/threejs/camera.js",
+    "type": "subDriver/threejs"
+}

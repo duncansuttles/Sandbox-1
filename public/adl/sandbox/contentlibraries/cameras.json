@@ -1,0 +1,17 @@
+{
+	"Orbit":{
+		"url":"./contentlibraries/cameras/vwf/orbit.vwf.json",
+		"preview":"./contentlibraries/cameras/thumbs/camera.png",
+		"type":"asset"
+	},
+	"Fly":{
+		"url":"./contentlibraries/cameras/vwf/fly.vwf.json",
+		"preview":"./contentlibraries/cameras/thumbs/camera.png",
+		"type":"asset"
+	},
+	"Walk":{
+		"url":"./contentlibraries/cameras/vwf/walk.vwf.json",
+		"preview":"./contentlibraries/cameras/thumbs/camera.png",
+		"type":"asset"
+	}
+}

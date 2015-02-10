@@ -1,26 +1,27 @@
 ﻿"use strict";
-    // Copyright 2012 United States Government, as represented by the Secretary of Defense, Under
-    // Secretary of Defense (Personnel & Readiness).
-    // 
-    // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-    // in compliance with the License. You may obtain a copy of the License at
-    // 
-    //   http://www.apache.org/licenses/LICENSE-2.0
-    // 
-    // Unless required by applicable law or agreed to in writing, software distributed under the License
-    // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-    // or implied. See the License for the specific language governing permissions and limitations under
-    // the License.
+// Copyright 2012 United States Government, as represented by the Secretary of Defense, Under
+// Secretary of Defense (Personnel & Readiness).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License. You may obtain a copy of the License at
+// 
+//   http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software distributed under the License
+// is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions and limitations under
+// the License.
 function setClone(ab) {
-        var f32 = new Float32Array(ab.length);
-        f32.set(ab);
-        return f32;
-    }
+    var f32 = new Float32Array(ab.length);
+    f32.set(ab);
+    return f32;
+}
+
 function getURLParameter(name) {
-            return decodeURI(
-                (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search) || [, null])[1]
-            );
-        }
+    return decodeURI(
+        (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search) || [, null])[1]
+    );
+}
 
 function matset(newv, old) {
     if (!old) {
@@ -35,11 +36,9 @@ function matset(newv, old) {
 }
 
 
-
-
 var pfx = ["webkit", "moz", "ms", "o", ""];
 
-define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/threejs/ThermalCamEffect", "vwf/model/threejs/VRRenderer","vwf/view/threejs/editorCameraController"], function(module, view) {
+define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/threejs/ThermalCamEffect", "vwf/model/threejs/VRRenderer", "vwf/view/threejs/editorCameraController"], function(module, view) {
     var stats;
     var NORMALRENDER = 0;
     var STEREORENDER = 1;
@@ -56,7 +55,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         vrHMDSensor: null,
         vrHMD: null,
         vrRenderer: null,
-        editorCamera:new THREE.PerspectiveCamera(35, $(document).width() / $(document).height(), .01, 10000),
+        editorCamera: new THREE.PerspectiveCamera(35, $(document).width() / $(document).height(), .01, 10000),
         simulateContextLoss: function() {
             var cx = _dRenderer.context.getExtension('WEBGL_lose_context');
             cx.loseContext();
@@ -116,19 +115,18 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         glyphs: [],
         addGlyph: function(id, url) {
 
-            if(this.glyphs.indexOf(id) == -1)
+            if (this.glyphs.indexOf(id) == -1)
                 this.glyphs.push(id);
-            else
-            {
-                $('#glyph' + ToSafeID(id)).attr('src',url);
+            else {
+                $('#glyph' + ToSafeID(id)).attr('src', url);
                 return;
             }
 
             var newdiv = document.createElement('img');
 
             $(newdiv).addClass('glyph');
-            $(newdiv).attr('vwfid',id);
-            newdiv.style.position = 'absolute';  
+            $(newdiv).attr('vwfid', id);
+            newdiv.style.position = 'absolute';
             newdiv.id = ToSafeID('glyph' + id);
             //newdiv.innerHTML = "" + this.name;
             $(newdiv).attr('src', url);
@@ -154,14 +152,12 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             });
 
         },
-        removeGlyph:function(id)
-        {
-            if(this.glyphs.indexOf(id) == -1)
+        removeGlyph: function(id) {
+            if (this.glyphs.indexOf(id) == -1)
                 return
-            else
-            {
+            else {
                 $('#glyph' + ToSafeID(id)).remove();
-                this.glyphs.splice(this.glyphs.indexOf(id),1);
+                this.glyphs.splice(this.glyphs.indexOf(id), 1);
                 return;
             }
         },
@@ -169,12 +165,11 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
             for (var i = 0; i < this.glyphs.length; i++) {
                 var div = $('#glyph' + ToSafeID(this.glyphs[i]))[0];
-                if(!div) continue;
+                if (!div) continue;
 
-                var trans = vwf.getProperty(this.glyphs[i],'worldTransform');
-                
+                var trans = vwf.getProperty(this.glyphs[i], 'worldTransform');
+
                 var pos = [trans[12], trans[13], trans[14], 1];
-
 
 
                 var screen = MATH.mulMat4Vec4(viewprojection, pos);
@@ -231,7 +226,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         initialize: function(rootSelector) {
 
             this.initHMD();
-           
+
             rootSelector = {
                 "application-root": '#vwf-root'
             };
@@ -377,10 +372,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         setInterpolatedTransforms: function(deltaTime) {
 
 
-
             //deltaTime = Math.min(deltaTime,this.realTickDif)
             this.tickTime += deltaTime || 0;
-
 
 
             var hit = 0;
@@ -421,16 +414,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
             }
 
-
-            /*
-            if (this.gizmoThisTickTransform && this.gizmoLastTickTransform) {
-                this.currentGizmoTransform = _Editor.GetMoveGizmo().parent.matrix.clone();
-                var interpG = this.matrixLerp(matCpy(this.gizmoLastTickTransform.elements), matCpy(this.gizmoThisTickTransform.elements), step);
-
-                _Editor.GetMoveGizmo().parent.matrix.fromArray(interpG);
-                _Editor.GetMoveGizmo().parent.updateMatrixWorld(true);
-            }*/
-
             var lerpStep = Math.min(1, .2 * (deltaTime / 16.6)); //the slower the frames ,the more we have to move per frame. Should feel the same at 60 0r 20
             var keys = Object.keys(this.nodes);
             var interp = null;
@@ -458,7 +441,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     }
 
 
-
                 }
 
                 last = this.nodes[i].lastAnimationFrame;
@@ -469,7 +451,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
 
                     interpA = this.lerp(last, now, step);
-
 
 
                     this.nodes[i].currentAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
@@ -487,7 +468,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
 
             }
-
 
 
         },
@@ -552,7 +532,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         ticklocal: function() {
 
 
-
         },
         ticked: function() {
             //so, here's what we'll do. Since the sim state cannot advance until tick, we will update on tick. 
@@ -582,10 +561,9 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             //why must every driver deal with this crap? The design of this thing is ridiculous.
             //here, we must deal with the fact that we might never see a setproperty for a node based on one of the standard types
             //because the property for the glyphURL is defined on the prototype
-            var glyph = vwf.getProperty(childExtendsID,'glyphURL');
-            if(glyph)
-            {
-                this.addGlyph(childID,glyph);
+            var glyph = vwf.getProperty(childExtendsID, 'glyphURL');
+            if (glyph) {
+                this.addGlyph(childID, glyph);
             }
             //the created node is a scene, and has already been added to the state by the model.
             //how/when does the model set the state object? 
@@ -755,7 +733,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             //this.state.nodes is shared with the threejs model!
             var node = this.state.nodes[nodeID];
             if (!node) node = this.state.scenes[nodeID];
-            if(!this.nodes[nodeID]) return;
+            if (!this.nodes[nodeID]) return;
             //this driver has no representation of this node, so there is nothing to do.
             if (!node) return;
 
@@ -776,9 +754,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             //There is not three object for this node, so there is nothing this driver can do. return
             if (!threeObject) return value;
 
-            if(node && propertyName == 'glyphURL')
-            {
-                this.addGlyph(nodeID,propertyValue);
+            if (node && propertyName == 'glyphURL') {
+                this.addGlyph(nodeID, propertyValue);
             }
             if (node && threeObject && propertyValue !== undefined) {
                 if (threeObject instanceof THREE.Scene) {
@@ -960,7 +937,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             }
 
 
-
         },
         createRenderTarget: function(cameraID) {
 
@@ -1026,7 +1002,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
     });
     // private ===============================================================================
     function initScene(sceneNode) {
-
 
 
         var self = this;
@@ -1141,7 +1116,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         }
 
 
-
         var timepassed;
         var now;
         var cam;
@@ -1167,7 +1141,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         var documentselector = $(document);
 
         function renderScene(time) {
-
 
 
             requestAnimFrame(renderScene);
@@ -1218,7 +1191,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 self.setInterpolatedTransforms(timepassed);
 
 
-
             cam.matrixWorldInverse.getInverse(cam.matrixWorld);
 
             _viewProjectionMatrix.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
@@ -1233,14 +1205,13 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             if (minD < 100) return;
 
 
-
             vpargs[0] = vp.slice(0);
             vpargs[1] = wh;
             vpargs[2] = ww;
 
 
             self.trigger('prerender', vpargs);
-            self.updateGlyphs(null,vp,wh,ww);
+            self.updateGlyphs(null, vp, wh, ww);
             var keys = Object.keys(vwf.models[0].model.nodes);
             for (var j = 0; j < keys.length; j++) {
                 var i = keys[j];
@@ -1253,7 +1224,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
             _viewProjectionMatrix.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
             vp = _viewProjectionMatrix.transpose().toArray(temparray);
-
 
 
             if (sceneNode.frameCount > 5) {
@@ -1313,7 +1283,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             self.trigger('postprerender', vpargs);
 
 
-
             //update the render passes - these may be added by render to texture materials, or from the terrain grass engine
             for (var i = 0; i < self.renderTargetPasses.length; i++) {
                 var rttcamID = self.renderTargetPasses[i].camera;
@@ -1324,7 +1293,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 renderer.setRenderTarget();
                 renderer.render(scene, rttcam, rtt);
             }
-
 
 
             //use this for drawing really really far. Not usually necessary
@@ -1428,7 +1396,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             }
 
 
-
             if (self.selection && vwf.getProperty(self.selection.id, 'type') == 'Camera' && self.cameraID != self.selection.id) {
                 var selnode = _Editor.findviewnode(self.selection.id);
                 if (selnode) {
@@ -1443,12 +1410,10 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     h = wh / 3;
 
 
-
                     renderer.setViewport(0, 0, w, w);
                     _Editor.hideMoveGizmo();
                     _dRenderer.setScissor(0, 0, w, w);
                     renderer.enableScissorTest(true);
-
 
 
                     camback = self.cameraID;
@@ -1478,13 +1443,11 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             }
 
 
-
             self.trigger('postrender', vpargs);
 
             if ($('#glyphOverlay').css('display') != 'none') {
                 self.trigger('glyphRender', vpargs);
             }
-
 
 
             if (stats.domElement.style.display == 'block')
@@ -1507,8 +1470,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
         var mycanvas = this.canvasQuery.get(0);
 
-
-        
 
         if (mycanvas) {
             var oldMouseX = 0;
@@ -1591,7 +1552,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                         });
 
 
-
                         //here, we are going to do a lot of work to clean up the three.js datastructures
                         //to force the  new renderer to recreate all the webgl objects
                         _dScene.__webglObjects = {};
@@ -1642,7 +1602,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
                                         node.attributes[i].buffer = _dRenderer.context.createBuffer();
 
-                                        
+
                                         node.attributes[i].array = setClone(node.attributes[i].array);
                                         _dRenderer.context.bindBuffer(_dRenderer.context.ARRAY_BUFFER, node.attributes[i].buffer);
                                         _dRenderer.context.bufferData(_dRenderer.context.ARRAY_BUFFER, node.attributes[i].array, _dRenderer.context.STATIC_DRAW);
@@ -1730,7 +1690,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             this.state.cameraInUse = sceneNode.camera.threeJScameras[sceneNode.camera.ID];
 
 
-
             // Schedule the renderer.
 
             var view = this;
@@ -1756,42 +1715,42 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
     function rebuildAllMaterials(start) {
 
-            if (!start) {
-                for (var i in this.state.scenes) {
-                    rebuildAllMaterials(this.state.scenes[i].threeScene);
-                }
-            } else {
-                if (start && start.material) {
-                    start.material.needsUpdate = true;
-                }
-                if (start && start.children) {
-                    for (var i in start.children)
-                        rebuildAllMaterials(start.children[i]);
-                }
+        if (!start) {
+            for (var i in this.state.scenes) {
+                rebuildAllMaterials(this.state.scenes[i].threeScene);
+            }
+        } else {
+            if (start && start.material) {
+                start.material.needsUpdate = true;
+            }
+            if (start && start.children) {
+                for (var i in start.children)
+                    rebuildAllMaterials(start.children[i]);
             }
         }
-        //necessary when settign the amibent color to match MATH behavior
-        //Three js mults scene ambient by material ambient
+    }
+    //necessary when settign the amibent color to match MATH behavior
+    //Three js mults scene ambient by material ambient
     function SetMaterialAmbients(start) {
 
-            if (!start) {
-                for (var i in this.state.scenes) {
-                    SetMaterialAmbients(this.state.scenes[i].threeScene);
-                }
-            } else {
-                if (start && start.material) {
-                    //.005 chosen to make the 255 range for the ambient light mult to values that look like MATH values.
-                    //this will override any ambient colors set in materials.
-                    if (start.material.ambient)
-                        start.material.ambient.setRGB(1, 1, 1);
-                }
-                if (start && start.children) {
-                    for (var i in start.children)
-                        SetMaterialAmbients(start.children[i]);
-                }
+        if (!start) {
+            for (var i in this.state.scenes) {
+                SetMaterialAmbients(this.state.scenes[i].threeScene);
+            }
+        } else {
+            if (start && start.material) {
+                //.005 chosen to make the 255 range for the ambient light mult to values that look like MATH values.
+                //this will override any ambient colors set in materials.
+                if (start.material.ambient)
+                    start.material.ambient.setRGB(1, 1, 1);
+            }
+            if (start && start.children) {
+                for (var i in start.children)
+                    SetMaterialAmbients(start.children[i]);
             }
         }
-        // -- initInputEvents ------------------------------------------------------------------------
+    }
+    // -- initInputEvents ------------------------------------------------------------------------
 
 
     function initInputEvents(canvas) {
@@ -1814,7 +1773,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
         var container = document.getElementById("container");
         var sceneCanvas = canvas;
-
 
 
         var self = this;
@@ -1861,7 +1819,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 screenPosition: [mouseXPos.call(this, e), mouseYPos.call(this, e)],
                 worldPickRay: _Editor.GetWorldPickRay(e)
             }];
-
 
 
             var camera = self.getCamera(); //sceneView.state.cameraInUse;
@@ -2130,7 +2087,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 //var params = JSON.stringify( sceneView.keyStates );
 
 
-
             }
             for (var i in sceneView.keyStates.keysUp) {
 
@@ -2319,15 +2275,15 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
     };
 
-    function getClientFocusNode (client)
-    {
-        var clients = vwf.getProperty(vwf.application(),'clients');
-        if(clients[client] && clients[client].focusID)
+    function getClientFocusNode(client) {
+        var clients = vwf.getProperty(vwf.application(), 'clients');
+        if (clients[client] && clients[client].focusID)
             return clients[client].focusID;
         else return vwf.application();
 
 
     }
+
     function mouseXPos(e) {
 
         return e.clientX - e.currentTarget.offsetLeft + (window.scrollX || 0);
@@ -2348,7 +2304,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         };
         if (!this.pickOptions) this.pickOptions = {};
 
-        var threeCam = cam; 
+        var threeCam = cam;
         if (!this.ray) this.ray = new THREE.Ray();
         if (!this.projector) this.projector = new THREE.Projector();
         if (!this.directionVector) this.directionVector = new THREE.Vector3();
@@ -2369,7 +2325,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
         pos.copy(pos2);
         this.directionVector.sub(pos);
         this.directionVector.normalize();
-
 
 
         var intersects;
@@ -2413,7 +2368,6 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 intersects = _SceneManager.CPUPick([pos.x, pos.y, pos.z], [this.directionVector.x, this.directionVector.y, this.directionVector.z], this.pickOptionsAvatar);
             else
                 intersects = _SceneManager.CPUPick([pos.x, pos.y, pos.z], [this.directionVector.x, this.directionVector.y, this.directionVector.z], this.pickOptions);
-
 
 
             return intersects;

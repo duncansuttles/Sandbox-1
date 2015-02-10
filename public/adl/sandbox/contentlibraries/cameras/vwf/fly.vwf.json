@@ -1,0 +1,35 @@
+{
+    "extends": "SandboxCamera.vwf",
+    "methods": {
+        "deinitialize": {
+            "body": "\n  this.Scene.unbind('pointerMove', this.pointermoved);\n      this.Scene.unbind('pointerDown', this.pointerdown);\n      //This function was created for you by the system. \n      //Deinitialize is called when the object is being destroyed.\n      // Clean up here if your object allocated any resources manually during initialize.\n",
+            "parameters": []
+        },
+        "ready": {
+            "body": "\n\n\n\n\n\n\n\n                this.Scene.unbind('pointerMove', this.pointermoved);\n                    this.Scene.unbind('pointerDown', this.pointerdown);\n                    var self = this;\n                    this.pointermoved = function(event)\n                    {\n                        self.relX = self.lastX - event.position[0];\n                        self.relY = self.lastY - event.position[1];\n                        //self.lastX = event.position[0];\n                        //self.lastY = event.position[1];\n                        console.log(self.relX);\n                    }\n                    this.pointerdown = function(event)\n                    {\n                        self.lastX = event.position[0];\n                        self.lastY = event.position[1];\n                    }\n                    this.Scene.bind('pointerMove', this.pointermoved);\n                    this.Scene.bind('pointerDown', this.pointerdown);\n                    //This function was created for you by the system. \n                    //The scene is now completely loaded. This will fire on each client when the client joins, so it`s not a great place to create objects\n",
+            "parameters": []
+        },
+        "tick": {
+            "body": "\n\n\n\n\n\n            this.transformAPI.move(0, .5, 0, this.transformAPI.COORDINATES.LOCAL);\n\n                this.transformAPI.rotateZ(this.relX * 30, this.transformAPI.COORDINATES.GLOBAL);\n                this.transformAPI.rotateX(this.relY * 30, this.transformAPI.COORDINATES.LOCAL);\n                this.transformAPI.rotateY(this.relX * -10, this.transformAPI.COORDINATES.LOCAL);\n                var localX = this.transformAPI.localToGlobalRotation([1, 0, 0]);\n                localX[1] = 0;\n                localX = Vec3.normalize(localX, []);\n                var dotH = Vec3.dot(localX, [0, 0, -1]);\n\n                //if (dotH > 0)\n                this.transformAPI.rotateY(-dotH, this.transformAPI.COORDINATES.LOCAL);\n                //else\n                //  this.transformAPI.rotateY(dotH * -10, this.transformAPI.COORDINATES.LOCAL);\n                var pos = this.transformAPI.getPosition();\n                var hits = _SceneManager.CPUPick(pos, [0, 0, -1]);\n\n                if (hits && pos[2] < hits.point[2])\n                {\n                    pos[2] = hits.point[2];\n                    this.transformAPI.setPosition(pos);\n                    this.transformAPI.rotateX( 30, this.transformAPI.COORDINATES.LOCAL);\n                }\n                //this.relX = 0;\n                //this.relY = 0;\n",
+            "parameters": []
+        }
+    },
+    "properties": {
+        "DisplayName": "Camera1",
+        "lastX": 0.4107594936708861,
+        "lastY": 0.90927624872579,
+        "owner": "Anonymous0",
+        "relX": 0.0056962025316456,
+        "relY": -0.0050968399592252744,
+        "transform": [0.7426735162734985, -0.6686468720436096, 0.03672044724225998, 0, 0.6685550212860107, 0.7434794902801514, 0.016527870669960976, 0, -0.0383523553609848, 0.012274662032723427, 0.9991904497146606, 0, -1.1348685026168823, -0.7031089067459106, 1.8177460432052612, 1]
+    },
+    "random": {
+        "c": 1,
+        "s0": 0.898159096715972,
+        "s1": 0.551168398233131,
+        "s2": 0.348852874245495
+    },
+    "sequence": 0,
+    "source": "vwf/model/threejs/camera.js",
+    "type": "subDriver/threejs"
+}
