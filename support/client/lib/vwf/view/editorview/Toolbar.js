@@ -1,9 +1,9 @@
-function toolBarButton(src, handler,tooltip)
+function toolBarButton(src, handler,tooltip,name)
 {
-
+            if(!name) name = GUID();
             var translatedTooltip = i18n.t(tooltip);
 
-            var iconname = 'toolbaricon' + GUID() +  "icon";
+            var iconname = name  +  "icon";
             
            
 
@@ -100,7 +100,7 @@ define({
 
                 $(".ddsmoothmenu").find('li').trigger('mouseleave');
             };
-            toolbarButtons[menuitemname] = new toolBarButton(src,handler,tooltip);
+            toolbarButtons[menuitemname] = new toolBarButton(src,handler,tooltip,menuitemname);
         }
 
 
