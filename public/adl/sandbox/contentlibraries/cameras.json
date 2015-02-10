@@ -13,5 +13,10 @@
 		"url":"./contentlibraries/cameras/vwf/walk.vwf.json",
 		"preview":"./contentlibraries/cameras/thumbs/camera.png",
 		"type":"asset"
+	},
+	"Lookat":{
+		"url":"./contentlibraries/cameras/vwf/lookat.vwf.json",
+		"preview":"./contentlibraries/cameras/thumbs/camera.png",
+		"type":"asset"
 	}
 }

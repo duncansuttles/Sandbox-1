@@ -1,0 +1,40 @@
+{
+    "extends": "SandboxCamera.vwf",
+    "methods": {
+        "tick": {
+            "body": "\n  var node = this.Scene.findNodeByID(this.objectToLookAt);\n      var pos = [0, 0, 0];\n      if (node)\n          pos = node.transformAPI.localToGlobal([0, 0, 0]);\n      var offset = this.offset.internal_val;\n      offset = MATH.scaleVec3(offset, this.zoom);\n     \n      this.transformAPI.lookat(pos, '', '-Y', 'Z');\n",
+            "parameters": []
+        }
+    },
+    "properties": {
+        "DisplayName": "LookatCamera",
+        "EditorData": {
+            "Target": {
+                "displayname": "Target",
+                "property": "objectToLookAt",
+                "type": "nodeid"
+            }
+        },
+        "last_x": 0,
+        "last_y": 0,
+        "mousedown": 0,
+        "objectToLookAt": "sphere2-vwf-8ece85a2-f2d7-221b-db-b3e4b1b0ded7",
+        "offset": [1, 0, 0],
+        "owner": "Anonymous0",
+        "quaternion": [-0.168120741844177, 0.0131280934438109, -0.0767349526286125, 0.982687532901764],
+        "rotation": [-0.90743362903595, 0.0708590298891068, -0.414177775382996, 21.3538246154785],
+        "scale": [1.00000011920929, 0.998998463153839, 0.999000251293182],
+        "transform": [0.10949709266424179, -0.9939874410629272, 8.258164818641944e-9, 0, 0.888575553894043, 0.09788497537374496, -0.4459262192249298, 0, 0.44324547052383423, 0.048827677965164185, 0.8939518928527832, 0, -0.7464320659637451, -1.3108220100402832, 1.4177459478378296, 1],
+        "translation": [-4.97808504104614, -9.80616760253906, 1.45953845977783],
+        "zoom": 1
+    },
+    "random": {
+        "c": 1,
+        "s0": 0.762165069347247,
+        "s1": 0.779216341907158,
+        "s2": 0.235236180946231
+    },
+    "sequence": 0,
+    "source": "vwf/model/threejs/camera.js",
+    "type": "subDriver/threejs"
+}

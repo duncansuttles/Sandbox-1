@@ -42,16 +42,3 @@ properties:
       min: 1
       max: 90
       step: 1
-    activate:
-      type: button
-      label: Activate
-      method: activate      
-scripts:
--  |
-    this.activate = function()
-    {
-        if(this.moniker == this.client)
-        {
-            _dView.setCamera(this.id);
-        }
-    }

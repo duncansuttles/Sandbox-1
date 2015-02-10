@@ -19,7 +19,7 @@
         }
     },
     "properties": {
-        "DisplayName": "Camera1",
+        "DisplayName": "OrbitCamera",
         "last_x": 0,
         "last_y": 0,
         "mousedown": 0,
