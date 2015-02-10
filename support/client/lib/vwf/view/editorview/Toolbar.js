@@ -32,6 +32,22 @@ function toolBarButton(src, handler,tooltip)
             {
                 this.handler();
             }
+            this.select = function()
+            {
+                $('#' + iconname).addClass('iconselected');
+            }
+            this.deselect = function()
+            {
+                $('#' + iconname).removeClass('iconselected');
+            }
+            this.enable = function()
+            {
+                $('#' + iconname).addClass('icondisabled');
+            }
+            this.disable = function()
+            {
+                $('#' + iconname).removeClass('icondisabled');
+            }
 }
 var toolbarButtons = {};
 define({

@@ -207,6 +207,7 @@ scripts:
     this.findNode = function(displayName,node)
     {
       
+      if(displayName.internal_val) displayName = displayName.internal_val;
       if(!node)
       node = this;
       
@@ -223,6 +224,7 @@ scripts:
     this.findNodeByID = function(id,node)
     {
       
+      if(id.internal_val) id = id.internal_val;
       if(!node)
       node = this;
       

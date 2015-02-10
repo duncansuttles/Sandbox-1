@@ -280,6 +280,7 @@ define(function() {
                     this.SelectionTransformed(null, node);
                     this.setupAnimationGUI(node, true);
                     this.setupEditorData(node, true);
+                    this.recursevlyAddPrototypes(node);
                     this.recursevlyAddModifiers(node);
                     this.addBehaviors(node);
                     $("#accordion").accordion({
@@ -302,6 +303,17 @@ define(function() {
             }
         }
 
+        this.recursevlyAddPrototypes = function(node) {
+            
+            
+            
+            node = _Editor.getNode(vwf.prototype(node.id)); 
+            if(!node) return;  
+            this.setupEditorData(node, false);
+            this.recursevlyAddPrototypes(node);
+                
+            
+        }
         this.recursevlyAddModifiers = function(node) {
             for (var i in node.children) {
                 /*	section = '<h3 class="modifiersection" ><a href="#">'+node.children[i].properties.type+'</a></h3>'+

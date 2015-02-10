@@ -14,7 +14,7 @@
             "parameters": ["rel_x", "rel_y"]
         },
         "tick": {
-            "body": "\n\n    var node = this.Scene.findNode(this.objectToLookAt);\n            var pos = [0, 0, 0];\n            if (node)\n                pos = node.transformAPI.localToGlobal([0, 0, 0]);\n            var offset = this.offset.internal_val;\n            offset = MATH.scaleVec3(offset, this.zoom);\n            this.transformAPI.setPosition(MATH.addVec3(pos, offset));\n            this.transformAPI.lookat(pos, '', '-Y', 'Z');\n",
+            "body": "\n\n    var node = this.Scene.findNodeByID(this.objectToLookAt);\n            var pos = [0, 0, 0];\n            if (node)\n                pos = node.transformAPI.localToGlobal([0, 0, 0]);\n            var offset = this.offset.internal_val;\n            offset = MATH.scaleVec3(offset, this.zoom);\n            this.transformAPI.setPosition(MATH.addVec3(pos, offset));\n            this.transformAPI.lookat(pos, '', '-Y', 'Z');\n",
             "parameters": []
         }
     },
@@ -31,7 +31,16 @@
         "scale": [1.00000011920929, 0.998998463153839, 0.999000251293182],
         "transform": [0.10949709266424179, -0.9939874410629272, 8.258164818641944e-9, 0, 0.888575553894043, 0.09788497537374496, -0.4459262192249298, 0, 0.44324547052383423, 0.048827677965164185, 0.8939518928527832, 0, 3.3332905769348145, -0.8693611025810242, 0.01774579845368862, 1],
         "translation": [-4.97808504104614, -9.80616760253906, 1.45953845977783],
-        "zoom": 1
+        "zoom": 1,
+        "EditorData":
+            {
+            	"Target":{
+            		"type":"nodeid",
+            		"displayname":"Target",
+            		"property":"objectToLookAt"
+            	}
+
+            }
     },
     "random": {
         "c": 1,
