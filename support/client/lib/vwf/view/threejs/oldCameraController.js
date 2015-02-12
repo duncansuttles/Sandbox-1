@@ -817,7 +817,7 @@
      this.pointerLeave = function(parms) {}
      this.localpointerWheel = function(pickInfo)
      {
-         if (this.cameramode != 'Free' && this.cameramode != 'Fly' && this.cameramode != 'Navigate')
+         if (this.cameramode != 'Free' && this.cameramode != 'Fly' && this.cameramode != 'Navigate' && this.cameramode != 'FirstPerson')
          {
              if (this.zoom < .4 && pickInfo.deltaY < 0)
              {
@@ -851,7 +851,8 @@
          }
          if (this.cameramode == 'FirstPerson' && pickInfo.deltaY > 0)
          {
-             this.cameramode = '3RDPerson';
+             require("vwf/view/threejs/editorCameraController").setCameraMode('3RDPerson');
+             require("vwf/view/threejs/editorCameraController").getController('3RDPerson').zoom = 1;
          }
          else if (this.cameramode == '3RDPerson' && pickInfo.deltaY < 0)
          {

@@ -873,24 +873,16 @@ scripts:
 
         if (this.id == 'character-vwf') return false;
         if (vwf.client() != this.ownerClientID) return false;
-        if (!(e.keysDown.W || e.keysDown.uparrow || e.keysDown.S || e.keysDown.downarrow ||e.keysDown.D||e.keysDown.A)) {
+        if (!(e.keysDown.W || e.keysDown.uparrow ||e.keysDown.D||e.keysDown.A||e.keysDown.leftarrow||e.keysDown.rightarrow)) {
           this.removeMotion('walk');
           this.removeCycle('walk');
         }
+        if (!(e.keysDown.S || e.keysDown.downarrow)) {
+          this.removeMotion('walkback');
+          this.removeCycle('walkback');
+        }
        
-        if (!e.keysDown.C && !e.keysDown.rightarrow) {
-          this.removeMotion('turnright');
-          this.removeMotion('turnleft');
-          this.removeCycle('turnright');
-          this.removeCycle('turnleft');
-        }
-        
-        if (!e.keysDown.Z && !e.keysDown.leftarrow) {
-          this.removeMotion('turnleft');
-          this.removeMotion('turnright');
-          this.removeCycle('turnleft');
-          this.removeCycle('turnright');
-        }
+      
         if (!e.keysDown.W && !e.keysDown.uparrow && this.inMotion('run'))
           this.cancelRun();
 
@@ -909,10 +901,13 @@ scripts:
         if (this.id == 'character-vwf') return false;
         if (vwf.client() != this.ownerClientID) return false;
 
-        if (e.keysDown.W || e.keysDown.uparrow || e.keysDown.S || e.keysDown.downarrow ||e.keysDown.D||e.keysDown.A){
+        if (e.keysDown.W || e.keysDown.uparrow  ||e.keysDown.D||e.keysDown.A || e.keysDown.leftarrow || e.keysDown.rightarrow){
 
           this.walk();
 
+        }if(e.keysDown.S || e.keysDown.downarrow)
+        {
+          this.walkback();
         }
         
         if (e.keysDown.space && !e.mods.shift) {
@@ -923,18 +918,7 @@ scripts:
         }
         
 
-        if ((e.keysDown.C || e.keysDown.rightarrow) && !this.inMotion('walkback')) {
-          this.addMotion('turnright');
-        }
-        if ((e.keysDown.C || e.keysDown.rightarrow) && this.inMotion('walkback')) {
-          this.addMotion('turnleft');
-        }
-        if ((e.keysDown.Z || e.keysDown.leftarrow) && !this.inMotion('walkback')) {
-          this.addMotion('turnleft');
-        }
-        if ((e.keysDown.Z || e.keysDown.leftarrow) && this.inMotion('walkback')) {
-          this.addMotion('turnright');
-        }
+       
         if (e.mods.shift && e.keysDown.W)
           this.run();
 

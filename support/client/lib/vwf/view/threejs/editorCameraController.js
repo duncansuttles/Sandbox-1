@@ -15,7 +15,7 @@
          this.addController('Free', _oldCameraController);
          this.addController('Fly', _oldCameraController);
          this.addController('3RDPerson', avatarCameraController);
-         this.addController('FirstPerson', avatarCameraController);
+         this.addController('FirstPerson', _oldCameraController);
          this.addController('DeviceOrientation', _oldCameraController);
          this.cameramode = 'Orbit';
          $('#index-vwf').mousedown(function(e)

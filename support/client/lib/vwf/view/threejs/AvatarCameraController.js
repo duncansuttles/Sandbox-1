@@ -19,30 +19,39 @@ var AvatarCameraController = function()
         this.totalz = 0;
         this.zoom = 3;
         this.mouseDown = false;
+        this.shiftDown = false;
+        this.ctrlDown = false;
     }
     this.localTouchStart = function(event) {}
     this.localTouchEnd = function(event) {}
     this.localTouchMove = function(event) {}
     this.localpointerDown = function(e, pickInfo)
     {
-        this.mouseDown = true;
+        if(e.button == 2)
+            this.mouseDown = true;
         this.last_x = e.clientX;
         this.last_y = e.clientY;
     }
     this.localpointerUp = function(e, pickInfo)
     {
-        this.mouseDown = false;
+        if(e.button == 2)
+            this.mouseDown = false;
     }
     this.localKeyDown = function(e)
     {
+        console.log(e.keyCode)
         var id = _UserManager.GetAvatarForClientID(vwf.moniker()).id;
-        if (e.keyCode == 87) //W
+        if (e.keyCode == 16)
+            this.shiftDown = true;
+        if (e.keyCode == 17)
+            this.ctrlDown = true;
+        if (e.keyCode == 87 || e.keyCode == 38) //W
         {
             vwf_view.kernel.callMethod(id, 'lookat', [
                 [-this.offset.x, -this.offset.y, -this.offset.z]
             ]);
         }
-        if (e.keyCode == 65) //S
+        if (e.keyCode == 65 || e.keyCode == 37) //A
         {
             var up = new THREE.Vector3(0, 0, 1);
             var side = this.offset.clone().cross(up);
@@ -50,7 +59,7 @@ var AvatarCameraController = function()
                 [side.x, side.y, side.z]
             ]);
         }
-        if (e.keyCode == 68) //D
+        if (e.keyCode == 68 || e.keyCode == 39) //D
         {
             var up = new THREE.Vector3(0, 0, 1);
             var side = this.offset.clone().cross(up);
@@ -58,25 +67,38 @@ var AvatarCameraController = function()
                 [-side.x, -side.y, -side.z]
             ]);
         }
-        if (e.keyCode == 83) //A
+        if (e.keyCode == 83 || e.keyCode == 40) //S
         {
             vwf_view.kernel.callMethod(id, 'lookat', [
-                [this.offset.x, this.offset.y, this.offset.z]
+                [-this.offset.x, -this.offset.y, -this.offset.z]
             ]);
         }
     }
-    this.localKeyUp = function(e) {}
+    this.localKeyUp = function(e) {
+        if (e.keyCode == 16)
+            this.shiftDown = false;
+         if (e.keyCode == 17)
+            this.ctrlDown = false;
+    }
     this.localpointerMove = function(e, pickInfo)
     {
-        if (!this.mouseDown) return;
-        this.rel_x = e.clientX - this.last_x;
-        this.last_x = e.clientX;
-        var rot_z = new THREE.Quaternion();
-        rot_z.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -this.rel_x / 300);
-        this.offset = this.offset.applyQuaternion(rot_z);
+        
+         this.rel_x = e.clientX - this.last_x;
+      this.last_x = e.clientX;
+        if (this.mouseDown || this.shiftDown ){
+               
+                var rot_z = new THREE.Quaternion();
+                rot_z.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -this.rel_x / 300);
+                this.offset = this.offset.applyQuaternion(rot_z);}
+        
         this.rel_y = e.clientY - this.last_y;
         this.last_y = e.clientY;
-        this.totalz += this.rel_y;
+        if (this.mouseDown  || this.shiftDown)
+            this.totalz += this.rel_y;
+        else if(this.ctrlDown)
+        {
+            this.zoom += this.rel_y/100;
+        }
     }
     this.orientationEvent = function(e) {}
     this.updateCamera = function()
@@ -96,6 +118,9 @@ var AvatarCameraController = function()
             this.zoom *= 1.1;
         else
             this.zoom *= .9;
+
+        if(this.zoom < .5)
+            require("vwf/view/threejs/editorCameraController").setCameraMode('FirstPerson');
     }
     this.prerender = function()
     {
