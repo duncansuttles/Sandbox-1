@@ -1,5 +1,12 @@
 "use strict";
 (function() {
+
+    //enum to keep track of assets that fail to load.
+    var NOT_STARTED = 0;
+    var PENDING = 1;
+    var FAILED = 2;
+    var SUCCEDED = 3;
+    var LOAD_FAIL_TIME = 20*1000;
     function asset(childID, childSource, childName, childType, assetSource, asyncCallback, assetRegistry) {
 
 
@@ -26,10 +33,14 @@
                 fps: 30
             };
         }
-
+        this.loadState = NOT_STARTED;
+        this.failTimeout = null;
         this.inherits = ['vwf/model/threejs/transformable.js', 'vwf/model/threejs/materialDef.js', 'vwf/model/threejs/animatable.js', 'vwf/model/threejs/shadowcaster.js', 'vwf/model/threejs/passable.js', 'vwf/model/threejs/visible.js', 'vwf/model/threejs/static.js', 'vwf/model/threejs/selectable.js'];
         this.initializingNode = function() {
 
+
+            //somehow this is not called by the loaders 
+            this.getRoot().updateMatrixWorld(true);
             //the parent is an asset object
             if (true) {
                 
@@ -83,6 +94,24 @@
             }
          
 
+        }
+        this.loadSucceded = function()
+        {
+            console.log('load SUCCEDED');
+            this.loadState = SUCCEDED;
+            window.clearTimeout(this.failTimeout);
+            this.failTimeout = null;
+        }
+        this.loadStarted = function()
+        {
+            console.log('load started');
+            this.loadState = PENDING;
+            this.failTimeout = window.setTimeout(function(){
+                this.loadFailed();
+                this.loadState = FAILED;
+                console.log('load failed due to timeout');
+            }.bind(this),
+            LOAD_FAIL_TIME);
         }
         this.gettingProperty = function(propertyName) {
 
@@ -188,7 +217,7 @@
         }
         this.loadFailed = function(id) {
 
-
+            if(this.loadState !== PENDING) return; // in this case, the callback from the load either came too late, and we have decided it failed, or came twice, which really it never should
             //the collada loader uses the failed callback as progress. data means this is not really an error;
             if (!id) {
                 if (window._Notifier) {
@@ -319,12 +348,17 @@
             }
         }
         this.loaded = function(asset) {
+
+            if(this.loadState !== PENDING) return; // in this case, the callback from the load either came too late, and we have decided it failed, or came twice, which really it never should
+
+            
+
             _ProgressBar.hide();
             if (!asset) {
                 this.loadFailed();
                 return;
             }
-
+            this.loadSucceded();
             $(document).trigger('EndParse', ['Loading...', assetSource]);
 
 
@@ -449,20 +483,21 @@
                 this.loader = new THREE.ColladaLoader();
 
                 this.loader.load(assetSource, this.loaded.bind(this), this.loadFailed.bind(this));
-
-                asyncCallback(false);
+                this.loadStarted();
+                asyncCallback(false);   
             }
             if (childType == 'subDriver/threejs/asset/vnd.collada+xml+optimized') {
                 this.loader = new ColladaLoaderOptimized();
 
                 this.loader.load(assetSource, this.loaded.bind(this), this.loadFailed.bind(this));
-
+                this.loadStarted();
                 asyncCallback(false);
             }
             if (childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed+optimized') {
                 this.loader = new UTF8JsonLoader_Optimized({
                     source: assetSource
                 }, this.loaded.bind(this), this.loadFailed.bind(this));
+                this.loadStarted();
                 asyncCallback(false);
             }
             if (childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed') {
@@ -470,7 +505,7 @@
                 this.loader = new UTF8JsonLoader({
                     source: assetSource
                 }, this.loaded.bind(this), this.loadFailed.bind(this));
-
+                this.loadStarted();
                 asyncCallback(false);
             }
             if (childType == 'subDriver/threejs/asset/vnd.gltf+json') {
@@ -479,6 +514,7 @@
                 node.loader = new THREE.glTFLoader()
                 node.loader.useBufferGeometry = true;
                 node.source = assetSource;
+                this.loadStarted();
                 asyncCallback(false);
 
                 //create a queue to hold requests to the loader, since the loader cannot be re-entered for parallel loads
