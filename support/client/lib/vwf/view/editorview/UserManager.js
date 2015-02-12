@@ -274,7 +274,7 @@ define(function() {
                         _dView.setCameraDefault();
                         clearCameraModeIcons();
                         $('#MenuCamera3RDPersonicon').addClass('iconselected');
-                        require("vwf/view/threejs/editorCameraController").followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
+                        require("vwf/view/threejs/editorCameraController").getController('Orbit').followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
                         require("vwf/view/threejs/editorCameraController").setCameraMode('3RDPerson');
                     }
                 }
@@ -559,7 +559,8 @@ define(function() {
             this.PlayerProto.properties.transform[14] = newintersectxy[2];
             this.PlayerProto.properties.scale = [profile.avatarHeight || 1.0, profile.avatarHeight || 1.0, profile.avatarHeight || 1.0];
 
-            require("vwf/view/threejs/editorCameraController").orbitPoint(newintersectxy);
+            require("vwf/view/threejs/editorCameraController").getController('Orbit').orbitPoint(newintersectxy);
+            require("vwf/view/threejs/editorCameraController").setCameraMode('Orbit');
             document[username + 'link'] = null;
             //this.PlayerProto.id = "player"+username;
             document["PlayerNumber"] = username;

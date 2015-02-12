@@ -583,7 +583,8 @@ define({
             var ray = _Editor.GetCameraCenterRay();
             var dxy = _Editor.intersectLinePlane(ray, campos, [0, 0, 0], _Editor.WorldZ);
             var newintersectxy = MATH.addVec3(campos, MATH.scaleVec3(ray, dxy));
-            require("vwf/view/threejs/editorCameraController").orbitPoint(newintersectxy);
+            require("vwf/view/threejs/editorCameraController").getController('Orbit').orbitPoint(newintersectxy);
+            require("vwf/view/threejs/editorCameraController").setCameraMode('Orbit');
             require("vwf/view/threejs/editorCameraController").updateCamera();
         });
         // click events for touching sub menus
@@ -669,7 +670,7 @@ define({
                 _dView.setCameraDefault();
                 clearCameraModeIcons();
                 $('#MenuCamera3RDPersonicon').addClass('iconselected');
-                require("vwf/view/threejs/editorCameraController").followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
+                require("vwf/view/threejs/editorCameraController").getController('Orbit').followObject(vwf.models[0].model.nodes[_UserManager.GetCurrentUserID()]);
                 require("vwf/view/threejs/editorCameraController").setCameraMode('3RDPerson');
             } else {
                 _Notifier.alert('First person mode is not available when you are not logged in.');
