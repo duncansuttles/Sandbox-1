@@ -39,7 +39,8 @@ methods:
   setPosition:  
   keyUp:
   keyDown:
-  ready:  
+  ready: 
+  lookat: 
 events:
   pointerOver:
   pointerOut:
@@ -60,6 +61,12 @@ scripts:
         this.Scene.bind('keyDown', this.kd);
         this.Scene.bind('keyUp', this.ku);
         this.Scene.avatarCreated(this);
+      }
+      this.lookat = function(vec)
+      {
+      
+        var pos = this.transformAPI.getPosition();
+        this.transformAPI.lookat([pos[0] + vec[0],pos[1] + vec[1],pos[2] + vec[2]],'Z','Y','Z')
       }
       this.initialize = function() {
 
@@ -866,32 +873,18 @@ scripts:
 
         if (this.id == 'character-vwf') return false;
         if (vwf.client() != this.ownerClientID) return false;
-        if (!e.keysDown.W && !e.keysDown.uparrow) {
+        if (!(e.keysDown.W || e.keysDown.uparrow || e.keysDown.S || e.keysDown.downarrow ||e.keysDown.D||e.keysDown.A)) {
           this.removeMotion('walk');
           this.removeCycle('walk');
         }
-        if (!e.keysDown.S && !e.keysDown.downarrow) {
-          this.removeMotion('walkback');
-          this.removeCycle('walkback');
-        }
-        if (!e.keysDown.D) {
-          this.removeMotion('straferight');
-          this.removeMotion('strafeleft');
-          this.removeCycle('straferight');
-          this.removeCycle('strafeleft');
-        }
+       
         if (!e.keysDown.C && !e.keysDown.rightarrow) {
           this.removeMotion('turnright');
           this.removeMotion('turnleft');
           this.removeCycle('turnright');
           this.removeCycle('turnleft');
         }
-        if (!e.keysDown.A) {
-          this.removeMotion('strafeleft');
-          this.removeMotion('straferight');
-          this.removeCycle('strafeleft');
-          this.removeCycle('straferight');
-        }
+        
         if (!e.keysDown.Z && !e.keysDown.leftarrow) {
           this.removeMotion('turnleft');
           this.removeMotion('turnright');
@@ -916,38 +909,19 @@ scripts:
         if (this.id == 'character-vwf') return false;
         if (vwf.client() != this.ownerClientID) return false;
 
-        if (e.keysDown.W || e.keysDown.uparrow) {
+        if (e.keysDown.W || e.keysDown.uparrow || e.keysDown.S || e.keysDown.downarrow ||e.keysDown.D||e.keysDown.A){
 
           this.walk();
 
         }
-        if (e.keysDown.S || e.keysDown.downarrow)
-          this.walkback();
+        
         if (e.keysDown.space && !e.mods.shift) {
           if (!this.inMotion('run'))
             this.jump();
           else
             this.runningjump();
         }
-        // if(e.keysDown.T  )
-        //    { this.originalvelocity = [0,0,.25]; }
-
-        if (e.keysDown.D && !this.inMotion('walkback')) {
-          this.addMotion('straferight');
-          this.addCycle('straferight');
-        }
-        if (e.keysDown.D && this.inMotion('walkback')) {
-          this.addMotion('strafeleft');
-          this.addCycle('strafeleft');
-        }
-        if (e.keysDown.A && !this.inMotion('walkback')) {
-          this.addMotion('strafeleft');
-          this.addCycle('strafeleft');
-        }
-        if (e.keysDown.A && this.inMotion('walkback')) {
-          this.addMotion('straferight');
-          this.addCycle('straferight');
-        }
+        
 
         if ((e.keysDown.C || e.keysDown.rightarrow) && !this.inMotion('walkback')) {
           this.addMotion('turnright');

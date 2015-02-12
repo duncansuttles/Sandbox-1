@@ -33,10 +33,37 @@ var AvatarCameraController = function()
     {
         this.mouseDown = false;
     }
-    this.localKeyDown = function(e) {
-
-        console.log(e)
-
+    this.localKeyDown = function(e)
+    {
+        var id = _UserManager.GetAvatarForClientID(vwf.moniker()).id;
+        if (e.keyCode == 87) //W
+        {
+            vwf_view.kernel.callMethod(id, 'lookat', [
+                [-this.offset.x, -this.offset.y, -this.offset.z]
+            ]);
+        }
+        if (e.keyCode == 65) //S
+        {
+            var up = new THREE.Vector3(0, 0, 1);
+            var side = this.offset.clone().cross(up);
+            vwf_view.kernel.callMethod(id, 'lookat', [
+                [side.x, side.y, side.z]
+            ]);
+        }
+        if (e.keyCode == 68) //D
+        {
+            var up = new THREE.Vector3(0, 0, 1);
+            var side = this.offset.clone().cross(up);
+            vwf_view.kernel.callMethod(id, 'lookat', [
+                [-side.x, -side.y, -side.z]
+            ]);
+        }
+        if (e.keyCode == 83) //A
+        {
+            vwf_view.kernel.callMethod(id, 'lookat', [
+                [this.offset.x, this.offset.y, this.offset.z]
+            ]);
+        }
     }
     this.localKeyUp = function(e) {}
     this.localpointerMove = function(e, pickInfo)
@@ -45,7 +72,7 @@ var AvatarCameraController = function()
         this.rel_x = e.clientX - this.last_x;
         this.last_x = e.clientX;
         var rot_z = new THREE.Quaternion();
-        rot_z.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -this.rel_x/300);
+        rot_z.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -this.rel_x / 300);
         this.offset = this.offset.applyQuaternion(rot_z);
         this.rel_y = e.clientY - this.last_y;
         this.last_y = e.clientY;
@@ -55,16 +82,17 @@ var AvatarCameraController = function()
     this.updateCamera = function()
     {
         var avatar = _UserManager.GetAvatarForClientID(vwf.moniker()).transformAPI.getPosition();
-        var center = new THREE.Vector3(avatar[0],avatar[1],avatar[2]+1.5);
+        var center = new THREE.Vector3(avatar[0], avatar[1], avatar[2] + 1.5);
         var pos = center.clone().add(this.offset.setLength(this.zoom));
-        pos.z += this.totalz/200 * this.zoom;
+        pos.z += this.totalz / 200 * this.zoom;
         this.camera.position.copy(pos);
         this.camera.lookAt(center);
     }
     this.setCameraMode = function(mode) {}
     this.pointerLeave = function(e) {}
-    this.localpointerWheel = function(e) {
-        if(e.deltaY > 0)
+    this.localpointerWheel = function(e)
+    {
+        if (e.deltaY > 0)
             this.zoom *= 1.1;
         else
             this.zoom *= .9;
