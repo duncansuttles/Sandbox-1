@@ -41,7 +41,7 @@ var AvatarCameraController = function()
     this.localKeyDown = function(e)
     {
        // if(e.keyCode !=87 && e.keyCode != 38 && this.keysDown[e.keyCode]) return;
-        this.keysDown[e.keyCode] = true;
+        
         var id = _UserManager.GetAvatarForClientID(vwf.moniker()).id;
         if (e.keyCode == 16)
             this.shiftDown = true;
@@ -52,6 +52,7 @@ var AvatarCameraController = function()
             vwf_view.kernel.callMethod(id, 'lookat', [
                 [-this.offset.x, -this.offset.y, -this.offset.z]
             ]);
+            this.keysDown[e.keyCode] = true;
         }
         if (e.keyCode == 65 || e.keyCode == 37) //A
         {
@@ -60,6 +61,7 @@ var AvatarCameraController = function()
             vwf_view.kernel.callMethod(id, 'lookat', [
                 [side.x, side.y, side.z]
             ]);
+            this.keysDown[e.keyCode] = true;
         }
         if (e.keyCode == 68 || e.keyCode == 39) //D
         {
@@ -68,12 +70,14 @@ var AvatarCameraController = function()
             vwf_view.kernel.callMethod(id, 'lookat', [
                 [-side.x, -side.y, -side.z]
             ]);
+            this.keysDown[e.keyCode] = true;
         }
         if (e.keyCode == 83 || e.keyCode == 40) //S
         {
             vwf_view.kernel.callMethod(id, 'lookat', [
                 [-this.offset.x, -this.offset.y, -this.offset.z]
             ]);
+            this.keysDown[e.keyCode] = true;
         }
     }
     this.localKeyUp = function(e)
@@ -121,7 +125,9 @@ var AvatarCameraController = function()
         this.camera.lookAt(center);
     }
     this.setCameraMode = function(mode) {}
-    this.pointerLeave = function(e) {}
+    this.pointerLeave = function(e) {
+        this.keysDown = {};
+    }
     this.localpointerWheel = function(e)
     {
         if (e.deltaY > 0)
