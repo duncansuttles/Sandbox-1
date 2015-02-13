@@ -405,8 +405,15 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                         this.nodes[i].thisTickTransform = matset(this.nodes[i].thisTickTransform, this.state.nodes[i].gettingProperty('transform'));
                     }
                     if (this.state.nodes[i] && this.state.nodes[i].gettingProperty) {
-                        this.nodes[i].lastAnimationFrame = this.nodes[i].thisAnimationFrame;
-                        this.nodes[i].thisAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
+                        if (this.nodes[i].lastAnimationStep + 1 < vwf.time()) {
+                            this.nodes[i].lastAnimationFrame = null;
+                            this.nodes[i].thisAnimationFrame = null;
+                        }
+                        else
+                        {
+                            this.nodes[i].lastAnimationFrame = this.nodes[i].thisAnimationFrame;
+                            this.nodes[i].thisAnimationFrame = this.state.nodes[i].gettingProperty('animationFrame');
+                        }
 
                     }
                 }
@@ -555,7 +562,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                     id: childID,
                     extends: childExtendsID,
                     properties: {},
-                    lastTransformStep:0
+                    lastTransformStep:0,
+                    lastAnimationStep:0
                 };
 
             //man VWF makes this stuff so hard. Why must we deal with this? Who though that a game engine needed prototypical inheritance?
@@ -744,6 +752,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
             if (propertyName == 'transform')
                 this.nodes[nodeID].lastTransformStep = vwf.time();
+            if (propertyName == 'animationFrame')
+                this.nodes[nodeID].lastAnimationStep = vwf.time();
 
             node[propertyName] = propertyValue;
 
