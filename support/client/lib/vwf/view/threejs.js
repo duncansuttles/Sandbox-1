@@ -1550,6 +1550,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                             alpha: false,
                             stencil: false
                         });
+                        renderer.sortObjects  = false;
 
 
                         //here, we are going to do a lot of work to clean up the three.js datastructures
