@@ -842,6 +842,7 @@ define({
         });
          $('#MenuViewRenderVR').click(function(e) {
             _dView.setRenderModeVR();
+            require("vwf/view/threejs/editorCameraController").setCameraMode('VR');
         });
 
         $('#TestSettings').click(function(e) {

@@ -1,5 +1,5 @@
 
- define(["vwf/view/threejs/oldCameraController","vwf/view/threejs/AvatarCameraController"], function(oldCameraController,avatarCameraController)
+ define(["vwf/view/threejs/oldCameraController","vwf/view/threejs/AvatarCameraController","vwf/view/threejs/VRCameraController"], function(oldCameraController,avatarCameraController,VRCameraController)
  {
      function editorCameraController()
      {}
@@ -7,16 +7,18 @@
      {
          this.camera = camera;
          this.cameraControllers = {};
-         var _oldCameraController = oldCameraController;
-         _oldCameraController.initialize(this.camera);
+        
+         oldCameraController.initialize(this.camera);
          avatarCameraController.initialize(this.camera);
-         this.addController('Orbit', _oldCameraController);
-         this.addController('Navigate', _oldCameraController);
-         this.addController('Free', _oldCameraController);
-         this.addController('Fly', _oldCameraController);
+         VRCameraController.initialize(this.camera);
+         this.addController('Orbit', oldCameraController);
+         this.addController('Navigate', oldCameraController);
+         this.addController('Free', oldCameraController);
+         this.addController('Fly', oldCameraController);
          this.addController('3RDPerson', avatarCameraController);
-         this.addController('FirstPerson', _oldCameraController);
-         this.addController('DeviceOrientation', _oldCameraController);
+         this.addController('FirstPerson', oldCameraController);
+         this.addController('DeviceOrientation', oldCameraController);
+         this.addController('VR', VRCameraController);
          this.cameramode = 'Orbit';
          $('#index-vwf').mousedown(function(e)
          {
