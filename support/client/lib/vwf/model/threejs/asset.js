@@ -89,6 +89,11 @@
                     skin.boundingSphere = parentSkin.boundingSphere;
                     skin.updateMatrixWorld(true);
                     skin.frustumCulled = false;
+                    for(var i in skin.children)
+                    {
+                        if(skin.children[i] instanceof THREE.Bone)
+                            skin.remove(skin.children[i]);
+                    }
                   
                 }
             }
