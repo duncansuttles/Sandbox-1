@@ -116,6 +116,10 @@ var VRCameraController = function()
          this.camera.position.copy(this.position);
          this.camera.position.add(headPos);
     }
+    this.activate = function()
+    {
+        this.position.copy(this.camera.position);
+    }
     this.setCameraMode = function(mode) {}
     this.pointerLeave = function(e) {}
     this.localpointerWheel = function(e)

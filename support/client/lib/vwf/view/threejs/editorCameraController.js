@@ -123,6 +123,8 @@
      {
          this.cameramode = mode;
          this.cameraControllers[this.cameramode].setCameraMode(mode);
+         if(this.cameraControllers[this.cameramode].activate)
+            this.cameraControllers[this.cameramode].activate();
      }
      return new editorCameraController()
  })
