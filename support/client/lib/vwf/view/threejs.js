@@ -554,7 +554,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 this.nodes[childID] = {
                     id: childID,
                     extends: childExtendsID,
-                    properties: {}
+                    properties: {},
+                    lastTransformStep:0
                 };
 
             //man VWF makes this stuff so hard. Why must we deal with this? Who though that a game engine needed prototypical inheritance?
