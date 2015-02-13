@@ -3481,6 +3481,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     dist = 1;
                 require("vwf/view/threejs/editorCameraController").getController('Orbit').orbitPoint(gizpos);
                 require("vwf/view/threejs/editorCameraController").getController('Orbit').zoom = dist;
+                require("vwf/view/threejs/editorCameraController").setCameraMode('Orbit');
                 require("vwf/view/threejs/editorCameraController").updateCamera();
                 box.release();
 
