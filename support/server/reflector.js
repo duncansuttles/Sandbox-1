@@ -388,10 +388,19 @@ function runningInstance(id)
             logger.info(message + '\n',level);
         }
     }
+    this.getClientList = function()
+    {
+        var list = [];
+        for(var k in this.clients)
+            list.push(k);
+        return list;
+    }
     this.clientCount = function()
     {
-        return Object.keys(this.clients)
-            .length;
+        var i = 0;
+        for(var k in this.clients)
+            i++;
+        return i;
     }
     this.getLoadClient = function()
     {
@@ -421,8 +430,18 @@ function runningInstance(id)
     }
     this.messageClients = function(message)
     {
+
+        if (message.constructor != String)
+        {
+            message.instance = this.id;
+            message = JSON.stringify(message);
+        }
         //message to each user the join of the new client. Queue it up for the new guy, since he should not send it until after getstate
+        
+       
         var Message = messageCompress.pack(message);
+        
+       
         for (var i in this.clients)
         {
             if (!this.clients[i].pending)
@@ -435,24 +454,24 @@ function runningInstance(id)
     }
     this.messageConnection = function(id, name, UID)
     {
-        var joinMessage = messageCompress.pack(JSON.stringify(
+        var joinMessage = 
         {
             "action": "fireEvent",
             "parameters": ["clientConnected", [id, name, UID]],
             node: "index-vwf",
             "time": this.time
-        }));
+        };
         this.messageClients(joinMessage);
     }
     this.messageDisconnection = function(id, name, UID)
     {
-        var joinMessage = messageCompress.pack(JSON.stringify(
+        var joinMessage = 
         {
             "action": "fireEvent",
             "parameters": ["clientDisconnected", [id, name, UID]],
             node: "index-vwf",
             "time": this.time
-        }));
+        };
         this.messageClients(joinMessage);
     }
     this.GetNextAnonName = function()
@@ -490,7 +509,9 @@ function runningInstance(id)
     this.startTimer = function()
     {
         //keep track of the timer for this instance
+        
         var self = this;
+        if(self.timerID) return; //already started
         self.accum = 0;
         var timer = function()
         {
@@ -519,19 +540,20 @@ function runningInstance(id)
                 }
                 self.accum -= .05;
                 self.time += .05;
-                var tickmessage = messageCompress.pack(JSON.stringify(
+                var tickmessage = 
                 {
                     "action": "tick",
                     "parameters": [],
                     "time": self.time,
-                    "origin": "reflector"
-                }));
+                    "origin": "reflector",
+                };
                 self.messageClients(tickmessage);
             }
             self.lasttime = now;
-            self.timerID = setTimeout(timer, 5);
+            
         }.bind(self);
-        self.timerID = setTimeout(timer, 5);
+        self.timerID = setInterval(timer, 5);
+        console.warn("timer is " + self.timerID)
     }
 }
 
@@ -560,12 +582,14 @@ global.instances = RunningInstances;
 
 function ClientConnected(socket, namespace, instancedata)
     {
+        console.log('ClientConnected');
         var allowAnonymous = false;
         if (instancedata.publishSettings && instancedata.publishSettings.allowAnonymous)
             allowAnonymous = true;
         //if it's a new instance, setup record 
         if (!RunningInstances.has(namespace))
         {
+            logger.warn('adding new instance' + namespace)
             RunningInstances.add(namespace);
         }
         var thisInstance = RunningInstances.get(namespace);
@@ -695,6 +719,7 @@ function ClientConnected(socket, namespace, instancedata)
                 })));
                 getBlankScene(state, instancedata, function(blankscene)
                 {
+                    console.log('got  blank scene');
                     //only really doing this to keep track of the ownership
                     for (var i = 0; i < state.length - 1; i++)
                     {
@@ -1022,6 +1047,7 @@ function ClientConnected(socket, namespace, instancedata)
                         return;
                     }
                 }
+                message.instance = thisInstance.id;
                 var compressedMessage = messageCompress.pack(JSON.stringify(message))
                     //distribute message to all clients on given instance
                 for (var i in thisInstance.clients)
@@ -1063,12 +1089,12 @@ function ClientConnected(socket, namespace, instancedata)
                             if (message.time >= thisInstance.time)
                             {
                                 delete node.children; //remove children or we could end up getting large trees
-                                thisInstance.messageClients(JSON.stringify(
+                                thisInstance.messageClients(
                                 {
                                     "action": "resyncNode",
                                     "parameters": [node.id, node],
                                     "time": thisInstance.time
-                                }))
+                                });
                             }
                             else
                             {
@@ -1117,66 +1143,75 @@ function ClientConnected(socket, namespace, instancedata)
         //When a client disconnects, go ahead and remove the instance data
         socket.on('disconnect', function()
         {
-            try
-            {
-                var loginData = socket.loginData;
-                logger.debug(socket.id, loginData, 2)
-                thisInstance.clients[socket.id] = null;
-               
-                delete thisInstance.clients[socket.id];
-              
-                //if it's the last client, delete the data and the timer
-                //message to each user the join of the new client. Queue it up for the new guy, since he should not send it until after getstate
-                thisInstance.messageDisconnection(socket.id, socket.loginData ? socket.loginData.Username : null);
-                if (loginData && loginData.clients)
+            console.log(socket.id);
+            console.log(Object.keys(thisInstance.clients));
+            delete thisInstance.clients[socket.id];
+            console.log(thisInstance.clientCount());
+            if (thisInstance.clientCount() == 0)
                 {
-                    delete loginData.clients[socket.id];
-                    logger.error("Disconnect. Deleting node for user avatar " + loginData.UID);
-                    var avatarID = 'character-vwf-' + loginData.UID;
-                    thisInstance.messageClients(JSON.stringify(
-                    {
-                        "action": "deleteNode",
-                        "node": avatarID,
-                        "time": thisInstance.time
-                    }));
-                    thisInstance.messageClients(JSON.stringify(
-                    {
-                        "action": "callMethod",
-                        "node": 'index-vwf',
-                        member: 'cameraBroadcastEnd',
-                        "time": thisInstance.time,
-                        client: socket.id
-                    }));
-                    thisInstance.messageClients(JSON.stringify(
-                    {
-                        "action": "callMethod",
-                        "node": 'index-vwf',
-                        member: 'PeerSelection',
-                        parameters: [
-                            []
-                        ],
-                        "time": thisInstance.time,
-                        client: socket.id
-                    }));
-                    thisInstance.state.deleteNode(avatarID);
-                }
-                thisInstance.messageClients(JSON.stringify(
-                {
-                    "action": "status",
-                    "parameters": ["Peer disconnected: " + (loginData ? loginData.UID : "Unknown")],
-                    "time": thisInstance.getStateTime
-                }));
-                if (thisInstance.clientCount() == 0)
-                {
-                    clearTimeout(thisInstance.timerID);
+                    clearInterval(thisInstance.timerID);
+                    console.log("timer is " + thisInstance.timerID)
                     RunningInstances.remove(thisInstance.id);
-                    logger.warn('Shutting down ' + namespace, 2)
+                    console.log('Shutting down ' + namespace, 2)
                 }
-            }
-            catch (e)
-            {
-                logger.error('error in reflector disconnect')
-                logger.error(e);
+            else
+            {    
+                try
+                {
+                    var loginData = socket.loginData;
+                    logger.debug(socket.id, loginData, 2)
+                    //thisInstance.clients[socket.id] = null;
+                  
+                    //if it's the last client, delete the data and the timer
+                    //message to each user the join of the new client. Queue it up for the new guy, since he should not send it until after getstate
+                    thisInstance.messageDisconnection(socket.id, socket.loginData ? socket.loginData.Username : null);
+                    if (loginData && loginData.clients)
+                    {
+                        
+                        console.log("Disconnect. Deleting node for user avatar " + loginData.UID);
+                        var avatarID = 'character-vwf-' + loginData.UID;
+                        thisInstance.messageClients(
+                        {
+                            "action": "deleteNode",
+                            "node": avatarID,
+                            "time": thisInstance.time
+                        });
+                        thisInstance.messageClients(
+                        {
+                            "action": "callMethod",
+                            "node": 'index-vwf',
+                            member: 'cameraBroadcastEnd',
+                            "time": thisInstance.time,
+                            client: socket.id
+                        });
+                        thisInstance.messageClients(
+                        {
+                            "action": "callMethod",
+                            "node": 'index-vwf',
+                            member: 'PeerSelection',
+                            parameters: [
+                                []
+                            ],
+                            "time": thisInstance.time,
+                            client: socket.id
+                        });
+                        thisInstance.state.deleteNode(avatarID);
+                    }
+                    thisInstance.messageClients(
+                    {
+                        "action": "status",
+                        "parameters": ["Peer disconnected: " + (loginData ? loginData.UID : "Unknown")],
+                        "time": thisInstance.getStateTime
+                    });
+                    console.log('clientcount is ' + thisInstance.clientCount());
+                    console.log(thisInstance.getClientList());
+                    
+                }
+                catch (e)
+                {
+                    logger.error('error in reflector disconnect')
+                    logger.error(e);
+                }
             }
         });
     } // end WebSocketConnection
