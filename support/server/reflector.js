@@ -324,6 +324,7 @@ function WebSocketConnection(socket, _namespace)
             socket.emit('namespaceSet',
             {});
         });
+
         socket.on('connectionTest', function(msg)
         {
             socket.emit('connectionTest', msg);
@@ -862,6 +863,26 @@ function ClientConnected(socket, namespace, instancedata)
             if (!thisInstance.requestTimer)
                 (new timeout(thisInstance));
         }
+        socket.on('authenticate', function(msg)
+        {
+            console.log(msg.cookie);
+            try
+            {   
+                var cookieData = parseSignedCookie(cookie.parse(msg.cookie.join(';'))[global.configuration.sessionKey ? global.configuration.sessionKey : 'virtual'],
+                    global.configuration.sessionSecret ? global.configuration.sessionSecret : 'unsecure cookie secret');
+                logger.warn(cookieData);
+                sessions.GetSessionData({cookieData:cookieData},function(loginData)
+                {
+                    logger.warn('client changed credentials');
+                    console.log(loginData);
+                    socket.loginData = loginData;
+                    
+                });
+            }catch(e)
+            {
+                logger.error(e);
+            }
+        });
         socket.on('message', function(msg)
         {
             try

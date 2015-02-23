@@ -61,6 +61,21 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 		//console.log(data);
 		socket.emit('message',messageCompress.pack(JSON.stringify(data)));	
 	}
+	function RandomTurn()
+	{
+		console.log("Randonturm");
+		var keyevent = {"time": currenttime,
+		"node": "character-vwf-" + username,
+		"action": "callMethod",
+		"member": 'lookat',   //key up or key down
+		"parameters": [
+			[[
+				Math.random(),Math.random(),0
+			]]
+		],
+		"client": socketid}
+		send(keyevent);		
+	}
 	//generate a key event and send it
 	// State is either UP or DOWN, key is a char
 	function KeyEvent(state,key)
@@ -111,113 +126,177 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 		//we are finally done logging in, so let's send the avatar object over the socket to be created
 		//The object below is the proper defination of an avatar
 		var component = 	
-		{
-			"time": currenttime,
-			"node": "index-vwf",
-			"action": "createChild",
-			"member": username,
-			"parameters": [
-					{
-						"extends": "character.vwf",
-						"source": "usmale.dae",
-						"type": "subDriver/threejs/asset/vnd.collada+xml",
-						"properties": {
-							"PlayerNumber": username,   //make it look like the user we logged in as is the owner of the avatar
-							"owner": username,
-							"ownerClientID": socket.id,	//this lets the avatar know which socket controlls it
-							"profile": {
-								"Username": username,
-								"Name": "TEST AVATAR",
-								"Age": "32",
-								"Birthday": "",
-								"Password": GUID(),   //set to anything to satisfy Fortify audit
-								"Relationship": "Married",
-								"City": "Mclean",
-								"State": "VA",
-								"Homepage": "",
-								"Employer": "ADL",
-								"Title": "",
-								"Height": "",
-								"Weight": "",
-								"Nationality": "",
-								"Avatar": "usmale.dae",
-								"inventoryKey": "1komqvgn",
-								"password": GUID()   //set to anything to satisfy Fortify audit
-							},
-							"translation": [				//we randomly place him in the world center +-5
-								(require('../cryptoRandom.js').random() - .5) * 5,
-								(require('../cryptoRandom.js').random() - .5) * 5,
-								0
-							]
-						},
-						"events": {
-							"ShowProfile": null,
-							"Message": null
-						},
-						"scripts": [
-							"this.ShowProfile = function(){if(vwf.client() != vwf.moniker()) return; _UserManager.showProfile(_DataManager.GetProfileForUser(this.UserUID))     }; \nthis.Message = function(){if(vwf.client() != vwf.moniker()) return; setupPmWindow(this.PlayerNumber)     }"
-						]
-					}
-				]
-			};
-			component.parameters[0].properties.cycles = {
-                stand: {
-                    start: 1,
-                    length: 0,
-                    speed: 1.25,
-                    current: 0,
-                    loop: true
+        {
+            "time": 0,
+            "node": "index-vwf",
+            "action": "createChild",
+            "member": username,
+            "parameters": [{
+                    "extends": "character.vwf",
+                    "source": "./avatars/VWS_Business_Female1.DAE",
+                    "type": "subDriver/threejs/asset/vnd.collada+xml",
+                    "properties": {
+                        "PlayerNumber": username,
+                        "isDynamic": true,
+                        "castShadows": true,
+                        "receiveShadows": true,
+                        "activeCycle": [],
+                        "standingOnID": null,
+                        "standingOnOffset": null,
+                        "___physics_activation_state": 4,
+                        "___physics_deactivation_time": 0,
+                        "___physics_velocity_linear": [0, 0, 0],
+                        "___physics_velocity_angular": [0, 0, 0],
+                        "___physics_factor_linear": [0, 0, 0],
+                        "___physics_factor_angular": [0, 0, 0],
+                        "___physics_enabled": true,
+                        "___physics_mass": 100,
+                        "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, Math.random() * 5, Math.random() * 5, 0, 1],
+                        "cycles": {
+                            "stand": {
+                                "start": 1,
+                                "length": 0,
+                                "speed": 1.25,
+                                "current": 0,
+                                "loop": true
+                            },
+                            "walk": {
+                                "start": 6,
+                                "length": 27,
+                                "speed": 1,
+                                "current": 0,
+                                "loop": true
+                            },
+                            "straferight": {
+                                "start": 108,
+                                "length": 16,
+                                "speed": 1.5,
+                                "current": 0,
+                                "loop": true
+                            },
+                            "strafeleft": {
+                                "start": 124,
+                                "length": 16,
+                                "speed": -1.5,
+                                "current": 0,
+                                "loop": true
+                            },
+                            "walkback": {
+                                "start": 0,
+                                "length": 30,
+                                "speed": -1.25,
+                                "current": 0,
+                                "loop": true
+                            },
+                            "run": {
+                                "start": 70,
+                                "length": 36,
+                                "speed": 1.25,
+                                "current": 0,
+                                "loop": true
+                            },
+                            "jump": {
+                                "start": 70,
+                                "length": 36,
+                                "speed": 1.25,
+                                "current": 0,
+                                "loop": false
+                            },
+                            "runningjump": {
+                                "start": 109,
+                                "length": 48,
+                                "speed": 1.25,
+                                "current": 0,
+                                "loop": false
+                            }
+                        },
+                        "materialDef": {
+                            "color": {
+                                "r": 1,
+                                "g": 1,
+                                "b": 1
+                            },
+                            "ambient": {
+                                "r": 1,
+                                "g": 1,
+                                "b": 1
+                            },
+                            "emit": {
+                                "r": 0.27058823529411763,
+                                "g": 0.2549019607843137,
+                                "b": 0.2549019607843137
+                            },
+                            "specularColor": {
+                                "r": 0.2,
+                                "g": 0.2,
+                                "b": 0.2
+                            },
+                            "specularLevel": 1,
+                            "alpha": 1,
+                            "shininess": 0,
+                            "side": 0,
+                            "reflect": 0,
+                            "layers": [{
+                                "mapTo": 1,
+                                "scalex": 1,
+                                "scaley": 1,
+                                "offsetx": 0,
+                                "offsety": 0,
+                                "alpha": 1,
+                                "src": "./avatars/VWS_B_Female1-1.jpg",
+                                "mapInput": 0
+                            }],
+                            "type": "phong",
+                            "depthtest": true,
+                            "morphTargets": true
+                        },
+                        "standing": 0,
+                        "owner": username,
+                        "ownerClientID": socket.id,
+                        "profile": {
+                            "Username": username,
+                            "Email": "rchadwic@gmail.com",
+                            "Avatar": "usmale.dae",
+                            "Salt": "bfcd9933-faae-74e9-3715-893021c71340",
+                            "inventoryKey": "eccb29cf-c98f-410d-ab10-6d428a1a5b30",
+                            "id": "Rob"
+                        },
+                        "scale": [1, 1, 1]
+                    },
+                    "events": {
+                        "ShowProfile": null,
+                        "Message": null
+                    },
+                    "scripts": ["this.ShowProfile = function(){if(vwf.client() != vwf.moniker()) return; _UserManager.showProfile(this.ownerClientID)     }; \nthis.Message = function(){if(vwf.client() != vwf.moniker()) return; setupPmWindow(this.ownerClientID)     }"],
+                    "children": {
+                        
+                        
+                    }
                 },
-                walk: {
-                    start: 6,
-                    length: 27,
-                    speed: 1.0,
-                    current: 0,
-                    loop: true
-                },
-                straferight: {
-                    start: 108,
-                    length: 16,
-                    speed: 1.5,
-                    current: 0,
-                    loop: true
-                },
-                strafeleft: {
-                    start: 124,
-                    length: 16,
-                    speed: -1.5,
-                    current: 0,
-                    loop: true
-                },
-                walkback: {
-                    start: 0,
-                    length: 30,
-                    speed: -1.25,
-                    current: 0,
-                    loop: true
-                },
-                run: {
-                    start: 70,
-                    length: 36,
-                    speed: 1.25,
-                    current: 0,
-                    loop: true
-                },
-                jump: {
-                    start: 70,
-                    length: 36,
-                    speed: 1.25,
-                    current: 0,
-                    loop: false
-                },
-                runningjump: {
-                    start: 109,
-                    length: 48,
-                    speed: 1.25,
-                    current: 0,
-                    loop: false
-                }
-            };
+                null
+            ]
+        };
+        component.parameters[0].children[GUID()] =  {
+                            "extends": "box2.vwf",
+                            "source": "vwf/model/threejs/box.js",
+                            "type": "subDriver/threejs",
+                            "properties": {
+                                "___physics_activation_state": 1,
+                                "___physics_deactivation_time": 0,
+                                "___physics_velocity_linear": [0, 0, 0],
+                                "___physics_velocity_angular": [0, 0, 0],
+                                "DisplayName": "CharacterCollision",
+                                "_length": 0.8,
+                                "height": 1.54,
+                                "isSelectable": false,
+                                "owner": username,
+                                "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0.8009999394416809, 1],
+                                "type": "Primitive",
+                                "width": 0.62,
+                                "visible": false,
+                                "___physics_enabled": true
+                            }
+                        }
 		//console.log('sending avatar');
 		socket.emit('message',messageCompress.pack(JSON.stringify(component)));
 	}
@@ -303,7 +382,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 			}
 			if(rnd == 6)
 			{
-				KeyEvent(DOWN,'c');
+				RandomTurn();
 			}
 			if(rnd == 7)
 			{
@@ -322,6 +401,8 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 	  
 	  socket.on('connect',function()
 	  {
+
+	  	socket.emit('authenticate', {cookie:cookie});
 		socketid = socket.id;
 		socket.on('message', function (data) {
 		OnMessage(data);

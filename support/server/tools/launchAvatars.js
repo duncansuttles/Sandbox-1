@@ -10,7 +10,7 @@ var count;
 
 function randomtick()
 {
-	
+	return;
 	var rnd = Math.floor(require('../cryptoRandom.js').random() * 5);
 	if(rnd == 4)
 	{
