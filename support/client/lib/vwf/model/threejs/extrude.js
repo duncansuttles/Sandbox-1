@@ -7,12 +7,13 @@
 			this.updateSelf = function()
 			{
 				
-				if(this.mymesh)
+				if(this.mymesh && this.mymesh.parent)
 					this.mymesh.parent.remove(this.mymesh);
 
 				var mesh = this.parentNode.GetMesh();
 				if(!mesh) return;
 				var geo = mesh.geometry;
+				if(!geo) return;
 				var points = [];
 				
 				var extrusionSettings = {
@@ -20,6 +21,8 @@
 					bevelThickness: 1, bevelSize: 2, bevelEnabled: false,
 					material: 0, extrudeMaterial: 1
 				};
+				if(geo.vertices.length === 0) return;
+
 				for(var i = 0; i < geo.vertices.length; i++)
 				{
 					points.push(new THREE.Vector2(geo.vertices[i].x,geo.vertices[i].y));
