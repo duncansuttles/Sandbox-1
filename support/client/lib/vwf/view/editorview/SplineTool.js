@@ -167,7 +167,7 @@ function SplineTool() {
 
             vec = vec.applyMatrix4(selfT);
 
-            self.display.children[i].position = vec;
+            self.display.children[i].position.copy(vec);
             self.display.children[i].updateMatrixWorld(true);
         }
     }
@@ -266,6 +266,7 @@ function SplineTool() {
         }
         var p = spline.getPoint(1);
         self.points.push([p.x, p.y, p.z]);
+        _UndoManager.recordSetProperty(self.selectedID, 'points', self.points);
         _Editor.setProperty(self.selectedID, 'points', self.points);
         self.updateDisplay();
         _Editor.updateBounds();
@@ -288,6 +289,7 @@ function SplineTool() {
         }
         var p = spline.getPoint(1);
         self.points.push([p.x, p.y, p.z]);
+        _UndoManager.recordSetProperty(self.selectedID, 'points', self.points);
         _Editor.setProperty(self.selectedID, 'points', self.points);
         self.updateDisplay();
         _Editor.updateBounds();
@@ -296,6 +298,7 @@ function SplineTool() {
 
     $('#SplineToolGUIClear').click(function(e) {
         self.points = [];
+        _UndoManager.recordSetProperty(self.selectedID, 'points', self.points);
         _Editor.setProperty(self.selectedID, 'points', self.points);
         self.updateDisplay();
         _Editor.updateGizmoLocation();
@@ -305,6 +308,7 @@ function SplineTool() {
 
 
         self.points.splice(self.selectedIndex, 1);
+        _UndoManager.recordSetProperty(self.selectedID, 'points', self.points);
         _Editor.setProperty(self.selectedID, 'points', self.points);
         self.updateDisplay();
 
@@ -337,6 +341,7 @@ function SplineTool() {
         self.points[self.selectedIndex][1] = prop.elements[13];
         self.points[self.selectedIndex][2] = prop.elements[14];
 
+        _UndoManager.recordSetProperty(self.selectedID, 'points', self.points);
         _Editor.setProperty(self.selectedID, 'points', self.points);
         _Editor.updateGizmoLocation();
         _Editor.updateBounds();
@@ -404,7 +409,7 @@ function SplineTool() {
             self.points.splice(i1 + 1, 0, newp);
 
             this.selectedIndex = i2;
-
+            _UndoManager.recordSetProperty(self.selectedID, 'points', self.points);
             _Editor.setProperty(self.selectedID, 'points', self.points);
             self.updateDisplay();
             _Editor.updateGizmoLocation();
@@ -423,6 +428,7 @@ function SplineTool() {
         if (hits.length > 0) {
 
             self.points.splice(hits[0].vertindex, 1);
+            _UndoManager.recordSetProperty(self.selectedID, 'points', self.points);
             _Editor.setProperty(self.selectedID, 'points', self.points);
             _Editor.updateGizmoLocation();
             _Editor.updateBounds();
@@ -462,6 +468,7 @@ function SplineTool() {
         selfT.getInverse(selfT);
         pos = pos.applyMatrix4(selfT);
         self.points.push([pos.x, pos.y, pos.z]);
+        _UndoManager.recordSetProperty(self.selectedID, 'points', self.points);
         _Editor.setProperty(self.selectedID, 'points', self.points);
         self.updateDisplay();
         _Editor.updateBounds();
