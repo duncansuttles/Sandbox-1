@@ -848,6 +848,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                             newfog.vFalloffStart = this.nodes[nodeID].properties["fogVFalloffStart"] || 0;
                             newfog.vAtmosphereDensity = (this.nodes[nodeID].properties["skyAtmosphereDensity"] || 0) / 500;
 
+                            if(!threeObject.fog) threeObject.fog = newfog;
                             threeObject.fog.vHorizonColor = new THREE.Color();
 
                             threeObject.fog.vHorizonColor.r = this.nodes[nodeID].properties["skyApexColor"] ? this.nodes[nodeID].properties["skyHorizonColor"][0] : 1;
@@ -1498,7 +1499,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                         alpha: false,
                         stencil: false,
                         depth: true,
-                        preserveDrawingBuffer: true
+                        preserveDrawingBuffer: true,
+                       
                     });
                     if (!sceneNode.renderer.context) {
                         //lets not fall back on canvas renderer. there just is no point trying to do this without it.
@@ -1726,20 +1728,15 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
     }
 
     function rebuildAllMaterials(start) {
-
-        if (!start) {
-            for (var i in this.state.scenes) {
-                rebuildAllMaterials(this.state.scenes[i].threeScene);
-            }
-        } else {
-            if (start && start.material) {
-                start.material.needsUpdate = true;
-            }
-            if (start && start.children) {
-                for (var i in start.children)
-                    rebuildAllMaterials(start.children[i]);
-            }
-        }
+       //update 2/15 - walk all objects registered with renderer, not just objects currently in scence
+       //previous code missed objects cached in engine in various places.
+       //This probably misses some cached materials, however
+       if(!window._dScene) return;
+       for(var i in _dScene.__webglObjects)
+         for(var j in _dScene.__webglObjects[i])
+            if(_dScene.__webglObjects[i][j].material) _dScene.__webglObjects[i][j].material.needsUpdate = true;
+        if(window._dTerrain)
+            _dTerrain.TileCache.rebuildAllMaterials();
     }
     //necessary when settign the amibent color to match MATH behavior
     //Three js mults scene ambient by material ambient
