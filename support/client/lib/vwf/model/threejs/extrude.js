@@ -86,8 +86,13 @@
                 this.mymesh.parent.remove(this.mymesh);
         }
         this.initializingNode = function() {
+           	try{
             this.updateSelf();
             this.dirtyStack();
+        	}catch(e)
+        	{
+        		console.error(e);
+        	}
         }
         this.settingProperty = function(prop, val) {
             if (prop == 'amount') {
