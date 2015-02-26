@@ -494,7 +494,7 @@ function heightmapTerrainAlgorithm()
 		"{"+
 			"lowp vec3 dirt0 = perturb_normal(TBN0, coords.yz, sampler);\n"+
 			"lowp vec3 dirt1 = perturb_normal(TBN1, coords.zx, sampler);\n"+
-			"lowp vec3 dirt2 = perturb_normal(TBN2, coords.xy, sampler);\n"+
+			"lowp vec3 dirt2 = perturb_normal(TBN2, coords.yx, sampler);\n"+
 			"return blend_weights.x * dirt0 + blend_weights.y * dirt1 + blend_weights.z * dirt2;\n"+
 		"}"+
 		"vec3 blendNorm(in vec3 texture1,in vec3 texture2, in float a1)\n"+
@@ -511,7 +511,7 @@ function heightmapTerrainAlgorithm()
 		"	 lowp vec3 V = -((viewMatrix * vec4(coords,1.0)).xyz);\n"+
 		"    lowp mat3 TBN0 = cotangent_frame(viewNorm, V, coordsScaleA.yz);\n"+
 		"   lowp  mat3 TBN1 = cotangent_frame(viewNorm, V, coordsScaleA.zx);\n"+
-		"   lowp  mat3 TBN2 = cotangent_frame(viewNorm, V, coordsScaleA.xy);\n"+
+		"   lowp  mat3 TBN2 = cotangent_frame(viewNorm, V, coordsScaleA.yx);\n"+
 
 		"lowp float faramt = interp(300.0,400.0,distance(cameraPosition , coords));\n"+
 		"lowp float nearamt = interp(25.0,35.0,distance(cameraPosition , coords));\n"+
@@ -565,7 +565,7 @@ function heightmapTerrainAlgorithm()
 		"{"+
 			"lowp vec4 dirt0 = texture2D(sampler,((coords.yz )));\n"+
 			"lowp vec4 dirt1 = texture2D(sampler,((coords.zx )));\n"+
-			"lowp vec4 dirt2 = texture2D(sampler,((coords.xy )));\n"+
+			"lowp vec4 dirt2 = texture2D(sampler,((coords.yx )));\n"+
 			"lowp vec3 blend_weights = abs( norm.xyz );   // Tighten up the blending zone:  \n"+
 			
 			"return blend_weights.x * dirt0 + blend_weights.y * dirt1 + blend_weights.z * dirt2;\n"+
