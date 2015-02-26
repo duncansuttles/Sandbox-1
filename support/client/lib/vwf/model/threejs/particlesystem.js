@@ -898,11 +898,32 @@ function CreateParticleSystem(nodeID, childID, childName) {
         //the node constructor
         this.settingProperty = function(propertyName, propertyValue) {
 
-        	
+
             var particles = ps.geometry;
             if (propertyName == 'quaternion') return;
             if (propertyName == 'rotation') return;
+            
+
+            if(propertyName == "particleCount" && propertyValue != ps[propertyName])
+            {
+            	
+            	var propbackup = vwf.getProperties(this.ID);
+            	delete propbackup.particleCount;
+            	ps.geometry.dispose();
+            	var oldparent = ps.parent;
+            	ps.parent.remove(ps)
+            	ps = CreateParticleSystem();
+            	ps.particleCount = propertyValue;
+            	ps.setParticleCount(propertyValue);
+            	oldparent.add(ps);
+            	for(var i in propbackup)
+            	{
+            		this.settingProperty(i,propbackup[i]);
+            	}
+            }
+
             ps[propertyName] = propertyValue;
+
 
 
             if (propertyName == 'maxVelocity' ||
@@ -910,7 +931,7 @@ function CreateParticleSystem(nodeID, childID, childName) {
                 propertyName == 'maxAcceleration' ||
                 propertyName == 'minAcceleration' ||
                 propertyName == 'emitterType' ||
-                propertyName == 'emitterSize' ||
+                (propertyName == 'emitterSize' && this.solver == 'AnalyticShader') ||  
                 propertyName == 'maxLifeTime' ||
                 propertyName == 'minLifeTime' ||
                 propertyName == 'velocityMode'
@@ -1082,4 +1103,4 @@ function CreateParticleSystem(nodeID, childID, childName) {
     }
 })();
 
-//@ sourceURL=threejs.subdriver.line
+//@ sourceURL=threejs.subdriver.particleSystem
