@@ -503,7 +503,7 @@ function heightmapTerrainAlgorithm()
 		"}\n"+
 		"vec3 getNormal(in vec3 coords,in  vec3 viewNorm,in  vec2 uv,in vec3 wN) {\n"+
 
-		//"return  viewNorm;\n"+
+		"return  viewNorm;\n"+
 
 		
 		" lowp vec3 med = viewNorm;\n"+
@@ -599,7 +599,7 @@ function heightmapTerrainAlgorithm()
 		"}"+
 		"vec4 getTexture(in vec3 coords, in vec3 norm, in vec2 uv)" +
 		"{"+
-
+			"return vec4(1.0,1.0,1.0,1.0);\n"+
 			(this.type == 'bt'?
 			"mixVal = texture2D(mixMap,((coords.yx * vec2(1.0,1.0) + vec2("+((this.worldWidth)/2).toFixed(5)+","+((this.worldLength)/2).toFixed(5)+"))/vec2("+((this.worldWidth)).toFixed(5)+","+((this.worldLength)).toFixed(5)+")));\n"
 			:

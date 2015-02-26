@@ -226,7 +226,7 @@ function TileCache()
 						" if(side == 7.0 && (position.y > 49.0 || position.x < -49.0)) {edgeblend = 1.0; debug = vec3(1.0,1.0,1.0);}\n" +
 						" if(side == 8.0 && (position.y < -49.0 || position.x < -49.0)) {edgeblend = 1.0; debug = vec3(1.0,1.0,1.0);}\n" +
 						
-						
+						"edgeblend = 1.0;" + 
 						"wN = mix(everyOtherNormal,ONormal,blendPercent);\n"+
 						"if(edgeblend == 1.0) {z=everyOtherZ;wN = everyOtherNormal; }\n"+
 						
