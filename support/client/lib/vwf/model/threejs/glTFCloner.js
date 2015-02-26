@@ -184,7 +184,7 @@ define(["vwf/model/threejs/glTF-parser"], function() {
         for (var i in this.glTFAnimations) {
             this.duration = Math.max(this.duration, this.glTFAnimations[i].duration)
         }
-        this.setKey = function(key) {
+        this.setKey = function(key,fps) {
             if (this.lastKey == key) return;
             this.lastKey = key;
 
@@ -192,7 +192,7 @@ define(["vwf/model/threejs/glTF-parser"], function() {
                 var i, len = this.glTFAnimations[j].interps.length;
                 for (i = 0; i < len; i++) {
 
-                    this.glTFAnimations[j].interps[i].interp(key / 30);
+                    this.glTFAnimations[j].interps[i].interp(key / fps);
                     //if(!(this.glTFAnimations[j].interps[i].targetNode instanceof THREE.Bone))
                         this.glTFAnimations[j].interps[i].targetNode.updateMatrix();
                 }

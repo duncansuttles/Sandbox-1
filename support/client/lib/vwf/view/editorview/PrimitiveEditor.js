@@ -14,7 +14,7 @@ define(function() {
     function initialize() {
 
         this.propertyEditorDialogs = [];
-
+        this.currentWidgets = {};
         function hasPrototype(nodeID, prototype) {
 	        if (!nodeID) return false;
 	        if (nodeID == prototype) return true;
@@ -208,6 +208,7 @@ define(function() {
 
         this.SelectionChanged = function(e, node) {
             try {
+                this.currentWidgets = {};
                 if (node) {
                     this.inSetup = true;
                     this.clearPropertyEditorDialogs();
@@ -306,10 +307,18 @@ define(function() {
         this.recursevlyAddPrototypes = function(node) {
             
             
-            
+            var oldID = node.id;
             node = _Editor.getNode(vwf.prototype(node.id)); 
-            if(!node) return;  
+             if(!node){
+                return;  
+            }
+            var currentID = node.id;
+            //must be careful... we don't actually want to set the properties on the prototype
+            //we want to set them on the current node
+            node.id = oldID;
+
             this.setupEditorData(node, false);
+            node.id = currentID; // careful not to recurse forever
             this.recursevlyAddPrototypes(node);
                 
             
@@ -552,6 +561,10 @@ define(function() {
             $("#accordion").append(section);
             for (var j = 0; j < editordatanames.length; j++) {
                 var i = editordatanames[j];
+                //if multiple editorData properties up the prototype chain have the same editor objects, skip
+                if(this.currentWidgets[i]) continue;
+                this.currentWidgets[i] = true;
+                
                 if (editordata[i].type == 'sectionTitle') {
                     var inputstyle = "";
                     $('#basicSettings' + nodeid).append('<div style="" class = "EditorDataSectionTitle">' + editordata[i].displayname + ': </div>');
