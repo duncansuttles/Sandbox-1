@@ -29,6 +29,8 @@ new(function() {
         mesh.geometry.attributes.everyOtherNormal.array.set(everyOtherNormal)
         mesh.geometry.attributes.everyOtherZ.array.set(everyOtherZ);
 
+        
+
         mesh.geometry.attributes.position.array.set(vertices);
 
 
@@ -337,7 +339,7 @@ new(function() {
         for (var i = 0; i < mesh.res * mesh.res; i++) {
             vertices.push(mesh.geometry.attributes.position.array[i * 3 + 0]);
             vertices.push(mesh.geometry.attributes.position.array[i * 3 + 1]);
-            vertices.push(mesh.geometry.attributes.position.array[i * 3 + 2]);
+            vertices.push(0);
         }
         var data = {};
         data.vertices = vertices;
