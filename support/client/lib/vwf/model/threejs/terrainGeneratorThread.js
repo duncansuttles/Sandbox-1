@@ -180,10 +180,11 @@ this.generateTerrainSimWorker = function(datain, buffers) {
         }
     }
 
+    
     for (var j = 0; j < res; j++) {
 
         for (var l = 0; l < res; l++) {
-            //remove when not perect stitching
+            //remove when not perfect stitching
 
             {
                 if (l % 2 == 1 && j % 2 != 1) {

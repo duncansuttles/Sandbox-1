@@ -1,4 +1,176 @@
 "use strict";
+
+function geometryToBufferGeometryKeepIndex( geometry, settings ) {
+
+        if ( geometry instanceof THREE.BufferGeometry ) {
+
+            return geometry;
+
+        }
+
+        settings = settings || { 'vertexColors': THREE.NoColors };
+
+        var vertices = geometry.vertices;
+        var faces = geometry.faces;
+        var faceVertexUvs = geometry.faceVertexUvs;
+        var vertexColors = settings.vertexColors;
+        var hasFaceVertexUv = faceVertexUvs[ 0 ].length > 0;
+        var hasFaceVertexNormals = faces[ 0 ].vertexNormals.length == 3;
+        
+        var bufferGeometry = new THREE.BufferGeometry();
+        bufferGeometry.topEdgeMap = [];
+        for(var i =0; i < vertices.length; i ++)
+        {
+        	bufferGeometry.topEdgeMap[i] = vertices[i].topedge;
+        }
+        bufferGeometry.attributes = {
+
+            position: {
+                itemSize: 3,
+                array: new Float32Array( vertices.length * 3  )
+            },
+            normal: {
+                itemSize: 3,
+                array: new Float32Array( vertices.length * 3  )
+            },
+            index: {
+                itemSize: 3,
+                array: new Int16Array( faces.length * 3 )
+            }
+
+        }
+
+        var positions = bufferGeometry.attributes.position.array;
+        var normals = bufferGeometry.attributes.normal.array;
+        var index = bufferGeometry.attributes.index.array;
+        if ( vertexColors !== THREE.NoColors ) {
+
+            bufferGeometry.attributes.color = {
+                itemSize: 3,
+                array: new Float32Array( faces.length * 3 * 3 )
+            };
+
+            var colors = bufferGeometry.attributes.color.array;
+
+        }
+
+        if ( hasFaceVertexUv === true ) {
+
+            bufferGeometry.attributes.uv = {
+                itemSize: 2,
+                array: new Float32Array( faces.length * 3 * 2 )
+            };
+
+            var uvs = bufferGeometry.attributes.uv.array;
+
+        }
+
+        var i2 = 0, i3 = 0;
+
+        for ( var i = 0; i < faces.length; i ++ ) {
+
+            var face = faces[ i ];
+
+            var a = vertices[ face.a ];
+            var b = vertices[ face.b ];
+            var c = vertices[ face.c ];
+
+            positions[ face.a*3     ] = a.x;
+            positions[ face.a*3 + 1 ] = a.y;
+            positions[ face.a*3 + 2 ] = a.z;
+            
+            positions[face.b*3 + 0 ] = b.x;
+            positions[ face.b*3 + 1 ] = b.y;
+            positions[ face.b*3 + 2 ] = b.z;
+            
+            positions[ face.c*3 + 0 ] = c.x;
+            positions[ face.c*3 + 1 ] = c.y;
+            positions[ face.c*3 + 2 ] = c.z;
+            index[i*3] = face.a;
+            index[i*3+1] = face.b;
+            index[i*3+2] = face.c;
+            
+
+                var n = face.normal;
+
+                normals[ face.a*3     ] = n.x;
+                normals[ face.a*3 + 1 ] = n.y;
+                normals[ face.a*3 + 2 ] = n.z;
+
+                normals[ face.b*3 + 0 ] = n.x;
+                normals[ face.b*3 + 1 ] = n.y;
+                normals[ face.b*3 + 2 ] = n.z;
+
+                normals[ face.c*3 + 0 ] = n.x;
+                normals[ face.c*3 + 1 ] = n.y;
+                normals[ face.c*3 + 2 ] = n.z;
+
+            
+
+            if ( vertexColors === THREE.FaceColors ) {
+
+                var fc = face.color;
+
+                colors[ i3     ] = fc.r;
+                colors[ i3 + 1 ] = fc.g;
+                colors[ i3 + 2 ] = fc.b;
+
+                colors[ i3 + 3 ] = fc.r;
+                colors[ i3 + 4 ] = fc.g;
+                colors[ i3 + 5 ] = fc.b;
+
+                colors[ i3 + 6 ] = fc.r;
+                colors[ i3 + 7 ] = fc.g;
+                colors[ i3 + 8 ] = fc.b;
+
+            } else if ( vertexColors === THREE.VertexColors ) {
+
+                var vca = face.vertexColors[ 0 ];
+                var vcb = face.vertexColors[ 1 ];
+                var vcc = face.vertexColors[ 2 ];
+
+                colors[ i3     ] = vca.r;
+                colors[ i3 + 1 ] = vca.g;
+                colors[ i3 + 2 ] = vca.b;
+
+                colors[ i3 + 3 ] = vcb.r;
+                colors[ i3 + 4 ] = vcb.g;
+                colors[ i3 + 5 ] = vcb.b;
+
+                colors[ i3 + 6 ] = vcc.r;
+                colors[ i3 + 7 ] = vcc.g;
+                colors[ i3 + 8 ] = vcc.b;
+
+            }
+
+            if ( hasFaceVertexUv === true ) {
+
+                var uva = faceVertexUvs[ 0 ][ i ][ 0 ];
+                var uvb = faceVertexUvs[ 0 ][ i ][ 1 ];
+                var uvc = faceVertexUvs[ 0 ][ i ][ 2 ];
+
+                uvs[ i2     ] = uva.x;
+                uvs[ i2 + 1 ] = uva.y;
+            
+                uvs[ i2 + 2 ] = uvb.x;
+                uvs[ i2 + 3 ] = uvb.y;
+            
+                uvs[ i2 + 4 ] = uvc.x;
+                uvs[ i2 + 5 ] = uvc.y;
+
+            }
+
+            i3 += 9;
+            i2 += 6;
+
+        }
+
+        bufferGeometry.computeBoundingSphere();
+
+        return bufferGeometry;
+
+    }
+
 function TileCache()
 			{
 				this.tiles = {};
@@ -32,9 +204,9 @@ function TileCache()
 						"attribute vec3 everyOtherNormal;\n"+
 						"attribute vec3 ONormal;\n"+
 						"attribute float everyOtherZ;\n"+
-						"attribute float everyZ;\n"+
+						
 						"void main() {\n"+
-						" float z = mix(everyOtherZ,everyZ,blendPercent);\n"+
+						" float z = mix(everyOtherZ,position.z,blendPercent);\n"+
 						" vFogPosition = (modelMatrix * vec4(position.xy,z,1.0)).xyz; \n"+
 						"opos = vec3(position.xy,z);\n"+
 						"npos = vFogPosition;\n"+
@@ -292,7 +464,7 @@ function TileCache()
 						var attributes_default = {
 							everyOtherNormal: { type: 'v3', value: [] },
 							everyOtherZ: { type: 'f', value: [] },
-							everyZ: { type: 'f', value: [] },
+							
 							ONormal: { type: 'v3', value: [] },
 						};
 						var mat = new THREE.ShaderMaterial( {
@@ -569,7 +741,11 @@ function TileCache()
 					
 					var newtile;
 					
-					newtile = new THREE.Mesh(this.buildMesh0(100,res),this.getMat());
+					newtile = new THREE.Mesh(geometryToBufferGeometryKeepIndex(this.buildMesh0(100,res)),this.getMat());
+					newtile.geometry.addAttribute( 'ONormal', new THREE.BufferAttribute( new Float32Array(newtile.geometry.attributes.position.array.length), 3 ) );
+					newtile.geometry.addAttribute( 'everyOtherNormal', new THREE.BufferAttribute( new Float32Array(newtile.geometry.attributes.position.array.length), 3 ) );
+					newtile.geometry.addAttribute( 'everyOtherZ', new THREE.BufferAttribute( new Float32Array(newtile.geometry.attributes.position.array.length/3), 1 ) );
+					
 					newtile.res = res + 3;
 					newtile.geometry.dynamic = true;
 					newtile.doublesided = false;
@@ -578,26 +754,9 @@ function TileCache()
 					newtile.castShadow = false;
 					newtile.material.uniforms.side.value = side;
 					newtile.matrixAutoUpdate = false;
-					for(var i = 0; i < newtile.geometry.vertices.length; i++)
-					{
-						if(i < newtile.res * newtile.res)
-						{
-							newtile.material.attributes.everyOtherZ.value.push(0);
-							newtile.material.attributes.everyZ.value.push(0);
-							newtile.material.attributes.everyOtherNormal.value.push(new THREE.Vector3(0,0,1));
-							newtile.material.attributes.ONormal.value.push(new THREE.Vector3(0,0,1));
-							
-						}
-						else
-						{
-							newtile.material.attributes.everyOtherZ.value.push(-10);
-							newtile.material.attributes.everyZ.value.push(-10);
-							newtile.material.attributes.everyOtherNormal.value.push(new THREE.Vector3(0,0,1));
-							newtile.material.attributes.ONormal.value.push(new THREE.Vector3(0,0,1));
-						}
-					}
-					newtile.material.attributes.everyOtherZ.needsUpdate = true;
-					newtile.material.attributes.everyOtherNormal.needsUpdate = true;
+					
+					newtile.geometry.attributes.everyOtherZ.needsUpdate = true;
+					newtile.geometry.attributes.everyOtherNormal.needsUpdate = true;
 					//so, it appears that it might just be better to generate a new one than store it 
 					//memory / cpu tradeoff
 					this.tiles[res].push(newtile);

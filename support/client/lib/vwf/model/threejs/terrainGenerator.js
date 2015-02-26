@@ -1,4 +1,6 @@
 "use strict";
+
+
 new(function() {
 
 
@@ -23,51 +25,37 @@ new(function() {
         var res = mesh.res;
 
 
-        for (var i = 0; i < mesh.res * mesh.res; i++) {
-            mesh.material.attributes.ONormal.value[i].x = normals[i * 3];
-            mesh.material.attributes.ONormal.value[i].y = normals[i * 3 + 1];
-            mesh.material.attributes.ONormal.value[i].z = normals[i * 3 + 2];
-        }
-        for (var i = 0; i < mesh.res * mesh.res; i++) {
-            mesh.material.attributes.everyOtherNormal.value[i].x = everyOtherNormal[i * 3];
-            mesh.material.attributes.everyOtherNormal.value[i].y = everyOtherNormal[i * 3 + 1];
-            mesh.material.attributes.everyOtherNormal.value[i].z = everyOtherNormal[i * 3 + 2];
-        }
+        mesh.geometry.attributes.ONormal.array.set(normals)
+        mesh.geometry.attributes.everyOtherNormal.array.set(everyOtherNormal)
+        mesh.geometry.attributes.everyOtherZ.array.set(everyOtherZ);
+
+        mesh.geometry.attributes.position.array.set(vertices);
 
 
-
-        for (var i = 0; i < mesh.res * mesh.res; i++) {
-            mesh.material.attributes.everyOtherZ.value[i] = everyOtherZ[i];
+        for (var i = mesh.res * mesh.res; i < mesh.geometry.attributes.position.array.length / 3; i++) {
+            mesh.geometry.attributes.everyOtherNormal.array[i * 3 + 0] = everyOtherNormal[(mesh.geometry.topEdgeMap[i]) * 3];
+            mesh.geometry.attributes.everyOtherNormal.array[i * 3 + 1] = everyOtherNormal[(mesh.geometry.topEdgeMap[i]) * 3 + 1];
+            mesh.geometry.attributes.everyOtherNormal.array[i * 3 + 2] = everyOtherNormal[(mesh.geometry.topEdgeMap[i]) * 3 + 2];
         }
-        for (var i = 0; i < mesh.res * mesh.res; i++) {
-            mesh.geometry.vertices[i].z = vertices[i * 3 + 2];
-            mesh.material.attributes.everyZ.value[i] = mesh.geometry.vertices[i].z;
+        for (var i = mesh.res * mesh.res; i < mesh.geometry.attributes.position.array.length / 3; i++) {
+            mesh.geometry.attributes.everyOtherZ.array[i] = everyOtherZ[(mesh.geometry.topEdgeMap[i])] - (mesh.scale.x) * 5;
         }
-
-        for (var i = mesh.res * mesh.res; i < mesh.geometry.vertices.length; i++) {
-            mesh.material.attributes.everyOtherNormal.value[i].x = everyOtherNormal[(mesh.geometry.vertices[i].topedge) * 3];
-            mesh.material.attributes.everyOtherNormal.value[i].y = everyOtherNormal[(mesh.geometry.vertices[i].topedge) * 3 + 1];
-            mesh.material.attributes.everyOtherNormal.value[i].z = everyOtherNormal[(mesh.geometry.vertices[i].topedge) * 3 + 2];
-        }
-        for (var i = mesh.res * mesh.res; i < mesh.geometry.vertices.length; i++) {
-            mesh.material.attributes.everyOtherZ.value[i] = everyOtherZ[(mesh.geometry.vertices[i].topedge)] - (mesh.scale.x) * 5;
-        }
-        for (var i = mesh.res * mesh.res; i < mesh.geometry.vertices.length; i++) {
+        for (var i = mesh.res * mesh.res; i < mesh.geometry.attributes.position.array.length / 3; i++) {
             //set the position cpu side for collision
-            mesh.geometry.vertices[i].z = vertices[(mesh.geometry.vertices[i].topedge) * 3 + 2] - (mesh.scale.x) * 5;
+            mesh.geometry.attributes.position.array[i * 3 + 2] = vertices[(mesh.geometry.topEdgeMap[i]) * 3 + 2] - (mesh.scale.x) * 5;
             //but upload vert z via attribute to move less data over bus
-            mesh.material.attributes.everyZ.value[i] = mesh.geometry.vertices[i].z;
+
         }
-        for (var i = mesh.res * mesh.res; i < mesh.geometry.vertices.length; i++) {
-            mesh.material.attributes.ONormal.value[i].x = normals[(mesh.geometry.vertices[i].topedge) * 3];
-            mesh.material.attributes.ONormal.value[i].y = normals[(mesh.geometry.vertices[i].topedge) * 3 + 1];
-            mesh.material.attributes.ONormal.value[i].z = normals[(mesh.geometry.vertices[i].topedge) * 3 + 2];
+        for (var i = mesh.res * mesh.res; i < mesh.geometry.attributes.position.array.length / 3; i++) {
+            mesh.geometry.attributes.ONormal.array[i * 3] = normals[(mesh.geometry.topEdgeMap[i]) * 3];
+            mesh.geometry.attributes.ONormal.array[i * 3 + 1] = normals[(mesh.geometry.topEdgeMap[i]) * 3 + 1];
+            mesh.geometry.attributes.ONormal.array[i * 3 + 2] = normals[(mesh.geometry.topEdgeMap[i]) * 3 + 2];
         }
 
-        mesh.material.attributes.everyOtherNormal.needsUpdate = true;
-        mesh.material.attributes.everyOtherZ.needsUpdate = true;
-        mesh.material.attributes.everyZ.needsUpdate = true;
-        mesh.material.attributes.ONormal.needsUpdate = true;
+        mesh.geometry.attributes.everyOtherNormal.needsUpdate = true;
+        mesh.geometry.attributes.everyOtherZ.needsUpdate = true;
+        mesh.geometry.attributes.position.needsUpdate = true;
+        mesh.geometry.attributes.ONormal.needsUpdate = true;
 
         //geo.verticesNeedUpdate = true;
         geo.computeBoundingSphere();
@@ -151,8 +139,6 @@ new(function() {
                 //	console.log("response from  tile");
 
 
-
-
                 if (mesh) {
 
                     this.readers[i] = [];
@@ -211,7 +197,6 @@ new(function() {
             loadScript('vwf/model/threejs/' + type + '.js');
         }
         this.terrainAlgorithm = new(eval(type))();
-
 
 
         this.terrainAlgorithm.importScript = function(url) {
@@ -287,16 +272,11 @@ new(function() {
             poolSideData = this.terrainAlgorithm.poolInit(init, params);
 
 
-
         if (poolSideData === false)
             this.waitingForInit = true;
         else {
             init(poolSideData);
         }
-
-
-
-
 
 
     }
@@ -355,9 +335,9 @@ new(function() {
         var vertices = [];
 
         for (var i = 0; i < mesh.res * mesh.res; i++) {
-            vertices.push(mesh.geometry.vertices[i].x);
-            vertices.push(mesh.geometry.vertices[i].y);
-            vertices.push(mesh.geometry.vertices[i].z);
+            vertices.push(mesh.geometry.attributes.position.array[i * 3 + 0]);
+            vertices.push(mesh.geometry.attributes.position.array[i * 3 + 1]);
+            vertices.push(mesh.geometry.attributes.position.array[i * 3 + 2]);
         }
         var data = {};
         data.vertices = vertices;
