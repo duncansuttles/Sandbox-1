@@ -18,6 +18,7 @@
  {
      this.initialize = function(camera)
      {
+         this.active = false;
          this.camera = camera;
          this.camera.up.y = 0;
          this.camera.up.z = 1;
@@ -52,6 +53,14 @@
          this.updateCallbacks = [];
          //  this.PickOptions = new MATH.CPUPickOptions();
          //  this.PickOptions.UserRenderBatches = true;
+     }
+     this.activate = function()
+     {
+        this.active = true;
+     }
+     this.deactivate = function()
+     {
+        this.active = false;
      }
      this.broadcastCameraPosition = function(transform)
      {
@@ -619,6 +628,7 @@
      }
      this.updateCamera = function()
      {
+         if(!this.active) return
          if (!_dView.inDefaultCamera()) return;
          this.keyboardControl();
          try

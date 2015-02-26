@@ -19,7 +19,8 @@
          this.addController('FirstPerson', oldCameraController);
          this.addController('DeviceOrientation', oldCameraController);
          this.addController('VR', VRCameraController);
-         this.cameramode = 'Orbit';
+         this.setCameraMode('Orbit');
+         
          $('#index-vwf').mousedown(function(e)
          {
              this.localpointerDown(e);
@@ -121,9 +122,13 @@
      }
      editorCameraController.prototype.setCameraMode = function(mode)
      {
+        if(this.cameraControllers[this.cameramode] && this.cameraControllers[this.cameramode].deactivate)
+            this.cameraControllers[this.cameramode].deactivate();
+
          this.cameramode = mode;
-         this.cameraControllers[this.cameramode].setCameraMode(mode);
-         if(this.cameraControllers[this.cameramode].activate)
+         if(this.cameraControllers[this.cameramode])
+            this.cameraControllers[this.cameramode].setCameraMode(mode);
+         if(this.cameraControllers[this.cameramode] && this.cameraControllers[this.cameramode].activate)
             this.cameraControllers[this.cameramode].activate();
      }
      return new editorCameraController()
