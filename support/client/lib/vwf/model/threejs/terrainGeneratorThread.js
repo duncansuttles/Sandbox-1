@@ -74,7 +74,7 @@ this.generateTerrainSimWorker = function(datain, buffers) {
     this.everyOtherNormal.length = 0;
     var matrix = new THREE.Matrix4();
     matrix.elements = datain.matrix;
-
+    var scale = (matrix.elements[0]);
     for (var i = 0; i < datain.vertices.length; i += 3) {
         var ver = new THREE.Vector3();
         ver.x = datain.vertices[i];
@@ -149,9 +149,10 @@ this.generateTerrainSimWorker = function(datain, buffers) {
                     vert3.y += vertoffset2;
                 }
 
-                var z1 = this.terrainAlgorithm.displace(vert, matrix, res);
-                var z2 = this.terrainAlgorithm.displace(vert2, matrix, res);
-                var z3 = this.terrainAlgorithm.displace(vert3, matrix, res);
+                //dont bother with using the more accurate displace if not the man vert
+                var z1 = this.terrainAlgorithm.displace(vert, matrix, res, k == 0 ? scale : 10);
+                var z2 = this.terrainAlgorithm.displace(vert2, matrix, res, k == 0 ? scale : 10);
+                var z3 = this.terrainAlgorithm.displace(vert3, matrix, res, k == 0 ? scale : 10);
 
                 var n;
                 if (k < 6)

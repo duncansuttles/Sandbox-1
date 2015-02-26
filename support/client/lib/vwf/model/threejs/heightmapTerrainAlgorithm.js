@@ -660,11 +660,12 @@ function heightmapTerrainAlgorithm()
 	}
 	
 	//This is the displacement function, which is called in paralell by the thread pool
-	this.displace= function(vert,matrix,res)
+	this.displace= function(vert,matrix,res,scale)
 	{
+		if(!scale) scale = 1;
 		var z = 0;
 
-		if(this.addNoise)
+		if(this.addNoise && scale < 4)
 		{
 			z = this.SimplexNoise.noise2D((vert.x)/100,(vert.y)/100) * 4.5;
 			z += this.SimplexNoise.noise2D((vert.x)/300,(vert.y)/300) * 4.5;
@@ -672,7 +673,7 @@ function heightmapTerrainAlgorithm()
 		}
 		//this is gamma correction
 		var h = this.type == 'img' && this.gamma?2.2:1.0;
-		if(this.cubic)
+		if(this.cubic && scale < 4)
 			return this.sampleBiCubic((vert.x+ (this.worldLength/2)) / this.worldLength ,(vert.y + (this.worldWidth/2)) / this.worldWidth,matrix,res  ) * h * this.heightScale  + z|| 0;
 		else
 			return this.sampleBiLinear((vert.x+ (this.worldLength/2)) / this.worldLength ,(vert.y + (this.worldWidth/2)) / this.worldWidth,matrix,res  ) * h * this.heightScale + z|| 0;
@@ -682,8 +683,10 @@ function heightmapTerrainAlgorithm()
 		x = Math.floor(x);
 		y = Math.floor(y);
 		if(!this.data) return 0;
-		if( x >= this.dataHeight || x < 0) return 0;
-		if( y >= this.dataWidth || y < 0) return 0;
+		if( x >= this.dataHeight) x = x % this.dataHeight;
+		if( x <  0) x = this.dataHeight-(-x%this.dataHeight);
+		if( y >= this.dataWidth ) y = y % this.dataWidth;
+		if( y <  0) y = this.dataWidth-(-y%this.dataWidth);
 		var i = y * this.dataWidth  + x;
 		return this.data[i]  - this.min;
 	}
