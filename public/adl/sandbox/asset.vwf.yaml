@@ -35,6 +35,7 @@ properties:
   animationEnd: 0
   animationState: 0
   animationSpeed: 1
+  animationFPS: 30
   materialDef:
   isSelectable: true
   physicsAPI:

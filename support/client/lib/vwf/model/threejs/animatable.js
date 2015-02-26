@@ -33,6 +33,7 @@
     function animatable(childID, childSource, childName) {
         this.animationFrame = 0;
         this.animationSpeed = 1;
+        this.animationFPS = 30;
         //this my be called by the view driver during interpolation
         //in which case, there is no point in dirtying the scenemanager, as you may not 
         //reason over the interpolated values anyway
@@ -67,7 +68,8 @@
                 }
                 if (skins[i].animationHandle) {
                    
-                    skins[i].animationHandle.setKey(this.animationFrame);
+                    skins[i].animationHandle.setKey(this.animationFrame,this.animationFPS);
+                    console.log(this.animationFrame)
                     skins[i].updateMatrixWorld(true);
                     
                     //odd, does not seem to update matrix on first child bone. 
@@ -104,6 +106,9 @@
             if (propertyName == 'animationSpeed') {
                 this.animationSpeed = propertyValue;
             }
+            if (propertyName == 'animationFPS') {
+                this.animationFPS = propertyValue;
+            }
         }
         this.gettingProperty = function(propertyName) {
             if (propertyName == 'animationFrame') {
@@ -129,12 +134,17 @@
             if (propertyName == 'animationSpeed') {
                 return this.animationSpeed;
             }
+            if (propertyName == 'animationFPS') {
+                return this.animationFPS;
+            }
         }
         this.ticking = function() {
 
             if (this.animationState == 1) {
 
-                var nextframe = this.animationFrame + this.animationSpeed;
+                //use 1.5 to map the 20fps tick to a default 30fps animation
+                var speedAdjust = this.animationFPS / 20;
+                var nextframe = this.animationFrame + (this.animationSpeed*speedAdjust);
                 if (nextframe > this.animationEnd - 1) {
                     nextframe = this.animationStart || 0;
 
