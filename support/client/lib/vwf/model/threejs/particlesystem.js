@@ -90,6 +90,14 @@ function CreateParticleSystem(nodeID, childID, childName) {
             type: "t",
             value: THREE.ImageUtils.loadTexture("textures/sprites/ball.png")
         },
+        pCount:{
+            type:'f',
+            value:1000
+        },
+        maxRate:{
+            type:'f',
+            value:1000
+        },
         useTexture: {
             type: "f",
             value: 0.0
@@ -246,6 +254,8 @@ function CreateParticleSystem(nodeID, childID, childName) {
         "uniform float endSize;\n" +
         "uniform vec4 startColor;\n" +
         "uniform vec4 endColor;\n" +
+        "uniform float maxRate;\n" +
+        "uniform float pCount;\n" +
         "varying vec4 vColor;\n" +
         "varying vec4 vRandom;\n" +
         "uniform float sizeRange;\n" +
@@ -254,7 +264,7 @@ function CreateParticleSystem(nodeID, childID, childName) {
         "uniform float screenSize;\n" +
         "void main() {\n" +
         //randomly offset in time
-        "   float lifetime = fract(random.x+(time))*lifespan*1.33;" +
+        "   float lifetime = fract(random.x*(min(1.0,pCount/(maxRate*1.0)))+(time))*lifespan*1.33;" +
         //solve for position
         "   vec3 pos2 = position.xyz + velocity*lifetime + (acceleration*lifetime*lifetime)/2.0;" + // ;
         "   vFogPosition = (modelMatrix * vec4(pos2,1.0)).xyz; \n" +
@@ -439,7 +449,7 @@ function CreateParticleSystem(nodeID, childID, childName) {
         //generate from a point
         //TODO: specify point?
         if (this.emitterType.toLowerCase() == 'point') {
-            return new THREE.Vector3(0, 0, 0);
+            return new THREE.Vector3(0, 0, 0).add(this._emitterPosition);
         }
         //Generate in a box
         //assumes centered at 0,0,0
@@ -448,7 +458,7 @@ function CreateParticleSystem(nodeID, childID, childName) {
             var y = this.emitterSize[1] * Math.SecureRandom() - this.emitterSize[1] / 2;
             var z = this.emitterSize[2] * Math.SecureRandom() - this.emitterSize[2] / 2;
 
-            return new THREE.Vector3(x, y, z);
+            return new THREE.Vector3(x, y, z).add(this._emitterPosition);
         }
         //Generate in a sphere
         //assumes centered at 0,0,0
@@ -463,7 +473,7 @@ function CreateParticleSystem(nodeID, childID, childName) {
             var z = u;
 
 
-            return new THREE.Vector3(x, y, z).setLength(r);
+            return new THREE.Vector3(x, y, z).setLength(r).add(this._emitterPosition);
         }
 
     }
@@ -613,7 +623,8 @@ function CreateParticleSystem(nodeID, childID, childName) {
             //setup with new random values, and move randomly forward in time one step	
             var particle = this.regenParticles.shift();
             this.setupParticle(particle, this.matrix, inv);
-            this.updateParticleAnalytic(particle, this.matrix, inv, Math.SecureRandom() * 3.33);
+            if(this.maxRate < this.particleCount)
+                this.updateParticleAnalytic(particle, this.matrix, inv, Math.SecureRandom() * 3.33);
             particle.waitForRegen = false;
         }
 
@@ -657,7 +668,7 @@ function CreateParticleSystem(nodeID, childID, childName) {
                 this.updateParticleEuler(particle, this.matrix, inv, 3.333);
             }
 
-            //examples developed with faster tick - maxrate *33 is scale to make work 
+            //examples developed with faster tick - maxRate *33 is scale to make work 
             //with new timing
 
             //Reuse up to maxRate particles, sliced for delta_time
@@ -797,6 +808,7 @@ function CreateParticleSystem(nodeID, childID, childName) {
             particle.prevworld.applyMatrix4(inv);
         }
     }
+    particleSystem._emitterPosition = new THREE.Vector3(0,0,0);
     particleSystem.update = function(time) {
 
         this.updateInner(time);
@@ -926,21 +938,7 @@ function CreateParticleSystem(nodeID, childID, childName) {
 
 
 
-            if (propertyName == 'maxVelocity' ||
-                propertyName == 'minVelocity' ||
-                propertyName == 'maxAcceleration' ||
-                propertyName == 'minAcceleration' ||
-                propertyName == 'emitterType' ||
-                (propertyName == 'emitterSize' && this.solver == 'AnalyticShader') ||  
-                propertyName == 'maxLifeTime' ||
-                propertyName == 'minLifeTime' ||
-                propertyName == 'velocityMode'
 
-            ) {
-
-                ps.rebuildParticles();
-
-            }
 
             if (propertyName == 'size') {
                 //ps.material.size = propertyValue;
@@ -953,6 +951,12 @@ function CreateParticleSystem(nodeID, childID, childName) {
             if (propertyName == 'particleCount') {
                 ps.setParticleCount(propertyValue);
             }
+            if(propertyName == 'emitterPosition')
+            {
+                ps._emitterPosition.x = propertyValue[0];
+                ps._emitterPosition.y = propertyValue[1];
+                ps._emitterPosition.z = propertyValue[2];
+            }
             if (propertyName == 'startSize') {
                 ps.shaderMaterial_analytic.uniforms.startSize.value = propertyValue;
             }
@@ -961,6 +965,12 @@ function CreateParticleSystem(nodeID, childID, childName) {
             }
             if (propertyName == 'sizeRange') {
                 ps.shaderMaterial_analytic.uniforms.sizeRange.value = propertyValue;
+            }
+            if (propertyName == 'maxRate') {
+                ps.shaderMaterial_analytic.uniforms.maxRate.value = propertyValue;
+            }
+            if (propertyName == 'particleCount') {
+                ps.shaderMaterial_analytic.uniforms.pCount.value = propertyValue;
             }
             if (propertyName == 'maxSpin') {
                 ps.shaderMaterial_analytic.uniforms.maxSpin.value = propertyValue;
@@ -1078,6 +1088,24 @@ function CreateParticleSystem(nodeID, childID, childName) {
                 }
             }
 
+            if (propertyName == 'maxVelocity' ||
+                propertyName == 'minVelocity' ||
+                propertyName == 'maxAcceleration' ||
+                propertyName == 'minAcceleration' ||
+                propertyName == 'emitterType' ||
+                (propertyName == 'emitterSize' && ps.solver == 'AnalyticShader') ||  
+                (propertyName == 'emitterPosition' && ps.solver == 'AnalyticShader') ||  
+                propertyName == 'maxLifeTime' ||
+                propertyName == 'minLifeTime' ||
+                propertyName == 'velocityMode' ||
+                propertyName == 'maxRate'
+
+            ) {
+
+                ps.rebuildParticles();
+
+            }
+
         }
         this.initializingNode = function() {
 
@@ -1087,7 +1115,16 @@ function CreateParticleSystem(nodeID, childID, childName) {
             if (ps.hasOwnProperty(propertyName))
                 return ps[propertyName];
         }
-
+        this.callingMethod = function(name,args)
+        {
+            if(name == 'reset')
+            {
+                if(ps.solver == 'AnalyticShader')
+                     ps.shaderMaterial_analytic.uniforms.time.value = 0;
+                else
+                    ps.rebuildParticles(); 
+            }
+        }
         //must be defined by the object
         this.getRoot = function() {
             return this.rootnode;

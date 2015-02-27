@@ -59,6 +59,13 @@ properties:
             if(!this.colorRange) this.colorRange = [0,0,0,0];
             return this.colorRange[3];                       
   EditorData:
+    AAParticleCount:
+      displayname: "Particle Count"
+      property: particleCount
+      type: slider
+      min: 200
+      max: 10000
+      step: 200
     ABstartAlpha:
       displayname: "Alpha: start"
       property: startAlpha
@@ -214,6 +221,10 @@ properties:
     emitterSize:
       displayname: Emitter Size
       property: emitterSize
+      type: vector
+    emitterPosition:
+      displayname: Emitter Position
+      property: emitterPosition
       type: vector
     velocityMode:
       displayname: "Velocity Mode"
