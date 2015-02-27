@@ -683,6 +683,7 @@ function CreateParticleSystem(nodeID, childID, childName) {
                 var particle = this.regenParticles.shift();
                 this.setupParticle(particle, this.matrix, inv);
                 this.updateParticleEuler(particle, this.matrix, inv, Math.SecureRandom() * 3.33);
+                particle.age = 0;
                 this.material.attributes.lifespan.needsUpdate = true;
             }
 
