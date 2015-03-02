@@ -475,6 +475,21 @@ function MorphBinaryLoader() {
                 list[i].castShadow = _SettingsManager.getKey('shadows');
                 list[i].receiveShadow = _SettingsManager.getKey('shadows');
                 if (list[i].geometry instanceof THREE.BufferGeometry) continue;
+
+                var materials = [];
+                if(list[i] && list[i].material)
+                {
+                    materials.push(list[i].material)
+                }
+                if(list[i] && list[i].material && list[i].material instanceof THREE.MeshFaceMaterial)
+                {
+                    materials = materials.concat(list[i].material.materials)
+                }
+                for (var j in materials)
+                {
+                    if(materials[j].hasOwnProperty('map') && !materials[j].map)
+                            materials[j].map = _SceneManager.getTexture('white.png');
+                }
                 //humm, the below looks useful. Why is it removed?
                 /*	if(list[i].material)
                  {

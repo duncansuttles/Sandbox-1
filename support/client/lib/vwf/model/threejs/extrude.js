@@ -19,8 +19,8 @@
 
                 steps: this.steps + 2,
 
-                bevelEnabled: false
-
+                bevelEnabled: false,
+                material: 0, extrudeMaterial: 1
             };
             extrusionSettings.extrudePath = new THREE.SplineCurve3([]);
             extrusionSettings.extrudePath.points.push(new THREE.Vector3(0, 0, 0));
@@ -72,11 +72,10 @@
             //	mesh.parent.remove(mesh);
             this.mymesh = new THREE.Mesh(geometry, mesh.material)
 
-            var mat = new THREE.MeshPhongMaterial();
-            this.mymesh.material = mat;
+           
             this.mymesh.castShadow = this.parentNode.castShadows;
             this.mymesh.receiveShadow = this.parentNode.receiveShadows;
-            _Editor.setMaterialByDef(mat, this.parentNode.materialDef);
+            _MaterialCache.setMaterial(this.mymesh, this.parentNode.materialDef);
             p.add(this.mymesh);
 
         }
