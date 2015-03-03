@@ -3,13 +3,17 @@
         this.amount = 1;
         this.steps = 1;
         this.mymesh = null;
+        this.hideLine = false;
         this.axis = 'Z';
         this.updateSelf = function() {
 
             if (this.mymesh && this.mymesh.parent)
                 this.mymesh.parent.remove(this.mymesh);
 
+
             var mesh = this.parentNode.GetMesh();
+            if(this.hideLine)
+            	mesh.visible = false;
             if (!mesh) return;
             var geo = mesh.geometry;
             if (!geo) return;
@@ -106,6 +110,11 @@
                 this.axis = val;
                 this.dirtyStack();
             }
+            if(prop == 'hideLine')
+            {
+            	this.hideLine = val;
+            	this.dirtyStack();
+            }
 
         }
         this.GetMesh = function() {
@@ -151,6 +160,11 @@
                         labels: ['X', "Y", "Z"]
 
 
+                    },
+                    hideLine: {
+                        displayname: 'Hide Parent Line ',
+                        property: 'hideLine',
+                        type: 'check',
                     }
                 }
             }

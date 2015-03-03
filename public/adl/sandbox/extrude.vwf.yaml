@@ -16,3 +16,4 @@ extends: http://vwf.example.com/node3.vwf
 properties:
   amount: 1 
   steps: 1
+  hideLine: false

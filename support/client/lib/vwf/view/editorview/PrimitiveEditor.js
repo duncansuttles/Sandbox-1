@@ -558,13 +558,17 @@ define(function() {
             if (editordatanames.length == 0) return;
             editordatanames.sort();
             section = '<h3 class="modifiersection" ><a href="#"><div style="font-weight:bold;display:inline">' + (vwf.getProperty(node.id, 'type') || "Type") + ": </div>" + (node.properties.DisplayName || "None") + '</a></h3>' + '<div class="modifiersection" id="basicSettings' + nodeid + '">' + '</div>';
+           
             $("#accordion").append(section);
+
+            var addedWidget = false;
             for (var j = 0; j < editordatanames.length; j++) {
                 var i = editordatanames[j];
                 //if multiple editorData properties up the prototype chain have the same editor objects, skip
-                if(this.currentWidgets[i]) continue;
-                this.currentWidgets[i] = true;
                 
+                if(this.currentWidgets[nodeid+i]) continue;
+                this.currentWidgets[nodeid+i] = true;
+                addedWidget = true;
                 if (editordata[i].type == 'sectionTitle') {
                     var inputstyle = "";
                     $('#basicSettings' + nodeid).append('<div style="" class = "EditorDataSectionTitle">' + editordata[i].displayname + ': </div>');
@@ -866,7 +870,14 @@ define(function() {
                     $('#' + $('#' + nodeid + i + 'ColorPicker').data('colorpickerId')).attr('nodeid', nodeid);
                     this.addPropertyEditorDialog(node.id, editordata[i].property, $('#' + nodeid + i + 'ColorPicker'), 'color');
                 }
+                
             }
+            if(!addedWidget)
+                {
+                    
+                    $("#accordion").children().last().remove();
+                    $("#accordion").children().last().remove();
+                }
             $('#basicSettings' + nodeid).append('<div style="margin-top: 1em;" nodename="' + node.id + '" id="' + nodeid + 'deletebutton"/>');
             $('#' + nodeid + 'deletebutton').button({
                 label: 'Delete'
