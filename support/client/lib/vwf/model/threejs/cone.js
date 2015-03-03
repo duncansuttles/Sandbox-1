@@ -42,6 +42,14 @@
 			{
 				var mesh=  new THREE.Mesh(new THREE.CylinderGeometry(0, this.radius, this.height,this.rsegs,this.hsegs), mat);
 				mesh.rotation.x = Math.PI/2;
+
+				for (var face in mesh.geometry.faces) {
+                    if (mesh.geometry.faces[face].normal.y <= -0.1)
+                        mesh.geometry.faces[face].materialIndex = 1;
+                    if (mesh.geometry.faces[face].normal.y >= 0.1)
+                        mesh.geometry.faces[face].materialIndex = 2;
+                }
+                
 				return mesh;
 			}
 			
