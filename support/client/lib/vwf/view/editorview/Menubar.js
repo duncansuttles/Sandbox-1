@@ -334,6 +334,9 @@ define({
         $('#MenuCreateExtrude').click(function(e) {
             _Editor.CreateModifier('extrude', document.PlayerNumber, true);
         });
+         $('#MenuCreatePathExtrude').click(function(e) {
+            _Editor.CreateModifier('pathextrude', document.PlayerNumber, true);
+        });
         $('#MenuCreateLathe').click(function(e) {
             _Editor.CreateModifier('lathe', document.PlayerNumber, true);
         });
