@@ -56,9 +56,9 @@
                 delete this.materials[olddef];
             }
             //make sure that we update the material to have enough submats for all the requested IDs
-            if(newmat instanceof THREE.MeshFaceMaterial && mesh.geometry)
+            if(newmat instanceof THREE.MeshFaceMaterial && mesh.geometry && mesh.geometry.faces)
             {
-            	debugger;
+            	
             	var maxIndex = 0;
             	for (var j = 0; j < mesh.geometry.faces.length; j++)
             	{
@@ -1244,7 +1244,14 @@
                         propval.skinning = true;
                     else
                         propval.skinning = false;
-                    _MaterialCache.setMaterial(list[i], propval);
+                    if(!(propval instanceof Array))
+                    	_MaterialCache.setMaterial(list[i], propval);
+                    else if(list.length == 1)
+                    	_MaterialCache.setMaterial(list[i], propval);
+                    else
+                    {
+                    	_MaterialCache.setMaterial(list[i], propval[Math.min(i,propval.length-1)]);
+                    }
 
 
                         list[i].materialUpdated();
