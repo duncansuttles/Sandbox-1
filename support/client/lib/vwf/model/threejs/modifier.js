@@ -2,17 +2,18 @@
     function modifier(childID, childSource, childName) {
         this.active = true;
         this.callingMethod = function(methodName, args) {
+            args = args || [];
             if (methodName == 'GetMesh') {
                 return this.GetMesh();
             }
             if (methodName == 'dirtyStack') {
-                return this.dirtyStack();
+                return this.dirtyStack(args[0],args[1],args[2]);
             }
             if (methodName == 'updateStack') {
-                return this.updateStack();
+                return this.updateStack(args[0],args[1],args[2]);
             }
             if (methodName == 'updateSelf') {
-                return this.updateSelf();
+                return this.updateSelf(args[0],args[1],args[2]);
             }
         }
         this.gettingProperty = function(prop) {
@@ -53,9 +54,9 @@
             return vwf.callMethod(vwf.parent(this.ID), 'GetBounds');
         }
         this.dirtyStack = function() {
-
-
-            return vwf.callMethod(vwf.parent(this.ID), 'dirtyStack');
+            //modifiers parents are assumed to be either a modifier or a prim. modifiers never trigger a stack update
+            vwf.callMethod(vwf.parent(this.ID), 'dirtyStack');
+            return false;
         }
         //must be defined by the object
         this.getRoot = function() {

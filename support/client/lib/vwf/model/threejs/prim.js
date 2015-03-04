@@ -1,17 +1,18 @@
 (function() {
     function prim(childID, childSource, childName) {
         this.callingMethod = function(methodName, args) {
+            args = args || [];
             if (methodName == 'GetMesh') {
                 return this.GetMesh();
             }
             if (methodName == 'dirtyStack') {
-                return this.dirtyStack();
+                return this.dirtyStack(args[0],args[1],args[2]);
             }
             if (methodName == 'updateStack') {
-                return this.updateStack();
+                return this.updateStack(args[0],args[1],args[2]);
             }
             if (methodName == 'updateSelf') {
-                return this.updateSelf();
+                return this.updateSelf(args[0],args[1],args[2]);
             }
         }
         this.PrimGetAllLeafMeshes = function(threeObject, list) {
@@ -48,7 +49,12 @@
         }
 
         this.dirtyStack = function(rebuild, cache) {
-            this.updateStack(rebuild, cache);
+            
+            //the the parent knows how to update the stack, let the parent deal with is. otherwise, start the update cascade here
+            var parentHandled = vwf.callMethod(vwf.parent(this.ID), 'dirtyStack',[rebuild, cache]);
+            if(!parentHandled)
+                this.updateStack(rebuild, cache);
+            return true;
         }
         this.gettingProperty = function(propertyName) {
             if (propertyName == 'type') {
