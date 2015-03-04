@@ -185,19 +185,12 @@ define(["vwf/model/threejs/glTF-parser"], function() {
             this.duration = Math.max(this.duration, this.glTFAnimations[i].duration)
         }
         this.setKey = function(key,fps) {
-            if (this.lastKey == key) return;
-            this.lastKey = key;
-
-            for (var j =0 ; j <  this.glTFAnimations.length; j++) {
-                var i, len = this.glTFAnimations[j].interps.length;
-                for (i = 0; i < len; i++) {
-
-                    this.glTFAnimations[j].interps[i].interp(key / fps);
-                    //if(!(this.glTFAnimations[j].interps[i].targetNode instanceof THREE.Bone))
-                        this.glTFAnimations[j].interps[i].targetNode.updateMatrix();
+                for (var j in this.glTFAnimations) {
+                    var i, len = this.glTFAnimations[j].interps.length;
+                    for (i = 0; i < len; i++) {
+                        this.glTFAnimations[j].interps[i].interp(key / fps);
+                    }
                 }
-            }
-
         }
         this.data = {
             length: this.duration,

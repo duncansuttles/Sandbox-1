@@ -1,0 +1,436 @@
+{
+    "accessors": {
+        "accessor_21": {
+            "bufferView": "bufferView_56",
+            "byteOffset": 0,
+            "byteStride": 0,
+            "count": 6,
+            "type": 5123
+        },
+        "accessor_23": {
+            "bufferView": "bufferView_57",
+            "byteOffset": 0,
+            "byteStride": 12,
+            "count": 4,
+            "max": [
+                21.0411,
+                -19.1974,
+                44.8541
+            ],
+            "min": [
+                -21.0411,
+                -19.1974,
+                0
+            ],
+            "type": 35665
+        },
+        "accessor_25": {
+            "bufferView": "bufferView_57",
+            "byteOffset": 48,
+            "byteStride": 12,
+            "count": 4,
+            "max": [
+                0,
+                -1,
+                0
+            ],
+            "min": [
+                0,
+                -1,
+                0
+            ],
+            "type": 35665
+        },
+        "accessor_27": {
+            "bufferView": "bufferView_57",
+            "byteOffset": 96,
+            "byteStride": 8,
+            "count": 4,
+            "max": [
+                1,
+                1
+            ],
+            "min": [
+                0,
+                0
+            ],
+            "type": 35664
+        },
+        "accessor_48": {
+            "bufferView": "bufferView_56",
+            "byteOffset": 12,
+            "byteStride": 0,
+            "count": 30,
+            "type": 5123
+        },
+        "accessor_50": {
+            "bufferView": "bufferView_57",
+            "byteOffset": 128,
+            "byteStride": 12,
+            "count": 20,
+            "max": [
+                21.0411,
+                19.1974,
+                44.8541
+            ],
+            "min": [
+                -21.0411,
+                -19.1974,
+                0
+            ],
+            "type": 35665
+        },
+        "accessor_52": {
+            "bufferView": "bufferView_57",
+            "byteOffset": 368,
+            "byteStride": 12,
+            "count": 20,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                0,
+                -1
+            ],
+            "type": 35665
+        },
+        "accessor_54": {
+            "bufferView": "bufferView_57",
+            "byteOffset": 608,
+            "byteStride": 8,
+            "count": 20,
+            "max": [
+                1,
+                1
+            ],
+            "min": [
+                0,
+                0
+            ],
+            "type": 35664
+        }
+    },
+    "animations": {},
+    "asset": {
+        "generator": "collada2gltf@0ac67053264680f5e9cd8a2ecd4468d910cfc092",
+        "premultipliedAlpha": true,
+        "profile": "WebGL 1.0.2",
+        "version": 0.6
+    },
+    "bufferViews": {
+        "bufferView_56": {
+            "buffer": "91be91c400a2338579970dd03c9cc7fb",
+            "byteLength": 72,
+            "byteOffset": 0,
+            "target": 34963
+        },
+        "bufferView_57": {
+            "buffer": "91be91c400a2338579970dd03c9cc7fb",
+            "byteLength": 768,
+            "byteOffset": 72,
+            "target": 34962
+        }
+    },
+    "buffers": {
+        "91be91c400a2338579970dd03c9cc7fb": {
+            "byteLength": 840,
+            "path": "91be91c400a2338579970dd03c9cc7fb.bin",
+            "type": "arraybuffer"
+        }
+    },
+    "materials": {
+        "m0_1___Default_material-fx": {
+            "instanceTechnique": {
+                "technique": "technique0",
+                "values": {
+                    "ambient": [
+                        0.470588,
+                        1,
+                        0,
+                        1
+                    ],
+                    "diffuse": [
+                        0.470588,
+                        1,
+                        0,
+                        1
+                    ],
+                    "emission": [
+                        0,
+                        0,
+                        0,
+                        1
+                    ],
+                    "shininess": 0,
+                    "specular": [
+                        0.9,
+                        0.9,
+                        0.9,
+                        1
+                    ]
+                }
+            },
+            "name": "m0_1___Default_material"
+        },
+        "m1_2___Default_material-fx": {
+            "instanceTechnique": {
+                "technique": "technique0",
+                "values": {
+                    "ambient": [
+                        0.588235,
+                        0.588235,
+                        0.588235,
+                        1
+                    ],
+                    "diffuse": [
+                        0.588235,
+                        0.588235,
+                        0.588235,
+                        1
+                    ],
+                    "emission": [
+                        0,
+                        0,
+                        0,
+                        1
+                    ],
+                    "shininess": 0,
+                    "specular": [
+                        0.9,
+                        0.9,
+                        0.9,
+                        1
+                    ]
+                }
+            },
+            "name": "m1_2___Default_material"
+        }
+    },
+    "meshes": {
+        "meshId0": {
+            "name": "meshId0_name",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": "accessor_25",
+                        "POSITION": "accessor_23",
+                        "TEXCOORD_0": "accessor_27"
+                    },
+                    "indices": "accessor_21",
+                    "material": "m0_1___Default_material-fx",
+                    "primitive": 4
+                }
+            ]
+        },
+        "meshId1": {
+            "name": "meshId1_name",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": "accessor_52",
+                        "POSITION": "accessor_50",
+                        "TEXCOORD_0": "accessor_54"
+                    },
+                    "indices": "accessor_48",
+                    "material": "m1_2___Default_material-fx",
+                    "primitive": 4
+                }
+            ]
+        }
+    },
+    "nodes": {
+        "EnvironmentAmbientLight": {
+            "children": [],
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "EnvironmentAmbientLight"
+        },
+        "Object001": {
+            "children": [],
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                -3.32697,
+                4.26157,
+                0,
+                1
+            ],
+            "meshes": [
+                "meshId0",
+                "meshId1"
+            ],
+            "name": "Object001"
+        },
+        "unnamed": {
+            "children": [
+                "EnvironmentAmbientLight",
+                "Object001"
+            ],
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "unnamed"
+        }
+    },
+    "programs": {
+        "program_0": {
+            "attributes": [
+                "a_normal",
+                "a_position"
+            ],
+            "fragmentShader": "91be91c400a2338579970dd03c9cc7fb0FS",
+            "vertexShader": "91be91c400a2338579970dd03c9cc7fb0VS"
+        }
+    },
+    "scene": "defaultScene",
+    "scenes": {
+        "defaultScene": {
+            "nodes": [
+                "unnamed"
+            ]
+        }
+    },
+    "shaders": {
+        "91be91c400a2338579970dd03c9cc7fb0FS": {
+            "path": "91be91c400a2338579970dd03c9cc7fb0FS.glsl",
+            "type": 35632
+        },
+        "91be91c400a2338579970dd03c9cc7fb0VS": {
+            "path": "91be91c400a2338579970dd03c9cc7fb0VS.glsl",
+            "type": 35633
+        }
+    },
+    "skins": {},
+    "techniques": {
+        "technique0": {
+            "parameters": {
+                "ambient": {
+                    "type": 35666
+                },
+                "diffuse": {
+                    "type": 35666
+                },
+                "emission": {
+                    "type": 35666
+                },
+                "modelViewMatrix": {
+                    "semantic": "MODELVIEW",
+                    "type": 35676
+                },
+                "normal": {
+                    "semantic": "NORMAL",
+                    "type": 35665
+                },
+                "normalMatrix": {
+                    "semantic": "MODELVIEWINVERSETRANSPOSE",
+                    "type": 35675
+                },
+                "position": {
+                    "semantic": "POSITION",
+                    "type": 35665
+                },
+                "projectionMatrix": {
+                    "semantic": "PROJECTION",
+                    "type": 35676
+                },
+                "shininess": {
+                    "type": 5126
+                },
+                "specular": {
+                    "type": 35666
+                }
+            },
+            "pass": "defaultPass",
+            "passes": {
+                "defaultPass": {
+                    "details": {
+                        "commonProfile": {
+                            "extras": {
+                                "doubleSided": false
+                            },
+                            "lightingModel": "Phong",
+                            "parameters": [
+                                "ambient",
+                                "diffuse",
+                                "emission",
+                                "modelViewMatrix",
+                                "normalMatrix",
+                                "projectionMatrix",
+                                "shininess",
+                                "specular"
+                            ]
+                        },
+                        "type": "COLLADA-1.4.1/commonProfile"
+                    },
+                    "instanceProgram": {
+                        "attributes": {
+                            "a_normal": "normal",
+                            "a_position": "position"
+                        },
+                        "program": "program_0",
+                        "uniforms": {
+                            "u_ambient": "ambient",
+                            "u_diffuse": "diffuse",
+                            "u_emission": "emission",
+                            "u_modelViewMatrix": "modelViewMatrix",
+                            "u_normalMatrix": "normalMatrix",
+                            "u_projectionMatrix": "projectionMatrix",
+                            "u_shininess": "shininess",
+                            "u_specular": "specular"
+                        }
+                    },
+                    "states": {
+                        "blendEnable": 0,
+                        "cullFaceEnable": 1,
+                        "depthMask": 1,
+                        "depthTestEnable": 1
+                    }
+                }
+            }
+        }
+    }
+}

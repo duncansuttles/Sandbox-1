@@ -69,7 +69,7 @@
                 if (skins[i].animationHandle) {
                    
                     skins[i].animationHandle.setKey(this.animationFrame,this.animationFPS);
-                    console.log(this.animationFrame)
+                    
                     skins[i].updateMatrixWorld(true);
                     
                     //odd, does not seem to update matrix on first child bone. 
@@ -109,6 +109,26 @@
             if (propertyName == 'animationFPS') {
                 this.animationFPS = propertyValue;
             }
+            if (propertyName == 'morphTargetInfluences') {
+
+                var skins = getSkin(this.getRoot());
+                for (var i = 0; i < skins.length; i++) {
+                    if (skins[i].geometry.morphTargets && skins[i].geometry.morphTargets.length > 0) {
+                        //reset to target 0
+                        for (var j = 0; j < skins[i].geometry.vertices.length; j++) {
+                            skins[i].geometry.vertices[j].copy(skins[i].geometry.morphTargets[0].vertices[j]);
+                        }
+                        for (var j = 1; j < skins[i].geometry.morphTargets.length; j++) {
+                            if (propertyValue[j - 1]) {
+                                for (var k = 0; k < skins[i].geometry.vertices.length; k++) {
+                                    skins[i].geometry.vertices[k].add(skins[i].geometry.morphTargets[0].vertices[k].clone().sub(skins[i].geometry.morphTargets[j].vertices[k].clone()).multiplyScalar(propertyValue[j - 1] || 0));
+                                }
+                            }
+                        }
+                        skins[i].geometry.verticesNeedUpdate = true;
+                    }
+                }
+            }
         }
         this.gettingProperty = function(propertyName) {
             if (propertyName == 'animationFrame') {
@@ -118,6 +138,7 @@
                 return this.animationStart || 0;
             }
             if (propertyName == 'animationEnd') {
+                
                 return this.animationEnd || this.gettingProperty('animationLength');
             }
             if (propertyName == 'animationLength') {
@@ -145,7 +166,7 @@
                 //use 1.5 to map the 20fps tick to a default 30fps animation
                 var speedAdjust = this.animationFPS / 20;
                 var nextframe = this.animationFrame + (this.animationSpeed*speedAdjust);
-                if (nextframe > this.animationEnd - 1) {
+                if (nextframe > this.gettingProperty('animationEnd') - 1) {
                     nextframe = this.animationStart || 0;
 
                 }

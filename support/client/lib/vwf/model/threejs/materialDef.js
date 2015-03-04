@@ -55,7 +55,20 @@
                 var olddef = oldmat.def;
                 delete this.materials[olddef];
             }
-            mesh.material = newmat;
+            //make sure that we update the material to have enough submats for all the requested IDs
+            if(newmat instanceof THREE.MeshFaceMaterial && mesh.geometry && mesh.geometry.faces)
+            {
+            	
+            	var maxIndex = 0;
+            	for (var j = 0; j < mesh.geometry.faces.length; j++)
+            	{
+            		maxIndex = Math.max(maxIndex,mesh.geometry.faces[j].materialIndex);
+            	}
+            	for(var j = 0; j < maxIndex +1; j++)
+            		if(!newmat.materials[j])
+            			newmat.materials[j] = newmat.materials[0];
+            }
+            	mesh.material = newmat;
             if (mesh.material && mesh.material.refCount === undefined)
                 mesh.material.refCount = 0;
             if (mesh.material)
@@ -73,7 +86,7 @@
         }
         this.setMaterialByDef = function(currentmat, value) {
             if (!value) return null;
-            if (!value.type)
+            if (!value.type && !(value instanceof Array))
                 value.type = 'phong';
 
             if (value.type == 'phong') {
@@ -86,7 +99,136 @@
                 return this.setMaterialDefCamera(currentmat, value)
             else if (value.type == 'mix')
                 return this.setMaterialDefMix(currentmat, value);
+            else if (value.type == 'fresnel')
+                return this.fresnelShader(currentmat, value);
+            else if (value instanceof Array)
+            	return this.setMaterialDefMultiFace(currentmat,value)
         }
+
+        this.setMaterialDefMultiFace = function(currentmat,value)
+        {
+        	
+        	if (currentmat && !(currentmat instanceof THREE.MeshFaceMaterial)) {
+                 if (currentmat && currentmat.dispose)
+                		currentmat.dispose();
+                 currentmat = null;
+            }
+            if(!currentmat) {
+                currentmat = new THREE.MeshFaceMaterial()
+            }
+            for(var i = 0; i < value.length; i++)
+            {
+            	currentmat.materials[i] = this.setMaterialByDef(currentmat.materials[i],value[i])
+            }
+            return currentmat;
+        }
+        this.fresnelShader = function(currentmat, value) {
+            if (currentmat && currentmat.dispose)
+                currentmat.dispose();
+
+            if (currentmat && !(currentmat instanceof THREE.ShaderMaterial)) {
+                currentmat = null;
+            }
+            if (!currentmat) {
+                currentmat = new THREE.ShaderMaterial({
+                    uniforms: {
+
+                        "mRefractionRatio": { type: "f", value: 1.02 },
+                        "mFresnelBias": { type: "f", value: 0.1 },
+                        "mFresnelPower": { type: "f", value: 2.0 },
+                        "mFresnelScale": { type: "f", value: 1.0 },
+                        "tCube": { type: "t", value: null }
+
+                    },
+
+                    vertexShader: [
+
+                        "uniform float mRefractionRatio;",
+                        "uniform float mFresnelBias;",
+                        "uniform float mFresnelScale;",
+                        "uniform float mFresnelPower;",
+
+                        "varying vec3 vReflect;",
+                        "varying vec3 vRefract[3];",
+                        "varying float vReflectionFactor;",
+
+                        "void main() {",
+
+                        "vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+                        "vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
+
+                        "vec3 worldNormal = normalize( mat3( modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz ) * normal );",
+
+                        "vec3 I = worldPosition.xyz - cameraPosition;",
+
+                        "vReflect = reflect( I, worldNormal );",
+                        "vRefract[0] = refract( normalize( I ), worldNormal, mRefractionRatio );",
+                        "vRefract[1] = refract( normalize( I ), worldNormal, mRefractionRatio * 0.99 );",
+                        "vRefract[2] = refract( normalize( I ), worldNormal, mRefractionRatio * 0.98 );",
+                        "vReflectionFactor = mFresnelBias + mFresnelScale * pow( 1.0 + dot( normalize( I ), worldNormal ), mFresnelPower );",
+
+                        "gl_Position = projectionMatrix * mvPosition;",
+
+                        "}"
+
+                    ].join("\n"),
+
+                    fragmentShader: [
+
+                        "uniform samplerCube tCube;",
+
+                        "varying vec3 vReflect;",
+                        "varying vec3 vRefract[3];",
+                        "varying float vReflectionFactor;",
+
+                        "void main() {",
+
+                        "vec4 reflectedColor = textureCube( tCube, vec3( -vReflect.x, vReflect.yz ) );",
+                        "vec4 refractedColor = vec4( 1.0 );",
+
+                        "refractedColor.r = textureCube( tCube, vec3( -vRefract[0].x, vRefract[0].yz ) ).r;",
+                        "refractedColor.g = textureCube( tCube, vec3( -vRefract[1].x, vRefract[1].yz ) ).g;",
+                        "refractedColor.b = textureCube( tCube, vec3( -vRefract[2].x, vRefract[2].yz ) ).b;",
+
+                        "gl_FragColor = mix( refractedColor, reflectedColor, clamp( vReflectionFactor, 0.0, 1.0 ) );",
+
+                        "}"
+                    ].join("\n")
+                });
+            }
+            currentmat.dispose = function() {
+                _dView.deleteRenderTarget(this.renderTarget);
+            }.bind(currentmat);
+
+
+            if (currentmat.renderTarget) {
+                _dView.deleteRenderTarget(currentmat.renderTarget);
+            }
+
+            currentmat.uniforms.mRefractionRatio.value = value.RefractionRatio;
+            currentmat.uniforms.mFresnelBias.value = value.FresnelBias;
+            currentmat.uniforms.mFresnelPower.value = value.FresnelPower;
+            currentmat.uniforms.mFresnelScale.value = value.FresnelScale;
+
+            if (!value.fresnelsrc) {
+                currentmat.uniforms[ "tCube" ].value = vwf_view.kernel.kernel.callMethod(vwf.application(), 'getSkyMat')
+            } else {
+                currentmat.uniforms[ "tCube" ].value = value.fresnelsrc;
+            }
+
+            if (value.fresnelside == 1) {
+                currentmat.side = THREE.BackSide;
+            } else {
+                currentmat.side = THREE.FrontSide;
+            }
+
+            currentmat.needsUpdate = true;
+
+            return currentmat;
+        }
+
+
+
         this.setMaterialDefVideo = function(currentmat, value) {
 
             if (currentmat && currentmat.dispose)
@@ -236,8 +378,9 @@
                 _dView.deleteRenderTarget(currentmat.renderTarget);
             }
 
-
-            currentmat.uniforms.texture1.value = _dView.createRenderTarget(value.RTTCameraID);
+            var cameraID = value.RTTCameraID;
+            if (cameraID)
+                currentmat.uniforms.texture1.value = _dView.createRenderTarget(cameraID);
 
             currentmat.renderTarget = currentmat.uniforms.texture1.value;
             //currentmat.uniforms.texture1.value.minFilter = THREE.LinearFilter;
@@ -1046,18 +1189,40 @@
                 }
             }
         }
+        this.compareLayers = function(olddef,newdef)
+        {		
+        	if(!(olddef instanceof Array))
+        		olddef = [olddef];
+        	if(!(newdef instanceof Array))
+        		newdef = [newdef];
+
+        	var newdeflayers = [];
+        	for(var i =0; i <newdef.length; i ++)
+        		newdeflayers = newdeflayers.concat(newdef.layers)
+
+        	var olddeflayers = [];
+        	for(var i =0; i <olddef.length; i ++)
+        		olddeflayers = olddeflayers.concat(olddef.layers)
+        	if(olddeflayers.length !== newdeflayers.length) return false;
+        	for(var i =0; i < newdeflayers.length; i++)
+        	{
+        		if(!newdeflayers[i] && olddeflayers[i]) return false;
+        		if(newdeflayers[i] && !olddeflayers[i]) return false;
+        		if(!newdeflayers[i] && !olddeflayers[i]) continue;
+        		if(newdeflayers[i].src != olddeflayers[i].src) return false;
+        		if(newdeflayers[i].mapTo != olddeflayers[i].mapTo) return false;
+        	}
+        	return true;
+        }
         this.settingProperty = function(propname, propval) {
 
             //if it's a prim, this.build will be true. Prims must be able to reset the material, and won't pass this check
             if (!Object.deepEquals(propval, this.materialDef) || this.Build)
-            if (propname == 'materialDef' && propval && propval.layers) {
+            if (propname == 'materialDef' && propval ) {
 
                 var needRebuild = false;
 
-
-
-                if (this.materialDef) {
-                    if (this.materialDef && propval.layers.length > this.materialDef.layers.length)
+                if (!this.compareLayers(this.materialDef,propval)) {
                         needRebuild = true;
                 }
                 this.materialDef = propval;
@@ -1079,7 +1244,14 @@
                         propval.skinning = true;
                     else
                         propval.skinning = false;
-                    _MaterialCache.setMaterial(list[i], propval);
+                    if(!(propval instanceof Array))
+                    	_MaterialCache.setMaterial(list[i], propval);
+                    else if(list.length == 1)
+                    	_MaterialCache.setMaterial(list[i], propval);
+                    else
+                    {
+                    	_MaterialCache.setMaterial(list[i], propval[Math.min(i,propval.length-1)]);
+                    }
 
 
                         list[i].materialUpdated();

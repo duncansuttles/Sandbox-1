@@ -70,6 +70,7 @@ define(["vwf/model/threejs/backgroundLoader", "vwf/view/editorview/lib/alertify.
 
 
             }
+            this.morphs = {},
             this.collada = {},
                 this.utf8Json = {},
                 this.subDriver = {},
@@ -121,6 +122,14 @@ define(["vwf/model/threejs/backgroundLoader", "vwf/view/editorview/lib/alertify.
                         cb(assetLoader.getglTF(url));
 
                     });
+                } else if (type == 'subDriver/threejs/asset/vnd.raw-animation') {
+                    if (assetLoader.getglTF(url)) {
+                        cb(assetLoader.getglTF(url));
+                        return;
+                    }
+                    assetLoader.loadglTF(url, function() {
+                        cb(assetLoader.getglTF(url));
+                    }, true)
                 } else if (type == 'subDriver/threejs/asset/vnd.osgjs+json+compressed+optimized') {
                     if (assetLoader.getUtf8JsonOptimized(url)) {
                         cb(assetLoader.getUtf8JsonOptimized(url));
@@ -178,6 +187,9 @@ define(["vwf/model/threejs/backgroundLoader", "vwf/view/editorview/lib/alertify.
                 },
                 this.getSubDriver = function(url) {
                     return this.subDriver[url];
+                },
+                this.getMorphs = function(url) {
+                    return this.morphs[url];
                 },
 
 
@@ -258,7 +270,7 @@ define(["vwf/model/threejs/backgroundLoader", "vwf/view/editorview/lib/alertify.
                         cb2();
                     });
                 },
-                this.loadglTF = function(url, cb2) {
+                this.loadglTF = function(url, cb2, animOnly) {
                     var time = performance.now();
 
 
@@ -267,11 +279,16 @@ define(["vwf/model/threejs/backgroundLoader", "vwf/view/editorview/lib/alertify.
                     this.loader.load(url, function(asset) {
                         //console.log(url, performance.now() - time);
                         assetLoader.glTF[url] = asset;
+
+                        if (animOnly) {
+                            console.log(url, performance.now() - time);
+                            return cb2();
+                        }
                         assetLoader.BuildCollisionData(asset.scene, function(cb3) {
                             // console.log(url, performance.now() - time);
                             cb2();
                         });
-                    });
+                    }, animOnly || false);
                 },
                 this.loadUnknown = function(url, cb2) {
                     $.ajax({
@@ -431,6 +448,23 @@ define(["vwf/model/threejs/backgroundLoader", "vwf/view/editorview/lib/alertify.
                             cb2();
                         } else if (type == 'subDriver/threejs') {
                             assetLoader.loadSubDriver(url, cb2);
+                        } else if (type == 'subDriver/threejs/asset/vnd.raw-morphttarget') {
+
+                            function MorphRawJSONLoader() {
+                                this.load = function(url,callback)
+                                {
+                                    $.get(url,function(data)
+                                    {
+                                        var dummyNode = new THREE.Object3D();
+                                        dummyNode.morphTarget = JSON.parse(data);
+                                        callback({scene:dummyNode});
+                                    });
+                                }
+                            }
+                            loader = new MorphRawJSONLoader();
+                            loader.load(url,function(data){
+                                assetLoader.morphs[url] = data; cb2()
+                            })
                         } else if (type == 'subDriver/threejs/asset/vnd.collada+xml') {
                             assetLoader.loadCollada(url, cb2);
                         } else if (type == 'subDriver/threejs/asset/vnd.collada+xml+optimized') {
@@ -439,6 +473,8 @@ define(["vwf/model/threejs/backgroundLoader", "vwf/view/editorview/lib/alertify.
                             assetLoader.loadUTf8Json(url, cb2);
                         } else if (type == 'subDriver/threejs/asset/vnd.gltf+json') {
                             assetLoader.loadglTF(url, cb2);
+                        } else if (type == 'subDriver/threejs/asset/vnd.raw-animation') {
+                            assetLoader.loadglTF(url, cb2, true);
                         } else if (type == 'subDriver/threejs/asset/vnd.osgjs+json+compressed+optimized') {
                             assetLoader.loadUTf8JsonOptimized(url, cb2);
                         } else if (type == 'unknown') {

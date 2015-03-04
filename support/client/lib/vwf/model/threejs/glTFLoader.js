@@ -696,8 +696,8 @@ THREE.glTFLoader.prototype.load = function( url, callback ) {
                         }
                     }
                 }
-
-                var texture = LoadTexture('checker.jpg');
+               
+                var texture = LoadTexture(texturePath);
                 if (texture && textureParams) {
 
                     if (textureParams.wrapS == WebGLRenderingContext.REPEAT)

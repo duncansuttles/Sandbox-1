@@ -1,7 +1,40 @@
 "use strict";
+
+function MorphRawJSONLoader() {
+    this.load = function(url, callback) {
+        $.get(url, function(data) {
+            var dummyNode = new THREE.Object3D();
+            dummyNode.morphTarget = JSON.parse(data);
+            callback({
+                scene: dummyNode
+            });
+        });
+    }
+}
+
+function MorphBinaryLoader() {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.responseType = "arraybuffer";
+
+    xhr.onload = function(url, callback) {
+        var arrayBuffer = xhr.response;
+        if (arrayBuffer) {
+            var byteArray = new Float32Array(arrayBuffer);
+            for (var i = 0; i < byteArray.byteLength; i++) {
+                var dummyNode = new THREE.Object3D();
+                dummyNode.morphTarget = JSON.parse(byteArray.byteLength[i]);
+                callback({
+                    scene: dummyNode
+                });
+            }
+        }
+    };
+}
+
 (function() {
 
-    //enum to keep track of assets that fail to load.
+    //enum to keep track of assets that fail to load
     var NOT_STARTED = 0;
     var PENDING = 1;
     var FAILED = 2;
@@ -19,11 +52,11 @@
             for (var i in this.glTFAnimations) {
                 this.duration = Math.max(this.duration, this.glTFAnimations[i].duration)
             }
-            this.setKey = function(key) {
+            this.setKey = function(key,fps) {
                 for (var j in this.glTFAnimations) {
                     var i, len = this.glTFAnimations[j].interps.length;
                     for (i = 0; i < len; i++) {
-                        this.glTFAnimations[j].interps[i].interp(key / 30);
+                        this.glTFAnimations[j].interps[i].interp(key / fps);
                     }
                 }
 
@@ -79,8 +112,7 @@
                 }
                 walk(this.getRoot());
                 // bind skinned mesh of init node to parent skeleton
-                if (skeleton && skin)
-                {
+                    if (skeleton && skin) {
                  
                    
                     skin.updateMatrixWorld(true);
@@ -94,6 +126,158 @@
                         if(skin.children[i] instanceof THREE.Bone)
                             skin.remove(skin.children[i]);
                     }
+                    }
+                }
+
+                if (childType === "subDriver/threejs/asset/vnd.raw-morphttarget") {
+
+                    var parentRoot = null;
+                    if (this.parentNode && this.parentNode.getRoot) //if the parent internal driver object is just the scene, it does not have a getRoot function
+                        parentRoot = this.parentNode.getRoot();
+                    var parentSkin = null;
+
+                    var walk = function(node) {
+                        if (node.skeleton) {
+                            parentSkin = node;
+                            return;
+                        }
+                        for (var i = 0; i < node.children.length; i++)
+                            walk(node.children[i])
+                    }
+                    walk(parentRoot);
+                    /////////////////////////////////////////////////////////
+                    // clone the parent mesh and attach the new geometry
+
+                    var parent = parentSkin.parent;
+                    parent.remove(parentSkin);
+
+
+                    var newgeo = new THREE.Geometry;
+                    var oldgeo = parentSkin.geometry;
+                    for (var i in oldgeo.faces)
+                        newgeo.faces.push(oldgeo.faces[i].clone());
+                    for (var i in oldgeo.vertices)
+                        newgeo.vertices.push(oldgeo.vertices[i].clone());
+                    for (var i in oldgeo.skinIndices)
+                        newgeo.skinIndices.push(oldgeo.skinIndices[i].clone());
+                    for (var i in oldgeo.skinWeights)
+                        newgeo.skinWeights.push(oldgeo.skinWeights[i].clone())
+                    newgeo.RayTraceAccelerationStructure = oldgeo.RayTraceAccelerationStructure;
+
+                    newgeo.faceVertexUvs = [];
+                    for (var i in oldgeo.faceVertexUvs) {
+                        var uv = oldgeo.faceVertexUvs[i];
+                        var newuv = [];
+                        newgeo.faceVertexUvs.push(newuv);
+                        for (var j in uv) {
+                            var u = uv[j];
+                            var newu = [];
+                            newuv.push(newu);
+                            for (var k in u)
+                                newu.push(u[k].clone());
+                        }
+                    }
+                    newgeo.dynamic = oldgeo.dynamic;
+                    newgeo.bones = [];
+                    for (var i in oldgeo.bones) {
+                        var newbone = new THREE.Bone();
+                        var oldbone = oldgeo.bones[i];
+
+                        newgeo.bones.push(newbone);
+                        newbone.matrix = oldbone.matrix.clone();
+                        newbone.name = oldbone.name;
+                        newbone.pos = oldbone.pos.splice();
+                        newbone.rotq = oldbone.rotq.splice();
+                        newbone.scl = oldbone.scl.splice();
+                        newbone.parent = oldbone.parent;
+                    }
+                    
+                    newgeo.animation = oldgeo.animation;
+                    var newSkin = new THREE.SkinnedMesh(newgeo, parentSkin.material,true);
+                    newSkin.animationHandle = parentSkin.animationHandle;
+                    newSkin.bindMatrix = parentSkin.bindMatrix.clone();
+                    newSkin.bindMatrixInverse = parentSkin.bindMatrixInverse.clone();
+                    newSkin.matrix = parentSkin.matrix.clone();;
+                    newSkin.matrixWorld = parentSkin.matrixWorld.clone();
+                    newSkin.orthoMatrixWorld = parentSkin.orthoMatrixWorld.clone();
+                    newSkin.position.copy(parentSkin.position);
+                    newSkin.quaternion.copy(parentSkin.quaternion);
+                    newSkin.rotation.copy(parentSkin.rotation);
+                    newSkin.scale.copy(parentSkin.scale);
+                    newSkin.bindMode = parentSkin.bindMode;
+
+
+                    for (var i =0; i < parentSkin.children.length; i++) {
+                        newSkin.children.push(parentSkin.children[i].clone());
+                    }
+
+                    parent.add(newSkin);
+                    newSkin.bind(parentSkin.skeleton, newSkin.matrix.clone());
+
+
+
+                    ///////////////////////////////////////////////////////////
+
+                    parentSkin = newSkin;
+                    if (parentSkin) {
+
+                        var morph = this.assetRegistry[assetSource].node.morphTarget;
+
+                        if (morph) {
+
+                            if ((morph.length / 3) % parentSkin.geometry.vertices.length > 0) {
+                                console.warn('target is wrong vertex count');
+                                return;
+                            }
+
+                            if (!parentSkin.geometry.morphTargets)
+                                parentSkin.geometry.morphTargets = [];
+
+                            parentSkin.geometry.morphTargets.push({
+                                name: 'base',
+                                vertices: parentSkin.geometry.vertices.map(function(vert) {
+                                    return vert.clone()
+                                })
+                            });
+
+                            var targetCount = (morph.length / 3) / parentSkin.geometry.vertices.length;
+                            var pointer = 0;
+
+                            var defaultInfluences = [];
+                            for (var i = 0; i < targetCount; i++)
+                                defaultInfluences.push(0);
+
+                            //notify the kernel of the state of the property so the default value is not null
+                            if(!vwf.getProperty(this.parentNode.ID, 'morphTargetInfluences'))
+                                vwf.setProperty(this.parentNode.ID, 'morphTargetInfluences', defaultInfluences)
+
+                            for (var i = 0; i < targetCount; i++) {
+                                var verts = [];
+                                for (var j = 0; j < parentSkin.geometry.vertices.length; j++) {
+                                    var x = morph[pointer];
+                                    pointer++;
+                                    var y = morph[pointer];
+                                    pointer++;
+                                    var z = morph[pointer];
+                                    pointer++;
+                                    verts.push(new THREE.Vector3(x, y, z));
+                                }
+                                parentSkin.geometry.morphTargets.push({
+                                    name: this.assetSource + i,
+                                    vertices: verts
+                                });
+
+                            }
+
+                            vwf.setProperty(this.parentNode.ID, 'morphTargetInfluences',vwf.getProperty(this.parentNode.ID, 'morphTargetInfluences'))
+
+                            //  parentSkin.geometry.morphTargetsNeedUpdate = true;
+                            //  parentSkin.updateMorphTargets();
+                            //  window.parentSkin = parentSkin;
+
+                            //  parentSkin.material.morphTargets = true;
+                            //  parentSkin.morphTargetInfluences[0] = 1;
+                        }
                   
                 }
             }
@@ -221,8 +405,8 @@
             }
         }
         this.loadFailed = function(id) {
+                if(this.loadState !== PENDING) return; // in this case, the callback from the load either came too late, and we have decided it failed, or came twice, which really it never should
 
-            if(this.loadState !== PENDING) return; // in this case, the callback from the load either came too late, and we have decided it failed, or came twice, which really it never should
             //the collada loader uses the failed callback as progress. data means this is not really an error;
             if (!id) {
                 if (window._Notifier) {
@@ -263,7 +447,7 @@
                     this.GetAllLeafMeshes(threeObject.children[i], list);
                 }
             }
-            if (threeObject.children) {
+                if (threeObject && threeObject.children) {
                 for (var i = 0; i < threeObject.children.length; i++) {
                     this.GetAllLeafMeshes(threeObject.children[i], list);
                 }
@@ -287,10 +471,25 @@
             this.removeLights(node);
             this.GetAllLeafMeshes(node, list);
             for (var i = 0; i < list.length; i++) {
-                list[i].geometry.dynamic = false;
+                    list[i].geometry.dynamic = true;
                 list[i].castShadow = _SettingsManager.getKey('shadows');
                 list[i].receiveShadow = _SettingsManager.getKey('shadows');
                 if (list[i].geometry instanceof THREE.BufferGeometry) continue;
+
+                var materials = [];
+                if(list[i] && list[i].material)
+                {
+                    materials.push(list[i].material)
+                }
+                if(list[i] && list[i].material && list[i].material instanceof THREE.MeshFaceMaterial)
+                {
+                    materials = materials.concat(list[i].material.materials)
+                }
+                for (var j in materials)
+                {
+                    if(materials[j].hasOwnProperty('map') && !materials[j].map)
+                            materials[j].map = _SceneManager.getTexture('white.png');
+                }
                 //humm, the below looks useful. Why is it removed?
                 /*	if(list[i].material)
                  {
@@ -376,8 +575,8 @@
             //store this asset in the registry
 
             //actually, is this necessary? can we just store the raw loaded asset in the cache? 
-            if (childType !== 'subDriver/threejs/asset/vnd.gltf+json')
-                reg.node = asset.scene.clone();
+                if (childType !== 'subDriver/threejs/asset/vnd.gltf+json' && childType !== 'subDriver/threejs/asset/vnd.raw-animation')
+                    reg.node = asset.scene; //dont clone into the cache, since we clone on the way out
             else {
                 glTFCloner.clone(asset.scene, asset.rawAnimationChannels, function(clone) {
                     reg.node = clone;
@@ -437,6 +636,12 @@
             assetRegistry[assetSource].callbacks = [];
 
             //see if it was preloaded
+                if (childType == 'subDriver/threejs/asset/vnd.raw-morphttarget' && _assetLoader.getMorphs(assetSource)) {
+                    assetRegistry[assetSource].loaded = true;
+                    assetRegistry[assetSource].pending = false;
+                    assetRegistry[assetSource].node = _assetLoader.getMorphs(assetSource).scene;
+                    this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
+                }
             if (childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed' && _assetLoader.getUtf8Json(assetSource)) {
                 assetRegistry[assetSource].loaded = true;
                 assetRegistry[assetSource].pending = false;
@@ -461,7 +666,7 @@
                 assetRegistry[assetSource].node = _assetLoader.getColladaOptimized(assetSource).scene;
                 this.cleanTHREEJSnodes(assetRegistry[assetSource].node);
             }
-            if (childType == 'subDriver/threejs/asset/vnd.gltf+json' && _assetLoader.getglTF(assetSource)) {
+                if ((childType == 'subDriver/threejs/asset/vnd.gltf+json' || childType == 'subDriver/threejs/asset/vnd.raw-animation') && _assetLoader.getglTF(assetSource)) {
 
                 assetRegistry[assetSource].loaded = true;
                 assetRegistry[assetSource].pending = false;
@@ -513,7 +718,7 @@
                 this.loadStarted();
                 asyncCallback(false);
             }
-            if (childType == 'subDriver/threejs/asset/vnd.gltf+json') {
+                if (childType == 'subDriver/threejs/asset/vnd.gltf+json' || childType == 'subDriver/threejs/asset/vnd.raw-animation') {
                 
                 var node = this;
                 node.loader = new THREE.glTFLoader()
@@ -521,14 +726,13 @@
                 node.source = assetSource;
                 this.loadStarted();
                 asyncCallback(false);
+                    var animOnly = childType === 'subDriver/threejs/asset/vnd.raw-animation'
 
                 //create a queue to hold requests to the loader, since the loader cannot be re-entered for parallel loads
-                if(!THREE.glTFLoader.queue)
-                {
+                    if (!THREE.glTFLoader.queue) {
                     //task is an object that olds the info about what to load
                     //nexttask is supplied by async to trigger the next in the queue;
-                    THREE.glTFLoader.queue = new async.queue(function(task,nextTask)
-                    {
+                        THREE.glTFLoader.queue = new async.queue(function(task, nextTask) {
                         var node = task.node;
                         var cb = task.cb;
                         //call the actual load function
@@ -538,7 +742,7 @@
                             nextTask();
                             //do whatever it was (asset loaded) that this load was going to do when complete
                             cb(geometry , materials);
-                        });
+                            }, animOnly);
 
                     },1);
                 }
@@ -546,10 +750,20 @@
                 
                 //we need to queue up our entry to this module, since it cannot handle re-entry. This means that while it 
                 //is an async function, it cannot be entered again before it completes
-                THREE.glTFLoader.queue.push({node:node,cb:node.loaded.bind( this ) })
+                    THREE.glTFLoader.queue.push({
+                        node: node,
+                        cb: node.loaded.bind(this)
+                    })
 
 
             }
+                //load as a normal gltf file TODO:add this to the preloader, since it should work normally
+                if (childType == 'subDriver/threejs/asset/vnd.raw-morphttarget') {
+                    this.loader = new MorphRawJSONLoader();
+                    this.loader.load(assetSource, this.loaded.bind(this));
+                    this.loadStarted();
+                    asyncCallback(false);
+                }
 
 
 
@@ -583,6 +797,7 @@
 
                 });
             } else {
+                    console.log("Loading Assets from Cache...");
                 this.getRoot().add(reg.node.clone());
                 this.cleanTHREEJSnodes(this.getRoot());
                 this.settingProperty('materialDef', this.materialDef);
@@ -605,9 +820,6 @@
 
                     if (childType === 'subDriver/threejs/asset/vnd.gltf+json') {
                         var self = this;
-
-                        var obj = _assetLoader.getglTF(assetSource);
-                        node = obj.scene;
 
                         glTFCloner.clone(node, rawAnimationChannels, function(clone) {
                             // Finally, attach our cloned model

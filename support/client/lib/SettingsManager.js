@@ -22,7 +22,10 @@ define(function ()
             useSimpleMaterials:false,
             resolutionScale: 1,
             filtering:true,
-            stereoOffset:.25
+            stereoOffset:.25,
+            normalMapTerrain:true,
+            triPlanerMapTerrain:false
+  
         }
         this.getKey = function(key)
         {
