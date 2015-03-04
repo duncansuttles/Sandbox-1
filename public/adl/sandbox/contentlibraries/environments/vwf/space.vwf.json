@@ -59,7 +59,7 @@
                 "rot": 0,
                 "scalex": "10",
                 "scaley": "10",
-                "src": "../contentlibraries/environments/assets/concrete.jpg"
+                "src": "./contentlibraries/environments/assets/concrete.jpg"
             }],
             "type": "phong",
             "side": 2

@@ -57,7 +57,7 @@
                 "rot": 0,
                 "scalex": "100",
                 "scaley": "100",
-                "src": "../contentlibraries/environments/assets/grass.jpg"
+                "src": "./contentlibraries/environments/assets/grass.jpg"
             }],
             "type": "phong",
             "side": 2

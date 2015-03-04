@@ -64,7 +64,7 @@
                 "rot": 0,
                 "scalex": "100",
                 "scaley": "100",
-                "src": "../contentlibraries/environments/assets/stone2.png"
+                "src": "./contentlibraries/environments/assets/stone2.png"
             }],
             "type": "phong",
             "side": 2
