@@ -1758,3 +1758,43 @@ border-radius: 15px;
 left: 20px;
 top: 20px;
 }
+
+#JSONViewButtonBar
+{
+height: 2.5em;
+margin-left: -1em;
+}
+
+#JSONViewButtonBarOk, #JSONViewButtonBarCancel, #JSONViewButtonBarLoad, #JSONViewButtonBarSave
+{
+	border: 1px solid #444;
+background: #222 url(images/ui-bg_glass_15_222222_1x400.png) 50% 50% repeat-x;
+font-weight: 700;
+color: #eee;
+margin: 1px;
+padding: 3px 10px;
+border-radius: 5px;
+cursor: pointer;
+display: inline;
+}
+
+#JSONViewButtonBarOk:hover, #JSONViewButtonBarCancel:hover, #JSONViewButtonBarLoad:hover, #JSONViewButtonBarSave:hover
+{
+border: 1px solid #26b3f7;
+background: #3a8fff url(images/ui-bg_glass_20_3a8fff_1x400.png) 50% 50% repeat-x;
+font-weight: 700;
+color: #fff;
+display: inline;
+}
+
+#JSONLoadInput
+{
+	position: absolute;
+opacity: 0;
+top: 0;
+left: 0;
+clip: auto;
+margin: 0px;
+padding: 0px;
+width: 5em;
+}

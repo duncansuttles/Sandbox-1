@@ -256,53 +256,12 @@ define(function ()
 				if (_InventoryManager.selectedType != 'event' &&  _InventoryManager.selectedType != 'method')
 				{
 					var text = JSON.stringify(item);
-					text = text.replace(/([^\n])\{/gm, '$1\n\{');
-					text = text.replace(/([^\n])\}/gm, '$1\n\}');
-					var opening = 0;
-					var inbracket = 0;
-					var indentedtext = "";
-					for (var i = 0; i < text.length - 1; i++)
-					{
-						if (text[i] == '{') opening++;
-						if (text[i] == ']') inbracket--;
-						if (text[i] == '[') inbracket++;
-						if (text[i] == '\n')
-						{}
-						else if (text[i] == ',' && !inbracket)
-						{
-							indentedtext += ',\n';
-							for (var j = 0; j < opening; j++) indentedtext += '   ';
-						}
-						else if (text[i] == '{')
-						{
-							indentedtext += '\n'
-							for (var j = 0; j < opening; j++) indentedtext += '   ';
-							indentedtext += '{\n'
-							for (var j = 0; j < opening; j++) indentedtext += '   ';
-						}
-						else if (text[i] == '}')
-						{
-							indentedtext += '\n';
-							for (var j = 0; j < opening; j++) indentedtext += '   ';
-							indentedtext += '}\n'
-							for (var j = 0; j < opening; j++) indentedtext += '   ';
-						}
-						else
-						{
-							indentedtext += text[i];
-						}
-						if (text[i] == '}') opening--;
-					}
-					indentedtext += text[text.length - 1];
-					_InventoryManager.itemViewer.setValue(indentedtext);
-					_InventoryManager.itemViewer.selection.clearSelection();
-					_InventoryManager.itemViewer.getSession().setMode("ace/mode/json");
+					require("vwf/view/editorview/JSONPrompt").prompt(item);
 				}
 				if (_InventoryManager.selectedType == 'script')
 				{
-					_InventoryManager.itemViewer.setValue(_InventoryManager.selectedItem.body);
-					_InventoryManager.itemViewer.selection.clearSelection();
-					_InventoryManager.itemViewer.getSession().setMode("ace/mode/javascript");
+					require("vwf/view/editorview/JSONPrompt").prompt(_InventoryManager.selectedItem.body);
+					
 				}
 			});
 		}.bind(this);
@@ -627,11 +586,7 @@ define(function ()
 			
 			if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 		}
-		this.itemViewer = ace.edit("InventoryView");
-		this.itemViewer.setTheme("ace/theme/chrome");
-		this.itemViewer.getSession().setMode("ace/mode/json");
-		this.itemViewer.setPrintMarginColumn(false);
-		this.itemViewer.setFontSize('15px');
+		
 		this.hide();
 	}
 });

@@ -803,6 +803,16 @@ define({
             else
                 alertify.alert('No Selection');
         });
+        $('#ToolsShowVWF').click(function()
+        {
+            p = require("vwf/view/editorview/JSONPrompt");
+            var ID = _Editor.GetSelectedVWFID();
+            if(ID)
+            {
+                var data = _DataManager.getCleanNodePrototype(ID);
+                p.prompt(data);
+            }
+        })
 
 
 
