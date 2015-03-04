@@ -56,7 +56,7 @@
                 "rot": 0,
                 "scalex": "10",
                 "scaley": "10",
-                "src": "/adl/sandbox/example_blank//vwfDataManager.svc/texture?UID=dirt.jpg"
+                "src": "../contentlibraries/environments/assets/dirt.jpg"
             }, {
                 "offsetx": 0,
                 "offsety": 0,
@@ -67,7 +67,7 @@
                 "mapTo": "4",
                 "mapInput": 0,
                 "alpha": 0.27,
-                "src": "/adl/sandbox/example_blank//vwfDataManager.svc/texture?UID=waternormal.jpg"
+                "src": "../contentlibraries/environments/assets/waternormal.jpg"
             }],
             "type": "phong",
             "side": 2
