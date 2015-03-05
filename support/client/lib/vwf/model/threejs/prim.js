@@ -82,7 +82,7 @@
 
 
             for (var i in children) {
-                vwf.callMethod(children[i], 'updateStack');
+                vwf.callMethod(children[i], 'updateStack',[rebuild, cache]);
             }
         }
         this.backupMesh = function() {
