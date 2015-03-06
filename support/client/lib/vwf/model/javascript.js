@@ -1163,12 +1163,12 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
             Object.defineProperty(node.methods, methodName, { // "this" is node.methods in get/set
                 get: function() {
                     return function( /* parameter1, parameter2, ... */ ) { // "this" is node.methods
-                        return jsDriverSelf.kernel.callMethod(this.node.id, methodName, arguments);
+                        return jsDriverSelf.kernel.callMethod(this.id, methodName, arguments);
                     };
                 },
                 set: function(value) {
                     this.node.methods.hasOwnProperty(methodName) ||
-                        jsDriverSelf.kernel.createMethod(this.node.id, methodName);
+                        jsDriverSelf.kernel.createMethod(this.id, methodName);
                     this.node.private.bodies[methodName] = value;
                 },
                 enumerable: true,
@@ -1343,6 +1343,17 @@ define(["module", "vwf/model", "vwf/utility"], function(module, model, utility) 
                     //              "exception:", utility.exceptionMessage( e ) );
                 }
             }
+
+            //call the method on the child behaviors
+            
+            for(var i =0; i < node.children.length; i++)
+            {
+                if(node.children[i] && this.isBehavior(node.children[i]))
+                {
+                    this.callingMethod(node.children[i].id, methodName, methodParameters)
+                }
+            }
+
 
             return undefined;
         },
