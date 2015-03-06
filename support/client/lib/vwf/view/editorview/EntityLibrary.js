@@ -429,6 +429,8 @@ define(function() {
 
                 });
                 this.material.transparent = true;
+                this.material.alphaTest = .8;
+                this.material.depthWrite = false;
             }
             return this.material;
         }

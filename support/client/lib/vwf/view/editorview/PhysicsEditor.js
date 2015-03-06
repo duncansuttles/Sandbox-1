@@ -63,6 +63,10 @@ define([], function() {
         $('#PhysicsEditor').css('border-bottom', '5px solid #444444')
         $('#PhysicsEditor').css('border-left', '2px solid #444444')
         this.physicsPreviewRoot = new THREE.Object3D();
+        this.rebuildPropertyNames = ["___physics_enabled","___physics_gravity","___physics_accuracy","___physics_active",
+        "___physics_mass","___physics_restitution","___physics_friction","___physics_damping",
+        "transform", "___physics_collision_length", "___physics_collision_width", "___physics_collision_height", "___physics_collision_radius",
+         "___physics_collision_type", "___physics_collision_offset", "_length", "width", "height", "radius"]
         this.show = function() {
             $('#PhysicsEditor').prependTo($('#PhysicsEditor').parent());
             $('#PhysicsEditor').show('blind', function() {
@@ -123,21 +127,38 @@ define([], function() {
             //we could be smarter about this, but probably not worth the effort
             if (_Editor.isSelected(nodeID) && this.isOpen()) {
                 //optimization for only movement of roots
-                if (this.physicsPreviewRoot && this.physicsPreviewRoot[nodeID] && propName == "transform") {
-                    this.physicsPreviewRoot[nodeID].matrix.fromArray(propVal);
-                    this.physicsPreviewRoot[nodeID].updateMatrixWorld(true);
+                if (this.physicsPreviewRoot && propName == "transform") {
+                        var previewChild = null;
+                        for(var i =0; i < this.physicsPreviewRoot.children.length; i++)
+                        {
+                            if( this.physicsPreviewRoot.children[i].vwfID == nodeID)
+                                previewChild = this.physicsPreviewRoot.children[i];
+                        }
+                        if(previewChild) {
+                            previewChild.matrix.fromArray(propVal);
+                            previewChild.updateMatrixWorld(true);
+                        }
                 } else {
-                    this.BuildPreview();
+                    if(this.rebuildPropertyNames.indexOf(propName) > -1) //we rebuild the preview only on certain property sets
+                        this.BuildPreview();
                 }
             }
             //here, if we are displaying all of the physics world, we need to update transforms
             //note that the above function rebuilds all objects each time a property is set
             //this is inteneded to show the world in motion, so the above is inefficient
             //instead, we will set transforms for physics body roots, but not update geometries for now
-            if (this.worldPreviewRoot) {
-                if (this.worldPreviewRoot[nodeID] && propName == 'transform') {
-                    this.worldPreviewRoot[nodeID].matrix.fromArray(propVal);
-                    this.worldPreviewRoot[nodeID].updateMatrixWorld(true);
+            if (this.worldPreviewRoot  && propName == 'transform') {
+
+                var previewChild = null;
+                for(var i =0; i < this.worldPreviewRoot.children.length; i++)
+                {
+                    if( this.worldPreviewRoot.children[i].vwfID == nodeID)
+                        previewChild = this.worldPreviewRoot.children[i];
+                }
+
+                if (previewChild) {
+                   previewChild.matrix.fromArray(propVal);
+                    previewChild.updateMatrixWorld(true);
                 }
                 //here, we pick up some other properties and just rebuild
                 //not that since we sort of expect this to run fairly fast, we need to be a bit more careful then we were above
@@ -526,7 +547,7 @@ define([], function() {
                 mesh = rotNode;
             }
             root.add(mesh);
-            root[i] = mesh;
+            mesh.vwfID = i;
             if (transform) mesh.matrix.fromArray(transform);
             mesh.matrixAutoUpdate = false;
             mesh.matrix.elements[12] *= scale[0];

@@ -37,12 +37,12 @@
             return this.GetMesh().getBoundingBox(true);
         }
         this.updateSelf = function(rebuild, cache) {
-            if (rebuild) {
+      //      if (rebuild) {
                 this.Build(cache);
-                this.backupMesh();
-            } else {
-                this.restoreMesh();
-            }
+          //      this.backupMesh();
+          //  } else {
+         //       this.restoreMesh();
+        //    }
             if (this.GetMesh())
                 this.GetMesh().geometry.dirtyMesh = true;
 
@@ -117,6 +117,7 @@
             return arrNew;
         }
         this.restoreMesh = function() {
+            debugger;
             if (!this.GetMesh())
                 return;
             var geometry = this.GetMesh().geometry;
