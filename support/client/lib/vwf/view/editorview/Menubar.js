@@ -116,6 +116,9 @@ define({
         $('#MenuCreateGUIPanel').click(function(e) {
             _GUIView.createPanel();
         });
+        $('#MenuCreateGUIImage').click(function(e) {
+            _GUIView.createImage();
+        });
 
 
         $('#MenuEn').click(function(e) {
