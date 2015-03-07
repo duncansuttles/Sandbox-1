@@ -85,12 +85,13 @@ properties:
               
               options.filter = function(o)
               {
+                  var ret = true;
                   if(options.oldfilter)
                   {
-                     options.oldfilter(traceself.___getJSNode(traceself.___findVWFID(o)))
+                     ret = options.oldfilter(traceself.___getJSNode(traceself.___findVWFID(o)))
                   }
                   if(o.passable) return false;
-                  return true;
+                  return ret;
               }
               return options;
             }
