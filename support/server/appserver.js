@@ -321,12 +321,29 @@ function handleRequest(request, response, next) {
     var filename = libpath.join(path, uri);
     var instance = Findinstance(filename);
     //logger.info(instance);
-    //remove the instance identifier from the request
-    filename = filterinstance(filename, instance);
+   
 
     async.waterfall([
 
             function serve_file_directly(callback) {
+                existsCaseInsensitive(libpath.resolve(__dirname, filename), function(c1) {
+                    if (c1) {
+                        callback(null, true);
+                    } else
+                        callback(null, false);
+                });
+            },
+            function remove_instance_and_serve_file(resolved,callback)
+            {
+                
+                //bail out of the step, the previous was successful
+                if (resolved) {
+                    callback(null, resolved);
+                    return;
+                }
+                //remove the instance identifier from the request
+                filename = filterinstance(filename, instance);
+                
                 existsCaseInsensitive(libpath.resolve(__dirname, filename), function(c1) {
                     if (c1) {
                         callback(null, true);
