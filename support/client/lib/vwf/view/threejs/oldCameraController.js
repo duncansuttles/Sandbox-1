@@ -400,7 +400,7 @@
      }
      this.localKeyDown = function(e)
      {
-         console.log(e.keyCode);
+         
          if (e.keyCode == 37)
              this.leftArrowDown = true;
          if (e.keyCode == 38)

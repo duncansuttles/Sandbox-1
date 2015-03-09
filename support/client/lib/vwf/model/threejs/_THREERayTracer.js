@@ -1554,7 +1554,7 @@ THREE.Geometry.prototype.CPUPick = function(origin, direction, options, collisio
                     if (false && this.RayTraceAccelerationStructure.root) {
 
                         var leafBounds = this.RayTraceAccelerationStructure.root.getLeaves();
-                        console.log(leafBounds);
+                        
                         var mat = new THREE.MeshPhongMaterial();
                         mat.color.r = 1;
                         mat.color.g = 0;
@@ -1577,7 +1577,7 @@ THREE.Geometry.prototype.CPUPick = function(origin, direction, options, collisio
                             meshparent.add(mesh, true);
                             mesh.updateMatrixWorld(true);
                         }
-                        console.log(faces);
+                        
                     }
                 }
 
@@ -1716,7 +1716,7 @@ THREE.BufferGeometry.prototype.BuildRayTraceAccelerationStructure = function() {
     var volCm3 = volumeM3 * (100 * 100 * 100);
 
     var denPerCm3 = (facedata.length / 3) / volCm3;
-    console.log(denPerCm3);
+   
     if (denPerCm3 > .001 && (facedata.length / 3) > OCTMaxFaces) {
         console.warn('Mesh density is greater than one poly per cubic centimeter. This is insane. Bailing out of octree generation');
         this.RayTraceAccelerationStructure = buildFaceListFromBounds(bounds);
