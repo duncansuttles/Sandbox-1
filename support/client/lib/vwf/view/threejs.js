@@ -1500,6 +1500,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                         stencil: false,
                         depth: true,
                         preserveDrawingBuffer: true,
+                        devicePixelRatio: window.devicePixelRatio
                        
                     });
                     if (!sceneNode.renderer.context) {
@@ -1561,7 +1562,8 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                             canvas: mycanvas,
                             antialias: true,
                             alpha: false,
-                            stencil: false
+                            stencil: false,
+                            devicePixelRatio:window.devicePixelRatio
                         });
                         renderer.sortObjects  = false;
 

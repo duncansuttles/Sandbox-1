@@ -2,7 +2,7 @@ function findviewnode(id)
 {
     for (var i = 0; i < vwf.views.length; i++)
     {
-        if (vwf.views[i].state.nodes[id].threeObject) return vwf.views[i].state.nodes[id].threeObject;
+        if (vwf.views[i].state && vwf.views[i].state.nodes && vwf.views[i].state.nodes[id] && vwf.views[i].state.nodes[id].threeObject) return vwf.views[i].state.nodes[id].threeObject;
     }
     return null;
 }

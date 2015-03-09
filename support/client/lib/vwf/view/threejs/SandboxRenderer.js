@@ -4,6 +4,7 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 	{
 		this.renderer = r;
 		this.canvas = c;
+
 		this.rtt = new THREE.WebGLRenderTarget(1024, 1024,
 		{
 			format: THREE.RGBAFormat,
@@ -16,6 +17,8 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 			minFilter: THREE.LinearFilter,
 			magFilter: THREE.LinearFilter
 		});
+		this.overrideMaterial = new THREE.MeshPhongMaterial();
+
 		this.rttCamera = new THREE.OrthographicCamera();
 		this.rttScene = new THREE.Scene();
 		this.rttScene.add(quad);
@@ -32,7 +35,8 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 				this.renderer.setRenderTarget(this.rtt);
 				this.renderer.setClearColor(this.renderer.getClearColor(),0.0);
 				this.renderer.clear();
-				this.renderObject(findviewnode(_Editor.GetSelectedVWFID()), scene, camera);
+				for(var i = 0; i < _Editor.getSelectionCount(); i++)
+				this.renderObject(findviewnode(_Editor.GetSelectedVWFID(i)), scene, camera,this.overrideMaterial);
 				
 			
 
@@ -70,9 +74,10 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 			});
 			return list;
 		}
-		this.renderObject = function(object, scene, camera)
+		this.renderObject = function(object, scene, camera,material)
 		{
 			if (!object) return;
+			if(object instanceof THREE.Scene) return; 
 			var lights = scene.__lights;
 			var fog = scene.fog;
 			var objects = this.flattenObject(object);
@@ -83,12 +88,17 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 					{
 						
 						var renderObject = scene.__webglObjects[i][j];
+						if(! (material ||renderObject.material)) continue;
+						renderObject.object._modelViewMatrix.multiplyMatrices( camera.matrixWorldInverse, renderObject.object.matrixWorld );
+						renderObject.object._normalMatrix.getNormalMatrix( renderObject.object._modelViewMatrix );
+
+
 						var oldTransparent = renderObject.object.material.transparent;
 						renderObject.object.material.transparent = false;
 						if (renderObject.object.geometry instanceof THREE.BufferGeometry)
-							this.renderer.renderBufferDirect(camera, [], null, renderObject.object.material, renderObject.object.geometry, renderObject.object)
+							this.renderer.renderBufferDirect(camera, [], null,material || renderObject.object.material, renderObject.object.geometry, renderObject.object)
 						else if (renderObject.object.geometry instanceof THREE.Geometry)
-							this.renderer.renderBuffer(camera, lights, fog, renderObject.material, renderObject.buffer, renderObject.object)
+							this.renderer.renderBuffer(camera, lights, fog, material ||renderObject.material, renderObject.buffer, renderObject.object)
 						renderObject.object.material.transparent = oldTransparent;
 					}
 			}
