@@ -235,47 +235,47 @@ define(function() {
                     $('#dispOwner').val(vwf.getProperty(node.id, 'owner'));
 
                     if (vwf.getProperty(node.id, 'isStatic')) {
-                        $('#isStatic').attr('checked', 'checked');
+                        $('#isStatic').prop('checked', 'checked');
                     } else {
-                        $('#isStatic').removeAttr('checked');
+                        $('#isStatic').prop('checked', '');
                     }
 
                     if (vwf.getProperty(node.id, 'visible')) {
-                        $('#isVisible').attr('checked', 'checked');
+                        $('#isVisible').prop('checked', 'checked');
                     } else {
-                        $('#isVisible').removeAttr('checked');
+                        $('#isVisible').prop('checked', '');
                     }
 
                     if (vwf.getProperty(node.id, 'inheritScale')) {
-                        $('#inheritScale').attr('checked', 'checked');
+                        $('#inheritScale').prop('checked', 'checked');
                     } else {
-                        $('#inheritScale').removeAttr('checked');
+                        $('#inheritScale').prop('checked', '');
                     }
 
                     if (vwf.getProperty(node.id, 'isDynamic')) {
-                        $('#isDynamic').attr('checked', 'checked');
+                        $('#isDynamic').prop('checked', 'checked');
                     } else {
-                        $('#isDynamic').removeAttr('checked');
+                        $('#isDynamic').prop('checked', '');
                     }
                     if (vwf.getProperty(node.id, 'castShadows')) {
-                        $('#castShadows').attr('checked', 'checked');
+                        $('#castShadows').prop('checked', 'checked');
                     } else {
-                        $('#castShadows').removeAttr('checked');
+                        $('#castShadows').prop('checked', '');
                     }
                     if (vwf.getProperty(node.id, 'isSelectable')) {
-                        $('#isSelectable').attr('checked', 'checked');
+                        $('#isSelectable').prop('checked', 'checked');
                     } else {
-                        $('#isSelectable').removeAttr('checked');
+                        $('#isSelectable').prop('checked', '');
                     }
                     if (vwf.getProperty(node.id, 'passable')) {
-                        $('#passable').attr('checked', 'checked');
+                        $('#passable').prop('checked', 'checked');
                     } else {
-                        $('#passable').removeAttr('checked');
+                        $('#passable').prop('checked', '');
                     }
                     if (vwf.getProperty(node.id, 'receiveShadows')) {
-                        $('#receiveShadows').attr('checked', 'checked');
+                        $('#receiveShadows').prop('checked', 'checked');
                     } else {
-                        $('#receiveShadows').removeAttr('checked');
+                        $('#receiveShadows').prop('checked', '');
                     }
                     $('#BaseSectionTitle').text(node.properties.type || "Type" + ": " + node.id);
                     this.SelectionTransformed(null, node);
@@ -620,7 +620,7 @@ define(function() {
                     var val = vwf.getProperty(node.id, editordata[i].property);
                     $('#' + i + nodeid).click(this.primPropertyChecked);
                     if (val == true) {
-                        $('#' + i + nodeid).attr('checked', 'checked');
+                        $('#' + i + nodeid).prop('checked', 'checked');
                     }
 
                     this.addPropertyEditorDialog(node.id, editordata[i].property, $('#' + i + nodeid), 'check');
@@ -1025,7 +1025,7 @@ define(function() {
                     if (diag.type == 'slider')
                         diag.element.slider('value', propVal);
                     if (diag.type == 'check')
-                        diag.element.attr('checked', propVal);
+                        diag.element.prop('checked', propVal);
                 }
             }
             //if the editor data changes while the object is selected, redraw
@@ -1033,6 +1033,12 @@ define(function() {
             {
             	_PrimitiveEditor.SelectionChanged(null, _Editor.GetSelectedVWFNode());
             }
+            if(_Editor.GetSelectedVWFID() == nodeID && propName == "DisplayName" && this.isOpen())
+            {
+                $('#primeditortitletext').text(propVal);
+            }
+
+            
             //if the editordata of a child behavior changes while selected, redraw
             //TODO:handle modifiers
             //TODO:redraw without animation

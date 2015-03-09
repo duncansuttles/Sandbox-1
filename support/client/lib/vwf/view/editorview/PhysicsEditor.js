@@ -120,7 +120,7 @@ define([], function() {
                     //need to filter out sets from self
                     if (diag.type == 'text' && vwf.client() != vwf.moniker()) diag.element.val(propVal);
                     if (diag.type == 'slider') diag.element.slider('value', propVal);
-                    if (diag.type == 'check') diag.element.attr('checked', propVal);
+                    if (diag.type == 'check') diag.element.prop('checked', propVal);
                 }
             }
             //basically, any property change on a selected node might require a redraw
@@ -241,7 +241,7 @@ define([], function() {
             var val = vwf.getProperty(nodeid, propertyName);
             $('#' + propertyName + nodeid).click(this.primPropertyChecked);
             if (val == true) {
-                $('#' + propertyName + nodeid).attr('checked', 'checked');
+                $('#' + propertyName + nodeid).prop('checked', 'checked');
             }
             this.addPropertyEditorDialog(nodeid, propertyName, $('#' + propertyName + nodeid), 'check');
         }
@@ -650,12 +650,12 @@ define([], function() {
                         var linearFactor = vwf.getProperty(this.selectedID, '___physics_factor_linear');
                         var angularFactor = vwf.getProperty(this.selectedID, '___physics_factor_angular');
                         if (linearFactor) {
-                            if (linearFactor[0] == 1) $('#lockXMotion').attr('checked', 'checked');
-                            if (linearFactor[1] == 1) $('#lockYMotion').attr('checked', 'checked');
-                            if (linearFactor[2] == 1) $('#lockZMotion').attr('checked', 'checked');
-                            if (angularFactor[0] == 1) $('#lockXRotation').attr('checked', 'checked');
-                            if (angularFactor[1] == 1) $('#lockYRotation').attr('checked', 'checked');
-                            if (angularFactor[2] == 1) $('#lockZRotation').attr('checked', 'checked');
+                            if (linearFactor[0] == 1) $('#lockXMotion').prop('checked', 'checked');
+                            if (linearFactor[1] == 1) $('#lockYMotion').prop('checked', 'checked');
+                            if (linearFactor[2] == 1) $('#lockZMotion').prop('checked', 'checked');
+                            if (angularFactor[0] == 1) $('#lockXRotation').prop('checked', 'checked');
+                            if (angularFactor[1] == 1) $('#lockYRotation').prop('checked', 'checked');
+                            if (angularFactor[2] == 1) $('#lockZRotation').prop('checked', 'checked');
                         }
                         $('#lockXMotion, #lockYMotion, #lockZMotion').click(function() {
                             var linearFactor = [0, 0, 0];

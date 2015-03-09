@@ -165,7 +165,7 @@ define(["vwf/view/editorview/Editor"], function(Editor) {
 						$(this).parent().remove();
 					});
 					if (permission[i] !== 0) {
-						$('#permisisonFor' + id).attr('checked', 'checked');
+						$('#permisisonFor' + id).prop('checked', 'checked');
 					}
 				}
 

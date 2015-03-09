@@ -91,24 +91,24 @@ define([], function() {
             var statedata = vwf.getProperty(vwf.application(), 'publishSettings') || {};
 
             if (statedata.SinglePlayer)
-                $('#singlePlayer').attr('checked', 'checked');
+                $('#singlePlayer').prop('checked', 'checked');
             else
-                $('#singlePlayer').removeAttr('checked');
+                $('#singlePlayer').prop('checked', '');
 
             if (statedata.allowAnonymous)
-                $('#allowAnonymous').attr('checked', 'checked');
+                $('#allowAnonymous').prop('checked', 'checked');
             else
-                $('#allowAnonymous').removeAttr('checked');
+                $('#allowAnonymous').prop('checked', '');
 
             if (statedata.createAvatar)
-                $('#createAvatar').attr('checked', 'checked');
+                $('#createAvatar').prop('checked', 'checked');
             else
-                $('#createAvatar').removeAttr('checked');
+                $('#createAvatar').prop('checked', '');
 
             if (statedata.allowTools)
-                $('#allowTools').attr('checked', 'checked');
+                $('#allowTools').prop('checked', 'checked');
             else
-                $('#allowTools').removeAttr('checked');
+                $('#allowTools').prop('checked', '');
 
             if (statedata.camera) {
                 $('#chooseCamera').button('option', 'label', vwf.getProperty(statedata.camera, 'DisplayName'));

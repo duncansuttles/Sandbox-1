@@ -230,6 +230,7 @@ define(function ()
 
 			var data = JSON.stringify(nodes);
 			vwf.saveState(data);
+			$('#SceneSaved').text(new Date());
 		}
 		this.getInstances = function ()
 		{

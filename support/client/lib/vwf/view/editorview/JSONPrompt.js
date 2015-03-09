@@ -1,5 +1,5 @@
 var isInitialized = false;
-var self = null;
+
 
 function download(filename, text) {
 		var a = window.document.createElement('a');
@@ -17,7 +17,10 @@ function download(filename, text) {
 	}
 
 define(
-{
+function() { 
+
+	var self = null;
+	return {
 	initialize: function()
 	{
 		self = this;
@@ -80,4 +83,4 @@ define(
 		this.itemViewer.setPrintMarginColumn(false);
 		this.itemViewer.setFontSize('15px');
 	}
-});
+}});

@@ -201,6 +201,7 @@ define({
             }
             if (_Editor.findcamera()) {
 
+                if(!$('#index-vwf')[0]) return;
                 var resolutionScale = _SettingsManager.getKey('resolutionScale');
 
 
@@ -208,6 +209,7 @@ define({
                 var oldheight = parseInt($('#index-vwf').css('height'));
 
                 //if ((origWidth != self.width) || (origHeight != self.height)) {
+                    
                 $('#index-vwf')[0].height = self.height / resolutionScale;
                 $('#index-vwf')[0].width = self.width / resolutionScale;
                 if(window._dRenderer)

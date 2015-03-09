@@ -340,7 +340,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             var dispName;
             if (vwfnode) dispName = vwf.getProperty(vwfnode, 'DisplayName');
             if (!dispName) dispName = vwfnode;
-            $('#ContextMenuName').text(dispName || "{none selected}");
+            $('#ContextMenuName').text(dispName || vwfnode || "{none selected}");
             $('#ContextMenuName').attr('VWFID', vwfnode);
             $('#ContextMenu').show();
             $('#ContextMenu').css('z-index', '1000000');
@@ -3114,8 +3114,11 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             ScaleSnap = s;
             $('#StatusSnaps').text('Snaps: ' + (r / 0.0174532925) + 'deg, ' + m + 'm, ' + s + '%');
         }.bind(this);
-        this.GetSelectedVWFID = function() {
-            return this.SelectedVWFID;
+        this.GetSelectedVWFID = function(i) {
+            if(!i)
+                return this.SelectedVWFID;
+            else
+                return SelectedVWFNodes[i].id;
         }
         this.CallCreateNodeCallback = function(c, p, n) {
             try {

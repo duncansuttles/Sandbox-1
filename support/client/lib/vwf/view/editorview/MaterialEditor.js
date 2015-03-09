@@ -535,7 +535,7 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 			});
 			if (this.currentMaterial.fog === true || this.currentMaterial.fog === undefined)
 			{
-				$('#MaterialBasicSettingsFog').attr('checked', 'checked');
+				$('#MaterialBasicSettingsFog').prop('checked', 'checked');
 			}
 			
 			
@@ -551,7 +551,7 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 			});
 			if (this.currentMaterial.metal === true)
 			{
-				$('#MaterialBasicSettingsMetal').attr('checked', 'checked');
+				$('#MaterialBasicSettingsMetal').prop('checked', 'checked');
 			}
 
 			$('#MaterialBasicSettingsVertexColors').click(function()
@@ -564,7 +564,7 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 			});
 			if (this.currentMaterial.vertexColors === true)
 			{
-				$('#MaterialBasicSettingsVertexColors').attr('checked', 'checked');
+				$('#MaterialBasicSettingsVertexColors').prop('checked', 'checked');
 			}
 			
 			$('#MaterialBasicSettingsWireFrame').click(function()
@@ -577,7 +577,7 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 			});
 			if (this.currentMaterial.wireframe === true)
 			{
-				$('#MaterialBasicSettingsWireFrame').attr('checked', 'checked');
+				$('#MaterialBasicSettingsWireFrame').prop('checked', 'checked');
 			}
 			
 			$('#MaterialBasicSettingsDepthTest').click(function()
@@ -603,7 +603,7 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 			});
 			if (this.currentMaterial.depthwrite === true || this.currentMaterial.depthwrite === undefined)
 			{
-				$('#MaterialBasicSettingsDepthWrite').attr('checked', 'checked');
+				$('#MaterialBasicSettingsDepthWrite').prop('checked', 'checked');
 			}
 			
 			
@@ -617,7 +617,7 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 			});
 			if (this.currentMaterial.shading === true || this.currentMaterial.shading === undefined)
 			{
-				$('#MaterialBasicSettingsShading').attr('checked', 'checked');
+				$('#MaterialBasicSettingsShading').prop('checked', 'checked');
 			}
 			
 			$('#' + 'MaterialBasicSettings').append('<div id="MaterialBasicSettingsBlending" style=width:100%;margin-top:10px/>');
