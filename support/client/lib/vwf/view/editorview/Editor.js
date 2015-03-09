@@ -823,6 +823,11 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     id: id
                 }]);
             }
+            if (window._Editor && propname == 'DisplayName' && _Editor.isSelected(id)) {
+                $('#StatusSelectedName').text(val);
+            }
+
+            
             
             //when an object moves, check that it's not hilighted by the peer selection display.
             //if it is, update the matrix of the selection rectangle.
@@ -2402,7 +2407,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     else
                         $('#StatusSelectedID').text(SelectedVWFNodes.length + ' objects');
 
-                    $('#StatusSelectedName').text(vwf.getProperty(SelectedVWFNodes[0].id, 'DisplayName'));
+                    $('#StatusSelectedName').text(vwf.getProperty(SelectedVWFNodes[0].id, 'DisplayName') || SelectedVWFNodes[0].id);
                     for (var i = 1; i < SelectedVWFNodes.length; i++)
                         $('#StatusSelectedName').text($('#StatusSelectedName').text() + ', ' + vwf.getProperty(SelectedVWFNodes[i].id, 'DisplayName'));
                 }
