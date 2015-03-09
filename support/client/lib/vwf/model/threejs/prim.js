@@ -159,14 +159,18 @@
             if (this.mesh) {
                 this.rootnode.remove(this.mesh);
                 //here, we need to deallocate the geometry
-                var list = [];
+               
+                if(this.mesh && this.mesh.geometry)
+                    this.mesh.geometry.dispose();
+                /*var list = [];
                 this.PrimGetAllLeafMeshes(this.mesh, list);
                 for (var i = 0; i < list.length; i++) {
                     if (list[i] && list[i].geometry) {
                         //currently, we can't deallocate because we cache cubes
-                        //list[i].geometry.deallocate();
+                        //just not worth it. better to deallocate than to the accelerate that one case
+                        list[i].geometry.deallocate();
                     }
-                }
+                }*/
             }
 
             var mesh = this.BuildMesh(mat, cache);
