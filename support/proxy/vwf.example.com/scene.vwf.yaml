@@ -224,7 +224,7 @@ scripts:
     }
     this.findNodeByID = function(id,node)
     {
-      
+      if(!id) return null;
       if(id.internal_val) id = id.internal_val;
       if(!node)
       node = this;
