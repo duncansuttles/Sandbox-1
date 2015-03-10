@@ -90,7 +90,7 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 						var renderObject = scene.__webglObjects[i][j];
 						if(! (material ||renderObject.material)) continue;
 						renderObject.object._modelViewMatrix.multiplyMatrices( camera.matrixWorldInverse, renderObject.object.matrixWorld );
-						renderObject.object._normalMatrix.getNormalMatrix( renderObject.object._modelViewMatrix );
+						//renderObject.object._normalMatrix.getNormalMatrix( renderObject.object._modelViewMatrix );
 
 
 						var oldTransparent = renderObject.object.material.transparent;
