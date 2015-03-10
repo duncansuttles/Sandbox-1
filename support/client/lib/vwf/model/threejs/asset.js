@@ -498,8 +498,10 @@ function MorphBinaryLoader() {
                 
                 _MaterialCache.setMaterial(list[i], def);
                 list[i].material = list[i].material.clone();
-                if(i == 0)
-                    this.materialDef = def; //we must remember the value, otherwise when we fire the getter in materialdef.js, we will get
+                if(!this.materialDef)
+                    this.materialDef = [];
+
+                    this.materialDef.push(def); //we must remember the value, otherwise when we fire the getter in materialdef.js, we will get
                 //the def generated from the material, which may have been edited by the above on one client but not another
 
 
