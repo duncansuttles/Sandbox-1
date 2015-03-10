@@ -1538,7 +1538,7 @@ this.createNode = function( nodeComponent, nodeAnnotation, callback_async /* ( n
     // Interpret `createNode( nodeComponent, callback )` as
     // `createNode( nodeComponent, undefined, callback )`. (`nodeAnnotation` was added in
     // 0.6.12.)
-
+    
     if(nodeComponent && nodeComponent.id == vwf.application())
     {
         $(document).trigger('setstatebegin');
@@ -1725,6 +1725,7 @@ this.createNode = function( nodeComponent, nodeAnnotation, callback_async /* ( n
             vwf.callMethod(vwf.application(),'ready',[]);
 
         }
+
 
     } );
 
@@ -2418,6 +2419,7 @@ this.hashNode = function( nodeID ) {  // TODO: works with patches?  // TODO: onl
 this.createDepth = 0;
 this.createChild = function( nodeID, childName, childComponent, childURI, callback_async /* ( childID ) */ ) {
     vwf.createDepth++;
+    var now = performance.now();
     this.logger.debuggx( "createChild", function() {
         return [ nodeID, childName, JSON.stringify( loggableComponent( childComponent ) ), childURI ];
     } );
@@ -2945,6 +2947,7 @@ this.createChild = function( nodeID, childName, childComponent, childURI, callba
             } );
 
         }
+        console.log(performance.now()  - now);
 
     } );
 

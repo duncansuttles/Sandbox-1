@@ -1324,7 +1324,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
                 cam.updateProjectionMatrix();
                 //if there are no effects, we can do a normal render
                 if (self.effects.length == 0)
-                    RenderManager.render(scene, cam);
+                    _RenderManager.render(scene, cam);
                 else //else, the normal render is taken care of by the effect
                 {
                     for (var i = 0; i < self.effects.length; i++) {
@@ -1721,7 +1721,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             window._dbackgroundScene = backgroundScene;
             window._dRenderer = renderer;
             
-            window.RenderManager = new (require("vwf/view/threejs/SandboxRenderer"))(_dRenderer,mycanvas);
+            window._RenderManager = new (require("vwf/view/threejs/SandboxRenderer"))(_dRenderer,mycanvas);
             glext_ft = _dRenderer.context.getExtension("GLI_frame_terminator");
             window._dSceneNode = sceneNode;
             sceneNode.frameCount = 0; // needed for estimating when we're pick-safe

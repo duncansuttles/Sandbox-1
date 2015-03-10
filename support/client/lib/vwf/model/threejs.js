@@ -327,7 +327,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
                 var sceneNode = this.state.scenes[this.state.sceneRootID];
                 if (childType == "model/vnd.collada+xml" || childType == "model/vnd.osgjs+json+compressed") {
 
-                    debugger;
+                    
                     node = this.state.nodes[childID] = {
                         name: childName,
                         threeObject: threeChild,

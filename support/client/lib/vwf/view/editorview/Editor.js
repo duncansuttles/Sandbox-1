@@ -2296,7 +2296,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             }
             walk(node);
             node.name = vwf.name(id);
-
+            if(!node.properties) node.properties = {};
             return node;
         }
         this.SelectObjectPublic = function(VWFNodeid) {
@@ -2844,7 +2844,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                                 var newname = GUID();
                                 newnames.push(newname)
                                 this.createChild(parentnode.id, newname, node);
-                               
+                                _RenderManager.flashHilight(findviewnode(parentnode.id));
 
                             } else {
                                 alertify.alert('This object cannot be assigned to be a child of one of its decendants')
@@ -2872,6 +2872,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                 var newnames = [];
                 for (var i = 0; i < this.getSelectionCount(); i++) {
                     var id = this.GetSelectedVWFNode(i).id;
+                    _RenderManager.flashHilight(findviewnode(vwf.parent(id)));
                     var node = _DataManager.getCleanNodePrototype(id);
                     var childmat = toGMat(this.findviewnode(id).matrixWorld);
                     delete node.properties.translation;
@@ -3577,7 +3578,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             if (vwf.getProperty(vwf.application(), 'playMode') == 'play') return;
             if (this.activeTool && this.activeTool.keydown) this.activeTool.keydown(e);
         }
-        this.createdNode = function() {
+        this.createdNode = function(nodeID,childID) {
 
             if (!toolsOpen()) return;
             if (this.activeTool && this.activeTool.createdNode) this.activeTool.createdNode.apply(this.activeTool, arguments);
@@ -3594,6 +3595,10 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
                 }, 500)
 
+            }
+            if(window._RenderManager){
+                _RenderManager.flashHilightMult(findviewnode(childID));
+                _RenderManager.flashHilightMult(findviewnode(nodeID));
             }
 
         }

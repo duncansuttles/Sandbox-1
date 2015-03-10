@@ -566,8 +566,8 @@ define(function() {
                 var i = editordatanames[j];
                 //if multiple editorData properties up the prototype chain have the same editor objects, skip
                 
-                if(this.currentWidgets[nodeid+i]) continue;
-                this.currentWidgets[nodeid+i] = true;
+                if(this.currentWidgets[i]) continue;
+                this.currentWidgets[i] = true;
                 addedWidget = true;
                 if (editordata[i].type == 'sectionTitle') {
                     var inputstyle = "";
@@ -825,6 +825,9 @@ define(function() {
                         _Editor.TempPickCallback = function(node) {
                             if(!node) return;
                             $('#' + nodename + propname ).val(node.id);
+
+                            _RenderManager.flashHilight(findviewnode(node.id));
+
                             _Editor.TempPickCallback = null;
                             _Editor.SetSelectMode('Pick');
 

@@ -4,7 +4,7 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 	{
 		this.renderer = r;
 		this.canvas = c;
-
+		this.hilightObjects = [];
 		this.rtt = new THREE.WebGLRenderTarget(1024, 1024,
 		{
 			format: THREE.RGBAFormat,
@@ -17,27 +17,76 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 			minFilter: THREE.LinearFilter,
 			magFilter: THREE.LinearFilter
 		});
-		this.overrideMaterial = new THREE.MeshPhongMaterial();
+		this.overrideMaterial = new THREE.MeshBasicMaterial();
+		this.overrideMaterial.color.r = 0;
+		this.overrideMaterial.color.g = 0;
+		this.overrideMaterial.color.b = 1;
 
+		this.overrideMaterial2 = new THREE.MeshBasicMaterial();
+		this.overrideMaterial2.color.r = 0;
+		this.overrideMaterial2.color.g = 1;
+		this.overrideMaterial2.color.b = 0;
 		this.rttCamera = new THREE.OrthographicCamera();
 		this.rttScene = new THREE.Scene();
 		this.rttScene.add(quad);
 		quad.material.uniforms.tDiffuse.value = this.rtt;
+		this.flashHilight = function(mesh)
+		{
+			if(this.cb)
+				this.cb();
+			this.cb = null;
+			if(this.cbt)
+				window.clearTimeout(this.cbt);
+			this.cbt = null;
+			var index = this.hilightObjects.indexOf(mesh);
+			if(index > -1) return;
+			this.addHilightObject(mesh);
+			var self = this;
+			
+			this.cb = function(){
+				self.removeHilightObject(mesh);
+			}
+			this.cbt = window.setTimeout(function()
+				{
+					if(self.cb)
+						self.cb();
+				},1000);
+		}
+		this.flashHilightMult = function(mesh)
+		{
+			
+			var index = this.hilightObjects.indexOf(mesh);
+			if(index > -1) return;
+			this.addHilightObject(mesh);
+			var self = this; 
+			window.setTimeout(function(){
+				self.removeHilightObject(mesh);
+			},1000);
+		}
 		this.render = function render(scene, camera)
 		{
 			this.renderer.render(scene, camera);
 			
 			
 
-			if(_Editor.GetSelectedVWFID())
+			if(_Editor.GetSelectedVWFID() || this.hilightObjects.length > 0)
 			{
 				//render into RTT1
 				this.renderer.setRenderTarget(this.rtt);
 				this.renderer.setClearColor(this.renderer.getClearColor(),0.0);
 				this.renderer.clear();
+			
+				if(_Editor.GetSelectedVWFID())
 				for(var i = 0; i < _Editor.getSelectionCount(); i++)
-				this.renderObject(findviewnode(_Editor.GetSelectedVWFID(i)), scene, camera,this.overrideMaterial);
+					this.renderObject(findviewnode(_Editor.GetSelectedVWFID(i)), scene, camera,this.overrideMaterial);
 				
+				
+
+				
+				for(var i = 0; i < this.hilightObjects.length; i++)
+				{
+					this.renderObject(this.hilightObjects[i], scene, camera,this.overrideMaterial2);
+				}
 			
 
 				
@@ -74,6 +123,16 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 			});
 			return list;
 		}
+		this.addHilightObject = function(object)
+		{
+			this.hilightObjects.push(object);
+		}
+		this.removeHilightObject = function(object)
+		{
+			var index = this.hilightObjects.indexOf(object);
+			if(index > -1)
+				this.hilightObjects.splice(index,1);
+		}
 		this.renderObject = function(object, scene, camera,material)
 		{
 			if (!object) return;
@@ -81,9 +140,11 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 			var lights = scene.__lights;
 			var fog = scene.fog;
 			var objects = this.flattenObject(object);
-			for (var i in scene.__webglObjects)
+			var keys = Object.keys(scene.__webglObjects)
+			for (var k = 0; k < keys.length; k++)
 			{
-				for (var j in scene.__webglObjects[i])
+				var i = keys[k];
+				for (var j=0; j< scene.__webglObjects[i].length; j++)
 					if (objects.indexOf(scene.__webglObjects[i][j].object) > -1)
 					{
 						

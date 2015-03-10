@@ -167,6 +167,7 @@ define(function() {
                             if (ID) {
 
                                 var bound = _Editor.findviewnode(ID).GetBoundingBox(true);
+                                _RenderManager.flashHilight(_Editor.findviewnode(ID));
                                 bound = bound.transformBy(toGMat(_Editor.findviewnode(ID).matrixWorld));
                                 var x = ((bound.max[0] - bound.min[0]) / 2) + bound.min[0];
                                 var y = ((bound.max[1] - bound.min[1]) / 2) + bound.min[1];
@@ -194,13 +195,15 @@ define(function() {
                             if (!EntityLibrary.dropPreview) {
                                 EntityLibrary.dropPreview = new THREE.Mesh(new THREE.SphereGeometry(1, 30, 30), EntityLibrary.createPreviewMaterial());
                                 _dScene.add(EntityLibrary.dropPreview, true);
-
+                                
                                 if (data.dropPreview) {
                                     console.log(data.dropPreview.url);
+                                    
                                     //the asset must have a 'drop preview' key
                                     _assetLoader.getOrLoadAsset(data.dropPreview.url, data.dropPreview.type, function(asset) {
                                         if (asset && asset.scene && EntityLibrary.dropPreview) {
                                             var transformNode = new THREE.Object3D();
+                                            _RenderManager.addHilightObject(EntityLibrary.dropPreview)
                                             transformNode.matrixAutoUpdate = false;
                                             if (data.dropPreview.transform)
                                                 transformNode.matrix.fromArray(data.dropPreview.transform)
@@ -215,7 +218,7 @@ define(function() {
                         if (currentDrag.type == 'material' || currentDrag.type == 'child' || currentDrag.type == 'environment') {
 
                             if (!EntityLibrary.dropPreview) {
-                                EntityLibrary.dropPreview = new THREE.Mesh(new THREE.SphereGeometry(1, 30, 30), EntityLibrary.createPreviewMaterial());
+                                EntityLibrary.dropPreview = new  THREE.Object3D();//new THREE.Mesh(new THREE.SphereGeometry(1, 30, 30), EntityLibrary.createPreviewMaterial());
                                 _dScene.add(EntityLibrary.dropPreview, true);
                             }
                         }
@@ -224,6 +227,7 @@ define(function() {
                     $("#vwf-root").on('dragleave', "#index-vwf",function(evt) {
                         if (EntityLibrary.dropPreview) {
                             _dScene.remove(EntityLibrary.dropPreview, true);
+                            _RenderManager.removeHilightObject(EntityLibrary.dropPreview);
                             delete EntityLibrary.dropPreview;
                             
                         }
@@ -236,6 +240,7 @@ define(function() {
                         
                         if (EntityLibrary.dropPreview) {
                             _dScene.remove(EntityLibrary.dropPreview, true);
+                             _RenderManager.removeHilightObject(EntityLibrary.dropPreview);
                             delete EntityLibrary.dropPreview;
                             EntityLibrary.create(data, evt);
                            

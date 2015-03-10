@@ -74,7 +74,10 @@ define(function() {
 		}
 		this.hide = function() {
 			//$('#hierarchyManager').dialog('close');
+
 			if (this.isOpen()) {
+				if(window._RenderManager)
+					_RenderManager.removeHilightObject(HierarchyManager.previewNode);
 				$('#hierarchyManager').hide('blind', function() {
 					if ($('#sidepanel').data('jsp')) $('#sidepanel').data('jsp').reinitialise();
 					if (!$('#sidepanel').children('.jspContainer').children('.jspPane').children().is(':visible')) hideSidePanel();
@@ -112,12 +115,12 @@ define(function() {
 				//mat[3] = 0;
 				//mat[7] = 0;
 				//mat[11] = 0;
-				this.SelectionBounds = _Editor.BuildBox([box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]], [box.min[0] + (box.max[0] - box.min[0]) / 2, box.min[1] + (box.max[1] - box.min[1]) / 2, box.min[2] + (box.max[2] - box.min[2]) / 2], color);
+				this.SelectionBounds = _Editor.BuildWireBox([box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]], [box.min[0] + (box.max[0] - box.min[0]) / 2, box.min[1] + (box.max[1] - box.min[1]) / 2, box.min[2] + (box.max[2] - box.min[2]) / 2], color);
 				//this.SelectionBounds = _Editor.BuildBox([box.max[0] - box.min[0],box.max[1] - box.min[1],box.max[2] - box.min[2]],[0,0,0],color);
 				this.SelectionBounds.matrixAutoUpdate = false;
 				this.SelectionBounds.matrix.elements = mat;
 				this.SelectionBounds.updateMatrixWorld(true);
-				this.SelectionBounds.material = new THREE.MeshBasicMaterial();
+				this.SelectionBounds.material = new THREE.LineBasicMaterial();
 				this.SelectionBounds.material.color.r = color[0];
 				this.SelectionBounds.material.color.g = color[1];
 				this.SelectionBounds.material.color.b = color[2];
@@ -208,6 +211,9 @@ define(function() {
 			}
 			if (type == 'three') node = HierarchyManager.findTHREEChild(_Editor.findviewnode(HierarchyManager.selectedID), name);
 			HierarchyManager.makeBounds(node, color);
+			_RenderManager.removeHilightObject(HierarchyManager.previewNode);
+			HierarchyManager.previewNode = node;
+			_RenderManager.addHilightObject(node);
 			$(".hierarchyItem").removeClass('hierarchyItemSelected');
 			$('#heirarchyParent').removeClass('hierarchyItemSelected');
 			$('#hierarchyDisplay').find('[name="' + name + '"]').addClass('hierarchyItemSelected');
@@ -286,7 +292,7 @@ define(function() {
 		}
 		this.BuildGUI = function() {
 
-
+			_RenderManager.removeHilightObject(HierarchyManager.previewNode);
 			$('#hierarchyManagertitletext').text((vwf.getProperty(this.selectedID, 'DisplayName') || "") + ' Hierarchy');
 			$('#hierarchyDisplay').empty();
 			$('#InventoryRename').hide();

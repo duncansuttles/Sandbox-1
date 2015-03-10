@@ -13,7 +13,7 @@ define([], function()
 		"   vec4 color2 = texture2D( tDiffuse, vUv + vec2(0.001,-0.001) );" +
 		"   vec4 color3 = texture2D( tDiffuse, vUv + vec2(-0.001,-0.001) );" +
 		"   vec4 color4 = texture2D( tDiffuse, vUv + vec2(-0.001,0.001) );"+ 
-		"	gl_FragColor = vec4(0.0,0.0,1.0,color1.a+color2.a+color3.a+color4.a);\n" +
+		"	gl_FragColor = vec4((color1+color2+color3+color4).xyz,color1.a+color2.a+color3.a+color4.a);\n" +
 		"	if(color1.a+color2.a+color3.a+color4.a > 3.8)\n" +
 		"	gl_FragColor.a = 0.0;\n" +
 		"}	\n";	
