@@ -854,6 +854,8 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 					var mat = vwf.getProperty(node.id, 'materialDef');
 					if(!mat)
 						return;
+					if(mat.constructor === Array)
+						mat = mat[0];
 					
 					this.currentMaterial = JSON.parse(JSON.stringify(mat));
 					if (!this.currentMaterial){

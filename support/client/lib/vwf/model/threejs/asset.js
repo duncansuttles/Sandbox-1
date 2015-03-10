@@ -317,7 +317,7 @@ function MorphBinaryLoader() {
                     var list = [];
                     this.GetAllLeafMeshes(this.rootnode, list);
                     if (list[0])
-                        return this.getDefForMaterial(list[0].material);
+                        return _MaterialCache.getDefForMaterial(list[0].material);
                     else return undefined;
 
                 } else {
@@ -467,14 +467,17 @@ function MorphBinaryLoader() {
             }
         }
         this.cleanTHREEJSnodes = function(node) {
+            
             var list = [];
             this.removeLights(node);
             this.GetAllLeafMeshes(node, list);
             for (var i = 0; i < list.length; i++) {
-                    list[i].geometry.dynamic = true;
+                if(list[i].name == "BoneSelectionHandle") continue;
+
+                list[i].geometry.dynamic = true;
                 list[i].castShadow = _SettingsManager.getKey('shadows');
                 list[i].receiveShadow = _SettingsManager.getKey('shadows');
-                if (list[i].geometry instanceof THREE.BufferGeometry) continue;
+                
 
                 var materials = [];
                 if(list[i] && list[i].material)
@@ -490,46 +493,27 @@ function MorphBinaryLoader() {
                     if(materials[j].hasOwnProperty('map') && !materials[j].map)
                             materials[j].map = _SceneManager.getTexture('white.png');
                 }
-                //humm, the below looks useful. Why is it removed?
-                /*	if(list[i].material)
-                 {
-                 list[i].material = list[i].material.clone();
-                 list[i].material.needsUpdate = true;
-                 if(list[i].material.map)
-                 {
-                 list[i].material.map =  _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
-                 list[i].material.map.needsUpdate = true;
-                 }else
-                 {
-                 list[i].material.map =  _SceneManager.getTexture('white.png');
-                 list[i].material.map.needsUpdate = true;
-                 }
-                 if(list[i].material.bumpMap)
-                 {
-                 list[i].material.bumpMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
-                 list[i].material.bumpMap.needsUpdate = true;
-                 }
-                 if(list[i].material.lightMap)
-                 {
-                 list[i].material.lightMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
-                 list[i].material.lightMap.needsUpdate = true;
-                 }
-                 if(list[i].material.normalMap)
-                 {
-                 list[i].material.normalMap = _SceneManager.getTexture(list[i].material.map._SMsrc || list[i].material.map.image.src);
-                 list[i].material.normalMap.needsUpdate = true;
-                 }
+               
+                //pass all materials through the material system to normalize them with the render options
+                var def = _MaterialCache.getDefForMaterial(list[i].material);
+                //must break the reference, because of deallocation in materialdef.js
+                list[i].material = new THREE.MeshPhongMaterial();
+                
+                _MaterialCache.setMaterial(list[i], def);
 
-                 list[i].materialUpdated();
-                 }else
-                 {
-                 list[i].material = new THREE.MeshPhongMaterial();
-                 list[i].material.map =  _SceneManager.getTexture('white.png');
-                 }
-                 */
+                if (list[i].animationHandle)
+                        list[i].material.skinning = true;
+
+                list[i].material = list[i].material.clone();
+                if(!this.materialDef)
+                    this.materialDef = [];
+                if(this.materialDef.constructor === Array)
+                    this.materialDef.push(def); //we must remember the value, otherwise when we fire the getter in materialdef.js, we will get
+                //the def generated from the material, which may have been edited by the above on one client but not another
+
 
                 //If the incomming mesh does not have UVs on channel one, fill with zeros.
-                if (!list[i].geometry.faceVertexUvs[0] || list[i].geometry.faceVertexUvs[0].length == 0) {
+                if (list[i].geometry instanceof THREE.Geometry && (!list[i].geometry.faceVertexUvs[0] || list[i].geometry.faceVertexUvs[0].length == 0)) {
                     list[i].geometry.faceVertexUvs[0] = [];
                     for (var k = 0; k < list[i].geometry.faces.length; k++) {
                         if (!list[i].geometry.faces[k].d)
@@ -539,8 +523,10 @@ function MorphBinaryLoader() {
                     }
                 }
 
+
                 //lets set all animations to frame 0
                 if (list[i].animationHandle) {
+                    list[i].CPUPick([0,0,0],[0,0,1],{}); //this is sort of a silly way to initialize the bone handles, but it works
                     list[i].animationHandle.setKey(this.animationFrame);
                     list[i].updateMatrixWorld();
                     //odd, does not seem to update matrix on first child bone. 
@@ -550,6 +536,8 @@ function MorphBinaryLoader() {
                     }
                 }
             }
+            if(this.materialDef.length === 1)
+                this.materialDef = this.materialDef[0];
         }
         this.loaded = function(asset) {
 
@@ -599,7 +587,7 @@ function MorphBinaryLoader() {
 
             //set some defaults now that the mesh is loaded
             //the VWF should set some defaults as well
-            this.settingProperty('materialDef', this.materialDef);
+            vwf.setProperty(childID ,'materialDef', this.materialDef);
             this.settingProperty('animationFrame', 0);
             //if any callbacks were waiting on the asset, call those callbacks
 
@@ -784,7 +772,7 @@ function MorphBinaryLoader() {
                     self.getRoot().add(clone);
                     self.cleanTHREEJSnodes(self.getRoot());
 
-                    self.settingProperty('materialDef', self.materialDef);
+                    vwf.setProperty(childID,'materialDef', self.materialDef);
                     $(document).trigger('EndParse');
 
                     self.getRoot().updateMatrixWorld(true);
@@ -800,7 +788,7 @@ function MorphBinaryLoader() {
                     console.log("Loading Assets from Cache...");
                 this.getRoot().add(reg.node.clone());
                 this.cleanTHREEJSnodes(this.getRoot());
-                this.settingProperty('materialDef', this.materialDef);
+                vwf.setProperty(childID,'materialDef', this.materialDef);
                 $(document).trigger('EndParse');
                 this.getRoot().updateMatrixWorld(true);
                 this.getRoot().GetBoundingBox();
@@ -826,7 +814,7 @@ function MorphBinaryLoader() {
                             self.cleanTHREEJSnodes(self.getRoot());
                             self.getRoot().add(clone);
 
-                            self.settingProperty('materialDef', self.materialDef);
+                            vwf.setProperty(childID ,'materialDef', self.materialDef);
                             $(document).trigger('EndParse');
                             self.getRoot().updateMatrixWorld(true);
 
@@ -836,7 +824,7 @@ function MorphBinaryLoader() {
                         $(document).trigger('EndParse');
                         this.getRoot().add(node.clone());
                         this.cleanTHREEJSnodes(this.getRoot());
-                        this.settingProperty('materialDef', this.materialDef);
+                        vwf.setProperty(childID ,'materialDef', this.materialDef);
                         this.getRoot().updateMatrixWorld(true);
 
                         tcal(true);
