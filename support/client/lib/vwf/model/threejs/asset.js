@@ -467,11 +467,14 @@ function MorphBinaryLoader() {
             }
         }
         this.cleanTHREEJSnodes = function(node) {
+            
             var list = [];
             this.removeLights(node);
             this.GetAllLeafMeshes(node, list);
             for (var i = 0; i < list.length; i++) {
-                    list[i].geometry.dynamic = true;
+                if(list[i].name == "BoneSelectionHandle") continue;
+
+                list[i].geometry.dynamic = true;
                 list[i].castShadow = _SettingsManager.getKey('shadows');
                 list[i].receiveShadow = _SettingsManager.getKey('shadows');
                 
@@ -520,8 +523,10 @@ function MorphBinaryLoader() {
                     }
                 }
 
+
                 //lets set all animations to frame 0
                 if (list[i].animationHandle) {
+                    list[i].CPUPick([0,0,0],[0,0,1],{}); //this is sort of a silly way to initialize the bone handles, but it works
                     list[i].animationHandle.setKey(this.animationFrame);
                     list[i].updateMatrixWorld();
                     //odd, does not seem to update matrix on first child bone. 
