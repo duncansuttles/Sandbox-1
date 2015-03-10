@@ -157,6 +157,13 @@ var messageCompress = {
 		this.addMapping('"animationFrame"');
 		this.addMapping('"animationStart"');
 		this.addMapping('"animationEnd"');
+        this.addMapping('"subDriver/threejs/asset/vnd.collada+xml"');
+        this.addMapping('"link_existing/threejs"');
+        this.addMapping('"sequence"');
+        this.addMapping('"random"');
+        this.addMapping('"children"');
+        this.addMapping('"extends"');
+        this.addMapping('"source"');
 
 
 
