@@ -25,6 +25,7 @@ properties:
   colorRange_noAplha:
     value: [1 ,1 ,1]
     set: |
+            if(!value) return;
             this.colorRange = [value[0],value[1],value[2],this.alphaRange]
     get: |
             return [this.colorRange[0],this.colorRange[1],this.colorRange[2]]          
@@ -32,6 +33,7 @@ properties:
     value: [1 ,1 ,1]
     set: |
             if(!this.endColor) this.endColor = [0,0,0,0];
+            if(!value) return;
             this.endColor = [value[0],value[1],value[2],this.endAlpha]
     get: |
             if(!this.endColor) this.endColor = [0,0,0,0];
