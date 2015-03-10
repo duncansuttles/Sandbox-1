@@ -80,6 +80,10 @@ var fills = {
     },
     //try to generate crytographicly secure random numbers
     secureCryptoPRGN: function() {
+        //turn out this is fairly slow. Enable to use crypto secure random. not really necessary here anywhere
+        Math.SecureRandom = Math.random;
+        return;
+
         var buf = new Uint32Array(1);
         Math.SecureRandom = function() {
             if (window.crypto)
