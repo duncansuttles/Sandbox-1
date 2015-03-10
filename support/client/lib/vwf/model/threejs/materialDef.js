@@ -1113,31 +1113,33 @@
 
                 var value = {};
                 value.color = {}
-                value.color.r = currentmat.color.r;
-                value.color.g = currentmat.color.g;
-                value.color.b = currentmat.color.b;
+                value.color.r = parseFloat(currentmat.color.r.toFixed(3));
+                value.color.g = parseFloat(currentmat.color.g.toFixed(3));
+                value.color.b = parseFloat(currentmat.color.b.toFixed(3));
                 value.ambient = {r:0,g:0,b:0};
 
                 if(currentmat.ambient)
                 {
-                	value.ambient.r = currentmat.ambient.r;
-                	value.ambient.g = currentmat.ambient.g;
-                	value.ambient.b = currentmat.ambient.b;
+                	value.ambient.r =parseFloat( currentmat.ambient.r.toFixed(3));
+                	value.ambient.g = parseFloat(currentmat.ambient.g.toFixed(3));
+                	value.ambient.b = parseFloat(currentmat.ambient.b.toFixed(3));
             	}
                 value.emit = {r:0,g:0,b:0};
+                if(currentmat instanceof THREE.MeshBasicMaterial)
+                    value.emit = {r:1,g:1,b:1};
                 if(currentmat.emissive)
                 {
-	                value.emit.r = currentmat.emissive.r;
-	                value.emit.g = currentmat.emissive.g;
-	                value.emit.b = currentmat.emissive.b;
+	                value.emit.r = parseFloat(currentmat.emissive.r.toFixed(3));
+	                value.emit.g = parseFloat(currentmat.emissive.g.toFixed(3));
+	                value.emit.b = parseFloat(currentmat.emissive.b.toFixed(3));
             	}
 
                 value.specularColor = {r:0,g:0,b:0};
                 if(currentmat.specular)
                 {
-	                value.specularColor.r = currentmat.specular.r;
-	                value.specularColor.g = currentmat.specular.g;
-	                value.specularColor.b = currentmat.specular.b;
+	                value.specularColor.r = parseFloat(currentmat.specular.r.toFixed(3));
+	                value.specularColor.g = parseFloat(currentmat.specular.g.toFixed(3));
+	                value.specularColor.b = parseFloat(currentmat.specular.b.toFixed(3))
             	}
                 value.specularLevel = 1;
                 value.alpha = currentmat.opacity;
