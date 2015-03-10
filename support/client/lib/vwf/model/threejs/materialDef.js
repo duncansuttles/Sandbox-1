@@ -1158,7 +1158,7 @@
                         if (i == 0) value.layers[value.layers.length - 1].alpha = -currentmat.alphaTest + 1;
                         if (i == 3) value.layers[value.layers.length - 1].alpha = currentmat.normalScale.x;
                         if (i == 1) value.layers[value.layers.length - 1].alpha = currentmat.bumpScale;
-                        value.layers[value.layers.length - 1].src = map.image.src;
+                        value.layers[value.layers.length - 1].src = map._SMsrc || map.image.src;
                         if (map.mapping instanceof THREE.UVMapping) value.layers[value.layers.length - 1].mapInput = 0;
                         if (map.mapping instanceof THREE.CubeReflectionMapping) value.layers[value.layers.length - 1].mapInput = 1;
                         if (map.mapping instanceof THREE.CubeRefractionMapping) value.layers[value.layers.length - 1].mapInput = 2;

@@ -782,7 +782,7 @@ function MorphBinaryLoader() {
             } else {
                     console.log("Loading Assets from Cache...");
                 this.getRoot().add(reg.node.clone());
-                
+                this.cleanTHREEJSnodes(this.getRoot());
                 vwf.setProperty(childID,'materialDef', this.materialDef);
                 $(document).trigger('EndParse');
                 this.getRoot().updateMatrixWorld(true);
