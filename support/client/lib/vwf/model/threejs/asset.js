@@ -474,7 +474,7 @@ function MorphBinaryLoader() {
                     list[i].geometry.dynamic = true;
                 list[i].castShadow = _SettingsManager.getKey('shadows');
                 list[i].receiveShadow = _SettingsManager.getKey('shadows');
-                if (list[i].geometry instanceof THREE.BufferGeometry) continue;
+                
 
                 var materials = [];
                 if(list[i] && list[i].material)
@@ -497,16 +497,20 @@ function MorphBinaryLoader() {
                 list[i].material = new THREE.MeshPhongMaterial();
                 
                 _MaterialCache.setMaterial(list[i], def);
+
+                if (list[i].animationHandle)
+                        list[i].material.skinning = true;
+
                 list[i].material = list[i].material.clone();
                 if(!this.materialDef)
                     this.materialDef = [];
-
+                if(this.materialDef.constructor === Array)
                     this.materialDef.push(def); //we must remember the value, otherwise when we fire the getter in materialdef.js, we will get
                 //the def generated from the material, which may have been edited by the above on one client but not another
 
 
                 //If the incomming mesh does not have UVs on channel one, fill with zeros.
-                if (!list[i].geometry.faceVertexUvs[0] || list[i].geometry.faceVertexUvs[0].length == 0) {
+                if (list[i].geometry instanceof THREE.Geometry && (!list[i].geometry.faceVertexUvs[0] || list[i].geometry.faceVertexUvs[0].length == 0)) {
                     list[i].geometry.faceVertexUvs[0] = [];
                     for (var k = 0; k < list[i].geometry.faces.length; k++) {
                         if (!list[i].geometry.faces[k].d)
@@ -527,6 +531,8 @@ function MorphBinaryLoader() {
                     }
                 }
             }
+            if(this.materialDef.length === 1)
+                this.materialDef = this.materialDef[0];
         }
         this.loaded = function(asset) {
 
