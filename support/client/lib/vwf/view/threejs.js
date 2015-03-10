@@ -1159,7 +1159,7 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
             _PerformanceManager.preFrame();
             //lets not render when the quere is not ready. This prevents rendering of meshes that must have their children
             //loaded before they can render
-            if (!vwf.private.queue.ready() || !window._dRenderer) {
+            if (!window._dRenderer) {
                 return;
             }
             //so, here's what we'll do. Since the sim state cannot advance until tick, we will update on tick. 
