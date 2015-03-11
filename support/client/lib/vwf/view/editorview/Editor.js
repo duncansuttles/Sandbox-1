@@ -213,7 +213,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
         }
         //create progressbar and the log bar
-        ProgressBar.initialize('statusbar');
+        ProgressBar.initialize('statusbarinner');
         window._ProgressBar = ProgressBar;
 
         Log.initialize('statusbar');

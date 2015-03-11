@@ -9,7 +9,7 @@ define({
 	},
 	setProgress:function(percent)
 	{
-		var w = $('#GlobalProgressBar').width() * percent;
+		var w = $('#GlobalProgressBar').width() * Math.min(1,percent);
 		$('#GlobalProgressBarInner').css('width',w +'px');
 
 	},
