@@ -66,7 +66,25 @@ define([], function() {
         this.rebuildPropertyNames = ["___physics_enabled","___physics_gravity","___physics_accuracy","___physics_active",
         "___physics_mass","___physics_restitution","___physics_friction","___physics_damping",
         "transform", "___physics_collision_length", "___physics_collision_width", "___physics_collision_height", "___physics_collision_radius",
-         "___physics_collision_type", "___physics_collision_offset", "_length", "width", "height", "radius"]
+         "___physics_collision_type", "___physics_collision_offset", "_length", "width", "height", "radius"];
+
+         this.previewMaterial = new THREE.MeshBasicMaterial();
+                this.previewMaterial.color.b = 1;
+                this.previewMaterial.color.g = .3;
+                this.previewMaterial.color.r = 1;
+                this.previewMaterial.transparent = true;
+                this.previewMaterial.depthTest = false;
+                this.previewMaterial.depthWrite = false;
+                this.previewMaterial.wireframe = true;
+
+         this.previewMaterialSubObject = new THREE.MeshBasicMaterial();
+                this.previewMaterialSubObject.color.b = 1;
+                this.previewMaterialSubObject.color.g = 0.0;
+                this.previewMaterialSubObject.color.r = .5;
+                this.previewMaterialSubObject.transparent = true;
+                this.previewMaterialSubObject.depthTest = false;
+                this.previewMaterialSubObject.depthWrite = false;
+                this.previewMaterialSubObject.wireframe = true;      
         this.show = function() {
             $('#PhysicsEditor').prependTo($('#PhysicsEditor').parent());
             $('#PhysicsEditor').show('blind', function() {
@@ -160,11 +178,12 @@ define([], function() {
                    previewChild.matrix.fromArray(propVal);
                     previewChild.updateMatrixWorld(true);
                 }
-                //here, we pick up some other properties and just rebuild
-                //not that since we sort of expect this to run fairly fast, we need to be a bit more careful then we were above
-                else if (["transform", "___physics_enabled", "___physics_collision_length", "___physics_collision_width", "___physics_collision_height", "___physics_collision_radius", "___physics_collision_type", "___physics_collision_offset", "_length", "width", "height", "radius"].indexOf(propName) > -1) {
-                    this.BuildWorldPreview();
-                }
+                
+            }
+            //here, we pick up some other properties and just rebuild
+            //not that since we sort of expect this to run fairly fast, we need to be a bit more careful then we were above
+            else if (this.worldPreviewRoot && this.rebuildPropertyNames.indexOf(propName) > -1) {
+                this.BuildWorldPreview(nodeID);
             }
         }
         this.propertyEditorDialogs = [];
@@ -355,9 +374,11 @@ define([], function() {
             }
             //walk a threejs node and dispose of the geometry and materials
         this.dispose = function(threeNode) {
+            if(threeNode.isAsset) return;  //because we clone the geometry for showing the mesh collision preview, we must be careful not to dispose
+            //so we don't destroy the same geometry that is actually used by the asset
             if (threeNode && threeNode.dispose) threeNode.dispose();
             if (threeNode && threeNode.geometry) this.dispose(threeNode.geometry)
-            if (threeNode && threeNode.material) this.dispose(threeNode.material)
+           
             if (threeNode && threeNode.children)
                 for (var i = 0; i < threeNode.children.length; i++) this.dispose(threeNode.children[i]);
         }
@@ -505,34 +526,38 @@ define([], function() {
                         }
                         break;
                     case 6:
-                        {
+                        { var self = this;
+                            //mesh
+                            geo = findviewnode(i).clone();
+                            geo.isAsset = true;
+                            geo.traverse(function(o){
+                                if(o instanceof THREE.Mesh)
+                                    o.material = self.previewMaterial;
+                            })
                             //none
                         }
                         break;
                     case 7:
                         {
-                            //mesh
+
                         }
                         break;
                     default:
                 }
             }
             var mesh = null;
-            if (geo) {
-                mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial());
-                mesh.material.color.b = 1;
-                mesh.material.color.g = .3;
-                mesh.material.color.r = 1;
+            if (geo instanceof THREE.Geometry) {
+                
+                mesh = new THREE.Mesh(geo, this.previewMaterial);
+                
                 if (vwf.parent(i) != vwf.application()) {
-                    mesh.material.color.g = .0;
-                    mesh.material.color.r = .5;
+                   mesh.material = this.previewMaterialSubObject;
                 }
-                mesh.material.transparent = true;
-                mesh.material.depthTest = false;
-                mesh.material.depthWrite = false;
-                mesh.material.wireframe = true;
+                
                 mesh.InvisibleToCPUPick = true;
-            }
+            }if(geo instanceof THREE.Object3D)
+                mesh = geo;
+
             var children = vwf.children(i);
             //the current node does not have a mesh, so we use a blank object3
             if (!mesh) mesh = new THREE.Object3D();
@@ -581,12 +606,13 @@ define([], function() {
             //this is used not for previewing the selected item, but for displaying all physics bodies
             //note that it won't update for collision shapes that change during runtime, IE, a compound
             //collision body is updated during execution. This should not be happening anyway.
-        this.BuildWorldPreview = function() {
+        this.BuildWorldPreview = function(nodeID) {
             if (this.worldPreviewRoot) {
                 this.clearWorldPreview();
                 _dScene.remove(this.worldPreviewRoot);
             }
             this.worldPreviewRoot = new THREE.Object3D();
+        
             var roots = vwf.children(vwf.application());
             for (var i in roots) {
                 if (roots[i] && vwf.getProperty(roots[i], '___physics_enabled')) {
@@ -631,13 +657,14 @@ define([], function() {
                         this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_restitution', 'Bounciness', .1, 0, 1);
                         this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_friction', 'Friction', .1, 0, 10);
                         this.createSlider($('#PhysicsMaterialSettings'), this.selectedID, '___physics_damping', 'Damping', .1, 0, 10);
-                        if (phyNode.type == 7) {
+                        if (phyNode.type == 8) {
                             $('#physicsaccordion').append('<h3><a href="#">Collision Shape</a>    </h3>   <div id="PhysicsCollisionSettings">  </div>');
                             this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_length', 'Collision Length', .1, 0, 50);
                             this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_width', 'Collision Width', .1, 0, 50);
                             this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_height', 'Collision Height', .1, 0, 50);
                             this.createSlider($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_radius', 'Collision Radius', .1, 0, 50);
-                            this.createChoice($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_type', 'Collision Type', ["None", "Box", "Sphere", "Cylinder", "Cone", "Mesh"], ["0", "2", "1", "3", "4", "5"]);
+                            this.createChoice($('#PhysicsCollisionSettings'), this.selectedID, '___physics_collision_type', 'Collision Type', ["None", "Box", "Sphere", "Cylinder", "Cone", "Plane" ,"Mesh"], ["7", "2", "1", "3", "4", "5","6"]);
+                            
                         }
                         $('#physicsaccordion').append('<h3><a href="#">Forces</a>    </h3>   <div id="PhysicsForceSettings">  </div>');
                         this.createVector($('#PhysicsForceSettings'), this.selectedID, '___physics_constant_torque', 'Constant Torque');

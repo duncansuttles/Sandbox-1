@@ -162,7 +162,7 @@ properties:
   ___physics_collision_width: .5
   ___physics_collision_height: .5
   ___physics_collision_radius: .5
-  ___physics_collision_type: 6
+  ___physics_collision_type: 7
   ___physics_collision_offset: [ 0, 0, 0]
   ___physics_velocity_linear: [ 0, 0, 0]
   ___physics_velocity_angular: [ 0, 0, 0]
