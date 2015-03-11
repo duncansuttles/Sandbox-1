@@ -92,6 +92,11 @@
                         propval.skinning = true;
                     else
                         propval.skinning = false;
+                    if(list[i].receiveShadow)
+                        propval.shadows = true;
+                    else
+                        propval.shadows = false;
+                    
                     if(!(propval instanceof Array))
                     	_MaterialCache.setMaterial(list[i], propval);
                     else if(list.length == 1)

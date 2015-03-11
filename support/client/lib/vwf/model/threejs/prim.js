@@ -1,3 +1,4 @@
+var defaultPrimMaterial = new THREE.MeshPhongMaterial();
 (function() {
     function prim(childID, childSource, childName) {
         this.callingMethod = function(methodName, args) {
@@ -117,7 +118,7 @@
             return arrNew;
         }
         this.restoreMesh = function() {
-            debugger;
+           
             if (!this.GetMesh())
                 return;
             var geometry = this.GetMesh().geometry;
@@ -154,7 +155,7 @@
             if (this.rootnode.children[0])
                 mat = this.rootnode.children[0].material;
             else
-                mat = new THREE.MeshPhongMaterial();
+                mat = defaultPrimMaterial;
 
             if (this.mesh) {
                 this.rootnode.remove(this.mesh);

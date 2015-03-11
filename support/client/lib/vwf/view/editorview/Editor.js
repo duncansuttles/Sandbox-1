@@ -46,6 +46,41 @@ return !( bLeft > aRight
     );
 }
 
+var blueBoundingBoxMaterial = new THREE.LineBasicMaterial();
+var redBoundingBoxMaterial = new THREE.LineBasicMaterial();
+var greenBoundingBoxMaterial = new THREE.LineBasicMaterial();
+var lightgreenBoundingBoxMaterial = new THREE.LineBasicMaterial();
+
+
+
+
+    blueBoundingBoxMaterial.transparent = true;
+    blueBoundingBoxMaterial.depthTest = false;
+    blueBoundingBoxMaterial.depthWrite = false;
+    blueBoundingBoxMaterial.color.r = 0;
+    blueBoundingBoxMaterial.color.g = 0;
+    blueBoundingBoxMaterial.color.b = 1;
+
+    redBoundingBoxMaterial.transparent = true;
+    redBoundingBoxMaterial.depthTest = false;
+    redBoundingBoxMaterial.depthWrite = false;
+    redBoundingBoxMaterial.color.r = 1;
+    redBoundingBoxMaterial.color.g = 0;
+    redBoundingBoxMaterial.color.b = 0;
+
+    greenBoundingBoxMaterial.transparent = true;
+    greenBoundingBoxMaterial.depthTest = false;
+    greenBoundingBoxMaterial.depthWrite = false;
+    greenBoundingBoxMaterial.color.r = 0;
+    greenBoundingBoxMaterial.color.g = 1;
+    greenBoundingBoxMaterial.color.b = 0;
+
+    lightgreenBoundingBoxMaterial.transparent = true;
+    lightgreenBoundingBoxMaterial.depthTest = false;
+    lightgreenBoundingBoxMaterial.depthWrite = false;
+    lightgreenBoundingBoxMaterial.color.r = 0;
+    lightgreenBoundingBoxMaterial.color.g = .7;
+    lightgreenBoundingBoxMaterial.color.b = .7;
 
 define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(Log, ProgressBar) {
     var originalGizmoPos;
@@ -2200,35 +2235,23 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
 
             box = self.findviewnode(id).GetBoundingBox(true);
             mat = toGMat(self.findviewnode(id).matrixWorld).slice(0);
-            var color = [.5, .5, 1, 1];
-            if (this.findviewnode(id).initializedFromAsset) color = [1, 0, 0, 1];
-            if (vwf.getProperty(id, 'type') == 'Group' && vwf.getProperty(id, 'open') == false) color = [0, 1, 0, 1];
-            if (vwf.getProperty(id, 'type') == 'Group' && vwf.getProperty(id, 'open') == true) color = [.7, 1.0, .7, 1];
+            var material = blueBoundingBoxMaterial;
+            if (this.findviewnode(id).initializedFromAsset) color = redBoundingBoxMaterial;
+            if (vwf.getProperty(id, 'type') == 'Group' && vwf.getProperty(id, 'open') == false) color = greenBoundingBoxMaterial;
+            if (vwf.getProperty(id, 'type') == 'Group' && vwf.getProperty(id, 'open') == true) color = lightgreenBoundingBoxMaterial;
             var boundingbox = new THREE.Object3D();
             boundingbox.name = "Bounds_+" + id;
-            boundingbox.add(this.BuildWireBox([box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]], [box.min[0] + (box.max[0] - box.min[0]) / 2, box.min[1] + (box.max[1] - box.min[1]) / 2, box.min[2] + (box.max[2] - box.min[2]) / 2], color), true);
+            boundingbox.add(this.BuildWireBox([box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]], [box.min[0] + (box.max[0] - box.min[0]) / 2, box.min[1] + (box.max[1] - box.min[1]) / 2, box.min[2] + (box.max[2] - box.min[2]) / 2], [0,0,0],material), true);
             boundingbox.children[0].name = "Bounds_+" + id + "_Mesh";
             boundingbox.matrixAutoUpdate = false;
             boundingbox.matrix.elements = MATH.transposeMat4(mat);
             boundingbox.updateMatrixWorld(true);
-            //	boundingbox.children[0].material = new THREE.MeshBasicMaterial();
-            //	boundingbox.children[0].material.wireframe = true;
-            boundingbox.children[0].material.transparent = true;
+            
             boundingbox.children[0].renderDepth = -10000 - 3;
-            boundingbox.children[0].material.depthTest = false;
-            boundingbox.children[0].material.depthWrite = false;
-            boundingbox.children[0].material.color.r = color[0];
-            boundingbox.children[0].material.color.g = color[1];
-            boundingbox.children[0].material.color.b = color[2];
+      
             boundingbox.children[0].PickPriority = -1;
-            // boundingbox.InvisibleToCPUPick = true;
-            // boundingbox.setCastShadows(false);
-            // boundingbox.setDrawType(MATH.DRAW_LINELOOPS);
-            // boundingbox.setDepthTest(false);
-            // boundingbox.setZtransparent(true);
-            // boundingbox.setCull(MATH.NONE);
-            // boundingbox.setPickable(false);
-            // boundingbox.RenderPriority = 999;
+            boundingbox.children[0].InvisibleToCPUPick = true;
+            
             boundingbox.vwfid = id;
             box.release();
             return boundingbox;
@@ -2740,13 +2763,14 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             mesh.updateMatrixWorld(true);
             return mesh;
         }.bind(this);
-        this.BuildWireBox = function(size, offset, color) {
+        this.BuildWireBox = function(size, offset, color, material) {
 
-            var mesh = new THREE.Line(new THREE.Geometry(), new THREE.LineBasicMaterial(), THREE.LinePieces);
-            mesh.material.color.r = color[0];
-            mesh.material.color.g = color[1];
-            mesh.material.color.b = color[2];
-
+            var mesh = new THREE.Line(new THREE.Geometry(), material ||(new THREE.LineBasicMaterial()), THREE.LinePieces);
+            if(! material){
+                        mesh.material.color.r = color[0];
+                        mesh.material.color.g = color[1];
+                        mesh.material.color.b = color[2];
+            }
 
             var vertices = [
                 new THREE.Vector3(size[0] / 2, size[1] / 2, size[2] / 2),

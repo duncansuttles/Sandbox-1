@@ -39,13 +39,20 @@
 				}
 				if(propname == 'receiveShadows')
 				{
+					
 					this.receiveShadows = propval;
 					var list = this.CasterGetAllLeafMeshes(this.getRoot())
 					for(var i = 0; i < list.length; i++)
 					{
 						list[i].receiveShadow = this.receiveShadows  && _SettingsManager.getKey('shadows');
-						if(list[i].material)
-							list[i].material.needsUpdate = true
+						if(list[i].material && list[i].material.__webglShader && list[i].material.__webglShader.uniforms && list[i].material.__webglShader.uniforms.shadowMap && list[i].material.__webglShader.uniforms.shadowMap.value)
+						{
+							
+							if(propval == false && list[i].material.__webglShader.uniforms.shadowMap.value.length == 1)
+								list[i].material.needsUpdate = true;
+							if(propval == true && list[i].material.__webglShader.uniforms.shadowMap.value.length == 0)
+								list[i].material.needsUpdate = true;
+						}
 					}
 					return propval;
 				}

@@ -2419,7 +2419,7 @@ this.hashNode = function( nodeID ) {  // TODO: works with patches?  // TODO: onl
 this.createDepth = 0;
 this.createChild = function( nodeID, childName, childComponent, childURI, callback_async /* ( childID ) */ ) {
     vwf.createDepth++;
-    var now = performance.now();
+    
     this.logger.debuggx( "createChild", function() {
         return [ nodeID, childName, JSON.stringify( loggableComponent( childComponent ) ), childURI ];
     } );
@@ -2939,15 +2939,17 @@ this.createChild = function( nodeID, childName, childComponent, childURI, callba
 
         if ( callback_async ) {
 
+            
             queue.suspend( "before completing " + childID ); // suspend the queue
 
             async.nextTick( function() {
                 callback_async( childID );
                 queue.resume( "after completing " + childID ); // resume the queue; may invoke dispatch(), so call last before returning to the host
+                
             } );
 
         }
-        console.log(performance.now()  - now);
+        
 
     } );
 

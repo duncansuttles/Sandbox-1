@@ -471,7 +471,7 @@ define(["module", "vwf/model", "vwf/utility", "vwf/utility/color", "vwf/model/th
 
         deletingNode: function(nodeID) {
 
-            console.log('three driver saw delete command for ' + nodeID)
+            //console.log('three driver saw delete command for ' + nodeID)
             if (nodeID) {
                 var childNode = this.state.nodes[nodeID];
                 if (!childNode) return;
