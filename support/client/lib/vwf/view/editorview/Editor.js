@@ -837,6 +837,8 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
                     }
                 }
             }
+            if(method == "modifierStackUpdated" && this.isSelected(id))
+                this.updateBounds();
         }
         this.satProperty = function(id, propname, val) {
 
@@ -888,6 +890,7 @@ define(["vwf/view/editorview/log", "vwf/view/editorview/progressbar"], function(
             }
 
         }
+
         this.SelectParent = function() {
             if (self.GetSelectedVWFNode()) self.SelectObject(vwf.parent(self.GetSelectedVWFID()));
         }
