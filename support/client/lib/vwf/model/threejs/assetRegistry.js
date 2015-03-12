@@ -37,6 +37,13 @@ function MorphBinaryLoader()
         }
     };
 }
+
+ var NOT_STARTED = 0;
+    var PENDING = 1;
+    var FAILED = 2;
+    var SUCCEDED = 3;
+    var LOAD_FAIL_TIME = 20 * 1000;
+
 var assetRegistry = function() {
     this.assets = {};
     this.initFromPreloader = function(childType, assetSource)
@@ -90,15 +97,46 @@ var assetRegistry = function() {
     {
         //thus, it becomes pending
         var reg = this.assets[assetSource];
+        reg.loadState = NOT_STARTED;
+        reg.failTimeout = null;
+        reg.loadSucceded = function()
+        {
+            console.log('load SUCCEDED');
+            this.loadState = SUCCEDED;
+            window.clearTimeout(this.failTimeout);
+            this.failTimeout = null;
+        }
+        reg.loadStarted = function()
+        {
+            console.log('load started');
+            this.loadState = PENDING;
+            this.failTimeout = window.setTimeout(function()
+                {
+                    this.assetFailed();
+                    this.loadState = FAILED;
+                    console.log('load failed due to timeout');
+                }.bind(this),
+                LOAD_FAIL_TIME);
+        }
+
         reg.pending = true;
         reg.callbacks.push(success);
         reg.failcallbacks.push(failure);
         var assetLoaded = function(asset)
         {
+
             //store this asset in the registry
             //get the entry from the asset registry
             reg = assetRegistry.assets[assetSource];
+            if (reg.loadState !== PENDING) return; // in this case, the callback from the load either came too late, and we have decided it failed, or came twice, which really it never should
             //it's not pending, and it is loaded
+            if(!asset)
+            {
+                _ProgressBar.hide();
+                this.assetFailed();
+                return;
+            }
+            reg.loadSucceded();
             reg.pending = false;
             reg.loaded = true;
             //actually, is this necessary? can we just store the raw loaded asset in the cache? 
@@ -119,6 +157,7 @@ var assetRegistry = function() {
             reg.failcallbacks = [];
             _ProgressBar.hide();
         }
+        reg.assetLoaded = assetLoaded;
         var assetFailed = function(id)
         {
             //the collada loader uses the failed callback as progress. data means this is not really an error;
@@ -133,7 +172,8 @@ var assetRegistry = function() {
                 $(document).trigger('EndParse');
                 //it's not pending, and it is loaded
                 reg.pending = false;
-                reg.loaded = true;
+                reg.loaded = false;
+                reg.loadState = NOT_STARTED;
                 //store this asset in the registry
                 reg.node = null;
                 //if any callbacks were waiting on the asset, call those callbacks
@@ -143,6 +183,7 @@ var assetRegistry = function() {
                 reg.callbacks = [];
                 reg.failcallbacks = [];
                 _ProgressBar.hide();
+                window.clearTimeout(reg.failTimeout);
                
             }
             else
@@ -154,18 +195,22 @@ var assetRegistry = function() {
                 _ProgressBar.show();
             }
         }
+        reg.assetFailed = assetFailed;
         if (childType == 'subDriver/threejs/asset/vnd.collada+xml')
         {
+            reg.loadStarted();
             this.loader = new THREE.ColladaLoader();
             this.loader.load(assetSource, assetLoaded, assetFailed);
         }
         if (childType == 'subDriver/threejs/asset/vnd.collada+xml+optimized')
         {
+            reg.loadStarted();
             this.loader = new ColladaLoaderOptimized();
             this.loader.load(assetSource, assetLoaded, assetFailed);
         }
         if (childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed+optimized')
         {
+            reg.loadStarted();
             this.loader = new UTF8JsonLoader_Optimized(
             {
                 source: assetSource
@@ -173,6 +218,7 @@ var assetRegistry = function() {
         }
         if (childType == 'subDriver/threejs/asset/vnd.osgjs+json+compressed')
         {
+            reg.loadStarted();
             this.loader = new UTF8JsonLoader(
             {
                 source: assetSource
@@ -189,6 +235,10 @@ var assetRegistry = function() {
             {
                 //task is an object that olds the info about what to load
                 //nexttask is supplied by async to trigger the next in the queue;
+
+                //note the timeout does not account for the fact that the load has not really started because of the queue
+                reg.loadStarted();
+
                 THREE.glTFLoader.queue = new async.queue(function(task, nextTask)
                 {
                     var node = task.node;
@@ -219,12 +269,14 @@ var assetRegistry = function() {
         //load as a normal gltf file TODO:add this to the preloader, since it should work normally
         if (childType == 'subDriver/threejs/asset/vnd.raw-morphttarget')
         {
+            reg.loadStarted();
             this.loader = new MorphRawJSONLoader();
             this.loader.load(assetSource, assetLoaded);
         }
     }
     this.get = function(childType, assetSource, success, failure)
-    {
+    {   
+      
         //try to load from the preloader
         if (!this.assets[assetSource])
         {
@@ -237,7 +289,7 @@ var assetRegistry = function() {
         {
             this.newLoad(childType, assetSource, success, failure)
         }
-        if (reg.loaded == true && reg.pending == false)
+        else if (reg.loaded == true && reg.pending == false)
         {
 
             //must return async
@@ -246,7 +298,7 @@ var assetRegistry = function() {
             })
             
         }
-        if (reg.loaded == false && reg.pending == true)
+        else if (reg.loaded == false && reg.pending == true)
         {
             _ProgressBar.show();
             reg.callbacks.push(success)

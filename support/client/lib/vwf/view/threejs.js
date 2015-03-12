@@ -2207,84 +2207,11 @@ define(["module", "vwf/view", "vwf/model/threejs/OculusRiftEffect", "vwf/model/t
 
         // -- dragOver ---------------------------------------------------------------------------------
 
-        canvas.ondragover = function(e) {
-            sceneCanvas.mouseX = e.clientX;
-            sceneCanvas.mouseY = e.clientY;
-            var eData = getEventData(e, false);
-            if (eData) {
-                e.dataTransfer.dropEffect = "copy";
-            }
-            e.preventDefault();
-        };
+       
 
         // -- drop ---------------------------------------------------------------------------------
 
-        canvas.ondrop = function(e) {
-
-            e.preventDefault();
-            var eData = getEventData(e, false);
-
-            if (eData) {
-
-                var fileData, fileName, fileUrl, rotation, scale, translation, match, object;
-
-                try {
-
-                    fileData = JSON.parse(e.dataTransfer.getData('text/plain'));
-                    fileName = decodeURIComponent(fileData.fileName);
-                    fileUrl = decodeURIComponent(fileData.fileUrl);
-                    rotation = decodeURIComponent(fileData.rotation);
-                    rotation = rotation ? JSON.parse(rotation) : undefined;
-                    scale = decodeURIComponent(fileData.scale);
-                    scale = scale ? JSON.parse(scale) : [1, 1, 1];
-                    translation = decodeURIComponent(fileData.translation);
-                    translation = translation ? JSON.parse(translation) : [0, 0, 0];
-                    if ($.isArray(translation) && translation.length == 3) {
-                        translation[0] += eData.eventNodeData[""][0].globalPosition[0];
-                        translation[1] += eData.eventNodeData[""][0].globalPosition[1];
-                        translation[2] += eData.eventNodeData[""][0].globalPosition[2];
-                    } else {
-                        translation = eData.eventNodeData[""][0].globalPosition;
-                    }
-
-                    if (match = /* assignment! */ fileUrl.match(/(.*\.vwf)\.(json|yaml)$/i)) {
-
-                        object = {
-                            extends: match[1],
-                            properties: {
-                                translation: translation,
-                                rotation: rotation,
-                                scale: scale,
-                            },
-                        };
-
-                        fileName = fileName.replace(/\.(json|yaml)$/i, "");
-
-                    } else if (match = /* assignment! */ fileUrl.match(/\.dae$/i)) {
-
-                        object = {
-                            extends: "http://vwf.example.com/node3.vwf",
-                            source: fileUrl,
-                            type: "model/vnd.collada+xml",
-                            properties: {
-                                translation: translation,
-                                rotation: rotation,
-                                scale: scale,
-                            },
-                        };
-
-                    }
-
-                    if (object) {
-                        sceneView.kernel.createChild("index-vwf", fileName, object);
-                    }
-
-                } catch (e) {
-                    // TODO: invalid JSON
-                }
-
-            }
-        };
+        
 
     };
 

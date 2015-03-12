@@ -1,7 +1,7 @@
 define({
 	initialize:function(div)
 	{
-		$('#'+div).append('<div id="GlobalProgressBar" />');
+		$('#'+div).prepend('<div id="GlobalProgressBar" />');
 		$('#GlobalProgressBar').append('<div id="GlobalProgressBarBack" />');
 		$('#GlobalProgressBar').append('<div id="GlobalProgressBarInner" />');
 		$('#GlobalProgressBarInner').text('message');

@@ -4,11 +4,7 @@
 (function()
 {
     //enum to keep track of assets that fail to load
-    var NOT_STARTED = 0;
-    var PENDING = 1;
-    var FAILED = 2;
-    var SUCCEDED = 3;
-    var LOAD_FAIL_TIME = 20 * 1000;
+   
 
     function asset(childID, childSource, childName, childType, assetSource, asyncCallback)
         {
@@ -38,8 +34,6 @@
                     fps: 30
                 };
             }
-            this.loadState = NOT_STARTED;
-            this.failTimeout = null;
             this.inherits = ['vwf/model/threejs/transformable.js', 'vwf/model/threejs/materialDef.js', 'vwf/model/threejs/animatable.js', 'vwf/model/threejs/shadowcaster.js', 'vwf/model/threejs/passable.js', 'vwf/model/threejs/visible.js', 'vwf/model/threejs/static.js', 'vwf/model/threejs/selectable.js'];
             this.initializingNode = function()
             {
@@ -239,25 +233,7 @@
                     }
                 }
             }
-            this.loadSucceded = function()
-            {
-                console.log('load SUCCEDED');
-                this.loadState = SUCCEDED;
-                window.clearTimeout(this.failTimeout);
-                this.failTimeout = null;
-            }
-            this.loadStarted = function()
-            {
-                console.log('load started');
-                this.loadState = PENDING;
-                this.failTimeout = window.setTimeout(function()
-                    {
-                        this.loadFailed();
-                        this.loadState = FAILED;
-                        console.log('load failed due to timeout');
-                    }.bind(this),
-                    LOAD_FAIL_TIME);
-            }
+            
             this.gettingProperty = function(propertyName) {}
             this.settingProperty = function(propertyName, propertyValue) {}
             this.gettingProperty = function(propertyName)
@@ -465,14 +441,12 @@
             }
             this.loaded = function(asset,rawAnimationChannels)
             {
-                if (this.loadState !== PENDING) return; // in this case, the callback from the load either came too late, and we have decided it failed, or came twice, which really it never should
-                _ProgressBar.hide();
+                
                 if (!asset)
                 {
                     this.loadFailed();
                     return;
                 }
-                this.loadSucceded();
                 $(document).trigger('EndParse', ['Loading...', assetSource]);
                 
                 //you may be wondering why we are cloning again - this is so that the object in the scene is 
@@ -507,7 +481,7 @@
                 return;
             }
             asyncCallback(false);
-            this.loadStarted();
+            
             
             assetRegistry.get(childType,assetSource,this.loaded,this.loadFailed);
             
