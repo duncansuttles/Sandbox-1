@@ -283,7 +283,7 @@ border-radius: 6px;
 	{
 		padding:3px 4px 3px 4px;
 		font:1.5em sans-serif;
-		font-weight: bold;
+		
 	}
 	.SidePanelWindowBottomBorder
 	{
@@ -352,7 +352,7 @@ border-radius: 6px;
 		font-size: 1.5em;
 		color: white;
 		font-family: 'Open Sans',sans-serif;
-		font-weight: bold;
+		
 		box-shadow: 2px 2px 5px black;
 		border: 1px solid gray;
 		cursor:default;
@@ -396,7 +396,7 @@ border-radius: 6px;
 		vertical-align: middle;
 		line-height: 50px;
 		font-size: 0.85em;
-		font-weight: bold;
+		
 		display: inline-block;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -428,7 +428,7 @@ cursor: pointer;
 	}
 	.nametag {
 /* pointer-events: none; */
-font-weight: bold;
+
 position: fixed;
 left: 612.7792636991876px;
 top: 350.056008871367px;
@@ -547,7 +547,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#636363', end
 	{
 		background-color:rgb(130, 184, 255);
 		padding: 3px;
-		border: 4px outset #444;
+		border: 3px inset #444
 	}
 	.icondisabled
 	{
@@ -569,7 +569,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#636363', end
 	.usertable tr td
 	{
 	
-		font: 8pt 'Open Sans' bold;
+		font: 8pt 'Open Sans' ;
 	}
 	.usertable tr
 	{
@@ -594,7 +594,7 @@ font-family: 'Open Sans',sans-serif;
 font-size: 1.3em;
 text-shadow: 1px 1px 3px black;
 border-left: 1px solid;
-font-weight: bold;
+
 	}
 	#sidepanel
 	{
@@ -607,7 +607,7 @@ font-weight: bold;
 	.EditorDataSectionTitle
 	{
 		text-align: center;
-		font-weight: bold;
+		
 		margin: 3em 0px 0px 0px;
 		border-bottom: 1px solid #444444;
 		font-size: 1.3em;
@@ -1645,13 +1645,13 @@ padding-right: 3px;
 text-align: center;
 display:inline-block;
 margin-right: 1.5em;
-width: 75px;
+width: 73px;
 height: 75px;
 }
 
 .libraryAsset div
 {
-	font-weight: bold;
+	
 padding-bottom: 9px;
 color: whitesmoke;
 text-shadow: 1px 1px 5px black;
@@ -1749,6 +1749,8 @@ border: 2px solid rgb(130,184,255);
 		border: 3px solid rgb(140,185,255);
 	
 	}
+
+
 
 #eventtext,#methodtext,#propertytext
 {

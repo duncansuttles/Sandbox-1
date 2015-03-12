@@ -401,14 +401,15 @@ define(function() {
 			}
 		});
 		//
+
 		$('#methodlist').css('width', '180px');
 		$('#eventlist').css('width', '180px');
 		$('#propertylist').css('width', '180px');
 
 
-		$('#methodlist').css('overflow-y', 'scroll');
-		$('#eventlist').css('overflow-y', 'scroll');
-		$('#propertylist').css('overflow-y', 'scroll');
+		$('#methodlist').css('overflow-y', 'auto');
+		$('#eventlist').css('overflow-y', 'auto');
+		$('#propertylist').css('overflow-y', 'auto');
 
 		$('#methodlist').css('overflow-x', 'hidden');
 		$('#eventlist').css('overflow-x', 'hidden');
@@ -1066,7 +1067,7 @@ define(function() {
 				node = node.proto;
 			}
 			return false;
-		}
+		} 
 		this.BuildGUI = function(refresh) {
 			$('#scripteditortitletext').text('Script Editor - ' + (vwf.getProperty(this.currentNode.id, 'DisplayName') || this.currentNode.id))
 			if (!refresh) {
