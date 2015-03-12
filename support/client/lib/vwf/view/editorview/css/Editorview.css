@@ -260,13 +260,17 @@ border-radius: 6px;
 	.playerlabel
 	{
 		cursor: pointer;
-		font-size: 1.3em;
-		font-weight: bold;
+  font-size: 1.3em;
+  margin: 1px 5px;
+  padding: 3px;
+  border-radius: 7px;
+  border: 1px solid #444;
+  background: #222 url(images/ui-bg_glass_15_222222_1x400.png) 50% 50% repeat-x;
+  font-weight: 700;
+  color: #eee;
+  font-family: 'Open Sans';
 	}
-	.playerlabel:hover
-	{
-		background-image: -webkit-linear-gradient(right, white 0%, #D9EEEF 100%)
-	}
+	
 	.loadchoice
 	{
 		background-color: #DDD;
@@ -468,6 +472,7 @@ transition: background 1s, opacity 1s;
 		height: 16px;
 		box-shadow: 1px 1px 6px lightgray inset;
 		background: #F4F4FF;
+		color: black;
 	}
 	.EditorLabel
 	{
@@ -502,6 +507,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#636363', end
 	{
 		width:100%;
 		margin-bottom: 5px;
+		margin-left: 5px;
 	}
 	.headericon
 	{
@@ -563,11 +569,11 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#636363', end
 	.usertable tr td
 	{
 	
-		font: 8pt arial bold;
+		font: 8pt 'Open Sans' bold;
 	}
 	.usertable tr
 	{
-		box-shadow: 0px 0px 9px #AAA;
+		
 		display: block;
 		border-radius: 5px;
 		width: 100%;
@@ -1810,3 +1816,35 @@ margin: 0px;
 padding: 0px;
 width: 5em;
 }
+
+.playerlabelID{
+	  font-size: .6em;
+  color: gray;
+}
+
+.playerlabel .glyphicon
+{
+	float: right;
+  margin: 0px;
+  border: 0;
+  padding: 2px;
+  margin-left: 4px;
+    font-size: 1.5em;
+}
+.playerlabel .glyphicon:hover
+{
+	color:rgb(132, 185, 255);
+}
+.playerlabelname
+{
+	display: inline-block;
+}
+*
+{
+	box-sizing:content-box;
+}
+* select
+{
+		color: black;
+}
+

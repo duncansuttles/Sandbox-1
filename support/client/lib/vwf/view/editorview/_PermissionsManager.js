@@ -92,7 +92,13 @@ define(["vwf/view/editorview/Editor"], function(Editor) {
 				newperm[$(v).attr('user')] = $(v).is(':checked') ? 1 : 0;
 
 			});
-			this.setProperty(vwf.application(), 'permission', newperm, 'You do not have permission to edit this object');
+			this.setProperty(vwf.application(), 'permission', newperm, 'You do not have permission to change permissions');
+		}
+		this.setPermission = function(user,id,val)
+		{
+			var permission = vwf.getProperty(id, 'permission') || {};
+			permission[user] = val;
+			this.setProperty(vwf.application(), 'permission', permission, 'You do not have permission to change permissions');	
 		}
 		this.getPermission = function(user, id) {
 			var level = 0;

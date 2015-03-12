@@ -687,6 +687,25 @@ define(function() {
                 if (clients[i].UID == id) return clietns[i].cid;
             }
         }
+
+        
+        this.satProperty = function(id,name,val)
+        {
+            if(name == 'permission')
+                this.updatePermissions();
+        }
+        this.updatePermissions = function()
+        {
+            var clients = vwf.getProperty(vwf.application(),'clients');
+            for(var id in clients)
+            {
+            var e = ToSafeID(id)
+            if(_PermissionsManager.getPermission(clients[id].name,vwf.application()))
+                    $("#" + e + "label .glyphicon-share").css('color','rgb(130, 184, 255)')
+                else    
+                    $("#" + e + "label .glyphicon-share").css('color','')
+            }
+        }
         this.showPlayers = function() {
             $('#Players').prependTo($('#Players').parent());
             $('#Players').show('blind', function() {});
@@ -696,19 +715,61 @@ define(function() {
             
             for (var i in clients) {
                 var e = ToSafeID(i);
-                $("#PlayerList").append("<div id='" + (e + "label") + "'  class='playerlabel'>" + clients[i].name + "</div>");
-                $("#" + e + "label").attr("playerid", i);
-                $("#" + e + "label").click(function() {
-                    $(".playerlabel").css("background-image", ""); // -webkit-linear-gradient(right, white 0%, #D9EEEF 100%)
-                    $(this).css("background-image", "-webkit-linear-gradient(right, white 0%, #D9EEEF 100%)");
+                 var id = i;
+                var self = this;
+                (function(e,id,clients){
+                $("#PlayerList").append("<div id='" + (e + "label") + "'  class='playerlabel'><span class='playerlabelname'>" + clients[i].name + (e == vwf.moniker() ? " (me)":"") + "<div class='playerlabelID'>" + i + "</div></span></div>");
+                $("#" + e + "label").append("<div class='glyphicon glyphicon-comment' />");
+                $("#" + e + "label").append("<div class='glyphicon glyphicon-user' />");
+                $("#" + e + "label").append("<div class='glyphicon glyphicon-earphone' />");
+                $("#" + e + "label").append("<div class='glyphicon glyphicon-facetime-video' />");
+                $("#" + e + "label").append("<div class='glyphicon glyphicon-share' />");
+               
+                 $("#" + e + "label .glyphicon-comment").click(function()
+                 {
+                     setupPmWindow(id);
+                 });
+                 $("#" + e + "label .glyphicon-user").click(function()
+                 {
+                     self.showProfile(id);
+                 })
+                 $("#" + e + "label .glyphicon-facetime-video").click(function()
+                 {
+                     vwf.callMethod('index-vwf', 'rtcVideoCall', {
+                        target: id
+                    });
+                 });
+                 $("#" + e + "label .glyphicon-earphone").click(function()
+                 {
+                     vwf.callMethod('index-vwf', 'rtcCall', {
+                        target: id
+                    });
+                 })
 
+                 function updatePermission()
+                 {
+                    if(_PermissionsManager.getPermission(clients[id].name,vwf.application()))
+                        $("#" + e + "label .glyphicon-share").css('color','rgb(130, 184, 255)')
+                    else    
+                        $("#" + e + "label .glyphicon-share").css('color','')
+                 }
+                 updatePermission();
+                 $("#" + e + "label .glyphicon-share").click(function()
+                 {
+                    if(_PermissionsManager.getPermission(clients[id].name,vwf.application()))
+                        _PermissionsManager.setPermission(clients[id].name,vwf.application(),0);
+                    else
+                        _PermissionsManager.setPermission(clients[id].name,vwf.application(),1);
+                    
+                    window.setTimeout(function(){
+                        updatePermission();        
+                    },500)
 
-                    _UserManager.showProfile($(this).attr("playerid"));
-                });
-                if (e == vwf.moniker()) {
-                    $("#" + e + "label").attr("self", "true");
-                    $("#" + e + "label").append(" (me)");
-                }
+                 })
+             })(e,id,clients);
+
+                 
+               
             }
 
 

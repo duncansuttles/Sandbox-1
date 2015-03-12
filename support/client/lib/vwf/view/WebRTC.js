@@ -26,7 +26,7 @@ define(["module", "vwf/view", "vwf/view/rtcObject"], function(module, view, RTCO
 				'			poster="' + window.appPath + 'vwf/view/webrtc/avatar.png" muted/>' +
 				'		<input id="chatButton" type="button" value="Send Message" ' +
 				'			style="position: absolute; right: 0px;"/>' +
-				'		<span id="videoClose" class="ui-button-icon-primary ui-icon ui-icon-closethick" type="button" value="X" ' +
+				'		<span id="videoClose" class="glyphicon glyphicon-remove" type="button" value="X" ' +
 				'			style="position: absolute; left: 0px; bottom:0px"/>' +
 				'		<span id="connectionStatus" style="font-family: \'Glyphicons\', arial; font-size: 18pt; position: absolute; right: 5px; bottom: 5px;">\uE182\uE091</span>' +
 				'	</div>' +
