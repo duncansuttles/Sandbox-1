@@ -775,19 +775,23 @@ define(function() {
                     $('#' + nodeid + i).button({
                         label: editordata[i].displayname
                     });
+
+                    $('#' + nodeid + i).prepend("<img src='"+vwf.getProperty(node.id, editordata[i].property)+"'/>");
+
                     $('#' + nodeid + i).click(function() {
                         _MapBrowser.setTexturePickedCallback(function(e) {
                             var propname = $(this).attr('propname');
                             var nodename = $(this).attr('nodename');
                             _MapBrowser.setTexturePickedCallback(null);
                             _PrimitiveEditor.setProperty(nodename, propname, e);
-                            _MapBrowser.hide();
+                            $(this).children('img').attr('src',e);
                         }.bind(this));
                         _MapBrowser.show();
                     });
+                    $('#' + nodeid + i).css('text-align','left');
                 }
                 if (editordata[i].type == 'text') {
-                    $('#basicSettings' + nodeid).append('<div style="">' + editordata[i].displayname + '</div><input type="text" style="display: block;width: 100%;padding: 2px;border-radius: 5px;font-weight: bold;" id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/>');
+                    $('#basicSettings' + nodeid).append('<div style="">' + editordata[i].displayname + '</div><input type="text" style="  background: black;border: 1px inset;display: block;width: 100%;padding: 2px;border-radius: 5px;font-weight: bold;" id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/>');
                     $('#' + nodeid + i).val(vwf.getProperty(node.id, editordata[i].property));
                     $('#' + nodeid + i).keyup(function() {
                         var propname = $(this).attr('propname');
@@ -797,8 +801,10 @@ define(function() {
                     this.addPropertyEditorDialog(node.id, editordata[i].property, $('#' + nodeid + i), 'text');
                 }
                 if (editordata[i].type == 'prompt') {
-                    $('#basicSettings' + nodeid).append('<div style="">' + editordata[i].displayname + '</div><input type="text" style="text-align: center;border: outset 1px;background-color: #DDDDDD;margin: 0px 0px 5px 0px;cursor: pointer;display: block;width: 100%;padding: 2px;border-radius: 5px;font-weight: bold;" id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/>');
-                    $('#' + nodeid + i).val(vwf.getProperty(node.id, editordata[i].property));
+                    $('#basicSettings' + nodeid).append('<div style="">' + editordata[i].displayname + '</div><div type="text" id="' + nodeid + i + '" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/>');
+                    $('#' + nodeid + i).text(vwf.getProperty(node.id, editordata[i].property));
+                    $('#' + nodeid + i).button();
+                    $('#' + nodeid + i).css('width','100%');
                     $('#' + nodeid + i).click(function() {
 
                         var propname = $(this).attr('propname');
@@ -814,13 +820,21 @@ define(function() {
                 }
                 if (editordata[i].type == 'nodeid') {
 
-                    $('#basicSettings' + nodeid).append('<div style="margin-top: 5px;margin-bottom: 5px;"><div >' + editordata[i].displayname + '</div><input type="text" style="display: inline;width: 50%;padding: 2px;border-radius: 5px;font-weight: bold;" id="' + nodeid + editordata[i].property + '" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/><div  style="float:right;width:45%;height:2em" id="' + nodeid + i + 'button" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/></div><div style="clear:both" />');
+                    $('#basicSettings' + nodeid).append('<div style="margin-top: 5px;margin-bottom: 5px;"><div >' + editordata[i].displayname + '</div><input type="text" style="background: black;display: inline;width: 50%;padding: 2px;border-radius: 5px;font-weight: bold;" id="' + nodeid + editordata[i].property + '" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/><div  style="float:right;width:45%;height:2em" id="' + nodeid + i + 'button" nodename="' + nodeid + '" propname="' + editordata[i].property + '"/></div><div style="clear:both" />');
                     
                    
                     $('#' + nodeid + editordata[i].property).attr('disabled', 'disabled');
                     $('#' + nodeid + i + 'button').button({
                         label: 'Choose Node'
                     });
+                    $('#' + nodeid + i + 'button').mouseover(function(){
+
+                        var propname = $(this).attr('propname');
+                        var nodename = $(this).attr('nodename');
+                        var id = vwf.getProperty(nodename,propname);
+                        if(id && findviewnode(id))
+                            _RenderManager.flashHilight(findviewnode(id));
+                    })
                     var label = $('#' + nodeid + editordata[i].property);
                     $('#' + nodeid + i + 'button').click(function() {
                         var propname = $(this).attr('propname');
