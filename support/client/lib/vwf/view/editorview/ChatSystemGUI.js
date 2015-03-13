@@ -139,7 +139,7 @@ define({
 		}
 
 		function PMReceived(e) {
-			vwf.callMethod('index-vwf', 'playSound', ['./sounds/ChatDing.wav'])
+			//vwf.callMethod('index-vwf', 'playSound', ['./sounds/ChatDing.wav'])
 			e = JSON.parse(e);
 			var displayNameSender = vwf.getProperty(vwf.application(), 'clients')[e.sender].name;;
 			var displayNameReceiver = vwf.getProperty(vwf.application(), 'clients')[e.receiver].name;;
@@ -150,8 +150,8 @@ define({
 
 			var text = replaceURLWithHTMLLinks(e.text);
 
-			if (e.sender != vwf.moniker()) $('#ChatLog' + ToSafeID(e.sender)).append('<div class="ChatFromOther"><div class="ChatFromOtherText">' + text + '</div><div class="ChatFromOtherLabel">' + displayNameSender + '</div></div>');
-			else $('#ChatLog' + ToSafeID(e.receiver)).append('<div class="ChatFromMe"><div class="ChatFromMeText">' + text + '</div><div class="ChatFromMeLabel">' + displayNameSender + '</div></div>');
+			if (e.sender != vwf.moniker()) $('#ChatLog' + ToSafeID(e.sender)).append('<div class="ChatFromOther"><div class="ChatFromOtherLabel">' + displayNameSender + '</div><div class="ChatFromOtherText">' + text + '</div></div>');
+			else $('#ChatLog' + ToSafeID(e.receiver)).append('<div class="ChatFromMe"><div class="ChatFromMeLabel">' + displayNameSender + '</div><div class="ChatFromMeText">' + text + '</div></div>');
 
 			$('#ChatLog' + ToSafeID(e.receiver)).parent().animate({
 				scrollTop: $('#ChatLog' + ToSafeID(e.receiver)).height()
@@ -161,11 +161,11 @@ define({
 			}, "slow");
 
 			if (e.sender == vwf.moniker())
-				$('#ChatLog').children().last().hide().show('slide', {
+				$('#ChatLog' + ToSafeID(e.receiver)).children().last().hide().show('fade', {
 					direction: 'right'
 				});
 			else
-				$('#ChatLog').children().last().hide().show('slide', {
+				$('#ChatLog' + ToSafeID(e.sender)).children().last().hide().show('fade', {
 					direction: 'left'
 				});
 
@@ -179,20 +179,20 @@ define({
 			var text = replaceURLWithHTMLLinks(message.text);
 
 			if (message.sender == vwf.moniker())
-				$('#ChatLog').append('<div class="ChatFromMe"><div class="ChatFromMeText">' + text + '</div><div class="ChatFromMeLabel">' + displayNameSender + '</div></div>');
+				$('#ChatLog').append('<div class="ChatFromMe"><div class="ChatFromMeLabel">' + displayNameSender + '</div><div class="ChatFromMeText">' + text + '</div></div>');
 			else
-				$('#ChatLog').append('<div class="ChatFromOther"><div class="ChatFromOtherText">' + text + '</div><div class="ChatFromOtherLabel">' + displayNameSender + '</div></div>');
+				$('#ChatLog').append('<div class="ChatFromOther"><div class="ChatFromOtherLabel">' + displayNameSender + '</div><div class="ChatFromOtherText">' + text + '</div></div>');
 			_Notifier.notify(displayNameSender + ": " + message.text);
 			$('#ChatLog').parent().animate({
 				scrollTop: $('#ChatLog').height()
 			}, "slow");
 
 			if (message.sender == vwf.moniker())
-				$('#ChatLog').children().last().hide().show('slide', {
+				$('#ChatLog').children().last().hide().show('fade', {
 					direction: 'right'
 				});
 			else
-				$('#ChatLog').children().last().hide().show('slide', {
+				$('#ChatLog').children().last().hide().show('fade', {
 					direction: 'left'
 				});
 		}

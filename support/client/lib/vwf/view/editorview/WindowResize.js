@@ -111,7 +111,10 @@ define({
         toolsLoaded = _EditorView.needTools();
         $(window).resize(function() {
 
-            
+            //prevent resize events from dialogs from bubbling up here and causing a full gui refresh
+            if (event.target !== window) {
+                return;
+            }
 
             var canvasheight;
             var canvaswidth;
