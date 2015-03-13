@@ -505,8 +505,8 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#636363', end
 	.headericon
 	{
 		vertical-align: middle;
-		width: 30px;
-		height: 30px;
+		width: 25px;
+		height: 25px;
 		display:inline-block;
 		zoom:1.2;
 		padding-right: 5px;
@@ -1634,12 +1634,13 @@ display:inline-block;
 margin-right: 1.5em;
 width: 73px;
 height: 75px;
+  margin-bottom: 9px;
 }
 
 .libraryAsset div
 {
 	
-padding-bottom: 9px;
+
 color: whitesmoke;
 text-shadow: 1px 1px 5px black;
 overflow: hidden;
@@ -1907,4 +1908,9 @@ margin: 2px;
   background: #5B89B6 ;
  
   /* color: black !important; */
+}
+
+#guioverlay_index-vwf
+{
+	outline: none !important;
 }

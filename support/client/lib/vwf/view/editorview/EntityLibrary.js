@@ -91,10 +91,12 @@ define(function() {
                                     var dragIcon = document.createElement('img');
                                     dragIcon.src = '../vwf/view/editorview/images/icons/paste.png';
                                     dragIcon.width = 100;
-                                    evt.originalEvent.dataTransfer.setDragImage(dragIcon, 10, 10);
+                                    if(evt.originalEvent.dataTransfer.setDragImage)
+                                        evt.originalEvent.dataTransfer.setDragImage(dragIcon, 10, 10);
 
                                     currentDrag = libs[i1].library[j1];
-                                    evt.originalEvent.dataTransfer.setData('json', JSON.stringify(libs[i1].library[j1]));
+                                    if(evt.originalEvent.dataTransfer.setData)
+                                        evt.originalEvent.dataTransfer.setData('text', JSON.stringify(libs[i1].library[j1]));
                                     $(this).css('opacity', .5);
                                 });
                                 $("#asset" + ToSafeID(i1) + ToSafeID(j1)).on('dragend', function() {
@@ -236,7 +238,7 @@ define(function() {
                     $("#vwf-root").on('drop',"#index-vwf", function(evt) {
                         evt.preventDefault();
                         if(!currentDrag) return;
-                        data = JSON.parse(evt.originalEvent.dataTransfer.getData('json'));
+                        data = JSON.parse(evt.originalEvent.dataTransfer.getData('text'));
                         
                         if (EntityLibrary.dropPreview) {
                             _dScene.remove(EntityLibrary.dropPreview, true);

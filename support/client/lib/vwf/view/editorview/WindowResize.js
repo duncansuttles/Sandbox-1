@@ -109,7 +109,7 @@ define({
         var toolsHidden = false;
         var toolsLoaded = true;
         toolsLoaded = _EditorView.needTools();
-        $(window).resize(function() {
+        $(window).resize(function(event) {
 
             //prevent resize events from dialogs from bubbling up here and causing a full gui refresh
             if (event.target !== window) {
