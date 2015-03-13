@@ -31,8 +31,8 @@ define(function() {
             '<h3><a href="#">Flags</a></h3>' +
             '<div>' +
             "<div id='otherprops'>" +
-            "<input class='TransformEditorInput' style='width:50%;margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='text' id='dispName'>Name</input><br/>" +
-            "<input disabled='disabled' class='TransformEditorInput' style='width:50%;margin: 7px 2px 6px 0px;text-align: center;vertical-align: middle;' type='text' id='dispOwner'>Owners</input><br/>" +
+            "<input class='' style='width:50%;text-align: center;vertical-align: middle;' type='text' id='dispName'>Name</input><br/>" +
+            "<input disabled='disabled' class='' style='width:50%;text-align: center;vertical-align: middle;' type='text' id='dispOwner'>Owners</input><br/>" +
 
             "<input class='editorCheck' type='checkbox' id='isVisible'>Visible</input><br/>" +
             "<input class='editorCheck' type='checkbox' id='isStatic'>Static (does not move)</input><br/>" +
@@ -48,21 +48,21 @@ define(function() {
             '<div>' +
             "<div class='EditorLabel'>Translation</div>" +
             "<div id='Translation'>" +
-            "<input type='number'  class='TransformEditorInput' id='PositionX'/>" +
-            "<input type='number'  class='TransformEditorInput' id='PositionY'/>" +
-            "<input type='number'  class='TransformEditorInput' id='PositionZ'/>" +
+            "<input   class='TransformEditorInput' id='PositionX'/>" +
+            "<input   class='TransformEditorInput' id='PositionY'/>" +
+            "<input   class='TransformEditorInput' id='PositionZ'/>" +
             "</div>" + "<div class='EditorLabel'>Rotation</div>" +
             "<div id='Rotation'>" +
-            "<input type='number' class='TransformEditorInput' id='RotationX'/>" +
-            "<input type='number' class='TransformEditorInput' id='RotationY'/>" +
-            "<input type='number' class='TransformEditorInput' id='RotationZ'/>" +
-            "<input type='number' class='TransformEditorInput' id='RotationW'/>" +
+            "<input  class='TransformEditorInput' id='RotationX'/>" +
+            "<input  class='TransformEditorInput' id='RotationY'/>" +
+            "<input  class='TransformEditorInput' id='RotationZ'/>" +
+            "<input  class='TransformEditorInput' id='RotationW'/>" +
             "</div>" +
             "<div class='EditorLabel'>Scale</div>" +
             "<div id='Scale'>" +
-            "<input type='number' min='.0001' step='.05'  class='TransformEditorInput' id='ScaleX'/>" +
-            "<input type='number' min='.0001' step='.05' class='TransformEditorInput' id='ScaleY'/>" +
-            "<input type='number' min='.0001' step='.05' class='TransformEditorInput' id='ScaleZ'/>" +
+            "<input  min='.0001' step='.05'  class='TransformEditorInput' id='ScaleX'/>" +
+            "<input  min='.0001' step='.05' class='TransformEditorInput' id='ScaleY'/>" +
+            "<input  min='.0001' step='.05' class='TransformEditorInput' id='ScaleZ'/>" +
             "</div>" +
             '</div>' +
             '</div>');
@@ -71,7 +71,7 @@ define(function() {
         $('#primitiveeditorclose').click(function() {
             _PrimitiveEditor.hide();
         });
-
+        $('.TransformEditorInput').spinner();
         $('#isStatic').change(function(e) {
             _PrimitiveEditor.setProperty('selection', 'isStatic', this.checked)
         });
@@ -594,8 +594,11 @@ define(function() {
                         step: parseFloat(editordata[i].step) || 1,
                         change: this.primPropertyTypein,
                         spin: this.primSpinner
-
-                    })
+                    });
+                    $('#' + nodeid + editordata[i].property + 'value').on('keyup',function(e,ui){
+                        if(!isNaN(parseFloat($(this).val())))
+                            _PrimitiveEditor.primPropertyTypein.apply(this);
+                    });
                     $('#' + nodeid + editordata[i].property + 'value').spinner('value', vwf.getProperty(node.id, editordata[i].property));
                     $('#' + nodeid + editordata[i].property + 'value').parent().css('float', 'right');
 
@@ -655,14 +658,14 @@ define(function() {
 
 
                     //find and select the current value in the dropdown
-                    var selectedindex = editordata[i].values.indexOf(vwf.getProperty(node.id, editordata[i].property));
+                    var selectedindex = editordata[i].values.indexOf(vwf.getProperty(node.id, editordata[i].property+''));
                     var selectedLabel = editordata[i].labels[selectedindex];
                     $("select option").filter(function() {
                         //may want to use $.trim in here
                         return $.trim($(this).text()) == $.trim(selectedLabel);
                     }).prop('selected', true);
 
-                    $('#' + nodeid + i).change(function() {
+                    $('#' + nodeid + i).on('selectmenuchange',function() {
 
                         var propname = $(this).attr('propname');
                         var nodename = $(this).attr('nodename');
@@ -673,7 +676,8 @@ define(function() {
 
                     });
                     this.addPropertyEditorDialog(node.id, editordata[i].property, $('#' + nodeid + i), 'text');
-
+                    $('#' + nodeid + i).selectmenu();
+                   $('#' + nodeid + i).val(editordata[i].values[selectedindex]).selectmenu('refresh', true);
                     //$('#'+i).
                 }
                 if (editordata[i].type == 'rangeslider') {
@@ -945,7 +949,12 @@ define(function() {
             _PrimitiveEditor.setProperty(id, 'amount', amount);
         }
         this.positionChanged = function() {
-            this.setTransform();
+            
+            var self = this;
+            async.nextTick(function(){
+             self.setTransform();    
+            })
+            
         }
         this.makeRotMat = function(x, y, z) {
             var xm = [
@@ -988,10 +997,21 @@ define(function() {
             val[1] = $('#RotationY').val();
             val[2] = $('#RotationZ').val();
 
+            if(isNaN(val[0])) val[0] = 0;
+            if(isNaN(val[1])) val[1] = 0;
+            if(isNaN(val[2])) val[2] = 0;
+
             var rotmat = this.makeRotMat(parseFloat(val[0]) / 57.2957795, parseFloat(val[1]) / 57.2957795, parseFloat(val[2]) / 57.2957795);
             var scale = [parseFloat($('#ScaleX').val()), parseFloat($('#ScaleY').val()), parseFloat($('#ScaleZ').val())];
             var pos = [parseFloat($('#PositionX').val()), parseFloat($('#PositionY').val()), parseFloat($('#PositionZ').val())];
 
+            if(isNaN(pos[0])) pos[0] = 0;
+            if(isNaN(pos[1])) pos[1] = 0;
+            if(isNaN(pos[2])) pos[2] = 0;
+
+            if(isNaN(scale[0])) scale[0] = 1;
+            if(isNaN(scale[1])) scale[1] = 1;
+            if(isNaN(scale[2])) scale[2] = 1;
 
             rotmat = goog.vec.Mat4.scale(rotmat, scale[0], scale[1], scale[2]);
 
@@ -999,13 +1019,24 @@ define(function() {
 
             var val = goog.vec.Mat4.multMat(pos, rotmat, []);
 
-            this.setProperty(_Editor.GetSelectedVWFNode().id, 'transform', val);
+            var self = this;
+            async.nextTick(function()
+            {
+                self.setProperty(_Editor.GetSelectedVWFNode().id, 'transform', val);    
+            })
+            
         }
         this.rotationChanged = function() {
-            this.setTransform();
+           var self = this;
+            async.nextTick(function(){
+             self.setTransform();    
+            })
         }
         this.scaleChanged = function() {
-            this.setTransform();
+            var self = this;
+            async.nextTick(function(){
+             self.setTransform();    
+            })
         }
         this.initializedProperty = function (nodeID, propName, propVal)
         {
@@ -1097,16 +1128,39 @@ define(function() {
         $(document).bind('modifierCreated', this.SelectionChanged.bind(this));
         $(document).bind('selectionTransformedLocal', this.SelectionTransformed.bind(this));
        
-        $('#PositionX').change(this.positionChanged.bind(this));
-        $('#PositionY').change(this.positionChanged.bind(this));
-        $('#PositionZ').change(this.positionChanged.bind(this));
-        $('#RotationX').change(this.rotationChanged.bind(this));
-        $('#RotationY').change(this.rotationChanged.bind(this));
-        $('#RotationZ').change(this.rotationChanged.bind(this));
-        $('#RotationW').change(this.rotationChanged.bind(this));
-        $('#ScaleX').change(this.scaleChanged.bind(this));
-        $('#ScaleY').change(this.scaleChanged.bind(this));
-        $('#ScaleZ').change(this.scaleChanged.bind(this));
+        $('#PositionX').on( "spinchange",this.positionChanged.bind(this));
+        $('#PositionY').on( "spinchange",this.positionChanged.bind(this));
+        $('#PositionZ').on( "spinchange",this.positionChanged.bind(this));
+        $('#RotationX').on( "spinchange",this.rotationChanged.bind(this));
+        $('#RotationY').on( "spinchange",this.rotationChanged.bind(this));
+        $('#RotationZ').on( "spinchange",this.rotationChanged.bind(this));
+        $('#RotationW').on( "spinchange",this.rotationChanged.bind(this));
+        $('#ScaleX').on( "spinchange",this.scaleChanged.bind(this));
+        $('#ScaleY').on( "spinchange",this.scaleChanged.bind(this));
+        $('#ScaleZ').on( "spinchange",this.scaleChanged.bind(this));
+
+        $('#PositionX').on( "spin",this.positionChanged.bind(this));
+        $('#PositionY').on( "spin",this.positionChanged.bind(this));
+        $('#PositionZ').on( "spin",this.positionChanged.bind(this));
+        $('#RotationX').on( "spin",this.rotationChanged.bind(this));
+        $('#RotationY').on( "spin",this.rotationChanged.bind(this));
+        $('#RotationZ').on( "spin",this.rotationChanged.bind(this));
+        $('#RotationW').on( "spin",this.rotationChanged.bind(this));
+        $('#ScaleX').on( "spin",this.scaleChanged.bind(this));
+        $('#ScaleY').on( "spin",this.scaleChanged.bind(this));
+        $('#ScaleZ').on( "spin",this.scaleChanged.bind(this));
+
+        $('#PositionX').on( "keyup",this.positionChanged.bind(this));
+        $('#PositionY').on( "keyup",this.positionChanged.bind(this));
+        $('#PositionZ').on( "keyup",this.positionChanged.bind(this));
+        $('#RotationX').on( "keyup",this.rotationChanged.bind(this));
+        $('#RotationY').on( "keyup",this.rotationChanged.bind(this));
+        $('#RotationZ').on( "keyup",this.rotationChanged.bind(this));
+        $('#RotationW').on( "keyup",this.rotationChanged.bind(this));
+        $('#ScaleX').on( "keyup",this.scaleChanged.bind(this));
+        $('#ScaleY').on( "keyup",this.scaleChanged.bind(this));
+        $('#ScaleZ').on( "keyup",this.scaleChanged.bind(this));
+
         $('#RotationW').hide();
     }
 });

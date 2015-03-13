@@ -357,13 +357,14 @@ define([], function() {
                 }
                 //$('#' + nodeid + i).button();
                 //find and select the current value in the dropdown
+                
                 var selectedindex = values.indexOf(vwf.getProperty(nodeid, propertyName));
                 var selectedLabel = labels[selectedindex];
                 $("select option").filter(function() {
                     //may want to use $.trim in here
                     return $.trim($(this).text()) == $.trim(selectedLabel);
                 }).prop('selected', true);
-                $('#' + nodeid + propertyName).change(function() {
+                $('#' + nodeid + propertyName).on('selectmenuchange',function() {
                     var propname = $(this).attr('propname');
                     var nodename = $(this).attr('nodename');
                     var value = $(this).val();
@@ -371,6 +372,8 @@ define([], function() {
                     _PhysicsEditor.setProperty(nodename, propname, value);
                 });
                 this.addPropertyEditorDialog(nodeid, propertyName, $('#' + nodeid + i), 'text');
+                $('#' + nodeid + propertyName).selectmenu();
+                $('#' + nodeid + propertyName).val(values[selectedindex]).selectmenu('refresh', true);
             }
             //walk a threejs node and dispose of the geometry and materials
         this.dispose = function(threeNode) {

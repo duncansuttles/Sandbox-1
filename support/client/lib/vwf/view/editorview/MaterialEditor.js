@@ -749,17 +749,20 @@ define(["vwf/view/editorview/mapbrowser","vwf/view/editorview/colorpicker.js"], 
 				$('#' + rootid + 'mapToDiv').append('<select id="' + rootid + 'mapTo" style="float:right;clear:right">' + '<option value="1">Diffuse Color</option>' + '<option value="2">Bump Map</option>' + '<option value="3">Light Map</option>' + '<option value="4">Normal Map</option>' + '<option value="5">Specular Map</option>' + '<option value="6">Environment Map</option>' +  '<option value="7">Alpha Map</option>'+ '</select>');
 				$('#' + rootid + 'mapTo').val(this.currentMaterial.layers[i].mapTo + "");
 				$('#' + rootid + 'mapTo').attr('layer', i);
-				$('#' + rootid + 'mapTo').change(function ()
+				$('#' + rootid + 'mapTo').selectmenu();
+				$('#' + rootid + 'mapTo').on('selectmenuchange',function ()
 				{
 					_MaterialEditor.currentMaterial.layers[$(this).attr('layer')].mapTo = $(this).val();
 					_MaterialEditor.updateObject();
 				});
+
 				$('#' + rootid).append('<div style="clear:right" id="' + rootid + 'mapInputDiv" />');
 				$('#' + rootid + 'mapInputDiv').append('<div  style="display:inline-block;margin-bottom: 3px;margin-top: 3px;">Coord Type: </div>');
 				$('#' + rootid + 'mapInputDiv').append('<select id="' + rootid + 'mapInput" style="float:right;clear:right">' + '<option value="0">UV Set 1</option>' + '<option value="1">Cube Reflection</option>' + '<option value="2">Cube Refraction</option>' + '<option value="3">Spherical Reflection</option>' + '<option value="4">Spherical Reflection</option>' + '</select>');
 				$('#' + rootid + 'mapInput').val(this.currentMaterial.layers[i].mapTo + "");
 				$('#' + rootid + 'mapInput').attr('layer', i);
-				$('#' + rootid + 'mapInput').change(function ()
+				$('#' + rootid + 'mapInput').selectmenu();
+				$('#' + rootid + 'mapInput').on('selectmenuchange',function ()
 				{
 					_MaterialEditor.currentMaterial.layers[$(this).attr('layer')].mapInput = $(this).val();
 					_MaterialEditor.updateObject();

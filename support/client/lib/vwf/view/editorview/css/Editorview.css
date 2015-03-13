@@ -236,7 +236,7 @@ border-radius: 6px;
 		overflow-x: hidden !important;
 
 	}
-	input:focus,input[type="number"]:focus,input[type="text"]:focus,input[type="password"]:focus
+	input[type="text"]:focus, input[type="password"]:focus
 	{
 		box-shadow: 0px 0px 5px rgba(130, 184, 255,1);
 	}
@@ -465,19 +465,12 @@ transition: background 1s, opacity 1s;
 	}
 	.TransformEditorInput
 	{
-		width: 25%;
-		display: inline;
-		border-radius: 3px;
-		padding: 2px;
-		height: 16px;
-		box-shadow: 1px 1px 6px lightgray inset;
-		background: #F4F4FF;
-		color: black;
+		width: 4em;
+		
 	}
 	.EditorLabel
 	{
-		padding-bottom: 10px;
-		padding-top: 10px;
+		
 	}
 	.statusbar
 	{
@@ -532,6 +525,8 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#636363', end
 		padding: 1px;
 		cursor:pointer;
 		display:inline-block;
+		-moz-border-bottom-colors: #4B4B4B #4B4B4B #4B4B4B #4B4B4B #4B4B4B #4B4B4B #4B4B4B #4B4B4B
+-moz-border-right-colors: #4B4B4B #4B4B4B #4B4B4B #4B4B4B #4B4B4B #4B4B4B #4B4B4B #4B4B4B
 
 	}
 	.icon:hover
@@ -548,6 +543,8 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#636363', end
 		background-color:rgb(130, 184, 255);
 		padding: 3px;
 		border: 3px inset #444
+		-moz-border-bottom-colors: #6E6E6E #6E6E6E #6E6E6E #6E6E6E #6E6E6E #6E6E6E #6E6E6E #6E6E6E;
+-moz-border-right-colors: #6E6E6E #6E6E6E #6E6E6E #6E6E6E #6E6E6E #6E6E6E #6E6E6E;
 	}
 	.icondisabled
 	{
@@ -1850,3 +1847,19 @@ width: 5em;
 		color: black;
 }
 
+div#Translation .ui-spinner, div#Rotation .ui-spinner, div#Scale .ui-spinner
+{
+	border-radius: 0px
+}
+
+div#otherprops input[type=text] {
+color: black;
+border-radius: 5px;
+padding: 0px;
+margin: 2px;
+}
+
+.ui-selectmenu-button
+{
+	float:right;
+}
