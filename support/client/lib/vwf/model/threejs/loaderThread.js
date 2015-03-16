@@ -60,7 +60,7 @@
          //importScripts('jquery.nodom.js');
          //importScripts('three.js');
          //importScripts('ColladaLoader.js');
-         importScripts('../UTF8JSONLoader.js');
+         importScripts('UTF8JSONLoader.js');
      }
      self.decompressUTF8 = function(data) {
          if (!data) return;

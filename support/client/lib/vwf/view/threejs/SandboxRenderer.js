@@ -5,6 +5,7 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 		this.renderer = r;
 		this.canvas = c;
 		this.hilightObjects = [];
+		this.hilightMouseOver = false;
 		this.rtt = new THREE.WebGLRenderTarget(1024, 1024,
 		{
 			format: THREE.RGBAFormat,
@@ -26,6 +27,11 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 		this.overrideMaterial2.color.r = 0;
 		this.overrideMaterial2.color.g = 1;
 		this.overrideMaterial2.color.b = 0;
+
+		this.overrideMaterial3 = new THREE.MeshBasicMaterial();
+		this.overrideMaterial3.color.r = 1;
+		this.overrideMaterial3.color.g = 0;
+		this.overrideMaterial3.color.b = 0;
 		this.rttCamera = new THREE.OrthographicCamera();
 		this.rttScene = new THREE.Scene();
 		this.rttScene.add(quad);
@@ -52,6 +58,14 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 						self.cb();
 				},1000);
 		}
+		this.startMouseHoverHilight = function()
+		{
+			this.hilightMouseOver = true;
+		}
+		this.stopMouseHoverHilight = function()
+		{
+			this.hilightMouseOver = false;
+		}
 		this.flashHilightMult = function(mesh)
 		{
 			
@@ -69,7 +83,7 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 			
 			
 
-			if(_Editor.GetSelectedVWFID() || this.hilightObjects.length > 0)
+			if(_Editor.GetSelectedVWFID() || this.hilightObjects.length > 0 || this.hilightMouseOver)
 			{
 				//render into RTT1
 				this.renderer.setRenderTarget(this.rtt);
@@ -79,15 +93,20 @@ define(["vwf/view/threejs/screenAlignedQuad"], function(quad)
 				if(_Editor.GetSelectedVWFID())
 				for(var i = 0; i < _Editor.getSelectionCount(); i++)
 					this.renderObject(findviewnode(_Editor.GetSelectedVWFID(i)), scene, camera,this.overrideMaterial);
-				
-				
-
+		
 				
 				for(var i = 0; i < this.hilightObjects.length; i++)
 				{
 					this.renderObject(this.hilightObjects[i], scene, camera,this.overrideMaterial2);
 				}
 			
+				if(this.hilightMouseOver)
+				{
+					if(vwf.views[0].lastPickId && findviewnode(vwf.views[0].lastPickId))
+					{
+						this.renderObject(findviewnode(vwf.views[0].lastPickId), scene, camera,this.overrideMaterial3);		
+					}
+				}
 
 				
 				//render to the screen
