@@ -1538,7 +1538,7 @@ this.createNode = function( nodeComponent, nodeAnnotation, callback_async /* ( n
     // Interpret `createNode( nodeComponent, callback )` as
     // `createNode( nodeComponent, undefined, callback )`. (`nodeAnnotation` was added in
     // 0.6.12.)
-
+    
     if(nodeComponent && nodeComponent.id == vwf.application())
     {
         $(document).trigger('setstatebegin');
@@ -1725,6 +1725,7 @@ this.createNode = function( nodeComponent, nodeAnnotation, callback_async /* ( n
             vwf.callMethod(vwf.application(),'ready',[]);
 
         }
+
 
     } );
 
@@ -2418,6 +2419,7 @@ this.hashNode = function( nodeID ) {  // TODO: works with patches?  // TODO: onl
 this.createDepth = 0;
 this.createChild = function( nodeID, childName, childComponent, childURI, callback_async /* ( childID ) */ ) {
     vwf.createDepth++;
+    
     this.logger.debuggx( "createChild", function() {
         return [ nodeID, childName, JSON.stringify( loggableComponent( childComponent ) ), childURI ];
     } );
@@ -2937,14 +2939,17 @@ this.createChild = function( nodeID, childName, childComponent, childURI, callba
 
         if ( callback_async ) {
 
+            
             queue.suspend( "before completing " + childID ); // suspend the queue
 
             async.nextTick( function() {
                 callback_async( childID );
                 queue.resume( "after completing " + childID ); // resume the queue; may invoke dispatch(), so call last before returning to the host
+                
             } );
 
         }
+        
 
     } );
 
