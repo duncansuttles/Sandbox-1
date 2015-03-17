@@ -745,7 +745,7 @@ function ClientConnected(socket, namespace, instancedata)
                     })));
                     socket.pending = false;
                     //this must come after the client is added. Here, there is only one client
-                    thisInstance.messageConnection(socket.id, socket.loginData.Username, socket.loginData.UID);
+                    thisInstance.messageConnection(socket.id, socket.loginData ? socket.loginData.Username : "", socket.loginData ? socket.loginData.UID : "");
                     thisInstance.startTimer();
                 });
             });

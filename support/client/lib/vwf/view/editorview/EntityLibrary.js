@@ -58,10 +58,15 @@ define(function() {
         $('#EntityLibrary').append("<div id='EntityLibraryMain'></div>");
         $('#EntityLibraryMain').append("<div id='entitylibrarytitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' ><span id='entitylibrarytitletext' class='ui-dialog-title' id='ui-dialog-title-Players'>Content Libraries</span></div>");
 
+        $('#entitylibrarytitle').append('<div id="entitylibrarytray" class="glyphicon glyphicon-align-justify" />');
         $('#entitylibrarytitle').append('<a id="entitylibraryclose" href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button" style="display: inline-block;float: right;"><span class="ui-icon ui-icon-closethick">close</span></a>');
         $('#entitylibrarytitle').prepend('<div class="headericon properties" />');
+   
         $('#EntityLibraryMain').append("<div id='EntityLibraryAccordion'></div>");
 
+        $('entitylibraryclose').click(function(){
+            _EntityLibrary.hide();
+        })
         this.buildGUI = function()
         {
             try{
