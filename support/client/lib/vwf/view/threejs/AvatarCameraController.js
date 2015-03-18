@@ -1,11 +1,4 @@
-function findviewnode(id)
-{
-    for (var i = 0; i < vwf.views.length; i++)
-    {
-        if (vwf.views[i].state.nodes[id].threeObject) return vwf.views[i].state.nodes[id].threeObject;
-    }
-    return null;
-}
+
 var AvatarCameraController = function()
 {
     this.initialize = function(camera)

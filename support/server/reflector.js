@@ -563,10 +563,32 @@ function runningInstanceList()
     this.instances = {};
     this.add = function(id)
     {
+        //send a signal to the parent process that we are hosting this instance
+        if(global.configuration.cluster)
+        {
+                var message = {};
+                message.type = 'state';
+                message.action = 'add';
+                message.args = [id];
+                
+                process.send(message); 
+        }
+
         this.instances[id] = new runningInstance(id);
     }
     this.remove = function(id)
     {
+        //send a signal to the parent process that we are hosting this instance
+        if(global.configuration.cluster)
+        {
+                var message = {};
+                message.type = 'state';
+                message.action = 'remove';
+                message.args = [id];
+                
+                process.send(message); 
+        }
+
         delete this.instances[id];
     }
     this.get = function(id)
@@ -584,6 +606,10 @@ global.instances = RunningInstances;
 function ClientConnected(socket, namespace, instancedata)
     {
         console.log('ClientConnected');
+
+        
+
+
         var allowAnonymous = false;
         if (instancedata.publishSettings && instancedata.publishSettings.allowAnonymous)
             allowAnonymous = true;

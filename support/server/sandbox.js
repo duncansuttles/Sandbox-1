@@ -167,6 +167,10 @@ function startVWF() {
                 p = process.argv.indexOf('-a');
                 adminUID = p >= 0 ? process.argv[p + 1] : (configSettings.admin ? configSettings.admin : adminUID);
 
+                p = process.argv.indexOf('-cluster');
+                var cluster = p >= 0 ? true : false;
+                global.configuration.cluster = cluster;
+
                 FileCache.enabled = process.argv.indexOf('-nocache') >= 0 ? false : !configSettings.noCache;
                 if (!FileCache.enabled) {
                     logger.info('server cache disabled');
