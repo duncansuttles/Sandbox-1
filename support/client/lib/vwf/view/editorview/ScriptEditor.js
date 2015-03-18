@@ -148,7 +148,7 @@ define(function() {
 		$(document.body).append("<div id='ScriptEditorDeleteProperty'>Are you sure you want to delete this property? This cannot be undone.</div>");
 		$(document.body).append("<div id='ScriptEditorDeleteEvent'>Are you sure you want to delete this script? This cannot be undone.</div>");
 		$(document.body).append("<div id='ScriptEditorMessage'>This script contains syntax errors, and cannot be saved;</div>");
-		$(document.body).append("<div id='ScriptEditor'  style=''>" +
+		$(document.body).append("<div id='ScriptEditor'  style='z-index:100'>" +
 			"<div id='scripteditortitle' style = 'padding:3px 4px 3px 4px;font:1.5em sans-serif;font-weight: bold;' class='ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix' >" +
 			"<span id='scripteditortitletext' class='ui-dialog-title' id='ui-dialog-title-Players'>ScriptEditor</span></div>" +
 			'<div id="ScriptEditorTabs" style="width:100%;height:100%;overflow:hidden;padding: 0px 10px 0px 0px;">' +

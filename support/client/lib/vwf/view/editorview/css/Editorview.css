@@ -1914,3 +1914,21 @@ margin: 2px;
 {
 	outline: none !important;
 }
+
+#entitylibrarytray
+{
+	  margin-left: 1em;
+  font-size: 22.2px;
+  vertical-align: middle;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+
+#entitylibrarytray:hover
+{
+	color:rgb(132, 185, 255);
+}
+
+ul li a .glyphicon {
+  margin-right: 1em;
+}

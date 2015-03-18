@@ -103,6 +103,7 @@ exports.ResetPassword = function(username,response)
 //Read the pass from the profile for the UID user, and callback with the match
 exports.CheckPassword = function(UID,Password, callback)
 {
+	console.log('check password');
 	DAL.getUser(UID,function(user)
 	{
 		if(!user)

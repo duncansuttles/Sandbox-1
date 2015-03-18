@@ -18,7 +18,7 @@ define(["module", "vwf/view"], function(module, view) {
             $('#guioverlay_index-vwf').css('left', '0%');
             $('#guioverlay_index-vwf').css('width', '100%');
             $('#guioverlay_index-vwf').css('height', '100%');
-            $('#guioverlay_index-vwf').css('z-index', '100000');
+            $('#guioverlay_index-vwf').css('z-index', '99');
             $('#guioverlay_index-vwf').css('pointer-events', 'none');
 
             //keep the overlay aligned over the 3D view

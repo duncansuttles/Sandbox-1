@@ -5,6 +5,7 @@ var  mime = require('mime');
 var  io = require('socket.io-client');
 var  CryptoJS = require('cryptojs');
 var messageCompress = require('../../../support/client/lib/messageCompress').messageCompress;
+var async = require('async');
 var GUID = require('node-uuid').v4;
 global.appPath = "/adl/sandbox"		
 var EncryptPassword = function (password, username,salt)
@@ -117,7 +118,32 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
 
 	}
 
+    function startBandwidthTest() {
+        async.forever(function(cb) {
 
+            http.request('http://' + server + ':' + port + '/adl/sandbox/vwf.js', function(response) {
+
+                
+                var str = '';
+                //the whole response has been recieved, so we just print it out here
+                response.on('end', function() {
+                	console.log('downloaded');
+                	//setTimeout(cb,Math.random() * 10000)
+                	    
+                });
+                
+                 //another chunk of data has been recieved, so append it to `str`
+				  response.on('data', function (chunk) {
+					str += chunk;
+				  });
+
+            }).end();
+
+        }, function(e) {
+            console.log(e);
+        })
+
+    }
 	//once the entire login procedure is done, we can start sending commands over the socket
 	worldLoginComplete = function(response) {
 
@@ -299,6 +325,7 @@ function LaunchAvatar(username_in,password_in,server_in,port_in,session_in)
                         }
 		//console.log('sending avatar');
 		socket.emit('message',messageCompress.pack(JSON.stringify(component)));
+		startBandwidthTest();
 	}
 
 	//here, we handle incomming data from the server

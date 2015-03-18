@@ -37,7 +37,7 @@ function startup(listen)
                 // save parsedSessionId to handshakeData
                 try
                 {
-                    handshake.cookieData = parseSignedCookie(cookie.parse(handshake.headers.cookie)[global.configuration.sessionKey ? global.configuration.sessionKey : 'virtual'],
+                    handshake.cookieData = parseSignedCookie(cookie.parse(handshake.headers.cookie)['session'],
                         global.configuration.sessionSecret ? global.configuration.sessionSecret : 'unsecure cookie secret');
                 }
                 catch (e)
@@ -563,10 +563,32 @@ function runningInstanceList()
     this.instances = {};
     this.add = function(id)
     {
+        //send a signal to the parent process that we are hosting this instance
+        if(global.configuration.cluster)
+        {
+                var message = {};
+                message.type = 'state';
+                message.action = 'add';
+                message.args = [id];
+                
+                process.send(message); 
+        }
+
         this.instances[id] = new runningInstance(id);
     }
     this.remove = function(id)
     {
+        //send a signal to the parent process that we are hosting this instance
+        if(global.configuration.cluster)
+        {
+                var message = {};
+                message.type = 'state';
+                message.action = 'remove';
+                message.args = [id];
+                
+                process.send(message); 
+        }
+
         delete this.instances[id];
     }
     this.get = function(id)
@@ -584,6 +606,10 @@ global.instances = RunningInstances;
 function ClientConnected(socket, namespace, instancedata)
     {
         console.log('ClientConnected');
+
+        
+
+
         var allowAnonymous = false;
         if (instancedata.publishSettings && instancedata.publishSettings.allowAnonymous)
             allowAnonymous = true;
@@ -745,7 +771,7 @@ function ClientConnected(socket, namespace, instancedata)
                     })));
                     socket.pending = false;
                     //this must come after the client is added. Here, there is only one client
-                    thisInstance.messageConnection(socket.id, socket.loginData.Username, socket.loginData.UID);
+                    thisInstance.messageConnection(socket.id, socket.loginData ? socket.loginData.Username : "", socket.loginData ? socket.loginData.UID : "");
                     thisInstance.startTimer();
                 });
             });

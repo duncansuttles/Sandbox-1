@@ -52,6 +52,7 @@ function getStats(cb)
 
 function getUser(id, cb)
 {
+ 
     getUsers(function(UserIndex)
     {
         if (UserIndex && UserIndex.indexOf(id) != -1)
@@ -1548,59 +1549,45 @@ function getStates(cb, start, count)
     searchStatesInner(search, cb, start, count)
 }
 
-function searchStatesInner(query, found, start, count)
-{
+function searchStatesInner(query, found, start, count) {
     if (!start) start = 0;
     if (!count) count = 10000000;
-    var index = DB.find_raw(
-    {
+    DB.find_advanced({
         _key: 'StateIndex'
-    }, function(err, data)
-    {
-        if (err)
-        {
+    },0,{},1, function(err, data) {
+        if (err) {
             found(null)
             return;
         }
         var states = data[0].val;
-        DB.find_raw(
-            {
-                $and: [
-                    {
-                        _key:
-                        {
+        DB.find_advanced({
+                $and: [{
+                        _key: {
                             $in: states
                         }
                     },
                     query
                 ]
-            })
-            .sort(
-            {
+            }, start, {
                 lastUpdate: 1
-            })
-            .skip(start)
-            .limit(count)
-            .exec(
-                function(err, data)
-                {
-                    if (err)
-                    {
-                        found(null)
-                        return;
+            }, count,
+
+
+            function(err, data) {
+                if (err) {
+                    found(null)
+                    return;
+                }
+                var ret = {};
+                for (var i in data) {
+                    if (states.indexOf(data[i]._key) != -1) {
+                        var s = JSON.parse(JSON.stringify(data[i].val));
+                        s.id = data[i]._key;
+                        ret[data[i]._key] = s;
                     }
-                    var ret = {};
-                    for (var i in data)
-                    {
-                        if (states.indexOf(data[i]._key) != -1)
-                        {
-                            var s = JSON.parse(JSON.stringify(data[i].val));
-                            s.id = data[i]._key;
-                            ret[data[i]._key] = s;
-                        }
-                    }
-                    found(ret);
-                });
+                }
+                found(ret);
+            });
     });
 }
 
@@ -1656,7 +1643,8 @@ function startup(callback)
     async.series([
         function(cb)
         {
-            require('./DB_nedb.js')
+            console.log(global.configuration.DB_driver);
+            require(global.configuration.DB_driver)
                 .new(DBTablePath, function(_DB)
                 {
                     DB = _DB;
@@ -1669,6 +1657,7 @@ function startup(callback)
         {
             DB.get('UserIndex', function(err, UserIndex)
             {
+
                 if (!UserIndex)
                     DB.save('UserIndex', [], function(err, data, key)
                     {

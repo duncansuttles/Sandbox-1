@@ -8,23 +8,9 @@ var libpath = require('path'),
     mime = require('mime'),
     YAML = require('js-yaml');
 var logger = require('./logger');
-// Read configuration settings early so we can use appPath
-var configSettings;
 
-try {
-    configSettings = JSON.parse(fs.readFileSync('./config.json').toString());
-} catch (e) {
-    configSettings = {};
-    logger.error("Error: Unable to load config file");
-    logger.info(e.message);
-}
 
-appPath = configSettings.appPath ? configSettings.appPath : '/adl/sandbox';
-global.appPath = appPath;
-logger.info('Set appPath to ' + global.appPath);
 
-//save configuration into global scope so other modules can use.
-global.configuration = configSettings;
 
 var SandboxAPI = require('./sandboxAPI'),
     Shell = require('./ShellInterface'),
@@ -123,6 +109,7 @@ function startVWF() {
     async.series([
 
             function readconfig(cb) {
+                var configSettings;
                 //start the DAL, load configuration file
                 try {
                     configSettings = JSON.parse(fs.readFileSync('./config.json').toString());
@@ -141,58 +128,91 @@ function startVWF() {
 
 
                 //This is a bit ugly, but it does beat putting a ton of if/else statements everywhere
-                port = p >= 0 ? parseInt(process.argv[p + 1]) : (configSettings.port ? configSettings.port : 3000);
+                port = p >= 0 ? parseInt(process.argv[p + 1]) : (global.configuration.port ? global.configuration.port : 3000);
+                global.configuration.port = port;
+
+                var p = process.argv.indexOf('-DB');
+                var DB_driver = p >= 0 ? (process.argv[p + 1]) : (global.configuration.DB_driver ? global.configuration.DB_driver : './DB_nedb.js');
+                global.configuration.DB_driver = DB_driver;
+                
 
                 p = process.argv.indexOf('-sp');
-                sslPort = p >= 0 ? parseInt(process.argv[p + 1]) : (configSettings.sslPort ? configSettings.sslPort : 443);
+                sslPort = p >= 0 ? parseInt(process.argv[p + 1]) : (global.configuration.sslPort ? global.configuration.sslPort : 443);
+                global.configuration.sslPort = sslPort;
 
                 p = process.argv.indexOf('-d');
-                datapath = p >= 0 ? process.argv[p + 1] : (configSettings.datapath ? libpath.normalize(configSettings.datapath) : libpath.join(__dirname, "../../data"));
+                datapath = p >= 0 ? process.argv[p + 1] : (global.configuration.datapath ? libpath.normalize(global.configuration.datapath) : libpath.join(__dirname, "../../data"));
                 global.datapath = datapath;
+                global.configuration.datapath = datapath;
 
                 logger.initFileOutput(datapath);
 
                 p = process.argv.indexOf('-ls');
-                global.latencySim = p >= 0 ? parseInt(process.argv[p + 1]) : (configSettings.latencySim ? configSettings.latencySim : 0);
+                global.latencySim = p >= 0 ? parseInt(process.argv[p + 1]) : (global.configuration.latencySim ? global.configuration.latencySim : 0);
 
                 if (global.latencySim > 0)
                     logger.info('Latency Sim = ' + global.latencySim);
+                global.configuration.latencySim = global.latencySim;
 
                 p = process.argv.indexOf('-l');
-                logger.logLevel = p >= 0 ? process.argv[p + 1] : (configSettings.logLevel ? configSettings.logLevel : 1);
+                logger.logLevel = p >= 0 ? process.argv[p + 1] : (global.configuration.logLevel ? global.configuration.logLevel : 1);
                 logger.info('LogLevel = ' + logger.logLevel, 0);
+                global.configuration.logLevel = logger.logLevel;
 
                 adminUID = 'admin';
 
                 p = process.argv.indexOf('-a');
-                adminUID = p >= 0 ? process.argv[p + 1] : (configSettings.admin ? configSettings.admin : adminUID);
+                adminUID = p >= 0 ? process.argv[p + 1] : (global.configuration.admin ? global.configuration.admin : adminUID);
+                global.configuration.adminUID = adminUID;
 
-                FileCache.enabled = process.argv.indexOf('-nocache') >= 0 ? false : !configSettings.noCache;
+                p = process.argv.indexOf('-cluster');
+                var cluster = p >= 0 ? true : false;
+                global.configuration.cluster = cluster;
+
+                FileCache.enabled = process.argv.indexOf('-nocache') >= 0 ? false : !global.configuration.noCache;
                 if (!FileCache.enabled) {
                     logger.info('server cache disabled');
                 }
+                global.configuration.FileCache = FileCache.enabled;
 
-                FileCache.minify = process.argv.indexOf('-min') >= 0 ? true : !!configSettings.minify;
-                compile = process.argv.indexOf('-compile') >= 0 ? true : !!configSettings.compile;
+                FileCache.minify = process.argv.indexOf('-min') >= 0 ? true : !!global.configuration.minify;
+                compile = process.argv.indexOf('-compile') >= 0 ? true : !!global.configuration.compile;
                 if (compile) {
                     logger.info('Starting compilation process...');
                 }
+                global.configuration.minify = FileCache.minify;
+                global.configuration.compile = FileCache.compile;
 
-                var versioning = process.argv.indexOf('-cc') >= 0 ? true : !!configSettings.useVersioning;
+                var versioning = process.argv.indexOf('-cc') >= 0 ? true : !!global.configuration.useVersioning;
                 if (versioning) {
-                    global.version = configSettings.version ? configSettings.version : global.version;
+                    global.version = global.configuration.version ? global.configuration.version : global.version;
                     logger.info('Versioning is on. Version is ' + global.version);
                 } else {
                     logger.info('Versioning is off.');
                     delete global.version;
                 }
+                global.configuration.versioning = versioning;
+                global.configuration.version = global.version;
+
+                appPath = global.configuration.appPath ? global.configuration.appPath : '/adl/sandbox';
+                global.appPath = appPath;
+                global.configuration.appPath = appPath;
+                logger.info('Set appPath to ' + global.appPath);
+
 
                 var clean = process.argv.indexOf('-clean') > 0 ? true : false;
+                global.configuration.clean = clean;
                 if (clean) {
                     var path = libpath.normalize('../../build/'); //trick the filecache
                     path = libpath.resolve(__dirname, path);
                     fs.remove(path, cb);
                 } else
+                    cb();
+            },
+
+            function initLandingRoutes(cb)
+            {
+                    Landing.init();
                     cb();
             },
             function registerErrorHandler(cb) {
@@ -497,7 +517,7 @@ function startVWF() {
             function startupDAL(cb) {
                 DAL.setDataPath(datapath);
                 SandboxAPI.setDataPath(datapath);
-                Landing.setDocumentation(configSettings);
+                Landing.setDocumentation(global.configuration);
                 logger.info('DAL Startup');
                 DAL.startup(cb);
             },
@@ -568,12 +588,16 @@ function startVWF() {
                 app.use(require('cookie-parser')());
 
                 app.use(i18n.handle);
-                app.use(require('connect').cookieSession({
-                    key: global.configuration.sessionKey ? global.configuration.sessionKey : 'virtual',
+                app.use(require("client-sessions")({
+                    
                     secret: global.configuration.sessionSecret ? global.configuration.sessionSecret : 'unsecure cookie secret',
                     cookie: {
                         maxAge: global.configuration.sessionTimeoutMs ? global.configuration.sessionTimeoutMs : 10000000
-                    }
+                    },
+                     cookieName: 'session', // cookie name dictates the key name added to the request object
+  
+                     duration: 24 * 60 * 60 * 1000, // how long the session will stay valid in ms
+                     activeDuration: 1000 * 60 * 5 //
                 }));
 
                 app.use(passport.initialize());

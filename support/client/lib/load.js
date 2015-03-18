@@ -8,7 +8,7 @@ if (false) {
         "async.js", 
         "crypto.js", 
         "md5.js",  
-        "./vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js", 
+        
         "./vwf/view/editorview/lib/jquery.transit.min.js", 
         "./vwf/view/editorview/lib/jquery-mousewheel.js", 
         "./vwf/view/editorview/lib/jquery-scrollpane.min.js", 
@@ -18,6 +18,7 @@ if (false) {
         "./vwf/model/threejs/DDSLoader.js",
         "./vwf/view/localization/i18next-1.7.2.min.js", 
         "./vwf/view/localization/cookies.js", 
+        "./vwf/view/editorview/lib/jquery-ui-1.10.3.custom.min.js", 
         "compatibility.js", 
         "closure/deps.js",
         "closure/vec/float32array.js",
