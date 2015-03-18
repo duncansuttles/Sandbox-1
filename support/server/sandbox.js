@@ -588,12 +588,16 @@ function startVWF() {
                 app.use(require('cookie-parser')());
 
                 app.use(i18n.handle);
-                app.use(require('connect').cookieSession({
-                    key: global.configuration.sessionKey ? global.configuration.sessionKey : 'virtual',
+                app.use(require("client-sessions")({
+                    
                     secret: global.configuration.sessionSecret ? global.configuration.sessionSecret : 'unsecure cookie secret',
                     cookie: {
                         maxAge: global.configuration.sessionTimeoutMs ? global.configuration.sessionTimeoutMs : 10000000
-                    }
+                    },
+                     cookieName: 'session', // cookie name dictates the key name added to the request object
+  
+                     duration: 24 * 60 * 60 * 1000, // how long the session will stay valid in ms
+                     activeDuration: 1000 * 60 * 5 //
                 }));
 
                 app.use(passport.initialize());

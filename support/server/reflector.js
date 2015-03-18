@@ -37,7 +37,7 @@ function startup(listen)
                 // save parsedSessionId to handshakeData
                 try
                 {
-                    handshake.cookieData = parseSignedCookie(cookie.parse(handshake.headers.cookie)[global.configuration.sessionKey ? global.configuration.sessionKey : 'virtual'],
+                    handshake.cookieData = parseSignedCookie(cookie.parse(handshake.headers.cookie)['session'],
                         global.configuration.sessionSecret ? global.configuration.sessionSecret : 'unsecure cookie secret');
                 }
                 catch (e)
