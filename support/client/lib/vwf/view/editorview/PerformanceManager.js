@@ -82,6 +82,8 @@ define([], function() {
         this.resizeCounter = 0;
         this.counters = {};
 
+        this.originalResScale = _SettingsManager.getKey('resolutionScale');;
+
         this.counters.RenderTime = new TimeCounter(FRAME_ROLLING_AVERAGE_LENGTH);
         this.counters.FPS = new TimeCounter(FRAME_ROLLING_AVERAGE_LENGTH);
         this.counters.TickTime = new TimeCounter(TICK_ROLLING_AVERAGE_LENGTH);
@@ -97,6 +99,7 @@ define([], function() {
             this.FPS = 1000/this.counters.FPS.averageTime;
             this.resizeCounter++;
             //if the fps is low, but the ticktime is fast enough, then we should be able to go faster
+            if(this.originalResScale == 1 ) //only do this if the user did not set the frame scale. otherwise use the user setting
             if ((this.resizeCounter > FRAME_ROLLING_AVERAGE_LENGTH && vwf.getProperty(vwf.application(),'playMode') != 'playing') ||
             	(this.resizeCounter > FRAME_ROLLING_AVERAGE_LENGTH && vwf.getProperty(vwf.application(),'playMode') == 'playing' && this.FPSTimeAverage < TICK_TIME_THRESHOLD )) {
                 this.resizeCounter = 0;
@@ -119,13 +122,14 @@ define([], function() {
                     if (_SettingsManager.settings.resolutionScale == 16)
                         alertify.error('Graphics performance problem detected!')
                     this.scaleDisplayResolution();
+                    
                 }
             }
 
         }
         this.scaleDisplayResolution = function()
         {
-        	var resolutionScale = _SettingsManager.getKey('resolutionScale');
+        	var resolutionScale = _SettingsManager.getKey('resolutionScale')  ;
 
 
                 var oldwidth = parseInt($('#index-vwf').css('width'));

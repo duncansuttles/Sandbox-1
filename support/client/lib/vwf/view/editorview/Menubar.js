@@ -51,7 +51,7 @@ define({
                 alertify.alert('Sorry, only the world owner can set the thumbnail');
                 return;
             }
-
+            var resolutionScale = _SettingsManager.getKey('resolutionScale')  ;
             var h = parseInt($('#index-vwf').css('height'));
             var w = parseInt($('#index-vwf').css('width'));
             _dRenderer.setSize(600, 300);
@@ -66,7 +66,18 @@ define({
                 _dRenderer.setSize(w, h);
                 camera.aspect = a;
                 camera.updateProjectionMatrix();
-                _dRenderer.setSize(w, h);
+                $('#index-vwf')[0].height = h / resolutionScale;
+                $('#index-vwf')[0].width = w / resolutionScale;
+                if(window._dRenderer)
+                    _dRenderer.setViewport(0, 0, w / resolutionScale, h / resolutionScale)
+
+                //note, this changes some renderer internals that need to be set, but also resizes the canvas which we don't want.
+                //much of the resize code is in WindowResize.js
+                if(window._dRenderer)
+                    _dRenderer.setSize(w / resolutionScale, h / resolutionScale);
+
+                $('#index-vwf').css('height', h);
+                $('#index-vwf').css('width', w);
 
 
                 jQuery.ajax({
