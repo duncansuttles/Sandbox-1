@@ -5,7 +5,7 @@ var GUID = require('node-uuid')
 var logger = new winston.Logger({
     transports: [
         new winston.transports.Console({
-            level: 'warn',
+            level: 'info',
             handleExceptions: true,
             json: false,
             colorize: 'all',
@@ -21,7 +21,7 @@ var inside = 0;
 
 module.exports.initFileOutput = function(path) {
     logger.add(winston.transports.File, {
-        level: 'error',
+        level: 'warn',
         filename: require('path').join(path, '/Logs/all-logs.log'),
         handleExceptions: true,
         json: true,

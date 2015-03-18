@@ -18,11 +18,15 @@ var states = {};
 function GetProxyPort(request, cb) {
 
     var query = url.parse(request.url, true).query;
-    var id = query.pathname.replace(/\\/g, "_");
+    var id = query.pathname.replace(/\//g, "_");
+    console.log(id)
     var newport = port + parseInt(1 + Math.floor(Math.random() * count));
     if (states[id]) {
         console.log('have record for ' + id);
         newport = states[id].port;
+    }else
+    {
+    	console.log("random port for " + id)
     }
     async.nextTick(function() {
         cb(newport);
@@ -121,7 +125,7 @@ async.series([
         console.log('forkChildren');
         proxies = [];
         for (var i = 1; i < count + 1; i++) {
-            var p1 = fork('./app.js', ['-p', port + i, '-cluster'], {
+            var p1 = fork('./app.js', ['-p', port + i, '-cluster', '-DB','./DB_cluster.js'], {
                 silent: true
             });
             proxies.push(p1);

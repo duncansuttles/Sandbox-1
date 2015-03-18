@@ -52,7 +52,7 @@ function getStats(cb)
 
 function getUser(id, cb)
 {
-    console.log('getUser');
+ 
     getUsers(function(UserIndex)
     {
         if (UserIndex && UserIndex.indexOf(id) != -1)
@@ -1643,7 +1643,8 @@ function startup(callback)
     async.series([
         function(cb)
         {
-            require('./DB_nedb.js')
+            console.log(global.configuration.DB_driver);
+            require(global.configuration.DB_driver)
                 .new(DBTablePath, function(_DB)
                 {
                     DB = _DB;
