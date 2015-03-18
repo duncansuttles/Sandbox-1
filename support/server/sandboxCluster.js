@@ -29,14 +29,33 @@ function GetProxyPort(request, cb) {
     	console.log("random port for " + id)
     }
     async.nextTick(function() {
-        cb(newport);
+        if(proxies[newport-port-1].ready)
+            cb(newport);
+        else
+        {
+            console.log("child " + newport + " not ready")
+            setTimeout(function()
+            {
+                GetProxyPortRandom(request,cb);
+            },300)
+        }
     })
 }
 
 function GetProxyPortRandom(request, cb) {
 
     async.nextTick(function() {
-        cb(port + parseInt(1 + Math.floor(Math.random() * count)));
+        var newport = port + parseInt(1 + Math.floor(Math.random() * count));
+        if(proxies[newport-port-1].ready)
+            cb(newport);
+        else
+        {
+            console.log("child " + newport + " not ready")
+            setTimeout(function()
+            {
+                GetProxyPortRandom(request,cb);
+            },300)
+        }
     })
 }
 
@@ -55,6 +74,10 @@ function HandleMessage(message, cb, client) {
     if (message.type == 'console') {
         console.log(message.data);
         cb(message);
+    }
+    if (message.type == 'ready') {
+        client.ready = true;
+        console.log("client " + client.port + " is ready");
     }
     if (message.type == 'state') {
         if (message.action == 'add') {
@@ -153,6 +176,29 @@ async.series([
                         }
                     }, child);
                 });
+                child.on('close',function()
+                {
+
+                    console.log('CRASH in child ' + child.port);
+                    var p1 = fork('./app.js', ['-p', child.port, '-cluster', '-DB','./DB_cluster.js'], {
+                        silent: true
+                    });
+
+                    proxies.splice(proxies.indexOf(child),1);
+                    proxies.push(p1);
+                    p1.port = child.port;
+                    hookupChild(p1);
+                    console.log("spawned new child for port "+ p1.port)
+                    for(var i in states)
+                    {
+                        if(states[i] == child)
+                        {
+                            console.log('removing entries from crashed child ' + i + ' ' + child.port);
+                            delete states[i];
+                        }
+                    }
+                    
+                })
             }
 
             hookupChild(child);
@@ -163,7 +209,7 @@ async.series([
         console.log('startProxyServer');
 
 
-        var proxies = {};
+        var proxyServers = {};
         for (var i = 1; i < count + 1; i++) {
             var proxy = httpProxy.createProxyServer({
                 ws: true
@@ -172,7 +218,7 @@ async.series([
                 console.log(e);
 
             });
-            proxies[port + i] = proxy;
+            proxyServers[port + i] = proxy;
         }
 
         // Create your custom server and just call `proxy.web()` to proxy
@@ -184,8 +230,8 @@ async.series([
             // and then proxy the request.
             GetProxyPortRandom(req, function(proxyPort) {
 
-                //console.log('proxy request to ' + 'http://localhost:' + proxyPort);
-                proxies[proxyPort].web(req, res, {
+                console.log('proxy request to ' + 'http://localhost:' + proxyPort);
+                proxyServers[proxyPort].web(req, res, {
                     target: 'http://localhost:' + proxyPort
                 });
             });
@@ -194,7 +240,7 @@ async.series([
         server.on('upgrade', function(request, socket, head) {
             GetProxyPort(request, function(proxyPort) {
                 console.log('proxy request to ' + 'http://localhost:' + proxyPort);
-                proxies[proxyPort].ws(request, socket, head, {
+                proxyServers[proxyPort].ws(request, socket, head, {
                     target: 'http://localhost:' + proxyPort
                 });
             });

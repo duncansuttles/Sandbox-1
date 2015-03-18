@@ -733,6 +733,16 @@ function startVWF() {
                 Shell.StartShellInterface();
                 reflector.startup(listen);
                 cb();
+            },
+            function messageParentProcess(cb)
+            {
+                if(global.configuration.cluster)
+                {
+                    var message = {};
+                    message.type = 'ready';
+                    process.send(message);
+                }
+                cb();
             }
         ],
         function(err) {
