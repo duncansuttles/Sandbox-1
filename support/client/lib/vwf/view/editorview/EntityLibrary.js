@@ -202,15 +202,15 @@ define(function() {
                                     console.log(data.dropPreview.url);
                                     
                                     //the asset must have a 'drop preview' key
-                                    _assetLoader.getOrLoadAsset(data.dropPreview.url, data.dropPreview.type, function(asset) {
-                                        if (asset && asset.scene && EntityLibrary.dropPreview) {
+                                    window.assetRegistry.get(data.dropPreview.type, data.dropPreview.url, function(asset) {
+                                        if (asset  && EntityLibrary.dropPreview) {
                                             var transformNode = new THREE.Object3D();
                                             _RenderManager.addHilightObject(EntityLibrary.dropPreview)
                                             transformNode.matrixAutoUpdate = false;
                                             if (data.dropPreview.transform)
                                                 transformNode.matrix.fromArray(data.dropPreview.transform)
                                             //EntityLibrary.dropPreview.visible = false;
-                                            transformNode.add(asset.scene, true);
+                                            transformNode.add(asset, true);
                                             EntityLibrary.dropPreview.add(transformNode, true);
                                         }
                                     });

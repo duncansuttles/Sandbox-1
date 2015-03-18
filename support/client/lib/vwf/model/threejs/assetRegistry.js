@@ -49,6 +49,7 @@ var assetRegistry = function() {
     this.initFromPreloader = function(childType, assetSource)
     {
         this.assets[assetSource] = {};
+        this.assets[assetSource].refcount = 0;
         this.assets[assetSource].loaded = false;
         this.assets[assetSource].pending = false;
         this.assets[assetSource].callbacks = [];
@@ -97,6 +98,7 @@ var assetRegistry = function() {
     {
         //thus, it becomes pending
         var reg = this.assets[assetSource];
+        reg.refcount++;
         reg.loadState = NOT_STARTED;
         reg.failTimeout = null;
         reg.loadSucceded = function()
@@ -287,11 +289,13 @@ var assetRegistry = function() {
         //if the asset entry is not loaded and not pending, you'll have to actaully go download and parse it
         if (reg.loaded == false && reg.pending == false)
         {
-            this.newLoad(childType, assetSource, success, failure)
+            this.newLoad(childType, assetSource, success, failure);
+            reg.refcount++;
         }
         else if (reg.loaded == true && reg.pending == false)
         {
 
+            reg.refcount++;
             //must return async
             async.nextTick(function(){
                 success(reg.node, reg.rawAnimationChannels);    
@@ -300,10 +304,25 @@ var assetRegistry = function() {
         }
         else if (reg.loaded == false && reg.pending == true)
         {
+            reg.refcount++;
             _ProgressBar.show();
             reg.callbacks.push(success)
             reg.failcallbacks.push(failure);
         }
+    }
+    this.cancel = function(assetSource, success, failure)
+    {
+        var reg = this.assets[assetSource];
+        if(!reg) return;
+        var successIndex = reg.callbacks.indexOf(success);
+        var failureCallback = reg.failcallbacks.indexOf(failure);
+        if(successIndex > -1)
+        {
+            reg.refcount--;
+            reg.callbacks.splice(successIndex,1);
+        }
+        if(failureCallback > -1)
+            reg.callbacks.splice(failure,1);
     }
 };
 
