@@ -165,7 +165,7 @@ function _FileCache() {
         //the whole process insensitive, even if the filesystem is. Note: probably doing a lot of 
         //unnecessary work if we could know that the filesystem is not sensitive, maybe from a config value
         path = resolveCase(path);
-
+        if(!path){ callback(null) return;}
         path = libpath.normalize(path);
 
         //here, we see if there is a build file that matches, but is under the build directory
