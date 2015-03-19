@@ -215,6 +215,7 @@ async.series([
                 ws: true
             });
             proxy.on('error', function(err, req, res) {
+                console.log(err);
                 res.end();
             })
             proxyServers[port + i] = proxy;
