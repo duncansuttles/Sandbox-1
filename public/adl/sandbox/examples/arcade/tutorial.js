@@ -142,9 +142,9 @@ window._Tutorial = new(function() {
         $('#tutorialRoot').empty();
         $('#tutorialRoot').remove();
         $(document.body).append('<div id="tutorialRoot" />');
-        $('#tutorialRoot').load('/vwfdatamanager.svc/datafile/XAPIGame/prompts.html', function() {
+        $('#tutorialRoot').load('../examples/arcade/prompts.html', function() {
 
-		var pathRoot = '/vwfdatamanager.svc/datafile/XAPIGame/';
+		var pathRoot = '../examples/arcade/';
 
         	$('#tutorialCancel').click(_Tutorial.cancelTutorial);
             async.series([
