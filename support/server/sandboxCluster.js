@@ -209,17 +209,16 @@ async.series([
         console.log('startProxyServer');
 
 
-        var proxyServers = {};
-        for (var i = 1; i < count + 1; i++) {
+     //   var proxyServers = {};
+     //   for (var i = 1; i < count + 1; i++) {
             var proxy = httpProxy.createProxyServer({
                 ws: true
             });
-            proxy.on('error', function(err, req, res) {
-                console.log(err);
-                res.end();
+            proxy.on('error', function(e) {
+                console.log(JSON.stringify(e));
             })
-            proxyServers[port + i] = proxy;
-        }
+      //      proxyServers[port + i] = proxy;
+      //  }
 
         // Create your custom server and just call `proxy.web()` to proxy
         // a web request to the target passed in the options
@@ -231,7 +230,7 @@ async.series([
             GetProxyPortRandom(req, function(proxyPort) {
 
                 console.log('proxy request to ' + 'http://localhost:' + proxyPort);
-                proxyServers[proxyPort].web(req, res, {
+                proxy.web(req, res, {
                     target: 'http://localhost:' + proxyPort
                 });
             });
@@ -240,7 +239,7 @@ async.series([
         server.on('upgrade', function(request, socket, head) {
             GetProxyPort(request, function(proxyPort) {
                 console.log('proxy request to ' + 'http://localhost:' + proxyPort);
-                proxyServers[proxyPort].ws(request, socket, head, {
+                proxy.ws(request, socket, head, {
                     target: 'http://localhost:' + proxyPort
                 });
             });
