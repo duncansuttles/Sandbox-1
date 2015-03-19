@@ -179,29 +179,30 @@ function center()
 		<div>			
 		<div class="" style="">
 		
+		
+		<div class="buttonContainer">
+		<a class="ActionButton" style="" href="{{root}}/features"><div class="ActionButtonlabel">Features</div><div class="ActionButtonsmalllabel">Learn about system capabilities</div></a>
+		</div>
+		<div class="buttonContainer">
+		<a class="ActionButton" style="" href="{{root}}/demos"><div class="ActionButtonlabel">Demos</div><div class="ActionButtonsmalllabel">See example content</div></a>
+		</div>
 		{{#sessionData}}
 		<div class="buttonContainer">
-		<a class="ActionButton" style="" href="./createNew/0"><div class="ActionButtonlabel">Create</div><div class="ActionButtonsmalllabel">Build a world</div></a>
+		<a class="ActionButton" style="" href="./createNew2/noTemplate"><div class="ActionButtonlabel">Create</div><div class="ActionButtonsmalllabel">Build a world</div></a>
 		</div>
 		{{/sessionData}}
 		{{^sessionData}}
 		<div class="buttonContainer">
-		<a class="ActionButton" style="" href="./createNotLoggedIn"><div class="ActionButtonlabel">Create</div><div class="ActionButtonsmalllabel">Build a world</div></a>
+		<a class="ActionButton" style="" href="./createNotLoggedIn"><div class="ActionButtonlabel">Try it!</div><div class="ActionButtonsmalllabel">Build a world</div></a>
 		</div>
 		{{/sessionData}}
-		<div class="buttonContainer">
-		<a class="ActionButton" style="" href="./featuredWorlds/0"><div class="ActionButtonlabel">Explore</div><div class="ActionButtonsmalllabel">Browse all public worlds</div></a>
-		</div>
-		<div class="buttonContainer">
-		<a class="ActionButton" style="" href="https://github.com/adlnet/Sandbox"><div class="ActionButtonlabel">Contribute</div><div class="ActionButtonsmalllabel">Edit the code or report a bug</div></a>
-		</div>
 	</div>
 	</div>
 
 	<div class='thinheader'>
 		
 		
-		<a class='thinheaderlink' href='http://vwf.adlnet.gov/r/documentation/'>
+		<a class='thinheaderlink' href='https://github.com/adlnet/sandbox/wiki'>
 			{{#translate}}Docs{{/translate}}
 		</a>
 		
@@ -211,21 +212,17 @@ function center()
 		</a>
 		
 		
-		<a class='thinheaderlink' href='{{root}}/features'>
-			{{#translate}}Features{{/translate}}
-		</a>
+		
 		<a class='thinheaderlink' href='{{root}}/about'>
 			{{#translate}}About{{/translate}}
 		</a>
 	<!--	<a class='thinheaderlink' href='{{root}}/featuredWorlds/0'>
 			{{#translate}}Worlds{{/translate}}
 		</a> -->
-		<a class='thinheaderlink' href='{{root}}/demos'>
-			{{#translate}}Demos{{/translate}}
-		</a> 
+		
 		{{^sessionData}}
 		<a id='logina' class='thinheaderlink' href='{{root}}/login'>
-			{{#translate}}Log in{{/translate}}
+			{{#translate}}Sign in{{/translate}}
 		</a>
 		{{/sessionData}}
 		{{#sessionData}}
@@ -241,7 +238,7 @@ function center()
 	</div>				
 
 	<div style='text-align:center;font-size:.75em;color:#999;margin-top:1em'>
-	An open source project from <a href='http://www.adlnet.gov'>ADL</a>
+	An <a href='https://github.com/adlnet/sandbox/'> open source project</a> from <a href='http://www.adlnet.gov'>ADL</a>
 	</div>
 
 	<div style="margin-top: 2em;">
