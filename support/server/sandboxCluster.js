@@ -214,10 +214,9 @@ async.series([
             var proxy = httpProxy.createProxyServer({
                 ws: true
             });
-            proxy.on('error', function(e, req, res) {
-                console.log(e);
-
-            });
+            proxy.on('error', function(err, req, res) {
+                res.end();
+            })
             proxyServers[port + i] = proxy;
         }
 
