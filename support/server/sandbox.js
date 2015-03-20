@@ -365,7 +365,7 @@ function startVWF() {
                         return;
                     }
 
-                    DAL.getUser(user.id, function(user) {
+                  //  DAL.getUser(user.id, function(user) {
                         if (!user) {
                             done(null, null)
                             return;;
@@ -379,14 +379,14 @@ function startVWF() {
                         userStorage.Password = user.Password;
 
                         done(null, userStorage);
-                    });
+                  //  });
                 });
 
                 // used to deserialize the user
                 passport.deserializeUser(function(userStorage, done) {
-                    DAL.getUser(userStorage.id, function(user) {
-                        done(null, user);
-                    });
+                  //  DAL.getUser(userStorage.id, function(user) {
+                        done(null, userStorage);
+                  //  });
                 });
 
                 passport.use(new LocalStrategy(

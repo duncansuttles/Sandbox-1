@@ -1,4 +1,4 @@
-var disableCompress = false;
+var disableCompress = true;
 var messageCompress = {
     pack: function(message) {
         if (disableCompress) return message;
