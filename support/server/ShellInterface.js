@@ -193,6 +193,21 @@ function StartShellInterface() {
                 console.log(global.configuration)
             }
         },
+        {
+            'command': 'start profile',
+            'description': 'start a V8 profile run',
+            'callback': function(commands) {
+                require('v8-profiler').startProfiling('name');
+            }
+        },
+         {
+            'command': 'stop profile',
+            'description': 'stop a V8 profile run',
+            'callback': function(commands) {
+                var profile = require('v8-profiler').stopProfiling('name');
+                fs.writeFileSync('run' + '.cpuprofile', JSON.stringify(profile));
+            }
+        },
         /*{
 			'command': 'compact',
 			'description': 'Compacts the database to remove obsolete data',
