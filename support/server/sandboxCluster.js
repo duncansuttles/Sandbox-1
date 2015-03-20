@@ -24,20 +24,17 @@ function GetProxyPort(request, cb) {
     if (states[id]) {
         console.log('have record for ' + id);
         newport = states[id].port;
-    }else
-    {
-    	console.log("random port for " + id)
+    } else {
+        console.log("random port for " + id)
     }
     async.nextTick(function() {
-        if(proxies[newport-port-1].ready)
+        if (proxies[newport - port - 1].ready)
             cb(newport);
-        else
-        {
+        else {
             console.log("child " + newport + " not ready")
-            setTimeout(function()
-            {
-                GetProxyPortRandom(request,cb);
-            },300)
+            setTimeout(function() {
+                GetProxyPortRandom(request, cb);
+            }, 300)
         }
     })
 }
@@ -46,15 +43,13 @@ function GetProxyPortRandom(request, cb) {
 
     async.nextTick(function() {
         var newport = port + parseInt(1 + Math.floor(Math.random() * count));
-        if(proxies[newport-port-1].ready)
+        if (proxies[newport - port - 1].ready)
             cb(newport);
-        else
-        {
+        else {
             console.log("child " + newport + " not ready")
-            setTimeout(function()
-            {
-                GetProxyPortRandom(request,cb);
-            },300)
+            setTimeout(function() {
+                GetProxyPortRandom(request, cb);
+            }, 300)
         }
     })
 }
@@ -148,11 +143,20 @@ async.series([
         console.log('forkChildren');
         proxies = [];
         for (var i = 1; i < count + 1; i++) {
-            var p1 = fork('./app.js', ['-p', port + i, '-cluster', '-DB','./DB_cluster.js'], {
-               
+            var p1 = fork('./app.js', ['-p', port + i, '-cluster', '-DB', './DB_cluster.js'], {
+                silent: true
             });
             proxies.push(p1);
             p1.port = port + i;
+            p1.stdout.on('data', function(data) {
+
+            }),
+            p1.stdin.on('data', function(data) {
+
+            }),
+            p1.stderr.on('data', function(data) {
+
+            })
         }
 
         cb();
@@ -176,28 +180,35 @@ async.series([
                         }
                     }, child);
                 });
-                child.on('close',function()
-                {
+                child.on('close', function() {
 
                     console.log('CRASH in child ' + child.port);
-                    var p1 = fork('./app.js', ['-p', child.port, '-cluster', '-DB','./DB_cluster.js'], {
-                     
+                    var p1 = fork('./app.js', ['-p', child.port, '-cluster', '-DB', './DB_cluster.js'], {
+                        silent: true
                     });
 
-                    proxies.splice(proxies.indexOf(child),1);
+                    p1.stdout.on('data', function(data) {
+
+                    }),
+                    p1.stdin.on('data', function(data) {
+
+                    }),
+                    p1.stderr.on('data', function(data) {
+
+                    })
+
+                    proxies.splice(proxies.indexOf(child), 1);
                     proxies.push(p1);
                     p1.port = child.port;
                     hookupChild(p1);
-                    console.log("spawned new child for port "+ p1.port)
-                    for(var i in states)
-                    {
-                        if(states[i] == child)
-                        {
+                    console.log("spawned new child for port " + p1.port)
+                    for (var i in states) {
+                        if (states[i] == child) {
                             console.log('removing entries from crashed child ' + i + ' ' + child.port);
                             delete states[i];
                         }
                     }
-                    
+
                 })
             }
 
@@ -209,16 +220,16 @@ async.series([
         console.log('startProxyServer');
 
 
-     //   var proxyServers = {};
-     //   for (var i = 1; i < count + 1; i++) {
-            var proxy = httpProxy.createProxyServer({
-                ws: true
-            });
-            proxy.on('error', function(e) {
-                console.log(JSON.stringify(e));
-            })
-      //      proxyServers[port + i] = proxy;
-      //  }
+        //   var proxyServers = {};
+        //   for (var i = 1; i < count + 1; i++) {
+        var proxy = httpProxy.createProxyServer({
+            ws: true
+        });
+        proxy.on('error', function(e) {
+            console.log(JSON.stringify(e));
+        })
+        //      proxyServers[port + i] = proxy;
+        //  }
 
         // Create your custom server and just call `proxy.web()` to proxy
         // a web request to the target passed in the options
