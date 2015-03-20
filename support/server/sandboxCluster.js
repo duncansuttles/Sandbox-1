@@ -149,7 +149,7 @@ async.series([
         proxies = [];
         for (var i = 1; i < count + 1; i++) {
             var p1 = fork('./app.js', ['-p', port + i, '-cluster', '-DB','./DB_cluster.js'], {
-                silent: true
+               
             });
             proxies.push(p1);
             p1.port = port + i;
@@ -181,7 +181,7 @@ async.series([
 
                     console.log('CRASH in child ' + child.port);
                     var p1 = fork('./app.js', ['-p', child.port, '-cluster', '-DB','./DB_cluster.js'], {
-                        silent: true
+                     
                     });
 
                     proxies.splice(proxies.indexOf(child),1);
