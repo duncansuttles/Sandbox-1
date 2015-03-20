@@ -1639,11 +1639,14 @@ height: 75px;
 
 .libraryAsset div
 {
-	
-
-color: whitesmoke;
-text-shadow: 1px 1px 5px black;
-overflow: hidden;
+  color: whitesmoke;
+  text-shadow: 1px 1px 5px black;
+  overflow: hidden;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  position: relative;
+  border-radius: 10px;
+  pointer-events: none;
 }
 
 .libraryAsset img
@@ -1701,7 +1704,7 @@ color: #DDD;
 
 .scriptchoicesug
 {
-color:#666;
+color:#B6B6B6;
 cursor: pointer;
 font-size: 1.5em;
 border: 1px solid gray;

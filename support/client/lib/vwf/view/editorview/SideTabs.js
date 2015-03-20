@@ -3,15 +3,17 @@ define(function() {
     this.initialize = function() {
         $('#sidepanel').append("<div id='sidetabs' />");
 
-        $("#sidetabs").append("<div id='SideTabModels' class='sidetab'>Models</div>");
-        $("#sidetabs").append("<div id='SideTabProperties'  class='sidetab'>Properties</div>");
-        $("#sidetabs").append("<div id='SideTabMaterials'  class='sidetab'>Material</div>");
-        $("#sidetabs").append("<div id='SideTabHierarchy'  class='sidetab'>Hierarchy</div>");
-        $("#sidetabs").append("<div id='SideTabUsers'  class='sidetab'>Users</div>");
-        $("#sidetabs").append("<div id='SideTabInventory'  class='sidetab'>Inventory</div>");
-        $("#sidetabs").append("<div id='SideTabScripts'  class='sidetab'>Scripts</div>");
         $("#sidetabs").append("<div id='SideTabChat'  class='sidetab'>Chat</div>");
+        $("#sidetabs").append("<div id='SideTabHierarchy'  class='sidetab'>Hierarchy</div>");
+        $("#sidetabs").append("<div id='SideTabInventory'  class='sidetab'>Inventory</div>");
+        $("#sidetabs").append("<div id='SideTabMaterials'  class='sidetab'>Material</div>");
+        $("#sidetabs").append("<div id='SideTabModels' class='sidetab'>Models</div>");
         $("#sidetabs").append("<div id='SideTabPhysics'  class='sidetab'>Physics</div>");
+        $("#sidetabs").append("<div id='SideTabProperties'  class='sidetab'>Properties</div>");
+        $("#sidetabs").append("<div id='SideTabUsers'  class='sidetab'>Users</div>");
+        $("#sidetabs").append("<div id='SideTabScripts'  class='sidetab'>Scripts</div>");
+        
+        
         $("#sidepanel").css('overflow', 'visible');
 
         $("#SideTabModels").click(function() {
